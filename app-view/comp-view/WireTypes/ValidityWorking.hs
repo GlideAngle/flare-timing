@@ -82,14 +82,14 @@ showPilotsPresentDiff (PilotsPresent expected) (PilotsPresent actual)
     | f actual == f expected = "="
     | otherwise = T.pack . f $ actual - expected
     where
-        f = printf "%+.3d"
+        f = printf "%+d"
 
 showPilotsFlyingDiff :: PilotsFlying -> PilotsFlying -> T.Text
 showPilotsFlyingDiff (PilotsFlying expected) (PilotsFlying actual)
     | f actual == f expected = "="
     | otherwise = T.pack . f $ actual - expected
     where
-        f = printf "%+.3d"
+        f = printf "%+d"
 
 showNominalLaunchDiff :: NominalLaunch -> NominalLaunch -> T.Text
 showNominalLaunchDiff (NominalLaunch expected) (NominalLaunch actual)
@@ -351,14 +351,14 @@ showPilotsLandedDiff (PilotsLanded expected) (PilotsLanded actual)
     | f actual == f expected = "="
     | otherwise = T.pack . f $ actual - expected
     where
-        f = printf "%+.3d"
+        f = printf "%+d"
 
 showPilotsAtEssDiff :: PilotsAtEss -> PilotsAtEss -> T.Text
 showPilotsAtEssDiff (PilotsAtEss expected) (PilotsAtEss actual)
     | f actual == f expected = "="
     | otherwise = T.pack . f $ actual - expected
     where
-        f = printf "%+.3d"
+        f = printf "%+d"
 
 newtype LaunchToEss = LaunchToEss Double
     deriving (Eq, Ord, Show, Generic)
