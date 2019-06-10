@@ -59,7 +59,7 @@ import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (timeZone, showTime)
-import qualified FlareTiming.Statistics as Stats (mean)
+import qualified FlareTiming.Statistics as Stats (mean, stdDev)
 
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
@@ -1187,12 +1187,13 @@ tablePilotReach reach bonusReach = do
                     let mapR = Map.fromList br
 
                     _ <- simpleList reach (uncurry (rowReachBonus mapR) . splitDynPure)
+                    let f = text . T.pack . printf "%.3f"
 
                     el "tr" $ do
                         el "th" $ text "∑"
-                        elClass "td" "td-plot-reach" . text . T.pack . printf "%.3f"
+                        elClass "td" "td-plot-reach" . f
                             $ Stats.sum rs
-                        elClass "td" "td-plot-reach-bonus" . text . T.pack . printf "%.3f"
+                        elClass "td" "td-plot-reach-bonus" . f
                             $ Stats.sum bs
                         elClass "td" "td-plot-reach-bonus-diff" $ text ""
                         el "td" $ text ""
@@ -1201,9 +1202,9 @@ tablePilotReach reach bonusReach = do
 
                     el "tr" $ do
                         el "th" $ text "μ"
-                        elClass "td" "td-plot-reach" . text . T.pack . printf "%.3f"
+                        elClass "td" "td-plot-reach" . f
                             $ Stats.mean rs
-                        elClass "td" "td-plot-reach-bonus" . text . T.pack . printf "%.3f"
+                        elClass "td" "td-plot-reach-bonus" . f
                             $ Stats.mean bs
                         elClass "td" "td-plot-reach-bonus-diff" $ text ""
                         el "td" $ text ""
@@ -1212,8 +1213,10 @@ tablePilotReach reach bonusReach = do
 
                     el "tr" $ do
                         el "th" $ text "σ"
-                        elClass "td" "td-plot-reach" $ text ""
-                        elClass "td" "td-plot-reach-bonus" $ text ""
+                        elClass "td" "td-plot-reach" . f
+                            $ Stats.stdDev rs
+                        elClass "td" "td-plot-reach-bonus" . f
+                            $ Stats.stdDev bs
                         elClass "td" "td-plot-reach-bonus-diff" $ text ""
                         el "td" $ text ""
 
