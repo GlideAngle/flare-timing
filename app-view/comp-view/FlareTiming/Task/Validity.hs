@@ -941,19 +941,19 @@ viewStop
 
                 el "tbody" $ do
                     el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Pilots at ESS"
+                        elV . T.pack $ show pilotsAtEss
+                        elN . T.pack $ show pilotsAtEssN
+                        elD $ showPilotsAtEssDiff pilotsAtEssN pilotsAtEss
+                        return ()
+
+                    el "tr" $ do
                         el "td" $ text "f"
                         el "td" $ text "Pilots Flying"
                         elV . T.pack $ show flying
                         elN . T.pack $ show flyingN
                         elD $ showPilotsFlyingDiff flyingN flying
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text "pe"
-                        el "td" $ text "Pilots at ESS"
-                        elV . T.pack $ show pilotsAtEss
-                        elN . T.pack $ show pilotsAtEssN
-                        elD $ showPilotsAtEssDiff pilotsAtEssN pilotsAtEss
                         return ()
 
                     el "tr" $ do
