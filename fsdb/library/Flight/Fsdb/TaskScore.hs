@@ -265,7 +265,7 @@ xpDistanceValidityWorking ng nd md =
     xpElem "FsTaskScoreParams"
     $ xpFilterCont(isAttr)
     $ xpFilterAttr
-        ( hasName "sum_dist_over_min"
+        ( hasName "sum_real_dist_over_min"
         <+> hasName "no_of_pilots_flying"
         <+> hasName "best_dist"
         )
@@ -288,7 +288,7 @@ xpDistanceValidityWorking ng nd md =
                     (sd, fromIntegral pf, bd)
         )
     $ xpTriple
-        (xpAttr "sum_dist_over_min" xpPrim)
+        (xpAttr "sum_real_dist_over_min" xpPrim)
         (xpAttr "no_of_pilots_flying" xpInt)
         (xpAttr "best_dist" xpPrim)
 
