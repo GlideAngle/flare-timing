@@ -991,7 +991,7 @@ viewStop
                                 return ()
 
                             el "tr" $ do
-                                el "td" $ text "Flown ‡"
+                                el "th" $ text "Flown ‡"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -1011,7 +1011,7 @@ viewStop
                                 return ()
 
                             el "tr" $ do
-                                el "td" $ text "Flown ‡"
+                                el "th" $ text "Flown ‡"
                                 elV $ showPilotDistance 3 flownMeanR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -1035,7 +1035,7 @@ viewStop
                                 return ()
 
                             el "tr" $ do
-                                el "td" $ text "Flown ‡"
+                                el "th" $ text "Flown ‡"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -1055,7 +1055,7 @@ viewStop
                                 return ()
 
                             el "tr" $ do
-                                el "td" $ text "Flown ‡"
+                                el "th" $ text "Flown ‡"
                                 elV $ showPilotDistance 3 flownStdDevR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
