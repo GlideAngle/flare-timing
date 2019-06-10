@@ -419,7 +419,7 @@ viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td f
                         spacer
                         viewLaunch v vN w wN
                         spacer
-                        viewDistance v w
+                        viewDistance v vN w wN
                         spacer
                         viewTime v vN w wN
                         spacer
@@ -619,15 +619,41 @@ viewLaunch
 viewDistance
     :: DomBuilder t m
     => Vy.Validity
+    -> Vy.Validity
+    -> ValidityWorking
     -> ValidityWorking
     -> m ()
 viewDistance
-    Vy.Validity{distance = v}
-    ValidityWorking{distance = DistanceValidityWorking{..}} = do
+    Vy.Validity{distance = dv}
+    Vy.Validity{distance = dvN}
+    ValidityWorking
+        { distance =
+            DistanceValidityWorking
+                { sum = sd
+                , flying = flying
+                , area
+                , nominalGoal = ng
+                , nominalDistance = nd
+                , minimumDistance = md
+                , bestDistance = bd
+                }
+        }
+    ValidityWorking
+        { distance =
+            DistanceValidityWorking
+                { sum = sdN
+                , flying = flyingN
+                , nominalGoal = ngN
+                , nominalDistance = ndN
+                , minimumDistance = mdN
+                , bestDistance = bdN
+                }
+        }
+    = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
-                $ "Distance Validity = " <> Vy.showDistanceValidity v
+                $ "Distance Validity = " <> Vy.showDistanceValidity dv
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
@@ -643,28 +669,92 @@ viewDistance
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "ng = nominal goal"
                         elClass "span" "tag is-primary"
-                            $ text (T.pack . show $ nominalGoal)
+                            $ text (T.pack . show $ ng)
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "sum = sum of distance"
                         elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ sum)
+                            $ text (T.pack . show $ sd)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "nd = nominal distance"
                         elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ nominalDistance)
+                            $ text (T.pack . show $ nd)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "md = minimum distance"
                         elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ minimumDistance)
+                            $ text (T.pack . show $ md)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "bd = best distance"
                         elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ bestDistance)
+                            $ text (T.pack . show $ bd)
+
+            elClass "table" "table is-striped" $ do
+                el "thead" $ do
+                    el "tr" $ do
+                        elAttr "th" ("colspan" =: "3") $ text ""
+                        elClass "th" "th-norm validity" $ text "✓"
+                        elClass "th" "th-norm th-diff" $ text "Δ"
+
+                el "tbody" $ do
+                    el "tr" $ do
+                        el "td" $ text "f"
+                        el "td" $ text "Pilots Flying"
+                        elV . T.pack $ show flying
+                        elN . T.pack $ show flyingN
+                        elD $ showPilotsFlyingDiff flyingN flying
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "ng"
+                        el "td" $ text "Nominal Goal"
+                        elV . T.pack $ show ng
+                        elN . T.pack $ show ngN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "sd"
+                        el "td" $ text "Sum of Distance"
+                        elV . T.pack $ show sd
+                        elN . T.pack $ show sdN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "nd"
+                        el "td" $ text "Nominal Distance"
+                        elV . T.pack $ show nd
+                        elN . T.pack $ show ndN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "md"
+                        el "td" $ text "Minimum Distance"
+                        elV . T.pack $ show md
+                        elN . T.pack $ show mdN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "bd"
+                        el "td" $ text "Best Distance"
+                        elV . T.pack $ show bd
+                        elN . T.pack $ show bdN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "th" $ text ""
+                        el "th" $ text "Distance Validity"
+                        elV $ Vy.showDistanceValidity dv
+                        elN $ Vy.showDistanceValidity dvN
+                        elD $ Vy.showDistanceValidityDiff dvN dv
+                        return ()
 
             elAttr
                 "div"
