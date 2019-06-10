@@ -676,14 +676,6 @@ viewDistance
                         return ()
 
                     el "tr" $ do
-                        el "td" $ text "area"
-                        el "td" $ text "Nominal Distance Area"
-                        elV . T.pack $ show area
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
                         el "td" $ text "ng"
                         el "td" $ text "Nominal Goal"
                         elV $ showNominalGoal ng
@@ -721,6 +713,14 @@ viewDistance
                         elV $ showMaximumDistance bd
                         elN $ showMaximumDistance bdN
                         elD $ showMaximumDistanceDiff bdN bd
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "area"
+                        el "th" $ text "Nominal Distance Area"
+                        elV . T.pack $ show area
+                        elN $ "n/a"
+                        elD $ ""
                         return ()
 
                     el "tr" $ do
