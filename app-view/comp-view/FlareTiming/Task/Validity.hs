@@ -902,9 +902,9 @@ viewStop
                 { pilotsAtEss
                 , flying
                 , landed
+                , flownMax = bd
                 , flownMean
                 , flownStdDev
-                , bestDistance = bd
                 , launchToEssDistance = ed
                 }
         }
@@ -914,9 +914,9 @@ viewStop
                 { pilotsAtEss = pilotsAtEssN
                 , flying = flyingN
                 , landed = landedN
+                , flownMax = bdN
                 , flownMean = flownMeanN
                 , flownStdDev = flownStdDevN
-                , bestDistance = bdN
                 , launchToEssDistance = edN
                 }
         }

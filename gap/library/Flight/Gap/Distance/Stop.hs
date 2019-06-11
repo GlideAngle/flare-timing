@@ -1,17 +1,30 @@
 module Flight.Gap.Distance.Stop
     ( LaunchToEss(..)
+    , FlownMax(..)
     , FlownMean(..)
     , FlownStdDev(..)
+    , unFlownMaxAsKm
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Convert (Convertible)
 
+import Data.Ratio.Rounding (dpRound)
 import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
+
+unFlownMaxAsKm
+    :: (Real a, Fractional a, Convertible u [u| m |])
+    => FlownMax (Quantity a u)
+    -> a
+unFlownMaxAsKm (FlownMax d) =
+    fromRational $ dpRound 6 dKm
+    where
+        MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 newtype LaunchToEss a = LaunchToEss a
     deriving (Eq, Ord, Show)
@@ -35,13 +48,38 @@ instance (q ~ Quantity Double [u| km |]) => FromJSON (LaunchToEss q) where
         ViaQ x <- parseJSON o
         return x
 
+newtype FlownMax a = FlownMax a
+    deriving (Eq, Ord, Show)
+
+instance
+    (q ~ Quantity Double [u| km |])
+    => DefaultDecimalPlaces (FlownMax q) where
+    defdp _ = DecimalPlaces 6
+
+instance
+    (q ~ Quantity Double [u| km |])
+    => Newtype (FlownMax q) q where
+    pack = FlownMax
+    unpack (FlownMax a) = a
+
+instance (q ~ Quantity Double [u| m |]) => ToJSON (FlownMax q) where
+    toJSON (FlownMax x) = toJSON $ ViaQ (FlownMax y)
+        where
+            y :: Quantity Double [u| km |]
+            y = convert x
+
+instance (q ~ Quantity Double [u| m |]) => FromJSON (FlownMax q) where
+    parseJSON o = do
+        ViaQ (FlownMax x) <- parseJSON o
+        return (FlownMax $ convert x)
+
 newtype FlownMean a = FlownMean a
     deriving (Eq, Ord, Show)
 
 instance
     (q ~ Quantity Double [u| km |])
     => DefaultDecimalPlaces (FlownMean q) where
-    defdp _ = DecimalPlaces 3
+    defdp _ = DecimalPlaces 6
 
 instance
     (q ~ Quantity Double [u| km |])
@@ -63,7 +101,7 @@ newtype FlownStdDev a = FlownStdDev a
 instance
     (q ~ Quantity Double [u| km |])
     => DefaultDecimalPlaces (FlownStdDev q) where
-    defdp _ = DecimalPlaces 3
+    defdp _ = DecimalPlaces 6
 
 instance
     (q ~ Quantity Double [u| km |])

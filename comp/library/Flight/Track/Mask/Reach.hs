@@ -9,9 +9,10 @@ Tracks masked with task control zones.
 -}
 module Flight.Track.Mask.Reach (MaskingReach(..)) where
 
-import Data.UnitsOfMeasure (u)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (QTaskDistance)
 import Flight.Score (Pilot(..))
@@ -19,11 +20,12 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
 import Flight.Track.Mask.Cmp (cmp)
+import Flight.Score
 
 -- | For each task, the masking for reach for that task.
 data MaskingReach =
     MaskingReach
-        { bestReach :: [Maybe (QTaskDistance Double [u| m |])]
+        { flownMax :: [Maybe (FlownMax (Quantity Double [u| m |]))]
         -- ^ For each task, the best distance made.
         , flownMean :: [QTaskDistance Double [u| m |]]
         -- ^ For each task, the mean of the flown distance, reach clamped below

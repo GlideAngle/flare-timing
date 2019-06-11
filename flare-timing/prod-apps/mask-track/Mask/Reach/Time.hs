@@ -18,6 +18,7 @@ import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
 import Flight.Track.Mask (MaskingReach(..))
 import Flight.Score
     ( MinimumDistance(..), PilotDistance(..), BestDistance(..), LinearFraction(..)
+    , FlownMax(..)
     , linearFraction
     )
 import Stats (DashPathInputs(..))
@@ -32,7 +33,7 @@ maskReachTime
     -> MaskingReach
 maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows psArriving =
     MaskingReach
-        { bestReach = dsBest
+        { flownMax = dsFlownMax
         , flownMean = fsMean
         , flownStdDev = fsStdDev
         , reachMean = rsMean
@@ -41,6 +42,8 @@ maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
         , nigh = dsNigh
         }
     where
+        dsFlownMax = (fmap . fmap) (\(TaskDistance d) -> FlownMax d) dsBest
+
         dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
             compNighTime lsWholeTask zsTaskTicked dsNighRows
 

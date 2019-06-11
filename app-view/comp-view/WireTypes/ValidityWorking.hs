@@ -331,9 +331,9 @@ data StopValidityWorking =
         , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
+        , flownMax :: BestDistance
         , flownMean :: PilotDistance
         , flownStdDev :: PilotDistance
-        , bestDistance :: BestDistance
         , launchToEssDistance :: LaunchToEss
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)

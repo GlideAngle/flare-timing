@@ -56,7 +56,7 @@ import Flight.Score
     , TimeValidity(..), TimeValidityWorking(..)
     , StopValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), PilotsAtEss(..), PilotsLanded(..)
-    , FlownMean(..), FlownStdDev(..)
+    , FlownMax(..), FlownMean(..), FlownStdDev(..)
     , LaunchToEss(..)
     , NominalGoal(..)
     , NominalLaunch(..)
@@ -313,16 +313,16 @@ xpStopValidityWorking =
                 , landed = PilotsLanded $ fromIntegral pl
                 , stillFlying = PilotsFlying . fromIntegral $ pf - pl
                 , flying = PilotsFlying $ fromIntegral pf
+                , flownMax = FlownMax $ MkQuantity bd
                 , flownMean = FlownMean [u| 0 km |]
                 , flownStdDev = FlownStdDev [u| 0 km |]
-                , bestDistance = BestDistance $ MkQuantity bd
                 , launchToEssDistance = LaunchToEss $ MkQuantity ed
                 }
         , \StopValidityWorking
                 { pilotsAtEss = PilotsAtEss pe
                 , landed = PilotsLanded pl
                 , flying = PilotsFlying pf
-                , bestDistance = BestDistance (MkQuantity bd)
+                , flownMax = FlownMax (MkQuantity bd)
                 , launchToEssDistance = LaunchToEss (MkQuantity ed)
                 } ->
                     (fromIntegral pe, fromIntegral pl, fromIntegral pf, bd, ed)

@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+import Data.Coerce (coerce)
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
 import Data.Maybe (fromMaybe, catMaybes)
@@ -128,7 +129,8 @@ import Flight.Score
     , PointPenalty
     , TaskPlacing(..), TaskPoints(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
-    , FlownMean(..), FlownStdDev(..)
+    , FlownMax(..), FlownMean(..), FlownStdDev(..)
+    , unFlownMaxAsKm
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
@@ -307,7 +309,7 @@ points'
         }
     ( _
     , MaskingReach
-        { bestReach
+        { flownMax = extraMax
         , flownMean
         , flownStdDev
         , nigh
@@ -371,7 +373,7 @@ points'
         -- or it has not been scored yet.
         maybeTasks :: [a -> Maybe a]
         maybeTasks =
-            [ if null ds then const Nothing else Just | ds <- bestReach ]
+            [ if null ds then const Nothing else Just | ds <- extraMax ]
 
         lvs =
             [ launchValidity
@@ -384,7 +386,7 @@ points'
 
         dBests :: [MaximumDistance (Quantity Double [u| km |])] =
             [ MaximumDistance . MkQuantity $ fromMaybe 0 b
-            | b <- (fmap . fmap) unTaskDistanceAsKm bestReach
+            | b <- (fmap . fmap) unFlownMaxAsKm extraMax
             ]
 
         dSums :: [SumOfDistance (Quantity Double [u| km |])] =
@@ -467,7 +469,7 @@ points'
             | gr <- grs
             | dw <- dws
             | tw <- taskTweak <$> tasks
-            | bd <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> bestReach
+            | bd <- maybe [u| 0.0 km |] (MkQuantity . unFlownMaxAsKm) <$> extraMax
             | td <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> lsWholeTask
             ]
 
@@ -523,7 +525,7 @@ points'
                     ed' <- ed
                     let ls = PilotsLanded . fromIntegral . length $ snd <$> landedByStop
                     let sf = PilotsFlying . fromIntegral . length $ snd <$> stillFlying
-                    return $ stopValidity pf pe ls sf fm fsd bd ed'
+                    return $ stopValidity pf pe ls sf bd fm fsd ed'
 
             | sp <- stopped <$> tasks
             | pf <- PilotsFlying <$> dfss
@@ -538,7 +540,7 @@ points'
                 (\(TaskDistance td) ->
                     FlownStdDev $ convert td) <$> flownStdDev
 
-            | bd <- (\(MaximumDistance x) -> BestDistance x) <$> dBests
+            | bd <- (\(MaximumDistance x) -> FlownMax x) <$> dBests
 
             | ed <-
                 (fmap . fmap)
@@ -570,7 +572,7 @@ points'
             [ let xs' = (fmap . fmap) madeNigh xs
                   ys' = (fmap . fmap) (const bd) ys
               in (xs' ++ ys')
-            | bd <- (fmap . fmap) unTaskDistanceAsKm bestReach
+            | bd <- (fmap . fmap) unFlownMaxAsKm extraMax
             | xs <- nigh
             | ys <- arrivalRank
             ]
@@ -665,9 +667,9 @@ points'
         nighDistancePointsDf :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyLinear free bd ps') ds)
+                (\ps' -> (fmap . fmap) (applyLinear free (coerce <$> bd) ps') ds)
                 ps
-            | bd <- bestReach
+            | bd <- extraMax
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDf
             ]
@@ -675,9 +677,9 @@ points'
         nighDistancePointsDfNoTrack :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyLinear free bd ps') ds)
+                (\ps' -> (fmap . fmap) (applyLinear free (coerce <$> bd) ps') ds)
                 ps
-            | bd <- bestReach
+            | bd <- extraMax
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDfNoTrack
             ]

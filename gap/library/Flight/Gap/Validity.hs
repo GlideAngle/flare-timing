@@ -31,7 +31,8 @@ import Data.UnitsOfMeasure
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Ratio (pattern (:%))
-import Flight.Gap.Distance.Stop (FlownMean(..), FlownStdDev(..), LaunchToEss(..))
+import Flight.Gap.Distance.Stop
+    (FlownMax(..), FlownMean(..), FlownStdDev(..), LaunchToEss(..))
 import Flight.Gap.Distance.Nominal (NominalDistance(..))
 import Flight.Gap.Distance.Best (BestDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
@@ -107,9 +108,9 @@ data StopValidityWorking =
         , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
+        , flownMax :: FlownMax (Quantity Double [u| m |])
         , flownMean :: FlownMean (Quantity Double [u| km |])
         , flownStdDev :: FlownStdDev (Quantity Double [u| km |])
-        , bestDistance :: BestDistance (Quantity Double [u| km |])
         , launchToEssDistance :: LaunchToEss (Quantity Double [u| km |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -346,9 +347,9 @@ stopValidity
     -> PilotsAtEss
     -> PilotsLanded
     -> PilotsFlying
+    -> FlownMax (Quantity Double [u| km |])
     -> FlownMean (Quantity Double [u| km |])
     -> FlownStdDev (Quantity Double [u| km |])
-    -> BestDistance (Quantity Double [u| km |])
     -> LaunchToEss (Quantity Double [u| km |])
     -> (StopValidity, Maybe StopValidityWorking)
 stopValidity
@@ -356,9 +357,9 @@ stopValidity
     pe@(PilotsAtEss ess)
     landedByStop@(PilotsLanded landed)
     stillFlying
+    (FlownMax bd)
     fm@(FlownMean flownMean)
     fd@(FlownStdDev flownStdDev)
-    bd'@(BestDistance bd)
     ed'@(LaunchToEss ed)
     | ess > 0 = (StopValidity 1, Just w)
     | otherwise = (StopValidity $ min 1 (toRational $ unQuantity a + b**3), Just w)
@@ -373,7 +374,7 @@ stopValidity
                     , flying = pf
                     , flownMean = fm
                     , flownStdDev = fd
-                    , bestDistance = bd'
+                    , flownMax = FlownMax $ convert bd
                     , launchToEssDistance = ed'
                     }
 

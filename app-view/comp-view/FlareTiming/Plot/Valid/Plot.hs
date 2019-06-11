@@ -417,7 +417,7 @@ stopByReachPlot
     (StopValidity y)
     vw@StopValidityWorking
         { flownMean = PilotDistance dMean
-        , bestDistance = BestDistance bd
+        , flownMax = BestDistance bd
         } = do
 
     let xMax = bd
@@ -454,7 +454,7 @@ fnStopByReach
         , landed = PilotsLanded landed
         , flying = PilotsFlying flying
         , flownStdDev = PilotDistance flownStdDev
-        , bestDistance = BestDistance bd
+        , flownMax = BestDistance bd
         , launchToEssDistance = LaunchToEss ed
         }
     flownMean
@@ -505,7 +505,7 @@ fnStopByLanded
         , flying = PilotsFlying flying
         , flownMean = PilotDistance flownMean
         , flownStdDev = PilotDistance flownStdDev
-        , bestDistance = BestDistance bd
+        , flownMax = BestDistance bd
         , launchToEssDistance = LaunchToEss ed
         }
     landed
@@ -521,7 +521,7 @@ stopByVaryPlot
     (StopValidity y)
     vw@StopValidityWorking
         { flownStdDev = PilotDistance std
-        , bestDistance = BestDistance bd
+        , flownMax = BestDistance bd
         } = do
 
     let xMax = bd
@@ -555,7 +555,7 @@ fnStopByVary
         , landed = PilotsLanded landed
         , flying = PilotsFlying flying
         , flownMean = PilotDistance flownMean
-        , bestDistance = BestDistance bd
+        , flownMax = BestDistance bd
         , launchToEssDistance = LaunchToEss ed
         }
     flownStdDev

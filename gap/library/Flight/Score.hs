@@ -150,6 +150,7 @@ module Flight.Score
     , availablePoints
     -- * Stopped task
     , LaunchToEss(..)
+    , FlownMax(..)
     , FlownMean(..)
     , FlownStdDev(..)
     , TaskStopTime(..)
@@ -158,6 +159,7 @@ module Flight.Score
     , StartGateInterval(..)
     , StopTime(..)
     , CanScoreStopped(..)
+    , unFlownMaxAsKm
     , stopTaskTime
     , canScoreStopped
     , MaximumDistance(..)
@@ -208,6 +210,7 @@ import Flight.Gap.Distance.Relative
 import Flight.Gap.Distance.Fraction
 import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty
+import Flight.Gap.Distance.Stop
 import Flight.Gap.Leading
 import Flight.Gap.Place.Arrival
 import Flight.Gap.Place.Task
