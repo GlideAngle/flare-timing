@@ -20,7 +20,7 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
 import Flight.Track.Mask.Cmp (cmp)
-import Flight.Score
+import Flight.Score (FlownMax(..))
 
 -- | For each task, the masking for reach for that task.
 data MaskingReach =
