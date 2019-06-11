@@ -307,12 +307,15 @@ points'
         { sumDistance
         , leadRank
         }
-    ( _
-    , MaskingReach
-        { flownMax = extraMax
+    ( MaskingReach
+        { flownMax
         , flownMean
         , flownStdDev
-        , nigh
+        , nigh = flownNigh
+        }
+    , MaskingReach
+        { flownMax = extraMax
+        , nigh = extraNigh
         }
     )
     MaskingSpeed
@@ -373,7 +376,7 @@ points'
         -- or it has not been scored yet.
         maybeTasks :: [a -> Maybe a]
         maybeTasks =
-            [ if null ds then const Nothing else Just | ds <- extraMax ]
+            [ if null ds then const Nothing else Just | ds <- flownMax ]
 
         lvs =
             [ launchValidity
@@ -386,7 +389,7 @@ points'
 
         dBests :: [MaximumDistance (Quantity Double [u| km |])] =
             [ MaximumDistance . MkQuantity $ fromMaybe 0 b
-            | b <- (fmap . fmap) unFlownMaxAsKm extraMax
+            | b <- (fmap . fmap) unFlownMaxAsKm flownMax
             ]
 
         dSums :: [SumOfDistance (Quantity Double [u| km |])] =
@@ -469,7 +472,7 @@ points'
             | gr <- grs
             | dw <- dws
             | tw <- taskTweak <$> tasks
-            | bd <- maybe [u| 0.0 km |] (MkQuantity . unFlownMaxAsKm) <$> extraMax
+            | bd <- maybe [u| 0.0 km |] (MkQuantity . unFlownMaxAsKm) <$> flownMax
             | td <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> lsWholeTask
             ]
 
@@ -573,7 +576,7 @@ points'
                   ys' = (fmap . fmap) (const bd) ys
               in (xs' ++ ys')
             | bd <- (fmap . fmap) unFlownMaxAsKm extraMax
-            | xs <- nigh
+            | xs <- extraNigh
             | ys <- arrivalRank
             ]
 
@@ -593,7 +596,7 @@ points'
                   ys' = (fmap . fmap) (const sd) ys
               in (xs' ++ ys')
             | sd <- (fmap . fmap) unTaskDistanceAsKm taskSpeedDistance
-            | xs <- nigh
+            | xs <- flownNigh
             | ys <- arrivalRank
             ]
 
@@ -697,7 +700,7 @@ points'
                 )
                 ps
             | ps <- (fmap . fmap) points allocs
-            | xs <- nigh
+            | xs <- flownNigh
             | ys <- leadRank
             ]
 
@@ -714,7 +717,7 @@ points'
                 )
                 ps
             | ps <- (fmap . fmap) points allocs
-            | xs <- nigh
+            | xs <- flownNigh
             | ys <- arrivalRank
             ]
 
@@ -732,7 +735,7 @@ points'
                     )
                     ps
                 | ps <- (fmap . fmap) points allocs
-                | xs <- nigh
+                | xs <- flownNigh
                 | ys <- speed
                 ]
 
@@ -741,7 +744,7 @@ points'
                 [ let xs' = (fmap . fmap) (const Nothing) xs
                       ys' = (fmap . fmap) (Just . Speed.time) ys
                   in (xs' ++ ys')
-                | xs <- nigh
+                | xs <- flownNigh
                 | ys <- speed
                 ]
 
