@@ -355,6 +355,9 @@ stopWorking
 
     "katex.render("
     <> "\"\\\\begin{aligned} "
+    <> " bd &= \\\\max(flown)"
+    <> katexNewLine
+    <> katexNewLine
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\mu(flown)}{ed - bd + 1} * \\\\sqrt{\\\\frac{\\\\sigma(flown)}{5}}}"
     <> katexNewLine
     <> eqnA
@@ -902,7 +905,8 @@ viewStop
                 { pilotsAtEss
                 , flying
                 , landed
-                , flownMax = bd
+                , extraMax
+                , flownMax
                 , flownMean
                 , flownStdDev
                 , launchToEssDistance = ed
@@ -914,7 +918,8 @@ viewStop
                 { pilotsAtEss = pilotsAtEssN
                 , flying = flyingN
                 , landed = landedN
-                , flownMax = bdN
+                , extraMax = extraMaxN
+                , flownMax = flownMaxN
                 , flownMean = flownMeanN
                 , flownStdDev = flownStdDevN
                 , launchToEssDistance = edN
@@ -935,14 +940,15 @@ viewStop
             elClass "table" "table is-striped" $ do
                 el "thead" $ do
                     el "tr" $ do
-                        elAttr "th" ("colspan" =: "3") $ text ""
+                        elAttr "th" ("colspan" =: "4") $ text ""
                         elClass "th" "th-norm validity" $ text "✓"
                         elClass "th" "th-norm th-diff" $ text "Δ"
 
                 el "tbody" $ do
                     el "tr" $ do
+                        elAttr "th" ("rowspan" =: "3") $ text "Pilots"
                         el "td" $ text ""
-                        el "td" $ text "Pilots at ESS"
+                        el "td" $ text "at ESS"
                         elV . T.pack $ show pilotsAtEss
                         elN . T.pack $ show pilotsAtEssN
                         elD $ showPilotsAtEssDiff pilotsAtEssN pilotsAtEss
@@ -950,7 +956,7 @@ viewStop
 
                     el "tr" $ do
                         el "td" $ text "f"
-                        el "td" $ text "Pilots Flying"
+                        el "td" $ text "Flying"
                         elV . T.pack $ show flying
                         elN . T.pack $ show flyingN
                         elD $ showPilotsFlyingDiff flyingN flying
@@ -958,32 +964,51 @@ viewStop
 
                     el "tr" $ do
                         el "td" $ text "ls"
-                        el "td" $ text "Pilots Landed before Stop"
+                        el "td" $ text "Landed before Stop"
                         elV . T.pack $ show landed
                         elN . T.pack $ show landedN
                         elD $ showPilotsLandedDiff landedN landed
                         return ()
 
                     el "tr" $ do
-                        el "td" $ text "bd"
-                        el "td" $ text "Best Distance"
-                        elV $ showBestDistance bd
-                        elN $ showBestDistance bdN
-                        elD $ showBestDistanceDiff bdN bd
-                        return ()
-
-                    el "tr" $ do
+                        el "th" $ text "Distance"
                         el "td" $ text "ed"
-                        el "td" $ text "Launch to ESS Distance"
+                        el "td" $ text "Launch to ESS"
                         elV $ showLaunchToEss ed
                         elN $ showLaunchToEss edN
                         elD $ showLaunchToEssDiff edN ed
+                        return ()
+
+                    el "tr" $ do
+                        elAttr "th" ("rowspan" =: "3") $ text "max"
+                        el "td" $ text ""
+                        el "td" $ text "Reach"
+                        elV $ ""
+                        elN $ ""
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "th" $ text "Flown"
+                        elV $ showBestDistance flownMax
+                        elN $ showBestDistance flownMaxN
+                        elD $ showBestDistanceDiff flownMaxN flownMax
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Extra"
+                        elV $ showBestDistance extraMax
+                        elN $ showBestDistance extraMaxN
+                        elD $ showBestDistanceDiff extraMaxN extraMax
                         return ()
 
                     _ <- dyn $ ffor reachStats (\case
                         Nothing -> do
                             el "tr" $ do
                                 elAttr "th" ("rowspan" =: "3") $ text "μ"
+                                el "td" $ text ""
                                 el "td" $ text "Reach †"
                                 elV $ "n/a"
                                 elN $ "n/a"
@@ -991,6 +1016,7 @@ viewStop
                                 return ()
 
                             el "tr" $ do
+                                el "td" $ text ""
                                 el "th" $ text "Flown ‡"
                                 elV $ "n/a"
                                 elN $ "n/a"
@@ -1004,6 +1030,7 @@ viewStop
                                 } -> do
                             el "tr" $ do
                                 elAttr "th" ("rowspan" =: "3") $ text "μ"
+                                el "td" $ text ""
                                 el "td" $ text "Reach †"
                                 elV $ showPilotDistance 3 reachMeanR <> " km"
                                 elN $ "n/a"
@@ -1011,6 +1038,7 @@ viewStop
                                 return ()
 
                             el "tr" $ do
+                                el "td" $ text ""
                                 el "th" $ text "Flown ‡"
                                 elV $ showPilotDistance 3 flownMeanR <> " km"
                                 elN $ "n/a"
@@ -1018,6 +1046,7 @@ viewStop
                                 return ())
 
                     el "tr" $ do
+                        el "td" $ text ""
                         el "td" $ text "Extra ‖"
                         elV $ showPilotDistance 3 flownMean <> " km"
                         elN $ showPilotDistance 3 flownMeanN <> " km"
@@ -1028,6 +1057,7 @@ viewStop
                         Nothing -> do
                             el "tr" $ do
                                 elAttr "th" ("rowspan" =: "3") $ text "σ"
+                                el "td" $ text ""
                                 el "td" $ text "Reach †"
                                 elV $ "n/a"
                                 elN $ "n/a"
@@ -1035,6 +1065,7 @@ viewStop
                                 return ()
 
                             el "tr" $ do
+                                el "td" $ text ""
                                 el "th" $ text "Flown ‡"
                                 elV $ "n/a"
                                 elN $ "n/a"
@@ -1048,6 +1079,7 @@ viewStop
                                 } -> do
                             el "tr" $ do
                                 elAttr "th" ("rowspan" =: "3") $ text "σ"
+                                el "td" $ text ""
                                 el "td" $ text "Reach †"
                                 elV $ showPilotDistance 3 reachStdDevR <> " km"
                                 elN $ "n/a"
@@ -1055,6 +1087,7 @@ viewStop
                                 return ()
 
                             el "tr" $ do
+                                el "td" $ text ""
                                 el "th" $ text "Flown ‡"
                                 elV $ showPilotDistance 3 flownStdDevR <> " km"
                                 elN $ "n/a"
@@ -1062,6 +1095,7 @@ viewStop
                                 return ())
 
                     el "tr" $ do
+                        el "td" $ text ""
                         el "td" $ text "Extra ‖"
                         elV $ showPilotDistance 3 flownStdDev <> " km"
                         elN $ showPilotDistance 3 flownStdDevN <> " km"
@@ -1069,6 +1103,7 @@ viewStop
                         return ()
 
                     el "tr" $ do
+                        el "td" $ text ""
                         el "th" $ text ""
                         el "th" $ text "Stop Validity"
                         elV $ Vy.showStopValidity sv
@@ -1076,7 +1111,7 @@ viewStop
                         elD $ Vy.showStopValidityDiff svN sv
                         return ()
 
-                let tdFoot = elAttr "td" ("colspan" =: "5")
+                let tdFoot = elAttr "td" ("colspan" =: "6")
                 let foot = el "tr" . tdFoot . text
 
                 el "tfoot" $ do
