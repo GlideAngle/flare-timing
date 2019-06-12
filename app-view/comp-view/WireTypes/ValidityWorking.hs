@@ -331,6 +331,7 @@ data StopValidityWorking =
         , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
+        , extraMax :: BestDistance
         , flownMax :: BestDistance
         , flownMean :: PilotDistance
         , flownStdDev :: PilotDistance

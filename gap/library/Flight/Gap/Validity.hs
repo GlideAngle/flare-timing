@@ -108,7 +108,10 @@ data StopValidityWorking =
         , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
+        , extraMax :: FlownMax (Quantity Double [u| m |])
+        -- ^ The best reach with altitude above goal converted to extra reach via glide.
         , flownMax :: FlownMax (Quantity Double [u| m |])
+        -- ^ The best reach as flown.
         , flownMean :: FlownMean (Quantity Double [u| km |])
         , flownStdDev :: FlownStdDev (Quantity Double [u| km |])
         , launchToEssDistance :: LaunchToEss (Quantity Double [u| km |])
@@ -269,23 +272,27 @@ distanceValidity
     -> NominalDistance (Quantity Double [u| km |])
     -> PilotsFlying
     -> MinimumDistance (Quantity Double [u| km |])
-    -> MaximumDistance (Quantity Double [u| km |])
+    -> FlownMax (Quantity Double [u| km |])
     -> SumOfDistance (Quantity Double [u| km |])
     -> (DistanceValidity, Maybe DistanceValidityWorking)
 distanceValidity _ _ (PilotsFlying 0) _ _ _ =
     (DistanceValidity 0, Nothing)
 
-distanceValidity _ _ _ _ (MaximumDistance (MkQuantity 0)) _ =
+distanceValidity _ _ _ _ (FlownMax (MkQuantity 0)) _ =
     (DistanceValidity 0, Nothing)
 
 distanceValidity
     ng@(NominalGoal (0 :% _))
     nd@(NominalDistance (MkQuantity 0))
-    nFly md bd dSum =
+    nFly
+    md
+    (FlownMax flownMax)
+    dSum =
     ( DistanceValidity $ min 1 $ dvr area nFly dSum
     , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
     )
     where
+        bd = MaximumDistance flownMax
         area = NominalDistanceArea 0
 
 distanceValidity
@@ -293,7 +300,7 @@ distanceValidity
     nd@(NominalDistance dNom')
     nFly
     md@(MinimumDistance dMin')
-    bd
+    (FlownMax flownMax)
     dSum
     | dNom < dMin =
         ( DistanceValidity (1 % 1)
@@ -304,6 +311,7 @@ distanceValidity
         , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
         )
     where
+        bd = MaximumDistance flownMax
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'
 
@@ -318,7 +326,7 @@ distanceValidity
     nd@(NominalDistance dNom')
     nFly
     md@(MinimumDistance dMin')
-    bd@(MaximumDistance dMax')
+    (FlownMax flownMax)
     dSum
     | dNom < dMin =
         ( DistanceValidity (1 % 1)
@@ -329,6 +337,7 @@ distanceValidity
         , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
         )
     where
+        bd@(MaximumDistance dMax') = MaximumDistance flownMax
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'
         MkQuantity dMax = toRational' dMax'
@@ -348,6 +357,9 @@ stopValidity
     -> PilotsLanded
     -> PilotsFlying
     -> FlownMax (Quantity Double [u| km |])
+    -- ^ The best reach with altitude above goal converted to extra reach via glide.
+    -> FlownMax (Quantity Double [u| km |])
+    -- ^ The best reach as flown.
     -> FlownMean (Quantity Double [u| km |])
     -> FlownStdDev (Quantity Double [u| km |])
     -> LaunchToEss (Quantity Double [u| km |])
@@ -357,14 +369,19 @@ stopValidity
     pe@(PilotsAtEss ess)
     landedByStop@(PilotsLanded landed)
     stillFlying
-    (FlownMax bd)
+    (FlownMax extraMax)
+    (FlownMax flownMax)
     fm@(FlownMean flownMean)
     fd@(FlownStdDev flownStdDev)
     ed'@(LaunchToEss ed)
     | ess > 0 = (StopValidity 1, Just w)
     | otherwise = (StopValidity $ min 1 (toRational $ unQuantity a + b**3), Just w)
         where
-            a = sqrt' (((bd -: flownMean) /: (ed -: bd +: [u| 1 km |])) *: sqrt' (flownStdDev /: [u| 5 km |]))
+            a =
+                sqrt' $
+                    ((flownMax -: flownMean) /: (ed -: flownMax +: [u| 1 km |]))
+                    *: sqrt' (flownStdDev /: [u| 5 km |])
+
             b = fromIntegral landed / (fromIntegral flying :: Double)
 
             w = StopValidityWorking
@@ -372,9 +389,10 @@ stopValidity
                     , landed = landedByStop
                     , stillFlying = stillFlying
                     , flying = pf
+                    , extraMax = FlownMax $ convert extraMax
+                    , flownMax = FlownMax $ convert flownMax
                     , flownMean = fm
                     , flownStdDev = fd
-                    , flownMax = FlownMax $ convert bd
                     , launchToEssDistance = ed'
                     }
 

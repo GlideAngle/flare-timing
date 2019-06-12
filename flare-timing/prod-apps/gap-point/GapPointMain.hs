@@ -115,7 +115,7 @@ import Flight.Zone.MkZones (Discipline(..))
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Score
-    ( MinimumDistance(..), MaximumDistance(..), LaunchToEss(..)
+    ( MinimumDistance(..), LaunchToEss(..)
     , BestDistance(..), SumOfDistance(..), PilotDistance(..)
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..), PilotsLanded(..)
     , GoalRatio(..), Lw(..), Aw(..), Rw(..), Ew(..)
@@ -387,8 +387,13 @@ points'
             | dnfs <- dnfss
             ]
 
-        dBests :: [MaximumDistance (Quantity Double [u| km |])] =
-            [ MaximumDistance . MkQuantity $ fromMaybe 0 b
+        extraBests :: [FlownMax (Quantity Double [u| km |])] =
+            [ FlownMax . MkQuantity $ fromMaybe 0 b
+            | b <- (fmap . fmap) unFlownMaxAsKm extraMax
+            ]
+
+        flownBests :: [FlownMax (Quantity Double [u| km |])] =
+            [ FlownMax . MkQuantity $ fromMaybe 0 b
             | b <- (fmap . fmap) unFlownMaxAsKm flownMax
             ]
 
@@ -406,7 +411,7 @@ points'
                 b
                 s
             | pf <- PilotsFlying <$> dfss
-            | b <- dBests
+            | b <- extraBests
             | s <- dSums
             ]
 
@@ -425,7 +430,7 @@ points'
 
                 | ssT <- f ssBestTime
                 | gsT <- f gsBestTime
-                | d <- (\(MaximumDistance x) -> BestDistance x) <$> dBests
+                | d <- (\(FlownMax x) -> BestDistance x) <$> extraBests
                 ]
 
         workings :: [Maybe ValidityWorking] =
@@ -528,7 +533,7 @@ points'
                     ed' <- ed
                     let ls = PilotsLanded . fromIntegral . length $ snd <$> landedByStop
                     let sf = PilotsFlying . fromIntegral . length $ snd <$> stillFlying
-                    return $ stopValidity pf pe ls sf bd fm fsd ed'
+                    return $ stopValidity pf pe ls sf eMax fMax fm fsd ed'
 
             | sp <- stopped <$> tasks
             | pf <- PilotsFlying <$> dfss
@@ -543,7 +548,8 @@ points'
                 (\(TaskDistance td) ->
                     FlownStdDev $ convert td) <$> flownStdDev
 
-            | bd <- (\(MaximumDistance x) -> FlownMax x) <$> dBests
+            | eMax <- extraBests
+            | fMax <- flownBests
 
             | ed <-
                 (fmap . fmap)

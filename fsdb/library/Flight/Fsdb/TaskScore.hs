@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module Flight.Fsdb.TaskScore (parseScores) where
 
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
@@ -11,7 +13,9 @@ import Text.XML.HXT.Arrow.Pickle
     , unpickleDoc, unpickleDoc'
     , xpWrap, xpElem, xpAttr
     , xpFilterAttr, xpFilterCont
-    , xpInt, xpPrim, xpPair, xpTriple, xp5Tuple, xp10Tuple, xpTextAttr, xpOption
+    , xpInt, xpPrim
+    , xpPair, xpTriple, xp5Tuple, xp6Tuple, xp10Tuple
+    , xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -304,34 +308,50 @@ xpStopValidityWorking =
         <+> hasName "no_of_pilots_landed_before_stop"
         <+> hasName "no_of_pilots_flying"
         <+> hasName "best_dist"
+        <+> hasName "best_real_dist"
         <+> hasName "launch_to_ess_distance"
         )
     $ xpWrap
-        ( \(pe, pl, pf, bd, ed) ->
-            StopValidityWorking
-                { pilotsAtEss = PilotsAtEss $ fromIntegral pe
-                , landed = PilotsLanded $ fromIntegral pl
-                , stillFlying = PilotsFlying . fromIntegral $ pf - pl
-                , flying = PilotsFlying $ fromIntegral pf
-                , flownMax = FlownMax $ MkQuantity bd
-                , flownMean = FlownMean [u| 0 km |]
-                , flownStdDev = FlownStdDev [u| 0 km |]
-                , launchToEssDistance = LaunchToEss $ MkQuantity ed
-                }
+        ( \(pe, pl, pf, eMax, fMax, ed) ->
+            let qExtraMax :: Quantity _ [u| km |] = MkQuantity eMax
+                qFlownMax :: Quantity _ [u| km |] = MkQuantity fMax
+            in
+                StopValidityWorking
+                    { pilotsAtEss = PilotsAtEss $ fromIntegral pe
+                    , landed = PilotsLanded $ fromIntegral pl
+                    , stillFlying = PilotsFlying . fromIntegral $ pf - pl
+                    , flying = PilotsFlying $ fromIntegral pf
+                    , extraMax = FlownMax $ convert qExtraMax
+                    , flownMax = FlownMax $ convert qFlownMax
+                    , flownMean = FlownMean [u| 0 km |]
+                    , flownStdDev = FlownStdDev [u| 0 km |]
+                    , launchToEssDistance = LaunchToEss $ MkQuantity ed
+                    }
         , \StopValidityWorking
                 { pilotsAtEss = PilotsAtEss pe
                 , landed = PilotsLanded pl
                 , flying = PilotsFlying pf
-                , flownMax = FlownMax (MkQuantity bd)
+                , extraMax = FlownMax qExtraMax
+                , flownMax = FlownMax qFlownMax
                 , launchToEssDistance = LaunchToEss (MkQuantity ed)
                 } ->
-                    (fromIntegral pe, fromIntegral pl, fromIntegral pf, bd, ed)
+                    let (MkQuantity eMax) :: Quantity _ [u| km |] = convert qExtraMax
+                        (MkQuantity fMax) :: Quantity _ [u| km |] = convert qFlownMax
+                    in
+                        ( fromIntegral pe
+                        , fromIntegral pl
+                        , fromIntegral pf
+                        , eMax
+                        , fMax
+                        , ed
+                        )
         )
-    $ xp5Tuple
+    $ xp6Tuple
         (xpAttr "no_of_pilots_reaching_es" xpInt)
         (xpAttr "no_of_pilots_landed_before_stop" xpInt)
         (xpAttr "no_of_pilots_flying" xpInt)
         (xpAttr "best_dist" xpPrim)
+        (xpAttr "best_real_dist" xpPrim)
         (xpAttr "launch_to_ess_distance" xpPrim)
 
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
