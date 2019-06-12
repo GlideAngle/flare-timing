@@ -527,7 +527,18 @@ tablePilotReach reach bonusReach = do
                             $ Stats.sum bs
                         elClass "td" "td-plot-reach-bonus-diff" . f
                             $ Stats.sum ds
-                        elAttr "td" ("rowspan" =: "3") $ text ""
+                        elAttr "td" ("rowspan" =: "4") $ text ""
+
+                        return ()
+
+                    el "tr" $ do
+                        el "th" $ text "max"
+                        elClass "td" "td-plot-reach" . f
+                            $ maximum rs
+                        elClass "td" "td-plot-reach-bonus" . f
+                            $ maximum bs
+                        elClass "td" "td-plot-reach-bonus-diff" . f
+                            $ maximum ds
 
                         return ()
 
