@@ -109,11 +109,13 @@ data StopValidityWorking =
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
         , extraMax :: FlownMax (Quantity Double [u| m |])
-        -- ^ The best reach with altitude above goal converted to extra reach via glide.
+        -- ^ The best bolstered reach with extra altitude above goal converted to extra reach via glide.
         , flownMax :: FlownMax (Quantity Double [u| m |])
-        -- ^ The best reach as flown.
+        -- ^ The maximuum bolstered reach.
         , flownMean :: FlownMean (Quantity Double [u| km |])
+        -- ^ The mean bolstered reach.
         , flownStdDev :: FlownStdDev (Quantity Double [u| km |])
+        -- ^ The standard deviation of bolstered reach.
         , launchToEssDistance :: LaunchToEss (Quantity Double [u| km |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -359,7 +361,7 @@ stopValidity
     -> FlownMax (Quantity Double [u| km |])
     -- ^ The best reach with altitude above goal converted to extra reach via glide.
     -> FlownMax (Quantity Double [u| km |])
-    -- ^ The best reach as flown.
+    -- ^ The best bolstered reach as flown.
     -> FlownMean (Quantity Double [u| km |])
     -> FlownStdDev (Quantity Double [u| km |])
     -> LaunchToEss (Quantity Double [u| km |])
