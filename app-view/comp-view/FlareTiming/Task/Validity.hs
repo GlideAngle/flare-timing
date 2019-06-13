@@ -44,12 +44,19 @@ viewValidity
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ReachStats)
+    -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe TaskDistance)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td flyingTimes = do
+viewValidity
+    utcOffset task
+    vy vyNorm
+    vw vwNorm
+    reachStats bonusStats
+    reach bonusReach
+    td flyingTimes = do
     let (landedByStop, stillFlying) =
             splitDynPure
             $ ffor2 task (fromMaybe [] <$> flyingTimes) (\Task{stopped} ft ->
@@ -60,19 +67,21 @@ viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td f
                     stopped)
 
     _ <- dyn $ ffor2 vy vyNorm (\vy' vyNorm' ->
-        dyn $ ffor2 vw vwNorm (\vw' vwNorm' ->
-            dyn $ ffor3 reachStats td landedByStop (\reachStats' td' lo ->
-                case (vy', vyNorm', vw', vwNorm', reachStats', td') of
-                    (Nothing, _, _, _, _, _) -> text "Loading validity ..."
-                    (_, Nothing, _, _, _, _) -> text "Loading expected validity from FS ..."
-                    (_, _, Nothing, _, _, _) -> text "Loading validity workings ..."
-                    (_, _, _, Nothing, _, _) -> text "Loading expected validity workings from FS ..."
-                    (_, _, _, _, Nothing, _) -> text "Loading reach stats ..."
-                    (_, _, _, _, _, Nothing) -> text "Loading stopped task distance ..."
-                    (Just v, Just vN, Just w, Just wN, Just r, Just d) -> do
+            dyn $ ffor2 vw vwNorm (\vw' vwNorm' ->
+            dyn $ ffor2 reachStats bonusStats (\reachStats' bonusStats' ->
+            dyn $ ffor2 td landedByStop (\td' lo ->
+                case (vy', vyNorm', vw', vwNorm', reachStats', bonusStats', td') of
+                    (Nothing, _, _, _, _, _, _) -> text "Loading validity ..."
+                    (_, Nothing, _, _, _, _, _) -> text "Loading expected validity from FS ..."
+                    (_, _, Nothing, _, _, _, _) -> text "Loading validity workings ..."
+                    (_, _, _, Nothing, _, _, _) -> text "Loading expected validity workings from FS ..."
+                    (_, _, _, _, Nothing, _, _) -> text "Loading reach stats ..."
+                    (_, _, _, _, _, Nothing, _) -> text "Loading bonus reach stats ..."
+                    (_, _, _, _, _, _, Nothing) -> text "Loading stopped task distance ..."
+                    (Just v, Just vN, Just w, Just wN, Just rStat, Just _, Just d) -> do
                         elAttr
                             "a"
-                            (("class" =: "button") <> ("onclick" =: hookWorking v w r d (length lo)))
+                            (("class" =: "button") <> ("onclick" =: hookWorking v w rStat d (length lo)))
                             (text "Show Working")
 
                         spacer
@@ -90,6 +99,7 @@ viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td f
                             v vN
                             w wN
                             reachStats
+                            bonusStats
                             (fromMaybe [] <$> reach)
                             (fromMaybe [] <$> bonusReach)
                             d
@@ -97,6 +107,6 @@ viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td f
                             stillFlying
 
                         spacer
-                        return ())))
+                        return ()))))
 
     return ()

@@ -21,7 +21,9 @@ import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskNormScore
-    , getTaskReachStats, getTaskReach, getTaskBonusReach, getTaskEffort
+    , getTaskReachStats, getTaskBonusReachStats
+    , getTaskReach, getTaskBonusReach
+    , getTaskEffort
     , getTaskArrival, getTaskLead, getTaskTime
     , getTaskValidityWorking, getNormTaskValidityWorking
     , getTaskLengthSphericalEdge
@@ -176,6 +178,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
     sDf <- holdDyn [] =<< getTaskScore ix pb
     sEx <- holdDyn [] =<< getTaskNormScore ix pb
     reachStats <- holdDyn Nothing =<< (fmap Just <$> getTaskReachStats ix pb)
+    bonusStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusReachStats ix pb)
     reach <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
     bonusReach <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusReach ix pb)
     ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)
@@ -283,7 +286,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
-                                BasisTabValidity -> viewValidity utc task vy vyNorm vw vwNorm reachStats reach bonusReach lnStop ft
+                                BasisTabValidity -> viewValidity utc task vy vyNorm vw vwNorm reachStats bonusStats reach bonusReach lnStop ft
                                 BasisTabGeo -> tableGeo ix)
 
                             <$> tabBasis

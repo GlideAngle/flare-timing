@@ -292,6 +292,9 @@ type GapPointApi k =
     :<|> "mask-track" :> (Capture "task" Int) :> "reach-stats"
         :> Get '[JSON] ReachStats
 
+    :<|> "mask-track" :> (Capture "task" Int) :> "bonus-reach-stats"
+        :> Get '[JSON] ReachStats
+
     :<|> "mask-track" :> (Capture "task" Int) :> "reach"
         :> Get '[JSON] [(Pilot, TrackReach)]
 
@@ -529,6 +532,7 @@ serverGapPointApi cfg =
         :<|> getTaskFlyingSectionTimes
         :<|> getTaskPilotTag
         :<|> getTaskReachStats
+        :<|> getTaskBonusReachStats
         :<|> getTaskReach
         :<|> getTaskBonusReach
         :<|> getTaskArrival
@@ -988,6 +992,29 @@ getTaskReachStats ii = do
     ws' <- fmap Mask.flownStdDev <$> asks maskingReach
     xs' <- fmap Mask.reachMean <$> asks maskingReach
     ys' <- fmap Mask.reachStdDev <$> asks maskingReach
+    case (vs', ws', xs', ys') of
+        (Just vs, Just ws, Just xs, Just ys) ->
+            let f = drop (ii - 1) in
+            case (f vs, f ws, f xs,  ys) of
+                (v : _, w : _, x : _, y : _) ->
+                    return
+                        ReachStats
+                            { flownMean = v
+                            , flownStdDev = w
+                            , reachMean = x
+                            , reachStdDev = y
+                            }
+
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "mask-track" ii
+
+getTaskBonusReachStats :: Int -> AppT k IO ReachStats
+getTaskBonusReachStats ii = do
+    vs' <- fmap Mask.flownMean <$> asks bonusReach
+    ws' <- fmap Mask.flownStdDev <$> asks bonusReach
+    xs' <- fmap Mask.reachMean <$> asks bonusReach
+    ys' <- fmap Mask.reachStdDev <$> asks bonusReach
     case (vs', ws', xs', ys') of
         (Just vs, Just ws, Just xs, Just ys) ->
             let f = drop (ii - 1) in
