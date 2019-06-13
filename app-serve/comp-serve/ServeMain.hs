@@ -62,6 +62,7 @@ import Flight.Score
     , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     , DistanceValidity(..), LaunchValidity(..), TimeValidity(..)
     , TaskValidity(..), StopValidity(..)
+    , ReachStats(..)
     )
 import Flight.Scribe
     ( readComp, readScore
@@ -170,10 +171,8 @@ newtype AppT k m a =
 
 data BolsterStats =
     BolsterStats
-        { bolsterMean :: QTaskDistance Double [u| m |]
-        , bolsterStdDev :: QTaskDistance Double [u| m |]
-        , reachMean :: QTaskDistance Double [u| m |]
-        , reachStdDev :: QTaskDistance Double [u| m |]
+        { bolster :: ReachStats
+        , reach :: ReachStats
         }
     deriving (Generic, ToJSON)
 
@@ -988,46 +987,26 @@ getTaskPilotTag ii pilotId = do
 
 getTaskBolsterStats :: Int -> AppT k IO BolsterStats
 getTaskBolsterStats ii = do
-    vs' <- fmap Mask.bolsterMean <$> asks maskingReach
-    ws' <- fmap Mask.bolsterStdDev <$> asks maskingReach
-    xs' <- fmap Mask.reachMean <$> asks maskingReach
-    ys' <- fmap Mask.reachStdDev <$> asks maskingReach
-    case (vs', ws', xs', ys') of
-        (Just vs, Just ws, Just xs, Just ys) ->
+    bs' <- fmap Mask.bolster <$> asks maskingReach
+    rs' <- fmap Mask.reach <$> asks maskingReach
+    case (bs', rs') of
+        (Just bs, Just rs) ->
             let f = drop (ii - 1) in
-            case (f vs, f ws, f xs,  ys) of
-                (v : _, w : _, x : _, y : _) ->
-                    return
-                        BolsterStats
-                            { bolsterMean = v
-                            , bolsterStdDev = w
-                            , reachMean = x
-                            , reachStdDev = y
-                            }
-
+            case (f bs, f rs) of
+                (b : _, r : _) -> return BolsterStats{bolster = b, reach = r}
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "mask-track" ii
 
 getTaskBonusBolsterStats :: Int -> AppT k IO BolsterStats
 getTaskBonusBolsterStats ii = do
-    vs' <- fmap Mask.bolsterMean <$> asks bonusReach
-    ws' <- fmap Mask.bolsterStdDev <$> asks bonusReach
-    xs' <- fmap Mask.reachMean <$> asks bonusReach
-    ys' <- fmap Mask.reachStdDev <$> asks bonusReach
-    case (vs', ws', xs', ys') of
-        (Just vs, Just ws, Just xs, Just ys) ->
+    bs' <- fmap Mask.bolster <$> asks bonusReach
+    rs' <- fmap Mask.reach <$> asks bonusReach
+    case (bs', rs') of
+        (Just bs, Just rs) ->
             let f = drop (ii - 1) in
-            case (f vs, f ws, f xs,  ys) of
-                (v : _, w : _, x : _, y : _) ->
-                    return
-                        BolsterStats
-                            { bolsterMean = v
-                            , bolsterStdDev = w
-                            , reachMean = x
-                            , reachStdDev = y
-                            }
-
+            case (f bs, f rs) of
+                (b : _, r : _) -> return BolsterStats{bolster = b, reach = r}
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "mask-track" ii

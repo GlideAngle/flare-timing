@@ -10,33 +10,24 @@ Tracks masked with task control zones.
 module Flight.Track.Mask.Reach (MaskingReach(..)) where
 
 import GHC.Generics (Generic)
+import Data.String (IsString())
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Distance (QTaskDistance)
 import Flight.Score (Pilot(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
-import Flight.Track.Mask.Cmp (cmp)
-import Flight.Score (FlownMax(..))
+import qualified Flight.Track.Mask.Cmp as Cmp (cmp)
+import Flight.Score (ReachStats)
 
 -- | For each task, the masking for reach for that task.
 data MaskingReach =
     MaskingReach
-        { bolsterMax :: [Maybe (FlownMax (Quantity Double [u| km |]))]
+        { bolster :: [ReachStats]
+        -- ^ The bolstered reach, reach clamped below to minimum distance.
+        , reach :: [ReachStats]
+        -- ^ The reach as flown, possibly less than minimum distance.
         -- ^ For each task, the best distance made.
-        , bolsterMean :: [QTaskDistance Double [u| m |]]
-        -- ^ For each task, the mean of the bolstered reach, reach clamped below
-        -- to minimum distance.
-        , bolsterStdDev :: [QTaskDistance Double [u| m |]]
-        -- ^ For each task, the standard deviation of bolstered distance, reach
-        -- clamped below to minimum distance.
-        , reachMean :: [QTaskDistance Double [u| m |]]
-        -- ^ For each task, the mean of reach.
-        , reachStdDev :: [QTaskDistance Double [u| m |]]
-        -- ^ For each task, the standard deviation of reach.
         , reachRank :: [[(Pilot, TrackReach)]]
         -- ^ For each task, the rank order of reach and linear distance fraction.
         , nigh :: [[(Pilot, TrackDistance Nigh)]]
@@ -45,3 +36,19 @@ data MaskingReach =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 instance FieldOrdering MaskingReach where fieldOrder _ = cmp
+
+cmp :: (Ord a, IsString a) => a -> a -> Ordering
+cmp a b =
+    case (a, b) of
+        -- TODO: first start time & last goal time & launched
+        ("bolster", _) -> LT
+
+        ("reach", "bolster") -> GT
+        ("reach", "frac") -> GT
+        ("reach", _) -> LT
+
+        ("reachRank", "bolster") -> GT
+        ("reachRank", "reach") -> GT
+        ("reachRank", _) -> LT
+
+        _ -> Cmp.cmp a b

@@ -131,7 +131,7 @@ import Flight.Score
     , PointPenalty
     , TaskPlacing(..), TaskPoints(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
-    , FlownMax(..), FlownMean(..), FlownStdDev(..)
+    , FlownMax(..)
     , unFlownMaxAsKm
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
@@ -310,15 +310,11 @@ points'
         , leadRank
         }
     ( MaskingReach
-        { bolsterMax
-        , bolsterMean
-        , bolsterStdDev
+        { bolster = bolsterStats
         , nigh = bolsterNigh
         }
     , MaskingReach
-        { bolsterMax = extraMax
-        , bolsterMean = extraMean
-        , bolsterStdDev = extraStdDev
+        { bolster = extraStats
         , nigh = extraNigh
         }
     )
@@ -380,7 +376,9 @@ points'
         -- or it has not been scored yet.
         maybeTasks :: [a -> Maybe a]
         maybeTasks =
-            [ if null ds then const Nothing else Just | ds <- bolsterMax ]
+            [ if b == [u| 0 km |] then const Nothing else Just
+            | ReachStats{max = FlownMax b} <- bolsterStats
+            ]
 
         lvs =
             [ launchValidity
@@ -389,31 +387,6 @@ points'
                 (PilotsFlying . fromInteger $ dfs)
             | dfs <- dfss
             | dnfs <- dnfss
-            ]
-
-        extraStats :: [ReachStats] =
-            [ ReachStats
-                (FlownMax $ maybe [u| 0 km |] coerce a)
-                (FlownMean $ convert b)
-                (FlownStdDev $ convert c)
-            | a <- extraMax
-            | TaskDistance b <- extraMean
-            | TaskDistance c <- extraStdDev
-            ]
-
-        bolsterStats :: [ReachStats] =
-            [ ReachStats
-                (FlownMax $ maybe [u| 0 km |] coerce a)
-                (FlownMean $ convert b)
-                (FlownStdDev $ convert c)
-            | a <- bolsterMax
-            | TaskDistance b <- bolsterMean
-            | TaskDistance c <- bolsterStdDev
-            ]
-
-        extraBests :: [FlownMax (Quantity Double [u| km |])] =
-            [ FlownMax . MkQuantity $ fromMaybe 0 b
-            | b <- (fmap . fmap) unFlownMaxAsKm extraMax
             ]
 
         dSums :: [SumOfDistance (Quantity Double [u| km |])] =
@@ -430,7 +403,7 @@ points'
                 b
                 s
             | pf <- PilotsFlying <$> dfss
-            | b <- extraBests
+            | ReachStats{max = b} <- extraStats
             | s <- dSums
             ]
 
@@ -445,11 +418,11 @@ points'
                     ssT
                     gsT
                     dNom
-                    d
+                    (coerce b)
 
                 | ssT <- f ssBestTime
                 | gsT <- f gsBestTime
-                | d <- (\(FlownMax x) -> BestDistance x) <$> extraBests
+                | ReachStats{max = b} <- extraStats
                 ]
 
         workings :: [Maybe ValidityWorking] =
@@ -496,7 +469,7 @@ points'
             | gr <- grs
             | dw <- dws
             | tw <- taskTweak <$> tasks
-            | bd <- maybe [u| 0.0 km |] (MkQuantity . unFlownMaxAsKm) <$> bolsterMax
+            | ReachStats{max = FlownMax bd} <- bolsterStats
             | td <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> lsWholeTask
             ]
 
@@ -590,9 +563,9 @@ points'
         -- NOTE: Pilots either get to goal or have a nigh distance.
         nighDistanceDf :: [[(Pilot, Maybe Double)]] =
             [ let xs' = (fmap . fmap) madeNigh xs
-                  ys' = (fmap . fmap) (const bd) ys
+                  ys' = (fmap . fmap) (const . Just $ unFlownMaxAsKm b) ys
               in (xs' ++ ys')
-            | bd <- (fmap . fmap) unFlownMaxAsKm extraMax
+            | ReachStats{max = b} <- extraStats
             | xs <- extraNigh
             | ys <- arrivalRank
             ]
@@ -687,9 +660,11 @@ points'
         nighDistancePointsDf :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyLinear free (coerce <$> bd) ps') ds)
+                (\ps' ->
+                    let bd = Just $ coerce b in
+                    (fmap . fmap) (applyLinear free bd ps') ds)
                 ps
-            | bd <- extraMax
+            | ReachStats{max = b} <- extraStats
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDf
             ]
@@ -697,9 +672,11 @@ points'
         nighDistancePointsDfNoTrack :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyLinear free (coerce <$> bd) ps') ds)
+                (\ps' ->
+                    let bd = Just $ coerce b in
+                    (fmap . fmap) (applyLinear free bd ps') ds)
                 ps
-            | bd <- extraMax
+            | ReachStats{max = b} <- extraStats
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDfNoTrack
             ]
