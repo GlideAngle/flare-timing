@@ -2,6 +2,8 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+import Prelude hiding (max)
+import qualified Prelude as Stats (max)
 import Data.Coerce (coerce)
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
@@ -121,7 +123,7 @@ import Flight.Score
     , GoalRatio(..), Lw(..), Aw(..), Rw(..), Ew(..)
     , NominalTime(..), BestTime(..)
     , Validity(..), ValidityWorking(..)
-    , StopValidity(..), StopValidityWorking
+    , StopValidity(..), ReachStats(..), StopValidityWorking
     , DifficultyFraction(..), LeadingFraction(..)
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
@@ -315,6 +317,8 @@ points'
         }
     , MaskingReach
         { bolsterMax = extraMax
+        , bolsterMean = extraMean
+        , bolsterStdDev = extraStdDev
         , nigh = extraNigh
         }
     )
@@ -387,14 +391,29 @@ points'
             | dnfs <- dnfss
             ]
 
+        extraStats :: [ReachStats] =
+            [ ReachStats
+                (FlownMax $ maybe [u| 0 m |] coerce a)
+                (FlownMean $ convert b)
+                (FlownStdDev $ convert c)
+            | a <- extraMax
+            | TaskDistance b <- extraMean
+            | TaskDistance c <- extraStdDev
+            ]
+
+        bolsterStats :: [ReachStats] =
+            [ ReachStats
+                (FlownMax $ maybe [u| 0 m |] coerce a)
+                (FlownMean $ convert b)
+                (FlownStdDev $ convert c)
+            | a <- bolsterMax
+            | TaskDistance b <- bolsterMean
+            | TaskDistance c <- bolsterStdDev
+            ]
+
         extraBests :: [FlownMax (Quantity Double [u| km |])] =
             [ FlownMax . MkQuantity $ fromMaybe 0 b
             | b <- (fmap . fmap) unFlownMaxAsKm extraMax
-            ]
-
-        bolsterBests :: [FlownMax (Quantity Double [u| km |])] =
-            [ FlownMax . MkQuantity $ fromMaybe 0 b
-            | b <- (fmap . fmap) unFlownMaxAsKm bolsterMax
             ]
 
         dSums :: [SumOfDistance (Quantity Double [u| km |])] =
@@ -533,23 +552,15 @@ points'
                     ed' <- ed
                     let ls = PilotsLanded . fromIntegral . length $ snd <$> landedByStop
                     let sf = PilotsFlying . fromIntegral . length $ snd <$> stillFlying
-                    return $ stopValidity pf pe ls sf eMax bMax fm fsd ed'
+                    return $ stopValidity pf pe ls sf eStats bStats ed'
 
             | sp <- stopped <$> tasks
             | pf <- PilotsFlying <$> dfss
             | pe <- pilotsAtEss
             | (landedByStop, stillFlying) <- pls
 
-            | fm <-
-                (\(TaskDistance td) ->
-                    FlownMean $ convert td) <$> bolsterMean
-
-            | fsd <-
-                (\(TaskDistance td) ->
-                    FlownStdDev $ convert td) <$> bolsterStdDev
-
-            | eMax <- extraBests
-            | bMax <- bolsterBests
+            | eStats <- extraStats
+            | bStats <- bolsterStats
 
             | ed <-
                 (fmap . fmap)
@@ -912,7 +923,7 @@ applyLinear
            | otherwise -> LinearPoints $ frac * y
     where
         frac :: Rational
-        frac = toRational (max dMin made) / toRational best'
+        frac = toRational (Stats.max dMin made) / toRational best'
 
         MkQuantity best' = convert best :: Quantity Double [u| km |]
 

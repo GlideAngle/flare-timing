@@ -2,6 +2,7 @@
 
 module Flight.Fsdb.TaskScore (parseScores) where
 
+import Prelude hiding (max)
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
 import Data.List (unzip5)
@@ -58,7 +59,7 @@ import Flight.Score
     , LaunchValidity(..), LaunchValidityWorking(..)
     , DistanceValidity(..), DistanceValidityWorking(..)
     , TimeValidity(..), TimeValidityWorking(..)
-    , StopValidityWorking(..)
+    , ReachStats(..), StopValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), PilotsAtEss(..), PilotsLanded(..)
     , FlownMax(..), FlownMean(..), FlownStdDev(..)
     , LaunchToEss(..)
@@ -321,18 +322,26 @@ xpStopValidityWorking =
                     , landed = PilotsLanded $ fromIntegral pl
                     , stillFlying = PilotsFlying . fromIntegral $ pf - pl
                     , flying = PilotsFlying $ fromIntegral pf
-                    , extraMax = FlownMax $ convert qExtraMax
-                    , flownMax = FlownMax $ convert qFlownMax
-                    , flownMean = FlownMean [u| 0 km |]
-                    , flownStdDev = FlownStdDev [u| 0 km |]
+                    , extra =
+                        ReachStats
+                            { max = FlownMax $ convert qExtraMax
+                            , mean = FlownMean [u| 0 km |]
+                            , stdDev = FlownStdDev [u| 0 km |]
+                            }
+                    , flown =
+                        ReachStats
+                            { max = FlownMax $ convert qFlownMax
+                            , mean = FlownMean [u| 0 km |]
+                            , stdDev = FlownStdDev [u| 0 km |]
+                            }
                     , launchToEssDistance = LaunchToEss $ MkQuantity ed
                     }
         , \StopValidityWorking
                 { pilotsAtEss = PilotsAtEss pe
                 , landed = PilotsLanded pl
                 , flying = PilotsFlying pf
-                , extraMax = FlownMax qExtraMax
-                , flownMax = FlownMax qFlownMax
+                , extra = ReachStats{max = FlownMax qExtraMax}
+                , flown = ReachStats{max = FlownMax qFlownMax}
                 , launchToEssDistance = LaunchToEss (MkQuantity ed)
                 } ->
                     let (MkQuantity eMax) :: Quantity _ [u| km |] = convert qExtraMax

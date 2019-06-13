@@ -11,6 +11,7 @@ module Flight.Gap.Validity
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
     , StopValidity(..)
+    , ReachStats(..)
     , StopValidityWorking(..)
     , LaunchToEss(..)
     , FlownMean(..)
@@ -23,6 +24,8 @@ module Flight.Gap.Validity
     , stopValidity
     ) where
 
+import Prelude hiding (min, max)
+import qualified Prelude as Stats (min, max)
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -102,20 +105,24 @@ data TimeValidityWorking =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+data ReachStats =
+    ReachStats
+        { max :: FlownMax (Quantity Double [u| m |])
+        , mean :: FlownMean (Quantity Double [u| km |])
+        , stdDev :: FlownStdDev (Quantity Double [u| km |])
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 data StopValidityWorking =
     StopValidityWorking
         { pilotsAtEss :: PilotsAtEss
         , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
-        , extraMax :: FlownMax (Quantity Double [u| m |])
+        , extra :: ReachStats
         -- ^ The best bolstered reach with extra altitude above goal converted to extra reach via glide.
-        , flownMax :: FlownMax (Quantity Double [u| m |])
+        , flown :: ReachStats
         -- ^ The maximuum bolstered reach.
-        , flownMean :: FlownMean (Quantity Double [u| km |])
-        -- ^ The mean bolstered reach.
-        , flownStdDev :: FlownStdDev (Quantity Double [u| km |])
-        -- ^ The standard deviation of bolstered reach.
         , launchToEssDistance :: LaunchToEss (Quantity Double [u| km |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -136,7 +143,7 @@ launchValidity
     nl@(NominalLaunch nominal)
     pp@(PilotsPresent present)
     pf@(PilotsFlying flying) =
-    (lvrPolynomial . min 1 $ f / (p * n), Just $ LaunchValidityWorking pf pp nl)
+    (lvrPolynomial . Stats.min 1 $ f / (p * n), Just $ LaunchValidityWorking pf pp nl)
     where
         n = toRational nominal
         p = toRational present
@@ -156,7 +163,7 @@ tvrValidity
         { nominalTime = NominalTime tNom
         , bestTime = BestTime tBest
         } =
-    tvrPolynomial . min 1 $ b / n
+    tvrPolynomial . Stats.min 1 $ b / n
     where
         MkQuantity n = toRational' tNom
         MkQuantity b = toRational' tBest
@@ -166,14 +173,14 @@ tvrValidity
         { nominalDistance = NominalDistance dNom
         , bestDistance = BestDistance dBest
         } =
-    tvrPolynomial . min 1 $ b / n
+    tvrPolynomial . Stats.min 1 $ b / n
     where
         MkQuantity n = toRational' dNom
         MkQuantity b = toRational' dBest
 
 tvrPolynomial :: Rational -> TimeValidity
 tvrPolynomial tvr =
-    TimeValidity . max 0 . min 1
+    TimeValidity . Stats.max 0 . Stats.min 1
     $ (- 271 % 1000)
     + (2912 % 1000) * tvr
     - (2098 % 1000) * tvr * tvr
@@ -290,7 +297,7 @@ distanceValidity
     md
     (FlownMax flownMax)
     dSum =
-    ( DistanceValidity $ min 1 $ dvr area nFly dSum
+    ( DistanceValidity $ Stats.min 1 $ dvr area nFly dSum
     , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
     )
     where
@@ -309,7 +316,7 @@ distanceValidity
         , Nothing
         )
     | otherwise =
-        ( DistanceValidity . min 1 $ dvr area nFly dSum
+        ( DistanceValidity . Stats.min 1 $ dvr area nFly dSum
         , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
         )
     where
@@ -335,7 +342,7 @@ distanceValidity
         , Nothing
         )
     | otherwise =
-        ( DistanceValidity . min 1 $ dvr area nFly dSum
+        ( DistanceValidity . Stats.min 1 $ dvr area nFly dSum
         , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
         )
     where
@@ -348,7 +355,7 @@ distanceValidity
         a = (gNom + 1) * (dNom - dMin)
 
         b :: Rational
-        b = max 0 $ gNom * (dMax - dNom)
+        b = Stats.max 0 $ gNom * (dMax - dNom)
 
         area :: NominalDistanceArea
         area = NominalDistanceArea $ (a + b) * (1 % 2)
@@ -358,12 +365,10 @@ stopValidity
     -> PilotsAtEss
     -> PilotsLanded
     -> PilotsFlying
-    -> FlownMax (Quantity Double [u| km |])
+    -> ReachStats
     -- ^ The best reach with altitude above goal converted to extra reach via glide.
-    -> FlownMax (Quantity Double [u| km |])
+    -> ReachStats
     -- ^ The best bolstered reach as flown.
-    -> FlownMean (Quantity Double [u| km |])
-    -> FlownStdDev (Quantity Double [u| km |])
     -> LaunchToEss (Quantity Double [u| km |])
     -> (StopValidity, Maybe StopValidityWorking)
 stopValidity
@@ -371,14 +376,19 @@ stopValidity
     pe@(PilotsAtEss ess)
     landedByStop@(PilotsLanded landed)
     stillFlying
-    (FlownMax extraMax)
-    (FlownMax flownMax)
-    fm@(FlownMean flownMean)
-    fd@(FlownStdDev flownStdDev)
+    extra
+    flown@ReachStats
+        { max = FlownMax flownMax'
+        , mean = FlownMean flownMean
+        , stdDev = FlownStdDev flownStdDev
+        }
     ed'@(LaunchToEss ed)
     | ess > 0 = (StopValidity 1, Just w)
-    | otherwise = (StopValidity $ min 1 (toRational $ unQuantity a + b**3), Just w)
+    | otherwise = (StopValidity $ Stats.min 1 (toRational $ unQuantity a + b**3), Just w)
         where
+            flownMax :: Quantity _ [u| km |]
+            flownMax = convert flownMax'
+
             a =
                 sqrt' $
                     ((flownMax -: flownMean) /: (ed -: flownMax +: [u| 1 km |]))
@@ -391,10 +401,8 @@ stopValidity
                     , landed = landedByStop
                     , stillFlying = stillFlying
                     , flying = pf
-                    , extraMax = FlownMax $ convert extraMax
-                    , flownMax = FlownMax $ convert flownMax
-                    , flownMean = fm
-                    , flownStdDev = fd
+                    , extra = extra
+                    , flown = flown
                     , launchToEssDistance = ed'
                     }
 

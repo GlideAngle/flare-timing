@@ -22,6 +22,7 @@ import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
+    , ReachStats(..)
     , StopValidityWorking(..)
     , PilotsFlying(..)
     , MaximumDistance(..)
@@ -200,10 +201,18 @@ viewStop
                 { pilotsAtEss
                 , flying
                 , landed
-                , extraMax
-                , flownMax
-                , flownMean
-                , flownStdDev
+                , extra =
+                    ReachStats
+                        { max = extraMax
+                        , mean = extraMean
+                        , stdDev = extraStdDev
+                        }
+                , flown =
+                    ReachStats
+                        { max = flownMax
+                        , mean = flownMean
+                        , stdDev = flownStdDev
+                        }
                 , launchToEssDistance = ed
                 }
         }
@@ -213,10 +222,18 @@ viewStop
                 { pilotsAtEss = pilotsAtEssN
                 , flying = flyingN
                 , landed = landedN
-                , extraMax = extraMaxN
-                , flownMax = flownMaxN
-                , flownMean = flownMeanN
-                , flownStdDev = flownStdDevN
+                , extra =
+                    ReachStats
+                        { max = extraMaxN
+                        , mean = extraMeanN
+                        , stdDev = extraStdDevN
+                        }
+                , flown =
+                    ReachStats
+                        { max = flownMaxN
+                        , mean = flownMeanN
+                        , stdDev = flownStdDevN
+                        }
                 , launchToEssDistance = edN
                 }
         }
@@ -303,7 +320,7 @@ viewStop
                         return ()
 
                     el "tr" $ do
-                        elAttr "th" ("rowspan" =: "3") $ text "max"
+                        elAttr "th" ("rowspan" =: "5") $ text "max"
                         el "td" $ text ""
                         el "td" $ text "Reach †"
                         elV $ ""
@@ -321,16 +338,32 @@ viewStop
 
                     el "tr" $ do
                         el "td" $ text ""
-                        el "td" $ text "Extra"
+                        el "td" $ text "Extra ‖"
                         elV $ showBestDistance extraMax
                         elN $ showBestDistance extraMaxN
                         elD $ showBestDistanceDiff extraMaxN extraMax
                         return ()
 
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Working"
+                        elV $ showBestDistance flownMax
+                        elN $ showBestDistance flownMaxN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Extra Working"
+                        elV $ showBestDistance extraMax
+                        elN $ showBestDistance extraMaxN
+                        elD $ ""
+                        return ()
+
                     _ <- dyn $ ffor reachStats (\case
                         Nothing -> do
                             el "tr" $ do
-                                elAttr "th" ("rowspan" =: "5") $ text "μ"
+                                elAttr "th" ("rowspan" =: "6") $ text "μ"
                                 el "td" $ text ""
                                 el "td" $ text "Reach"
                                 elV $ "n/a"
@@ -352,7 +385,7 @@ viewStop
                                 , reachMean = reachMeanR
                                 } -> do
                             el "tr" $ do
-                                elAttr "th" ("rowspan" =: "5") $ text "μ"
+                                elAttr "th" ("rowspan" =: "6") $ text "μ"
                                 el "td" $ text ""
                                 el "td" $ text "Reach"
                                 elV $ showPilotDistance 3 reachMeanR <> " km"
@@ -372,7 +405,7 @@ viewStop
                         Nothing -> do
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "td" $ text "Extra ‖ Reach"
+                                el "td" $ text "Extra Reach"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -415,10 +448,18 @@ viewStop
                         elD $ ""
                         return ()
 
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Extra Working"
+                        elV $ showPilotDistance 3 extraMean <> " km"
+                        elN $ showPilotDistance 3 extraMeanN <> " km"
+                        elD $ ""
+                        return ()
+
                     _ <- dyn $ ffor reachStats (\case
                         Nothing -> do
                             el "tr" $ do
-                                elAttr "th" ("rowspan" =: "5") $ text "σ"
+                                elAttr "th" ("rowspan" =: "6") $ text "σ"
                                 el "td" $ text ""
                                 el "td" $ text "Reach"
                                 elV $ "n/a"
@@ -440,7 +481,7 @@ viewStop
                                 , reachStdDev = reachStdDevR
                                 } -> do
                             el "tr" $ do
-                                elAttr "th" ("rowspan" =: "5") $ text "σ"
+                                elAttr "th" ("rowspan" =: "6") $ text "σ"
                                 el "td" $ text ""
                                 el "td" $ text "Reach"
                                 elV $ showPilotDistance 3 reachStdDevR <> " km"
@@ -500,6 +541,14 @@ viewStop
                         el "td" $ text "Working"
                         elV $ showPilotDistance 3 flownStdDev <> " km"
                         elN $ showPilotDistance 3 flownStdDevN <> " km"
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Extra Working"
+                        elV $ showPilotDistance 3 extraStdDev <> " km"
+                        elN $ showPilotDistance 3 extraStdDevN <> " km"
                         elD $ ""
                         return ()
 

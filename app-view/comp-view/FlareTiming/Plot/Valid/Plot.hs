@@ -10,7 +10,8 @@ module FlareTiming.Plot.Valid.Plot
     , stopByVaryPlot
     ) where
 
-import Prelude hiding (map, log)
+import Prelude hiding (min, max, map, log)
+import qualified Prelude as Stats (min, max)
 import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal, toJSValListOf)
@@ -21,7 +22,7 @@ import WireTypes.ValidityWorking
     ( LaunchValidityWorking(..)
     , TimeValidityWorking(..)
     , DistanceValidityWorking(..)
-    , StopValidityWorking(..)
+    , ReachStats(..), StopValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
     , BestTime(..), NominalTime(..)
     , BestDistance(..), NominalDistance(..)
@@ -279,7 +280,7 @@ launchPlot
 fnLaunch :: Double -> Double -> Double
 fnLaunch d n = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
     where
-        x = min 1 $ n / d
+        x = Stats.min 1 $ n / d
 
 timePlot :: IsElement e => e -> TimeValidity -> TimeValidityWorking -> IO Plot
 timePlot e vy TimeValidityWorking{gsBestTime = Just bt, ..} =
@@ -296,7 +297,7 @@ timeTime
     (BestTime bt)
     (NominalTime nt) = do
 
-    let xMax = max bt nt
+    let xMax = Stats.max bt nt
 
     let xy :: [[Double]] =
             [ [x', fnTime nt x']
@@ -331,7 +332,7 @@ timeDistance
     (BestDistance bd)
     (NominalDistance nd) = do
 
-    let xMax = max bd nd
+    let xMax = Stats.max bd nd
 
     let xy :: [[Double]] =
             [ [x', fnTime nd x']
@@ -360,9 +361,12 @@ timeDistance
             (toJSString msgNominal)
 
 fnTime :: Double -> Double -> Double
-fnTime d n = max 0 $ min 1 $ 0 - 0.271 + 2.912 * x - 2.098 * x**2 + 0.457 * x**3
+fnTime d n =
+    Stats.max 0
+    $ Stats.min 1
+    $ 0 - 0.271 + 2.912 * x - 2.098 * x**2 + 0.457 * x**3
     where
-        x = min 1 $ n / d
+        x = Stats.min 1 $ n / d
 
 reachPlot :: IsElement e => e -> DistanceValidity -> DistanceValidityWorking -> IO Plot
 reachPlot
@@ -376,7 +380,7 @@ reachPlot
         } = do
     let pf' :: Double = fromIntegral pf
     let dMean = dSum / pf'
-    let xMax = max dMean nda
+    let xMax = Stats.max dMean nda
 
     let xy :: [[Double]] =
             [ [x' , fnReach dMin nda x']
@@ -409,15 +413,18 @@ fnReach :: MinimumDistance -> Double -> Double -> Double
 fnReach (MinimumDistance dMin) d n
     | d == 0 = 0
     | n < dMin = 0
-    | otherwise = min 1 $ (n - dMin) / d
+    | otherwise = Stats.min 1 $ (n - dMin) / d
 
 stopByReachPlot :: IsElement e => e -> StopValidity -> StopValidityWorking -> IO Plot
 stopByReachPlot
     e
     (StopValidity y)
     vw@StopValidityWorking
-        { flownMean = PilotDistance dMean
-        , flownMax = BestDistance bd
+        { flown =
+            ReachStats
+                { max = BestDistance bd
+                , mean = PilotDistance dMean
+                }
         } = do
 
     let xMax = bd
@@ -453,13 +460,16 @@ fnStopByReach
         { pilotsAtEss = PilotsAtEss ess
         , landed = PilotsLanded landed
         , flying = PilotsFlying flying
-        , flownStdDev = PilotDistance flownStdDev
-        , flownMax = BestDistance bd
+        , flown =
+            ReachStats
+                { max = BestDistance bd
+                , stdDev = PilotDistance flownStdDev
+                }
         , launchToEssDistance = LaunchToEss ed
         }
     flownMean
     | ess > 0 = 1
-    | otherwise = min 1 $ a + b**3
+    | otherwise = Stats.min 1 $ a + b**3
         where
             a = sqrt (((bd - flownMean) / (ed - bd + 1)) * sqrt (flownStdDev / 5))
             b = fromIntegral landed / (fromIntegral flying :: Double)
@@ -503,14 +513,17 @@ fnStopByLanded
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
         , flying = PilotsFlying flying
-        , flownMean = PilotDistance flownMean
-        , flownStdDev = PilotDistance flownStdDev
-        , flownMax = BestDistance bd
+        , flown =
+            ReachStats
+                { max = BestDistance bd
+                , mean = PilotDistance flownMean
+                , stdDev = PilotDistance flownStdDev
+                }
         , launchToEssDistance = LaunchToEss ed
         }
     landed
     | ess > 0 = 1
-    | otherwise = min 1 $ a + b**3
+    | otherwise = Stats.min 1 $ a + b**3
         where
             a = sqrt (((bd - flownMean) / (ed - bd + 1)) * sqrt (flownStdDev / 5))
             b = landed / (fromIntegral flying :: Double)
@@ -520,8 +533,11 @@ stopByVaryPlot
     e
     (StopValidity y)
     vw@StopValidityWorking
-        { flownStdDev = PilotDistance std
-        , flownMax = BestDistance bd
+        { flown =
+            ReachStats
+                { max = BestDistance bd
+                , stdDev = PilotDistance std
+                }
         } = do
 
     let xMax = bd
@@ -554,13 +570,16 @@ fnStopByVary
         { pilotsAtEss = PilotsAtEss ess
         , landed = PilotsLanded landed
         , flying = PilotsFlying flying
-        , flownMean = PilotDistance flownMean
-        , flownMax = BestDistance bd
+        , flown =
+            ReachStats
+                { max = BestDistance bd
+                , mean = PilotDistance flownMean
+                }
         , launchToEssDistance = LaunchToEss ed
         }
     flownStdDev
     | ess > 0 = 1
-    | otherwise = min 1 $ a + b**3
+    | otherwise = Stats.min 1 $ a + b**3
         where
             a = sqrt (((bd - flownMean) / (ed - bd + 1)) * sqrt (flownStdDev / 5))
             b = fromIntegral landed / (fromIntegral flying :: Double)
