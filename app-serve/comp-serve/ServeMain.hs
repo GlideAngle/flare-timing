@@ -170,8 +170,8 @@ newtype AppT k m a =
 
 data ReachStats =
     ReachStats
-        { flownMean :: QTaskDistance Double [u| m |]
-        , flownStdDev :: QTaskDistance Double [u| m |]
+        { bolsterMean :: QTaskDistance Double [u| m |]
+        , bolsterStdDev :: QTaskDistance Double [u| m |]
         , reachMean :: QTaskDistance Double [u| m |]
         , reachStdDev :: QTaskDistance Double [u| m |]
         }
@@ -988,8 +988,8 @@ getTaskPilotTag ii pilotId = do
 
 getTaskReachStats :: Int -> AppT k IO ReachStats
 getTaskReachStats ii = do
-    vs' <- fmap Mask.flownMean <$> asks maskingReach
-    ws' <- fmap Mask.flownStdDev <$> asks maskingReach
+    vs' <- fmap Mask.bolsterMean <$> asks maskingReach
+    ws' <- fmap Mask.bolsterStdDev <$> asks maskingReach
     xs' <- fmap Mask.reachMean <$> asks maskingReach
     ys' <- fmap Mask.reachStdDev <$> asks maskingReach
     case (vs', ws', xs', ys') of
@@ -999,8 +999,8 @@ getTaskReachStats ii = do
                 (v : _, w : _, x : _, y : _) ->
                     return
                         ReachStats
-                            { flownMean = v
-                            , flownStdDev = w
+                            { bolsterMean = v
+                            , bolsterStdDev = w
                             , reachMean = x
                             , reachStdDev = y
                             }
@@ -1011,8 +1011,8 @@ getTaskReachStats ii = do
 
 getTaskBonusReachStats :: Int -> AppT k IO ReachStats
 getTaskBonusReachStats ii = do
-    vs' <- fmap Mask.flownMean <$> asks bonusReach
-    ws' <- fmap Mask.flownStdDev <$> asks bonusReach
+    vs' <- fmap Mask.bolsterMean <$> asks bonusReach
+    ws' <- fmap Mask.bolsterStdDev <$> asks bonusReach
     xs' <- fmap Mask.reachMean <$> asks bonusReach
     ys' <- fmap Mask.reachStdDev <$> asks bonusReach
     case (vs', ws', xs', ys') of
@@ -1022,8 +1022,8 @@ getTaskBonusReachStats ii = do
                 (v : _, w : _, x : _, y : _) ->
                     return
                         ReachStats
-                            { flownMean = v
-                            , flownStdDev = w
+                            { bolsterMean = v
+                            , bolsterStdDev = w
                             , reachMean = x
                             , reachStdDev = y
                             }

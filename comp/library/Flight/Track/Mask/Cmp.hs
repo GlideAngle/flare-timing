@@ -82,13 +82,13 @@ cmp a b =
         ("bestEffort", "taskSpeedDistance") -> GT
         ("bestEffort", _) -> LT
 
-        ("flownMax", "pilotsAtEss") -> GT
-        ("flownMax", "raceTime") -> GT
-        ("flownMax", "ssBestTime") -> GT
-        ("flownMax", "gsBestTime") -> GT
-        ("flownMax", "taskDistance") -> GT
-        ("flownMax", "taskSpeedDistance") -> GT
-        ("flownMax", _) -> LT
+        ("bolsterMax", "pilotsAtEss") -> GT
+        ("bolsterMax", "raceTime") -> GT
+        ("bolsterMax", "ssBestTime") -> GT
+        ("bolsterMax", "gsBestTime") -> GT
+        ("bolsterMax", "taskDistance") -> GT
+        ("bolsterMax", "taskSpeedDistance") -> GT
+        ("bolsterMax", _) -> LT
 
         ("sumDistance", "pilotsAtEss") -> GT
         ("sumDistance", "raceTime") -> GT
@@ -97,7 +97,7 @@ cmp a b =
         ("sumDistance", "taskDistance") -> GT
         ("sumDistance", "taskSpeedDistance") -> GT
         ("sumDistance", "bestEffort") -> GT
-        ("sumDistance", "flownMax") -> GT
+        ("sumDistance", "bolsterMax") -> GT
         ("sumDistance", _) -> LT
 
         ("leadAreaToCoef", "pilotsAtEss") -> GT
@@ -107,7 +107,7 @@ cmp a b =
         ("leadAreaToCoef", "taskDistance") -> GT
         ("leadAreaToCoef", "taskSpeedDistance") -> GT
         ("leadAreaToCoef", "bestEffort") -> GT
-        ("leadAreaToCoef", "flownMax") -> GT
+        ("leadAreaToCoef", "bolsterMax") -> GT
         ("leadAreaToCoef", "sumDistance") -> GT
         ("leadAreaToCoef", _) -> LT
 
@@ -118,7 +118,7 @@ cmp a b =
         ("leadCoefMin", "taskDistance") -> GT
         ("leadCoefMin", "taskSpeedDistance") -> GT
         ("leadCoefMin", "bestEffort") -> GT
-        ("leadCoefMin", "flownMax") -> GT
+        ("leadCoefMin", "bolsterMax") -> GT
         ("leadCoefMin", "sumDistance") -> GT
         ("leadCoefMin", "leadAreaToCoef") -> GT
         ("leadCoefMin", _) -> LT
@@ -129,7 +129,7 @@ cmp a b =
         ("leadRank", "gsBestTime") -> GT
         ("leadRank", "taskDistance") -> GT
         ("leadRank", "bestEffort") -> GT
-        ("leadRank", "flownMax") -> GT
+        ("leadRank", "bolsterMax") -> GT
         ("leadRank", "sumDistance") -> GT
         ("leadRank", "leadRankScaling") -> GT
         ("leadRank", "leadRankCoefMin") -> GT
@@ -141,7 +141,7 @@ cmp a b =
         ("arrivalRank", "gsBestTime") -> GT
         ("arrivalRank", "taskDistance") -> GT
         ("arrivalRank", "bestEffort") -> GT
-        ("arrivalRank", "flownMax") -> GT
+        ("arrivalRank", "bolsterMax") -> GT
         ("arrivalRank", "sumDistance") -> GT
         ("arrivalRank", "leadAreaToCoef") -> GT
         ("arrivalRank", "leadCoefMin") -> GT
@@ -154,7 +154,7 @@ cmp a b =
         ("flowMean", "gsBestTime") -> GT
         ("flowMean", "taskDistance") -> GT
         ("flowMean", "bestEffort") -> GT
-        ("flowMean", "flownMax") -> GT
+        ("flowMean", "bolsterMax") -> GT
         ("flowMean", "sumDistance") -> GT
         ("flowMean", "leadAreaToCoef") -> GT
         ("flowMean", "leadCoefMin") -> GT
@@ -162,20 +162,20 @@ cmp a b =
         ("flowMean", "arrivalRank") -> GT
         ("flowMean", _) -> LT
 
-        ("flownStdDev", "pilotsAtEss") -> GT
-        ("flownStdDev", "raceTime") -> GT
-        ("flownStdDev", "ssBestTime") -> GT
-        ("flownStdDev", "gsBestTime") -> GT
-        ("flownStdDev", "taskDistance") -> GT
-        ("flownStdDev", "bestEffort") -> GT
-        ("flownStdDev", "flownMax") -> GT
-        ("flownStdDev", "sumDistance") -> GT
-        ("flownStdDev", "leadAreaToCoef") -> GT
-        ("flownStdDev", "leadCoefMin") -> GT
-        ("flownStdDev", "leadRank") -> GT
-        ("flownStdDev", "arrivalRank") -> GT
-        ("flownStdDev", "flownMean") -> GT
-        ("flownStdDev", _) -> LT
+        ("bolsterStdDev", "pilotsAtEss") -> GT
+        ("bolsterStdDev", "raceTime") -> GT
+        ("bolsterStdDev", "ssBestTime") -> GT
+        ("bolsterStdDev", "gsBestTime") -> GT
+        ("bolsterStdDev", "taskDistance") -> GT
+        ("bolsterStdDev", "bestEffort") -> GT
+        ("bolsterStdDev", "bolsterMax") -> GT
+        ("bolsterStdDev", "sumDistance") -> GT
+        ("bolsterStdDev", "leadAreaToCoef") -> GT
+        ("bolsterStdDev", "leadCoefMin") -> GT
+        ("bolsterStdDev", "leadRank") -> GT
+        ("bolsterStdDev", "arrivalRank") -> GT
+        ("bolsterStdDev", "bolsterMean") -> GT
+        ("bolsterStdDev", _) -> LT
 
         ("reachMean", "pilotsAtEss") -> GT
         ("reachMean", "raceTime") -> GT
@@ -183,14 +183,14 @@ cmp a b =
         ("reachMean", "gsBestTime") -> GT
         ("reachMean", "taskDistance") -> GT
         ("reachMean", "bestEffort") -> GT
-        ("reachMean", "flownMax") -> GT
+        ("reachMean", "bolsterMax") -> GT
         ("reachMean", "sumDistance") -> GT
         ("reachMean", "leadAreaToCoef") -> GT
         ("reachMean", "leadCoefMin") -> GT
         ("reachMean", "leadRank") -> GT
         ("reachMean", "arrivalRank") -> GT
-        ("reachMean", "flownMean") -> GT
-        ("reachMean", "flownStdDev") -> GT
+        ("reachMean", "bolsterMean") -> GT
+        ("reachMean", "bolsterStdDev") -> GT
         ("reachMean", _) -> LT
 
         ("reachStdDev", "pilotsAtEss") -> GT
@@ -199,14 +199,14 @@ cmp a b =
         ("reachStdDev", "gsBestTime") -> GT
         ("reachStdDev", "taskDistance") -> GT
         ("reachStdDev", "bestEffort") -> GT
-        ("reachStdDev", "flownMax") -> GT
+        ("reachStdDev", "bolsterMax") -> GT
         ("reachStdDev", "sumDistance") -> GT
         ("reachStdDev", "leadAreaToCoef") -> GT
         ("reachStdDev", "leadCoefMin") -> GT
         ("reachStdDev", "leadRank") -> GT
         ("reachStdDev", "arrivalRank") -> GT
-        ("reachStdDev", "flownMean") -> GT
-        ("reachStdDev", "flownStdDev") -> GT
+        ("reachStdDev", "bolsterMean") -> GT
+        ("reachStdDev", "bolsterStdDev") -> GT
         ("reachStdDev", "reachMean") -> GT
         ("reachStdDev", _) -> LT
 
@@ -216,14 +216,14 @@ cmp a b =
         ("reachRank", "gsBestTime") -> GT
         ("reachRank", "taskDistance") -> GT
         ("reachRank", "bestEffort") -> GT
-        ("reachRank", "flownMax") -> GT
+        ("reachRank", "bolsterMax") -> GT
         ("reachRank", "sumDistance") -> GT
         ("reachRank", "leadAreaToCoef") -> GT
         ("reachRank", "leadCoefMin") -> GT
         ("reachRank", "leadRank") -> GT
         ("reachRank", "arrivalRank") -> GT
-        ("reachRank", "flownMean") -> GT
-        ("reachRank", "flownStdDev") -> GT
+        ("reachRank", "bolsterMean") -> GT
+        ("reachRank", "bolsterStdDev") -> GT
         ("reachRank", "reachMean") -> GT
         ("reachRank", "reachStdDev") -> GT
         ("reachRank", _) -> LT
@@ -235,14 +235,14 @@ cmp a b =
         ("ssSpeed", "taskDistance") -> GT
         ("ssSpeed", "taskSpeedDistance") -> GT
         ("ssSpeed", "bestEffort") -> GT
-        ("ssSpeed", "flownMax") -> GT
+        ("ssSpeed", "bolsterMax") -> GT
         ("ssSpeed", "sumDistance") -> GT
         ("ssSpeed", "leadAreaToCoef") -> GT
         ("ssSpeed", "leadCoefMin") -> GT
         ("ssSpeed", "leadRank") -> GT
         ("ssSpeed", "arrivalRank") -> GT
-        ("ssSpeed", "flownMean") -> GT
-        ("ssSpeed", "flownStdDev") -> GT
+        ("ssSpeed", "bolsterMean") -> GT
+        ("ssSpeed", "bolsterStdDev") -> GT
         ("ssSpeed", "reachMean") -> GT
         ("ssSpeed", "reachStdDev") -> GT
         ("ssSpeed", "reachRank") -> GT
@@ -255,14 +255,14 @@ cmp a b =
         ("gsSpeed", "taskDistance") -> GT
         ("gsSpeed", "taskSpeedDistance") -> GT
         ("gsSpeed", "bestEffort") -> GT
-        ("gsSpeed", "flownMax") -> GT
+        ("gsSpeed", "bolsterMax") -> GT
         ("gsSpeed", "sumDistance") -> GT
         ("gsSpeed", "leadAreaToCoef") -> GT
         ("gsSpeed", "leadCoefMin") -> GT
         ("gsSpeed", "leadRank") -> GT
         ("gsSpeed", "arrivalRank") -> GT
-        ("gsSpeed", "flownMean") -> GT
-        ("gsSpeed", "flownStdDev") -> GT
+        ("gsSpeed", "bolsterMean") -> GT
+        ("gsSpeed", "bolsterStdDev") -> GT
         ("gsSpeed", "reachMean") -> GT
         ("gsSpeed", "reachStdDev") -> GT
         ("gsSpeed", "reachRank") -> GT
@@ -275,7 +275,8 @@ cmp a b =
         ("nigh", "gsBestTime") -> GT
         ("nigh", "taskDistance") -> GT
         ("nigh", "bestEffort") -> GT
-        ("nigh", "flownMax") -> GT
+        ("nigh", "bolsterMax") -> GT
+        ("nigh", "bolsterMax") -> GT
         ("nigh", "sumDistance") -> GT
         ("nigh", "leadAreaToCoef") -> GT
         ("nigh", "leadCoefMin") -> GT

@@ -59,8 +59,8 @@ stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> TaskDistance -> (Dou
 stopWorkingSubA
     DistanceValidityWorking{bestDistance = bd@(MaximumDistance bd')}
     ReachStats
-        { flownMean = mf@(PilotDistance mf')
-        , flownStdDev = sf@(PilotDistance sf')
+        { bolsterMean = mf@(PilotDistance mf')
+        , bolsterStdDev = sf@(PilotDistance sf')
         }
     td@(TaskDistance td') = (z, eqn) where
         eqn =
@@ -321,7 +321,7 @@ viewStop
 
                         Just
                             ReachStats
-                                { flownMean = flownMeanR
+                                { bolsterMean = bolsterMeanR
                                 , reachMean = reachMeanR
                                 } -> do
                             el "tr" $ do
@@ -336,7 +336,7 @@ viewStop
                             el "tr" $ do
                                 el "td" $ text ""
                                 el "th" $ text "REACH Flown ‡"
-                                elV $ showPilotDistance 3 flownMeanR <> " km"
+                                elV $ showPilotDistance 3 bolsterMeanR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
                                 return ())
@@ -361,7 +361,7 @@ viewStop
 
                         Just
                             ReachStats
-                                { flownMean = flownMeanR
+                                { bolsterMean = bolsterMeanR
                                 , reachMean = reachMeanR
                                 } -> do
                             el "tr" $ do
@@ -375,7 +375,7 @@ viewStop
                             el "tr" $ do
                                 el "td" $ text ""
                                 el "th" $ text "EXTRA Flown ‡"
-                                elV $ showPilotDistance 3 flownMeanR <> " km"
+                                elV $ showPilotDistance 3 bolsterMeanR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
                                 return ())
@@ -409,7 +409,7 @@ viewStop
 
                         Just
                             ReachStats
-                                { flownStdDev = flownStdDevR
+                                { bolsterStdDev = bolsterStdDevR
                                 , reachStdDev = reachStdDevR
                                 } -> do
                             el "tr" $ do
@@ -424,7 +424,7 @@ viewStop
                             el "tr" $ do
                                 el "td" $ text ""
                                 el "th" $ text "REACH Flown ‡"
-                                elV $ showPilotDistance 3 flownStdDevR <> " km"
+                                elV $ showPilotDistance 3 bolsterStdDevR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
                                 return ())
@@ -449,7 +449,7 @@ viewStop
 
                         Just
                             ReachStats
-                                { flownStdDev = flownStdDevR
+                                { bolsterStdDev = bolsterStdDevR
                                 , reachStdDev = reachStdDevR
                                 } -> do
                             el "tr" $ do
@@ -463,7 +463,7 @@ viewStop
                             el "tr" $ do
                                 el "td" $ text ""
                                 el "th" $ text "EXTRA Flown ‡"
-                                elV $ showPilotDistance 3 flownStdDevR <> " km"
+                                elV $ showPilotDistance 3 bolsterStdDevR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
                                 return ())

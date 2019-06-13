@@ -308,13 +308,13 @@ points'
         , leadRank
         }
     ( MaskingReach
-        { flownMax
-        , flownMean
-        , flownStdDev
-        , nigh = flownNigh
+        { bolsterMax
+        , bolsterMean
+        , bolsterStdDev
+        , nigh = bolsterNigh
         }
     , MaskingReach
-        { flownMax = extraMax
+        { bolsterMax = extraMax
         , nigh = extraNigh
         }
     )
@@ -376,7 +376,7 @@ points'
         -- or it has not been scored yet.
         maybeTasks :: [a -> Maybe a]
         maybeTasks =
-            [ if null ds then const Nothing else Just | ds <- flownMax ]
+            [ if null ds then const Nothing else Just | ds <- bolsterMax ]
 
         lvs =
             [ launchValidity
@@ -392,9 +392,9 @@ points'
             | b <- (fmap . fmap) unFlownMaxAsKm extraMax
             ]
 
-        flownBests :: [FlownMax (Quantity Double [u| km |])] =
+        bolsterBests :: [FlownMax (Quantity Double [u| km |])] =
             [ FlownMax . MkQuantity $ fromMaybe 0 b
-            | b <- (fmap . fmap) unFlownMaxAsKm flownMax
+            | b <- (fmap . fmap) unFlownMaxAsKm bolsterMax
             ]
 
         dSums :: [SumOfDistance (Quantity Double [u| km |])] =
@@ -477,7 +477,7 @@ points'
             | gr <- grs
             | dw <- dws
             | tw <- taskTweak <$> tasks
-            | bd <- maybe [u| 0.0 km |] (MkQuantity . unFlownMaxAsKm) <$> flownMax
+            | bd <- maybe [u| 0.0 km |] (MkQuantity . unFlownMaxAsKm) <$> bolsterMax
             | td <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> lsWholeTask
             ]
 
@@ -533,7 +533,7 @@ points'
                     ed' <- ed
                     let ls = PilotsLanded . fromIntegral . length $ snd <$> landedByStop
                     let sf = PilotsFlying . fromIntegral . length $ snd <$> stillFlying
-                    return $ stopValidity pf pe ls sf eMax fMax fm fsd ed'
+                    return $ stopValidity pf pe ls sf eMax bMax fm fsd ed'
 
             | sp <- stopped <$> tasks
             | pf <- PilotsFlying <$> dfss
@@ -542,14 +542,14 @@ points'
 
             | fm <-
                 (\(TaskDistance td) ->
-                    FlownMean $ convert td) <$> flownMean
+                    FlownMean $ convert td) <$> bolsterMean
 
             | fsd <-
                 (\(TaskDistance td) ->
-                    FlownStdDev $ convert td) <$> flownStdDev
+                    FlownStdDev $ convert td) <$> bolsterStdDev
 
             | eMax <- extraBests
-            | fMax <- flownBests
+            | bMax <- bolsterBests
 
             | ed <-
                 (fmap . fmap)
@@ -602,7 +602,7 @@ points'
                   ys' = (fmap . fmap) (const sd) ys
               in (xs' ++ ys')
             | sd <- (fmap . fmap) unTaskDistanceAsKm taskSpeedDistance
-            | xs <- flownNigh
+            | xs <- bolsterNigh
             | ys <- arrivalRank
             ]
 
@@ -706,7 +706,7 @@ points'
                 )
                 ps
             | ps <- (fmap . fmap) points allocs
-            | xs <- flownNigh
+            | xs <- bolsterNigh
             | ys <- leadRank
             ]
 
@@ -723,7 +723,7 @@ points'
                 )
                 ps
             | ps <- (fmap . fmap) points allocs
-            | xs <- flownNigh
+            | xs <- bolsterNigh
             | ys <- arrivalRank
             ]
 
@@ -741,7 +741,7 @@ points'
                     )
                     ps
                 | ps <- (fmap . fmap) points allocs
-                | xs <- flownNigh
+                | xs <- bolsterNigh
                 | ys <- speed
                 ]
 
@@ -750,7 +750,7 @@ points'
                 [ let xs' = (fmap . fmap) (const Nothing) xs
                       ys' = (fmap . fmap) (Just . Speed.time) ys
                   in (xs' ++ ys')
-                | xs <- flownNigh
+                | xs <- bolsterNigh
                 | ys <- speed
                 ]
 

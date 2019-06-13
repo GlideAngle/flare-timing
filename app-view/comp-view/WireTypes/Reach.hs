@@ -23,8 +23,8 @@ data TrackReach =
 
 data ReachStats =
     ReachStats
-        { flownMean :: PilotDistance
-        , flownStdDev :: PilotDistance
+        { bolsterMean :: PilotDistance
+        , bolsterStdDev :: PilotDistance
         , reachMean :: PilotDistance
         , reachStdDev :: PilotDistance
         }

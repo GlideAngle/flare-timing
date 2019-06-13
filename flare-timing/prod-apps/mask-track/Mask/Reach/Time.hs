@@ -34,16 +34,16 @@ maskReachTime
     -> MaskingReach
 maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows psArriving =
     MaskingReach
-        { flownMax = dsFlownMax
-        , flownMean = fsMean
-        , flownStdDev = fsStdDev
+        { bolsterMax = dsBolsterMax
+        , bolsterMean = bsMean
+        , bolsterStdDev = bsStdDev
         , reachMean = rsMean
         , reachStdDev = rsStdDev
         , reachRank = rss
         , nigh = dsNigh
         }
     where
-        dsFlownMax = (fmap . fmap) coerce dsBest
+        dsBolsterMax = (fmap . fmap) coerce dsBest
 
         dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
             compNighTime lsWholeTask zsTaskTicked dsNighRows
@@ -124,5 +124,5 @@ maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
             | rs <- rss
             ]
 
-        fsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> fssRaw
-        fsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> fssRaw
+        bsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> fssRaw
+        bsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> fssRaw

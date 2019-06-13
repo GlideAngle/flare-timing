@@ -25,13 +25,13 @@ import Flight.Score (FlownMax(..))
 -- | For each task, the masking for reach for that task.
 data MaskingReach =
     MaskingReach
-        { flownMax :: [Maybe (FlownMax (Quantity Double [u| m |]))]
+        { bolsterMax :: [Maybe (FlownMax (Quantity Double [u| m |]))]
         -- ^ For each task, the best distance made.
-        , flownMean :: [QTaskDistance Double [u| m |]]
-        -- ^ For each task, the mean of the flown distance, reach clamped below
+        , bolsterMean :: [QTaskDistance Double [u| m |]]
+        -- ^ For each task, the mean of the bolstered reach, reach clamped below
         -- to minimum distance.
-        , flownStdDev :: [QTaskDistance Double [u| m |]]
-        -- ^ For each task, the standard deviation of flown distance, reach
+        , bolsterStdDev :: [QTaskDistance Double [u| m |]]
+        -- ^ For each task, the standard deviation of bolstered distance, reach
         -- clamped below to minimum distance.
         , reachMean :: [QTaskDistance Double [u| m |]]
         -- ^ For each task, the mean of reach.
