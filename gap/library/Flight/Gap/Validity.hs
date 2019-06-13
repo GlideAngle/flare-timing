@@ -107,7 +107,7 @@ data TimeValidityWorking =
 
 data ReachStats =
     ReachStats
-        { max :: FlownMax (Quantity Double [u| m |])
+        { max :: FlownMax (Quantity Double [u| km |])
         , mean :: FlownMean (Quantity Double [u| km |])
         , stdDev :: FlownStdDev (Quantity Double [u| km |])
         }

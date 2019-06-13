@@ -62,16 +62,13 @@ instance
     pack = FlownMax
     unpack (FlownMax a) = a
 
-instance (q ~ Quantity Double [u| m |]) => ToJSON (FlownMax q) where
-    toJSON (FlownMax x) = toJSON $ ViaQ (FlownMax y)
-        where
-            y :: Quantity Double [u| km |]
-            y = convert x
+instance (q ~ Quantity Double [u| km |]) => ToJSON (FlownMax q) where
+    toJSON x = toJSON $ ViaQ x
 
-instance (q ~ Quantity Double [u| m |]) => FromJSON (FlownMax q) where
+instance (q ~ Quantity Double [u| km |]) => FromJSON (FlownMax q) where
     parseJSON o = do
-        ViaQ (FlownMax x) <- parseJSON o
-        return (FlownMax $ convert x)
+        ViaQ x <- parseJSON o
+        return x
 
 newtype FlownMean a = FlownMean a
     deriving (Eq, Ord, Show)

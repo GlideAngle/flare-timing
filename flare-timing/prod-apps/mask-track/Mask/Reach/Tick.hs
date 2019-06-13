@@ -2,7 +2,6 @@
 
 module Mask.Reach.Tick (maskReachTick) where
 
-import Data.Coerce (coerce)
 import Data.Maybe (catMaybes)
 import Data.List (sortOn)
 import Data.Map.Strict (Map)
@@ -43,7 +42,7 @@ maskReachTick (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
         , nigh = dsNigh
         }
     where
-        dsBolsterMax = (fmap . fmap) coerce dsBest
+        dsBolsterMax = (fmap . fmap) (\(TaskDistance d) -> FlownMax $ convert d) dsBest
 
         dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
             compNighTick lsWholeTask zsTaskTicked dsNighRows

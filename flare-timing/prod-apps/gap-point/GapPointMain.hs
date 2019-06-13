@@ -393,7 +393,7 @@ points'
 
         extraStats :: [ReachStats] =
             [ ReachStats
-                (FlownMax $ maybe [u| 0 m |] coerce a)
+                (FlownMax $ maybe [u| 0 km |] coerce a)
                 (FlownMean $ convert b)
                 (FlownStdDev $ convert c)
             | a <- extraMax
@@ -403,7 +403,7 @@ points'
 
         bolsterStats :: [ReachStats] =
             [ ReachStats
-                (FlownMax $ maybe [u| 0 m |] coerce a)
+                (FlownMax $ maybe [u| 0 km |] coerce a)
                 (FlownMean $ convert b)
                 (FlownStdDev $ convert c)
             | a <- bolsterMax
