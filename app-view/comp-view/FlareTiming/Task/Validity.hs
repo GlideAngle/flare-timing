@@ -78,10 +78,10 @@ viewValidity
                     (_, _, _, _, Nothing, _, _) -> text "Loading reach stats ..."
                     (_, _, _, _, _, Nothing, _) -> text "Loading bonus reach stats ..."
                     (_, _, _, _, _, _, Nothing) -> text "Loading stopped task distance ..."
-                    (Just v, Just vN, Just w, Just wN, Just rStat, Just _, Just d) -> do
+                    (Just v, Just vN, Just w, Just wN, Just rStats, Just bStats, Just d) -> do
                         elAttr
                             "a"
-                            (("class" =: "button") <> ("onclick" =: hookWorking v w rStat d (length lo)))
+                            (("class" =: "button") <> ("onclick" =: hookWorking v w rStats d (length lo)))
                             (text "Show Working")
 
                         spacer
@@ -98,8 +98,8 @@ viewValidity
                             utcOffset
                             v vN
                             w wN
-                            reachStats
-                            bonusStats
+                            rStats
+                            bStats
                             (fromMaybe [] <$> reach)
                             (fromMaybe [] <$> bonusReach)
                             d

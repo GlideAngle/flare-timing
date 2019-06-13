@@ -179,8 +179,8 @@ viewStop
     -> Vy.Validity
     -> ValidityWorking
     -> ValidityWorking
-    -> Dynamic t (Maybe BolsterStats)
-    -> Dynamic t (Maybe BolsterStats)
+    -> BolsterStats
+    -> BolsterStats
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> TaskDistance
@@ -195,6 +195,7 @@ viewStop
     utcOffset
     Vy.Validity{stop = sv}
     Vy.Validity{stop = svN}
+    -- | Working from flare-timing.
     ValidityWorking
         { stop =
             Just StopValidityWorking
@@ -216,6 +217,7 @@ viewStop
                 , launchToEssDistance = ed
                 }
         }
+    -- | Working from FS, normal or expected.
     ValidityWorking
         { stop =
             Just StopValidityWorking
@@ -237,8 +239,20 @@ viewStop
                 , launchToEssDistance = edN
                 }
         }
-    reachStats
-    bonusStats
+    -- | Reach as flown.
+    BolsterStats
+        { bolsterMean
+        , bolsterStdDev
+        , reachMean
+        , reachStdDev
+        }
+    -- | With extra altitude converted by way of glide to extra reach.
+    BolsterStats
+        { bolsterMean = bolsterMeanE
+        , bolsterStdDev = bolsterStdDevE
+        , reachMean = reachMeanE
+        , reachStdDev = reachStdDevE
+        }
     reach
     bonusReach
     _td
@@ -360,85 +374,38 @@ viewStop
                         elD $ ""
                         return ()
 
-                    _ <- dyn $ ffor reachStats (\case
-                        Nothing -> do
-                            el "tr" $ do
-                                elAttr "th" ("rowspan" =: "6") $ text "μ"
-                                el "td" $ text ""
-                                el "td" $ text "Reach"
-                                elV $ "n/a"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
+                    el "tr" $ do
+                        elAttr "th" ("rowspan" =: "6") $ text "μ"
+                        el "td" $ text ""
+                        el "td" $ text "Reach"
+                        elV $ showPilotDistance 3 reachMean <> " km"
+                        elN $ "n/a"
+                        elD $ ""
+                        return ()
 
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "th" $ text "Bolster"
-                                elV $ "n/a"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "th" $ text "Bolster"
+                        elV $ showPilotDistance 3 bolsterMean <> " km"
+                        elN $ "n/a"
+                        elD $ ""
+                        return ()
 
-                        Just
-                            BolsterStats
-                                { bolsterMean = bolsterMeanR
-                                , reachMean = reachMeanR
-                                } -> do
-                            el "tr" $ do
-                                elAttr "th" ("rowspan" =: "6") $ text "μ"
-                                el "td" $ text ""
-                                el "td" $ text "Reach"
-                                elV $ showPilotDistance 3 reachMeanR <> " km"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Extra ‖ Reach"
+                        elV $ showPilotDistance 3 reachMeanE <> " km"
+                        elN $ "n/a"
+                        elD $ ""
+                        return ()
 
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "th" $ text "Bolster"
-                                elV $ showPilotDistance 3 bolsterMeanR <> " km"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ())
-
-                    _ <- dyn $ ffor bonusStats (\case
-                        Nothing -> do
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "td" $ text "Extra Reach"
-                                elV $ "n/a"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
-
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "th" $ text "Extra Bolster"
-                                elV $ "n/a"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
-
-                        Just
-                            BolsterStats
-                                { bolsterMean = bolsterMeanR
-                                , reachMean = reachMeanR
-                                } -> do
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "td" $ text "Extra ‖ Reach"
-                                elV $ showPilotDistance 3 reachMeanR <> " km"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
-
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "th" $ text "Extra Bolster"
-                                elV $ showPilotDistance 3 bolsterMeanR <> " km"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ())
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "th" $ text "Extra Bolster"
+                        elV $ showPilotDistance 3 bolsterMeanE <> " km"
+                        elN $ "n/a"
+                        elD $ ""
+                        return ()
 
                     el "tr" $ do
                         el "td" $ text ""
@@ -456,85 +423,38 @@ viewStop
                         elD $ ""
                         return ()
 
-                    _ <- dyn $ ffor reachStats (\case
-                        Nothing -> do
-                            el "tr" $ do
-                                elAttr "th" ("rowspan" =: "6") $ text "σ"
-                                el "td" $ text ""
-                                el "td" $ text "Reach"
-                                elV $ "n/a"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
+                    el "tr" $ do
+                        elAttr "th" ("rowspan" =: "6") $ text "σ"
+                        el "td" $ text ""
+                        el "td" $ text "Reach"
+                        elV $ showPilotDistance 3 reachStdDev <> " km"
+                        elN $ "n/a"
+                        elD $ ""
+                        return ()
 
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "th" $ text "Bolster"
-                                elV $ "n/a"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "th" $ text "Bolster"
+                        elV $ showPilotDistance 3 bolsterStdDev <> " km"
+                        elN $ "n/a"
+                        elD $ ""
+                        return ()
 
-                        Just
-                            BolsterStats
-                                { bolsterStdDev = bolsterStdDevR
-                                , reachStdDev = reachStdDevR
-                                } -> do
-                            el "tr" $ do
-                                elAttr "th" ("rowspan" =: "6") $ text "σ"
-                                el "td" $ text ""
-                                el "td" $ text "Reach"
-                                elV $ showPilotDistance 3 reachStdDevR <> " km"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Extra Reach"
+                        elV $ showPilotDistance 3 reachStdDevE <> " km"
+                        elN $ "n/a"
+                        elD $ ""
+                        return ()
 
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "th" $ text "Bolster"
-                                elV $ showPilotDistance 3 bolsterStdDevR <> " km"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ())
-
-                    _ <- dyn $ ffor bonusStats (\case
-                        Nothing -> do
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "td" $ text "Extra Reach"
-                                elV $ "n/a"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
-
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "th" $ text "Extra Bolster"
-                                elV $ "n/a"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
-
-                        Just
-                            BolsterStats
-                                { bolsterStdDev = bolsterStdDevR
-                                , reachStdDev = reachStdDevR
-                                } -> do
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "td" $ text "Extra Reach"
-                                elV $ showPilotDistance 3 reachStdDevR <> " km"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ()
-
-                            el "tr" $ do
-                                el "td" $ text ""
-                                el "th" $ text "Extra Bolster"
-                                elV $ showPilotDistance 3 bolsterStdDevR <> " km"
-                                elN $ "n/a"
-                                elD $ ""
-                                return ())
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "th" $ text "Extra Bolster"
+                        elV $ showPilotDistance 3 bolsterStdDevE <> " km"
+                        elN $ "n/a"
+                        elD $ ""
+                        return ()
 
                     el "tr" $ do
                         el "td" $ text ""
