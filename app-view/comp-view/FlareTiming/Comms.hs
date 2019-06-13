@@ -27,8 +27,8 @@ module FlareTiming.Comms
     , getTaskPilotTrackScoredSection
     , getTaskFlyingSectionTimes
     , getTaskPilotTag
-    , getTaskReachStats
-    , getTaskBonusReachStats
+    , getTaskBolsterStats
+    , getTaskBonusBolsterStats
     , getTaskReach
     , getTaskBonusReach
     , getTaskEffort
@@ -48,7 +48,7 @@ import Control.Monad.IO.Class (MonadIO)
 
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
-import WireTypes.Reach (TrackReach, ReachStats)
+import WireTypes.Reach (TrackReach, BolsterStats)
 import WireTypes.Effort (TrackEffort)
 import WireTypes.Arrival (TrackArrival)
 import WireTypes.Lead (TrackLead)
@@ -165,11 +165,11 @@ getAllocation = get "/gap-point/allocation"
 getTaskScore :: GetIxTask' t m [(Pilot, Breakdown)]
 getTaskScore = getIxTask "gap-point" "score"
 
-getTaskReachStats :: GetIxTask' t m ReachStats
-getTaskReachStats = getIxTask "mask-track" "reach-stats"
+getTaskBolsterStats :: GetIxTask' t m BolsterStats
+getTaskBolsterStats = getIxTask "mask-track" "bolster-stats"
 
-getTaskBonusReachStats :: GetIxTask' t m ReachStats
-getTaskBonusReachStats = getIxTask "mask-track" "bonus-reach-stats"
+getTaskBonusBolsterStats :: GetIxTask' t m BolsterStats
+getTaskBonusBolsterStats = getIxTask "mask-track" "bonus-bolster-stats"
 
 getTaskReach :: GetIxTask' t m [(Pilot, TrackReach)]
 getTaskReach = getIxTask "mask-track" "reach"

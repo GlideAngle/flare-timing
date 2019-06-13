@@ -168,8 +168,8 @@ newtype AppT k m a =
         , MonadThrow
         )
 
-data ReachStats =
-    ReachStats
+data BolsterStats =
+    BolsterStats
         { bolsterMean :: QTaskDistance Double [u| m |]
         , bolsterStdDev :: QTaskDistance Double [u| m |]
         , reachMean :: QTaskDistance Double [u| m |]
@@ -289,11 +289,11 @@ type GapPointApi k =
     :<|> "tag-zone" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] [Maybe ZoneTag]
 
-    :<|> "mask-track" :> (Capture "task" Int) :> "reach-stats"
-        :> Get '[JSON] ReachStats
+    :<|> "mask-track" :> (Capture "task" Int) :> "bolster-stats"
+        :> Get '[JSON] BolsterStats
 
-    :<|> "mask-track" :> (Capture "task" Int) :> "bonus-reach-stats"
-        :> Get '[JSON] ReachStats
+    :<|> "mask-track" :> (Capture "task" Int) :> "bonus-bolster-stats"
+        :> Get '[JSON] BolsterStats
 
     :<|> "mask-track" :> (Capture "task" Int) :> "reach"
         :> Get '[JSON] [(Pilot, TrackReach)]
@@ -531,8 +531,8 @@ serverGapPointApi cfg =
         :<|> getTaskPilotTrackScoredSection
         :<|> getTaskFlyingSectionTimes
         :<|> getTaskPilotTag
-        :<|> getTaskReachStats
-        :<|> getTaskBonusReachStats
+        :<|> getTaskBolsterStats
+        :<|> getTaskBonusBolsterStats
         :<|> getTaskReach
         :<|> getTaskBonusReach
         :<|> getTaskArrival
@@ -986,8 +986,8 @@ getTaskPilotTag ii pilotId = do
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
 
-getTaskReachStats :: Int -> AppT k IO ReachStats
-getTaskReachStats ii = do
+getTaskBolsterStats :: Int -> AppT k IO BolsterStats
+getTaskBolsterStats ii = do
     vs' <- fmap Mask.bolsterMean <$> asks maskingReach
     ws' <- fmap Mask.bolsterStdDev <$> asks maskingReach
     xs' <- fmap Mask.reachMean <$> asks maskingReach
@@ -998,7 +998,7 @@ getTaskReachStats ii = do
             case (f vs, f ws, f xs,  ys) of
                 (v : _, w : _, x : _, y : _) ->
                     return
-                        ReachStats
+                        BolsterStats
                             { bolsterMean = v
                             , bolsterStdDev = w
                             , reachMean = x
@@ -1009,8 +1009,8 @@ getTaskReachStats ii = do
 
         _ -> throwError $ errTaskStep "mask-track" ii
 
-getTaskBonusReachStats :: Int -> AppT k IO ReachStats
-getTaskBonusReachStats ii = do
+getTaskBonusBolsterStats :: Int -> AppT k IO BolsterStats
+getTaskBonusBolsterStats ii = do
     vs' <- fmap Mask.bolsterMean <$> asks bonusReach
     ws' <- fmap Mask.bolsterStdDev <$> asks bonusReach
     xs' <- fmap Mask.reachMean <$> asks bonusReach
@@ -1021,7 +1021,7 @@ getTaskBonusReachStats ii = do
             case (f vs, f ws, f xs,  ys) of
                 (v : _, w : _, x : _, y : _) ->
                     return
-                        ReachStats
+                        BolsterStats
                             { bolsterMean = v
                             , bolsterStdDev = w
                             , reachMean = x

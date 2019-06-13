@@ -11,7 +11,7 @@ import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.ValidityWorking (ValidityWorking(..))
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..))
-import WireTypes.Reach (TrackReach(..), ReachStats(..))
+import WireTypes.Reach (TrackReach(..), BolsterStats(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
 import FlareTiming.Task.Validity.Widget (spacer)
@@ -24,7 +24,7 @@ import FlareTiming.Task.Validity.Task (viewTask, taskWorking)
 hookWorking
     :: Vy.Validity
     -> ValidityWorking
-    -> ReachStats
+    -> BolsterStats
     -> TaskDistance
     -> Int
     -> T.Text
@@ -43,8 +43,8 @@ viewValidity
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ValidityWorking)
-    -> Dynamic t (Maybe ReachStats)
-    -> Dynamic t (Maybe ReachStats)
+    -> Dynamic t (Maybe BolsterStats)
+    -> Dynamic t (Maybe BolsterStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe TaskDistance)

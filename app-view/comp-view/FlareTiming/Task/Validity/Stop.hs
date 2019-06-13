@@ -33,7 +33,7 @@ import WireTypes.ValidityWorking
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
-import WireTypes.Reach (TrackReach(..), ReachStats(..))
+import WireTypes.Reach (TrackReach(..), BolsterStats(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (UtcOffset(..))
@@ -54,11 +54,11 @@ stopWorkingCase Nothing a b = (min 1 (a + b3), eqn) where
         b' = T.pack $ printf "%.3f" b3
         a' = T.pack $ printf "%.3f" a
 
-stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> TaskDistance -> (Double, T.Text)
+stopWorkingSubA :: DistanceValidityWorking -> BolsterStats -> TaskDistance -> (Double, T.Text)
 
 stopWorkingSubA
     DistanceValidityWorking{bestDistance = bd@(MaximumDistance bd')}
-    ReachStats
+    BolsterStats
         { bolsterMean = mf@(PilotDistance mf')
         , bolsterStdDev = sf@(PilotDistance sf')
         }
@@ -124,7 +124,7 @@ stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed b' =
 stopWorking
     :: DistanceValidityWorking
     -> TimeValidityWorking
-    -> ReachStats
+    -> BolsterStats
     -> TaskDistance
     -> Int
     -> T.Text
@@ -178,8 +178,8 @@ viewStop
     -> Vy.Validity
     -> ValidityWorking
     -> ValidityWorking
-    -> Dynamic t (Maybe ReachStats)
-    -> Dynamic t (Maybe ReachStats)
+    -> Dynamic t (Maybe BolsterStats)
+    -> Dynamic t (Maybe BolsterStats)
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> TaskDistance
@@ -320,7 +320,7 @@ viewStop
                                 return ()
 
                         Just
-                            ReachStats
+                            BolsterStats
                                 { bolsterMean = bolsterMeanR
                                 , reachMean = reachMeanR
                                 } -> do
@@ -360,7 +360,7 @@ viewStop
                                 return ()
 
                         Just
-                            ReachStats
+                            BolsterStats
                                 { bolsterMean = bolsterMeanR
                                 , reachMean = reachMeanR
                                 } -> do
@@ -408,7 +408,7 @@ viewStop
                                 return ()
 
                         Just
-                            ReachStats
+                            BolsterStats
                                 { bolsterStdDev = bolsterStdDevR
                                 , reachStdDev = reachStdDevR
                                 } -> do
@@ -448,7 +448,7 @@ viewStop
                                 return ()
 
                         Just
-                            ReachStats
+                            BolsterStats
                                 { bolsterStdDev = bolsterStdDevR
                                 , reachStdDev = reachStdDevR
                                 } -> do

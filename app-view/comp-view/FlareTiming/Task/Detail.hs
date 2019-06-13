@@ -21,7 +21,7 @@ import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskNormScore
-    , getTaskReachStats, getTaskBonusReachStats
+    , getTaskBolsterStats, getTaskBonusBolsterStats
     , getTaskReach, getTaskBonusReach
     , getTaskEffort
     , getTaskArrival, getTaskLead, getTaskTime
@@ -177,8 +177,8 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
     sEx <- holdDyn [] =<< getTaskNormScore ix pb
-    reachStats <- holdDyn Nothing =<< (fmap Just <$> getTaskReachStats ix pb)
-    bonusStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusReachStats ix pb)
+    reachStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBolsterStats ix pb)
+    bonusStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusBolsterStats ix pb)
     reach <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
     bonusReach <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusReach ix pb)
     ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)

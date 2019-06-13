@@ -1,7 +1,7 @@
 module WireTypes.Reach
     ( ReachFraction(..)
     , TrackReach(..)
-    , ReachStats(..)
+    , BolsterStats(..)
     ) where
 
 import GHC.Generics (Generic)
@@ -21,8 +21,8 @@ data TrackReach =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
-data ReachStats =
-    ReachStats
+data BolsterStats =
+    BolsterStats
         { bolsterMean :: PilotDistance
         , bolsterStdDev :: PilotDistance
         , reachMean :: PilotDistance
