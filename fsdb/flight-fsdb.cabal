@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 146fde7430219e0eae7ea93b75140768621feddb6c4214cbff1083998b3b1552
+-- hash: 8228916bbff74ae9509bd1c2fdfeff021ba9a952aaf290d19fbbd75dfb9dbb05
 
 name:           flight-fsdb
 version:        0.1.0
@@ -67,8 +67,10 @@ library
     , path
     , scientific
     , split
+    , statistics
     , time
     , uom-plugin
+    , vector
   default-language: Haskell2010
 
 test-suite doctest
@@ -112,6 +114,8 @@ test-suite doctest
     , path
     , scientific
     , split
+    , statistics
     , time
     , uom-plugin
+    , vector
   default-language: Haskell2010

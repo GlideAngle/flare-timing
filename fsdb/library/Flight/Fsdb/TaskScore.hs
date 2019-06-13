@@ -6,6 +6,8 @@ import Prelude hiding (max)
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
 import Data.List (unzip5)
+import qualified Data.Vector as V (fromList)
+import qualified Statistics.Sample as Stats (mean, stdDev)
 import Data.UnitsOfMeasure (u, zero, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -15,7 +17,7 @@ import Text.XML.HXT.Arrow.Pickle
     , xpWrap, xpElem, xpAttr
     , xpFilterAttr, xpFilterCont
     , xpInt, xpPrim
-    , xpPair, xpTriple, xp5Tuple, xp6Tuple, xp10Tuple
+    , xpPair, xpTriple, xp5Tuple, xp6Tuple, xp11Tuple
     , xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -41,7 +43,7 @@ import Text.XML.HXT.Core
     , isAttr
     )
 
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
 import Flight.Comp (PilotId(..), Pilot(..), Nominal(..))
@@ -98,10 +100,11 @@ xpRankScore =
         <+> hasName "started_ss"
         <+> hasName "finished_ss"
         <+> hasName "ss_time"
+        <+> hasName "real_distance"
         <+> hasName "distance"
         )
     $ xpWrap
-        ( \(r, p, dp, l, a, t, dM, ss, es, ssE) ->
+        ( \(r, p, dp, l, a, t, dM, dE, ss, es, ssE) ->
             NormBreakdown
                 { place = TaskPlacing . fromIntegral $ r
                 , total = TaskPoints . toRational $ p
@@ -109,7 +112,8 @@ xpRankScore =
                 , leading = LeadingPoints . dToR $ l
                 , arrival = ArrivalPoints . dToR $ a
                 , time = TimePoints . dToR $ t
-                , distanceMade = taskKmToMetres . TaskDistance . MkQuantity $ dM
+                , reachExtra = taskKmToMetres . TaskDistance . MkQuantity $ dE
+                , reachMade = taskKmToMetres . TaskDistance . MkQuantity $ dM
                 , distanceFrac = 0
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
@@ -129,7 +133,8 @@ xpRankScore =
                 , leading = LeadingPoints l
                 , arrival = ArrivalPoints a
                 , time = TimePoints t
-                , distanceMade = TaskDistance (MkQuantity d)
+                , reachExtra = TaskDistance (MkQuantity dE)
+                , reachMade = TaskDistance (MkQuantity dM)
                 , ss
                 , es
                 , timeElapsed
@@ -140,19 +145,21 @@ xpRankScore =
                     , fromRational l
                     , fromRational a
                     , fromRational t
-                    , d
+                    , dE
+                    , dM
                     , show <$> ss
                     , show <$> es
                     , show <$> timeElapsed
                     )
         )
-    $ xp10Tuple
+    $ xp11Tuple
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
         (xpAttr "distance_points" xpPrim)
         (xpAttr "leading_points" xpPrim)
         (xpAttr "arrival_points" xpPrim)
         (xpAttr "time_points" xpPrim)
+        (xpAttr "real_distance" xpPrim)
         (xpAttr "distance" xpPrim)
         (xpOption $ xpTextAttr "started_ss")
         (xpOption $ xpTextAttr "finished_ss")
@@ -372,7 +379,7 @@ getScore pilots =
     >>> arr (\(td, xs) ->
         [
             (,) p $ do
-                n@NormBreakdown{distanceMade = dm} <- x
+                n@NormBreakdown{reachMade = dm} <- x
                 let dKm = taskMetresToKm dm
                 AwardedDistance{awardedFrac = frac} <- asAwardReach td (Just dKm)
                 return $ n{distanceFrac = frac}
@@ -405,6 +412,7 @@ getScore pilots =
                         >>> hasAttr "leading_points"
                         >>> hasAttr "arrival_points"
                         >>> hasAttr "time_points"
+                        >>> hasAttr "real_distance"
                         >>> hasAttr "distance"
                         )
                     >>> getAttrValue "id"
@@ -516,10 +524,53 @@ parseScores
     ps <- runX $ doc >>> getCompPilot
     xss <- runX $ doc >>> getScore ps
 
-    let yss = [catMaybes $ sequence <$> xs| xs <- xss]
+    let yss :: [[(Pilot, NormBreakdown)]] = [catMaybes $ sequence <$> xs| xs <- xss]
     let tss = const Nothing <$> yss
 
+    let rss =
+            [
+                unzip
+                [ (e, r)
+                | NormBreakdown{reachExtra = e, reachMade = r} <- ys
+                ]
+            | ys <- (fmap . fmap) snd yss
+            ]
+
+    let es =
+            [
+                let ys = V.fromList $ unTaskDistanceAsKm <$> xs in
+                ReachStats
+                    { max = FlownMax . MkQuantity $ maximum ys
+                    , mean = FlownMean . MkQuantity $ Stats.mean ys
+                    , stdDev = FlownStdDev . MkQuantity $ Stats.stdDev ys
+                    }
+            | (xs, _) <- rss
+            ]
+
+    let rs =
+            [
+                let ys = V.fromList $ unTaskDistanceAsKm <$> xs in
+                ReachStats
+                    { max = FlownMax . MkQuantity $ maximum ys
+                    , mean = FlownMean . MkQuantity $ Stats.mean ys
+                    , stdDev = FlownStdDev . MkQuantity $ Stats.stdDev ys
+                    }
+            | (_, xs) <- rss
+            ]
+
     gvs <- runX $ doc >>> getValidity ng nl nd md nt
+    let vws =
+            [
+                (\(vs, lw, tw, dw, sw) ->
+                    let sw' = sw{extra = e, flown = r} in
+                    (vs, lw, tw, dw, sw')
+                )
+                <$> gv
+            | gv <- gvs
+            | e <- es
+            | r <- rs
+            ]
+
     return $
         (\(vs, lw, tw, dw, sw) -> NormPointing
             { bestTime = tss
@@ -531,4 +582,4 @@ parseScores
             , score = yss
             })
         . unzip5
-        <$> sequence gvs
+        <$> sequence vws

@@ -26,6 +26,8 @@ in    defs
             , "containers"
             , "time"
             , "newtype"
+            , "statistics"
+            , "vector"
             , "uom-plugin"
             , "detour-via-sci"
             , "flight-comp"

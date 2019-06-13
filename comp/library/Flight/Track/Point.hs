@@ -82,7 +82,8 @@ data NormBreakdown =
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
-        , distanceMade :: Land
+        , reachExtra :: Land
+        , reachMade :: Land
         , distanceFrac :: Double
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
@@ -187,16 +188,28 @@ cmpNorm a b =
         ("time", "arrival") -> GT
         ("time", _) -> LT
 
-        ("distanceMade", "distanceFrac") -> LT
-        ("distanceMade", "ss") -> LT
-        ("distanceMade", "es") -> LT
-        ("distanceMade", "timeElapsed") -> LT
-        ("distanceMade", "timeFrac") -> LT
-        ("distanceMade", "leadingArea") -> LT
-        ("distanceMade", "leadingCoef") -> LT
-        ("distanceMade", "leadingFrac") -> LT
-        ("distanceMade", "arrivalFrac") -> LT
-        ("distanceMade", _) -> GT
+        ("reachExtra", "reachMade") -> LT
+        ("reachExtra", "distanceFrac") -> LT
+        ("reachExtra", "ss") -> LT
+        ("reachExtra", "es") -> LT
+        ("reachExtra", "timeElapsed") -> LT
+        ("reachExtra", "timeFrac") -> LT
+        ("reachExtra", "leadingArea") -> LT
+        ("reachExtra", "leadingCoef") -> LT
+        ("reachExtra", "leadingFrac") -> LT
+        ("reachExtra", "arrivalFrac") -> LT
+        ("reachExtra", _) -> GT
+
+        ("reachMade", "distanceFrac") -> LT
+        ("reachMade", "ss") -> LT
+        ("reachMade", "es") -> LT
+        ("reachMade", "timeElapsed") -> LT
+        ("reachMade", "timeFrac") -> LT
+        ("reachMade", "leadingArea") -> LT
+        ("reachMade", "leadingCoef") -> LT
+        ("reachMade", "leadingFrac") -> LT
+        ("reachMade", "arrivalFrac") -> LT
+        ("reachMade", _) -> GT
 
         ("distanceFrac", "ss") -> LT
         ("distanceFrac", "es") -> LT

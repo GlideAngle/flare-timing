@@ -276,7 +276,6 @@ cmp a b =
         ("nigh", "taskDistance") -> GT
         ("nigh", "bestEffort") -> GT
         ("nigh", "bolsterMax") -> GT
-        ("nigh", "bolsterMax") -> GT
         ("nigh", "sumDistance") -> GT
         ("nigh", "leadAreaToCoef") -> GT
         ("nigh", "leadCoefMin") -> GT
