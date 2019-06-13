@@ -278,7 +278,7 @@ viewStop
                     el "tr" $ do
                         elAttr "th" ("rowspan" =: "3") $ text "max"
                         el "td" $ text ""
-                        el "td" $ text "Reach"
+                        el "td" $ text "Reach †"
                         elV $ ""
                         elN $ ""
                         elD $ ""
@@ -286,7 +286,7 @@ viewStop
 
                     el "tr" $ do
                         el "td" $ text ""
-                        el "th" $ text "Flown"
+                        el "th" $ text "Bolster ‡"
                         elV $ showBestDistance flownMax
                         elN $ showBestDistance flownMaxN
                         elD $ showBestDistanceDiff flownMaxN flownMax
@@ -305,7 +305,7 @@ viewStop
                             el "tr" $ do
                                 elAttr "th" ("rowspan" =: "5") $ text "μ"
                                 el "td" $ text ""
-                                el "td" $ text "REACH Reach †"
+                                el "td" $ text "Reach"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -313,7 +313,7 @@ viewStop
 
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "th" $ text "REACH Flown ‡"
+                                el "th" $ text "Bolster"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -327,7 +327,7 @@ viewStop
                             el "tr" $ do
                                 elAttr "th" ("rowspan" =: "5") $ text "μ"
                                 el "td" $ text ""
-                                el "td" $ text "REACH Reach †"
+                                el "td" $ text "Reach"
                                 elV $ showPilotDistance 3 reachMeanR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -335,7 +335,7 @@ viewStop
 
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "th" $ text "REACH Flown ‡"
+                                el "th" $ text "Bolster"
                                 elV $ showPilotDistance 3 bolsterMeanR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -345,7 +345,7 @@ viewStop
                         Nothing -> do
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "td" $ text "EXTRA Reach †"
+                                el "td" $ text "Extra ‖ Reach"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -353,7 +353,7 @@ viewStop
 
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "th" $ text "EXTRA Flown ‡"
+                                el "th" $ text "Extra Bolster"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -366,7 +366,7 @@ viewStop
                                 } -> do
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "td" $ text "EXTRA Reach †"
+                                el "td" $ text "Extra ‖ Reach"
                                 elV $ showPilotDistance 3 reachMeanR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -374,7 +374,7 @@ viewStop
 
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "th" $ text "EXTRA Flown ‡"
+                                el "th" $ text "Extra Bolster"
                                 elV $ showPilotDistance 3 bolsterMeanR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -382,7 +382,7 @@ viewStop
 
                     el "tr" $ do
                         el "td" $ text ""
-                        el "td" $ text "WORKING"
+                        el "td" $ text "Working"
                         elV $ showPilotDistance 3 flownMean <> " km"
                         elN $ showPilotDistance 3 flownMeanN <> " km"
                         elD $ ""
@@ -393,7 +393,7 @@ viewStop
                             el "tr" $ do
                                 elAttr "th" ("rowspan" =: "5") $ text "σ"
                                 el "td" $ text ""
-                                el "td" $ text "REACH Reach †"
+                                el "td" $ text "Reach"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -401,7 +401,7 @@ viewStop
 
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "th" $ text "REACH Flown ‡"
+                                el "th" $ text "Bolster"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -415,7 +415,7 @@ viewStop
                             el "tr" $ do
                                 elAttr "th" ("rowspan" =: "5") $ text "σ"
                                 el "td" $ text ""
-                                el "td" $ text "REACH Reach †"
+                                el "td" $ text "Reach"
                                 elV $ showPilotDistance 3 reachStdDevR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -423,7 +423,7 @@ viewStop
 
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "th" $ text "REACH Flown ‡"
+                                el "th" $ text "Bolster"
                                 elV $ showPilotDistance 3 bolsterStdDevR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -433,7 +433,7 @@ viewStop
                         Nothing -> do
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "td" $ text "EXTRA Reach †"
+                                el "td" $ text "Extra Reach"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -441,7 +441,7 @@ viewStop
 
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "th" $ text "EXTRA Flown ‡"
+                                el "th" $ text "Extra Bolster"
                                 elV $ "n/a"
                                 elN $ "n/a"
                                 elD $ ""
@@ -454,7 +454,7 @@ viewStop
                                 } -> do
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "td" $ text "EXTRA Reach †"
+                                el "td" $ text "Extra Reach"
                                 elV $ showPilotDistance 3 reachStdDevR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -462,7 +462,7 @@ viewStop
 
                             el "tr" $ do
                                 el "td" $ text ""
-                                el "th" $ text "EXTRA Flown ‡"
+                                el "th" $ text "Extra Bolster"
                                 elV $ showPilotDistance 3 bolsterStdDevR <> " km"
                                 elN $ "n/a"
                                 elD $ ""
@@ -470,7 +470,7 @@ viewStop
 
                     el "tr" $ do
                         el "td" $ text ""
-                        el "td" $ text "WORKING"
+                        el "td" $ text "Working"
                         elV $ showPilotDistance 3 flownStdDev <> " km"
                         elN $ showPilotDistance 3 flownStdDevN <> " km"
                         elD $ ""
@@ -491,9 +491,9 @@ viewStop
                 el "tfoot" $ do
                     foot "μ Mean."
                     foot "σ Standard Deviation."
-                    foot "† With reach as small as actually flown."
-                    foot "‡ With reach clamped below to be no smaller than minimum distance."
-                    foot "‖ With altitude above goal converted to extra reach via glide."
+                    foot "† Reach as small as actually flown."
+                    foot "‡ Reach bolstered below to be no smaller than minimum distance."
+                    foot "‖ Extra altitude above goal converted to extra reach via glide."
                     return ()
 
             elAttr
