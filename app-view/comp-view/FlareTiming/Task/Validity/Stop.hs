@@ -516,8 +516,6 @@ viewStop
                 let foot = el "tr" . tdFoot . text
 
                 el "tfoot" $ do
-                    foot "μ Mean."
-                    foot "σ Standard Deviation."
                     foot "† Reach as small as actually flown."
                     foot "‡ Reach bolstered below to be no smaller than minimum distance."
                     foot "‖ Extra altitude above goal converted to extra reach via glide."
