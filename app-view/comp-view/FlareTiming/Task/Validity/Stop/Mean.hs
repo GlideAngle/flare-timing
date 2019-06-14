@@ -155,7 +155,7 @@ viewStopMean
 
         el "tbody" $ do
             el "tr" $ do
-                el "th" $ text "Flown"
+                el "th" $ text "Flown ‖"
                 elV $ showPilotDistance 3 reachMean
                 -- NOTE: bolsterMean == flownMean
                 elV $ showPilotDistance 3 flownMean
@@ -164,10 +164,18 @@ viewStopMean
                 return ()
 
             el "tr" $ do
-                el "th" $ text "Extra"
+                el "th" $ text "Extra ¶"
                 elV $ showPilotDistance 3 reachMeanE
                 -- NOTE: bolsterMeanE == extraMean
                 elV $ showPilotDistance 3 extraMean
                 elN $ showPilotDistance 3 extraMeanN
                 elD $ showPilotDistanceDiff 3 extraMeanN extraMean
                 return ()
+
+        let tdFoot = elAttr "td" ("colspan" =: "5")
+        let foot = el "tr" . tdFoot . text
+
+        el "tfoot" $ do
+            foot "‖ As flown without extra."
+            foot "¶ Extra altitude above goal converted to extra reach via glide."
+            return ()

@@ -155,7 +155,7 @@ viewStopMax
 
         el "tbody" $ do
             el "tr" $ do
-                el "th" $ text "Flown ‖"
+                el "th" $ text "Flown"
                 elV $ showBestDistance reachMax
                 -- NOTE: bolsterMax == flownMax
                 elV $ showBestDistance flownMax
@@ -164,7 +164,7 @@ viewStopMax
                 return ()
 
             el "tr" $ do
-                el "th" $ text "Extra ¶"
+                el "th" $ text "Extra"
                 elV $ showBestDistance reachMaxE
                 -- NOTE: bolsterMaxE == extraMax
                 elV $ showBestDistance extraMax
@@ -178,6 +178,4 @@ viewStopMax
         el "tfoot" $ do
             foot "† Raw reach, unbolstered."
             foot "‡ Bolstered, no smaller than minimum distance."
-            foot "‖ As flown without extra."
-            foot "¶ Extra altitude above goal converted to extra reach via glide."
             return ()
