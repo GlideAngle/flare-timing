@@ -99,7 +99,9 @@ viewStopStdDev
                     $ showPilotDistance 3 reachStdDevE
 
                 -- NOTE: bolsterStdDevE == extraStdDev
-                elV $ showPilotDistance 3 extraStdDev
+                elClass "td" "td-valid-bolster-extra" . text
+                    $ showPilotDistance 3 extraStdDev
+
                 elN $ showPilotDistance 3 extraStdDevN
                 elD $ showPilotDistanceDiff 3 extraStdDevN extraStdDev
                 return ()

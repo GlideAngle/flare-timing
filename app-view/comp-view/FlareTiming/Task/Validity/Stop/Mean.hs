@@ -99,7 +99,9 @@ viewStopMean
                     $ showPilotDistance 3 reachMeanE
 
                 -- NOTE: bolsterMeanE == extraMean
-                elV $ showPilotDistance 3 extraMean
+                elClass "td" "td-valid-bolster-extra" . text
+                    $ showPilotDistance 3 extraMean
+
                 elN $ showPilotDistance 3 extraMeanN
                 elD $ showPilotDistanceDiff 3 extraMeanN extraMean
                 return ()
