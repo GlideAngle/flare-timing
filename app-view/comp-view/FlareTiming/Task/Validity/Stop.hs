@@ -393,54 +393,54 @@ tablePilotReach free reach bonusReach = do
 
                     el "tr" $ do
                         el "th" $ text "max"
-                        elClass "td" "td-valid-reach" . f
+                        elClass "td" "valid-max td-valid-reach" . f
                             $ maximum rs
-                        elClass "td" "td-valid-reach-extra" . f
+                        elClass "td" "valid-max td-valid-reach-extra" . f
                             $ maximum bs
-                        elClass "td" "td-valid-reach-extra-diff" . f
+                        elClass "td" "valid-max td-valid-reach-extra-diff" . f
                             $ maximum ds
 
-                        elClass "td" "td-valid-bolster" . f
+                        elClass "td" "valid-max td-valid-bolster" . f
                             $ maximum rs'
-                        elClass "td" "td-valid-bolster-extra" . f
+                        elClass "td" "valid-max td-valid-bolster-extra" . f
                             $ maximum bs'
-                        elClass "td" "td-valid-bolster-extra-diff" . f
+                        elClass "td" "valid-max td-valid-bolster-extra-diff" . f
                             $ maximum ds'
 
                         return ()
 
                     el "tr" $ do
                         el "th" $ text "μ"
-                        elClass "td" "td-valid-reach" . f
+                        elClass "td" "valid-μ td-valid-reach" . f
                             $ Stats.mean rs
-                        elClass "td" "td-valid-reach-extra" . f
+                        elClass "td" "valid-μ td-valid-reach-extra" . f
                             $ Stats.mean bs
-                        elClass "td" "td-valid-reach-extra-diff" . f
+                        elClass "td" "valid-μ td-valid-reach-extra-diff" . f
                             $ Stats.mean ds
 
-                        elClass "td" "td-valid-bolster" . f
+                        elClass "td" "valid-μ td-valid-bolster" . f
                             $ Stats.mean rs'
-                        elClass "td" "td-valid-bolster-extra" . f
+                        elClass "td" "valid-μ td-valid-bolster-extra" . f
                             $ Stats.mean bs'
-                        elClass "td" "td-valid-bolster-extra-diff" . f
+                        elClass "td" "valid-μ td-valid-bolster-extra-diff" . f
                             $ Stats.mean ds'
 
                         return ()
 
                     el "tr" $ do
                         el "th" $ text "σ"
-                        elClass "td" "td-valid-reach" . f
+                        elClass "td" "valid-σ td-valid-reach" . f
                             $ Stats.stdDev rs
-                        elClass "td" "td-valid-reach-extra" . f
+                        elClass "td" "valid-σ td-valid-reach-extra" . f
                             $ Stats.stdDev bs
-                        elClass "td" "td-valid-reach-extra-diff" . f
+                        elClass "td" "valid-σ td-valid-reach-extra-diff" . f
                             $ Stats.stdDev ds
 
-                        elClass "td" "td-valid-bolster" . f
+                        elClass "td" "valid-σ td-valid-bolster" . f
                             $ Stats.stdDev rs'
-                        elClass "td" "td-valid-bolster-extra" . f
+                        elClass "td" "valid-σ td-valid-bolster-extra" . f
                             $ Stats.stdDev bs'
-                        elClass "td" "td-valid-bolster-extra-diff" . f
+                        elClass "td" "valid-σ td-valid-bolster-extra-diff" . f
                             $ Stats.stdDev ds'
 
                         return ()
