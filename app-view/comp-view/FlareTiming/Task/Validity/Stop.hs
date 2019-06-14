@@ -34,7 +34,8 @@ import WireTypes.ValidityWorking
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
-import WireTypes.Reach (TrackReach(..), BolsterStats(..))
+import WireTypes.Reach (TrackReach(..))
+import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (UtcOffset(..))
@@ -55,13 +56,20 @@ stopWorkingCase Nothing a b = (min 1 (a + b3), eqn) where
         b' = T.pack $ printf "%.3f" b3
         a' = T.pack $ printf "%.3f" a
 
-stopWorkingSubA :: DistanceValidityWorking -> BolsterStats -> TaskDistance -> (Double, T.Text)
+stopWorkingSubA
+    :: DistanceValidityWorking
+    -> Stats.BolsterStats
+    -> TaskDistance
+    -> (Double, T.Text)
 
 stopWorkingSubA
     DistanceValidityWorking{bestDistance = bd@(MaximumDistance bd')}
-    BolsterStats
-        { bolsterMean = mf@(PilotDistance mf')
-        , bolsterStdDev = sf@(PilotDistance sf')
+    Stats.BolsterStats
+        { bolster =
+            ReachStats
+                { mean = mf@(PilotDistance mf')
+                , stdDev = sf@(PilotDistance sf')
+                }
         }
     td@(TaskDistance td') = (z, eqn) where
         eqn =
@@ -125,7 +133,7 @@ stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed b' =
 stopWorking
     :: DistanceValidityWorking
     -> TimeValidityWorking
-    -> BolsterStats
+    -> Stats.BolsterStats
     -> TaskDistance
     -> Int
     -> T.Text
@@ -179,8 +187,8 @@ viewStop
     -> Vy.Validity
     -> ValidityWorking
     -> ValidityWorking
-    -> BolsterStats
-    -> BolsterStats
+    -> Stats.BolsterStats
+    -> Stats.BolsterStats
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> TaskDistance
@@ -240,18 +248,30 @@ viewStop
                 }
         }
     -- | Reach as flown.
-    BolsterStats
-        { bolsterMean
-        , bolsterStdDev
-        , reachMean
-        , reachStdDev
+    Stats.BolsterStats
+        { bolster =
+            ReachStats
+                { mean = bolsterMean
+                , stdDev = bolsterStdDev
+                }
+        , reach =
+            ReachStats
+                { mean = reachMean
+                , stdDev = reachStdDev
+                }
         }
     -- | With extra altitude converted by way of glide to extra reach.
-    BolsterStats
-        { bolsterMean = bolsterMeanE
-        , bolsterStdDev = bolsterStdDevE
-        , reachMean = reachMeanE
-        , reachStdDev = reachStdDevE
+    Stats.BolsterStats
+        { bolster =
+            ReachStats
+                { mean = bolsterMeanE
+                , stdDev = bolsterStdDevE
+                }
+        , reach =
+            ReachStats
+                { mean = reachMeanE
+                , stdDev = reachStdDevE
+                }
         }
     reach
     bonusReach

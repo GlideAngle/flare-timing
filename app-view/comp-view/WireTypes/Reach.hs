@@ -8,6 +8,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
 
 import WireTypes.Point (PilotDistance(..))
+import WireTypes.ValidityWorking (ReachStats(..))
 
 newtype ReachFraction = ReachFraction Double
     deriving (Eq, Ord, Show, Generic)
@@ -23,10 +24,8 @@ data TrackReach =
 
 data BolsterStats =
     BolsterStats
-        { bolsterMean :: PilotDistance
-        , bolsterStdDev :: PilotDistance
-        , reachMean :: PilotDistance
-        , reachStdDev :: PilotDistance
+        { bolster :: ReachStats
+        , reach :: ReachStats
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
