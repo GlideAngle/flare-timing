@@ -48,18 +48,11 @@ viewStopCounts
     -> Vy.Validity
     -> ValidityWorking
     -> ValidityWorking
-    -> Stats.BolsterStats
-    -> Stats.BolsterStats
-    -> Dynamic t [(Pilot, TrackReach)]
-    -> Dynamic t [(Pilot, TrackReach)]
-    -> TaskDistance
-    -> Dynamic t [(Pilot, FlyingSection UTCTime)]
-    -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
-viewStopCounts _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ = return ()
-viewStopCounts _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
-viewStopCounts _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
-viewStopCounts _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
+viewStopCounts _ Vy.Validity{stop = Nothing} _ _ _ = return ()
+viewStopCounts _ _ Vy.Validity{stop = Nothing} _ _ = return ()
+viewStopCounts _ _ _ ValidityWorking{stop = Nothing} _ = return ()
+viewStopCounts _ _ _ _ ValidityWorking{stop = Nothing} = return ()
 viewStopCounts
     utcOffset
     Vy.Validity{stop = sv}
@@ -71,18 +64,6 @@ viewStopCounts
                 { pilotsAtEss
                 , flying
                 , landed
-                , extra =
-                    ReachStats
-                        { max = extraMax
-                        , mean = extraMean
-                        , stdDev = extraStdDev
-                        }
-                , flown =
-                    ReachStats
-                        { max = flownMax
-                        , mean = flownMean
-                        , stdDev = flownStdDev
-                        }
                 , launchToEssDistance = ed
                 }
         }
@@ -93,56 +74,10 @@ viewStopCounts
                 { pilotsAtEss = pilotsAtEssN
                 , flying = flyingN
                 , landed = landedN
-                , extra =
-                    ReachStats
-                        { max = extraMaxN
-                        , mean = extraMeanN
-                        , stdDev = extraStdDevN
-                        }
-                , flown =
-                    ReachStats
-                        { max = flownMaxN
-                        , mean = flownMeanN
-                        , stdDev = flownStdDevN
-                        }
                 , launchToEssDistance = edN
                 }
         }
-    -- | Reach as flown.
-    Stats.BolsterStats
-        { bolster =
-            ReachStats
-                { max = bolsterMax
-                , mean = bolsterMean
-                , stdDev = bolsterStdDev
-                }
-        , reach =
-            ReachStats
-                { max = reachMax
-                , mean = reachMean
-                , stdDev = reachStdDev
-                }
-        }
-    -- | With extra altitude converted by way of glide to extra reach.
-    Stats.BolsterStats
-        { bolster =
-            ReachStats
-                { max = bolsterMaxE
-                , mean = bolsterMeanE
-                , stdDev = bolsterStdDevE
-                }
-        , reach =
-            ReachStats
-                { max = reachMaxE
-                , mean = reachMeanE
-                , stdDev = reachStdDevE
-                }
-        }
-    reach
-    bonusReach
-    _td
-    landedByStop
-    stillFlying = do
+    = do
 
     elClass "table" "table is-striped" $ do
         el "thead" $ do

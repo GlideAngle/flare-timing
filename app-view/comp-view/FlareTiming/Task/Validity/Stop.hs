@@ -325,48 +325,21 @@ viewStop
                                 elClass "p" "title" $ text "max"
                                 elClass "p" "subtitle" $ text "maximum km"
                                 elClass "div" "content" $
-                                    viewStopMax
-                                        utcOffset
-                                        v vN
-                                        vw vwN
-                                        sf se
-                                        reach
-                                        bonusReach
-                                        td
-                                        landedByStop
-                                        stillFlying
+                                    viewStopMax vw vwN sf se
 
                         elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "μ"
                                 elClass "p" "subtitle" $ text "mean km"
                                 elClass "div" "content" $
-                                    viewStopMean
-                                        utcOffset
-                                        v vN
-                                        vw vwN
-                                        sf se
-                                        reach
-                                        bonusReach
-                                        td
-                                        landedByStop
-                                        stillFlying
+                                    viewStopMean vw vwN sf se
 
                         elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "σ"
                                 elClass "p" "subtitle" $ text "standard deviation km"
                                 elClass "div" "content" $
-                                    viewStopStdDev
-                                        utcOffset
-                                        v vN
-                                        vw vwN
-                                        sf se
-                                        reach
-                                        bonusReach
-                                        td
-                                        landedByStop
-                                        stillFlying
+                                    viewStopStdDev vw vwN sf se
 
             elClass "div" "tile is-ancestor" $ do
                 elClass "div" "tile is-12" $
@@ -380,12 +353,6 @@ viewStop
                                         utcOffset
                                         v vN
                                         vw vwN
-                                        sf se
-                                        reach
-                                        bonusReach
-                                        td
-                                        landedByStop
-                                        stillFlying
 
             elAttr
                 "div"

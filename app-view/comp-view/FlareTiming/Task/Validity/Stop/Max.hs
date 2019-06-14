@@ -43,69 +43,40 @@ import FlareTiming.Task.Validity.Widget (katexNewLine, spacer, elV, elN, elD)
 
 viewStopMax
     :: MonadWidget t m
-    => Dynamic t UtcOffset
-    -> Vy.Validity
-    -> Vy.Validity
-    -> ValidityWorking
+    => ValidityWorking
     -> ValidityWorking
     -> Stats.BolsterStats
     -> Stats.BolsterStats
-    -> Dynamic t [(Pilot, TrackReach)]
-    -> Dynamic t [(Pilot, TrackReach)]
-    -> TaskDistance
-    -> Dynamic t [(Pilot, FlyingSection UTCTime)]
-    -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
-viewStopMax _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ = return ()
-viewStopMax _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
-viewStopMax _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
-viewStopMax _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
+viewStopMax ValidityWorking{stop = Nothing} _ _ _ = return ()
+viewStopMax _ ValidityWorking{stop = Nothing} _ _ = return ()
 viewStopMax
-    utcOffset
-    Vy.Validity{stop = sv}
-    Vy.Validity{stop = svN}
     -- | Working from flare-timing.
     ValidityWorking
         { stop =
             Just StopValidityWorking
-                { pilotsAtEss
-                , flying
-                , landed
-                , extra =
+                { extra =
                     ReachStats
                         { max = extraMax
-                        , mean = extraMean
-                        , stdDev = extraStdDev
                         }
                 , flown =
                     ReachStats
                         { max = flownMax
-                        , mean = flownMean
-                        , stdDev = flownStdDev
                         }
-                , launchToEssDistance = ed
                 }
         }
     -- | Working from FS, normal or expected.
     ValidityWorking
         { stop =
             Just StopValidityWorking
-                { pilotsAtEss = pilotsAtEssN
-                , flying = flyingN
-                , landed = landedN
-                , extra =
+                { extra =
                     ReachStats
                         { max = extraMaxN
-                        , mean = extraMeanN
-                        , stdDev = extraStdDevN
                         }
                 , flown =
                     ReachStats
                         { max = flownMaxN
-                        , mean = flownMeanN
-                        , stdDev = flownStdDevN
                         }
-                , launchToEssDistance = edN
                 }
         }
     -- | Reach as flown.
@@ -113,14 +84,10 @@ viewStopMax
         { bolster =
             ReachStats
                 { max = _bolsterMax
-                , mean = bolsterMean
-                , stdDev = bolsterStdDev
                 }
         , reach =
             ReachStats
                 { max = reachMax
-                , mean = reachMean
-                , stdDev = reachStdDev
                 }
         }
     -- | With extra altitude converted by way of glide to extra reach.
@@ -128,21 +95,13 @@ viewStopMax
         { bolster =
             ReachStats
                 { max = _bolsterMaxE
-                , mean = bolsterMeanE
-                , stdDev = bolsterStdDevE
                 }
         , reach =
             ReachStats
                 { max = reachMaxE
-                , mean = reachMeanE
-                , stdDev = reachStdDevE
                 }
         }
-    reach
-    bonusReach
-    _td
-    landedByStop
-    stillFlying = do
+    = do
 
     elClass "table" "table is-striped" $ do
         el "thead" $ do
