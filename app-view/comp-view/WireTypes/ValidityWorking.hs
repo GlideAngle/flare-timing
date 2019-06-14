@@ -284,7 +284,7 @@ instance Show BestDistance where
 
 showBestDistance :: BestDistance -> T.Text
 showBestDistance (BestDistance x) =
-    T.pack $ printf "%.3f km" x
+    T.pack $ printf "%.3f" x
 
 showBestDistanceDiff :: BestDistance -> BestDistance -> T.Text
 showBestDistanceDiff e@(BestDistance expected) a@(BestDistance actual)

@@ -323,7 +323,7 @@ viewStop
                         elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "max"
-                                elClass "p" "subtitle" $ text "maximum"
+                                elClass "p" "subtitle" $ text "maximum km"
                                 elClass "div" "content" $
                                     viewStopMax
                                         utcOffset
@@ -339,7 +339,7 @@ viewStop
                         elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "μ"
-                                elClass "p" "subtitle" $ text "mean"
+                                elClass "p" "subtitle" $ text "mean km"
                                 elClass "div" "content" $
                                     viewStopMean
                                         utcOffset
@@ -355,7 +355,7 @@ viewStop
                         elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "σ"
-                                elClass "p" "subtitle" $ text "standard deviation"
+                                elClass "p" "subtitle" $ text "standard deviation km"
                                 elClass "div" "content" $
                                     viewStopStdDev
                                         utcOffset

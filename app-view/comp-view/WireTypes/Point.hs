@@ -159,10 +159,10 @@ showPilotDistance :: Int -> PilotDistance -> T.Text
 showPilotDistance dp (PilotDistance d) =
     T.pack $ printf "%.*f" dp d
 
-showPilotDistanceDiff :: PilotDistance -> PilotDistance -> T.Text
-showPilotDistanceDiff (PilotDistance expected) (PilotDistance actual)
-    | printf "%.1f" actual == (printf "%.1f" expected :: String) = "="
-    | otherwise = T.pack . printf "%+.1f" $ actual - expected
+showPilotDistanceDiff :: Int -> PilotDistance -> PilotDistance -> T.Text
+showPilotDistanceDiff dp (PilotDistance expected) (PilotDistance actual)
+    | printf "%.*f" dp actual == (printf "%.*f" dp expected :: String) = "="
+    | otherwise = T.pack . printf "%+.*f" dp $ actual - expected
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =

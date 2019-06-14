@@ -157,8 +157,8 @@ viewTime
                     el "tr" $ do
                         el "td" $ text "bd"
                         el "td" $ text "Best Distance"
-                        elV $ showBestDistance bd
-                        elN $ showBestDistance bdN
+                        elV $ showBestDistance bd <> " km"
+                        elN $ showBestDistance bdN <> " km"
                         elD $ showBestDistanceDiff bdN bd
                         return ()
 

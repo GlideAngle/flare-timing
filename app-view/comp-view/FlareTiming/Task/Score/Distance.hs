@@ -257,7 +257,7 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
                                 <$> dM'
                         in
                             ( showPilotDistance 1 dR
-                            , maybe "" (showPilotDistanceDiff dR) dM''
+                            , maybe "" (showPilotDistanceDiff 1 dR) dM''
                             , showDistancePoints d'
                             , showDistancePointsDiff d' d
                             )

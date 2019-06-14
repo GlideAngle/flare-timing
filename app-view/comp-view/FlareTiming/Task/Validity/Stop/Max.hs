@@ -147,54 +147,33 @@ viewStopMax
     elClass "table" "table is-striped" $ do
         el "thead" $ do
             el "tr" $ do
-                elAttr "th" ("colspan" =: "2") $ text ""
+                el "th" $ text ""
+                el "th" $ text "Reach †"
+                el "th" $ text "Bolster ‡"
+                el "th" $ text "FT"
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         el "tbody" $ do
             el "tr" $ do
-                el "td" $ text "Reach †"
+                el "td" $ text "Flown"
                 elV $ showBestDistance reachMax
-                elN $ showBestDistance flownMaxN
-                elD $ showBestDistanceDiff flownMaxN reachMax
-                return ()
-
-            el "tr" $ do
-                el "th" $ text "Bolster (Flown Max)"
+                elV $ showBestDistance bolsterMax
                 elV $ showBestDistance flownMax
                 elN $ showBestDistance flownMaxN
                 elD $ showBestDistanceDiff flownMaxN flownMax
                 return ()
 
             el "tr" $ do
-                el "th" $ text "Bolster Max"
-                elV $ showBestDistance bolsterMax
-                elN $ showBestDistance flownMaxN
-                elD $ showBestDistanceDiff flownMaxN bolsterMax
-                return ()
-
-            el "tr" $ do
-                el "td" $ text "Extra ‖"
+                el "th" $ text "Extra ‖"
+                elV $ showBestDistance reachMaxE
+                elV $ showBestDistance bolsterMaxE
                 elV $ showBestDistance extraMax
                 elN $ showBestDistance extraMaxN
                 elD $ showBestDistanceDiff extraMaxN extraMax
                 return ()
 
-            el "tr" $ do
-                el "td" $ text "Working"
-                elV $ showBestDistance flownMax
-                elN $ showBestDistance flownMaxN
-                elD $ ""
-                return ()
-
-            el "tr" $ do
-                el "td" $ text "Extra Working"
-                elV $ showBestDistance extraMax
-                elN $ showBestDistance extraMaxN
-                elD $ ""
-                return ()
-
-        let tdFoot = elAttr "td" ("colspan" =: "4")
+        let tdFoot = elAttr "td" ("colspan" =: "6")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do

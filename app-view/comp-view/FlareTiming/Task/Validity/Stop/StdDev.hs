@@ -33,7 +33,7 @@ import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..))
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
-import WireTypes.Point (PilotDistance(..), showPilotDistance)
+import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (UtcOffset(..))
 import FlareTiming.Pilot (showPilotName)
@@ -147,49 +147,28 @@ viewStopStdDev
     elClass "table" "table is-striped" $ do
         el "thead" $ do
             el "tr" $ do
-                elAttr "th" ("colspan" =: "2") $ text ""
+                el "th" $ text ""
+                el "th" $ text "Reach †"
+                el "th" $ text "Bolster ‡"
+                el "th" $ text "FT"
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         el "tbody" $ do
             el "tr" $ do
-                el "td" $ text "Reach"
-                elV $ showPilotDistance 3 reachStdDev <> " km"
-                elN $ "n/a"
-                elD $ ""
+                el "td" $ text "Flown"
+                elV $ showPilotDistance 3 reachStdDev
+                elV $ showPilotDistance 3 bolsterStdDev
+                elV $ showPilotDistance 3 flownStdDev
+                elN $ showPilotDistance 3 flownStdDevN
+                elD $ showPilotDistanceDiff 3 flownStdDevN flownStdDev
                 return ()
 
             el "tr" $ do
-                el "th" $ text "Bolster"
-                elV $ showPilotDistance 3 bolsterStdDev <> " km"
-                elN $ "n/a"
-                elD $ ""
-                return ()
-
-            el "tr" $ do
-                el "td" $ text "Extra Reach"
-                elV $ showPilotDistance 3 reachStdDevE <> " km"
-                elN $ "n/a"
-                elD $ ""
-                return ()
-
-            el "tr" $ do
-                el "th" $ text "Extra Bolster"
-                elV $ showPilotDistance 3 bolsterStdDevE <> " km"
-                elN $ "n/a"
-                elD $ ""
-                return ()
-
-            el "tr" $ do
-                el "td" $ text "Working"
-                elV $ showPilotDistance 3 flownStdDev <> " km"
-                elN $ showPilotDistance 3 flownStdDevN <> " km"
-                elD $ ""
-                return ()
-
-            el "tr" $ do
-                el "td" $ text "Extra Working"
-                elV $ showPilotDistance 3 extraStdDev <> " km"
-                elN $ showPilotDistance 3 extraStdDevN <> " km"
-                elD $ ""
+                el "th" $ text "Extra ‖"
+                elV $ showPilotDistance 3 reachStdDevE
+                elV $ showPilotDistance 3 bolsterStdDevE
+                elV $ showPilotDistance 3 extraStdDev
+                elN $ showPilotDistance 3 extraStdDevN
+                elD $ showPilotDistanceDiff 3 extraStdDevN extraStdDev
                 return ()
