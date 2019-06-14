@@ -216,24 +216,26 @@ viewStop
                 $ "Stop Validity = " <> Vy.showStopValidity sv
 
             elClass "div" "tile is-ancestor" $ do
-                elClass "div" "tile is-vertical is-6" $
-                    elClass "div" "tile" $
-                        elClass "div" "tile is-parent is-vertical" $ do
+                elClass "div" "tile is-12" $
+                    elClass "div" "tile" $ do
+                        elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Landed"
                                 elClass "p" "subtitle" $ text "landed before stop"
                                 elClass "div" "content"
                                     $ tablePilotFlyingTimes utcOffset landedByStop
 
+                        elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Flying"
                                 elClass "p" "subtitle" $ text "still flying at stop"
                                 elClass "div" "content"
                                     $ tablePilotFlyingTimes utcOffset stillFlying
 
-                elClass "div" "tile is-vertical is-6" $
+            elClass "div" "tile is-ancestor" $ do
+                elClass "div" "tile is-12" $
                     elClass "div" "tile" $
-                        elClass "div" "tile is-parent is-vertical" $ do
+                        elClass "div" "tile is-parent" $
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Reach"
                                 elClass "p" "subtitle" $ text "reach at or before stop"
