@@ -16,7 +16,7 @@ import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..))
 import WireTypes.Reach (TrackReach(..), BolsterStats(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
+import WireTypes.Comp (MinimumDistance(..), Task(..), UtcOffset(..), TaskStop(..))
 import FlareTiming.Task.Validity.Widget (spacer)
 import FlareTiming.Task.Validity.Launch (viewLaunch, launchWorking)
 import FlareTiming.Task.Validity.Time (viewTime, timeWorking)
@@ -41,6 +41,7 @@ hookWorking v ValidityWorking{launch = l, distance = d, time = t} r td landed =
 viewValidity
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t MinimumDistance
     -> Dynamic t Task
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe Vy.Validity)
@@ -54,11 +55,9 @@ viewValidity
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
 viewValidity
-    utcOffset task
-    vy
-    vyNorm
-    vw
-    vwNorm
+    utcOffset free task
+    vy vyNorm
+    vw vwNorm
     reachStats bonusStats
     reach bonusReach
     td flyingTimes = do
@@ -133,6 +132,7 @@ viewValidity
 
                         viewStop
                             utcOffset
+                            free
                             v vN
                             w wN
                             rStats
