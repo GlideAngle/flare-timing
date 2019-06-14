@@ -95,7 +95,9 @@ viewStopMax
 
             el "tr" $ do
                 el "th" $ text "Extra"
-                elV $ showBestDistance reachMaxE
+                elClass "td" "td-valid-reach-extra" . text
+                    $ showBestDistance reachMaxE
+
                 -- NOTE: bolsterMaxE == extraMax
                 elV $ showBestDistance extraMax
                 elN $ showBestDistance extraMaxN

@@ -95,7 +95,9 @@ viewStopMean
 
             el "tr" $ do
                 el "th" $ text "Extra ¶"
-                elV $ showPilotDistance 3 reachMeanE
+                elClass "td" "td-valid-reach-extra" . text
+                    $ showPilotDistance 3 reachMeanE
+
                 -- NOTE: bolsterMeanE == extraMean
                 elV $ showPilotDistance 3 extraMean
                 elN $ showPilotDistance 3 extraMeanN

@@ -353,11 +353,11 @@ tablePilotReach reach bonusReach = do
 
                     el "tr" $ do
                         el "th" $ text "∑"
-                        elClass "td" "td-plot-reach" . f
+                        elClass "td" "td-valid-reach" . f
                             $ Stats.sum rs
-                        elClass "td" "td-plot-reach-bonus" . f
+                        elClass "td" "td-valid-reach-extra" . f
                             $ Stats.sum bs
-                        elClass "td" "td-plot-reach-bonus-diff" . f
+                        elClass "td" "td-valid-reach-extra-diff" . f
                             $ Stats.sum ds
                         elAttr "td" ("rowspan" =: "4") $ text ""
 
@@ -365,33 +365,33 @@ tablePilotReach reach bonusReach = do
 
                     el "tr" $ do
                         el "th" $ text "max"
-                        elClass "td" "td-plot-reach" . f
+                        elClass "td" "td-valid-reach" . f
                             $ maximum rs
-                        elClass "td" "td-plot-reach-bonus" . f
+                        elClass "td" "td-valid-reach-extra" . f
                             $ maximum bs
-                        elClass "td" "td-plot-reach-bonus-diff" . f
+                        elClass "td" "td-valid-reach-extra-diff" . f
                             $ maximum ds
 
                         return ()
 
                     el "tr" $ do
                         el "th" $ text "μ"
-                        elClass "td" "td-plot-reach" . f
+                        elClass "td" "td-valid-reach" . f
                             $ Stats.mean rs
-                        elClass "td" "td-plot-reach-bonus" . f
+                        elClass "td" "td-valid-reach-extra" . f
                             $ Stats.mean bs
-                        elClass "td" "td-plot-reach-bonus-diff" . f
+                        elClass "td" "td-valid-reach-extra-diff" . f
                             $ Stats.mean ds
 
                         return ()
 
                     el "tr" $ do
                         el "th" $ text "σ"
-                        elClass "td" "td-plot-reach" . f
+                        elClass "td" "td-valid-reach" . f
                             $ Stats.stdDev rs
-                        elClass "td" "td-plot-reach-bonus" . f
+                        elClass "td" "td-valid-reach-extra" . f
                             $ Stats.stdDev bs
-                        elClass "td" "td-plot-reach-bonus-diff" . f
+                        elClass "td" "td-valid-reach-extra-diff" . f
                             $ Stats.stdDev ds
 
                         return ()
