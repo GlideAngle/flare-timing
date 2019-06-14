@@ -102,7 +102,6 @@ viewValidity
                             bStats
                             (fromMaybe [] <$> reach)
                             (fromMaybe [] <$> bonusReach)
-                            d
                             landedByStop
                             stillFlying
 

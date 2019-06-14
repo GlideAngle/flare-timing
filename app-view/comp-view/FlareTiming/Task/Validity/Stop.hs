@@ -14,23 +14,14 @@ import qualified Data.Text as T (Text, pack)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 
-import qualified WireTypes.Validity as Vy
-    ( Validity(..)
-    , showStopValidity, showStopValidityDiff
-    )
+import qualified WireTypes.Validity as Vy (Validity(..), showStopValidity)
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
     , ReachStats(..)
-    , StopValidityWorking(..)
     , PilotsFlying(..)
     , MaximumDistance(..)
-    , showPilotsFlyingDiff
-    , showPilotsLandedDiff
-    , showPilotsAtEssDiff
-    , showBestDistance, showBestDistanceDiff
-    , showLaunchToEss, showLaunchToEssDiff
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
@@ -42,7 +33,7 @@ import WireTypes.Comp (UtcOffset(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (timeZone, showTime)
 import qualified FlareTiming.Statistics as Stats (mean, stdDev)
-import FlareTiming.Task.Validity.Widget (katexNewLine, spacer, elV, elN, elD)
+import FlareTiming.Task.Validity.Widget (katexNewLine)
 import FlareTiming.Task.Validity.Stop.Counts (viewStopCounts)
 import FlareTiming.Task.Validity.Stop.Max (viewStopMax)
 import FlareTiming.Task.Validity.Stop.Mean (viewStopMean)
@@ -195,95 +186,27 @@ viewStop
     -> Stats.BolsterStats
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
-    -> TaskDistance
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
-viewStop _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ = return ()
-viewStop _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
-viewStop _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
-viewStop _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
+viewStop _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ = return ()
 viewStop
     utcOffset
     v@Vy.Validity{stop = sv}
-    vN@Vy.Validity{stop = svN}
+    vN
     -- | Working from flare-timing.
-    vw@ValidityWorking
-        { stop =
-            Just StopValidityWorking
-                { pilotsAtEss
-                , flying
-                , landed
-                , extra =
-                    ReachStats
-                        { max = extraMax
-                        , mean = extraMean
-                        , stdDev = extraStdDev
-                        }
-                , flown =
-                    ReachStats
-                        { max = flownMax
-                        , mean = flownMean
-                        , stdDev = flownStdDev
-                        }
-                , launchToEssDistance = ed
-                }
-        }
+    vw
     -- | Working from FS, normal or expected.
-    vwN@ValidityWorking
-        { stop =
-            Just StopValidityWorking
-                { pilotsAtEss = pilotsAtEssN
-                , flying = flyingN
-                , landed = landedN
-                , extra =
-                    ReachStats
-                        { max = extraMaxN
-                        , mean = extraMeanN
-                        , stdDev = extraStdDevN
-                        }
-                , flown =
-                    ReachStats
-                        { max = flownMaxN
-                        , mean = flownMeanN
-                        , stdDev = flownStdDevN
-                        }
-                , launchToEssDistance = edN
-                }
-        }
+    vwN
     -- | Reach as flown.
-    sf@Stats.BolsterStats
-        { bolster =
-            ReachStats
-                { max = bolsterMax
-                , mean = bolsterMean
-                , stdDev = bolsterStdDev
-                }
-        , reach =
-            ReachStats
-                { max = reachMax
-                , mean = reachMean
-                , stdDev = reachStdDev
-                }
-        }
+    sf
     -- | With extra altitude converted by way of glide to extra reach.
-    se@Stats.BolsterStats
-        { bolster =
-            ReachStats
-                { max = bolsterMaxE
-                , mean = bolsterMeanE
-                , stdDev = bolsterStdDevE
-                }
-        , reach =
-            ReachStats
-                { max = reachMaxE
-                , mean = reachMeanE
-                , stdDev = reachStdDevE
-                }
-        }
+    se
     reach
     bonusReach
-    td
     landedByStop
     stillFlying = do
 
@@ -349,10 +272,7 @@ viewStop
                                 elClass "p" "title" $ text "Pilots, Distance & Validity"
                                 elClass "p" "subtitle" $ text "other stop validity formula inputs and the stop validity itself"
                                 elClass "div" "content" $
-                                    viewStopCounts
-                                        utcOffset
-                                        v vN
-                                        vw vwN
+                                    viewStopCounts v vN vw vwN
 
             elAttr
                 "div"
