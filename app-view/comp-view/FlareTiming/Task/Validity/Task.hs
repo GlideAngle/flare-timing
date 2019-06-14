@@ -107,7 +107,7 @@ viewTask
                 elD $ Vy.showTaskValidityDiff dqN dq
                 return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "4")
+        let tdFoot = elAttr "td" ("colspan" =: "6")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
