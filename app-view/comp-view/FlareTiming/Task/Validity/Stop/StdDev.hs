@@ -78,8 +78,8 @@ viewStopStdDev
         el "thead" $ do
             el "tr" $ do
                 el "th" $ text ""
-                elClass "th" "has-text-right" $ text "Reach"
-                elClass "th" "has-text-right" $ text "Bolster"
+                elClass "th" "th-valid-reach-col" $ text "Reach"
+                elClass "th" "th-valid-bolster-col" $ text "Bolster"
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 

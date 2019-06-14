@@ -14,6 +14,7 @@ $family-primary: $family-serif
 // orange #ff7f00
 $reach: #377eb8;
 $launch: #ff7f00;
+$bolster: #ff7f00;
 $effort: #ff7f00;
 $time: #4daf4a;
 $leading: #e41a1c;
@@ -46,13 +47,13 @@ th.th-speed
     background-color: $time;
     @extend .has-text-right;
 
-.th-distance
+.th-distance, .th-valid-reach-col
     @extend .is-info;
 
 .th-distance-points
     @extend .has-text-right;
 
-.th-points
+.th-points, .th-valid-bolster-col
     @extend .is-primary;
 
 .th-norm, .td-norm
@@ -434,12 +435,22 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 .th-plot-frac, .td-plot-frac
     @extend .has-text-right;
 
+.th-valid-reach, .th-valid-reach-diff,
+.th-valid-reach-extra, .th-valid-reach-extra-diff,
+.th-valid-bolster, .th-valid-bolster-diff,
+.th-valid-bolster-extra, .th-valid-bolster-extra-diff,
+
 .td-valid-reach, .td-valid-reach-diff,
-.td-valid-reach-extra, .td-valid-reach-extra-diff
+.td-valid-reach-extra, .td-valid-reach-extra-diff,
+.td-valid-bolster, .td-valid-bolster-diff,
+.td-valid-bolster-extra, .td-valid-bolster-extra-diff
     @extend .has-text-right;
 
 .td-valid-reach-extra, .td-valid-reach-extra-diff
-    color: $leading;
+    color: $reach;
+
+.td-valid-bolster-extra, .td-valid-bolster-extra-diff
+    color: $bolster;
 
 .td-plot-reach-bonus, .td-plot-frac-bonus, .td-plot-reach-bonus-diff
     color: $leading;
