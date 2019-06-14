@@ -112,7 +112,7 @@ viewStopMax
     Stats.BolsterStats
         { bolster =
             ReachStats
-                { max = bolsterMax
+                { max = _bolsterMax
                 , mean = bolsterMean
                 , stdDev = bolsterStdDev
                 }
@@ -127,7 +127,7 @@ viewStopMax
     Stats.BolsterStats
         { bolster =
             ReachStats
-                { max = bolsterMaxE
+                { max = _bolsterMaxE
                 , mean = bolsterMeanE
                 , stdDev = bolsterStdDevE
                 }
@@ -148,36 +148,36 @@ viewStopMax
         el "thead" $ do
             el "tr" $ do
                 el "th" $ text ""
-                el "th" $ text "Reach †"
-                el "th" $ text "Bolster ‡"
-                el "th" $ text "FT"
+                elClass "th" "has-text-right" $ text "Reach †"
+                elClass "th" "has-text-right" $ text "Bolster ‡"
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         el "tbody" $ do
             el "tr" $ do
-                el "td" $ text "Flown"
+                el "th" $ text "Flown ‖"
                 elV $ showBestDistance reachMax
-                elV $ showBestDistance bolsterMax
+                -- NOTE: bolsterMax == flownMax
                 elV $ showBestDistance flownMax
                 elN $ showBestDistance flownMaxN
                 elD $ showBestDistanceDiff flownMaxN flownMax
                 return ()
 
             el "tr" $ do
-                el "th" $ text "Extra ‖"
+                el "th" $ text "Extra ¶"
                 elV $ showBestDistance reachMaxE
-                elV $ showBestDistance bolsterMaxE
+                -- NOTE: bolsterMaxE == extraMax
                 elV $ showBestDistance extraMax
                 elN $ showBestDistance extraMaxN
                 elD $ showBestDistanceDiff extraMaxN extraMax
                 return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "6")
+        let tdFoot = elAttr "td" ("colspan" =: "5")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
-            foot "† Reach as small as actually flown."
+            foot "† Raw reach, unbolstered."
             foot "‡ Bolstered, no smaller than minimum distance."
-            foot "‖ Extra altitude above goal converted to extra reach via glide."
+            foot "‖ As flown without extra."
+            foot "¶ Extra altitude above goal converted to extra reach via glide."
             return ()

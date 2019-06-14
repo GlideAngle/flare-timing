@@ -114,7 +114,7 @@ viewStopStdDev
             ReachStats
                 { max = bolsterMax
                 , mean = bolsterMean
-                , stdDev = bolsterStdDev
+                , stdDev = _bolsterStdDev
                 }
         , reach =
             ReachStats
@@ -129,7 +129,7 @@ viewStopStdDev
             ReachStats
                 { max = bolsterMaxE
                 , mean = bolsterMeanE
-                , stdDev = bolsterStdDevE
+                , stdDev = _bolsterStdDevE
                 }
         , reach =
             ReachStats
@@ -148,26 +148,25 @@ viewStopStdDev
         el "thead" $ do
             el "tr" $ do
                 el "th" $ text ""
-                el "th" $ text "Reach †"
-                el "th" $ text "Bolster ‡"
-                el "th" $ text "FT"
+                elClass "th" "has-text-right" $ text "Reach"
+                elClass "th" "has-text-right" $ text "Bolster"
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         el "tbody" $ do
             el "tr" $ do
-                el "td" $ text "Flown"
+                el "th" $ text "Flown"
                 elV $ showPilotDistance 3 reachStdDev
-                elV $ showPilotDistance 3 bolsterStdDev
+                -- NOTE: bolsterStdDev == flownStdDev
                 elV $ showPilotDistance 3 flownStdDev
                 elN $ showPilotDistance 3 flownStdDevN
                 elD $ showPilotDistanceDiff 3 flownStdDevN flownStdDev
                 return ()
 
             el "tr" $ do
-                el "th" $ text "Extra ‖"
+                el "th" $ text "Extra"
                 elV $ showPilotDistance 3 reachStdDevE
-                elV $ showPilotDistance 3 bolsterStdDevE
+                -- NOTE: bolsterStdDevE == extraStdDev
                 elV $ showPilotDistance 3 extraStdDev
                 elN $ showPilotDistance 3 extraStdDevN
                 elD $ showPilotDistanceDiff 3 extraStdDevN extraStdDev

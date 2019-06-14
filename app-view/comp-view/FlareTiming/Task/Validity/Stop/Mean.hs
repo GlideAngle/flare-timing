@@ -113,7 +113,7 @@ viewStopMean
         { bolster =
             ReachStats
                 { max = bolsterMax
-                , mean = bolsterMean
+                , mean = _bolsterMean
                 , stdDev = bolsterStdDev
                 }
         , reach =
@@ -128,7 +128,7 @@ viewStopMean
         { bolster =
             ReachStats
                 { max = bolsterMaxE
-                , mean = bolsterMeanE
+                , mean = _bolsterMeanE
                 , stdDev = bolsterStdDevE
                 }
         , reach =
@@ -148,26 +148,25 @@ viewStopMean
         el "thead" $ do
             el "tr" $ do
                 el "th" $ text ""
-                el "th" $ text "Reach †"
-                el "th" $ text "Bolster ‡"
-                el "th" $ text "FT"
+                elClass "th" "has-text-right" $ text "Reach"
+                elClass "th" "has-text-right" $ text "Bolster"
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         el "tbody" $ do
             el "tr" $ do
-                el "td" $ text "Flown"
+                el "th" $ text "Flown"
                 elV $ showPilotDistance 3 reachMean
-                elV $ showPilotDistance 3 bolsterMean
+                -- NOTE: bolsterMean == flownMean
                 elV $ showPilotDistance 3 flownMean
                 elN $ showPilotDistance 3 flownMeanN
                 elD $ showPilotDistanceDiff 3 flownMeanN flownMean
                 return ()
 
             el "tr" $ do
-                el "th" $ text "Extra ‖"
+                el "th" $ text "Extra"
                 elV $ showPilotDistance 3 reachMeanE
-                elV $ showPilotDistance 3 bolsterMeanE
+                -- NOTE: bolsterMeanE == extraMean
                 elV $ showPilotDistance 3 extraMean
                 elN $ showPilotDistance 3 extraMeanN
                 elD $ showPilotDistanceDiff 3 extraMeanN extraMean
