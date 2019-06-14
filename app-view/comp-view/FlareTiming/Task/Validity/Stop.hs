@@ -43,6 +43,10 @@ import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (timeZone, showTime)
 import qualified FlareTiming.Statistics as Stats (mean, stdDev)
 import FlareTiming.Task.Validity.Widget (katexNewLine, spacer, elV, elN, elD)
+import FlareTiming.Task.Validity.Stop.Counts (viewStopCounts)
+import FlareTiming.Task.Validity.Stop.Max (viewStopMax)
+import FlareTiming.Task.Validity.Stop.Mean (viewStopMean)
+import FlareTiming.Task.Validity.Stop.StdDev (viewStopStdDev)
 
 stopWorkingCase :: Maybe a -> Double -> Double -> (Double, T.Text)
 stopWorkingCase (Just _) _ _ = (1, " &= 1")
@@ -201,10 +205,10 @@ viewStop _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
 viewStop _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
 viewStop
     utcOffset
-    Vy.Validity{stop = sv}
-    Vy.Validity{stop = svN}
+    v@Vy.Validity{stop = sv}
+    vN@Vy.Validity{stop = svN}
     -- | Working from flare-timing.
-    ValidityWorking
+    vw@ValidityWorking
         { stop =
             Just StopValidityWorking
                 { pilotsAtEss
@@ -226,7 +230,7 @@ viewStop
                 }
         }
     -- | Working from FS, normal or expected.
-    ValidityWorking
+    vwN@ValidityWorking
         { stop =
             Just StopValidityWorking
                 { pilotsAtEss = pilotsAtEssN
@@ -248,34 +252,38 @@ viewStop
                 }
         }
     -- | Reach as flown.
-    Stats.BolsterStats
+    sf@Stats.BolsterStats
         { bolster =
             ReachStats
-                { mean = bolsterMean
+                { max = bolsterMax
+                , mean = bolsterMean
                 , stdDev = bolsterStdDev
                 }
         , reach =
             ReachStats
-                { mean = reachMean
+                { max = reachMax
+                , mean = reachMean
                 , stdDev = reachStdDev
                 }
         }
     -- | With extra altitude converted by way of glide to extra reach.
-    Stats.BolsterStats
+    se@Stats.BolsterStats
         { bolster =
             ReachStats
-                { mean = bolsterMeanE
+                { max = bolsterMaxE
+                , mean = bolsterMeanE
                 , stdDev = bolsterStdDevE
                 }
         , reach =
             ReachStats
-                { mean = reachMeanE
+                { max = reachMaxE
+                , mean = reachMeanE
                 , stdDev = reachStdDevE
                 }
         }
     reach
     bonusReach
-    _td
+    td
     landedByStop
     stillFlying = do
 
@@ -309,206 +317,75 @@ viewStop
                                 elClass "div" "content"
                                     $ tablePilotReach reach bonusReach
 
-            spacer
+            elClass "div" "tile is-ancestor" $ do
+                elClass "div" "tile is-12" $
+                    elClass "div" "tile" $ do
+                        elClass "div" "tile is-parent" $ do
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "max"
+                                elClass "p" "subtitle" $ text "maximum"
+                                elClass "div" "content" $
+                                    viewStopMax
+                                        utcOffset
+                                        v vN
+                                        vw vwN
+                                        sf se
+                                        reach
+                                        bonusReach
+                                        td
+                                        landedByStop
+                                        stillFlying
 
-            elClass "table" "table is-striped" $ do
-                el "thead" $ do
-                    el "tr" $ do
-                        elAttr "th" ("colspan" =: "4") $ text ""
-                        elClass "th" "th-norm validity" $ text "✓"
-                        elClass "th" "th-norm th-diff" $ text "Δ"
+                        elClass "div" "tile is-parent" $ do
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "μ"
+                                elClass "p" "subtitle" $ text "mean"
+                                elClass "div" "content" $
+                                    viewStopMean
+                                        utcOffset
+                                        v vN
+                                        vw vwN
+                                        sf se
+                                        reach
+                                        bonusReach
+                                        td
+                                        landedByStop
+                                        stillFlying
 
-                el "tbody" $ do
-                    el "tr" $ do
-                        elAttr "th" ("rowspan" =: "3") $ text "Pilots"
-                        el "td" $ text ""
-                        el "td" $ text "at ESS"
-                        elV . T.pack $ show pilotsAtEss
-                        elN . T.pack $ show pilotsAtEssN
-                        elD $ showPilotsAtEssDiff pilotsAtEssN pilotsAtEss
-                        return ()
+                        elClass "div" "tile is-parent" $ do
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "σ"
+                                elClass "p" "subtitle" $ text "standard deviation"
+                                elClass "div" "content" $
+                                    viewStopStdDev
+                                        utcOffset
+                                        v vN
+                                        vw vwN
+                                        sf se
+                                        reach
+                                        bonusReach
+                                        td
+                                        landedByStop
+                                        stillFlying
 
-                    el "tr" $ do
-                        el "td" $ text "f"
-                        el "td" $ text "Flying"
-                        elV . T.pack $ show flying
-                        elN . T.pack $ show flyingN
-                        elD $ showPilotsFlyingDiff flyingN flying
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text "ls"
-                        el "td" $ text "Landed before Stop"
-                        elV . T.pack $ show landed
-                        elN . T.pack $ show landedN
-                        elD $ showPilotsLandedDiff landedN landed
-                        return ()
-
-                    el "tr" $ do
-                        el "th" $ text "Distance"
-                        el "td" $ text "ed"
-                        el "td" $ text "Launch to ESS"
-                        elV $ showLaunchToEss ed
-                        elN $ showLaunchToEss edN
-                        elD $ showLaunchToEssDiff edN ed
-                        return ()
-
-                    el "tr" $ do
-                        elAttr "th" ("rowspan" =: "5") $ text "max"
-                        el "td" $ text ""
-                        el "td" $ text "Reach †"
-                        elV $ ""
-                        elN $ ""
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "th" $ text "Bolster ‡"
-                        elV $ showBestDistance flownMax
-                        elN $ showBestDistance flownMaxN
-                        elD $ showBestDistanceDiff flownMaxN flownMax
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Extra ‖"
-                        elV $ showBestDistance extraMax
-                        elN $ showBestDistance extraMaxN
-                        elD $ showBestDistanceDiff extraMaxN extraMax
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Working"
-                        elV $ showBestDistance flownMax
-                        elN $ showBestDistance flownMaxN
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Extra Working"
-                        elV $ showBestDistance extraMax
-                        elN $ showBestDistance extraMaxN
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        elAttr "th" ("rowspan" =: "6") $ text "μ"
-                        el "td" $ text ""
-                        el "td" $ text "Reach"
-                        elV $ showPilotDistance 3 reachMean <> " km"
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "th" $ text "Bolster"
-                        elV $ showPilotDistance 3 bolsterMean <> " km"
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Extra ‖ Reach"
-                        elV $ showPilotDistance 3 reachMeanE <> " km"
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "th" $ text "Extra Bolster"
-                        elV $ showPilotDistance 3 bolsterMeanE <> " km"
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Working"
-                        elV $ showPilotDistance 3 flownMean <> " km"
-                        elN $ showPilotDistance 3 flownMeanN <> " km"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Extra Working"
-                        elV $ showPilotDistance 3 extraMean <> " km"
-                        elN $ showPilotDistance 3 extraMeanN <> " km"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        elAttr "th" ("rowspan" =: "6") $ text "σ"
-                        el "td" $ text ""
-                        el "td" $ text "Reach"
-                        elV $ showPilotDistance 3 reachStdDev <> " km"
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "th" $ text "Bolster"
-                        elV $ showPilotDistance 3 bolsterStdDev <> " km"
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Extra Reach"
-                        elV $ showPilotDistance 3 reachStdDevE <> " km"
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "th" $ text "Extra Bolster"
-                        elV $ showPilotDistance 3 bolsterStdDevE <> " km"
-                        elN $ "n/a"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Working"
-                        elV $ showPilotDistance 3 flownStdDev <> " km"
-                        elN $ showPilotDistance 3 flownStdDevN <> " km"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Extra Working"
-                        elV $ showPilotDistance 3 extraStdDev <> " km"
-                        elN $ showPilotDistance 3 extraStdDevN <> " km"
-                        elD $ ""
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "th" $ text ""
-                        el "th" $ text "Stop Validity"
-                        elV $ Vy.showStopValidity sv
-                        elN $ Vy.showStopValidity svN
-                        elD $ Vy.showStopValidityDiff svN sv
-                        return ()
-
-                let tdFoot = elAttr "td" ("colspan" =: "6")
-                let foot = el "tr" . tdFoot . text
-
-                el "tfoot" $ do
-                    foot "† Reach as small as actually flown."
-                    foot "‡ Reach bolstered below to be no smaller than minimum distance."
-                    foot "‖ Extra altitude above goal converted to extra reach via glide."
-                    return ()
+            elClass "div" "tile is-ancestor" $ do
+                elClass "div" "tile is-12" $
+                    elClass "div" "tile" $
+                        elClass "div" "tile is-parent" $ do
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "Pilots, Distance & Validity"
+                                elClass "p" "subtitle" $ text "other stop validity formula inputs and the stop validity itself"
+                                elClass "div" "content" $
+                                    viewStopCounts
+                                        utcOffset
+                                        v vN
+                                        vw vwN
+                                        sf se
+                                        reach
+                                        bonusReach
+                                        td
+                                        landedByStop
+                                        stillFlying
 
             elAttr
                 "div"
