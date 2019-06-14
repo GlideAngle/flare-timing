@@ -212,8 +212,9 @@ viewStop
 
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
-            elClass "h2" "title is-4" . text
-                $ "Stop Validity = " <> Vy.showStopValidity sv
+            elClass "h2" "title is-4" $ do
+                elClass "span" "legend-stop" $ text "▩"
+                text $ " Stop Validity = " <> Vy.showStopValidity sv
 
             elClass "div" "tile is-ancestor" $ do
                 elClass "div" "tile is-12" $

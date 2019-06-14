@@ -56,12 +56,14 @@ viewTask
             el "tr" $ do
                 el "th" $ text ""
                 el "th" $ text ""
+                el "th" $ text ""
                 elClass "th" "validity" $ text "Validity"
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         el "tbody" $ do
             el "tr" $ do
+                el "td" $ elClass "span" "legend-launch" $ text "▩"
                 el "td" $ text "lv"
                 el "td" $ text "Launch"
                 elV $ Vy.showLaunchValidity lv
@@ -70,6 +72,7 @@ viewTask
                 return ()
 
             el "tr" $ do
+                el "td" $ elClass "span" "legend-reach" $ text "▩"
                 el "td" $ text "dv"
                 el "td" $ text "Distance"
                 elV $ Vy.showDistanceValidity dv
@@ -78,6 +81,7 @@ viewTask
                 return ()
 
             el "tr" $ do
+                el "td" $ elClass "span" "legend-time" $ text "▩"
                 el "td" $ text "tv"
                 el "td" $ text "Time"
                 elV $ Vy.showTimeValidity tv
@@ -86,6 +90,7 @@ viewTask
                 return ()
 
             el "tr" $ do
+                el "td" $ elClass "span" "legend-stop" $ text "▩"
                 el "td" $ text "sv"
                 el "td" $ text "Stop"
                 elV $ Vy.showStopValidity sv
@@ -94,6 +99,7 @@ viewTask
                 return ()
 
             el "tr" $ do
+                el "th" $ text ""
                 el "th" $ text ""
                 el "th" $ text "Task"
                 elV $ Vy.showTaskValidity dq
@@ -105,6 +111,7 @@ viewTask
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
+            foot "* Day quality."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
             return ()

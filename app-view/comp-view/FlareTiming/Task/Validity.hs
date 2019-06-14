@@ -98,15 +98,15 @@ viewValidity
                                         elClass "article" "tile is-child box" $ do
                                             elClass "h2" "title is-4" . text
                                                 $ "Task Validity* = " <> Vy.showTaskValidity dq
-                                            elClass "span" "level-item level-right" $
-                                                text "* Day Quality"
                                             elClass "div" "content"
                                                 $ viewTask v vN w
 
                                     elClass "div" "tile is-parent" $ do
                                         elClass "article" "tile is-child box" $ do
-                                            elClass "h2" "title is-4" . text
-                                                $ "Launch Validity = " <> Vy.showLaunchValidity lv
+                                            elClass "h2" "title is-4" $ do
+                                                elClass "span" "legend-launch" $ text "▩"
+                                                text $ " Launch Validity = " <> Vy.showLaunchValidity lv
+
                                             elClass "div" "content"
                                                 $ viewLaunch v vN w wN
 
@@ -115,15 +115,19 @@ viewValidity
                                 elClass "div" "tile" $ do
                                     elClass "div" "tile is-parent" $ do
                                         elClass "article" "tile is-child box" $ do
-                                            elClass "h2" "title is-4" . text
-                                                $ "Distance Validity = " <> Vy.showDistanceValidity dv
+                                            elClass "h2" "title is-4" $ do
+                                                elClass "span" "legend-reach" $ text "▩"
+                                                text $ " Distance Validity = " <> Vy.showDistanceValidity dv
+
                                             elClass "div" "content"
                                                 $ viewDistance v vN w wN
 
                                     elClass "div" "tile is-parent" $ do
                                         elClass "article" "tile is-child box" $ do
-                                            elClass "h2" "title is-4" . text
-                                                $ "Time Validity = " <> Vy.showTimeValidity tv
+                                            elClass "h2" "title is-4" $ do
+                                                elClass "span" "legend-time" $ text "▩"
+                                                text $ " Time Validity = " <> Vy.showTimeValidity tv
+
                                             elClass "div" "content"
                                                 $ viewTime v vN w wN
 

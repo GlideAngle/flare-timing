@@ -45,14 +45,14 @@ foreign import javascript unsafe
     \, data: [{\
     \    points: $2\
     \  , fnType: 'points'\
-    \  , color: '#e41a1c'\
+    \  , color: '#ff7f00'\
     \  , range: [0, $5]\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: [[$3, $4]]\
     \  , fnType: 'points'\
-    \  , color: '#e41a1c'\
+    \  , color: '#ff7f00'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
