@@ -136,105 +136,100 @@ viewDistance
                 }
         }
     = do
-    elClass "div" "card" $ do
-        elClass "div" "card-content" $ do
-            elClass "h2" "title is-4" . text
-                $ "Distance Validity = " <> Vy.showDistanceValidity dv
+    elClass "table" "table is-striped" $ do
+        el "thead" $ do
+            el "tr" $ do
+                elAttr "th" ("colspan" =: "3") $ text ""
+                elClass "th" "th-norm validity" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
-            elClass "table" "table is-striped" $ do
-                el "thead" $ do
-                    el "tr" $ do
-                        elAttr "th" ("colspan" =: "3") $ text ""
-                        elClass "th" "th-norm validity" $ text "✓"
-                        elClass "th" "th-norm th-diff" $ text "Δ"
+        el "tbody" $ do
+            el "tr" $ do
+                el "td" $ text "f"
+                el "td" $ text "Pilots Flying"
+                elV . T.pack $ show flying
+                elN . T.pack $ show flyingN
+                elD $ showPilotsFlyingDiff flyingN flying
+                return ()
 
-                el "tbody" $ do
-                    el "tr" $ do
-                        el "td" $ text "f"
-                        el "td" $ text "Pilots Flying"
-                        elV . T.pack $ show flying
-                        elN . T.pack $ show flyingN
-                        elD $ showPilotsFlyingDiff flyingN flying
-                        return ()
+            el "tr" $ do
+                el "td" $ text "ng"
+                el "td" $ text "Nominal Goal"
+                elV $ showNominalGoal ng
+                elN $ showNominalGoal ngN
+                elD $ showNominalGoalDiff ngN ng
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "ng"
-                        el "td" $ text "Nominal Goal"
-                        elV $ showNominalGoal ng
-                        elN $ showNominalGoal ngN
-                        elD $ showNominalGoalDiff ngN ng
-                        return ()
+            el "tr" $ do
+                el "td" $ text "sd"
+                el "td" $ text "Sum of Distance †"
+                elV $ showSumOfDistance sd
+                elN $ showSumOfDistance sdN
+                elD $ showSumOfDistanceDiff sdN sd
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "sd"
-                        el "td" $ text "Sum of Distance †"
-                        elV $ showSumOfDistance sd
-                        elN $ showSumOfDistance sdN
-                        elD $ showSumOfDistanceDiff sdN sd
-                        return ()
+            el "tr" $ do
+                el "td" $ text "nd"
+                el "td" $ text "Nominal Distance"
+                elV $ showNominalDistance nd
+                elN $ showNominalDistance ndN
+                elD $ showNominalDistanceDiff ndN nd
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "nd"
-                        el "td" $ text "Nominal Distance"
-                        elV $ showNominalDistance nd
-                        elN $ showNominalDistance ndN
-                        elD $ showNominalDistanceDiff ndN nd
-                        return ()
+            el "tr" $ do
+                el "td" $ text "md"
+                el "td" $ text "Minimum Distance"
+                elV $ showMinimumDistance md
+                elN $ showMinimumDistance mdN
+                elD $ showMinimumDistanceDiff mdN md
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "md"
-                        el "td" $ text "Minimum Distance"
-                        elV $ showMinimumDistance md
-                        elN $ showMinimumDistance mdN
-                        elD $ showMinimumDistanceDiff mdN md
-                        return ()
+            el "tr" $ do
+                el "td" $ text "bd"
+                el "td" $ text "Best Distance"
+                elV $ showMaximumDistance bd
+                elN $ showMaximumDistance bdN
+                elD $ showMaximumDistanceDiff bdN bd
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "bd"
-                        el "td" $ text "Best Distance"
-                        elV $ showMaximumDistance bd
-                        elN $ showMaximumDistance bdN
-                        elD $ showMaximumDistanceDiff bdN bd
-                        return ()
+            let aN =
+                    let NominalGoal ng' = ngN
+                        NominalDistance nd' = ndN
+                        MinimumDistance md' = mdN
+                    in (ng' + 1) * (nd' - md')
 
-                    let aN =
-                            let NominalGoal ng' = ngN
-                                NominalDistance nd' = ndN
-                                MinimumDistance md' = mdN
-                            in (ng' + 1) * (nd' - md')
+            let bN =
+                    let NominalGoal ng' = ngN
+                        NominalDistance nd' = ndN
+                        MaximumDistance bd' = bdN
+                    in max 0 $ ng'* (bd' - nd')
 
-                    let bN =
-                            let NominalGoal ng' = ngN
-                                NominalDistance nd' = ndN
-                                MaximumDistance bd' = bdN
-                            in max 0 $ ng'* (bd' - nd')
+            let areaN = NominalDistanceArea $ (aN + bN) / 2
 
-                    let areaN = NominalDistanceArea $ (aN + bN) / 2
+            el "tr" $ do
+                el "td" $ text "area"
+                el "th" $ text "Nominal Distance Area"
+                elV $ showNominalDistanceArea area
+                elN $ showNominalDistanceArea areaN
+                elD $ showNominalDistanceAreaDiff areaN area
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "area"
-                        el "th" $ text "Nominal Distance Area"
-                        elV $ showNominalDistanceArea area
-                        elN $ showNominalDistanceArea areaN
-                        elD $ showNominalDistanceAreaDiff areaN area
-                        return ()
+            el "tr" $ do
+                el "th" $ text ""
+                el "th" $ text "Distance Validity"
+                elV $ Vy.showDistanceValidity dv
+                elN $ Vy.showDistanceValidity dvN
+                elD $ Vy.showDistanceValidityDiff dvN dv
+                return ()
 
-                    el "tr" $ do
-                        el "th" $ text ""
-                        el "th" $ text "Distance Validity"
-                        elV $ Vy.showDistanceValidity dv
-                        elN $ Vy.showDistanceValidity dvN
-                        elD $ Vy.showDistanceValidityDiff dvN dv
-                        return ()
+        let tdFoot = elAttr "td" ("colspan" =: "5")
+        let foot = el "tr" . tdFoot . text
 
-                let tdFoot = elAttr "td" ("colspan" =: "5")
-                let foot = el "tr" . tdFoot . text
+        el "tfoot" $ foot "† The sum of flown distance further than minimum distance."
 
-                el "tfoot" $ foot "† The sum of flown distance further than minimum distance."
-
-            elAttr
-                "div"
-                ("id" =: "distance-working")
-                (text "")
+    elAttr
+        "div"
+        ("id" =: "distance-working")
+        (text "")
 
     return ()

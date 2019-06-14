@@ -7,7 +7,10 @@ import Reflex.Dom
 import qualified Data.Text as T (Text)
 import Data.List (partition)
 
-import qualified WireTypes.Validity as Vy (Validity(..))
+import qualified WireTypes.Validity as Vy
+    ( Validity(..)
+    , showTaskValidity, showLaunchValidity, showDistanceValidity, showTimeValidity
+    )
 import WireTypes.ValidityWorking (ValidityWorking(..))
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..))
@@ -52,8 +55,10 @@ viewValidity
     -> m ()
 viewValidity
     utcOffset task
-    vy vyNorm
-    vw vwNorm
+    vy
+    vyNorm
+    vw
+    vwNorm
     reachStats bonusStats
     reach bonusReach
     td flyingTimes = do
@@ -78,21 +83,49 @@ viewValidity
                     (_, _, _, _, Nothing, _, _) -> text "Loading reach stats ..."
                     (_, _, _, _, _, Nothing, _) -> text "Loading bonus reach stats ..."
                     (_, _, _, _, _, _, Nothing) -> text "Loading stopped task distance ..."
-                    (Just v, Just vN, Just w, Just wN, Just rStats, Just bStats, Just d) -> do
+                    (Just v@Vy.Validity{task = dq, launch = lv, distance = dv, time = tv}
+                        , Just vN, Just w, Just wN, Just rStats, Just bStats, Just d) -> do
                         elAttr
                             "a"
                             (("class" =: "button") <> ("onclick" =: hookWorking v w rStats d (length lo)))
                             (text "Show Working")
 
                         spacer
-                        viewTask v vN w
-                        spacer
-                        viewLaunch v vN w wN
-                        spacer
-                        viewDistance v vN w wN
-                        spacer
-                        viewTime v vN w wN
-                        spacer
+                        elClass "div" "tile is-ancestor" $ do
+                            elClass "div" "tile is-12" $
+                                elClass "div" "tile" $ do
+                                    elClass "div" "tile is-parent" $ do
+                                        elClass "article" "tile is-child box" $ do
+                                            elClass "h2" "title is-4" . text
+                                                $ "Task Validity* = " <> Vy.showTaskValidity dq
+                                            elClass "span" "level-item level-right" $
+                                                text "* Day Quality"
+                                            elClass "div" "content"
+                                                $ viewTask v vN w
+
+                                    elClass "div" "tile is-parent" $ do
+                                        elClass "article" "tile is-child box" $ do
+                                            elClass "h2" "title is-4" . text
+                                                $ "Launch Validity = " <> Vy.showLaunchValidity lv
+                                            elClass "div" "content"
+                                                $ viewLaunch v vN w wN
+
+                        elClass "div" "tile is-ancestor" $ do
+                            elClass "div" "tile is-12" $
+                                elClass "div" "tile" $ do
+                                    elClass "div" "tile is-parent" $ do
+                                        elClass "article" "tile is-child box" $ do
+                                            elClass "h2" "title is-4" . text
+                                                $ "Distance Validity = " <> Vy.showDistanceValidity dv
+                                            elClass "div" "content"
+                                                $ viewDistance v vN w wN
+
+                                    elClass "div" "tile is-parent" $ do
+                                        elClass "article" "tile is-child box" $ do
+                                            elClass "h2" "title is-4" . text
+                                                $ "Time Validity = " <> Vy.showTimeValidity tv
+                                            elClass "div" "content"
+                                                $ viewTime v vN w wN
 
                         viewStop
                             utcOffset

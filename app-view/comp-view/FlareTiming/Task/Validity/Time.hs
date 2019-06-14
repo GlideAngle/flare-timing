@@ -117,78 +117,73 @@ viewTime
                 }
         }
     = do
-    elClass "div" "card" $ do
-        elClass "div" "card-content" $ do
-            elClass "h2" "title is-4" . text
-                $ "Time Validity = " <> Vy.showTimeValidity tv
+    elClass "table" "table is-striped" $ do
+        el "thead" $ do
+            el "tr" $ do
+                elAttr "th" ("colspan" =: "3") $ text ""
+                elClass "th" "th-norm validity" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
-            elClass "table" "table is-striped" $ do
-                el "thead" $ do
-                    el "tr" $ do
-                        elAttr "th" ("colspan" =: "3") $ text ""
-                        elClass "th" "th-norm validity" $ text "✓"
-                        elClass "th" "th-norm th-diff" $ text "Δ"
+        el "tbody" $ do
+            el "tr" $ do
+                el "td" $ text ""
+                el "td" $ text "Section Best Time †"
+                elV $ showBestTime ssBestTime
+                elN $ ""
+                elD $ ""
+                return ()
 
-                el "tbody" $ do
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Section Best Time †"
-                        elV $ showBestTime ssBestTime
-                        elN $ ""
-                        elD $ ""
-                        return ()
+            el "tr" $ do
+                el "td" $ text "bt"
+                el "td" $ text "Gate Best Time ‡"
+                elV $ showBestTime bt
+                elN $ showBestTime btN
+                elD $ showBestTimeDiff btN bt
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "bt"
-                        el "td" $ text "Gate Best Time ‡"
-                        elV $ showBestTime bt
-                        elN $ showBestTime btN
-                        elD $ showBestTimeDiff btN bt
-                        return ()
+            el "tr" $ do
+                el "td" $ text "nt"
+                el "td" $ text "Nominal Time"
+                elV $ showNominalTime nt
+                elN $ showNominalTime ntN
+                elD $ showNominalTimeDiff ntN nt
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "nt"
-                        el "td" $ text "Nominal Time"
-                        elV $ showNominalTime nt
-                        elN $ showNominalTime ntN
-                        elD $ showNominalTimeDiff ntN nt
-                        return ()
+            el "tr" $ do
+                el "td" $ text "bd"
+                el "td" $ text "Best Distance"
+                elV $ showBestDistance bd <> " km"
+                elN $ showBestDistance bdN <> " km"
+                elD $ showBestDistanceDiff bdN bd
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "bd"
-                        el "td" $ text "Best Distance"
-                        elV $ showBestDistance bd <> " km"
-                        elN $ showBestDistance bdN <> " km"
-                        elD $ showBestDistanceDiff bdN bd
-                        return ()
+            el "tr" $ do
+                el "td" $ text "nd"
+                el "td" $ text "Nominal Distance"
+                elV $ showNominalDistance nd
+                elN $ showNominalDistance ndN
+                elD $ showNominalDistanceDiff ndN nd
+                return ()
 
-                    el "tr" $ do
-                        el "td" $ text "nd"
-                        el "td" $ text "Nominal Distance"
-                        elV $ showNominalDistance nd
-                        elN $ showNominalDistance ndN
-                        elD $ showNominalDistanceDiff ndN nd
-                        return ()
+            el "tr" $ do
+                el "th" $ text ""
+                el "th" $ text "Time Validity"
+                elV $ Vy.showTimeValidity tv
+                elN $ Vy.showTimeValidity tvN
+                elD $ Vy.showTimeValidityDiff tvN tv
+                return ()
 
-                    el "tr" $ do
-                        el "th" $ text ""
-                        el "th" $ text "Time Validity"
-                        elV $ Vy.showTimeValidity tv
-                        elN $ Vy.showTimeValidity tvN
-                        elD $ Vy.showTimeValidityDiff tvN tv
-                        return ()
+        let tdFoot = elAttr "td" ("colspan" =: "5")
+        let foot = el "tr" . tdFoot . text
 
-                let tdFoot = elAttr "td" ("colspan" =: "5")
-                let foot = el "tr" . tdFoot . text
+        el "tfoot" $ do
+            foot "† The best time ignoring start gates."
+            foot "‡ The best time from the start gate taken."
+            return ()
 
-                el "tfoot" $ do
-                    foot "† The best time ignoring start gates."
-                    foot "‡ The best time from the start gate taken."
-                    return ()
-
-            elAttr
-                "div"
-                ("id" =: "time-working")
-                (text "")
+    elAttr
+        "div"
+        ("id" =: "time-working")
+        (text "")
 
     return ()

@@ -69,57 +69,52 @@ viewLaunch
                 }
         }
     = do
-    elClass "div" "card" $ do
-        elClass "div" "card-content" $ do
-            elClass "h2" "title is-4" . text
-                $ "Launch Validity = " <> Vy.showLaunchValidity lv
+    elClass "table" "table is-striped" $ do
+        el "thead" $ do
+            el "tr" $ do
+                elAttr "th" ("colspan" =: "3") $ text ""
+                elClass "th" "th-norm validity" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
-            elClass "table" "table is-striped" $ do
-                el "thead" $ do
-                    el "tr" $ do
-                        elAttr "th" ("colspan" =: "3") $ text ""
-                        elClass "th" "th-norm validity" $ text "✓"
-                        elClass "th" "th-norm th-diff" $ text "Δ"
-
-                el "tbody" $ do
-                    el "tr" $ do
-                        el "td" $ text "f"
-                        el "td" $ text "Pilots Flying"
-                        elV . T.pack $ show flying
-                        elN . T.pack $ show flyingN
-                        elD $ showPilotsFlyingDiff flyingN flying
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text "p"
-                        el "td" $ text "Pilots Present"
-                        elV . T.pack $ show present
-                        elN . T.pack $ show presentN
-                        elD $ showPilotsPresentDiff presentN present
-                        return ()
-
-                    el "tr" $ do
-                        el "td" $ text "n"
-                        el "td" $ text "Nominal Launch"
-                        elV . T.pack $ show nominalLaunch
-                        elN . T.pack $ show nominalLaunchN
-                        elD $ showNominalLaunchDiff nominalLaunchN nominalLaunch
-                        return ()
-
-                    el "tr" $ do
-                        el "th" $ text ""
-                        el "th" $ text "Launch Validity"
-                        elV $ Vy.showLaunchValidity lv
-                        elN $ Vy.showLaunchValidity lvN
-                        elD $ Vy.showLaunchValidityDiff lvN lv
-                        return ()
-
+        el "tbody" $ do
+            el "tr" $ do
+                el "td" $ text "f"
+                el "td" $ text "Pilots Flying"
+                elV . T.pack $ show flying
+                elN . T.pack $ show flyingN
+                elD $ showPilotsFlyingDiff flyingN flying
                 return ()
 
-            elAttr
-                "div"
-                ("id" =: "launch-working")
-                (text "")
+            el "tr" $ do
+                el "td" $ text "p"
+                el "td" $ text "Pilots Present"
+                elV . T.pack $ show present
+                elN . T.pack $ show presentN
+                elD $ showPilotsPresentDiff presentN present
+                return ()
+
+            el "tr" $ do
+                el "td" $ text "n"
+                el "td" $ text "Nominal Launch"
+                elV . T.pack $ show nominalLaunch
+                elN . T.pack $ show nominalLaunchN
+                elD $ showNominalLaunchDiff nominalLaunchN nominalLaunch
+                return ()
+
+            el "tr" $ do
+                el "th" $ text ""
+                el "th" $ text "Launch Validity"
+                elV $ Vy.showLaunchValidity lv
+                elN $ Vy.showLaunchValidity lvN
+                elD $ Vy.showLaunchValidityDiff lvN lv
+                return ()
+
+        return ()
+
+    elAttr
+        "div"
+        ("id" =: "launch-working")
+        (text "")
 
     return ()
 
