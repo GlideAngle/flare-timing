@@ -239,7 +239,7 @@ viewStop
                         elClass "div" "tile is-parent" $
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Reach"
-                                elClass "p" "subtitle" $ text "reach at or before stop"
+                                elClass "p" "subtitle" $ text "best distance reached at or before stop"
                                 elClass "div" "content"
                                     $ tablePilotReach reach bonusReach
 
