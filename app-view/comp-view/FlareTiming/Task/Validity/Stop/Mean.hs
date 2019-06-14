@@ -109,5 +109,5 @@ viewStopMean
 
         el "tfoot" $ do
             foot "‖ As flown without extra."
-            foot "¶ Extra altitude above goal converted to extra reach via glide."
+            foot "¶ Glide down to goal altitude for extra reach."
             return ()
