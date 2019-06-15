@@ -94,13 +94,12 @@ distanceWorkingSubArea
         , nominalDistance = NominalDistance nd
         , minimumDistance = MinimumDistance md
         } =
-    " &= \\\\frac{("
+    " = \\\\frac{("
     <> (T.pack $ ppr a)
     <> " + "
     <> (T.pack $ ppr b)
     <> ")}{2}"
-    <> katexNewLine
-    <> " &= "
+    <> " = "
     <> (T.pack . ppr $ (a + b) / 2)
     where
         a = (ng + 1) * (nd - md)
@@ -112,15 +111,11 @@ distanceWorkingSubArea
 distanceWorkingSubValidity :: DistanceValidityWorking -> T.Text
 distanceWorkingSubValidity
     DistanceValidityWorking
-        { nominalGoal = NominalGoal ng
-        , bestDistance = MaximumDistance bd
-        , nominalDistance = NominalDistance nd
-        , minimumDistance = MinimumDistance md
-        , sum
+        { sum
         , flying
         , area
         } =
-    " &= \\\\min(1, \\\\frac{"
+    " = \\\\min(1, \\\\frac{"
     <> (T.pack $ show sum)
     <> "}{"
     <> (T.pack $ show flying)
@@ -135,11 +130,9 @@ distanceWorking v w =
     <> " sum"
     <> " &="
     <> " \\\\sum_p \\\\max(0, d_p - md)"
-    <> " &\\\\"
-    <> " d_p = \\\\text{distance flown by pilot \\\\textit{p}}"
-    <> katexNewLine
-    <> " &= "
+    <> " = "
     <> (T.pack . show $ sum w)
+    <> " &\\\\ d_p = \\\\text{distance flown by pilot \\\\textit{p}}"
     <> katexNewLine
     <> katexNewLine
     <> " a &= (ng + 1) * (nd - md)"
@@ -153,15 +146,12 @@ distanceWorking v w =
     <> katexNewLine
     <> katexNewLine
     <> "area &= \\\\frac{(a + b)}{2}"
-    <> katexNewLine
     <> distanceWorkingSubArea w
     <> katexNewLine
     <> katexNewLine
     <> " validity &= \\\\min(1, \\\\frac{sum}{f * area})"
-    <> katexNewLine
     <> distanceWorkingSubValidity w
-    <> katexNewLine
-    <> " &= "
+    <> " = "
     <> (Vy.showDistanceValidity . Vy.distance $ v)
     <> " \\\\end{aligned}\""
     <> ", getElementById('distance-working')"
