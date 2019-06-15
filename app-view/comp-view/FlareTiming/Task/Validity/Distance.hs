@@ -109,6 +109,25 @@ distanceWorkingSubArea
         ppr 0 = "0"
         ppr x = printf "%.3f" x
 
+distanceWorkingSubValidity :: DistanceValidityWorking -> T.Text
+distanceWorkingSubValidity
+    DistanceValidityWorking
+        { nominalGoal = NominalGoal ng
+        , bestDistance = MaximumDistance bd
+        , nominalDistance = NominalDistance nd
+        , minimumDistance = MinimumDistance md
+        , sum
+        , flying
+        , area
+        } =
+    " &= \\\\min(1, \\\\frac{"
+    <> (T.pack $ show sum)
+    <> "}{"
+    <> (T.pack $ show flying)
+    <> " * "
+    <> (T.pack $ show area)
+    <> "})"
+
 distanceWorking :: Vy.Validity -> DistanceValidityWorking -> T.Text
 distanceWorking v w =
     "katex.render("
@@ -138,8 +157,9 @@ distanceWorking v w =
     <> distanceWorkingSubArea w
     <> katexNewLine
     <> katexNewLine
-    <> " validity &="
-    <> " \\\\min(1, \\\\frac{sum}{f * area})"
+    <> " validity &= \\\\min(1, \\\\frac{sum}{f * area})"
+    <> katexNewLine
+    <> distanceWorkingSubValidity w
     <> katexNewLine
     <> " &= "
     <> (Vy.showDistanceValidity . Vy.distance $ v)
