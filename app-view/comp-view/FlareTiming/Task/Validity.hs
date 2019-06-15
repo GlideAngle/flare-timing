@@ -17,6 +17,7 @@ import WireTypes.Route (TaskDistance(..))
 import WireTypes.Reach (TrackReach(..), BolsterStats(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (MinimumDistance(..), Task(..), UtcOffset(..), TaskStop(..))
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import FlareTiming.Task.Validity.Widget (spacer)
 import FlareTiming.Task.Validity.Launch (viewLaunch, launchWorking)
 import FlareTiming.Task.Validity.Time (viewTime, timeWorking)
@@ -53,6 +54,7 @@ viewValidity
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe TaskDistance)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
 viewValidity
     utcOffset free task
@@ -60,7 +62,10 @@ viewValidity
     vw vwNorm
     reachStats bonusStats
     reach bonusReach
-    td flyingTimes = do
+    td
+    flyingTimes
+    sEx = do
+
     let (landedByStop, stillFlying) =
             splitDynPure
             $ ffor2 task (fromMaybe [] <$> flyingTimes) (\Task{stopped} ft ->
@@ -73,7 +78,7 @@ viewValidity
     _ <- dyn $ ffor2 vy vyNorm (\vy' vyNorm' ->
             dyn $ ffor2 vw vwNorm (\vw' vwNorm' ->
             dyn $ ffor2 reachStats bonusStats (\reachStats' bonusStats' ->
-            dyn $ ffor2 td landedByStop (\td' lo ->
+            dyn $ ffor3 td landedByStop sEx (\td' lo sEx' ->
                 case (vy', vyNorm', vw', vwNorm', reachStats', bonusStats', td') of
                     (Nothing, _, _, _, _, _, _) -> text "Loading validity ..."
                     (_, Nothing, _, _, _, _, _) -> text "Loading expected validity from FS ..."
@@ -141,6 +146,7 @@ viewValidity
                             (fromMaybe [] <$> bonusReach)
                             landedByStop
                             stillFlying
+                            sEx'
 
                         spacer
                         return ()))))

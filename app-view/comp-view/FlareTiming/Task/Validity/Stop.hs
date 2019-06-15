@@ -28,6 +28,7 @@ import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..))
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance)
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
 import FlareTiming.Pilot (showPilotName)
@@ -189,11 +190,12 @@ viewStop
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
+    -> [(Pilot, Norm.NormBreakdown)]
     -> m ()
-viewStop _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
-viewStop _ _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
-viewStop _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
-viewStop _ _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ = return ()
+viewStop _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
 viewStop
     utcOffset
     free
@@ -210,7 +212,8 @@ viewStop
     reach
     bonusReach
     landedByStop
-    stillFlying = do
+    stillFlying
+    sEx = do
 
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
@@ -243,7 +246,7 @@ viewStop
                                 elClass "p" "title" $ text "Reach"
                                 elClass "p" "subtitle" $ text "best distance reached at or before stop"
                                 elClass "div" "content"
-                                    $ tablePilotReach free reach bonusReach
+                                    $ tablePilotReach free reach bonusReach sEx
 
             elClass "div" "tile is-ancestor" $ do
                 elClass "div" "tile is-12" $
@@ -325,8 +328,9 @@ tablePilotReach
     => Dynamic t MinimumDistance
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
+    -> [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tablePilotReach free reach bonusReach = do
+tablePilotReach free reach bonusReach sEx = do
     let tdFoot = elAttr "td" ("colspan" =: "12")
     let foot = el "tr" . tdFoot . text
 
@@ -376,8 +380,9 @@ tablePilotReach free reach bonusReach = do
                     let ds' = zipWith (-) bs' rs'
 
                     let mapR = Map.fromList br
+                    let mapN = Map.fromList sEx
 
-                    _ <- simpleList reach (uncurry (rowReachBonus free' mapR) . splitDynPure)
+                    _ <- simpleList reach (uncurry (rowReachBonus free' mapN mapR) . splitDynPure)
                     let f = text . T.pack . printf "%.3f"
 
                     el "tr" $ do
@@ -496,15 +501,31 @@ tablePilotReach free reach bonusReach = do
 rowReachBonus
     :: MonadWidget t m
     => MinimumDistance
+    -> Map Pilot Norm.NormBreakdown
     -> Map Pilot TrackReach
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m ()
-rowReachBonus (MinimumDistance dMin) mapR p r = do
-    (reachF, bolsterF, reachE', bolsterE', reachDiff, bolsterDiff) <- sample . current
+rowReachBonus (MinimumDistance dMin) mapN mapR p r = do
+    (reachF
+        , bolsterF
+        , reachE
+        , bolsterE
+        , reachDiff
+        , bolsterDiff
+        , extraN
+        , bolsterN
+        , extraDiffN
+        , bolsterDiffN
+        ) <- sample . current
             $ ffor2 p r (\p' r' ->
-                case Map.lookup p' mapR of
-                    Just br ->
+                case (Map.lookup p' mapN, Map.lookup p' mapR) of
+                    (Just
+                        Norm.NormBreakdown
+                            { reachMade = bolsterN
+                            , reachExtra = extraN
+                            }
+                        , Just br) ->
                         let reachE@(PilotDistance dE) = reach br
                             reachF@(PilotDistance dF) = reach r'
 
@@ -517,26 +538,30 @@ rowReachBonus (MinimumDistance dMin) mapR p r = do
                             , showPilotDistance 3 $ bolsterE
                             , showPilotDistanceDiff reachF reachE
                             , showPilotDistanceDiff bolsterF bolsterE
+                            , showPilotDistance 3 $ extraN
+                            , showPilotDistance 3 $ bolsterN
+                            , showPilotDistanceDiff bolsterE extraN
+                            , showPilotDistanceDiff bolsterF bolsterN
                             )
 
-                    _ -> ("", "", "", "", "", ""))
+                    _ -> ("", "", "", "", "", "", "", "", "", ""))
 
     el "tr" $ do
         el "td" $ text ""
 
         elClass "td" "td-valid-reach" $ text reachF
-        elClass "td" "td-valid-reach-extra" $ text reachE'
+        elClass "td" "td-valid-reach-extra" $ text reachE
         elClass "td" "td-valid-reach-extra-diff" $ text reachDiff
 
         elClass "td" "td-valid-bolster" $ text bolsterF
 
-        elClass "td" "td-norm-bolster" $ text "✓"
-        elClass "td" "td-norm-bolster-diff" $ text "Δ"
+        elClass "td" "td-norm-bolster" $ text bolsterN
+        elClass "td" "td-norm-bolster-diff" $ text bolsterDiffN
 
-        elClass "td" "td-valid-bolster-extra" $ text bolsterE'
+        elClass "td" "td-valid-bolster-extra" $ text bolsterE
 
-        elClass "td" "td-norm-bolster-extra" $ text "✓"
-        elClass "td" "td-norm-bolster-extra-diff" $ text "Δ"
+        elClass "td" "td-norm-bolster-extra" $ text extraN
+        elClass "td" "td-norm-bolster-extra-diff" $ text extraDiffN
 
         elClass "td" "td-valid-bolster-extra-diff" $ text bolsterDiff
 

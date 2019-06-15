@@ -392,7 +392,8 @@ data NormBreakdown =
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
-        , distanceMade :: PilotDistance
+        , reachExtra :: PilotDistance
+        , reachMade :: PilotDistance
         , distanceFrac :: Double
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
