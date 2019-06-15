@@ -117,9 +117,6 @@ viewTask
             return ()
         return ()
 
-    elAttr
-        "div"
-        ("id" =: "task-working")
-        (text "")
+    elAttr "div" ("id" =: "task-working") $ text ""
 
     return ()

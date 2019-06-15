@@ -181,9 +181,6 @@ viewTime
             foot "‡ The best time from the start gate taken."
             return ()
 
-    elAttr
-        "div"
-        ("id" =: "time-working")
-        (text "")
+    elAttr "div" ("id" =: "time-working") $ text ""
 
     return ()

@@ -282,10 +282,7 @@ viewStop
                                 elClass "div" "content" $
                                     viewStopCounts v vN vw vwN
 
-            elAttr
-                "div"
-                ("id" =: "stop-working")
-                (text "")
+            elAttr "div" ("id" =: "stop-working") $ text ""
 
     return ()
 

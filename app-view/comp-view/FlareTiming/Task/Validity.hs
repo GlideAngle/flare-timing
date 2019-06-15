@@ -27,15 +27,23 @@ import FlareTiming.Task.Validity.Task (viewTask, taskWorking)
 
 hookWorking
     :: Vy.Validity
+    -> Vy.Validity
+    -> ValidityWorking
     -> ValidityWorking
     -> BolsterStats
     -> TaskDistance
     -> Int
     -> T.Text
-hookWorking v ValidityWorking{launch = l, distance = d, time = t} r td landed =
+hookWorking
+    v
+    vN
+    ValidityWorking{launch = l, distance = d, time = t}
+    ValidityWorking{distance = dN}
+    r td landed =
     taskWorking v
     <> launchWorking v l
-    <> distanceWorking v d
+    <> distanceWorking "distance-working" v d
+    <> distanceWorking "distance-working-norm" vN dN
     <> timeWorking v t
     <> stopWorking d t r td landed
 
@@ -91,7 +99,7 @@ viewValidity
                         , Just vN, Just w, Just wN, Just rStats, Just bStats, Just d) -> do
                         elAttr
                             "a"
-                            (("class" =: "button") <> ("onclick" =: hookWorking v w rStats d (length lo)))
+                            (("class" =: "button") <> ("onclick" =: hookWorking v vN w wN rStats d (length lo)))
                             (text "Show Working")
 
                         spacer

@@ -111,10 +111,7 @@ viewLaunch
 
         return ()
 
-    elAttr
-        "div"
-        ("id" =: "launch-working")
-        (text "")
+    elAttr "div" ("id" =: "launch-working") $ text ""
 
     return ()
 

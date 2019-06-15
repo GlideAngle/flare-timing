@@ -1,7 +1,16 @@
-module FlareTiming.Task.Validity.Widget (katexNewLine, spacer, elV, elN, elD) where
+module FlareTiming.Task.Validity.Widget
+    ( ElementId
+    , katexNewLine
+    , spacer
+    , elV
+    , elN
+    , elD
+    ) where
 
 import qualified Data.Text as T (Text)
 import Reflex.Dom
+
+type ElementId = T.Text
 
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "

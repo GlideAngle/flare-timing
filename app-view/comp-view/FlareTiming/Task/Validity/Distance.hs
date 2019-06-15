@@ -30,7 +30,8 @@ import WireTypes.ValidityWorking
     , showMinimumDistance, showMinimumDistanceDiff
     , showMaximumDistance, showMaximumDistanceDiff
     )
-import FlareTiming.Task.Validity.Widget (katexNewLine, elV, elN, elD)
+import FlareTiming.Task.Validity.Widget
+    (ElementId, katexNewLine, spacer, elV, elN, elD)
 
 distanceWorkingSubA :: DistanceValidityWorking -> T.Text
 distanceWorkingSubA
@@ -131,8 +132,12 @@ distanceWorkingSubValidity
         ppr 0 = "0"
         ppr x = printf "%.3f" x
 
-distanceWorking :: Vy.Validity -> DistanceValidityWorking -> T.Text
-distanceWorking v w =
+distanceWorking
+    :: ElementId
+    -> Vy.Validity
+    -> DistanceValidityWorking
+    -> T.Text
+distanceWorking elId v w =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " d_p &= \\\\text{distance flown by pilot \\\\textit{p}}"
@@ -163,7 +168,7 @@ distanceWorking v w =
     <> " = "
     <> (Vy.showDistanceValidity . Vy.distance $ v)
     <> " \\\\end{aligned}\""
-    <> ", getElementById('distance-working')"
+    <> ", getElementById('" <> elId <> "')"
     <> ", {throwOnError: false});"
 
 viewDistance
@@ -291,9 +296,8 @@ viewDistance
 
         el "tfoot" $ foot "† The sum of flown distance further than minimum distance."
 
-    elAttr
-        "div"
-        ("id" =: "distance-working")
-        (text "")
+    elAttr "div" ("id" =: "distance-working") $ text ""
+    spacer
+    elAttr "div" ("id" =: "distance-working-norm") $ text ""
 
     return ()
