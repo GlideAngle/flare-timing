@@ -3,6 +3,7 @@
 module Flight.Fsdb.TaskScore (parseScores) where
 
 import Prelude hiding (max)
+import qualified Prelude as Stats (max)
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
 import Data.List (unzip5)
@@ -276,7 +277,10 @@ xpDistanceValidityWorking
     -> NominalDistance (Quantity Double [u| km |])
     -> MinimumDistance (Quantity Double [u| km |])
     -> PU DistanceValidityWorking
-xpDistanceValidityWorking ng nd md =
+xpDistanceValidityWorking
+    ng'@(NominalGoal ngR)
+    nd'@(NominalDistance (MkQuantity nd))
+    md'@(MinimumDistance (MkQuantity md)) =
     xpElem "FsTaskScoreParams"
     $ xpFilterCont(isAttr)
     $ xpFilterAttr
@@ -289,10 +293,13 @@ xpDistanceValidityWorking ng nd md =
             DistanceValidityWorking
                 { sum = SumOfDistance $ MkQuantity sd
                 , flying = PilotsFlying $ fromIntegral pf
-                , area = NominalDistanceArea 0
-                , nominalGoal = ng
-                , nominalDistance = nd
-                , minimumDistance = md
+                , area =
+                    let a :: Double = (ng + 1) * (nd - md)
+                        b :: Double = Stats.max 0 $ ng * (bd - nd)
+                    in NominalDistanceArea . toRational $ (a + b) / 2
+                , nominalGoal = ng'
+                , nominalDistance = nd'
+                , minimumDistance = md'
                 , bestDistance = MaximumDistance $ MkQuantity bd
                 }
         , \DistanceValidityWorking
@@ -306,6 +313,8 @@ xpDistanceValidityWorking ng nd md =
         (xpAttr "sum_real_dist_over_min" xpPrim)
         (xpAttr "no_of_pilots_flying" xpInt)
         (xpAttr "best_dist" xpPrim)
+    where
+        ng = fromRational ngR
 
 xpStopValidityWorking :: PU StopValidityWorking
 xpStopValidityWorking =
