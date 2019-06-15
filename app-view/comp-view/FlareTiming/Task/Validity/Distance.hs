@@ -160,8 +160,7 @@ distanceWorking v w =
     <> katexNewLine
     <> " validity &= \\\\min(1, \\\\frac{sum}{f * area})"
     <> distanceWorkingSubValidity w
-    <> katexNewLine
-    <> " &= "
+    <> " = "
     <> (Vy.showDistanceValidity . Vy.distance $ v)
     <> " \\\\end{aligned}\""
     <> ", getElementById('distance-working')"
