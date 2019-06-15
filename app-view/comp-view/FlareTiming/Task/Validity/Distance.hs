@@ -4,6 +4,7 @@ module FlareTiming.Task.Validity.Distance
     ) where
 
 import Prelude hiding (sum)
+import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
@@ -32,33 +33,58 @@ import FlareTiming.Task.Validity.Widget (katexNewLine, elV, elN, elD)
 distanceWorkingSubA :: DistanceValidityWorking -> T.Text
 distanceWorkingSubA
     DistanceValidityWorking
-        { nominalGoal = ng
-        , nominalDistance = nd
-        , minimumDistance = md
+        { nominalGoal = ng'@(NominalGoal ng)
+        , nominalDistance = nd'@(NominalDistance nd)
+        , minimumDistance = md'@(MinimumDistance md)
         } =
     " &= ("
-    <> (T.pack . show $ ng)
+    <> (T.pack . show $ ng')
     <> " + 1) * ("
-    <> (T.pack . show $ nd)
+    <> (T.pack . show $ nd')
     <> " - "
-    <> (T.pack . show $ md)
+    <> (T.pack . show $ md')
     <> ")"
+    <> katexNewLine
+    <> " &= "
+    <> (T.pack . ppr $ ng + 1)
+    <> " * "
+    <> (T.pack . ppr $ nd - md)
+    <> katexNewLine
+    <> " &= "
+    <> (T.pack . ppr $ (ng + 1) * (nd - md))
+    where
+        ppr = printf "%.3f"
 
 distanceWorkingSubB :: DistanceValidityWorking -> T.Text
 distanceWorkingSubB
     DistanceValidityWorking
-        { nominalGoal = ng
-        , bestDistance = bd
-        , nominalDistance = nd
+        { nominalGoal = ng'@(NominalGoal ng)
+        , bestDistance = bd'@(MaximumDistance bd)
+        , nominalDistance = nd'@(NominalDistance nd)
         } =
-    " &="
-    <> " \\\\max(0, "
-    <> (T.pack . show $ ng)
+    " &= \\\\max(0, "
+    <> (T.pack . show $ ng')
     <> " * ("
-    <> (T.pack . show $ bd)
+    <> (T.pack . show $ bd')
     <> " - "
-    <> (T.pack . show $ nd)
+    <> (T.pack . show $ nd')
+    <> "))"
+    <> katexNewLine
+    <> " &= \\\\max(0, "
+    <> (T.pack . show $ ng)
+    <> " * "
+    <> (T.pack . ppr $ bd - nd)
     <> ")"
+    <> katexNewLine
+    <> " &= \\\\max(0, "
+    <> (T.pack . ppr $ ng * (bd - nd))
+    <> ")"
+    <> katexNewLine
+    <> " &= "
+    <> (T.pack . ppr $ max 0 (ng * (bd - nd)))
+    where
+        ppr 0 = "0"
+        ppr x = printf "%.3f" x
 
 distanceWorking :: Vy.Validity -> DistanceValidityWorking -> T.Text
 distanceWorking v w =
@@ -80,7 +106,7 @@ distanceWorking v w =
     <> katexNewLine
     <> katexNewLine
     <> " b &="
-    <> " \\\\max(0, ng * (bd - nd)"
+    <> " \\\\max(0, ng * (bd - nd))"
     <> katexNewLine
     <> distanceWorkingSubB w
     <> katexNewLine
