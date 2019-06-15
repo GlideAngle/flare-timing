@@ -86,6 +86,29 @@ distanceWorkingSubB
         ppr 0 = "0"
         ppr x = printf "%.3f" x
 
+distanceWorkingSubArea :: DistanceValidityWorking -> T.Text
+distanceWorkingSubArea
+    DistanceValidityWorking
+        { nominalGoal = NominalGoal ng
+        , bestDistance = MaximumDistance bd
+        , nominalDistance = NominalDistance nd
+        , minimumDistance = MinimumDistance md
+        } =
+    " &= \\\\frac{("
+    <> (T.pack $ ppr a)
+    <> " + "
+    <> (T.pack $ ppr b)
+    <> ")}{2}"
+    <> katexNewLine
+    <> " &= "
+    <> (T.pack . ppr $ (a + b) / 2)
+    where
+        a = (ng + 1) * (nd - md)
+        b = max 0 $ ng * (bd - nd)
+
+        ppr 0 = "0"
+        ppr x = printf "%.3f" x
+
 distanceWorking :: Vy.Validity -> DistanceValidityWorking -> T.Text
 distanceWorking v w =
     "katex.render("
@@ -105,18 +128,14 @@ distanceWorking v w =
     <> distanceWorkingSubA w
     <> katexNewLine
     <> katexNewLine
-    <> " b &="
-    <> " \\\\max(0, ng * (bd - nd))"
+    <> " b &= \\\\max(0, ng * (bd - nd))"
     <> katexNewLine
     <> distanceWorkingSubB w
     <> katexNewLine
     <> katexNewLine
-    <> "area"
-    <> " &="
-    <> "\\\\frac{(a + b)}{2}"
+    <> "area &= \\\\frac{(a + b)}{2}"
     <> katexNewLine
-    <> " &= "
-    <> (T.pack . show $ area w)
+    <> distanceWorkingSubArea w
     <> katexNewLine
     <> katexNewLine
     <> " validity &="
