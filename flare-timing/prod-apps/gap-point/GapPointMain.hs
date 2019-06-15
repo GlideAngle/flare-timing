@@ -4,7 +4,6 @@
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
-import Data.Coerce (coerce)
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
 import Data.Maybe (fromMaybe, catMaybes)
@@ -418,11 +417,11 @@ points'
                     ssT
                     gsT
                     dNom
-                    (coerce b)
+                    (BestDistance $ convert b)
 
                 | ssT <- f ssBestTime
                 | gsT <- f gsBestTime
-                | ReachStats{max = b} <- extraStats
+                | ReachStats{max = FlownMax b} <- extraStats
                 ]
 
         workings :: [Maybe ValidityWorking] =
@@ -661,10 +660,10 @@ points'
             [ maybe
                 []
                 (\ps' ->
-                    let bd = Just $ coerce b in
+                    let bd = Just . TaskDistance $ convert b in
                     (fmap . fmap) (applyLinear free bd ps') ds)
                 ps
-            | ReachStats{max = b} <- extraStats
+            | ReachStats{max = FlownMax b} <- extraStats
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDf
             ]
@@ -673,10 +672,10 @@ points'
             [ maybe
                 []
                 (\ps' ->
-                    let bd = Just $ coerce b in
+                    let bd = Just . TaskDistance $ convert b in
                     (fmap . fmap) (applyLinear free bd ps') ds)
                 ps
-            | ReachStats{max = b} <- extraStats
+            | ReachStats{max = FlownMax b} <- extraStats
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDfNoTrack
             ]
