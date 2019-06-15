@@ -354,13 +354,13 @@ tablePilotReach free reach bonusReach sEx = do
 
                     elClass "th" "th-valid-bolster" $ text "Flown"
 
-                    elClass "th" "th-norm-bolster" $ text "✓"
-                    elClass "th" "th-norm-bolster-diff" $ text "Δ"
+                    elClass "th" "th-norm bolster" $ text "✓"
+                    elClass "th" "th-norm bolster-diff" $ text "Δ"
 
                     elClass "th" "th-valid-bolster-extra" $ text "Extra"
 
-                    elClass "th" "th-norm-bolster-extra" $ text "✓"
-                    elClass "th" "th-norm-bolster-extra-diff" $ text "Δ"
+                    elClass "th" "th-norm bolster-extra" $ text "✓"
+                    elClass "th" "th-norm bolster-extra-diff" $ text "Δ"
 
                     elClass "th" "th-valid-bolster-extra-diff" $ text "Δ"
 
@@ -397,14 +397,14 @@ tablePilotReach free reach bonusReach sEx = do
                         elClass "td" "td-valid-bolster" . f
                             $ Stats.sum rs'
 
-                        elClass "td" "td-norm-bolster" $ text "✓"
-                        elClass "td" "td-norm-bolster-diff" $ text "Δ"
+                        elClass "td" "td-norm bolster" $ text "✓"
+                        elClass "td" "td-norm bolster-diff" $ text "Δ"
 
                         elClass "td" "td-valid-bolster-extra" . f
                             $ Stats.sum bs'
 
-                        elClass "td" "td-norm-bolster-extra" $ text "✓"
-                        elClass "td" "td-norm-bolster-extra-diff" $ text "Δ"
+                        elClass "td" "td-norm bolster-extra" $ text "✓"
+                        elClass "td" "td-norm bolster-extra-diff" $ text "Δ"
 
                         elClass "td" "td-valid-bolster-extra-diff" . f
                             $ Stats.sum ds'
@@ -424,14 +424,14 @@ tablePilotReach free reach bonusReach sEx = do
                         elClass "td" "valid-max td-valid-bolster" . f
                             $ maximum rs'
 
-                        elClass "td" "td-norm-bolster" $ text "✓"
-                        elClass "td" "td-norm-bolster-diff" $ text "Δ"
+                        elClass "td" "td-norm bolster" $ text "✓"
+                        elClass "td" "td-norm bolster-diff" $ text "Δ"
 
                         elClass "td" "valid-max td-valid-bolster-extra" . f
                             $ maximum bs'
 
-                        elClass "td" "td-norm-bolster-extra" $ text "✓"
-                        elClass "td" "td-norm-bolster-extra-diff" $ text "Δ"
+                        elClass "td" "td-norm bolster-extra" $ text "✓"
+                        elClass "td" "td-norm bolster-extra-diff" $ text "Δ"
 
                         elClass "td" "valid-max td-valid-bolster-extra-diff" . f
                             $ maximum ds'
@@ -450,14 +450,14 @@ tablePilotReach free reach bonusReach sEx = do
                         elClass "td" "valid-μ td-valid-bolster" . f
                             $ Stats.mean rs'
 
-                        elClass "td" "td-norm-bolster" $ text "✓"
-                        elClass "td" "td-norm-bolster-diff" $ text "Δ"
+                        elClass "td" "td-norm bolster" $ text "✓"
+                        elClass "td" "td-norm bolster-diff" $ text "Δ"
 
                         elClass "td" "valid-μ td-valid-bolster-extra" . f
                             $ Stats.mean bs'
 
-                        elClass "td" "td-norm-bolster-extra" $ text "✓"
-                        elClass "td" "td-norm-bolster-extra-diff" $ text "Δ"
+                        elClass "td" "td-norm bolster-extra" $ text "✓"
+                        elClass "td" "td-norm bolster-extra-diff" $ text "Δ"
 
                         elClass "td" "valid-μ td-valid-bolster-extra-diff" . f
                             $ Stats.mean ds'
@@ -476,14 +476,14 @@ tablePilotReach free reach bonusReach sEx = do
                         elClass "td" "valid-σ td-valid-bolster" . f
                             $ Stats.stdDev rs'
 
-                        elClass "td" "td-norm-bolster" $ text "✓"
-                        elClass "td" "td-norm-bolster-diff" $ text "Δ"
+                        elClass "td" "td-norm bolster" $ text "✓"
+                        elClass "td" "td-norm bolster-diff" $ text "Δ"
 
                         elClass "td" "valid-σ td-valid-bolster-extra" . f
                             $ Stats.stdDev bs'
 
-                        elClass "td" "td-norm-bolster-extra" $ text "✓"
-                        elClass "td" "td-norm-bolster-extra-diff" $ text "Δ"
+                        elClass "td" "td-norm bolster-extra" $ text "✓"
+                        elClass "td" "td-norm bolster-extra-diff" $ text "Δ"
 
                         elClass "td" "valid-σ td-valid-bolster-extra-diff" . f
                             $ Stats.stdDev ds'
@@ -555,13 +555,13 @@ rowReachBonus (MinimumDistance dMin) mapN mapR p r = do
 
         elClass "td" "td-valid-bolster" $ text bolsterF
 
-        elClass "td" "td-norm-bolster" $ text bolsterN
-        elClass "td" "td-norm-bolster-diff" $ text bolsterDiffN
+        elClass "td" "td-norm bolster" $ text bolsterN
+        elClass "td" "td-norm bolster-diff" $ text bolsterDiffN
 
         elClass "td" "td-valid-bolster-extra" $ text bolsterE
 
-        elClass "td" "td-norm-bolster-extra" $ text extraN
-        elClass "td" "td-norm-bolster-extra-diff" $ text extraDiffN
+        elClass "td" "td-norm bolster-extra" $ text extraN
+        elClass "td" "td-norm bolster-extra-diff" $ text extraDiffN
 
         elClass "td" "td-valid-bolster-extra-diff" $ text bolsterDiff
 
