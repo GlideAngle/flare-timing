@@ -120,7 +120,7 @@ distanceWorkingSubValidity
     <> "}{"
     <> (T.pack $ show flying)
     <> " * "
-    <> (T.pack $ show area)
+    <> (showNominalDistanceArea area)
     <> "})"
 
 distanceWorking :: Vy.Validity -> DistanceValidityWorking -> T.Text
