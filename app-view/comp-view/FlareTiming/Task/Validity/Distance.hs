@@ -20,6 +20,8 @@ import WireTypes.ValidityWorking
     , MaximumDistance(..)
     , NominalDistance(..)
     , NominalDistanceArea(..)
+    , SumOfDistance(..)
+    , PilotsFlying(..)
     , showPilotsFlyingDiff
     , showNominalGoal, showNominalGoalDiff
     , showSumOfDistance, showSumOfDistanceDiff
@@ -111,28 +113,35 @@ distanceWorkingSubArea
 distanceWorkingSubValidity :: DistanceValidityWorking -> T.Text
 distanceWorkingSubValidity
     DistanceValidityWorking
-        { sum
-        , flying
-        , area
+        { sum = sum'@(SumOfDistance sd)
+        , flying = flying'@(PilotsFlying pf)
+        , area = area'@(NominalDistanceArea area)
         } =
     " = \\\\min(1, \\\\frac{"
-    <> (T.pack $ show sum)
+    <> (T.pack $ show sum')
     <> "}{"
-    <> (T.pack $ show flying)
+    <> (T.pack $ show flying')
     <> " * "
-    <> (showNominalDistanceArea area)
+    <> (showNominalDistanceArea area')
     <> "})"
+    <> " = \\\\min(1, "
+    <> (T.pack . ppr $ sd / (fromIntegral pf * area))
+    <> ")"
+    where
+        ppr 0 = "0"
+        ppr x = printf "%.3f" x
 
 distanceWorking :: Vy.Validity -> DistanceValidityWorking -> T.Text
 distanceWorking v w =
     "katex.render("
     <> "\"\\\\begin{aligned} "
+    <> " d_p &= \\\\text{distance flown by pilot \\\\textit{p}}"
+    <> katexNewLine
     <> " sum"
     <> " &="
     <> " \\\\sum_p \\\\max(0, d_p - md)"
     <> " = "
     <> (T.pack . show $ sum w)
-    <> " &\\\\ d_p = \\\\text{distance flown by pilot \\\\textit{p}}"
     <> katexNewLine
     <> katexNewLine
     <> " a &= (ng + 1) * (nd - md)"
@@ -151,7 +160,8 @@ distanceWorking v w =
     <> katexNewLine
     <> " validity &= \\\\min(1, \\\\frac{sum}{f * area})"
     <> distanceWorkingSubValidity w
-    <> " = "
+    <> katexNewLine
+    <> " &= "
     <> (Vy.showDistanceValidity . Vy.distance $ v)
     <> " \\\\end{aligned}\""
     <> ", getElementById('distance-working')"
