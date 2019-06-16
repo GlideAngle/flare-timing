@@ -29,31 +29,10 @@ import WireTypes.Point
     , LeadingPoints(..)
     , TimePoints(..)
     )
-import Data.Ratio.Rounding (dpRound)
+import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
 textf :: String -> Double -> T.Text
 textf fmt d = T.pack $ printf fmt d
-
-katexNewLine :: T.Text
-katexNewLine = " \\\\\\\\ "
-
-newtype Expect a = Expect a
-newtype Recalc a = Recalc a
-
-katexCheck :: Integer -> Recalc Double -> Expect Double -> T.Text
-katexCheck dp (Recalc x') (Expect y') =
-    if (printf "%.*f" dp x :: String) == printf "%.*f" dp y
-        then " \\\\color{blue}\\\\checkmark"
-        else " \\\\color{red}\\\\neq " <> (T.pack $ printf "%.*f" dp y)
-    where
-        -- WARNING: The rounding of printf may not be as you expect.
-        -- > printf "%.3f, %.3f" 0.37251 0.3725
-        -- 0.373, 0.372
-        f :: Double -> Double
-        f = fromRational . dpRound dp . toRational
-
-        x = f x'
-        y = f y'
 
 hookWorking
     :: Discipline

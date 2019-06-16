@@ -18,7 +18,8 @@ import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
     )
-import FlareTiming.Task.Validity.Widget (katexNewLine, elV, elN, elD)
+import FlareTiming.Task.Validity.Widget (elV, elN, elD)
+import FlareTiming.Katex (katexNewLine)
 
 taskWorking :: Vy.Validity -> T.Text
 taskWorking v =

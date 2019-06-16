@@ -21,7 +21,8 @@ import WireTypes.ValidityWorking
     , showBestDistance, showBestDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
     )
-import FlareTiming.Task.Validity.Widget (katexNewLine, elV, elN, elD)
+import FlareTiming.Task.Validity.Widget (elV, elN, elD)
+import FlareTiming.Katex (katexNewLine)
 
 timeWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
 timeWorkingCase (Just _) = " &= \\\\dfrac{bt}{nt}"

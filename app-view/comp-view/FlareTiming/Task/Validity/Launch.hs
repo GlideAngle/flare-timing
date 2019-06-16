@@ -17,7 +17,8 @@ import WireTypes.ValidityWorking
     , showPilotsFlyingDiff
     , showNominalLaunchDiff
     )
-import FlareTiming.Task.Validity.Widget (katexNewLine, elV, elN, elD)
+import FlareTiming.Task.Validity.Widget (elV, elN, elD)
+import FlareTiming.Katex (katexNewLine)
 
 launchWorking :: Vy.Validity -> LaunchValidityWorking -> T.Text
 launchWorking v w@LaunchValidityWorking{flying = f} =

@@ -1,6 +1,5 @@
 module FlareTiming.Task.Validity.Widget
     ( ElementId
-    , katexNewLine
     , spacer
     , elV
     , elN
@@ -11,9 +10,6 @@ import qualified Data.Text as T (Text)
 import Reflex.Dom
 
 type ElementId = T.Text
-
-katexNewLine :: T.Text
-katexNewLine = " \\\\\\\\ "
 
 spacer :: DomBuilder t m => m ()
 spacer = elClass "div" "spacer" $ return ()
