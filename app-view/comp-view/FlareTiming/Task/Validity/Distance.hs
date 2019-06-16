@@ -198,6 +198,7 @@ viewDistance
             DistanceValidityWorking
                 { sum = sdN
                 , flying = flyingN
+                , area = areaN
                 , nominalGoal = ngN
                 , nominalDistance = ndN
                 , minimumDistance = mdN
@@ -260,20 +261,6 @@ viewDistance
                 elN $ showMaximumDistance bdN
                 elD $ showMaximumDistanceDiff bdN bd
                 return ()
-
-            let aN =
-                    let NominalGoal ng' = ngN
-                        NominalDistance nd' = ndN
-                        MinimumDistance md' = mdN
-                    in (ng' + 1) * (nd' - md')
-
-            let bN =
-                    let NominalGoal ng' = ngN
-                        NominalDistance nd' = ndN
-                        MaximumDistance bd' = bdN
-                    in max 0 $ ng'* (bd' - nd')
-
-            let areaN = NominalDistanceArea $ (aN + bN) / 2
 
             el "tr" $ do
                 el "td" $ text "area"
