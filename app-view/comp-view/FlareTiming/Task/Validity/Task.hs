@@ -3,11 +3,17 @@ module FlareTiming.Task.Validity.Task
     , taskWorking
     ) where
 
+import Text.Printf (printf)
 import Reflex.Dom
-import qualified Data.Text as T (Text)
+import qualified Data.Text as T (Text, pack)
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
+    , TaskValidity(..)
+    , LaunchValidity(..)
+    , DistanceValidity(..)
+    , TimeValidity(..)
+    , StopValidity(..)
     , showTaskValidity, showTaskValidityDiff
     , showLaunchValidity, showLaunchValidityDiff
     , showDistanceValidity, showDistanceValidityDiff
@@ -19,10 +25,16 @@ import WireTypes.ValidityWorking
     , LaunchValidityWorking(..)
     )
 import FlareTiming.Task.Validity.Widget (elV, elN, elD)
-import FlareTiming.Katex (katexNewLine)
+import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
 taskWorking :: Vy.Validity -> T.Text
-taskWorking v =
+taskWorking
+    v@Vy.Validity
+        { task = Vy.TaskValidity dq
+        , launch = Vy.LaunchValidity lv
+        , distance = Vy.DistanceValidity dv
+        , time = Vy.TimeValidity tv
+        } =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> "validity &= lv * dv * tv"
@@ -37,10 +49,17 @@ taskWorking v =
     <> (maybe "" (\sv -> " * " <> (Vy.showStopValidity $ Just sv)) (Vy.stop v))
     <> katexNewLine
     <> " &= "
-    <> (Vy.showTaskValidity . Vy.task $ v)
+    <> (T.pack $ ppr dq)
+    <> katexCheck 3 (Recalc dq') (Expect dq)
     <> " \\\\end{aligned}\""
     <> ", getElementById('task-working')"
     <> ", {throwOnError: false});"
+    where
+        dqUnStop = lv * dv * tv
+        dq' = dqUnStop * maybe 1 (\(Vy.StopValidity sv) -> sv) (Vy.stop v)
+
+        ppr 0 = "0"
+        ppr x = printf "%.3f" x
 
 viewTask
     :: DomBuilder t m

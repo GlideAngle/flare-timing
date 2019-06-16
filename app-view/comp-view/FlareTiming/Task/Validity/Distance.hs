@@ -10,6 +10,7 @@ import qualified Data.Text as T (Text, pack)
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
+    , DistanceValidity(..)
     , showDistanceValidity, showDistanceValidityDiff
     )
 import WireTypes.ValidityWorking
@@ -31,7 +32,7 @@ import WireTypes.ValidityWorking
     , showMaximumDistance, showMaximumDistanceDiff
     )
 import FlareTiming.Task.Validity.Widget (ElementId, spacer, elV, elN, elD)
-import FlareTiming.Katex (katexNewLine)
+import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
 distanceWorkingSubA :: DistanceValidityWorking -> T.Text
 distanceWorkingSubA
@@ -111,8 +112,9 @@ distanceWorkingSubArea
         ppr 0 = "0"
         ppr x = printf "%.3f" x
 
-distanceWorkingSubValidity :: DistanceValidityWorking -> T.Text
+distanceWorkingSubValidity :: Vy.Validity -> DistanceValidityWorking -> T.Text
 distanceWorkingSubValidity
+    Vy.Validity{distance = Vy.DistanceValidity dv}
     DistanceValidityWorking
         { sum = sum'@(SumOfDistance sd)
         , flying = flying'@(PilotsFlying pf)
@@ -126,9 +128,15 @@ distanceWorkingSubValidity
     <> (showNominalDistanceArea area')
     <> "})"
     <> " = \\\\min(1, "
-    <> (T.pack . ppr $ sd / (fromIntegral pf * area))
+    <> (T.pack $ ppr dvUnbound)
     <> ")"
+    <> " = "
+    <> (T.pack $ ppr dv')
+    <> katexCheck 3 (Recalc dv') (Expect dv)
     where
+        dvUnbound = sd / (fromIntegral pf * area)
+        dv' = min 1 dvUnbound
+
         ppr 0 = "0"
         ppr x = printf "%.3f" x
 
@@ -164,9 +172,7 @@ distanceWorking elId v w =
     <> katexNewLine
     <> katexNewLine
     <> " validity &= \\\\min(1, \\\\frac{sum}{f * area})"
-    <> distanceWorkingSubValidity w
-    <> " = "
-    <> (Vy.showDistanceValidity . Vy.distance $ v)
+    <> distanceWorkingSubValidity v w
     <> " \\\\end{aligned}\""
     <> ", getElementById('" <> elId <> "')"
     <> ", {throwOnError: false});"
