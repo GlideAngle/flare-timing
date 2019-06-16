@@ -13,7 +13,6 @@ import qualified WireTypes.Validity as Vy
     )
 import WireTypes.ValidityWorking (ValidityWorking(..))
 import WireTypes.Cross (FlyingSection)
-import WireTypes.Route (TaskDistance(..))
 import WireTypes.Reach (TrackReach(..), BolsterStats(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (MinimumDistance(..), Task(..), UtcOffset(..), TaskStop(..))
@@ -31,14 +30,13 @@ hookWorking
     -> ValidityWorking
     -> ValidityWorking
     -> BolsterStats
-    -> TaskDistance
     -> T.Text
 hookWorking
     v
     vN
     ValidityWorking{launch = l, distance = d, time = t, stop = s}
     ValidityWorking{launch = lN, distance = dN, time = tN}
-    r td =
+    r =
     taskWorking "task-working" v
     <> taskWorking "task-working-norm" vN
     <> launchWorking "launch-working" v l
@@ -47,7 +45,7 @@ hookWorking
     <> distanceWorking "distance-working-norm" vN dN
     <> timeWorking "time-working" v t
     <> timeWorking "time-working-norm" vN tN
-    <> maybe "" (\s' -> stopWorking s' d t r td) s
+    <> maybe "" (\s' -> stopWorking s' d t r) s
 
 viewValidity
     :: MonadWidget t m
@@ -62,7 +60,6 @@ viewValidity
     -> Dynamic t (Maybe BolsterStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
-    -> Dynamic t (Maybe TaskDistance)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
@@ -72,7 +69,6 @@ viewValidity
     vw vwNorm
     reachStats bonusStats
     reach bonusReach
-    td
     flyingTimes
     sEx = do
 
@@ -88,20 +84,19 @@ viewValidity
     _ <- dyn $ ffor2 vy vyNorm (\vy' vyNorm' ->
             dyn $ ffor2 vw vwNorm (\vw' vwNorm' ->
             dyn $ ffor2 reachStats bonusStats (\reachStats' bonusStats' ->
-            dyn $ ffor3 td landedByStop sEx (\td' lo sEx' ->
-                case (vy', vyNorm', vw', vwNorm', reachStats', bonusStats', td') of
-                    (Nothing, _, _, _, _, _, _) -> text "Loading validity ..."
-                    (_, Nothing, _, _, _, _, _) -> text "Loading expected validity from FS ..."
-                    (_, _, Nothing, _, _, _, _) -> text "Loading validity workings ..."
-                    (_, _, _, Nothing, _, _, _) -> text "Loading expected validity workings from FS ..."
-                    (_, _, _, _, Nothing, _, _) -> text "Loading reach stats ..."
-                    (_, _, _, _, _, Nothing, _) -> text "Loading bonus reach stats ..."
-                    (_, _, _, _, _, _, Nothing) -> text "Loading stopped task distance ..."
+            dyn $ ffor sEx (\sEx' ->
+                case (vy', vyNorm', vw', vwNorm', reachStats', bonusStats') of
+                    (Nothing, _, _, _, _, _) -> text "Loading validity ..."
+                    (_, Nothing, _, _, _, _) -> text "Loading expected validity from FS ..."
+                    (_, _, Nothing, _, _, _) -> text "Loading validity workings ..."
+                    (_, _, _, Nothing, _, _) -> text "Loading expected validity workings from FS ..."
+                    (_, _, _, _, Nothing, _) -> text "Loading reach stats ..."
+                    (_, _, _, _, _, Nothing) -> text "Loading bonus reach stats ..."
                     (Just v@Vy.Validity{task = dq, launch = lv, distance = dv, time = tv}
-                        , Just vN, Just w, Just wN, Just rStats, Just bStats, Just d) -> do
+                        , Just vN, Just w, Just wN, Just rStats, Just bStats) -> do
                         elAttr
                             "a"
-                            (("class" =: "button") <> ("onclick" =: hookWorking v vN w wN rStats d))
+                            (("class" =: "button") <> ("onclick" =: hookWorking v vN w wN rStats))
                             (text "Show Working")
 
                         spacer

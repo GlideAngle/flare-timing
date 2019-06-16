@@ -24,9 +24,10 @@ import WireTypes.ValidityWorking
     , PilotsFlying(..)
     , PilotsLanded(..)
     , MaximumDistance(..)
+    , LaunchToEss(..)
+    , showLaunchToEss
     )
 import WireTypes.Cross (FlyingSection)
-import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..))
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance)
@@ -40,7 +41,7 @@ import FlareTiming.Task.Validity.Stop.Counts (viewStopCounts)
 import FlareTiming.Task.Validity.Stop.Max (viewStopMax)
 import FlareTiming.Task.Validity.Stop.Mean (viewStopMean)
 import FlareTiming.Task.Validity.Stop.StdDev (viewStopStdDev)
-import FlareTiming.Katex (katexNewLine)
+import FlareTiming.Katex (ppr, katexNewLine)
 
 stopWorkingCase :: Maybe a -> Double -> Double -> (Double, T.Text)
 stopWorkingCase (Just _) _ _ = (1, " &= 1")
@@ -57,7 +58,7 @@ stopWorkingCase Nothing a b = (min 1 (a + b3), eqn) where
 stopWorkingSubA
     :: DistanceValidityWorking
     -> Stats.BolsterStats
-    -> TaskDistance
+    -> LaunchToEss
     -> (Double, T.Text)
 
 stopWorkingSubA
@@ -69,7 +70,7 @@ stopWorkingSubA
                 , stdDev = sf@(PilotDistance sf')
                 }
         }
-    td@(TaskDistance td') =
+    ed@(LaunchToEss ed') =
         (z, eqn)
     where
         eqn =
@@ -78,7 +79,7 @@ stopWorkingSubA
             <> " - "
             <> mf''
             <> "}{"
-            <> ed
+            <> ed''
             <> " - "
             <> bd''
             <> " + 1} * \\\\sqrt{\\\\frac{"
@@ -86,9 +87,9 @@ stopWorkingSubA
             <> "}{5}}}"
             <> katexNewLine
             <> " &= \\\\sqrt{\\\\frac{"
-            <> textf (bd' - mf')
+            <> (textf $ bd' - mf')
             <> "}{"
-            <> textf (td' - bd' + 1)
+            <> (textf $ ed' - bd' + 1)
             <> "} * \\\\sqrt{"
             <> textf (sf' / 5)
             <> "}}"
@@ -102,16 +103,16 @@ stopWorkingSubA
             <> (" &= " <> z')
 
         bd'' = T.pack $ show bd
-        ed = showTaskDistance td
+        ed'' = showLaunchToEss ed
         mf'' = showPilotDistance 3 mf <> "km"
         sf'' = showPilotDistance 3 sf <> "km"
 
-        textf = T.pack . printf "%.3f"
+        textf = T.pack . ppr
         x' = textf x
         y' = textf y
         z' = textf z
 
-        x = (bd' - mf') / (td' - bd' + 1)
+        x = (bd' - mf') / (ed' - bd' + 1)
         y = sqrt $ sf' / 5
         z = sqrt $ x * y
 
@@ -140,14 +141,15 @@ stopWorking
     -> DistanceValidityWorking
     -> TimeValidityWorking
     -> Stats.BolsterStats
-    -> TaskDistance
     -> T.Text
 stopWorking
-    sw@StopValidityWorking{landed = PilotsLanded pl}
+    sw@StopValidityWorking
+        { landed = PilotsLanded pl
+        , launchToEssDistance = ed
+        }
     dw@DistanceValidityWorking{flying = PilotsFlying pf}
     TimeValidityWorking{gsBestTime = bt}
-    reachStats
-    td =
+    reachStats =
 
     "katex.render("
     <> "\"\\\\begin{aligned} "
@@ -182,7 +184,7 @@ stopWorking
     <> ", {throwOnError: false});"
     where
         b = fromIntegral pl / (fromIntegral pf :: Double)
-        (a, eqnA) = stopWorkingSubA dw reachStats td
+        (a, eqnA) = stopWorkingSubA dw reachStats ed
         (v, eqnV) = stopWorkingCase bt a b
 
 viewStop
