@@ -47,9 +47,8 @@ stopWorkingCase :: Maybe a -> Double -> Double -> (Double, T.Text)
 stopWorkingCase (Just _) _ _ = (1, " &= 1")
 stopWorkingCase Nothing a b = (min 1 (a + b3), eqn) where
         eqn =
-            " &= \\\\min(1, a + b^3)"
-            <> katexNewLine
-            <> " &= \\\\min(1, " <> a' <> " + " <> b' <> ")"
+            " = \\\\min(1, a + b^3)"
+            <> " = \\\\min(1, " <> a' <> " + " <> b' <> ")"
 
         b3 = b**3
         b' = T.pack $ printf "%.3f" b3
@@ -70,7 +69,7 @@ stopWorkingSubA
         (z, eqn)
     where
         eqn =
-            " &= \\\\sqrt{\\\\frac{"
+            " = \\\\sqrt{\\\\frac{"
             <> bd''
             <> " - "
             <> mf''
@@ -81,22 +80,19 @@ stopWorkingSubA
             <> " + 1} * \\\\sqrt{\\\\frac{"
             <> sf''
             <> "}{5}}}"
-            <> katexNewLine
-            <> " &= \\\\sqrt{\\\\frac{"
+            <> " = \\\\sqrt{\\\\frac{"
             <> (textf $ bd' - mf')
             <> "}{"
             <> (textf $ ed' - bd' + 1)
             <> "} * \\\\sqrt{"
             <> textf (sf' / 5)
             <> "}}"
-            <> katexNewLine
-            <> " &= \\\\sqrt{"
+            <> " = \\\\sqrt{"
             <> x'
             <> " * "
             <> y'
             <> "}"
-            <> katexNewLine
-            <> (" &= " <> z')
+            <> (" = " <> z')
 
         bd'' = T.pack $ show bd
         ed'' = showLaunchToEss ed
@@ -120,13 +116,12 @@ stopWorkingSubB
         , landed = PilotsLanded pl
         }
     b' =
-    " &= \\\\frac{"
+    " = \\\\frac{"
     <> ls
     <> "}{"
     <> f
     <> "}"
-    <> katexNewLine
-    <> (" &= " <> b)
+    <> (" = " <> b)
     where
         ls = T.pack . show $ pl
         f = T.pack . show $ pf
@@ -147,12 +142,10 @@ stopWorking
     <> katexNewLine
     <> katexNewLine
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\mu(flown)}{ed - bd + 1} * \\\\sqrt{\\\\frac{\\\\sigma(flown)}{5}}}"
-    <> katexNewLine
     <> eqnA
     <> katexNewLine
     <> katexNewLine
     <> " b &= \\\\frac{ls}{f}"
-    <> katexNewLine
     <> stopWorkingSubB sw b
     <> katexNewLine
     <> katexNewLine
@@ -165,10 +158,8 @@ stopWorking
     <> " \\\\min(1, a + b^3)"
     <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
-    <> katexNewLine
     <> eqnV
-    <> katexNewLine
-    <> (" &= " <> (T.pack $ printf "%.3f" v))
+    <> (" = " <> (T.pack $ printf "%.3f" v))
     <> " \\\\end{aligned}\""
     <> ", getElementById('" <> elId <> "')"
     <> ", {throwOnError: false});"
