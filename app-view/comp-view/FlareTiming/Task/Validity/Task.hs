@@ -24,11 +24,12 @@ import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
     )
-import FlareTiming.Task.Validity.Widget (elV, elN, elD)
+import FlareTiming.Task.Validity.Widget (ElementId, spacer, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
-taskWorking :: Vy.Validity -> T.Text
+taskWorking :: ElementId -> Vy.Validity -> T.Text
 taskWorking
+    elId
     v@Vy.Validity
         { task = Vy.TaskValidity dq
         , launch = Vy.LaunchValidity lv
@@ -52,7 +53,7 @@ taskWorking
     <> (T.pack $ ppr dq)
     <> katexCheck 3 (Recalc dq') (Expect dq)
     <> " \\\\end{aligned}\""
-    <> ", getElementById('task-working')"
+    <> ", getElementById('" <> elId <> "')"
     <> ", {throwOnError: false});"
     where
         dqUnStop = lv * dv * tv
@@ -138,5 +139,7 @@ viewTask
         return ()
 
     elAttr "div" ("id" =: "task-working") $ text ""
+    spacer
+    elAttr "div" ("id" =: "task-working-norm") $ text ""
 
     return ()

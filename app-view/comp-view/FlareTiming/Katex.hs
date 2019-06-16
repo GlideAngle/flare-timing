@@ -19,7 +19,7 @@ newtype Recalc a = Recalc a
 katexCheck :: Integer -> Recalc Double -> Expect Double -> T.Text
 katexCheck dp (Recalc x') (Expect y') =
     if (printf "%.*f" dp x :: String) == printf "%.*f" dp y
-        then " \\\\color{blue}\\\\checkmark"
+        then " \\\\color{limegreen}\\\\checkmark"
         else " \\\\color{red}\\\\neq " <> (T.pack $ printf "%.*f" dp y)
     where
         -- WARNING: The rounding of printf may not be as you expect.
