@@ -17,10 +17,12 @@ import qualified Data.Map.Strict as Map
 import qualified WireTypes.Validity as Vy (Validity(..), showStopValidity)
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
+    , StopValidityWorking(..)
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
     , ReachStats(..)
     , PilotsFlying(..)
+    , PilotsLanded(..)
     , MaximumDistance(..)
     )
 import WireTypes.Cross (FlyingSection)
@@ -67,7 +69,9 @@ stopWorkingSubA
                 , stdDev = sf@(PilotDistance sf')
                 }
         }
-    td@(TaskDistance td') = (z, eqn) where
+    td@(TaskDistance td') =
+        (z, eqn)
+    where
         eqn =
             " &= \\\\sqrt{\\\\frac{"
             <> bd''
@@ -111,9 +115,14 @@ stopWorkingSubA
         y = sqrt $ sf' / 5
         z = sqrt $ x * y
 
-stopWorkingSubB :: DistanceValidityWorking -> Int -> Double -> T.Text
+stopWorkingSubB :: StopValidityWorking -> Double -> T.Text
 
-stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed b' =
+stopWorkingSubB
+    StopValidityWorking
+        { flying = PilotsFlying pf
+        , landed = PilotsLanded pl
+        }
+    b' =
     " &= \\\\frac{"
     <> ls
     <> "}{"
@@ -122,23 +131,23 @@ stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed b' =
     <> katexNewLine
     <> (" &= " <> b)
     where
-        ls = T.pack . show $ landed
+        ls = T.pack . show $ pl
         f = T.pack . show $ pf
         b = T.pack $ printf "%.3f" b'
 
 stopWorking
-    :: DistanceValidityWorking
+    :: StopValidityWorking
+    -> DistanceValidityWorking
     -> TimeValidityWorking
     -> Stats.BolsterStats
     -> TaskDistance
-    -> Int
     -> T.Text
 stopWorking
+    sw@StopValidityWorking{landed = PilotsLanded pl}
     dw@DistanceValidityWorking{flying = PilotsFlying pf}
     TimeValidityWorking{gsBestTime = bt}
     reachStats
-    td
-    landed =
+    td =
 
     "katex.render("
     <> "\"\\\\begin{aligned} "
@@ -152,7 +161,7 @@ stopWorking
     <> katexNewLine
     <> " b &= \\\\frac{ls}{f}"
     <> katexNewLine
-    <> stopWorkingSubB dw landed b
+    <> stopWorkingSubB sw b
     <> katexNewLine
     <> katexNewLine
     <> " validity &="
@@ -172,7 +181,7 @@ stopWorking
     <> ", getElementById('stop-working')"
     <> ", {throwOnError: false});"
     where
-        b = fromIntegral landed / (fromIntegral pf :: Double)
+        b = fromIntegral pl / (fromIntegral pf :: Double)
         (a, eqnA) = stopWorkingSubA dw reachStats td
         (v, eqnV) = stopWorkingCase bt a b
 
