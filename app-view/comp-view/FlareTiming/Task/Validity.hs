@@ -38,7 +38,7 @@ hookWorking
     v
     vN
     ValidityWorking{launch = l, distance = d, time = t}
-    ValidityWorking{launch = lN, distance = dN}
+    ValidityWorking{launch = lN, distance = dN, time = tN}
     r td landed =
     taskWorking "task-working" v
     <> taskWorking "task-working-norm" vN
@@ -46,7 +46,8 @@ hookWorking
     <> launchWorking "launch-working-norm" vN lN
     <> distanceWorking "distance-working" v d
     <> distanceWorking "distance-working-norm" vN dN
-    <> timeWorking v t
+    <> timeWorking "time-working" v t
+    <> timeWorking "time-working-norm" vN tN
     <> stopWorking d t r td landed
 
 viewValidity

@@ -31,7 +31,7 @@ import WireTypes.ValidityWorking
     , showMinimumDistance, showMinimumDistanceDiff
     , showMaximumDistance, showMaximumDistanceDiff
     )
-import FlareTiming.Task.Validity.Widget (ElementId, spacer, elV, elN, elD)
+import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
 distanceWorkingSubA :: DistanceValidityWorking -> T.Text

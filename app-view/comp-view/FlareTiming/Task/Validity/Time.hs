@@ -10,19 +10,23 @@ import qualified Data.Text as T (Text, pack)
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
+    , TimeValidity(..)
     , showTimeValidity, showTimeValidityDiff
     )
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , TimeValidityWorking(..)
     , BestTime(..)
+    , NominalTime(..)
+    , BestDistance(..)
+    , NominalDistance(..)
     , showBestTime, showBestTimeDiff
     , showNominalTime, showNominalTimeDiff
     , showBestDistance, showBestDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
     )
-import FlareTiming.Task.Validity.Widget (elV, elN, elD)
-import FlareTiming.Katex (katexNewLine)
+import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
+import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
 timeWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
 timeWorkingCase (Just _) = " &= \\\\dfrac{bt}{nt}"
@@ -55,8 +59,16 @@ timeWorkingSub
     <> (T.pack . show $ nd)
     <> "}"
 
-timeWorking :: Vy.Validity -> TimeValidityWorking -> T.Text
-timeWorking v w@TimeValidityWorking{gsBestTime = bt} =
+timeWorking :: ElementId -> Vy.Validity -> TimeValidityWorking -> T.Text
+timeWorking
+    elId
+    Vy.Validity{time = Vy.TimeValidity tv}
+    w@TimeValidityWorking
+        { gsBestTime = bt
+        , nominalTime = NominalTime nt
+        , bestDistance = BestDistance bd
+        , nominalDistance = NominalDistance nd
+        } =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " x &="
@@ -69,24 +81,41 @@ timeWorking v w@TimeValidityWorking{gsBestTime = bt} =
     <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
     <> katexNewLine
+    <> katexNewLine
     <> timeWorkingCase bt
     <> katexNewLine
     <> timeWorkingSub w
     <> katexNewLine
     <> katexNewLine
     <> " y &= \\\\min(1, x)"
+    <> " = \\\\min(1, "
+    <> (T.pack $ ppr x)
+    <> ")"
+    <> " = "
+    <> (T.pack $ ppr y)
     <> katexNewLine
     <> katexNewLine
     <> " z &= -0.271 + 2.912 * y - 2.098 * y^2 + 0.457 * y^3"
+    <> " = "
+    <> (T.pack $ ppr z)
     <> katexNewLine
     <> katexNewLine
     <> "validity &= \\\\max(0, \\\\min(1, z))"
-    <> katexNewLine
-    <> " &= "
-    <> (Vy.showTimeValidity . Vy.time $ v)
+    <> " = "
+    <> (T.pack $ ppr tv')
+    <> katexCheck 3 (Recalc tv') (Expect tv)
     <> " \\\\end{aligned}\""
-    <> ", getElementById('time-working')"
+    <> ", getElementById('" <> elId <> "')"
     <> ", {throwOnError: false});"
+    where
+        x = maybe (bd / nd) (\(BestTime bt') -> bt' / nt) bt
+        y = min 1 x
+        z = -0.271 + 2.912 * y - 2.098 * y**2 + 0.457 * y**3
+        tv' = max 0 $ min 1 z
+
+ppr :: Double -> String
+ppr 0 = "0"
+ppr x = printf "%.3f" x
 
 viewTime
     :: DomBuilder t m
@@ -183,5 +212,6 @@ viewTime
             return ()
 
     elAttr "div" ("id" =: "time-working") $ text ""
+    elAttr "div" ("id" =: "time-working-norm") $ text ""
 
     return ()

@@ -22,7 +22,7 @@ import WireTypes.ValidityWorking
     , showPilotsFlyingDiff
     , showNominalLaunchDiff
     )
-import FlareTiming.Task.Validity.Widget (ElementId, spacer, elV, elN, elD)
+import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
 launchWorking :: ElementId -> Vy.Validity -> LaunchValidityWorking -> T.Text
