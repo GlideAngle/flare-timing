@@ -23,8 +23,8 @@ import WireTypes.ValidityWorking
     , ReachStats(..)
     , PilotsFlying(..)
     , PilotsLanded(..)
-    , MaximumDistance(..)
     , LaunchToEss(..)
+    , BestDistance(..)
     , showLaunchToEss
     )
 import WireTypes.Cross (FlyingSection)
@@ -55,22 +55,18 @@ stopWorkingCase Nothing a b = (min 1 (a + b3), eqn) where
         b' = T.pack $ printf "%.3f" b3
         a' = T.pack $ printf "%.3f" a
 
-stopWorkingSubA
-    :: DistanceValidityWorking
-    -> Stats.BolsterStats
-    -> LaunchToEss
-    -> (Double, T.Text)
+stopWorkingSubA :: StopValidityWorking -> (Double, T.Text)
 
 stopWorkingSubA
-    DistanceValidityWorking{bestDistance = bd@(MaximumDistance bd')}
-    Stats.BolsterStats
-        { bolster =
+    StopValidityWorking
+        { launchToEssDistance = ed@(LaunchToEss ed')
+        , extra =
             ReachStats
-                { mean = mf@(PilotDistance mf')
+                { max = bd@(BestDistance bd')
+                , mean = mf@(PilotDistance mf')
                 , stdDev = sf@(PilotDistance sf')
                 }
-        }
-    ed@(LaunchToEss ed') =
+        } =
         (z, eqn)
     where
         eqn =
@@ -140,16 +136,13 @@ stopWorking
     :: StopValidityWorking
     -> DistanceValidityWorking
     -> TimeValidityWorking
-    -> Stats.BolsterStats
     -> T.Text
 stopWorking
     sw@StopValidityWorking
         { landed = PilotsLanded pl
-        , launchToEssDistance = ed
         }
-    dw@DistanceValidityWorking{flying = PilotsFlying pf}
-    TimeValidityWorking{gsBestTime = bt}
-    reachStats =
+    DistanceValidityWorking{flying = PilotsFlying pf}
+    TimeValidityWorking{gsBestTime = bt} =
 
     "katex.render("
     <> "\"\\\\begin{aligned} "
@@ -184,7 +177,7 @@ stopWorking
     <> ", {throwOnError: false});"
     where
         b = fromIntegral pl / (fromIntegral pf :: Double)
-        (a, eqnA) = stopWorkingSubA dw reachStats ed
+        (a, eqnA) = stopWorkingSubA sw
         (v, eqnV) = stopWorkingCase bt a b
 
 viewStop

@@ -29,14 +29,12 @@ hookWorking
     -> Vy.Validity
     -> ValidityWorking
     -> ValidityWorking
-    -> BolsterStats
     -> T.Text
 hookWorking
     v
     vN
     ValidityWorking{launch = l, distance = d, time = t, stop = s}
-    ValidityWorking{launch = lN, distance = dN, time = tN}
-    r =
+    ValidityWorking{launch = lN, distance = dN, time = tN} =
     taskWorking "task-working" v
     <> taskWorking "task-working-norm" vN
     <> launchWorking "launch-working" v l
@@ -45,7 +43,7 @@ hookWorking
     <> distanceWorking "distance-working-norm" vN dN
     <> timeWorking "time-working" v t
     <> timeWorking "time-working-norm" vN tN
-    <> maybe "" (\s' -> stopWorking s' d t r) s
+    <> maybe "" (\s' -> stopWorking s' d t) s
 
 viewValidity
     :: MonadWidget t m
@@ -96,7 +94,7 @@ viewValidity
                         , Just vN, Just w, Just wN, Just rStats, Just bStats) -> do
                         elAttr
                             "a"
-                            (("class" =: "button") <> ("onclick" =: hookWorking v vN w wN rStats))
+                            (("class" =: "button") <> ("onclick" =: hookWorking v vN w wN))
                             (text "Show Working")
 
                         spacer
