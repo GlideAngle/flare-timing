@@ -290,7 +290,6 @@ viewDistance
         el "tfoot" $ foot "† The sum of flown distance further than minimum distance."
 
     elAttr "div" ("id" =: "distance-working") $ text ""
-    spacer
     elAttr "div" ("id" =: "distance-working-norm") $ text ""
 
     return ()

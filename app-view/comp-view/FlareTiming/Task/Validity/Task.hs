@@ -139,7 +139,6 @@ viewTask
         return ()
 
     elAttr "div" ("id" =: "task-working") $ text ""
-    spacer
     elAttr "div" ("id" =: "task-working-norm") $ text ""
 
     return ()

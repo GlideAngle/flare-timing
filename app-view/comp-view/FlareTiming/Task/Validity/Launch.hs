@@ -3,45 +3,71 @@ module FlareTiming.Task.Validity.Launch
     , launchWorking
     ) where
 
+import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
+    , LaunchValidity(..)
     , showLaunchValidity, showLaunchValidityDiff
     )
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
+    , PilotsFlying(..)
+    , PilotsPresent(..)
+    , NominalLaunch(..)
     , showPilotsPresentDiff
     , showPilotsFlyingDiff
     , showNominalLaunchDiff
     )
-import FlareTiming.Task.Validity.Widget (elV, elN, elD)
-import FlareTiming.Katex (katexNewLine)
+import FlareTiming.Task.Validity.Widget (ElementId, spacer, elV, elN, elD)
+import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
-launchWorking :: Vy.Validity -> LaunchValidityWorking -> T.Text
-launchWorking v w@LaunchValidityWorking{flying = f} =
+launchWorking :: ElementId -> Vy.Validity -> LaunchValidityWorking -> T.Text
+launchWorking
+    elId
+    Vy.Validity{launch = Vy.LaunchValidity lv}
+    LaunchValidityWorking
+        { flying = PilotsFlying pf
+        , present = PilotsPresent pp
+        , nominalLaunch = NominalLaunch nl
+        } =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> "x &= \\\\min(1, \\\\frac{f}{p * n})"
-    <> katexNewLine
-    <> " &= \\\\min(1, \\\\frac{"
-    <> (T.pack . show $ f)
+    <> " = \\\\min(1, \\\\frac{"
+    <> (T.pack $ show pf)
     <> "}{"
-    <> (T.pack . show $ present w)
+    <> (T.pack $ show pp)
     <> " * "
-    <> (T.pack . show $ nominalLaunch w)
+    <> (T.pack $ ppr nl)
     <> "})"
+    <> " = \\\\min(1, "
+    <> (T.pack $ ppr xUnbound)
+    <> ")"
+    <> " = "
+    <> (T.pack $ ppr x)
     <> katexNewLine
     <> katexNewLine
     <> "validity &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3"
-    <> katexNewLine
-    <> " &= "
-    <> (Vy.showLaunchValidity . Vy.launch $ v)
+    <> " = "
+    <> (T.pack $ ppr lv')
+    <> katexCheck 3 (Recalc lv') (Expect lv)
     <> " \\\\end{aligned}\""
-    <> ", getElementById('launch-working')"
+    <> ", getElementById('" <> elId <> "')"
     <> ", {throwOnError: false});"
+    where
+        xUnbound :: Double
+        xUnbound = fromIntegral pf / (fromIntegral pp * nl)
+
+        x = min 1 xUnbound
+        lv' = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
+
+ppr :: Double -> String
+ppr 0 = "0"
+ppr x = printf "%.3f" x
 
 viewLaunch
     :: DomBuilder t m
@@ -113,6 +139,7 @@ viewLaunch
         return ()
 
     elAttr "div" ("id" =: "launch-working") $ text ""
+    elAttr "div" ("id" =: "launch-working-norm") $ text ""
 
     return ()
 
