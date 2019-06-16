@@ -18,7 +18,6 @@ import qualified WireTypes.Validity as Vy (Validity(..), showStopValidity)
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , StopValidityWorking(..)
-    , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
     , ReachStats(..)
     , PilotsFlying(..)
@@ -132,16 +131,12 @@ stopWorkingSubB
         f = T.pack . show $ pf
         b = T.pack $ printf "%.3f" b'
 
-stopWorking
-    :: StopValidityWorking
-    -> DistanceValidityWorking
-    -> TimeValidityWorking
-    -> T.Text
+stopWorking :: StopValidityWorking -> TimeValidityWorking -> T.Text
 stopWorking
     sw@StopValidityWorking
-        { landed = PilotsLanded pl
+        { flying = PilotsFlying pf
+        , landed = PilotsLanded pl
         }
-    DistanceValidityWorking{flying = PilotsFlying pf}
     TimeValidityWorking{gsBestTime = bt} =
 
     "katex.render("
