@@ -34,7 +34,7 @@ hookWorking
     v
     vN
     ValidityWorking{launch = l, distance = d, time = t, stop = s}
-    ValidityWorking{launch = lN, distance = dN, time = tN} =
+    ValidityWorking{launch = lN, distance = dN, time = tN, stop = sN} =
     taskWorking "task-working" v
     <> taskWorking "task-working-norm" vN
     <> launchWorking "launch-working" v l
@@ -43,7 +43,8 @@ hookWorking
     <> distanceWorking "distance-working-norm" vN dN
     <> timeWorking "time-working" v t
     <> timeWorking "time-working-norm" vN tN
-    <> maybe "" (\s' -> stopWorking s' t) s
+    <> maybe "" (\s' -> stopWorking "stop-working" s' tN) s
+    <> maybe "" (\s' -> stopWorking "stop-working-norm" s' tN) sN
 
 viewValidity
     :: MonadWidget t m

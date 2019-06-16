@@ -40,6 +40,7 @@ import FlareTiming.Task.Validity.Stop.Counts (viewStopCounts)
 import FlareTiming.Task.Validity.Stop.Max (viewStopMax)
 import FlareTiming.Task.Validity.Stop.Mean (viewStopMean)
 import FlareTiming.Task.Validity.Stop.StdDev (viewStopStdDev)
+import FlareTiming.Task.Validity.Widget (ElementId)
 import FlareTiming.Katex (ppr, katexNewLine)
 
 stopWorkingCase :: Maybe a -> Double -> Double -> (Double, T.Text)
@@ -131,8 +132,9 @@ stopWorkingSubB
         f = T.pack . show $ pf
         b = T.pack $ printf "%.3f" b'
 
-stopWorking :: StopValidityWorking -> TimeValidityWorking -> T.Text
+stopWorking :: ElementId -> StopValidityWorking -> TimeValidityWorking -> T.Text
 stopWorking
+    elId
     sw@StopValidityWorking
         { flying = PilotsFlying pf
         , landed = PilotsLanded pl
@@ -168,7 +170,7 @@ stopWorking
     <> katexNewLine
     <> (" &= " <> (T.pack $ printf "%.3f" v))
     <> " \\\\end{aligned}\""
-    <> ", getElementById('stop-working')"
+    <> ", getElementById('" <> elId <> "')"
     <> ", {throwOnError: false});"
     where
         b = fromIntegral pl / (fromIntegral pf :: Double)
@@ -282,6 +284,7 @@ viewStop
                                     viewStopCounts v vN vw vwN
 
             elAttr "div" ("id" =: "stop-working") $ text ""
+            elAttr "div" ("id" =: "stop-working-norm") $ text ""
 
     return ()
 
