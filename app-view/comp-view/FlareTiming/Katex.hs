@@ -3,6 +3,7 @@ module FlareTiming.Katex
     , Recalc(..)
     , katexNewLine
     , katexCheck
+    , ppr
     ) where
 
 import qualified Data.Text as T (Text, pack)
@@ -12,6 +13,10 @@ import Data.Ratio.Rounding (dpRound)
 
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
+
+ppr :: Double -> String
+ppr 0 = "0"
+ppr x = printf "%.3f" x
 
 newtype Expect a = Expect a
 newtype Recalc a = Recalc a

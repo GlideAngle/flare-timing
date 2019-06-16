@@ -3,7 +3,6 @@ module FlareTiming.Task.Validity.Task
     , taskWorking
     ) where
 
-import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
@@ -25,7 +24,7 @@ import WireTypes.ValidityWorking
     , LaunchValidityWorking(..)
     )
 import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
-import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
+import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 taskWorking :: ElementId -> Vy.Validity -> T.Text
 taskWorking
@@ -58,9 +57,6 @@ taskWorking
     where
         dqUnStop = lv * dv * tv
         dq' = dqUnStop * maybe 1 (\(Vy.StopValidity sv) -> sv) (Vy.stop v)
-
-        ppr 0 = "0"
-        ppr x = printf "%.3f" x
 
 viewTask
     :: DomBuilder t m

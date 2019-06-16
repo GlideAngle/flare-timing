@@ -4,7 +4,6 @@ module FlareTiming.Task.Validity.Distance
     ) where
 
 import Prelude hiding (sum)
-import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
@@ -32,7 +31,7 @@ import WireTypes.ValidityWorking
     , showMaximumDistance, showMaximumDistanceDiff
     )
 import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
-import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
+import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 distanceWorkingSubA :: DistanceValidityWorking -> T.Text
 distanceWorkingSubA
@@ -56,8 +55,6 @@ distanceWorkingSubA
     <> katexNewLine
     <> " &= "
     <> (T.pack . ppr $ (ng + 1) * (nd - md))
-    where
-        ppr = printf "%.3f"
 
 distanceWorkingSubB :: DistanceValidityWorking -> T.Text
 distanceWorkingSubB
@@ -86,9 +83,6 @@ distanceWorkingSubB
     <> katexNewLine
     <> " &= "
     <> (T.pack . ppr $ max 0 (ng * (bd - nd)))
-    where
-        ppr 0 = "0"
-        ppr x = printf "%.3f" x
 
 distanceWorkingSubArea :: DistanceValidityWorking -> T.Text
 distanceWorkingSubArea
@@ -108,9 +102,6 @@ distanceWorkingSubArea
     where
         a = (ng + 1) * (nd - md)
         b = max 0 $ ng * (bd - nd)
-
-        ppr 0 = "0"
-        ppr x = printf "%.3f" x
 
 distanceWorkingSubValidity :: Vy.Validity -> DistanceValidityWorking -> T.Text
 distanceWorkingSubValidity
@@ -136,9 +127,6 @@ distanceWorkingSubValidity
     where
         dvUnbound = sd / (fromIntegral pf * area)
         dv' = min 1 dvUnbound
-
-        ppr 0 = "0"
-        ppr x = printf "%.3f" x
 
 distanceWorking
     :: ElementId

@@ -26,7 +26,7 @@ import WireTypes.ValidityWorking
     , showNominalDistance, showNominalDistanceDiff
     )
 import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
-import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
+import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 timeWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
 timeWorkingCase (Just _) = " &= \\\\dfrac{bt}{nt}"
@@ -112,10 +112,6 @@ timeWorking
         y = min 1 x
         z = -0.271 + 2.912 * y - 2.098 * y**2 + 0.457 * y**3
         tv' = max 0 $ min 1 z
-
-ppr :: Double -> String
-ppr 0 = "0"
-ppr x = printf "%.3f" x
 
 viewTime
     :: DomBuilder t m

@@ -3,7 +3,6 @@ module FlareTiming.Task.Validity.Launch
     , launchWorking
     ) where
 
-import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
@@ -23,7 +22,7 @@ import WireTypes.ValidityWorking
     , showNominalLaunchDiff
     )
 import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
-import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
+import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 launchWorking :: ElementId -> Vy.Validity -> LaunchValidityWorking -> T.Text
 launchWorking
@@ -64,10 +63,6 @@ launchWorking
 
         x = min 1 xUnbound
         lv' = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
-
-ppr :: Double -> String
-ppr 0 = "0"
-ppr x = printf "%.3f" x
 
 viewLaunch
     :: DomBuilder t m
