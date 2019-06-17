@@ -14,7 +14,8 @@ import qualified Data.Text as T (Text, pack)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 
-import qualified WireTypes.Validity as Vy (Validity(..), showStopValidity)
+import qualified WireTypes.Validity as Vy
+    (Validity(..), StopValidity(..), showStopValidity)
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , StopValidityWorking(..)
@@ -41,18 +42,27 @@ import FlareTiming.Task.Validity.Stop.Max (viewStopMax)
 import FlareTiming.Task.Validity.Stop.Mean (viewStopMean)
 import FlareTiming.Task.Validity.Stop.StdDev (viewStopStdDev)
 import FlareTiming.Task.Validity.Widget (ElementId)
-import FlareTiming.Katex (ppr, katexNewLine)
+import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
-stopWorkingCase :: Maybe a -> Double -> Double -> (Double, T.Text)
-stopWorkingCase (Just _) _ _ = (1, " &= 1")
-stopWorkingCase Nothing a b = (min 1 (a + b3), eqn) where
-        eqn =
-            " = \\\\min(1, a + b^3)"
-            <> " = \\\\min(1, " <> a' <> " + " <> b' <> ")"
+stopWorkingCase :: Vy.StopValidity -> Maybe _bestTime -> Double -> Double -> T.Text
+stopWorkingCase _ (Just _) _ _ = " &= 1"
+stopWorkingCase (Vy.StopValidity sv) Nothing a b =
+    " = \\\\min(1, a + b^3)"
+    <> " = \\\\min(1, " <> a' <> " + " <> b' <> ")"
+    <> " = min(1, "
+    <> (T.pack $ ppr svUnbound)
+    <> ")"
+    <> " = "
+    <> (T.pack $ ppr sv')
+    <> katexCheck 3 (Recalc sv') (Expect sv)
 
+    where
         b3 = b**3
         b' = T.pack $ printf "%.3f" b3
         a' = T.pack $ printf "%.3f" a
+
+        svUnbound = a + b3
+        sv' = min 1 svUnbound
 
 stopWorkingSubA :: StopValidityWorking -> (Double, T.Text)
 
@@ -66,9 +76,9 @@ stopWorkingSubA
                 , stdDev = sf@(PilotDistance sf')
                 }
         } =
-        (z, eqn)
+        (a, eqnA)
     where
-        eqn =
+        eqnA =
             " = \\\\sqrt{\\\\frac{"
             <> bd''
             <> " - "
@@ -92,7 +102,7 @@ stopWorkingSubA
             <> " * "
             <> y'
             <> "}"
-            <> (" = " <> z')
+            <> (" = " <> a')
 
         bd'' = T.pack $ show bd
         ed'' = showLaunchToEss ed
@@ -100,13 +110,14 @@ stopWorkingSubA
         sf'' = showPilotDistance 3 sf <> "km"
 
         textf = T.pack . ppr
-        x' = textf x
-        y' = textf y
-        z' = textf z
 
         x = (bd' - mf') / (ed' - bd' + 1)
         y = sqrt $ sf' / 5
-        z = sqrt $ x * y
+        x' = textf x
+        y' = textf y
+
+        a = sqrt $ x * y
+        a' = textf a
 
 stopWorkingSubB :: StopValidityWorking -> Double -> T.Text
 
@@ -127,9 +138,16 @@ stopWorkingSubB
         f = T.pack . show $ pf
         b = T.pack $ printf "%.3f" b'
 
-stopWorking :: ElementId -> StopValidityWorking -> TimeValidityWorking -> T.Text
+stopWorking
+    :: ElementId
+    -> Vy.Validity
+    -> StopValidityWorking
+    -> TimeValidityWorking
+    -> T.Text
+stopWorking _ Vy.Validity{stop = Nothing} _ _ = ""
 stopWorking
     elId
+    Vy.Validity{stop = Just sv}
     sw@StopValidityWorking
         { flying = PilotsFlying pf
         , landed = PilotsLanded pl
@@ -158,15 +176,13 @@ stopWorking
     <> " \\\\min(1, a + b^3)"
     <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
-    <> eqnV
-    <> (" = " <> (T.pack $ printf "%.3f" v))
+    <> stopWorkingCase sv bt a b
     <> " \\\\end{aligned}\""
     <> ", getElementById('" <> elId <> "')"
     <> ", {throwOnError: false});"
     where
         b = fromIntegral pl / (fromIntegral pf :: Double)
         (a, eqnA) = stopWorkingSubA sw
-        (v, eqnV) = stopWorkingCase bt a b
 
 viewStop
     :: MonadWidget t m

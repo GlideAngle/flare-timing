@@ -43,8 +43,8 @@ hookWorking
     <> distanceWorking "distance-working-norm" vN dN
     <> timeWorking "time-working" v t
     <> timeWorking "time-working-norm" vN tN
-    <> maybe "" (\s' -> stopWorking "stop-working" s' tN) s
-    <> maybe "" (\s' -> stopWorking "stop-working-norm" s' tN) sN
+    <> maybe "" (\s' -> stopWorking "stop-working" v s' tN) s
+    <> maybe "" (\s' -> stopWorking "stop-working-norm" vN s' tN) sN
 
 viewValidity
     :: MonadWidget t m
