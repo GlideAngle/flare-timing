@@ -184,7 +184,11 @@ viewDistance
                 , nominalGoal = ng
                 , nominalDistance = nd
                 , minimumDistance = md
-                , reachMax = ReachToggle{flown = bd}
+                , reachMax =
+                    ReachToggle
+                        { flown = bdF
+                        , extra = bdE
+                        }
                 }
         }
     ValidityWorking
@@ -196,7 +200,11 @@ viewDistance
                 , nominalGoal = ngN
                 , nominalDistance = ndN
                 , minimumDistance = mdN
-                , reachMax = ReachToggle{flown = bdN}
+                , reachMax =
+                    ReachToggle
+                        { flown = bdFN
+                        , extra = bdEN
+                        }
                 }
         }
     = do
@@ -250,10 +258,18 @@ viewDistance
 
             el "tr" $ do
                 el "td" $ text "bd"
-                el "td" $ text "Best Distance"
-                elV $ showPilotDistance 3 bd <> "km"
-                elN $ showPilotDistance 3 bdN <> "km"
-                elD $ showPilotDistanceDiff 3 bdN bd
+                el "td" $ text "Max Flown Bolster (Best Distance)"
+                elV $ showPilotDistance 3 bdF <> "km"
+                elN $ showPilotDistance 3 bdFN <> "km"
+                elD $ showPilotDistanceDiff 3 bdFN bdF
+                return ()
+
+            el "tr" $ do
+                el "td" $ text ""
+                el "td" $ text "Max Extra Bolster"
+                elV $ showPilotDistance 3 bdE <> "km"
+                elN $ showPilotDistance 3 bdEN <> "km"
+                elD $ showPilotDistanceDiff 3 bdEN bdE
                 return ()
 
             el "tr" $ do

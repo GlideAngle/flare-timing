@@ -133,7 +133,11 @@ viewTime
                 , gsBestTime = bt
                 , nominalTime = nt
                 , nominalDistance = nd
-                , reachMax = ReachToggle{extra = bd}
+                , reachMax =
+                    ReachToggle
+                        { flown = bdF
+                        , extra = bdE
+                        }
                 }
         }
     ValidityWorking
@@ -142,7 +146,11 @@ viewTime
                 { gsBestTime = btN
                 , nominalTime = ntN
                 , nominalDistance = ndN
-                , reachMax = ReachToggle{extra = bdN}
+                , reachMax =
+                    ReachToggle
+                        { flown = bdFN
+                        , extra = bdEN
+                        }
                 }
         }
     = do
@@ -179,11 +187,19 @@ viewTime
                 return ()
 
             el "tr" $ do
+                el "td" $ text ""
+                el "td" $ text "Max Flown Bolster"
+                elV $ showPilotDistance 3 bdF <> "km"
+                elN $ showPilotDistance 3 bdFN <> "km"
+                elD $ showPilotDistanceDiff 3 bdFN bdF
+                return ()
+
+            el "tr" $ do
                 el "td" $ text "bd"
-                el "td" $ text "Best Distance"
-                elV $ showPilotDistance 3 bd <> " km"
-                elN $ showPilotDistance 3 bdN <> " km"
-                elD $ showPilotDistanceDiff 3 bdN bd
+                el "td" $ text "Max Extra Bolster (Best Distance)"
+                elV $ showPilotDistance 3 bdE <> "km"
+                elN $ showPilotDistance 3 bdEN <> "km"
+                elD $ showPilotDistanceDiff 3 bdEN bdE
                 return ()
 
             el "tr" $ do
