@@ -27,7 +27,7 @@ import Flight.Score
     , SumOfDifficulty
     , ChunkDifficulty(..)
     , MinimumDistance(..)
-    , BestDistance(..)
+    , FlownMax(..)
     , PilotDistance(..)
     , DifficultyFraction(..)
     , Pilot(..)
@@ -80,8 +80,6 @@ data Landing =
         -- ^ The mimimum distance, set once for the comp. All pilots landing
         -- before this distance get this distance. The 100m segments start from
         -- here.
-        , bestDistance :: [Maybe (BestDistance (Quantity Double [u| km |]))]
-        -- ^ For each task, the best distance flown.
         , landout :: [Int]
         -- ^ For each task, the number of pilots landing out.
         , lookahead :: [Maybe Lookahead]
@@ -91,6 +89,8 @@ data Landing =
         -- difficulties.
         , difficulty :: [Maybe [ChunkDifficulty]]
         -- ^ The difficulty of each chunk.
+        , bestDistance :: [Maybe (FlownMax (Quantity Double [u| km |]))]
+        -- ^ For each task, the best distance flown.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

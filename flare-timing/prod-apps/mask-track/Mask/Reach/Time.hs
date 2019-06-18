@@ -20,7 +20,7 @@ import qualified Flight.Track.Time as Time (TimeRow(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
 import Flight.Track.Mask (MaskingReach(..))
 import Flight.Score
-    ( MinimumDistance(..), PilotDistance(..), BestDistance(..), LinearFraction(..)
+    ( MinimumDistance(..), PilotDistance(..), FlownMax(..), LinearFraction(..)
     , FlownMax(..), FlownMean(..), FlownStdDev(..), ReachStats(..)
     , linearFraction
     )
@@ -53,8 +53,8 @@ maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
                         TaskDistance b <- dBest
                         td@(TaskDistance d) <- made
 
-                        let bd :: BestDistance (Quantity Double [u| km |]) =
-                                BestDistance $ convert b
+                        let bd :: FlownMax (Quantity Double [u| km |]) =
+                                FlownMax $ convert b
                         let pd :: PilotDistance (Quantity Double [u| km |]) =
                                 PilotDistance $ convert d
 
@@ -74,8 +74,8 @@ maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
                 case dBest of
                     Nothing -> []
                     Just td@(TaskDistance b) ->
-                        let bd :: BestDistance (Quantity Double [u| km |]) =
-                                BestDistance $ convert b
+                        let bd :: FlownMax (Quantity Double [u| km |]) =
+                                FlownMax $ convert b
 
                             pd :: PilotDistance (Quantity Double [u| km |]) =
                                 PilotDistance $ convert b

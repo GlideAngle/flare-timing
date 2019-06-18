@@ -35,7 +35,7 @@ import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 import Flight.Gap.Distance.Fraction (DifficultyFraction(..))
 import Flight.Gap.Distance.Linear (PilotDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
-import Flight.Gap.Distance.Best (BestDistance(..))
+import Flight.Gap.Distance.Stop (FlownMax(..))
 import Flight.Gap.Pilots (Pilot)
 
 -- | The index of a 100m chunk. The zeroth chunk is any distance less than or
@@ -176,10 +176,10 @@ overlay
 -- | How many 100 m chunks to look ahead when working out the distance
 -- difficulty.
 lookahead
-    :: BestDistance (Quantity Double [u| km |])
+    :: FlownMax (Quantity Double [u| km |])
     -> [PilotDistance (Quantity Double [u| km |])]
     -> Lookahead
-lookahead (BestDistance (MkQuantity best)) xs =
+lookahead (FlownMax (MkQuantity best)) xs =
     Lookahead . max 30 $
     if null xs then 0
                else round ((30 * best) / fromInteger pilotsLandedOut)
@@ -191,9 +191,9 @@ lookahead (BestDistance (MkQuantity best)) xs =
 -- awarded that distance.
 chunks
     :: MinimumDistance (Quantity Double [u| km |])
-    -> BestDistance (Quantity Double [u| km |])
+    -> FlownMax (Quantity Double [u| km |])
     -> Chunks (Quantity Double [u| km |])
-chunks (MinimumDistance md) (BestDistance best) =
+chunks (MinimumDistance md) (FlownMax best) =
     Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN]
     where
         MkQuantity x0 = md

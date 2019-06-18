@@ -13,7 +13,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Ratio (pattern (:%))
 import Flight.Units ()
-import Flight.Gap.Distance.Best (BestDistance(..))
+import Flight.Gap.Distance.Stop (FlownMax(..))
 import Flight.Gap.Distance.Pilot (PilotDistance(..))
 
 newtype LinearFraction = LinearFraction Rational
@@ -28,15 +28,15 @@ deriveJsonViaSci ''LinearFraction
 
 -- | The linear fraction for distance.
 linearFraction
-    :: BestDistance (Quantity Double [u| km |])
+    :: FlownMax (Quantity Double [u| km |])
     -> PilotDistance (Quantity Double [u| km |])
     -> LinearFraction
-linearFraction (BestDistance bd) (PilotDistance pd) =
+linearFraction (FlownMax bd) (PilotDistance pd) =
     LinearFraction $ (np * db) % (dp * nb)
     where
         MkQuantity (nb :% db) = toRational' bd
         MkQuantity (np :% dp) = toRational' pd
 
-bestDistance' :: Ord a => [PilotDistance a] -> Maybe (BestDistance a)
+bestDistance' :: Ord a => [PilotDistance a] -> Maybe (FlownMax a)
 bestDistance' [] = Nothing
-bestDistance' xs = let PilotDistance x = maximum xs in Just . BestDistance $ x
+bestDistance' xs = let PilotDistance x = maximum xs in Just . FlownMax $ x

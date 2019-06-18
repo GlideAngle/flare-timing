@@ -73,7 +73,6 @@ module Flight.Score
     , bestTime'
     , speedFraction
     -- * Fractional allotment of linear distance points
-    , BestDistance(..)
     , PilotDistance(..)
     , LinearFraction(..)
     , linearFraction
@@ -164,7 +163,6 @@ module Flight.Score
     , unFlownMaxAsKm
     , stopTaskTime
     , canScoreStopped
-    , MaximumDistance(..)
     , SumOfDistance(..)
     , TaskType(..)
     , StartGates(..)
@@ -205,8 +203,6 @@ import Flight.Gap.Time.ScoreBack
 import Flight.Gap.Distance.Nominal
 import Flight.Gap.Distance.Linear
 import Flight.Gap.Distance.Min
-import Flight.Gap.Distance.Max
-import Flight.Gap.Distance.Best
 import Flight.Gap.Distance.Sum
 import Flight.Gap.Distance.Relative
 import Flight.Gap.Distance.Fraction

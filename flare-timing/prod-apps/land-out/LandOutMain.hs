@@ -31,7 +31,7 @@ import Flight.Track.Mask (MaskingEffort(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe (readComp, readMaskingEffort, writeLanding)
 import Flight.Score
-    ( BestDistance(..)
+    ( FlownMax(..)
     , PilotDistance(..)
     , Difficulty(..)
     , Pilot
@@ -107,9 +107,9 @@ difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
             . snd)
             land
 
-        bests :: [Maybe (BestDistance (Quantity Double [u| km |]))]
+        bests :: [Maybe (FlownMax (Quantity Double [u| km |]))]
         bests =
-            (fmap . fmap) (BestDistance . MkQuantity . unTaskDistanceAsKm) bestEffort
+            (fmap . fmap) (FlownMax . MkQuantity . unTaskDistanceAsKm) bestEffort
 
         ahead =
             [ flip Gap.lookahead ds <$> b
