@@ -17,21 +17,17 @@ module WireTypes.ValidityWorking
     , NominalGoal(..)
     , NominalDistance(..)
     , MinimumDistance(..)
-    , MaximumDistance(..)
     , showNominalGoal, showNominalGoalDiff
     , showSumOfDistance, showSumOfDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
     , showNominalDistanceArea, showNominalDistanceAreaDiff
     , showMinimumDistance, showMinimumDistanceDiff
-    , showMaximumDistance, showMaximumDistanceDiff
     -- * Time Validity Working
     , TimeValidityWorking(..)
     , BestTime(..)
-    , BestDistance(..)
     , NominalTime(..)
     , showBestTime, showBestTimeDiff
     , showNominalTime, showNominalTimeDiff
-    , showBestDistance, showBestDistanceDiff
     -- * Stop Validity Working
     , ReachToggle(..)
     , ReachStats(..)
@@ -156,9 +152,6 @@ newtype NominalDistance = NominalDistance Double
 newtype MinimumDistance = MinimumDistance Double
     deriving (Eq, Ord)
 
-newtype MaximumDistance = MaximumDistance Double
-    deriving (Eq, Ord)
-
 instance Show SumOfDistance where
     show (SumOfDistance x) = show x ++ " km"
 
@@ -201,20 +194,6 @@ showMinimumDistanceDiff (MinimumDistance expected) (MinimumDistance actual)
     where
         f = printf "%+.3f"
 
-instance Show MaximumDistance where
-    show (MaximumDistance x) = show x ++ " km"
-
-showMaximumDistance :: MaximumDistance -> T.Text
-showMaximumDistance (MaximumDistance x) =
-    T.pack $ printf "%.3f km" x
-
-showMaximumDistanceDiff :: MaximumDistance -> MaximumDistance -> T.Text
-showMaximumDistanceDiff (MaximumDistance expected) (MaximumDistance actual)
-    | f actual == f expected = "="
-    | otherwise = T.pack . f $ actual - expected
-    where
-        f = printf "%+.3f"
-
 instance FromJSON SumOfDistance where
     parseJSON x@(String _) = do
         s <- reverse . T.unpack <$> parseJSON x
@@ -239,14 +218,6 @@ instance FromJSON MinimumDistance where
             _ -> empty
     parseJSON _ = empty
 
-instance FromJSON MaximumDistance where
-    parseJSON x@(String _) = do
-        s <- reverse . T.unpack <$> parseJSON x
-        case s of
-            'm' : 'k' : ' ' : xs -> return . MaximumDistance . read . reverse $ xs
-            _ -> empty
-    parseJSON _ = empty
-
 data TimeValidityWorking =
     TimeValidityWorking
         { ssBestTime :: Maybe BestTime
@@ -258,9 +229,6 @@ data TimeValidityWorking =
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
 newtype BestTime = BestTime Double
-    deriving (Eq, Ord)
-
-newtype BestDistance = BestDistance Double
     deriving (Eq, Ord)
 
 newtype NominalTime = NominalTime Double
@@ -280,18 +248,6 @@ showBestTimeDiff e@(Just (BestTime expected)) a@(Just (BestTime actual))
     | showBestTime a == showBestTime e = "="
     | otherwise = showNominalTDiff . realToFrac $ actual - expected
 
-instance Show BestDistance where
-    show (BestDistance x) = show x ++ " km"
-
-showBestDistance :: BestDistance -> T.Text
-showBestDistance (BestDistance x) =
-    T.pack $ printf "%.3f" x
-
-showBestDistanceDiff :: BestDistance -> BestDistance -> T.Text
-showBestDistanceDiff e@(BestDistance expected) a@(BestDistance actual)
-    | showBestDistance a == showBestDistance e = "="
-    | otherwise = T.pack . printf "%+.3f" $ actual - expected
-
 instance Show NominalTime where
     show (NominalTime x) = show x ++ " h"
 
@@ -308,14 +264,6 @@ instance FromJSON BestTime where
         s <- reverse . T.unpack <$> parseJSON x
         case s of
             'h' : ' ' : xs -> return . BestTime . read . reverse $ xs
-            _ -> empty
-    parseJSON _ = empty
-
-instance FromJSON BestDistance where
-    parseJSON x@(String _) = do
-        s <- reverse . T.unpack <$> parseJSON x
-        case s of
-            'm' : 'k' : ' ' : xs -> return . BestDistance . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty
 
