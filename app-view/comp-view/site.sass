@@ -53,6 +53,17 @@ th.th-speed
 #time-working,
 #stop-working
     @extend .has-background-light;
+
+#task-working:not(:empty),
+#launch-working:not(:empty),
+#distance-working:not(:empty),
+#time-working:not(:empty),
+#stop-working:not(:empty),
+#task-working-norm:not(:empty),
+#launch-working-norm:not(:empty),
+#distance-working-norm:not(:empty),
+#time-working-norm:not(:empty),
+#stop-working-norm:not(:empty)
     padding: 1em;
 
 #task-working-norm,
@@ -62,7 +73,6 @@ th.th-speed
 #stop-working-norm
     @extend .has-text-light;
     @extend .has-background-black;
-    padding: 1em;
 
 .tr-sum td.td-valid-reach,
 .tr-sum td.td-valid-reach-extra,
