@@ -8,8 +8,8 @@ import WireTypes.ValidityWorking
     , ReachToggle(..)
     , ReachStats(..)
     , StopValidityWorking(..)
-    , showBestDistance, showBestDistanceDiff
     )
+import WireTypes.Point (showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import FlareTiming.Task.Validity.Widget (elV, elN, elD)
 
@@ -93,24 +93,24 @@ viewStopMax
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown"
-                elV $ showBestDistance reachMax
+                elV $ showPilotDistance 3 reachMax
                 -- NOTE: bolsterMax == flownMax
-                elV $ showBestDistance flownMax
-                elN $ showBestDistance flownMaxN
-                elD $ showBestDistanceDiff flownMaxN flownMax
+                elV $ showPilotDistance 3 flownMax
+                elN $ showPilotDistance 3 flownMaxN
+                elD $ showPilotDistanceDiff 3 flownMaxN flownMax
                 return ()
 
             el "tr" $ do
                 el "th" $ text "Extra"
                 elClass "td" "td-valid-reach-extra" . text
-                    $ showBestDistance reachMaxE
+                    $ showPilotDistance 3 reachMaxE
 
                 -- NOTE: bolsterMaxE == extraMax
                 elClass "td" "td-valid-bolster-extra" . text
-                    $ showBestDistance extraMax
+                    $ showPilotDistance 3 extraMax
 
-                elN $ showBestDistance extraMaxN
-                elD $ showBestDistanceDiff extraMaxN extraMax
+                elN $ showPilotDistance 3 extraMaxN
+                elD $ showPilotDistanceDiff 3 extraMaxN extraMax
                 return ()
 
         let tdFoot = elAttr "td" ("colspan" =: "5")

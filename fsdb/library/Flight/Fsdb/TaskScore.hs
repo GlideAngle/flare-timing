@@ -18,7 +18,7 @@ import Text.XML.HXT.Arrow.Pickle
     , xpWrap, xpElem, xpAttr
     , xpFilterAttr, xpFilterCont
     , xpInt, xpPrim
-    , xpPair, xpTriple, xp5Tuple, xp6Tuple, xp11Tuple
+    , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp11Tuple
     , xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -68,8 +68,8 @@ import Flight.Score
     , LaunchToEss(..)
     , NominalGoal(..)
     , NominalLaunch(..)
-    , NominalDistance(..), BestDistance(..)
-    , MinimumDistance(..), MaximumDistance(..)
+    , NominalDistance(..)
+    , MinimumDistance(..)
     , SumOfDistance(..), NominalDistanceArea(..)
     , NominalTime(..), BestTime(..)
     )
@@ -249,28 +249,40 @@ xpTimeValidityWorking nd nt =
     xpElem "FsTaskScoreParams"
     $ xpFilterCont(isAttr)
     $ xpFilterAttr
-        (hasName "best_dist" <+> hasName "best_time")
+        (hasName "best_time"
+        <+> hasName "best_dist"
+        <+> hasName "best_real_dist"
+        )
     $ xpWrap
-        ( \(bd, bt) ->
+        ( \(bt, bdE, bdF) ->
             TimeValidityWorking
                 { ssBestTime = Nothing
                 , gsBestTime =
                     if bt == 0 then Nothing else
                     Just . BestTime $ MkQuantity bt
-                , bestDistance = BestDistance $ MkQuantity bd
                 , nominalTime = nt
                 , nominalDistance = nd
+                , reachMax =
+                    ReachToggle
+                        { extra = FlownMax $ MkQuantity bdE
+                        , flown = FlownMax $ MkQuantity bdF
+                        }
                 }
         , \TimeValidityWorking
                 { gsBestTime = bt
-                , bestDistance = BestDistance (MkQuantity bd)
+                , reachMax =
+                    ReachToggle
+                        { extra = FlownMax (MkQuantity bdE)
+                        , flown = FlownMax (MkQuantity bdF)
+                        }
                 } ->
                     let bt' = maybe 0 (\(BestTime (MkQuantity x)) -> x) bt
-                    in (bd, bt')
+                    in (bt', bdE, bdF)
         )
-    $ xpPair
-        (xpAttr "best_dist" xpPrim)
+    $ xpTriple
         (xpAttr "best_time" xpPrim)
+        (xpAttr "best_dist" xpPrim)
+        (xpAttr "best_real_dist" xpPrim)
 
 xpDistanceValidityWorking
     :: NominalGoal
@@ -287,32 +299,42 @@ xpDistanceValidityWorking
         ( hasName "sum_real_dist_over_min"
         <+> hasName "no_of_pilots_flying"
         <+> hasName "best_dist"
+        <+> hasName "best_real_dist"
         )
     $ xpWrap
-        ( \(sd, pf, bd) ->
+        ( \(sd, pf, bdE, bdF) ->
             DistanceValidityWorking
                 { sum = SumOfDistance $ MkQuantity sd
                 , flying = PilotsFlying $ fromIntegral pf
                 , area =
                     let a :: Double = (ng + 1) * (nd - md)
-                        b :: Double = Stats.max 0 $ ng * (bd - nd)
+                        b :: Double = Stats.max 0 $ ng * (bdF - nd)
                     in NominalDistanceArea . toRational $ (a + b) / 2
                 , nominalGoal = ng'
                 , nominalDistance = nd'
                 , minimumDistance = md'
-                , bestDistance = MaximumDistance $ MkQuantity bd
+                , reachMax =
+                    ReachToggle
+                        { extra = FlownMax $ MkQuantity bdE
+                        , flown = FlownMax $ MkQuantity bdF
+                        }
                 }
         , \DistanceValidityWorking
                 { sum = SumOfDistance (MkQuantity sd)
                 , flying = PilotsFlying pf
-                , bestDistance = MaximumDistance (MkQuantity bd)
+                , reachMax =
+                    ReachToggle
+                        { extra = FlownMax (MkQuantity bdE)
+                        , flown = FlownMax (MkQuantity bdF)
+                        }
                 } ->
-                    (sd, fromIntegral pf, bd)
+                    (sd, fromIntegral pf, bdE, bdF)
         )
-    $ xpTriple
+    $ xp4Tuple
         (xpAttr "sum_real_dist_over_min" xpPrim)
         (xpAttr "no_of_pilots_flying" xpInt)
         (xpAttr "best_dist" xpPrim)
+        (xpAttr "best_real_dist" xpPrim)
     where
         ng = fromRational ngR
 

@@ -25,13 +25,12 @@ import WireTypes.ValidityWorking
     , PilotsFlying(..)
     , PilotsLanded(..)
     , LaunchToEss(..)
-    , BestDistance(..)
     , showLaunchToEss
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Reach (TrackReach(..))
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
-import WireTypes.Point (PilotDistance(..), showPilotDistance)
+import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
@@ -74,7 +73,7 @@ stopWorkingSubA
             ReachToggle
                 { flown =
                     ReachStats
-                        { max = bd@(BestDistance bd')
+                        { max = bd@(PilotDistance bd')
                         , mean = mf@(PilotDistance mf')
                         , stdDev = sf@(PilotDistance sf')
                         }
@@ -108,7 +107,7 @@ stopWorkingSubA
             <> "}"
             <> (" = " <> a')
 
-        bd'' = T.pack $ show bd
+        bd'' = showPilotDistance 3 bd <> "km"
         ed'' = showLaunchToEss ed
         mf'' = showPilotDistance 3 mf <> "km"
         sf'' = showPilotDistance 3 sf <> "km"
@@ -590,17 +589,20 @@ rowReachBonus (MinimumDistance dMin) mapN mapR p r = do
 
                             bolsterE = PilotDistance $ Stats.max dE dMin
                             bolsterF = PilotDistance $ Stats.max dF dMin
+
+                            f = showPilotDistance 3
+                            fDiff = showPilotDistanceDiff 3
                         in
-                            ( showPilotDistance 3 $ reachF
-                            , showPilotDistance 3 $ bolsterF
-                            , showPilotDistance 3 $ reachE
-                            , showPilotDistance 3 $ bolsterE
-                            , showPilotDistanceDiff reachF reachE
-                            , showPilotDistanceDiff bolsterF bolsterE
-                            , showPilotDistance 3 $ extraN
-                            , showPilotDistance 3 $ bolsterN
-                            , showPilotDistanceDiff bolsterE extraN
-                            , showPilotDistanceDiff bolsterF bolsterN
+                            ( f reachF
+                            , f bolsterF
+                            , f reachE
+                            , f bolsterE
+                            , fDiff reachF reachE
+                            , fDiff bolsterF bolsterE
+                            , f extraN
+                            , f bolsterN
+                            , fDiff bolsterE extraN
+                            , fDiff bolsterF bolsterN
                             )
 
                     _ -> ("", "", "", "", "", "", "", "", "", ""))
@@ -627,8 +629,3 @@ rowReachBonus (MinimumDistance dMin) mapN mapR p r = do
         el "td" . dynText $ showPilotName <$> p
 
         return ()
-
-showPilotDistanceDiff :: PilotDistance -> PilotDistance -> T.Text
-showPilotDistanceDiff (PilotDistance expected) (PilotDistance actual)
-    | printf "%.3f" actual == (printf "%.3f" expected :: String) = "="
-    | otherwise = T.pack . printf "%+.3f" $ actual - expected

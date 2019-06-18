@@ -117,12 +117,13 @@ import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Score
     ( MinimumDistance(..), LaunchToEss(..)
-    , BestDistance(..), SumOfDistance(..), PilotDistance(..)
+    , SumOfDistance(..), PilotDistance(..)
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..), PilotsLanded(..)
     , GoalRatio(..), Lw(..), Aw(..), Rw(..), Ew(..)
     , NominalTime(..), BestTime(..)
     , Validity(..), ValidityWorking(..)
-    , StopValidity(..), ReachStats(..), StopValidityWorking
+    , StopValidity(..), StopValidityWorking
+    , ReachToggle(..), ReachStats(..)
     , DifficultyFraction(..), LeadingFraction(..)
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
@@ -399,10 +400,11 @@ points'
                 dNom
                 pf
                 free
-                b
+                (ReachToggle bE bF)
                 s
             | pf <- PilotsFlying <$> dfss
-            | ReachStats{max = b} <- extraStats
+            | ReachStats{max = bE} <- extraStats
+            | ReachStats{max = bF} <- bolsterStats
             | s <- dSums
             ]
 
@@ -417,11 +419,12 @@ points'
                     ssT
                     gsT
                     dNom
-                    (BestDistance $ convert b)
+                    (ReachToggle bE bF)
 
                 | ssT <- f ssBestTime
                 | gsT <- f gsBestTime
-                | ReachStats{max = FlownMax b} <- extraStats
+                | ReachStats{max = bE} <- extraStats
+                | ReachStats{max = bF} <- bolsterStats
                 ]
 
         workings :: [Maybe ValidityWorking] =

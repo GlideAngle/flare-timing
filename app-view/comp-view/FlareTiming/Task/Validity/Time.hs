@@ -18,13 +18,13 @@ import WireTypes.ValidityWorking
     , TimeValidityWorking(..)
     , BestTime(..)
     , NominalTime(..)
-    , BestDistance(..)
     , NominalDistance(..)
+    , ReachToggle(..)
     , showBestTime, showBestTimeDiff
     , showNominalTime, showNominalTimeDiff
-    , showBestDistance, showBestDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
     )
+import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
@@ -51,10 +51,13 @@ timeWorkingSub
     <> "}"
 
 timeWorkingSub
-    TimeValidityWorking{bestDistance = bd, nominalDistance = nd} =
+    TimeValidityWorking
+        { nominalDistance = nd
+        , reachMax = ReachToggle{extra = bd}
+        } =
     " &="
     <> " \\\\dfrac{"
-    <> (T.pack . show $ bd)
+    <> (showPilotDistance 3 bd <> "km")
     <> "}{"
     <> (T.pack . show $ nd)
     <> "}"
@@ -66,8 +69,8 @@ timeWorking
     w@TimeValidityWorking
         { gsBestTime = bt
         , nominalTime = NominalTime nt
-        , bestDistance = BestDistance bd
         , nominalDistance = NominalDistance nd
+        , reachMax = ReachToggle{extra = PilotDistance bd}
         } =
     "katex.render("
     <> "\"\\\\begin{aligned} "
@@ -129,8 +132,8 @@ viewTime
                 { ssBestTime
                 , gsBestTime = bt
                 , nominalTime = nt
-                , bestDistance = bd
                 , nominalDistance = nd
+                , reachMax = ReachToggle{extra = bd}
                 }
         }
     ValidityWorking
@@ -138,8 +141,8 @@ viewTime
             TimeValidityWorking
                 { gsBestTime = btN
                 , nominalTime = ntN
-                , bestDistance = bdN
                 , nominalDistance = ndN
+                , reachMax = ReachToggle{extra = bdN}
                 }
         }
     = do
@@ -178,9 +181,9 @@ viewTime
             el "tr" $ do
                 el "td" $ text "bd"
                 el "td" $ text "Best Distance"
-                elV $ showBestDistance bd <> " km"
-                elN $ showBestDistance bdN <> " km"
-                elD $ showBestDistanceDiff bdN bd
+                elV $ showPilotDistance 3 bd <> " km"
+                elN $ showPilotDistance 3 bdN <> " km"
+                elD $ showPilotDistanceDiff 3 bdN bd
                 return ()
 
             el "tr" $ do

@@ -20,7 +20,11 @@ nullDistanceValidityWorking =
         , nominalGoal = NominalGoal 0
         , nominalDistance = NominalDistance [u| 0 km |]
         , minimumDistance = MinimumDistance [u| 0 km |]
-        , bestDistance = MaximumDistance [u| 0 km |]
+        , reachMax =
+            ReachToggle
+                { extra = FlownMax [u| 0 km |]
+                , flown = FlownMax [u| 0 km |]
+                }
         }
 
 nullTimeValidityWorking :: TimeValidityWorking
@@ -28,9 +32,13 @@ nullTimeValidityWorking =
     TimeValidityWorking
         { ssBestTime = Nothing
         , gsBestTime = Nothing
-        , bestDistance = BestDistance [u| 0 km |]
         , nominalTime = NominalTime [u| 0 h |]
         , nominalDistance = NominalDistance [u| 0 km |]
+        , reachMax =
+            ReachToggle
+                { extra = FlownMax [u| 0 km |]
+                , flown = FlownMax [u| 0 km |]
+                }
         }
 
 nullValidityWorking :: ValidityWorking

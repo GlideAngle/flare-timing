@@ -17,19 +17,19 @@ import WireTypes.ValidityWorking
     , DistanceValidityWorking(..)
     , NominalGoal(..)
     , MinimumDistance(..)
-    , MaximumDistance(..)
     , NominalDistance(..)
     , NominalDistanceArea(..)
     , SumOfDistance(..)
     , PilotsFlying(..)
+    , ReachToggle(..)
     , showPilotsFlyingDiff
     , showNominalGoal, showNominalGoalDiff
     , showSumOfDistance, showSumOfDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
     , showNominalDistanceArea, showNominalDistanceAreaDiff
     , showMinimumDistance, showMinimumDistanceDiff
-    , showMaximumDistance, showMaximumDistanceDiff
     )
+import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
@@ -60,13 +60,13 @@ distanceWorkingSubB :: DistanceValidityWorking -> T.Text
 distanceWorkingSubB
     DistanceValidityWorking
         { nominalGoal = ng'@(NominalGoal ng)
-        , bestDistance = bd'@(MaximumDistance bd)
         , nominalDistance = nd'@(NominalDistance nd)
+        , reachMax = ReachToggle{flown = bd'@(PilotDistance bd)}
         } =
     " &= \\\\max(0, "
     <> (T.pack . show $ ng')
     <> " * ("
-    <> (T.pack . show $ bd')
+    <> (showPilotDistance 3 bd' <> "km")
     <> " - "
     <> (T.pack . show $ nd')
     <> "))"
@@ -88,9 +88,9 @@ distanceWorkingSubArea :: DistanceValidityWorking -> T.Text
 distanceWorkingSubArea
     DistanceValidityWorking
         { nominalGoal = NominalGoal ng
-        , bestDistance = MaximumDistance bd
         , nominalDistance = NominalDistance nd
         , minimumDistance = MinimumDistance md
+        , reachMax = ReachToggle{flown = PilotDistance bd}
         } =
     " = \\\\frac{("
     <> (T.pack $ ppr a)
@@ -184,7 +184,7 @@ viewDistance
                 , nominalGoal = ng
                 , nominalDistance = nd
                 , minimumDistance = md
-                , bestDistance = bd
+                , reachMax = ReachToggle{flown = bd}
                 }
         }
     ValidityWorking
@@ -196,7 +196,7 @@ viewDistance
                 , nominalGoal = ngN
                 , nominalDistance = ndN
                 , minimumDistance = mdN
-                , bestDistance = bdN
+                , reachMax = ReachToggle{flown = bdN}
                 }
         }
     = do
@@ -251,9 +251,9 @@ viewDistance
             el "tr" $ do
                 el "td" $ text "bd"
                 el "td" $ text "Best Distance"
-                elV $ showMaximumDistance bd
-                elN $ showMaximumDistance bdN
-                elD $ showMaximumDistanceDiff bdN bd
+                elV $ showPilotDistance 3 bd <> "km"
+                elN $ showPilotDistance 3 bdN <> "km"
+                elD $ showPilotDistanceDiff 3 bdN bd
                 return ()
 
             el "tr" $ do

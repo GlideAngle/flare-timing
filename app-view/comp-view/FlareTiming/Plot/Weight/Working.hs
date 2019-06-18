@@ -11,7 +11,7 @@ import WireTypes.ValidityWorking
     , LaunchValidityWorking(..)
     , DistanceValidityWorking(..)
     , PilotsFlying(..)
-    , MaximumDistance(..)
+    , ReachToggle(..)
     )
 import WireTypes.Route (TaskLength(..), TaskDistance(..), showTaskDistance)
 import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..), AwScaling(..))
@@ -28,6 +28,7 @@ import WireTypes.Point
     , ArrivalPoints(..)
     , LeadingPoints(..)
     , TimePoints(..)
+    , PilotDistance(..)
     )
 import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 
@@ -42,7 +43,7 @@ hookWorking
     -> Maybe LwScaling
     -> Maybe AwScaling
     -> TaskDistance
-    -> MaximumDistance
+    -> PilotDistance
     -> Weights
     -> Points
     -> T.Text
@@ -56,7 +57,7 @@ weightWorking
     -> Maybe LwScaling
     -> Maybe AwScaling
     -> TaskDistance
-    -> MaximumDistance
+    -> PilotDistance
     -> Weights
     -> T.Text
 weightWorking
@@ -66,7 +67,7 @@ weightWorking
     lws
     aws
     (TaskDistance td)
-    (MaximumDistance bd)
+    (PilotDistance bd)
     Weights
         { distance = DistanceWeight dw
         , arrival = ArrivalWeight aw
@@ -313,7 +314,9 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                             { launch =
                                 LaunchValidityWorking { flying = pf@(PilotsFlying pf')}
                             , distance =
-                                DistanceValidityWorking{bestDistance = bd}
+                                DistanceValidityWorking
+                                    { reachMax = ReachToggle{extra = bd}
+                                    }
                             }
                     , Just
                         Tweak

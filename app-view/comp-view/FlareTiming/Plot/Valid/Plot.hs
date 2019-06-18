@@ -25,7 +25,7 @@ import WireTypes.ValidityWorking
     , ReachToggle(..), ReachStats(..), StopValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
     , BestTime(..), NominalTime(..)
-    , BestDistance(..), NominalDistance(..)
+    , NominalDistance(..)
     , SumOfDistance(..), NominalDistanceArea(..)
     , MinimumDistance(..)
     , PilotsAtEss(..), PilotsLanded(..), LaunchToEss(..)
@@ -287,8 +287,8 @@ timePlot e vy TimeValidityWorking{gsBestTime = Just bt, ..} =
     timeTime e vy bt nominalTime
 timePlot e vy TimeValidityWorking{ssBestTime = Just bt, ..} =
     timeTime e vy bt nominalTime
-timePlot e vy TimeValidityWorking{..} =
-    timeDistance e vy bestDistance nominalDistance
+timePlot e vy TimeValidityWorking{reachMax = ReachToggle{extra = bd}, ..} =
+    timeDistance e vy bd nominalDistance
 
 timeTime :: IsElement e => e -> TimeValidity -> BestTime -> NominalTime -> IO Plot
 timeTime
@@ -325,11 +325,11 @@ timeTime
             nt'
             (toJSString msgNominal)
 
-timeDistance :: IsElement e => e -> TimeValidity -> BestDistance -> NominalDistance -> IO Plot
+timeDistance :: IsElement e => e -> TimeValidity -> PilotDistance -> NominalDistance -> IO Plot
 timeDistance
     e
     (TimeValidity y)
-    (BestDistance bd)
+    (PilotDistance bd)
     (NominalDistance nd) = do
 
     let xMax = Stats.max bd nd
@@ -424,7 +424,7 @@ stopByReachPlot
             ReachToggle
                 { flown =
                     ReachStats
-                        { max = BestDistance bd
+                        { max = PilotDistance bd
                         , mean = PilotDistance dMean
                         }
                 }
@@ -468,7 +468,7 @@ fnStopByReach
             ReachToggle
                 { flown =
                     ReachStats
-                        { max = BestDistance bd
+                        { max = PilotDistance bd
                         , stdDev = PilotDistance flownStdDev
                         }
                 }
@@ -524,7 +524,7 @@ fnStopByLanded
             ReachToggle
                 { flown =
                     ReachStats
-                        { max = BestDistance bd
+                        { max = PilotDistance bd
                         , mean = PilotDistance flownMean
                         , stdDev = PilotDistance flownStdDev
                         }
@@ -546,7 +546,7 @@ stopByVaryPlot
             ReachToggle
                 { flown =
                     ReachStats
-                        { max = BestDistance bd
+                        { max = PilotDistance bd
                         , stdDev = PilotDistance std
                         }
                 }
@@ -587,7 +587,7 @@ fnStopByVary
             ReachToggle
                 { flown =
                     ReachStats
-                        { max = BestDistance bd
+                        { max = PilotDistance bd
                         , mean = PilotDistance flownMean
                         }
                 }

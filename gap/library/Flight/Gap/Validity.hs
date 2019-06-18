@@ -38,9 +38,7 @@ import Flight.Ratio (pattern (:%))
 import Flight.Gap.Distance.Stop
     (FlownMax(..), FlownMean(..), FlownStdDev(..), LaunchToEss(..))
 import Flight.Gap.Distance.Nominal (NominalDistance(..))
-import Flight.Gap.Distance.Best (BestDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
-import Flight.Gap.Distance.Max (MaximumDistance(..))
 import Flight.Gap.Distance.Sum (SumOfDistance(..))
 import Flight.Gap.Validity.Area (NominalDistanceArea(..))
 import Flight.Gap.Validity.Launch (LaunchValidity(..))
@@ -82,7 +80,7 @@ data DistanceValidityWorking =
         , nominalGoal :: NominalGoal
         , nominalDistance :: NominalDistance (Quantity Double [u| km |])
         , minimumDistance :: MinimumDistance (Quantity Double [u| km |])
-        , bestDistance :: MaximumDistance (Quantity Double [u| km |])
+        , reachMax :: ReachToggle (FlownMax (Quantity Double [u| km |]))
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -100,9 +98,9 @@ data TimeValidityWorking =
         -- ^ For each task, the best time ignoring start gates.
         , gsBestTime :: Maybe (BestTime (Quantity Double [u| h |]))
         -- ^ For each task, the best time from the start gate taken.
-        , bestDistance :: BestDistance (Quantity Double [u| km |])
         , nominalTime :: NominalTime (Quantity Double [u| h |])
         , nominalDistance :: NominalDistance (Quantity Double [u| km |])
+        , reachMax :: ReachToggle (FlownMax (Quantity Double [u| km |]))
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -179,7 +177,7 @@ tvrValidity
 tvrValidity
     DistanceRatio
         { nominalDistance = NominalDistance dNom
-        , bestDistance = BestDistance dBest
+        , bestDistance = FlownMax dBest
         } =
     tvrPolynomial . Stats.min 1 $ b / n
     where
@@ -203,7 +201,7 @@ data TimeValidityRatio
         }
     | DistanceRatio
         { nominalDistance :: NominalDistance (Quantity Double [u| km |])
-        , bestDistance :: BestDistance (Quantity Double [u| km |])
+        , bestDistance :: FlownMax (Quantity Double [u| km |])
         }
     deriving Show
 
@@ -231,21 +229,26 @@ timeValidity
     -> Maybe (BestTime (Quantity Double [u| s |]))
     -- ^ The best time from the start gate taken
     -> NominalDistance (Quantity Double [u| km |])
-    -> BestDistance (Quantity Double [u| km |])
+    -> ReachToggle (FlownMax (Quantity Double [u| km |]))
     -> (TimeValidity, Maybe TimeValidityWorking)
 
-timeValidity tNom ssBestTime Nothing dNom@(NominalDistance nd) dBest@(BestDistance bd)
+timeValidity
+    tNom
+    ssBestTime
+    Nothing
+    dNom@(NominalDistance nd)
+    reachMax@ReachToggle{extra = bdE@(FlownMax bd)}
     | nd <= [u| 0 km |] = tvZero
     | bd <= [u| 0 km |] = tvZero
     | otherwise =
-        ( tvrValidity $ DistanceRatio dNom dBest
+        ( tvrValidity $ DistanceRatio dNom bdE
         , Just
         $ TimeValidityWorking
             (btHours <$> ssBestTime)
             Nothing
-            dBest
             (ntHours tNom)
             dNom
+            reachMax
         )
 
 timeValidity
@@ -253,7 +256,7 @@ timeValidity
     ssBestTime
     (Just gsBestTime@(BestTime bt))
     dNom
-    dBest
+    reachMax
     | nt <= [u| 0 s |] = tvZero
     | bt <= [u| 0 s |] = tvZero
     | otherwise =
@@ -262,9 +265,9 @@ timeValidity
         $ TimeValidityWorking
             (btHours <$> ssBestTime)
             (Just (btHours gsBestTime))
-            dBest
             (ntHours tNom)
             dNom
+            reachMax
         )
 
 dvr
@@ -289,13 +292,13 @@ distanceValidity
     -> NominalDistance (Quantity Double [u| km |])
     -> PilotsFlying
     -> MinimumDistance (Quantity Double [u| km |])
-    -> FlownMax (Quantity Double [u| km |])
+    -> ReachToggle (FlownMax (Quantity Double [u| km |]))
     -> SumOfDistance (Quantity Double [u| km |])
     -> (DistanceValidity, Maybe DistanceValidityWorking)
 distanceValidity _ _ (PilotsFlying 0) _ _ _ =
     (DistanceValidity 0, Nothing)
 
-distanceValidity _ _ _ _ (FlownMax (MkQuantity 0)) _ =
+distanceValidity _ _ _ _ ReachToggle{flown = FlownMax (MkQuantity 0)} _ =
     (DistanceValidity 0, Nothing)
 
 distanceValidity
@@ -303,13 +306,12 @@ distanceValidity
     nd@(NominalDistance (MkQuantity 0))
     nFly
     md
-    (FlownMax flownMax)
+    bd
     dSum =
     ( DistanceValidity $ Stats.min 1 $ dvr area nFly dSum
     , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
     )
     where
-        bd = MaximumDistance flownMax
         area = NominalDistanceArea 0
 
 distanceValidity
@@ -317,7 +319,7 @@ distanceValidity
     nd@(NominalDistance dNom')
     nFly
     md@(MinimumDistance dMin')
-    (FlownMax flownMax)
+    bd
     dSum
     | dNom < dMin =
         ( DistanceValidity (1 % 1)
@@ -328,7 +330,6 @@ distanceValidity
         , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
         )
     where
-        bd = MaximumDistance flownMax
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'
 
@@ -343,7 +344,7 @@ distanceValidity
     nd@(NominalDistance dNom')
     nFly
     md@(MinimumDistance dMin')
-    (FlownMax flownMax)
+    bd@ReachToggle{flown = FlownMax dMax'}
     dSum
     | dNom < dMin =
         ( DistanceValidity (1 % 1)
@@ -354,7 +355,6 @@ distanceValidity
         , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
         )
     where
-        bd@(MaximumDistance dMax') = MaximumDistance flownMax
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'
         MkQuantity dMax = toRational' dMax'

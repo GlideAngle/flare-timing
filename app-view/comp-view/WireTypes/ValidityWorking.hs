@@ -112,7 +112,7 @@ data DistanceValidityWorking =
         , nominalGoal :: NominalGoal
         , nominalDistance :: NominalDistance
         , minimumDistance :: MinimumDistance
-        , bestDistance :: MaximumDistance
+        , reachMax :: ReachToggle PilotDistance
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
@@ -251,9 +251,9 @@ data TimeValidityWorking =
     TimeValidityWorking
         { ssBestTime :: Maybe BestTime
         , gsBestTime :: Maybe BestTime
-        , bestDistance :: BestDistance
         , nominalTime :: NominalTime
         , nominalDistance :: NominalDistance
+        , reachMax :: ReachToggle PilotDistance
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
@@ -336,7 +336,7 @@ data ReachToggle a =
 
 data ReachStats =
     ReachStats
-        { max :: BestDistance
+        { max :: PilotDistance
         , mean :: PilotDistance
         , stdDev :: PilotDistance
         }
