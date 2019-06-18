@@ -69,7 +69,7 @@ stopWorkingSubA :: StopValidityWorking -> (Double, T.Text)
 stopWorkingSubA
     StopValidityWorking
         { launchToEssDistance = ed@(LaunchToEss ed')
-        , extra =
+        , flown =
             ReachStats
                 { max = bd@(BestDistance bd')
                 , mean = mf@(PilotDistance mf')
