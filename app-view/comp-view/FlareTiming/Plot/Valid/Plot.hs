@@ -22,7 +22,7 @@ import WireTypes.ValidityWorking
     ( LaunchValidityWorking(..)
     , TimeValidityWorking(..)
     , DistanceValidityWorking(..)
-    , ReachStats(..), StopValidityWorking(..)
+    , ReachToggle(..), ReachStats(..), StopValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
     , BestTime(..), NominalTime(..)
     , BestDistance(..), NominalDistance(..)
@@ -420,10 +420,13 @@ stopByReachPlot
     e
     (StopValidity y)
     vw@StopValidityWorking
-        { flown =
-            ReachStats
-                { max = BestDistance bd
-                , mean = PilotDistance dMean
+        { reachStats =
+            ReachToggle
+                { flown =
+                    ReachStats
+                        { max = BestDistance bd
+                        , mean = PilotDistance dMean
+                        }
                 }
         } = do
 
@@ -460,12 +463,15 @@ fnStopByReach
         { pilotsAtEss = PilotsAtEss ess
         , landed = PilotsLanded landed
         , flying = PilotsFlying flying
-        , flown =
-            ReachStats
-                { max = BestDistance bd
-                , stdDev = PilotDistance flownStdDev
-                }
         , launchToEssDistance = LaunchToEss ed
+        , reachStats =
+            ReachToggle
+                { flown =
+                    ReachStats
+                        { max = BestDistance bd
+                        , stdDev = PilotDistance flownStdDev
+                        }
+                }
         }
     flownMean
     | ess > 0 = 1
@@ -513,13 +519,16 @@ fnStopByLanded
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
         , flying = PilotsFlying flying
-        , flown =
-            ReachStats
-                { max = BestDistance bd
-                , mean = PilotDistance flownMean
-                , stdDev = PilotDistance flownStdDev
-                }
         , launchToEssDistance = LaunchToEss ed
+        , reachStats =
+            ReachToggle
+                { flown =
+                    ReachStats
+                        { max = BestDistance bd
+                        , mean = PilotDistance flownMean
+                        , stdDev = PilotDistance flownStdDev
+                        }
+                }
         }
     landed
     | ess > 0 = 1
@@ -533,10 +542,13 @@ stopByVaryPlot
     e
     (StopValidity y)
     vw@StopValidityWorking
-        { flown =
-            ReachStats
-                { max = BestDistance bd
-                , stdDev = PilotDistance std
+        { reachStats =
+            ReachToggle
+                { flown =
+                    ReachStats
+                        { max = BestDistance bd
+                        , stdDev = PilotDistance std
+                        }
                 }
         } = do
 
@@ -570,12 +582,15 @@ fnStopByVary
         { pilotsAtEss = PilotsAtEss ess
         , landed = PilotsLanded landed
         , flying = PilotsFlying flying
-        , flown =
-            ReachStats
-                { max = BestDistance bd
-                , mean = PilotDistance flownMean
-                }
         , launchToEssDistance = LaunchToEss ed
+        , reachStats =
+            ReachToggle
+                { flown =
+                    ReachStats
+                        { max = BestDistance bd
+                        , mean = PilotDistance flownMean
+                        }
+                }
         }
     flownStdDev
     | ess > 0 = 1

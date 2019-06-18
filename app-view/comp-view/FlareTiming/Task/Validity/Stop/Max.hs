@@ -5,6 +5,7 @@ import Reflex.Dom
 
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
+    , ReachToggle(..)
     , ReachStats(..)
     , StopValidityWorking(..)
     , showBestDistance, showBestDistanceDiff
@@ -26,13 +27,16 @@ viewStopMax
     ValidityWorking
         { stop =
             Just StopValidityWorking
-                { extra =
-                    ReachStats
-                        { max = extraMax
-                        }
-                , flown =
-                    ReachStats
-                        { max = flownMax
+                { reachStats =
+                    ReachToggle
+                        { extra =
+                            ReachStats
+                                { max = extraMax
+                                }
+                        , flown =
+                            ReachStats
+                                { max = flownMax
+                                }
                         }
                 }
         }
@@ -40,13 +44,16 @@ viewStopMax
     ValidityWorking
         { stop =
             Just StopValidityWorking
-                { extra =
-                    ReachStats
-                        { max = extraMaxN
-                        }
-                , flown =
-                    ReachStats
-                        { max = flownMaxN
+                { reachStats =
+                    ReachToggle
+                        { extra =
+                            ReachStats
+                                { max = extraMaxN
+                                }
+                        , flown =
+                            ReachStats
+                                { max = flownMaxN
+                                }
                         }
                 }
         }

@@ -5,6 +5,7 @@ import Reflex.Dom
 
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
+    , ReachToggle(..)
     , ReachStats(..)
     , StopValidityWorking(..)
     )
@@ -26,13 +27,16 @@ viewStopMean
     ValidityWorking
         { stop =
             Just StopValidityWorking
-                { extra =
-                    ReachStats
-                        { mean = extraMean
-                        }
-                , flown =
-                    ReachStats
-                        { mean = flownMean
+                { reachStats =
+                    ReachToggle
+                        { extra =
+                            ReachStats
+                                { mean = extraMean
+                                }
+                        , flown =
+                            ReachStats
+                                { mean = flownMean
+                                }
                         }
                 }
         }
@@ -40,13 +44,16 @@ viewStopMean
     ValidityWorking
         { stop =
             Just StopValidityWorking
-                { extra =
-                    ReachStats
-                        { mean = extraMeanN
-                        }
-                , flown =
-                    ReachStats
-                        { mean = flownMeanN
+                { reachStats =
+                    ReachToggle
+                        { extra =
+                            ReachStats
+                                { mean = extraMeanN
+                                }
+                        , flown =
+                            ReachStats
+                                { mean = flownMeanN
+                                }
                         }
                 }
         }

@@ -33,6 +33,7 @@ module WireTypes.ValidityWorking
     , showNominalTime, showNominalTimeDiff
     , showBestDistance, showBestDistanceDiff
     -- * Stop Validity Working
+    , ReachToggle(..)
     , ReachStats(..)
     , StopValidityWorking(..)
     , PilotsAtEss(..)
@@ -326,6 +327,13 @@ instance FromJSON NominalTime where
             _ -> empty
     parseJSON _ = empty
 
+data ReachToggle a =
+    ReachToggle
+        { extra :: a
+        , flown :: a
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON)
+
 data ReachStats =
     ReachStats
         { max :: BestDistance
@@ -340,9 +348,8 @@ data StopValidityWorking =
         , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
-        , extra :: ReachStats
-        , flown :: ReachStats
         , launchToEssDistance :: LaunchToEss
+        , reachStats :: ReachToggle ReachStats
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

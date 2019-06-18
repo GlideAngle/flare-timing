@@ -440,27 +440,27 @@ cmpPointing a b =
         ("bestDistance", _) -> GT
 
         -- Point fields
-        ("reach", _) -> LT
+        ("reachStats", _) -> LT
 
-        ("effort", "reach") -> GT
+        ("effort", "reachStats") -> GT
         ("effort", _) -> LT
 
-        ("distance", "reach") -> GT
+        ("distance", "reachStats") -> GT
         ("distance", "effort") -> GT
         ("distance", _) -> LT
 
-        ("leading", "reach") -> GT
+        ("leading", "reachStats") -> GT
         ("leading", "effort") -> GT
         ("leading", "distance") -> GT
         ("leading", _) -> LT
 
-        ("arrival", "reach") -> GT
+        ("arrival", "reachStats") -> GT
         ("arrival", "effort") -> GT
         ("arrival", "distance") -> GT
         ("arrival", "leading") -> GT
         ("arrival", _) -> LT
 
-        ("time", "reach") -> GT
+        ("time", "reachStats") -> GT
         ("time", "effort") -> GT
         ("time", "distance") -> GT
         ("time", "leading") -> GT

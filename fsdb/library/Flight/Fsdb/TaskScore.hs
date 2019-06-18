@@ -62,7 +62,7 @@ import Flight.Score
     , LaunchValidity(..), LaunchValidityWorking(..)
     , DistanceValidity(..), DistanceValidityWorking(..)
     , TimeValidity(..), TimeValidityWorking(..)
-    , ReachStats(..), StopValidityWorking(..)
+    , ReachToggle(..), ReachStats(..), StopValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), PilotsAtEss(..), PilotsLanded(..)
     , FlownMax(..), FlownMean(..), FlownStdDev(..)
     , LaunchToEss(..)
@@ -338,17 +338,20 @@ xpStopValidityWorking =
                     , landed = PilotsLanded $ fromIntegral pl
                     , stillFlying = PilotsFlying . fromIntegral $ pf - pl
                     , flying = PilotsFlying $ fromIntegral pf
-                    , extra =
-                        ReachStats
-                            { max = FlownMax $ convert qExtraMax
-                            , mean = FlownMean [u| 0 km |]
-                            , stdDev = FlownStdDev [u| 0 km |]
-                            }
-                    , flown =
-                        ReachStats
-                            { max = FlownMax $ convert qFlownMax
-                            , mean = FlownMean [u| 0 km |]
-                            , stdDev = FlownStdDev [u| 0 km |]
+                    , reachStats =
+                        ReachToggle
+                            { extra =
+                                ReachStats
+                                    { max = FlownMax $ convert qExtraMax
+                                    , mean = FlownMean [u| 0 km |]
+                                    , stdDev = FlownStdDev [u| 0 km |]
+                                    }
+                            , flown =
+                                ReachStats
+                                    { max = FlownMax $ convert qFlownMax
+                                    , mean = FlownMean [u| 0 km |]
+                                    , stdDev = FlownStdDev [u| 0 km |]
+                                    }
                             }
                     , launchToEssDistance = LaunchToEss $ MkQuantity ed
                     }
@@ -356,8 +359,11 @@ xpStopValidityWorking =
                 { pilotsAtEss = PilotsAtEss pe
                 , landed = PilotsLanded pl
                 , flying = PilotsFlying pf
-                , extra = ReachStats{max = FlownMax qExtraMax}
-                , flown = ReachStats{max = FlownMax qFlownMax}
+                , reachStats =
+                    ReachToggle
+                        { extra = ReachStats{max = FlownMax qExtraMax}
+                        , flown = ReachStats{max = FlownMax qFlownMax}
+                        }
                 , launchToEssDistance = LaunchToEss (MkQuantity ed)
                 } ->
                     let (MkQuantity eMax) :: Quantity _ [u| km |] = convert qExtraMax
@@ -571,7 +577,7 @@ parseScores
     let vws =
             [
                 (\(vs, lw, tw, dw, sw) ->
-                    let sw' = sw{extra = e, flown = r} in
+                    let sw' = sw{reachStats = ReachToggle{extra = e, flown = r}} in
                     (vs, lw, tw, dw, sw')
                 )
                 <$> gv

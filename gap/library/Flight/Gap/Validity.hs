@@ -11,6 +11,7 @@ module Flight.Gap.Validity
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
     , StopValidity(..)
+    , ReachToggle(..)
     , ReachStats(..)
     , StopValidityWorking(..)
     , LaunchToEss(..)
@@ -105,6 +106,16 @@ data TimeValidityWorking =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+data ReachToggle a =
+    ReachToggle
+        { extra :: a
+        -- ^ The best bolstered reach with extra altitude above goal converted
+        -- to extra reach via glide.
+        , flown :: a
+        -- ^ The maximuum bolstered reach.
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 data ReachStats =
     ReachStats
         { max :: FlownMax (Quantity Double [u| km |])
@@ -119,11 +130,8 @@ data StopValidityWorking =
         , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
-        , extra :: ReachStats
-        -- ^ The best bolstered reach with extra altitude above goal converted to extra reach via glide.
-        , flown :: ReachStats
-        -- ^ The maximuum bolstered reach.
         , launchToEssDistance :: LaunchToEss (Quantity Double [u| km |])
+        , reachStats :: ReachToggle ReachStats
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -401,8 +409,11 @@ stopValidity
                     , landed = landedByStop
                     , stillFlying = stillFlying
                     , flying = pf
-                    , extra = extra
-                    , flown = flown
+                    , reachStats =
+                        ReachToggle
+                            { extra = extra
+                            , flown = flown
+                            }
                     , launchToEssDistance = ed'
                     }
 

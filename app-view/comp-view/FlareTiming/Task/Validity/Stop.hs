@@ -20,6 +20,7 @@ import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , StopValidityWorking(..)
     , TimeValidityWorking(..)
+    , ReachToggle(..)
     , ReachStats(..)
     , PilotsFlying(..)
     , PilotsLanded(..)
@@ -69,11 +70,14 @@ stopWorkingSubA :: StopValidityWorking -> (Double, T.Text)
 stopWorkingSubA
     StopValidityWorking
         { launchToEssDistance = ed@(LaunchToEss ed')
-        , flown =
-            ReachStats
-                { max = bd@(BestDistance bd')
-                , mean = mf@(PilotDistance mf')
-                , stdDev = sf@(PilotDistance sf')
+        , reachStats =
+            ReachToggle
+                { flown =
+                    ReachStats
+                        { max = bd@(BestDistance bd')
+                        , mean = mf@(PilotDistance mf')
+                        , stdDev = sf@(PilotDistance sf')
+                        }
                 }
         } =
         (a, eqnA)

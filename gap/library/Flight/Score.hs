@@ -27,6 +27,7 @@ module Flight.Score
     , DistanceValidity(..)
     , DistanceValidityWorking(..)
     , StopValidity(..)
+    , ReachToggle(..)
     , ReachStats(..)
     , StopValidityWorking(..)
     , TaskValidity(..)
