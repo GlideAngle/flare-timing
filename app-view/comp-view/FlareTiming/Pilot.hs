@@ -3,6 +3,7 @@ module FlareTiming.Pilot
     , showPilotName
     , rowPilot
     , rowDfNt
+    , rowDfNtReach
     , rowPenal
     ) where
 
@@ -59,6 +60,17 @@ rowDfNt utcOffset ln' pd = do
             el "td" . text $ showPilotName p
             elClass "td" "td-awarded-start" . text $ showSs tz v
             elClass "td" "td-awarded-end" . text $ showEs tz v
+            elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> d)
+
+rowDfNtReach
+    :: MonadWidget t m
+    => Dynamic t (Maybe TaskLength)
+    -> Dynamic t DfNoTrackPilot
+    -> m ()
+rowDfNtReach ln' pd = do
+    dyn_ $ ffor2 ln' pd (\ln DfNoTrackPilot{pilot = p, awardedReach = d} ->
+        el "tr" $ do
+            el "td" . text $ showPilotName p
             elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> d)
 
 rowPenal

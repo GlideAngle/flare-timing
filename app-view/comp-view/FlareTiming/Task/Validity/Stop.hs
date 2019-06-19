@@ -35,7 +35,7 @@ import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceD
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), DfNoTrack(..))
 import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
-import FlareTiming.Pilot (showPilotName, rowDfNt)
+import FlareTiming.Pilot (showPilotName, rowDfNtReach)
 import FlareTiming.Time (timeZone, showTime)
 import qualified FlareTiming.Statistics as Stats (mean, stdDev)
 import FlareTiming.Task.Validity.Stop.Counts (viewStopCounts)
@@ -258,13 +258,10 @@ viewStop
                                                 _ <- elClass "table" "table is-striped is-narrow" $ do
                                                         el "thead" $ do
                                                             el "tr" $ do
-                                                                el "th" $ text "Id"
                                                                 el "th" $ text "Name"
-                                                                elClass "th" "th-awarded-start" $ text "Start"
-                                                                elClass "th" "th-awarded-end" $ text "End"
                                                                 elClass "th" "th-awarded-reach" $ text "Reach"
 
-                                                        el "tbody" $ simpleList dfNt (rowDfNt utc ln)
+                                                        el "tbody" $ simpleList dfNt (rowDfNtReach ln)
 
                                                 el "p" . text
                                                     $ "These pilots get awarded at least minimum distance."
