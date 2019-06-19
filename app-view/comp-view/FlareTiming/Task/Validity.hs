@@ -12,9 +12,10 @@ import qualified WireTypes.Validity as Vy
     , showTaskValidity, showLaunchValidity, showDistanceValidity, showTimeValidity
     )
 import WireTypes.ValidityWorking (ValidityWorking(..))
+import WireTypes.Route (TaskLength(..))
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Reach (TrackReach(..), BolsterStats(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Pilot(..), DfNoTrack(..))
 import WireTypes.Comp (MinimumDistance(..), Task(..), UtcOffset(..), TaskStop(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import FlareTiming.Task.Validity.Widget (spacer)
@@ -49,6 +50,7 @@ hookWorking
 viewValidity
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t (Maybe TaskLength)
     -> Dynamic t MinimumDistance
     -> Dynamic t Task
     -> Dynamic t (Maybe Vy.Validity)
@@ -60,15 +62,17 @@ viewValidity
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
+    -> Dynamic t DfNoTrack
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
 viewValidity
-    utcOffset free task
+    utcOffset ln free task
     vy vyNorm
     vw vwNorm
     reachStats bonusStats
     reach bonusReach
     flyingTimes
+    dfNt
     sEx = do
 
     let (landedByStop, stillFlying) =
@@ -141,6 +145,7 @@ viewValidity
 
                         viewStop
                             utcOffset
+                            ln
                             free
                             v vN
                             w wN
@@ -150,6 +155,7 @@ viewValidity
                             (fromMaybe [] <$> bonusReach)
                             landedByStop
                             stillFlying
+                            dfNt
                             sEx'
 
                         spacer

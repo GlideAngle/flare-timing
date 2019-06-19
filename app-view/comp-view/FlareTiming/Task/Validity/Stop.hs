@@ -27,14 +27,15 @@ import WireTypes.ValidityWorking
     , LaunchToEss(..)
     , showLaunchToEss
     )
+import WireTypes.Route (TaskLength(..))
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Reach (TrackReach(..))
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Pilot(..), DfNoTrack(..))
 import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
-import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Pilot (showPilotName, rowDfNt)
 import FlareTiming.Time (timeZone, showTime)
 import qualified FlareTiming.Statistics as Stats (mean, stdDev)
 import FlareTiming.Task.Validity.Stop.Counts (viewStopCounts)
@@ -190,6 +191,7 @@ stopWorking
 viewStop
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t (Maybe TaskLength)
     -> Dynamic t MinimumDistance
     -> Vy.Validity
     -> Vy.Validity
@@ -201,14 +203,16 @@ viewStop
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
+    -> Dynamic t DfNoTrack
     -> [(Pilot, Norm.NormBreakdown)]
     -> m ()
-viewStop _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ = return ()
-viewStop _ _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
-viewStop _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
-viewStop _ _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
 viewStop
-    utcOffset
+    utc
+    ln
     free
     v@Vy.Validity{stop = sv}
     vN
@@ -224,7 +228,10 @@ viewStop
     bonusReach
     landedByStop
     stillFlying
+    dfNt'
     sEx = do
+
+    let dfNt = unDfNoTrack <$> dfNt'
 
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
@@ -236,18 +243,46 @@ viewStop
                 elClass "div" "tile is-12" $
                     elClass "div" "tile" $ do
                         elClass "div" "tile is-parent" $ do
+                            dyn_ $ ffor dfNt (\dfNt'' ->
+                                if null dfNt''
+                                    then
+                                        elClass "article" "tile is-child notification is-warning" $ do
+                                            elClass "p" "title" $ text "DF"
+                                            elClass "p" "subtitle" $ text "no track"
+                                            el "p" $ text "There are no DF-no-track pilots"
+                                    else
+                                        elClass "article" "tile is-child box" $ do
+                                            elClass "p" "title" $ text "DF"
+                                            elClass "p" "subtitle" $ text "no track"
+                                            elClass "div" "content" $ do
+                                                _ <- elClass "table" "table is-striped is-narrow" $ do
+                                                        el "thead" $ do
+                                                            el "tr" $ do
+                                                                el "th" $ text "Id"
+                                                                el "th" $ text "Name"
+                                                                elClass "th" "th-awarded-start" $ text "Start"
+                                                                elClass "th" "th-awarded-end" $ text "End"
+                                                                elClass "th" "th-awarded-reach" $ text "Reach"
+
+                                                        el "tbody" $ simpleList dfNt (rowDfNt utc ln)
+
+                                                el "p" . text
+                                                    $ "These pilots get awarded at least minimum distance."
+                                )
+
+                        elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Landed"
                                 elClass "p" "subtitle" $ text "landed before stop"
                                 elClass "div" "content"
-                                    $ tablePilotFlyingTimes utcOffset landedByStop
+                                    $ tablePilotFlyingTimes utc landedByStop
 
                         elClass "div" "tile is-parent" $ do
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Flying"
                                 elClass "p" "subtitle" $ text "still flying at stop"
                                 elClass "div" "content"
-                                    $ tablePilotFlyingTimes utcOffset stillFlying
+                                    $ tablePilotFlyingTimes utc stillFlying
 
             elClass "div" "tile is-ancestor" $ do
                 elClass "div" "tile is-12" $
@@ -303,8 +338,8 @@ tablePilotFlyingTimes
     => Dynamic t UtcOffset
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
-tablePilotFlyingTimes utcOffset xs = do
-    tz <- sample . current $ timeZone <$> utcOffset
+tablePilotFlyingTimes utc xs = do
+    tz <- sample . current $ timeZone <$> utc
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do

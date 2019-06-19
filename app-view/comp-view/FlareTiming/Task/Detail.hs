@@ -285,7 +285,14 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
-                                BasisTabValidity -> viewValidity utc free' task vy vyNorm vw vwNorm reachStats bonusStats reach bonusReach ft sEx
+                                BasisTabValidity ->
+                                    viewValidity
+                                        utc ln free' task
+                                        vy vyNorm
+                                        vw vwNorm
+                                        reachStats bonusStats
+                                        reach bonusReach
+                                        ft dfNt sEx
                                 BasisTabGeo -> tableGeo ix)
 
                             <$> tabBasis
