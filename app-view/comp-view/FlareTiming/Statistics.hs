@@ -8,7 +8,7 @@ stdDev = sqrt . variance
 
 variance :: [Double] -> Double
 variance xs =
-    (sum $ zipWith (*) ys ys) / (fromIntegral $ length xs - 1)
+    (sum $ zipWith (*) ys ys) / (fromIntegral $ length xs)
     where
         xMean = mean xs
         ys = ((-) xMean) <$> xs

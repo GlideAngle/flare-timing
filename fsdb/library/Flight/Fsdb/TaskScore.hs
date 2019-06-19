@@ -8,7 +8,7 @@ import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
 import Data.List (unzip5)
 import qualified Data.Vector as V (fromList)
-import qualified Statistics.Sample as Stats (mean, stdDev)
+import qualified Statistics.Sample as Stats (meanVariance)
 import Data.UnitsOfMeasure (u, zero, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -575,23 +575,27 @@ parseScores
 
     let es =
             [
-                let ys = V.fromList $ unTaskDistanceAsKm <$> xs in
-                ReachStats
-                    { max = FlownMax . MkQuantity $ maximum ys
-                    , mean = FlownMean . MkQuantity $ Stats.mean ys
-                    , stdDev = FlownStdDev . MkQuantity $ Stats.stdDev ys
-                    }
+                let ys = V.fromList $ unTaskDistanceAsKm <$> xs
+                    (ysMean, ysVar) = Stats.meanVariance ys
+                in
+                    ReachStats
+                        { max = FlownMax . MkQuantity $ maximum ys
+                        , mean = FlownMean $ MkQuantity ysMean
+                        , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
+                        }
             | (xs, _) <- rss
             ]
 
     let rs =
             [
-                let ys = V.fromList $ unTaskDistanceAsKm <$> xs in
-                ReachStats
-                    { max = FlownMax . MkQuantity $ maximum ys
-                    , mean = FlownMean . MkQuantity $ Stats.mean ys
-                    , stdDev = FlownStdDev . MkQuantity $ Stats.stdDev ys
-                    }
+                let ys = V.fromList $ unTaskDistanceAsKm <$> xs
+                    (ysMean, ysVar) = Stats.meanVariance ys
+                in
+                    ReachStats
+                        { max = FlownMax . MkQuantity $ maximum ys
+                        , mean = FlownMean $ MkQuantity ysMean
+                        , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
+                        }
             | (_, xs) <- rss
             ]
 

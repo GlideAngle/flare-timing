@@ -10,7 +10,7 @@ import Data.List (sortOn)
 import Data.Map.Strict (Map)
 import Data.UnitsOfMeasure (u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import qualified Statistics.Sample as Stats (mean, stdDev)
+import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList, maximum)
 
 import Flight.Comp (Pilot(..))
@@ -116,11 +116,13 @@ maskReachTick (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
             | rs <- rssRaw
             ]
 
+        mvs = Stats.meanVariance <$> rssRaw
+
         rsMean :: [FlownMean (Quantity Double [u| km |])] =
-            FlownMean . MkQuantity . Stats.mean <$> rssRaw
+            FlownMean . MkQuantity . fst <$> mvs
 
         rsStdDev  :: [FlownStdDev (Quantity Double [u| km |])] =
-            FlownStdDev . MkQuantity . Stats.stdDev <$> rssRaw
+            FlownStdDev . MkQuantity . sqrt . snd <$> mvs
 
         fssRaw =
             [ V.fromList
@@ -135,8 +137,10 @@ maskReachTick (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
             | fs <- fssRaw
             ]
 
+        bvs = Stats.meanVariance <$> fssRaw
+
         bsMean :: [FlownMean (Quantity Double [u| km |])] =
-            FlownMean . MkQuantity . Stats.mean <$> fssRaw
+            FlownMean . MkQuantity . fst <$> bvs
 
         bsStdDev  :: [FlownStdDev (Quantity Double [u| km |])] =
-            FlownStdDev . MkQuantity . Stats.stdDev <$> fssRaw
+            FlownStdDev . MkQuantity . sqrt . snd <$> bvs
