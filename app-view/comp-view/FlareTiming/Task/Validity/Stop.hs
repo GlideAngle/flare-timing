@@ -308,25 +308,30 @@ tablePilotFlyingTimes utcOffset xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
+                    el "th" $ text "#"
                     el "th" $ text "Landed"
                     el "th" $ text "Pilot"
 
                     return ()
 
             el "tbody" $ do
-                simpleList xs (uncurry (rowFlyingTimes tz) . splitDynPure)
+                listWithKey
+                    (Map.fromList . zip [1..] <$> xs)
+                    (rowFlyingTimes tz)
 
     return ()
 
 rowFlyingTimes
     :: MonadWidget t m
     => TimeZone
-    -> Dynamic t Pilot
-    -> Dynamic t (FlyingSection UTCTime)
+    -> Int
+    -> Dynamic t (Pilot, (FlyingSection UTCTime))
     -> m ()
-rowFlyingTimes tz p tm = do
+rowFlyingTimes tz i ptm = do
+    let (p, tm) = splitDynPure ptm
     let t = maybe "-" (T.pack . showTime tz . snd) <$> tm
     el "tr" $ do
+        el "td" . text . T.pack $ show i
         el "td" $ dynText t
         el "td" . dynText $ showPilotName <$> p
 
@@ -355,7 +360,7 @@ tablePilotReach free reach bonusReach sEx = do
 
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text ""
+                    el "th" $ text "#"
 
                     elClass "th" "th-valid-reach" $ text "Flown †"
                     elClass "th" "th-valid-reach-extra" $ text "Extra ‡"
@@ -405,7 +410,10 @@ tablePilotReach free reach bonusReach sEx = do
                     let mapR = Map.fromList br
                     let mapN = Map.fromList sEx
 
-                    _ <- simpleList reach (uncurry (rowReachBonus free' mapN mapR) . splitDynPure)
+                    _ <- listWithKey
+                            (Map.fromList . zip [1..] <$> reach)
+                            (rowReachBonus free' mapN mapR)
+
                     let f = text . T.pack . printf "%.3f"
 
                     elClass "tr" "tr-sum" $ do
@@ -561,10 +569,12 @@ rowReachBonus
     => MinimumDistance
     -> Map Pilot Norm.NormBreakdown
     -> Map Pilot TrackReach
-    -> Dynamic t Pilot
-    -> Dynamic t TrackReach
+    -> Int
+    -> Dynamic t (Pilot, TrackReach)
     -> m ()
-rowReachBonus (MinimumDistance dMin) mapN mapR p r = do
+rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
+    let (p, r) = splitDynPure pr
+
     (reachF
         , bolsterF
         , reachE
@@ -608,7 +618,7 @@ rowReachBonus (MinimumDistance dMin) mapN mapR p r = do
                     _ -> ("", "", "", "", "", "", "", "", "", ""))
 
     el "tr" $ do
-        el "td" $ text ""
+        el "td" . text . T.pack $ show i
 
         elClass "td" "td-valid-reach" $ text reachF
         elClass "td" "td-valid-reach-extra" $ text reachE
