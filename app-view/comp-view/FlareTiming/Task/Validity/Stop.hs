@@ -27,13 +27,13 @@ import WireTypes.ValidityWorking
     , LaunchToEss(..)
     , showLaunchToEss
     )
-import WireTypes.Route (TaskLength(..))
+import WireTypes.Route (TaskLength(..), TaskDistance(..))
 import WireTypes.Cross (FlyingSection)
-import WireTypes.Reach (TrackReach(..))
+import WireTypes.Reach (TrackReach(..), dfNoTrackReach)
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Pilot (Pilot(..), DfNoTrack(..))
+import WireTypes.Pilot (Pilot(..), DfNoTrackPilot(..), DfNoTrack(..))
 import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
 import FlareTiming.Pilot (showPilotName, rowDfNtReach)
 import FlareTiming.Time (timeZone, showTime)
@@ -293,7 +293,7 @@ viewStop
                                 elClass "p" "title" $ text "Reach"
                                 elClass "p" "subtitle" $ text "best distance reached at or before stop"
                                 elClass "div" "content"
-                                    $ tablePilotReach free reach bonusReach sEx
+                                    $ tablePilotReach ln free reach bonusReach dfNt sEx
 
             elClass "div" "tile is-ancestor" $ do
                 elClass "div" "tile is-12" $
@@ -375,14 +375,26 @@ rowFlyingTimes tz i ptm = do
 
 tablePilotReach
     :: MonadWidget t m
-    => Dynamic t MinimumDistance
+    => Dynamic t (Maybe TaskLength)
+    -> Dynamic t MinimumDistance
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
+    -> Dynamic t [DfNoTrackPilot]
     -> [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tablePilotReach free reach bonusReach sEx = do
+tablePilotReach ln free reach bonusReach dfNts sEx = do
     let tdFoot = elAttr "td" ("colspan" =: "12")
     let foot = el "tr" . tdFoot . text
+
+    let reach' = ffor3 ln reach dfNts (\ln' xs ys ->
+            let td = maybe (TaskDistance 0) (\TaskLength{..} -> taskRoute) ln'
+                ys' = dfNoTrackReach td <$> ys
+            in xs ++ ys')
+
+    let bonusReach' = ffor3 ln bonusReach dfNts (\ln' xs ys ->
+            let td = maybe (TaskDistance 0) (\TaskLength{..} -> taskRoute) ln'
+                ys' = dfNoTrackReach td <$> ys
+            in xs ++ ys')
 
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
@@ -418,7 +430,7 @@ tablePilotReach free reach bonusReach sEx = do
 
                     return ()
 
-            _ <- el "tbody" . dyn $ ffor3 free reach bonusReach (\free'@(MinimumDistance dMin) r br -> do
+            _ <- el "tbody" . dyn $ ffor3 free reach' bonusReach' (\free'@(MinimumDistance dMin) r br -> do
 
                     let fOver = Stats.max 0 . (\x -> x - dMin)
 
@@ -447,10 +459,11 @@ tablePilotReach free reach bonusReach sEx = do
                     let mapN = Map.fromList sEx
 
                     _ <- listWithKey
-                            (Map.fromList . zip [1..] <$> reach)
+                            (Map.fromList . zip [1..] <$> reach')
                             (rowReachBonus free' mapN mapR)
 
                     let f = text . T.pack . printf "%.3f"
+                    let g = text . T.pack . printf "%d"
 
                     elClass "tr" "tr-sum" $ do
                         el "th" $ text "∑"
@@ -505,6 +518,34 @@ tablePilotReach free reach bonusReach sEx = do
 
                         elClass "td" "td-valid-bolster-extra-diff" $ text ""
                         elAttr "td" ("rowspan" =: "4") $ text ""
+
+                        return ()
+
+                    el "tr" $ do
+                        el "th" $ text "n"
+                        elClass "td" "valid-max td-valid-reach" . g
+                            $ length rs
+                        elClass "td" "valid-max td-valid-reach-extra" . g
+                            $ length bs
+                        elClass "td" "valid-max td-valid-reach-extra-diff" . g
+                            $ length ds
+
+                        elClass "td" "valid-max td-valid-bolster" . g
+                            $ length rsB
+
+                        elClass "td" "td-norm bolster" . g
+                            $ length bsN
+                        elClass "td" "td-norm bolster-diff" $ text ""
+
+                        elClass "td" "valid-max td-valid-bolster-extra" . g
+                            $ length bsB
+
+                        elClass "td" "td-norm bolster-extra" . g
+                            $ length esN
+                        elClass "td" "td-norm bolster-extra-diff" $ text ""
+
+                        elClass "td" "valid-max td-valid-bolster-extra-diff" . g
+                            $ length dsB
 
                         return ()
 
