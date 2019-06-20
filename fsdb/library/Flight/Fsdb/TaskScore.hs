@@ -7,9 +7,10 @@ import qualified Prelude as Stats (max)
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
 import Data.List (unzip5)
+import qualified Data.Map.Strict as Map (fromList, lookup)
 import qualified Data.Vector as V (fromList)
 import qualified Statistics.Sample as Stats (meanVariance)
-import Data.UnitsOfMeasure (u, zero, convert, fromRational')
+import Data.UnitsOfMeasure ((*:), u, zero, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Text.XML.HXT.Arrow.Pickle
@@ -47,7 +48,8 @@ import Text.XML.HXT.Core
 import Flight.Distance (TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
-import Flight.Comp (PilotId(..), Pilot(..), Nominal(..))
+import Flight.Comp
+    (PilotId(..), Pilot(..), Nominal(..), DfNoTrackPilot(..))
 import Flight.Score
     ( TaskPoints(..), TaskPlacing(..)
     , DistancePoints(..)
@@ -76,7 +78,8 @@ import Flight.Score
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Internal.Parse (parseUtcTime, parseHmsTime)
-import Flight.Fsdb.Distance (asAwardReach, taskMetresToKm, taskKmToMetres)
+import Flight.Fsdb.Distance (asTaskKm, asAwardReach, taskMetresToKm, taskKmToMetres)
+import Flight.Fsdb.Task (getDidFlyNoTracklog, asAward)
 
 dToR :: Double -> Rational
 dToR = toRational
@@ -113,7 +116,11 @@ xpRankScore =
                 , leading = LeadingPoints . dToR $ l
                 , arrival = ArrivalPoints . dToR $ a
                 , time = TimePoints . dToR $ t
-                , reachExtra = taskKmToMetres . TaskDistance . MkQuantity $ dE
+                , reach =
+                    ReachToggle
+                        { flown = taskKmToMetres . TaskDistance . MkQuantity $ dE
+                        , extra = taskKmToMetres . TaskDistance . MkQuantity $ dE
+                        }
                 , reachMade = taskKmToMetres . TaskDistance . MkQuantity $ dM
                 , distanceFrac = 0
                 , ss = parseUtcTime <$> ss
@@ -134,7 +141,10 @@ xpRankScore =
                 , leading = LeadingPoints l
                 , arrival = ArrivalPoints a
                 , time = TimePoints t
-                , reachExtra = TaskDistance (MkQuantity dE)
+                , reach =
+                    ReachToggle
+                        { extra = TaskDistance (MkQuantity dE)
+                        }
                 , reachMade = TaskDistance (MkQuantity dM)
                 , ss
                 , es
@@ -412,17 +422,36 @@ getScore pilots =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getTaskDistance
+    &&& getDidFlyNoTracklog kps
     &&& getPoint
-    >>> arr (\(td, xs) ->
-        [
-            (,) p $ do
-                n@NormBreakdown{reachMade = dm} <- x
-                let dKm = taskMetresToKm dm
-                AwardedDistance{awardedFrac = frac} <- asAwardReach td (Just dKm)
-                return $ n{distanceFrac = frac}
+    >>> arr (\(t, (nt, xs)) ->
+        let td = asTaskKm t
+            dfnt = asAward t <$> nt
+            ys :: [(Pilot, _)] = (\DfNoTrackPilot{awardedReach = ar, ..} -> (pilot, ar)) <$> dfnt
+            mapDfNt = Map.fromList ys
+        in
+            [
+                (,) p $ do
+                    n@NormBreakdown{reachMade = dm, reach = r} <- x
+                    let dKm = taskMetresToKm dm
+                    AwardedDistance{awardedFrac = frac} <- asAwardReach t (Just dKm)
+                    return
+                        n
+                            { distanceFrac = frac
+                            , reach =
+                                maybe
+                                    r
+                                    (\((TaskDistance d), AwardedDistance{awardedFrac = fracDfNt}) ->
+                                        r{flown = TaskDistance $ (MkQuantity fracDfNt) *: d})
+                                    (do
+                                        td' <- td
+                                        ad <- Map.lookup p mapDfNt
+                                        ad' <- ad
+                                        return (td', ad'))
+                            }
 
-        | (p, x) <- xs
-        ])
+            | (p, x) <- xs
+            ])
     where
         kps = keyPilots pilots
 
@@ -568,7 +597,7 @@ parseScores
             [
                 unzip
                 [ (e, r)
-                | NormBreakdown{reachExtra = e, reachMade = r} <- ys
+                | NormBreakdown{reach = ReachToggle{extra = e}, reachMade = r} <- ys
                 ]
             | ys <- (fmap . fmap) snd yss
             ]

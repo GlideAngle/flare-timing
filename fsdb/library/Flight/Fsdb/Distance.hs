@@ -5,6 +5,7 @@ module Flight.Fsdb.Distance
     ( taskKmToMetres
     , taskMetresToKm
     , asAwardReach
+    , asTaskKm
     ) where
 
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
@@ -41,3 +42,11 @@ asAwardReach t' m' = do
         , awardedTask = t
         , awardedFrac = unQuantity $ qr /: qt
         }
+
+asTaskKm :: String -> Maybe (QTaskDistance Double [u| km |])
+asTaskKm t= do
+    -- TODO: Use unpickling for FsTaskScoreParams/@task_distance.
+    -- WARNING: Having some trouble with unpickling task distance.
+    -- Going with simple read for now.
+    let td :: Double = read t
+    return . TaskDistance . MkQuantity $ td

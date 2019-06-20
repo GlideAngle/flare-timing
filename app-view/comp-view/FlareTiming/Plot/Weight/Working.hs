@@ -11,7 +11,6 @@ import WireTypes.ValidityWorking
     , LaunchValidityWorking(..)
     , DistanceValidityWorking(..)
     , PilotsFlying(..)
-    , ReachToggle(..)
     )
 import WireTypes.Route (TaskLength(..), TaskDistance(..), showTaskDistance)
 import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..), AwScaling(..))
@@ -29,6 +28,7 @@ import WireTypes.Point
     , LeadingPoints(..)
     , TimePoints(..)
     , PilotDistance(..)
+    , ReachToggle(..)
     )
 import FlareTiming.Katex (Expect(..), Recalc(..), katexNewLine, katexCheck)
 

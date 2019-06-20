@@ -20,7 +20,6 @@ import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , StopValidityWorking(..)
     , TimeValidityWorking(..)
-    , ReachToggle(..)
     , ReachStats(..)
     , PilotsFlying(..)
     , PilotsLanded(..)
@@ -31,7 +30,10 @@ import WireTypes.Route (TaskLength(..), TaskDistance(..))
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Reach (TrackReach(..), dfNoTrackReach)
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
-import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
+import WireTypes.Point
+    ( PilotDistance(..), ReachToggle(..)
+    , showPilotDistance, showPilotDistanceDiff
+    )
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), DfNoTrackPilot(..), DfNoTrack(..))
 import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
@@ -436,7 +438,7 @@ tablePilotReach ln free reach bonusReach dfNts sEx = do
                     let bsB = Stats.max dMin <$> bs
                     let bsBO = fOver <$> bsB
 
-                    let esN = [d | (_, Norm.NormBreakdown{reachExtra = PilotDistance d}) <- sEx]
+                    let esN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{flown = PilotDistance d}}) <- sEx]
                     let esNO = fOver <$> esN
 
                     let bsN = [d | (_, Norm.NormBreakdown{reachMade = PilotDistance d}) <- sEx]
@@ -658,7 +660,7 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                     (Just
                         Norm.NormBreakdown
                             { reachMade = bolsterN
-                            , reachExtra = extraN
+                            , reach = ReachToggle{extra = extraN}
                             }
                         , Just br) ->
                         let reachE@(PilotDistance dE) = reach br

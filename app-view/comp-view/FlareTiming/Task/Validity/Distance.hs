@@ -21,7 +21,6 @@ import WireTypes.ValidityWorking
     , NominalDistanceArea(..)
     , SumOfDistance(..)
     , PilotsFlying(..)
-    , ReachToggle(..)
     , showPilotsFlyingDiff
     , showNominalGoal, showNominalGoalDiff
     , showSumOfDistance, showSumOfDistanceDiff
@@ -29,7 +28,10 @@ import WireTypes.ValidityWorking
     , showNominalDistanceArea, showNominalDistanceAreaDiff
     , showMinimumDistance, showMinimumDistanceDiff
     )
-import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
+import WireTypes.Point
+    ( PilotDistance(..), ReachToggle(..)
+    , showPilotDistance, showPilotDistanceDiff
+    )
 import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 

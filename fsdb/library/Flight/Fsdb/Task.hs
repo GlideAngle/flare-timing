@@ -5,6 +5,8 @@ module Flight.Fsdb.Task
     ( parseTasks
     , parseTaskPilotGroups
     , parseTaskPilotPenalties
+    , getDidFlyNoTracklog
+    , asAward
     ) where
 
 import Data.Time.Clock (addUTCTime)
@@ -67,7 +69,7 @@ import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity)
 import Flight.Fsdb.Tweak (xpTweak)
-import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
+import Flight.Fsdb.KeyPilot (KeyPilot, unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Distance (asAwardReach)
 
 -- | The attribute //FsTaskDefinition@goal.
@@ -317,7 +319,11 @@ isGoalLine _ = GoalNotLine
 
 asAward
     :: String
-    -> (Pilot, Maybe (QTaskDistance Double [u| km |]), Maybe AwardedVelocity)
+    ->
+        ( Pilot
+        , Maybe (QTaskDistance Double [u| km |])
+        , Maybe AwardedVelocity
+        )
     -> DfNoTrackPilot
 asAward t' (p, m, v) =
     DfNoTrackPilot
@@ -333,7 +339,7 @@ getTaskPilotGroup ps =
     >>> getTaskDistance
     &&& getAbsent
     &&& getDidNotFly
-    &&& getDidFlyNoTracklog
+    &&& getDidFlyNoTracklog kps
     >>> arr mkGroup
     where
         mkGroup (t, (absentees, (dnf, nt))) =
@@ -386,30 +392,45 @@ getTaskPilotGroup ps =
                     >>> getAttrValue "id"
                     >>> arr (unKeyPilot (keyMap kps) . PilotId)
 
-        -- <FsParticipant id="91">
-        --    <FsFlightData tracklog_filename="" />
-        -- <FsParticipant id="85">
-        --    <FsFlightData distance="95.030" tracklog_filename="" />
-        getDidFlyNoTracklog =
-            ( getChildren
-            >>> hasName "FsParticipants"
-            >>> listA getDidFlyers
+        getTaskDistance =
+            getChildren
+            >>> hasName "FsTaskScoreParams"
+            >>> getAttrValue "task_distance"
+
+-- <FsParticipant id="91">
+--    <FsFlightData tracklog_filename="" />
+-- <FsParticipant id="85">
+--    <FsFlightData distance="95.030" tracklog_filename="" />
+getDidFlyNoTracklog
+    :: ArrowXml a
+    => [KeyPilot]
+    -> a
+        _
+        [
+            ( Pilot
+            , Maybe (QTaskDistance Double [u| km |])
+            , Maybe AwardedVelocity
             )
-            -- NOTE: If a task is created when there are no participants
-            -- then the FsTask/FsParticipants element is omitted.
-            `orElse` constA []
-            where
-                getDidFlyers =
-                    getChildren
-                    >>> hasName "FsParticipant"
-                        `containing`
-                        ( getChildren
-                        >>> hasName "FsFlightData"
-                        >>> hasAttrValue "tracklog_filename" (== ""))
-                    >>> getAttrValue "id"
-                    &&& getAwardedDistance
-                    &&& getAwardedTime
-                    >>> arr (\(pid, (ad, at)) -> (unKeyPilot (keyMap kps) . PilotId $ pid, ad, at))
+        ]
+getDidFlyNoTracklog kps =
+    getChildren
+    >>> hasName "FsParticipants"
+    >>> listA getDidFlyers
+    -- NOTE: If a task is created when there are no participants
+    -- then the FsTask/FsParticipants element is omitted.
+    `orElse` constA []
+    where
+        getDidFlyers =
+            getChildren
+            >>> hasName "FsParticipant"
+                `containing`
+                ( getChildren
+                >>> hasName "FsFlightData"
+                >>> hasAttrValue "tracklog_filename" (== ""))
+            >>> getAttrValue "id"
+            &&& getAwardedDistance
+            &&& getAwardedTime
+            >>> arr (\(pid, (ad, at)) -> (unKeyPilot (keyMap kps) . PilotId $ pid, ad, at))
 
         getAwardedDistance =
             (getChildren
@@ -425,10 +446,6 @@ getTaskPilotGroup ps =
             )
             `orElse` constA Nothing
 
-        getTaskDistance =
-            getChildren
-            >>> hasName "FsTaskScoreParams"
-            >>> getAttrValue "task_distance"
 
 getTask
     :: ArrowXml a

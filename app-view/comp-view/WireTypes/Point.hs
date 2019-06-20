@@ -25,6 +25,7 @@ module WireTypes.Point
     , TimeWeight(..)
     , Weights(..)
     , PointPenalty(..)
+    , ReachToggle(..)
     -- * Showing Breakdown
     , showPilotDistance
     , showPilotDistanceDiff
@@ -384,6 +385,13 @@ data Velocity =
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
+data ReachToggle a =
+    ReachToggle
+        { extra :: a
+        , flown :: a
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON)
+
 data NormBreakdown =
     NormBreakdown
         { place :: TaskPlacing
@@ -392,7 +400,7 @@ data NormBreakdown =
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
-        , reachExtra :: PilotDistance
+        , reach :: ReachToggle PilotDistance
         , reachMade :: PilotDistance
         , distanceFrac :: Double
         , ss :: Maybe UTCTime

@@ -42,6 +42,7 @@ import Flight.Score
     , SpeedFraction
     , ArrivalFraction
     , LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
+    , ReachToggle(..)
     )
 import Flight.Track.Distance (Land)
 import Flight.Comp (StartGate)
@@ -82,7 +83,7 @@ data NormBreakdown =
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
-        , reachExtra :: Land
+        , reach :: ReachToggle Land
         , reachMade :: Land
         , distanceFrac :: Double
         , ss :: Maybe UTCTime

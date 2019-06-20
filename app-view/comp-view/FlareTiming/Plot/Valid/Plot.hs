@@ -22,7 +22,7 @@ import WireTypes.ValidityWorking
     ( LaunchValidityWorking(..)
     , TimeValidityWorking(..)
     , DistanceValidityWorking(..)
-    , ReachToggle(..), ReachStats(..), StopValidityWorking(..)
+    , ReachStats(..), StopValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
     , BestTime(..), NominalTime(..)
     , NominalDistance(..)
@@ -30,7 +30,7 @@ import WireTypes.ValidityWorking
     , MinimumDistance(..)
     , PilotsAtEss(..), PilotsLanded(..), LaunchToEss(..)
     )
-import WireTypes.Point (PilotDistance(..))
+import WireTypes.Point (PilotDistance(..), ReachToggle(..))
 import FlareTiming.Plot.Foreign (Plot(..))
 
 foreign import javascript unsafe

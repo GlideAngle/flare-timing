@@ -19,12 +19,14 @@ import WireTypes.ValidityWorking
     , BestTime(..)
     , NominalTime(..)
     , NominalDistance(..)
-    , ReachToggle(..)
     , showBestTime, showBestTimeDiff
     , showNominalTime, showNominalTimeDiff
     , showNominalDistance, showNominalDistanceDiff
     )
-import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
+import WireTypes.Point
+    ( PilotDistance(..), ReachToggle(..)
+    , showPilotDistance, showPilotDistanceDiff
+    )
 import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 

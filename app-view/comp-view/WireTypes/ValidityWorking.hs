@@ -29,7 +29,6 @@ module WireTypes.ValidityWorking
     , showBestTime, showBestTimeDiff
     , showNominalTime, showNominalTimeDiff
     -- * Stop Validity Working
-    , ReachToggle(..)
     , ReachStats(..)
     , StopValidityWorking(..)
     , PilotsAtEss(..)
@@ -47,7 +46,7 @@ import qualified Data.Text as T (Text, pack, unpack)
 import Data.Aeson (Value(..), FromJSON(..))
 
 import FlareTiming.Time (showHmsForHours, showNominalTDiff)
-import WireTypes.Point (PilotDistance(..))
+import WireTypes.Point (PilotDistance(..), ReachToggle(..))
 
 data ValidityWorking =
     ValidityWorking
@@ -274,13 +273,6 @@ instance FromJSON NominalTime where
             'h' : ' ' : xs -> return . NominalTime . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty
-
-data ReachToggle a =
-    ReachToggle
-        { extra :: a
-        , flown :: a
-        }
-    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 data ReachStats =
     ReachStats

@@ -5,11 +5,10 @@ import Reflex.Dom
 
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
-    , ReachToggle(..)
     , ReachStats(..)
     , StopValidityWorking(..)
     )
-import WireTypes.Point (showPilotDistance, showPilotDistanceDiff)
+import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import FlareTiming.Task.Validity.Widget (elV, elN, elD)
 
