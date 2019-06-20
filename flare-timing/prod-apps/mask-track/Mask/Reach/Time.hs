@@ -28,13 +28,21 @@ import Stats (DashPathInputs(..))
 
 maskReachTime
     :: MinimumDistance (Quantity Double [u| km |])
+    -> [[(Pilot, TrackReach)]]
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Map Pilot (DashPathInputs k)]
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[Pilot]]
     -> MaskingReach
-maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows psArriving =
+maskReachTime
+    (MinimumDistance dMin)
+    dfNtNigh
+    lsWholeTask
+    zsTaskTicked
+    dsBest
+    dsNighRows
+    psArriving =
     MaskingReach
         { bolster = zipWith3 ReachStats bsMax bsMean bsStdDev
         , reach = zipWith3 ReachStats rsMax rsMean rsStdDev
@@ -45,7 +53,7 @@ maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
         dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
             compNighTime lsWholeTask zsTaskTicked dsNighRows
 
-        rsNigh :: [[(Pilot, TrackReach)]] =
+        trackedNigh :: [[(Pilot, TrackReach)]] =
             [
                 catMaybes
                 $ sequence
@@ -68,6 +76,8 @@ maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows 
             | dBest <- dsBest
             | ds <- dsNigh
             ]
+
+        rsNigh :: [[(Pilot, TrackReach)]] = zipWith (++) trackedNigh dfNtNigh
 
         rsArrive :: [[(Pilot, TrackReach)]] =
             [

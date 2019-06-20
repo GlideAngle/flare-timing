@@ -386,16 +386,6 @@ tablePilotReach ln free reach bonusReach dfNts sEx = do
     let tdFoot = elAttr "td" ("colspan" =: "12")
     let foot = el "tr" . tdFoot . text
 
-    let reach' = ffor3 ln reach dfNts (\ln' xs ys ->
-            let td = maybe (TaskDistance 0) (\TaskLength{..} -> taskRoute) ln'
-                ys' = dfNoTrackReach td <$> ys
-            in xs ++ ys')
-
-    let bonusReach' = ffor3 ln bonusReach dfNts (\ln' xs ys ->
-            let td = maybe (TaskDistance 0) (\TaskLength{..} -> taskRoute) ln'
-                ys' = dfNoTrackReach td <$> ys
-            in xs ++ ys')
-
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -430,7 +420,7 @@ tablePilotReach ln free reach bonusReach dfNts sEx = do
 
                     return ()
 
-            _ <- el "tbody" . dyn $ ffor3 free reach' bonusReach' (\free'@(MinimumDistance dMin) r br -> do
+            _ <- el "tbody" . dyn $ ffor3 free reach bonusReach (\free'@(MinimumDistance dMin) r br -> do
 
                     let fOver = Stats.max 0 . (\x -> x - dMin)
 
@@ -459,7 +449,7 @@ tablePilotReach ln free reach bonusReach dfNts sEx = do
                     let mapN = Map.fromList sEx
 
                     _ <- listWithKey
-                            (Map.fromList . zip [1..] <$> reach')
+                            (Map.fromList . zip [1..] <$> reach)
                             (rowReachBonus free' mapN mapR)
 
                     let f = text . T.pack . printf "%.3f"

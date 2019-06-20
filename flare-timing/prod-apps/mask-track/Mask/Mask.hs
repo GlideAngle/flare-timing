@@ -10,6 +10,7 @@ import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.Except (MonadIO)
 import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
@@ -17,11 +18,14 @@ import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
     , Pilot(..)
+    , PilotGroup(..)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
+    , DfNoTrack(..)
+    , dfNoTrackReach
     , compToMaskArrival
     , compToMaskEffort
     , compToMaskLead
@@ -29,7 +33,7 @@ import Flight.Comp
     , compToMaskSpeed
     , compToBonusReach
     )
-import Flight.Distance (QTaskDistance)
+import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Mask
     ( FnIxTask
     , checkTracks
@@ -39,7 +43,7 @@ import Flight.Mask
 import Flight.Track.Tag (Tagging)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
-import Flight.Track.Distance (TrackDistance(..), Land)
+import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Land)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
 import qualified Flight.Lookup as Lookup
@@ -216,15 +220,35 @@ writeMask
                 (compToMaskEffort compFile)
                 (maskEffort dsNullAltBest dsLand)
 
+            let dfNtReach :: [[(Pilot, TrackReach)]] =
+                    [ dfNoTrackReach (TaskDistance $ MkQuantity td) <$> dfnts
+                    | dfnts <- unDfNoTrack . didFlyNoTracklog <$> pilotGroups
+                    | td <- maybe 0 unTaskDistanceAsKm <$> lsWholeTask
+                    ]
+
             -- NOTE: The reach without altitude bonus distance.
             writeMaskingReach
                 (compToMaskReach compFile)
-                (maskReachTime free lsWholeTask zsTaskTicked dsNullAltBest dsNullAltNighRows psArriving)
+                (maskReachTime
+                    free
+                    dfNtReach
+                    lsWholeTask
+                    zsTaskTicked
+                    dsNullAltBest
+                    dsNullAltNighRows
+                    psArriving)
 
             -- NOTE: The reach with altitude bonus distance.
             writeBonusReach
                 (compToBonusReach compFile)
-                (maskReachTick free lsWholeTask zsTaskTicked dsBonusAltBest dsBonusAltNighRows psArriving)
+                (maskReachTick
+                    free
+                    dfNtReach
+                    lsWholeTask
+                    zsTaskTicked
+                    dsBonusAltBest
+                    dsBonusAltNighRows
+                    psArriving)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)

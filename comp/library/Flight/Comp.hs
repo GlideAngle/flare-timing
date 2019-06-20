@@ -57,6 +57,7 @@ module Flight.Comp
     , DfNoTrackPilot(..)
     , LandedOut(..)
     , MadeGoal(..)
+    , dfNoTrackReach
     , pilotNamed
     -- * Comp paths
     , module Flight.Path

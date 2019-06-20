@@ -10,6 +10,7 @@ module Flight.Pilot
     , DfNoTrack(..)
     , LandedOut(..)
     , MadeGoal(..)
+    , dfNoTrackReach
     ) where
 
 import GHC.Generics (Generic)
@@ -17,9 +18,27 @@ import Data.Aeson
     ( ToJSON(..), FromJSON(..), Options(..)
     , defaultOptions, genericToJSON, genericParseJSON
     )
-import Flight.Score (Pilot)
+import Data.UnitsOfMeasure ((*:), u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+
+import Flight.Distance (TaskDistance(..), QTaskDistance)
+import Flight.Score (Pilot, LinearFraction(..))
 import Flight.Track.Time (AwardedVelocity)
-import Flight.Track.Distance (AwardedDistance)
+import Flight.Track.Distance (AwardedDistance(..), TrackReach(..))
+
+dfNoTrackReach
+    :: QTaskDistance Double [u| km |]
+    -> DfNoTrackPilot
+    -> (Pilot, TrackReach)
+dfNoTrackReach (TaskDistance td) DfNoTrackPilot{pilot, awardedReach} =
+    (pilot,) $
+    maybe
+        (TrackReach (TaskDistance [u| 0 m |]) (LinearFraction 0))
+        (\AwardedDistance{awardedFrac = af} ->
+            TrackReach
+                (TaskDistance $ (MkQuantity af) *: td)
+                (LinearFraction $ toRational af))
+        awardedReach
 
 -- | The group of pilots that did not fly a task.
 newtype Dnf = Dnf {unDnf :: [Pilot]}
