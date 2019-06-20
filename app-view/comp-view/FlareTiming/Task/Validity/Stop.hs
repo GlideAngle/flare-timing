@@ -258,10 +258,14 @@ viewStop
                                                 _ <- elClass "table" "table is-striped is-narrow" $ do
                                                         el "thead" $ do
                                                             el "tr" $ do
+                                                                el "th" $ text "#"
                                                                 el "th" $ text "Name"
                                                                 elClass "th" "th-awarded-reach" $ text "Reach"
 
-                                                        el "tbody" $ simpleList dfNt (rowDfNtReach ln)
+                                                        el "tbody" $
+                                                            listWithKey
+                                                                (Map.fromList . zip [1..] <$> dfNt)
+                                                                (rowDfNtReach ln)
 
                                                 el "p" . text
                                                     $ "These pilots get awarded at least minimum distance."

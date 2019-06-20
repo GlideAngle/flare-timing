@@ -65,11 +65,13 @@ rowDfNt utcOffset ln' pd = do
 rowDfNtReach
     :: MonadWidget t m
     => Dynamic t (Maybe TaskLength)
+    -> Int
     -> Dynamic t DfNoTrackPilot
     -> m ()
-rowDfNtReach ln' pd = do
+rowDfNtReach ln' i pd = do
     dyn_ $ ffor2 ln' pd (\ln DfNoTrackPilot{pilot = p, awardedReach = d} ->
         el "tr" $ do
+            el "td" . text . T.pack $ show i
             el "td" . text $ showPilotName p
             elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> d)
 
