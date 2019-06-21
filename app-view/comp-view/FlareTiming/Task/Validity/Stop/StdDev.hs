@@ -85,18 +85,22 @@ viewStopStdDev
             el "tr" $ do
                 el "th" $ text ""
                 elClass "th" "th-valid-reach-col" $ text "Reach"
-                elClass "th" "th-valid-bolster-col" $ text "Bolster"
+
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
+
+                elClass "th" "th-valid-bolster-col" $ text "Bolster"
 
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown"
                 elV $ showPilotDistance 3 reachStdDev
-                -- NOTE: bolsterStdDev == flownStdDev
-                elV $ showPilotDistance 3 flownStdDev
+
                 elN $ showPilotDistance 3 flownStdDevN
                 elD $ showPilotDistanceDiff 3 flownStdDevN flownStdDev
+
+                -- NOTE: bolsterStdDev == flownStdDev
+                elV $ showPilotDistance 3 flownStdDev
                 return ()
 
             el "tr" $ do
@@ -104,10 +108,11 @@ viewStopStdDev
                 elClass "td" "td-valid-reach-extra" . text
                     $ showPilotDistance 3 reachStdDevE
 
+                elN $ showPilotDistance 3 extraStdDevN
+                elD $ showPilotDistanceDiff 3 extraStdDevN extraStdDev
+
                 -- NOTE: bolsterStdDevE == extraStdDev
                 elClass "td" "td-valid-bolster-extra" . text
                     $ showPilotDistance 3 extraStdDev
 
-                elN $ showPilotDistance 3 extraStdDevN
-                elD $ showPilotDistanceDiff 3 extraStdDevN extraStdDev
                 return ()

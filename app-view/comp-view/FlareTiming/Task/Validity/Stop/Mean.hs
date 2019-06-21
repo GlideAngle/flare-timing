@@ -85,18 +85,22 @@ viewStopMean
             el "tr" $ do
                 el "th" $ text ""
                 elClass "th" "th-valid-reach-col" $ text "Reach"
-                elClass "th" "th-valid-bolster-col" $ text "Bolster"
+
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
+
+                elClass "th" "th-valid-bolster-col" $ text "Bolster"
 
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown ‖"
                 elV $ showPilotDistance 3 reachMean
-                -- NOTE: bolsterMean == flownMean
-                elV $ showPilotDistance 3 flownMean
+
                 elN $ showPilotDistance 3 flownMeanN
                 elD $ showPilotDistanceDiff 3 flownMeanN flownMean
+
+                -- NOTE: bolsterMean == flownMean
+                elV $ showPilotDistance 3 flownMean
                 return ()
 
             el "tr" $ do
@@ -104,12 +108,13 @@ viewStopMean
                 elClass "td" "td-valid-reach-extra" . text
                     $ showPilotDistance 3 reachMeanE
 
+                elN $ showPilotDistance 3 extraMeanN
+                elD $ showPilotDistanceDiff 3 extraMeanN extraMean
+
                 -- NOTE: bolsterMeanE == extraMean
                 elClass "td" "td-valid-bolster-extra" . text
                     $ showPilotDistance 3 extraMean
 
-                elN $ showPilotDistance 3 extraMeanN
-                elD $ showPilotDistanceDiff 3 extraMeanN extraMean
                 return ()
 
         let tdFoot = elAttr "td" ("colspan" =: "5")

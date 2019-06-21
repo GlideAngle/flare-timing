@@ -431,7 +431,6 @@ tablePilotReach free reach bonusReach sEx = do
                     let rsO = fOver <$> rs
 
                     let rsN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{flown = PilotDistance d}}) <- sEx]
-                    let rsNO = fOver <$> rsN
 
                     let rsB = Stats.max dMin <$> rs
                     let rsBO = fOver <$> rsB

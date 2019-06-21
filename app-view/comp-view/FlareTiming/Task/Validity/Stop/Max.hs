@@ -85,18 +85,22 @@ viewStopMax
             el "tr" $ do
                 el "th" $ text ""
                 elClass "th" "th-valid-reach-col" $ text "Reach †"
-                elClass "th" "th-valid-bolster-col" $ text "Bolster ‡"
+
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
+
+                elClass "th" "th-valid-bolster-col" $ text "Bolster ‡"
 
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown"
                 elV $ showPilotDistance 3 reachMax
-                -- NOTE: bolsterMax == flownMax
-                elV $ showPilotDistance 3 flownMax
+
                 elN $ showPilotDistance 3 flownMaxN
                 elD $ showPilotDistanceDiff 3 flownMaxN flownMax
+
+                -- NOTE: bolsterMax == flownMax
+                elV $ showPilotDistance 3 flownMax
                 return ()
 
             el "tr" $ do
@@ -104,12 +108,13 @@ viewStopMax
                 elClass "td" "td-valid-reach-extra" . text
                     $ showPilotDistance 3 reachMaxE
 
+                elN $ showPilotDistance 3 extraMaxN
+                elD $ showPilotDistanceDiff 3 extraMaxN extraMax
+
                 -- NOTE: bolsterMaxE == extraMax
                 elClass "td" "td-valid-bolster-extra" . text
                     $ showPilotDistance 3 extraMax
 
-                elN $ showPilotDistance 3 extraMaxN
-                elD $ showPilotDistanceDiff 3 extraMaxN extraMax
                 return ()
 
         let tdFoot = elAttr "td" ("colspan" =: "5")
