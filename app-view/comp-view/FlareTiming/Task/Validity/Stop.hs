@@ -431,6 +431,7 @@ tablePilotReach free reach bonusReach sEx = do
                     let rsO = fOver <$> rs
 
                     let rsN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{flown = PilotDistance d}}) <- sEx]
+                    let rsNO = fOver <$> rsN
 
                     let rsB = Stats.max dMin <$> rs
                     let rsBO = fOver <$> rsB
@@ -500,7 +501,7 @@ tablePilotReach free reach bonusReach sEx = do
                         elClass "td" "td-valid-reach" . f
                             $ Stats.sum rsO
                         elClass "th" "th-norm reach" . f
-                            $ Stats.sum rsN
+                            $ Stats.sum rsNO
                         elClass "th" "th-norm reach-diff" $ text ""
 
                         elClass "td" "td-valid-reach-extra" . f
@@ -598,7 +599,7 @@ tablePilotReach free reach bonusReach sEx = do
                         elClass "td" "valid-μ td-valid-reach" . f
                             $ Stats.mean rs
                         elClass "th" "th-norm reach" . f
-                            $ Stats.mean rs
+                            $ Stats.mean rsN
                         elClass "th" "th-norm reach-diff" $ text ""
 
                         elClass "td" "valid-μ td-valid-reach-extra" . f
@@ -631,7 +632,7 @@ tablePilotReach free reach bonusReach sEx = do
                         elClass "td" "valid-σ td-valid-reach" . f
                             $ Stats.stdDev rs
                         elClass "th" "th-norm reach" . f
-                            $ Stats.stdDev rs
+                            $ Stats.stdDev rsN
                         elClass "th" "th-norm reach-diff" $ text ""
 
                         elClass "td" "valid-σ td-valid-reach-extra" . f
