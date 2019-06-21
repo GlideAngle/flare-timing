@@ -401,6 +401,9 @@ tablePilotReach free reach bonusReach sEx = do
                     el "th" $ text "#"
 
                     elClass "th" "th-valid-reach" $ text "Flown †"
+                    elClass "th" "th-norm reach" $ text "✓"
+                    elClass "th" "th-norm reach-diff" $ text "Δ"
+
                     elClass "th" "th-valid-reach-extra" $ text "Extra ‡"
                     elClass "th" "th-valid-reach-extra-diff" $ text "Δ"
 
@@ -427,6 +430,9 @@ tablePilotReach free reach bonusReach sEx = do
                     let rs = [d | (_, TrackReach{reach = PilotDistance d}) <- r]
                     let rsO = fOver <$> rs
 
+                    let rsN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{flown = PilotDistance d}}) <- sEx]
+                    let rsNO = fOver <$> rsN
+
                     let rsB = Stats.max dMin <$> rs
                     let rsBO = fOver <$> rsB
 
@@ -436,7 +442,7 @@ tablePilotReach free reach bonusReach sEx = do
                     let bsB = Stats.max dMin <$> bs
                     let bsBO = fOver <$> bsB
 
-                    let esN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{flown = PilotDistance d}}) <- sEx]
+                    let esN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{extra = PilotDistance d}}) <- sEx]
                     let esNO = fOver <$> esN
 
                     let bsN = [d | (_, Norm.NormBreakdown{reachMade = PilotDistance d}) <- sEx]
@@ -457,8 +463,13 @@ tablePilotReach free reach bonusReach sEx = do
 
                     elClass "tr" "tr-sum" $ do
                         el "th" $ text "∑"
+
                         elClass "td" "td-valid-reach" . f
                             $ Stats.sum rs
+                        elClass "th" "th-norm reach" . f
+                            $ Stats.sum rsN
+                        elClass "th" "th-norm reach-diff" $ text ""
+
                         elClass "td" "td-valid-reach-extra" . f
                             $ Stats.sum bs
                         elClass "td" "td-valid-reach-extra-diff" . f
@@ -486,8 +497,13 @@ tablePilotReach free reach bonusReach sEx = do
 
                     elClass "tr" "tr-sum" $ do
                         el "th" $ text "∑ over min"
+
                         elClass "td" "td-valid-reach" . f
                             $ Stats.sum rsO
+                        elClass "th" "th-norm reach" . f
+                            $ Stats.sum rsN
+                        elClass "th" "th-norm reach-diff" $ text ""
+
                         elClass "td" "td-valid-reach-extra" . f
                             $ Stats.sum bsO
                         elClass "td" "td-valid-reach-extra-diff" $ text ""
@@ -513,8 +529,13 @@ tablePilotReach free reach bonusReach sEx = do
 
                     el "tr" $ do
                         el "th" $ text "n"
+
                         elClass "td" "valid-max td-valid-reach" . g
                             $ length rs
+                        elClass "th" "th-norm reach" . g
+                            $ length rsN
+                        elClass "th" "th-norm reach-diff" $ text ""
+
                         elClass "td" "valid-max td-valid-reach-extra" . g
                             $ length bs
                         elClass "td" "valid-max td-valid-reach-extra-diff" . g
@@ -541,8 +562,13 @@ tablePilotReach free reach bonusReach sEx = do
 
                     el "tr" $ do
                         el "th" $ text "max"
+
                         elClass "td" "valid-max td-valid-reach" . f
                             $ maximum rs
+                        elClass "th" "th-norm reach" . f
+                            $ maximum rsN
+                        elClass "th" "th-norm reach-diff" $ text ""
+
                         elClass "td" "valid-max td-valid-reach-extra" . f
                             $ maximum bs
                         elClass "td" "valid-max td-valid-reach-extra-diff" . f
@@ -569,8 +595,13 @@ tablePilotReach free reach bonusReach sEx = do
 
                     el "tr" $ do
                         el "th" $ text "μ"
+
                         elClass "td" "valid-μ td-valid-reach" . f
                             $ Stats.mean rs
+                        elClass "th" "th-norm reach" . f
+                            $ Stats.mean rs
+                        elClass "th" "th-norm reach-diff" $ text ""
+
                         elClass "td" "valid-μ td-valid-reach-extra" . f
                             $ Stats.mean bs
                         elClass "td" "valid-μ td-valid-reach-extra-diff" . f
@@ -597,8 +628,13 @@ tablePilotReach free reach bonusReach sEx = do
 
                     el "tr" $ do
                         el "th" $ text "σ"
+
                         elClass "td" "valid-σ td-valid-reach" . f
                             $ Stats.stdDev rs
+                        elClass "th" "th-norm reach" . f
+                            $ Stats.stdDev rs
+                        elClass "th" "th-norm reach-diff" $ text ""
+
                         elClass "td" "valid-σ td-valid-reach-extra" . f
                             $ Stats.stdDev bs
                         elClass "td" "valid-σ td-valid-reach-extra-diff" . f
@@ -645,9 +681,11 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
     (reachF
         , bolsterF
         , reachE
+        , reachN
         , bolsterE
-        , reachDiff
-        , bolsterDiff
+        , reachDiffE
+        , reachDiffN
+        , bolsterDiffE
         , extraN
         , bolsterN
         , extraDiffN
@@ -658,7 +696,11 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                     (Just
                         Norm.NormBreakdown
                             { reachMade = bolsterN
-                            , reach = ReachToggle{extra = extraN}
+                            , reach =
+                                ReachToggle
+                                    { extra = extraN
+                                    , flown = reachN
+                                    }
                             }
                         , Just br) ->
                         let reachE@(PilotDistance dE) = reach br
@@ -673,8 +715,10 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                             ( f reachF
                             , f bolsterF
                             , f reachE
+                            , f reachN
                             , f bolsterE
                             , fDiff reachF reachE
+                            , fDiff reachF reachN
                             , fDiff bolsterF bolsterE
                             , f extraN
                             , f bolsterN
@@ -682,14 +726,17 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                             , fDiff bolsterF bolsterN
                             )
 
-                    _ -> ("", "", "", "", "", "", "", "", "", ""))
+                    _ -> ("", "", "", "", "", "", "", "", "", "", "", ""))
 
     el "tr" $ do
         el "td" . text . T.pack $ show i
 
         elClass "td" "td-valid-reach" $ text reachF
+        elClass "td" "td-norm reach" $ text reachN
+        elClass "td" "td-norm reach-diff" $ text reachDiffN
+
         elClass "td" "td-valid-reach-extra" $ text reachE
-        elClass "td" "td-valid-reach-extra-diff" $ text reachDiff
+        elClass "td" "td-valid-reach-extra-diff" $ text reachDiffE
 
         elClass "td" "td-valid-bolster" $ text bolsterF
 
@@ -701,7 +748,7 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
         elClass "td" "td-norm bolster-extra" $ text extraN
         elClass "td" "td-norm bolster-extra-diff" $ text extraDiffN
 
-        elClass "td" "td-valid-bolster-extra-diff" $ text bolsterDiff
+        elClass "td" "td-valid-bolster-extra-diff" $ text bolsterDiffE
 
         el "td" . dynText $ showPilotName <$> p
 
