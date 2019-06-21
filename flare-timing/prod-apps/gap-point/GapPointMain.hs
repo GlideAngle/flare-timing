@@ -115,6 +115,7 @@ import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)
+import qualified Flight.Score as Gap (ReachToggle(..))
 import Flight.Score
     ( MinimumDistance(..), LaunchToEss(..)
     , SumOfDistance(..), PilotDistance(..)
@@ -400,7 +401,7 @@ points'
                 dNom
                 pf
                 free
-                (ReachToggle bE bF)
+                (ReachToggle{extra = bE, flown = bF})
                 s
             | pf <- PilotsFlying <$> dfss
             | ReachStats{max = bE} <- extraStats
@@ -419,7 +420,7 @@ points'
                     ssT
                     gsT
                     dNom
-                    (ReachToggle bE bF)
+                    (ReachToggle{extra = bE, flown = bF})
 
                 | ssT <- f ssBestTime
                 | gsT <- f gsBestTime
@@ -575,7 +576,7 @@ points'
         nighDistanceDfNoTrack :: [[(Pilot, Maybe Double)]] =
             [
                 (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} ->
-                    (p, madeAwarded free lWholeTask aw))
+                    (p, madeAwarded free lWholeTask $ Gap.extra <$> aw))
                 <$> xs
             | DfNoTrack xs <- dfNtss
             | lWholeTask <- lsWholeTask
@@ -645,7 +646,7 @@ points'
                                Paragliding -> const $ DifficultyFraction 0.0
 
                         xs' =
-                            (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} -> (p, f aw))
+                            (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} -> (p, f $ Gap.extra <$> aw))
                             <$> xs
                     in
                         (fmap . fmap)
@@ -1003,7 +1004,7 @@ collateDfNoTrack
     -> [
             (Pilot
             ,
-                ( (Maybe AwardedDistance, AwardedVelocity)
+                ( (Maybe (ReachToggle AwardedDistance), AwardedVelocity)
                 ,
                     ( ([PointPenalty], String)
                     , Gap.Points
@@ -1194,7 +1195,16 @@ tallyDfNoTrack
     :: [StartGate]
     -> Maybe (QTaskDistance Double [u| m |]) -- ^ Speed section distance
     -> Maybe (QTaskDistance Double [u| m |]) -- ^ Whole task distance
-    -> ((Maybe AwardedDistance, AwardedVelocity), (([PointPenalty], String), Gap.Points))
+    ->
+        (
+            ( Maybe (ReachToggle AwardedDistance)
+            , AwardedVelocity
+            )
+        ,
+            ( ([PointPenalty], String)
+            , Gap.Points
+            )
+        )
     -> Breakdown
 tallyDfNoTrack
     startGates
@@ -1253,7 +1263,7 @@ tallyDfNoTrack
         dP = PilotDistance <$> do
                 dT <- dT'
                 aw <- aw'
-                return $ awardByFrac (Clamp False) dT aw
+                return $ awardByFrac (Clamp False) dT (Gap.extra aw)
 
         dS = PilotDistance <$> do
                 TaskDistance d <- dS'

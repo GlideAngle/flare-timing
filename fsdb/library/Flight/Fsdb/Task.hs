@@ -5,6 +5,7 @@ module Flight.Fsdb.Task
     ( parseTasks
     , parseTaskPilotGroups
     , parseTaskPilotPenalties
+    , getDidFly
     , getDidFlyNoTracklog
     , asAward
     ) where
@@ -64,7 +65,7 @@ import Flight.Comp
     , PilotGroup(..), DfNoTrack(..), DfNoTrackPilot(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..), Tweak(..)
     )
-import Flight.Score (ScoreBackTime(..), PointPenalty(..))
+import Flight.Score (ScoreBackTime(..), PointPenalty(..), ReachToggle(..))
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity)
@@ -298,6 +299,12 @@ xpAwardedDistance =
     $ xpFilterAttr (hasName "distance")
     $ xpAttr "distance" xpickle
 
+xpAwardedBonusDistance :: PU (QTaskDistance Double [u| km |])
+xpAwardedBonusDistance =
+    xpElem "FsFlightData"
+    $ xpFilterAttr (hasName "bonus_distance")
+    $ xpAttr "bonus_distance" xpickle
+
 xpAwardedTime :: PU AwardedVelocity
 xpAwardedTime =
     xpElem "FsFlightData"
@@ -322,15 +329,25 @@ asAward
     ->
         ( Pilot
         , Maybe (QTaskDistance Double [u| km |])
+        , Maybe (QTaskDistance Double [u| km |])
         , Maybe AwardedVelocity
         )
     -> DfNoTrackPilot
-asAward t' (p, m, v) =
+asAward t' (p, d, bd, v) =
     DfNoTrackPilot
         { pilot = p
-        , awardedReach = asAwardReach t' m
+
+        , awardedReach = do
+            ad' <- ad
+            ab' <- ab
+            return $ ReachToggle{flown = ad', extra = ab'}
+
         , awardedVelocity = fromMaybe (AwardedVelocity Nothing Nothing) v
         }
+    where
+        ad = asAwardReach t' d
+        ab = asAwardReach t' bd
+
 
 getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree (PilotGroup)
 getTaskPilotGroup ps =
@@ -397,10 +414,6 @@ getTaskPilotGroup ps =
             >>> hasName "FsTaskScoreParams"
             >>> getAttrValue "task_distance"
 
--- <FsParticipant id="91">
---    <FsFlightData tracklog_filename="" />
--- <FsParticipant id="85">
---    <FsFlightData distance="95.030" tracklog_filename="" />
 getDidFlyNoTracklog
     :: ArrowXml a
     => [KeyPilot]
@@ -409,10 +422,44 @@ getDidFlyNoTracklog
         [
             ( Pilot
             , Maybe (QTaskDistance Double [u| km |])
+            , Maybe (QTaskDistance Double [u| km |])
             , Maybe AwardedVelocity
             )
         ]
-getDidFlyNoTracklog kps =
+getDidFlyNoTracklog = getDidFlyIf (== "")
+
+getDidFly
+    :: ArrowXml a
+    => [KeyPilot]
+    -> a
+        _
+        [
+            ( Pilot
+            , Maybe (QTaskDistance Double [u| km |])
+            , Maybe (QTaskDistance Double [u| km |])
+            , Maybe AwardedVelocity
+            )
+        ]
+getDidFly = getDidFlyIf (/= "")
+
+-- <FsParticipant id="91">
+--    <FsFlightData tracklog_filename="" />
+-- <FsParticipant id="85">
+--    <FsFlightData distance="95.030" tracklog_filename="" />
+getDidFlyIf
+    :: ArrowXml a
+    => _
+    -> [KeyPilot]
+    -> a
+        _
+        [
+            ( Pilot
+            , Maybe (QTaskDistance Double [u| km |])
+            , Maybe (QTaskDistance Double [u| km |])
+            , Maybe AwardedVelocity
+            )
+        ]
+getDidFlyIf predTrackLogFilename kps =
     getChildren
     >>> hasName "FsParticipants"
     >>> listA getDidFlyers
@@ -426,16 +473,24 @@ getDidFlyNoTracklog kps =
                 `containing`
                 ( getChildren
                 >>> hasName "FsFlightData"
-                >>> hasAttrValue "tracklog_filename" (== ""))
+                >>> hasAttrValue "tracklog_filename" predTrackLogFilename)
             >>> getAttrValue "id"
             &&& getAwardedDistance
+            &&& getAwardedBonusDistance
             &&& getAwardedTime
-            >>> arr (\(pid, (ad, at)) -> (unKeyPilot (keyMap kps) . PilotId $ pid, ad, at))
+            >>> arr (\(pid, (ad, (abd, at))) -> (unKeyPilot (keyMap kps) . PilotId $ pid, ad, abd, at))
 
         getAwardedDistance =
             (getChildren
             >>> hasName "FsFlightData"
             >>> arr (unpickleDoc xpAwardedDistance)
+            )
+            `orElse` constA Nothing
+
+        getAwardedBonusDistance =
+            (getChildren
+            >>> hasName "FsFlightData"
+            >>> arr (unpickleDoc xpAwardedBonusDistance)
             )
             `orElse` constA Nothing
 

@@ -27,7 +27,7 @@ import Flight.Track.Distance
     )
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Speed (pilotTime)
-import Flight.Score (ArrivalPlacing(..), MinimumDistance(..))
+import Flight.Score (ArrivalPlacing(..), MinimumDistance(..), ReachToggle(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats)
 
 awardByFrac
@@ -130,7 +130,7 @@ maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
                         d = TaskDistance
                             <$> maybe
                                 (Just dm)
-                                (\dAward -> do
+                                (\ReachToggle{extra = dAward} -> do
                                     td <- lTask
                                     let a = awardByFrac (Clamp True) td dAward
 

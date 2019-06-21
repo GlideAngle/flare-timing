@@ -19,7 +19,7 @@ import WireTypes.Pilot
     ( Pilot(..), PilotId(..), PilotName(..)
     , AwardedDistance(..), AwardedVelocity(..), DfNoTrackPilot(..)
     )
-import WireTypes.Point (PointPenalty(..))
+import WireTypes.Point (PointPenalty(..), ReachToggle(..))
 import WireTypes.Comp (UtcOffset(..))
 import FlareTiming.Time (showT, timeZone)
 
@@ -60,7 +60,7 @@ rowDfNt utcOffset ln' pd = do
             el "td" . text $ showPilotName p
             elClass "td" "td-awarded-start" . text $ showSs tz v
             elClass "td" "td-awarded-end" . text $ showEs tz v
-            elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> d)
+            elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> (extra <$> d))
 
 rowDfNtReach
     :: MonadWidget t m
@@ -73,7 +73,7 @@ rowDfNtReach ln' i pd = do
         el "tr" $ do
             el "td" . text . T.pack $ show i
             el "td" . text $ showPilotName p
-            elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> d)
+            elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> (extra <$> d))
 
 rowPenal
     :: MonadWidget t m

@@ -68,6 +68,7 @@ import Flight.Scribe
     , readPilotDiscardFurther
     , readPilotPegThenDiscard
     )
+import qualified Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskArrival (maskArrival, arrivals)
@@ -221,7 +222,10 @@ writeMask
                 (maskEffort dsNullAltBest dsLand)
 
             let dfNtReach :: [[(Pilot, TrackReach)]] =
-                    [ dfNoTrackReach (TaskDistance $ MkQuantity td) <$> dfnts
+                    [
+                        (fmap . fmap) Gap.extra $
+                        dfNoTrackReach (TaskDistance $ MkQuantity td)
+                        <$> dfnts
                     | dfnts <- unDfNoTrack . didFlyNoTracklog <$> pilotGroups
                     | td <- maybe 0 unTaskDistanceAsKm <$> lsWholeTask
                     ]

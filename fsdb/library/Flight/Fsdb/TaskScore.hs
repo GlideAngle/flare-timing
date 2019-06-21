@@ -7,7 +7,7 @@ import qualified Prelude as Stats (max)
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
 import Data.List (unzip5)
-import qualified Data.Map.Strict as Map (fromList, lookup)
+import qualified Data.Map.Strict as Map (fromList, lookup, union)
 import qualified Data.Vector as V (fromList)
 import qualified Statistics.Sample as Stats (meanVariance)
 import Data.UnitsOfMeasure ((*:), u, zero, convert, fromRational')
@@ -45,7 +45,7 @@ import Text.XML.HXT.Core
     , isAttr
     )
 
-import Flight.Distance (TaskDistance(..), unTaskDistanceAsKm)
+import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
 import Flight.Comp
@@ -79,7 +79,7 @@ import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Internal.Parse (parseUtcTime, parseHmsTime)
 import Flight.Fsdb.Distance (asTaskKm, asAwardReach, taskMetresToKm, taskKmToMetres)
-import Flight.Fsdb.Task (getDidFlyNoTracklog, asAward)
+import Flight.Fsdb.Task (getDidFly, getDidFlyNoTracklog, asAward)
 
 dToR :: Double -> Rational
 dToR = toRational
@@ -422,13 +422,18 @@ getScore pilots =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getTaskDistance
+    &&& getDidFly kps
     &&& getDidFlyNoTracklog kps
     &&& getPoint
-    >>> arr (\(t, (nt, xs)) ->
-        let td = asTaskKm t
+    >>> arr (\(t, (wt, (nt, xs))) ->
+        let td :: Maybe (QTaskDistance _ [u| km |]) = asTaskKm t
+            dfwt = asAward t <$> wt
             dfnt = asAward t <$> nt
-            ys :: [(Pilot, _)] = (\DfNoTrackPilot{awardedReach = ar, ..} -> (pilot, ar)) <$> dfnt
-            mapDfNt = Map.fromList ys
+            yswt :: [(Pilot, _)] = (\DfNoTrackPilot{awardedReach = ar, ..} -> (pilot, ar)) <$> dfwt
+            ysnt :: [(Pilot, _)] = (\DfNoTrackPilot{awardedReach = ar, ..} -> (pilot, ar)) <$> dfnt
+            dfwtM = Map.fromList yswt
+            dfntM = Map.fromList ysnt
+            dfM = Map.union dfntM dfwtM
         in
             [
                 (,) p $ do
@@ -441,13 +446,23 @@ getScore pilots =
                             , reach =
                                 maybe
                                     r
-                                    (\((TaskDistance d), AwardedDistance{awardedFrac = fracDfNt}) ->
-                                        r{flown = TaskDistance $ (MkQuantity fracDfNt) *: d})
+                                    (\((TaskDistance (d :: Quantity _ [u| m |]))
+                                          , ReachToggle
+                                              { flown = AwardedDistance{awardedFrac = fracF}
+                                              , extra = AwardedDistance{awardedFrac = fracE}
+                                              }) ->
+                                        r
+                                            { flown = TaskDistance $ (MkQuantity fracF) *: d
+                                            , extra = TaskDistance $ (MkQuantity fracE) *: d
+                                            })
                                     (do
-                                        td' <- td
-                                        ad <- Map.lookup p mapDfNt
+                                        TaskDistance td' <- td
+                                        let td'' :: Quantity _ [u| m |] = convert td'
+
+                                        ad <- Map.lookup p dfM
                                         ad' <- ad
-                                        return (td', ad'))
+
+                                        return (TaskDistance td'', ad'))
                             }
 
             | (p, x) <- xs

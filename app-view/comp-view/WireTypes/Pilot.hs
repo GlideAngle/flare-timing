@@ -18,7 +18,7 @@ module WireTypes.Pilot
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
-import WireTypes.Point (PointPenalty)
+import WireTypes.Point (PointPenalty, ReachToggle(..))
 
 -- | The group of pilots that were penalized for a task.
 newtype Penal = Penal {unPenal :: [(Pilot, [PointPenalty], String)]}
@@ -41,7 +41,7 @@ data AwardedVelocity =
 data DfNoTrackPilot =
     DfNoTrackPilot
         { pilot :: Pilot
-        , awardedReach :: Maybe AwardedDistance
+        , awardedReach :: Maybe (ReachToggle AwardedDistance)
         , awardedVelocity :: AwardedVelocity
         }
     deriving (Eq, Ord, Show, Generic)

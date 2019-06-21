@@ -22,22 +22,32 @@ import Data.UnitsOfMeasure ((*:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), QTaskDistance)
-import Flight.Score (Pilot, LinearFraction(..))
+import Flight.Score (Pilot, LinearFraction(..), ReachToggle(..))
 import Flight.Track.Time (AwardedVelocity)
 import Flight.Track.Distance (AwardedDistance(..), TrackReach(..))
 
 dfNoTrackReach
     :: QTaskDistance Double [u| km |]
     -> DfNoTrackPilot
-    -> (Pilot, TrackReach)
+    -> (Pilot, ReachToggle TrackReach)
 dfNoTrackReach (TaskDistance td) DfNoTrackPilot{pilot, awardedReach} =
     (pilot,) $
     maybe
-        (TrackReach (TaskDistance [u| 0 m |]) (LinearFraction 0))
-        (\AwardedDistance{awardedFrac = af} ->
-            TrackReach
-                (TaskDistance $ (MkQuantity af) *: td)
-                (LinearFraction $ toRational af))
+        (let r = TrackReach (TaskDistance [u| 0 m |]) (LinearFraction 0) in ReachToggle r r)
+        (\ReachToggle
+            { flown = AwardedDistance{awardedFrac = aF}
+            , extra = AwardedDistance{awardedFrac = aE}
+            } ->
+            ReachToggle
+                { flown =
+                    TrackReach
+                        (TaskDistance $ (MkQuantity aF) *: td)
+                        (LinearFraction $ toRational aF)
+                , extra =
+                    TrackReach
+                        (TaskDistance $ (MkQuantity aE) *: td)
+                        (LinearFraction $ toRational aE)
+                })
         awardedReach
 
 -- | The group of pilots that did not fly a task.
@@ -49,7 +59,7 @@ newtype Nyp = Nyp {unNyp :: [Pilot]}
 data DfNoTrackPilot =
     DfNoTrackPilot
         { pilot :: Pilot
-        , awardedReach :: Maybe AwardedDistance
+        , awardedReach :: Maybe (ReachToggle AwardedDistance)
         , awardedVelocity :: AwardedVelocity
         }
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)

@@ -26,16 +26,16 @@ import WireTypes.ValidityWorking
     , LaunchToEss(..)
     , showLaunchToEss
     )
-import WireTypes.Route (TaskLength(..), TaskDistance(..))
+import WireTypes.Route (TaskLength(..))
 import WireTypes.Cross (FlyingSection)
-import WireTypes.Reach (TrackReach(..), dfNoTrackReach)
+import WireTypes.Reach (TrackReach(..))
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import WireTypes.Point
     ( PilotDistance(..), ReachToggle(..)
     , showPilotDistance, showPilotDistanceDiff
     )
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Pilot (Pilot(..), DfNoTrackPilot(..), DfNoTrack(..))
+import WireTypes.Pilot (Pilot(..), DfNoTrack(..))
 import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
 import FlareTiming.Pilot (showPilotName, rowDfNtReach)
 import FlareTiming.Time (timeZone, showTime)
@@ -295,7 +295,7 @@ viewStop
                                 elClass "p" "title" $ text "Reach"
                                 elClass "p" "subtitle" $ text "best distance reached at or before stop"
                                 elClass "div" "content"
-                                    $ tablePilotReach ln free reach bonusReach dfNt sEx
+                                    $ tablePilotReach free reach bonusReach sEx
 
             elClass "div" "tile is-ancestor" $ do
                 elClass "div" "tile is-12" $
@@ -377,14 +377,12 @@ rowFlyingTimes tz i ptm = do
 
 tablePilotReach
     :: MonadWidget t m
-    => Dynamic t (Maybe TaskLength)
-    -> Dynamic t MinimumDistance
+    => Dynamic t MinimumDistance
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
-    -> Dynamic t [DfNoTrackPilot]
     -> [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tablePilotReach ln free reach bonusReach dfNts sEx = do
+tablePilotReach free reach bonusReach sEx = do
     let tdFoot = elAttr "td" ("colspan" =: "12")
     let foot = el "tr" . tdFoot . text
 
