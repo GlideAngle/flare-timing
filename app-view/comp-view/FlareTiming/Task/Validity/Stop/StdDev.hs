@@ -10,7 +10,7 @@ import WireTypes.ValidityWorking
     )
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
-import FlareTiming.Task.Validity.Widget (elV, elN, elD)
+import FlareTiming.Task.Validity.Widget (elV, elN, elD, elVSelect, elNSelect)
 
 viewStopStdDev
     :: MonadWidget t m
@@ -94,9 +94,9 @@ viewStopStdDev
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown"
-                elV $ showPilotDistance 3 sdF
+                elVSelect $ showPilotDistance 3 sdF
 
-                elN $ showPilotDistance 3 sdFN
+                elNSelect $ showPilotDistance 3 sdFN
                 elD $ showPilotDistanceDiff 3 sdFN sdF
 
                 elV $ showPilotDistance 3 sdB

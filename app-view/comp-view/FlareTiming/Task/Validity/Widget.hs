@@ -4,6 +4,8 @@ module FlareTiming.Task.Validity.Widget
     , elV
     , elN
     , elD
+    , elVSelect
+    , elNSelect
     ) where
 
 import qualified Data.Text as T (Text)
@@ -22,3 +24,9 @@ elN = elClass "td" "td-norm" . text
 
 elD :: DomBuilder t m => T.Text -> m ()
 elD = elClass "td" "td-norm td-diff" . text
+
+elVSelect :: DomBuilder t m => T.Text -> m ()
+elVSelect = elClass "th" "validity" . text
+
+elNSelect :: DomBuilder t m => T.Text -> m ()
+elNSelect = elClass "th" "td-norm" . text
