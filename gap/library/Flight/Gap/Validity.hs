@@ -373,10 +373,7 @@ stopValidity
     -> PilotsAtEss
     -> PilotsLanded
     -> PilotsFlying
-    -> ReachStats
-    -- ^ The best reach with altitude above goal converted to extra reach via glide.
-    -> ReachStats
-    -- ^ The best bolstered reach as flown.
+    -> ReachToggle ReachStats
     -> LaunchToEss (Quantity Double [u| km |])
     -> (StopValidity, Maybe StopValidityWorking)
 stopValidity
@@ -384,11 +381,14 @@ stopValidity
     pe@(PilotsAtEss ess)
     landedByStop@(PilotsLanded landed)
     stillFlying
-    extra
-    flown@ReachStats
-        { max = FlownMax flownMax'
-        , mean = FlownMean flownMean
-        , stdDev = FlownStdDev flownStdDev
+    ReachToggle
+        { extra
+        , flown =
+            flown@ReachStats
+                { max = FlownMax flownMax'
+                , mean = FlownMean flownMean
+                , stdDev = FlownStdDev flownStdDev
+                }
         }
     ed'@(LaunchToEss ed)
     | ess > 0 = (StopValidity 1, Just w)

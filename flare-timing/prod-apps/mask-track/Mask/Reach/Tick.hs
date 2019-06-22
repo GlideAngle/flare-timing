@@ -131,10 +131,10 @@ maskReachTick
         rsMean :: [FlownMean (Quantity Double [u| km |])] =
             FlownMean . MkQuantity . fst <$> mvs
 
-        rsStdDev  :: [FlownStdDev (Quantity Double [u| km |])] =
+        rsStdDev :: [FlownStdDev (Quantity Double [u| km |])] =
             FlownStdDev . MkQuantity . sqrt . snd <$> mvs
 
-        fssRaw =
+        bssRaw =
             [ V.fromList
                 [ unQuantity $ Stats.max dMin (convert r :: Quantity _ [u| km |])
                 | (_, TrackReach{reach = TaskDistance r}) <- rs
@@ -143,14 +143,14 @@ maskReachTick
             ]
 
         bsMax :: [FlownMax (Quantity Double [u| km |])] =
-            [ FlownMax $ if null fs then [u| 0 km |] else MkQuantity $ V.maximum fs
-            | fs <- fssRaw
+            [ FlownMax $ if null bs then [u| 0 km |] else MkQuantity $ V.maximum bs
+            | bs <- bssRaw
             ]
 
-        bvs = Stats.meanVariance <$> fssRaw
+        bvs = Stats.meanVariance <$> bssRaw
 
         bsMean :: [FlownMean (Quantity Double [u| km |])] =
             FlownMean . MkQuantity . fst <$> bvs
 
-        bsStdDev  :: [FlownStdDev (Quantity Double [u| km |])] =
+        bsStdDev :: [FlownStdDev (Quantity Double [u| km |])] =
             FlownStdDev . MkQuantity . sqrt . snd <$> bvs

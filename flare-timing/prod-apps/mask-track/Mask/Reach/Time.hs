@@ -10,7 +10,7 @@ import Data.List (sortOn)
 import Data.Map.Strict (Map)
 import Data.UnitsOfMeasure (u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import qualified Statistics.Sample as Stats (mean, stdDev)
+import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList, maximum)
 
 import Flight.Comp (Pilot(..))
@@ -126,13 +126,15 @@ maskReachTime
             | rs <- rssRaw
             ]
 
+        mvs = Stats.meanVariance <$> rssRaw
+
         rsMean :: [FlownMean (Quantity Double [u| km |])] =
-            FlownMean . MkQuantity . Stats.mean <$> rssRaw
+            FlownMean . MkQuantity . fst <$> mvs
 
-        rsStdDev  :: [FlownStdDev (Quantity Double [u| km |])] =
-            FlownStdDev . MkQuantity . Stats.stdDev <$> rssRaw
+        rsStdDev :: [FlownStdDev (Quantity Double [u| km |])] =
+            FlownStdDev . MkQuantity . sqrt . snd <$> mvs
 
-        fssRaw =
+        bssRaw =
             [ V.fromList
                 [ unQuantity $ Stats.max dMin (convert r :: Quantity _ [u| km |])
                 | (_, TrackReach{reach = TaskDistance r}) <- rs
@@ -141,12 +143,14 @@ maskReachTime
             ]
 
         bsMax :: [FlownMax (Quantity Double [u| km |])] =
-            [ FlownMax $ if null fs then [u| 0 km |] else MkQuantity $ V.maximum fs
-            | fs <- fssRaw
+            [ FlownMax $ if null bs then [u| 0 km |] else MkQuantity $ V.maximum bs
+            | bs <- bssRaw
             ]
 
-        bsMean :: [FlownMean (Quantity Double [u| km |])] =
-            FlownMean . MkQuantity . Stats.mean <$> fssRaw
+        bvs = Stats.meanVariance <$> bssRaw
 
-        bsStdDev  :: [FlownStdDev (Quantity Double [u| km |])] =
-            FlownStdDev . MkQuantity . Stats.stdDev <$> fssRaw
+        bsMean :: [FlownMean (Quantity Double [u| km |])] =
+            FlownMean . MkQuantity . fst <$> bvs
+
+        bsStdDev :: [FlownStdDev (Quantity Double [u| km |])] =
+            FlownStdDev . MkQuantity . sqrt . snd <$> bvs
