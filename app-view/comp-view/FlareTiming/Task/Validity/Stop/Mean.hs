@@ -30,11 +30,11 @@ viewStopMean
                     ReachToggle
                         { extra =
                             ReachStats
-                                { mean = extraMean
+                                { mean = meanE
                                 }
                         , flown =
                             ReachStats
-                                { mean = flownMean
+                                { mean = meanF
                                 }
                         }
                 }
@@ -47,11 +47,11 @@ viewStopMean
                     ReachToggle
                         { extra =
                             ReachStats
-                                { mean = extraMeanN
+                                { mean = meanEN
                                 }
                         , flown =
                             ReachStats
-                                { mean = flownMeanN
+                                { mean = meanFN
                                 }
                         }
                 }
@@ -60,22 +60,22 @@ viewStopMean
     Stats.BolsterStats
         { bolster =
             ReachStats
-                { mean = _bolsterMean
+                { mean = meanB
                 }
         , reach =
             ReachStats
-                { mean = reachMean
+                { mean = _meanF
                 }
         }
     -- | With extra altitude converted by way of glide to extra reach.
     Stats.BolsterStats
         { bolster =
             ReachStats
-                { mean = _bolsterMeanE
+                { mean = meanBE
                 }
         , reach =
             ReachStats
-                { mean = reachMeanE
+                { mean = _meanE
                 }
         }
     = do
@@ -94,26 +94,24 @@ viewStopMean
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown ‖"
-                elV $ showPilotDistance 3 reachMean
+                elV $ showPilotDistance 3 meanF
 
-                elN $ showPilotDistance 3 flownMeanN
-                elD $ showPilotDistanceDiff 3 flownMeanN flownMean
+                elN $ showPilotDistance 3 meanFN
+                elD $ showPilotDistanceDiff 3 meanFN meanF
 
-                -- NOTE: bolsterMean == flownMean
-                elV $ showPilotDistance 3 flownMean
+                elV $ showPilotDistance 3 meanB
                 return ()
 
             el "tr" $ do
                 el "th" $ text "Extra ¶"
                 elClass "td" "td-valid-reach-extra" . text
-                    $ showPilotDistance 3 reachMeanE
+                    $ showPilotDistance 3 meanE
 
-                elN $ showPilotDistance 3 extraMeanN
-                elD $ showPilotDistanceDiff 3 extraMeanN extraMean
+                elN $ showPilotDistance 3 meanEN
+                elD $ showPilotDistanceDiff 3 meanEN meanE
 
-                -- NOTE: bolsterMeanE == extraMean
                 elClass "td" "td-valid-bolster-extra" . text
-                    $ showPilotDistance 3 extraMean
+                    $ showPilotDistance 3 meanBE
 
                 return ()
 

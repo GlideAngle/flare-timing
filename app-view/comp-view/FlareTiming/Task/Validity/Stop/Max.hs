@@ -30,11 +30,11 @@ viewStopMax
                     ReachToggle
                         { extra =
                             ReachStats
-                                { max = extraMax
+                                { max = maxE
                                 }
                         , flown =
                             ReachStats
-                                { max = flownMax
+                                { max = maxF
                                 }
                         }
                 }
@@ -47,11 +47,11 @@ viewStopMax
                     ReachToggle
                         { extra =
                             ReachStats
-                                { max = extraMaxN
+                                { max = maxEN
                                 }
                         , flown =
                             ReachStats
-                                { max = flownMaxN
+                                { max = maxFN
                                 }
                         }
                 }
@@ -60,22 +60,22 @@ viewStopMax
     Stats.BolsterStats
         { bolster =
             ReachStats
-                { max = _bolsterMax
+                { max = maxB
                 }
         , reach =
             ReachStats
-                { max = reachMax
+                { max = _maxF
                 }
         }
     -- | With extra altitude converted by way of glide to extra reach.
     Stats.BolsterStats
         { bolster =
             ReachStats
-                { max = _bolsterMaxE
+                { max = maxBE
                 }
         , reach =
             ReachStats
-                { max = reachMaxE
+                { max = _maxE
                 }
         }
     = do
@@ -94,26 +94,25 @@ viewStopMax
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown"
-                elV $ showPilotDistance 3 reachMax
+                elV $ showPilotDistance 3 maxF
 
-                elN $ showPilotDistance 3 flownMaxN
-                elD $ showPilotDistanceDiff 3 flownMaxN flownMax
+                elN $ showPilotDistance 3 maxFN
+                elD $ showPilotDistanceDiff 3 maxFN maxF
 
-                -- NOTE: bolsterMax == flownMax
-                elV $ showPilotDistance 3 flownMax
+                elV $ showPilotDistance 3 maxB
                 return ()
 
             el "tr" $ do
                 el "th" $ text "Extra"
                 elClass "td" "td-valid-reach-extra" . text
-                    $ showPilotDistance 3 reachMaxE
+                    $ showPilotDistance 3 maxE
 
-                elN $ showPilotDistance 3 extraMaxN
-                elD $ showPilotDistanceDiff 3 extraMaxN extraMax
+                elN $ showPilotDistance 3 maxEN
+                elD $ showPilotDistanceDiff 3 maxEN maxE
 
                 -- NOTE: bolsterMaxE == extraMax
                 elClass "td" "td-valid-bolster-extra" . text
-                    $ showPilotDistance 3 extraMax
+                    $ showPilotDistance 3 maxBE
 
                 return ()
 

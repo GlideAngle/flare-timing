@@ -30,11 +30,11 @@ viewStopStdDev
                     ReachToggle
                         { extra =
                             ReachStats
-                                { stdDev = extraStdDev
+                                { stdDev = sdE
                                 }
                         , flown =
                             ReachStats
-                                { stdDev = flownStdDev
+                                { stdDev = sdF
                                 }
                         }
                 }
@@ -47,11 +47,11 @@ viewStopStdDev
                     ReachToggle
                         { extra =
                             ReachStats
-                                { stdDev = extraStdDevN
+                                { stdDev = sdEN
                                 }
                         , flown =
                             ReachStats
-                                { stdDev = flownStdDevN
+                                { stdDev = sdFN
                                 }
                         }
                 }
@@ -60,22 +60,22 @@ viewStopStdDev
     Stats.BolsterStats
         { bolster =
             ReachStats
-                { stdDev = _bolsterStdDev
+                { stdDev = sdB
                 }
         , reach =
             ReachStats
-                { stdDev = reachStdDev
+                { stdDev = _sdF
                 }
         }
     -- | With extra altitude converted by way of glide to extra reach.
     Stats.BolsterStats
         { bolster =
             ReachStats
-                { stdDev = _bolsterStdDevE
+                { stdDev = sdBE
                 }
         , reach =
             ReachStats
-                { stdDev = reachStdDevE
+                { stdDev = _sdE
                 }
         }
     = do
@@ -94,25 +94,23 @@ viewStopStdDev
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown"
-                elV $ showPilotDistance 3 reachStdDev
+                elV $ showPilotDistance 3 sdF
 
-                elN $ showPilotDistance 3 flownStdDevN
-                elD $ showPilotDistanceDiff 3 flownStdDevN flownStdDev
+                elN $ showPilotDistance 3 sdFN
+                elD $ showPilotDistanceDiff 3 sdFN sdF
 
-                -- NOTE: bolsterStdDev == flownStdDev
-                elV $ showPilotDistance 3 flownStdDev
+                elV $ showPilotDistance 3 sdB
                 return ()
 
             el "tr" $ do
                 el "th" $ text "Extra"
                 elClass "td" "td-valid-reach-extra" . text
-                    $ showPilotDistance 3 reachStdDevE
+                    $ showPilotDistance 3 sdE
 
-                elN $ showPilotDistance 3 extraStdDevN
-                elD $ showPilotDistanceDiff 3 extraStdDevN extraStdDev
+                elN $ showPilotDistance 3 sdEN
+                elD $ showPilotDistanceDiff 3 sdEN sdE
 
-                -- NOTE: bolsterStdDevE == extraStdDev
                 elClass "td" "td-valid-bolster-extra" . text
-                    $ showPilotDistance 3 extraStdDev
+                    $ showPilotDistance 3 sdBE
 
                 return ()
