@@ -611,8 +611,8 @@ parseScores
     let rss =
             [
                 unzip
-                [ (e, r)
-                | NormBreakdown{reach = ReachToggle{extra = e}, reachMade = r} <- ys
+                [ (extra, flown)
+                  | NormBreakdown{reach = ReachToggle{extra, flown}} <- ys
                 ]
             | ys <- (fmap . fmap) snd yss
             ]
