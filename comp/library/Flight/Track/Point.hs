@@ -189,17 +189,17 @@ cmpNorm a b =
         ("time", "arrival") -> GT
         ("time", _) -> LT
 
-        ("reachExtra", "reachMade") -> LT
-        ("reachExtra", "distanceFrac") -> LT
-        ("reachExtra", "ss") -> LT
-        ("reachExtra", "es") -> LT
-        ("reachExtra", "timeElapsed") -> LT
-        ("reachExtra", "timeFrac") -> LT
-        ("reachExtra", "leadingArea") -> LT
-        ("reachExtra", "leadingCoef") -> LT
-        ("reachExtra", "leadingFrac") -> LT
-        ("reachExtra", "arrivalFrac") -> LT
-        ("reachExtra", _) -> GT
+        ("reach", "reachMade") -> LT
+        ("reach", "distanceFrac") -> LT
+        ("reach", "ss") -> LT
+        ("reach", "es") -> LT
+        ("reach", "timeElapsed") -> LT
+        ("reach", "timeFrac") -> LT
+        ("reach", "leadingArea") -> LT
+        ("reach", "leadingCoef") -> LT
+        ("reach", "leadingFrac") -> LT
+        ("reach", "arrivalFrac") -> LT
+        ("reach", _) -> GT
 
         ("reachMade", "distanceFrac") -> LT
         ("reachMade", "ss") -> LT
