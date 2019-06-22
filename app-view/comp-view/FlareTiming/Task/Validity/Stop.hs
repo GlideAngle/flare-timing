@@ -390,7 +390,7 @@ tablePilotReach free reach bonusReach sEx = do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text ""
-                    elAttr "th" (("colspan" =: "3") <> ("class" =: "th-valid-reach-col")) $ text "Reach (km)"
+                    elAttr "th" (("colspan" =: "5") <> ("class" =: "th-valid-reach-col")) $ text "Reach (km)"
                     elAttr "th" (("colspan" =: "7") <> ("class" =: "th-valid-bolster-col"))$ text "Bolster (km)"
                     el "th" $ text ""
 
