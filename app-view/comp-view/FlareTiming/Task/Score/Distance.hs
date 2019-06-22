@@ -69,9 +69,9 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
+
             el "tr" $ do
-                elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "6" <> "class" =: "th-distance") $ text "Distance Flown"
+                elAttr "th" ("colspan" =: "11") $ text ""
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
 
             el "tr" $ do
@@ -79,13 +79,17 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs
                 elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-min-distance" $ text "Min"
 
-                elClass "th" "th-best-distance" $ text "Reach †"
-                elClass "th" "th-norm th-best-distance" $ text "✓-Reach"
-                elClass "th" "th-norm th-diff" $ text "Δ-Reach"
+                elClass "th" "th-distance-flown" $ text "Flown †"
+                elClass "th" "th-norm th-best-distance" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
+
+                elClass "th" "th-distance-extra" $ text "Extra ‡"
+                elClass "th" "th-norm th-best-distance" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-alt-distance" $ text "Alt"
                 elClass "th" "th-landed-distance" $ text "Landed"
-                elClass "th" "th-reach-points" $ text "Reach ‡"
+                elClass "th" "th-reach-points" $ text "Reach ¶"
                 elClass "th" "th-effort-points" $ text "Effort §"
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
@@ -95,9 +99,15 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
+
                 elClass "th" "th-best-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"
+
+                elClass "th" "th-best-distance-units" $ text "(km)"
+                elClass "th" "th-best-distance-units" $ text "(km)"
+                elClass "th" "th-best-distance-units" $ text "(km)"
+
                 elClass "th" "th-alt-distance-units" $ text "(m)"
                 elClass "th" "th-landed-distance-units" $ text "(km)"
 
@@ -143,13 +153,14 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "14")
+        let tdFoot = elAttr "td" ("colspan" =: "17")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
             foot "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
-            foot "‡ Points award for reach are also called linear distance points."
+            foot "‡ With altitude above goal converted to extra reach via glide."
+            foot "¶ Points award for reach are also called linear distance points."
             foot "§ Points award for effort are also called distance difficulty points."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
@@ -269,6 +280,11 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
+
+        elDynClass "td" (fst . fst <$> awardFree) . dynText
+            $ maybe "" (showPilotDistance 1) <$> reach
+        elClass "td" "td-norm td-best-distance" $ text yReach
+        elClass "td" "td-norm td-diff" $ text yReachDiff
 
         elDynClass "td" (fst . fst <$> awardFree) . dynText
             $ maybe "" (showPilotDistance 1) <$> reach
