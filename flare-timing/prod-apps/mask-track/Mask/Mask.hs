@@ -223,7 +223,7 @@ writeMask
 
             let dfNtReach :: [[(Pilot, TrackReach)]] =
                     [
-                        (fmap . fmap) Gap.extra $
+                        (fmap . fmap) Gap.flown $
                         dfNoTrackReach (TaskDistance $ MkQuantity td)
                         <$> dfnts
                     | dfnts <- unDfNoTrack . didFlyNoTracklog <$> pilotGroups
