@@ -422,8 +422,8 @@ data Breakdown =
         , penaltyReason :: String
         , breakdown :: Points
         , velocity :: Maybe Velocity
-        , reachDistance :: Maybe PilotDistance
-        , landedDistance :: Maybe PilotDistance
+        , reach :: Maybe (ReachToggle PilotDistance)
+        , landedMade :: Maybe PilotDistance
         , stoppedAlt :: Maybe Alt
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)

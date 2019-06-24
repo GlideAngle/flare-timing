@@ -1,5 +1,6 @@
 module FlareTiming.Task.Score.Distance (tableScoreDistance) where
 
+import Data.Maybe (fromMaybe)
 import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (pack)
@@ -10,12 +11,13 @@ import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
+import qualified WireTypes.Point as Bk (Breakdown(..))
 import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
-    , Breakdown(..)
     , PilotDistance(..)
     , Points(..)
+    , ReachToggle(..)
     , showDistancePoints
     , showDistancePointsDiff
     , showPilotDistance
@@ -46,7 +48,7 @@ tableScoreDistance
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t [(Pilot, Breakdown)]
+    -> Dynamic t [(Pilot, Bk.Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
 tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
@@ -223,18 +225,17 @@ pointRow
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
-    -> Dynamic t (Pilot, Breakdown)
+    -> Dynamic t (Pilot, Bk.Breakdown)
     -> m ()
-pointRow _utcOffset free ln dfNt pt sEx x = do
-    td <- sample . current $ (fmap . fmap) taskRoute ln
+pointRow _utcOffset free _ln dfNt pt sEx x = do
     MinimumDistance free' <- sample . current $ free
 
     let pilot = fst <$> x
     let xB = snd <$> x
 
-    let alt = stoppedAlt <$> xB
-    let reach = reachDistance <$> xB
-    let points = breakdown <$> xB
+    let alt = Bk.stoppedAlt <$> xB
+    let extraReach = fmap extra . Bk.reach <$> xB
+    let points = Bk.breakdown <$> xB
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
                         let n = showPilotName p in
@@ -242,7 +243,7 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let awardFree = ffor reach (\pd ->
+    let awardFree = ffor extraReach (\pd ->
             let c = ("td-best-distance", "td-landed-distance") in
             maybe
                 (c, "")
@@ -256,45 +257,48 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
                        in (c', T.pack $ printf "%.1f" free'))
                 pd)
 
-    (yReach, yReachDiff, yDistance, yDistanceDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{reachDistance = dM', breakdown = Points{distance = d}}) ->
-                case (td, Map.lookup pilot' sEx') of
-                    (Just (TaskDistance dTask), Just Norm.NormBreakdown {distance = d', distanceFrac = dF}) ->
-                        let r = dF * dTask
-                            dR = PilotDistance $ max r free'
-                            dM'' =
-                                PilotDistance
-                                . (\(PilotDistance r') -> max r' free')
-                                <$> dM'
-                        in
-                            ( showPilotDistance 1 dR
-                            , maybe "" (showPilotDistanceDiff 1 dR) dM''
-                            , showDistancePoints d'
-                            , showDistancePointsDiff d' d
-                            )
+    (xF, xE, yF, yDiffF, yE, yDiffE, yPts, yPtsDiff) <- sample . current
+                $ ffor3 pilot sEx x (\pilot' sEx' xx@(_, Bk.Breakdown{reach, breakdown = Points{distance = dPts}}) ->
+                    fromMaybe ("", "", "", "", "", "", "", "") $ do
+                        Norm.NormBreakdown
+                            { distance = dPtsN
+                            , reach =
+                                ReachToggle
+                                    { flown = rFN
+                                    , extra = rEN
+                                    }
+                            } <- Map.lookup pilot' sEx'
+                        ReachToggle{extra = rE, flown = rF} <- reach
 
-                    _ -> ("", "", "", ""))
+                        return
+                            ( showPilotDistance 3 rF
+                            , showPilotDistance 3 rE
+                            , showPilotDistance 3 rFN
+                            , showPilotDistanceDiff 3 rFN rF
+                            , showPilotDistance 3 rEN
+                            , showPilotDistanceDiff 3 rEN rE
+                            , showDistancePoints dPtsN
+                            , showDistancePointsDiff dPtsN dPts
+                            ))
 
     elDynClass "tr" (fst <$> classPilot) $ do
-        elClass "td" "td-placing" . dynText $ showRank . place <$> xB
+        elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
 
-        elDynClass "td" (fst . fst <$> awardFree) . dynText
-            $ maybe "" (showPilotDistance 1) <$> reach
-        elClass "td" "td-norm td-best-distance" $ text yReach
-        elClass "td" "td-norm td-diff" $ text yReachDiff
+        elDynClass "td" (fst . fst <$> awardFree) $ text xF
+        elClass "td" "td-norm td-best-distance" $ text yF
+        elClass "td" "td-norm td-diff" $ text yDiffF
 
-        elDynClass "td" (fst . fst <$> awardFree) . dynText
-            $ maybe "" (showPilotDistance 1) <$> reach
-        elClass "td" "td-norm td-best-distance" $ text yReach
-        elClass "td" "td-norm td-diff" $ text yReachDiff
+        elDynClass "td" (fst . fst <$> awardFree) $ text xE
+        elClass "td" "td-norm td-best-distance" $ text yE
+        elClass "td" "td-norm td-diff" $ text yDiffE
 
         elClass "td" "td-alt-distance" . dynText
             $ maybe "" showPilotAlt <$> alt
         elDynClass "td" (snd . fst <$> awardFree) . dynText
-            $ maybe "" (showPilotDistance 1) . landedDistance <$> xB
+            $ maybe "" (showPilotDistance 3) . Bk.landedMade <$> xB
 
         elClass "td" "td-reach-points" . dynText
             $ showMax Pt.reach showTaskLinearPoints pt points
@@ -302,8 +306,8 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
             $ showMax Pt.effort showTaskDifficultyPoints pt points
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
-        elClass "td" "td-norm td-distance-points" . text $ yDistance
-        elClass "td" "td-norm td-distance-points" . text $ yDistanceDiff
+        elClass "td" "td-norm td-distance-points" . text $ yPts
+        elClass "td" "td-norm td-distance-points" . text $ yPtsDiff
 
 dnfRows
     :: MonadWidget t m

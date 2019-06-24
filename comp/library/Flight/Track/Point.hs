@@ -107,11 +107,11 @@ data Breakdown =
         , penaltyReason :: String
         , breakdown :: Points
         , velocity :: Maybe Velocity
-        , reachDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
+        , reach :: Maybe (ReachToggle (PilotDistance (Quantity Double [u| km |])))
           -- ^ The best distance the pilot made, not exceeding goal and may be
           -- further than where the pilot landed. The linear distance points
           -- are awarded from this distance.
-        , landedDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
+        , landedMade :: Maybe (PilotDistance (Quantity Double [u| km |]))
           -- ^ The distance along the course to where the pilot landed.
         , stoppedAlt :: Maybe (QAlt Double [u| m |])
           -- ^ The altitude of the pilot at the stopped task score back time.

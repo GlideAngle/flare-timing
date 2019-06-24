@@ -568,7 +568,7 @@ points'
             ]
 
         -- NOTE: Pilots either get to goal or have a nigh distance.
-        nighDistanceDf :: [[(Pilot, Maybe Double)]] =
+        nighDistanceDfE :: [[(Pilot, Maybe Double)]] =
             [ let xs' = (fmap . fmap) madeNigh xs
                   ys' = (fmap . fmap) (const . Just $ unFlownMaxAsKm b) ys
               in (xs' ++ ys')
@@ -577,7 +577,16 @@ points'
             | ys <- arrivalRank
             ]
 
-        nighDistanceDfNoTrack :: [[(Pilot, Maybe Double)]] =
+        nighDistanceDfF :: [[(Pilot, Maybe Double)]] =
+            [ let xs' = (fmap . fmap) madeNigh xs
+                  ys' = (fmap . fmap) (const . Just $ unFlownMaxAsKm b) ys
+              in (xs' ++ ys')
+            | ReachStats{max = b} <- bolsterStatsF
+            | xs <- nighF
+            | ys <- arrivalRank
+            ]
+
+        nighDistanceDfNoTrackE :: [[(Pilot, Maybe Double)]] =
             [
                 (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} ->
                     (p, madeAwarded free lWholeTask $ Gap.extra <$> aw))
@@ -664,7 +673,7 @@ points'
             | lWholeTask <- lsWholeTask
             ]
 
-        nighDistancePointsDf :: [[(Pilot, LinearPoints)]] =
+        nighDistancePointsDfE :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
                 (\ps' ->
@@ -673,10 +682,10 @@ points'
                 ps
             | ReachStats{max = FlownMax b} <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
-            | ds <- nighDistanceDf
+            | ds <- nighDistanceDfE
             ]
 
-        nighDistancePointsDfNoTrack :: [[(Pilot, LinearPoints)]] =
+        nighDistancePointsDfNoTrackE :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
                 (\ps' ->
@@ -685,7 +694,7 @@ points'
                 ps
             | ReachStats{max = FlownMax b} <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
-            | ds <- nighDistanceDfNoTrack
+            | ds <- nighDistanceDfNoTrackE
             ]
 
         leadingPoints :: [[(Pilot, LeadingPoints)]] =
@@ -761,18 +770,20 @@ points'
 
         scoreDf :: [[(Pilot, Breakdown)]] =
             [ let dsL = Map.fromList dsLand
-                  dsN = Map.fromList dsNigh
+                  dsE = Map.fromList dsNighE
+                  dsF = Map.fromList dsNighF
                   dsS = Map.fromList dsSpeed
                   ds =
                       Map.toList
-                      $ Map.intersectionWith (\a (b, c) -> (a, b, c)) dsS
-                      $ Map.intersectionWith (,) dsN dsL
+                      $ Map.intersectionWith (\s (e, f, l) -> (s, e, f, l)) dsS
+                      $ Map.intersectionWith (\e (f, l) -> (e, f, l)) dsE
+                      $ Map.intersectionWith (,) dsF dsL
               in
                   rankByTotal . sortScores
                   $ fmap (tallyDf gates)
                   A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs
             | diffs <- difficultyDistancePointsDf
-            | linears <- nighDistancePointsDf
+            | linears <- nighDistancePointsDfE
             | ls <- leadingPoints
             | as <- arrivalPoints
             | ts <- timePoints gsSpeed
@@ -780,10 +791,14 @@ points'
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
                     speedDistance
-            | dsNigh <-
+            | dsNighE <-
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
-                    nighDistanceDf
+                    nighDistanceDfE
+            | dsNighF <-
+                (fmap . fmap)
+                    ((fmap . fmap) (PilotDistance . MkQuantity))
+                    nighDistanceDfF
             | dsLand <-
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
@@ -801,7 +816,7 @@ points'
               $ fmap (tallyDfNoTrack gates lSpeedTask lWholeTask)
               A.<$> collateDfNoTrack diffs linears as ts penals dsAward
             | diffs <- difficultyDistancePointsDfNoTrack
-            | linears <- nighDistancePointsDfNoTrack
+            | linears <- nighDistancePointsDfNoTrackE
             | as <- arrivalPoints
             | ts <- timePoints gsSpeed
             | dsAward <- dfNtss
@@ -940,7 +955,7 @@ collateDf
     -> [(Pilot, TimePoints)]
     -> [(Pilot, [PointPenalty], String)]
     -> [(Pilot, Maybe alt)]
-    -> [(Pilot, (Maybe a, Maybe a, Maybe a))]
+    -> [(Pilot, (Maybe a, Maybe a, Maybe a, Maybe a))]
     -> [(Pilot, Maybe b)]
     -> [(Pilot, Maybe c)]
     -> [(Pilot, Maybe d)]
@@ -955,7 +970,7 @@ collateDf
                         ,
                             ( Maybe b
                             ,
-                                ( (Maybe a, Maybe a, Maybe a)
+                                ( (Maybe a, Maybe a, Maybe a, Maybe a)
                                 ,
                                     ( ([PointPenalty], String)
                                     , Gap.Points
@@ -1123,6 +1138,7 @@ tallyDf
                             ( Maybe (PilotDistance (Quantity Double [u| km |]))
                             , Maybe (PilotDistance (Quantity Double [u| km |]))
                             , Maybe (PilotDistance (Quantity Double [u| km |]))
+                            , Maybe (PilotDistance (Quantity Double [u| km |]))
                             )
                         ,
                             ( ([PointPenalty], String)
@@ -1144,7 +1160,7 @@ tallyDf
             ,
                 ( ssT
                 ,
-                    ( (dS, dN, dL)
+                    ( (dS, dE, dF, dL)
                     ,
                         ( (penalties, penaltyReason)
                         , x@Gap.Points
@@ -1178,8 +1194,13 @@ tallyDf
                 , ssVelocity = liftA2 mkVelocity dS ssT
                 , gsVelocity = liftA2 mkVelocity dS gsT
                 }
-        , reachDistance = dN
-        , landedDistance = dL
+
+        , reach = do
+            dE' <- dE
+            dF' <- dF
+            return ReachToggle{extra = dE', flown = dF'}
+
+        , landedMade = dL
         , stoppedAlt = alt
         }
     where
@@ -1253,8 +1274,12 @@ tallyDfNoTrack
                             }
                 _ -> Nothing
 
-        , reachDistance = dP
-        , landedDistance = dP
+        , reach = do
+            dE' <- dE
+            dF' <- dF
+            return $ ReachToggle{extra = dE', flown = dF'}
+
+        , landedMade = dE
         , stoppedAlt = Nothing
         }
     where
@@ -1264,10 +1289,16 @@ tallyDfNoTrack
                 return $ startGateTaken gs' ss'
 
         total = TaskPoints $ r + dp + l + a + tp
-        dP = PilotDistance <$> do
+
+        dE = PilotDistance <$> do
                 dT <- dT'
                 aw <- aw'
                 return $ awardByFrac (Clamp False) dT (Gap.extra aw)
+
+        dF = PilotDistance <$> do
+                dT <- dT'
+                aw <- aw'
+                return $ awardByFrac (Clamp False) dT (Gap.flown aw)
 
         dS = PilotDistance <$> do
                 TaskDistance d <- dS'

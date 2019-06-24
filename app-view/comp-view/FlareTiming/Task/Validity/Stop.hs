@@ -695,12 +695,12 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                 case (Map.lookup p' mapN, Map.lookup p' mapR) of
                     (Just
                         Norm.NormBreakdown
-                            { reachMade = bolsterN
-                            , reach =
+                            { reach =
                                 ReachToggle
                                     { extra = extraN
                                     , flown = reachN
                                     }
+                            , reachMade = landedMadeN
                             }
                         , Just br) ->
                         let reachE@(PilotDistance dE) = reach br
@@ -721,9 +721,9 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                             , fDiff reachF reachN
                             , fDiff bolsterF bolsterE
                             , f extraN
-                            , f bolsterN
+                            , f landedMadeN
                             , fDiff bolsterE extraN
-                            , fDiff bolsterF bolsterN
+                            , fDiff bolsterF landedMadeN
                             )
 
                     _ -> ("", "", "", "", "", "", "", "", "", "", "", ""))

@@ -16,6 +16,7 @@ import WireTypes.Point
     , TaskPoints(..)
     , Breakdown(..)
     , PilotDistance(..)
+    , ReachToggle(..)
     , showPilotDistance
     , showTaskDistancePoints
     , showTaskArrivalPoints
@@ -289,7 +290,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                             , total = p@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))
 
-    let reach = reachDistance <$> xB
+    let xReach = reach <$> xB
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
 
@@ -299,11 +300,11 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let awardFree = ffor2 free reach (\(MinimumDistance f) pd ->
+    let awardFree = ffor2 free xReach (\(MinimumDistance f) pd ->
             let c = "td-best-distance" in
             maybe
                 (c, "")
-                (\(PilotDistance r) ->
+                (\ReachToggle{extra = PilotDistance r} ->
                     if r >= f then (c, "") else
                        let c' = c <> " award-free"
                        in (c', T.pack $ printf "%.1f" f))
@@ -322,7 +323,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
         elDynClass "td" (fst <$> awardFree) . dynText
-            $ maybe "" (showPilotDistance 1) <$> reach
+            $ maybe "" (showPilotDistance 1 . extra) <$> xReach
 
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
