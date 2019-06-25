@@ -12,6 +12,8 @@ module FlareTiming.Comms
     , getTaskScore
     , getTaskValidityWorking
     , getNormTaskValidityWorking
+    , getTaskLengthNormSphere
+    , getTaskLengthNormEllipse
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -201,8 +203,15 @@ getTaskValidityWorking = getIxTask "gap-point" "validity-working"
 getNormTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getNormTaskValidityWorking = getIxTask "fs-score" "validity-working"
 
+getFsRoute_ :: T.Text -> IxTask -> Get t m b
+getFsRoute_ = getIxTask "fs-route"
+
 getTaskLength_ :: T.Text -> IxTask -> Get t m b
 getTaskLength_ = getIxTask "task-length"
+
+getTaskLengthNormSphere, getTaskLengthNormEllipse :: GetIxTask' t m (Maybe TrackLine)
+getTaskLengthNormSphere = getFsRoute_ "sphere"
+getTaskLengthNormEllipse = getFsRoute_ "ellipse"
 
 getTaskLengthSphericalEdge, getTaskLengthEllipsoidEdge
     :: GetIxTask' t m (OptimalRoute (Maybe TrackLine))
@@ -214,8 +223,7 @@ getTaskLengthProjectedEdgeSpherical, getTaskLengthProjectedEdgeEllipsoid
 getTaskLengthProjectedEdgeSpherical = getTaskLength_ "projected-edge-spherical"
 getTaskLengthProjectedEdgeEllipsoid = getTaskLength_ "projected-edge-ellipsoid"
 
-getTaskLengthProjectedEdgePlanar
-    :: GetIxTask' t m (Maybe PlanarTrackLine)
+getTaskLengthProjectedEdgePlanar :: GetIxTask' t m (Maybe PlanarTrackLine)
 getTaskLengthProjectedEdgePlanar = getTaskLength_ "projected-edge-planar"
 
 getTaskPilotDf, getTaskPilotAbs :: GetIxTask' t m [Pilot]

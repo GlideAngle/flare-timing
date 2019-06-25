@@ -29,7 +29,7 @@ rowOptimal
     -> T.Text
     -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
     -> m ()
-rowOptimal earth algo  lnTask = do
+rowOptimal earth algo lnTask = do
     ln <- (fmap . fmap) taskLength lnTask
     let d = ffor ln (maybe "" $ \TaskLength{..} ->
                 showTaskDistance taskRoute)
@@ -50,11 +50,23 @@ rowSpherical ix = do
     let x = holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
     rowOptimal "Sphere" "Haversines" x
 
+rowSphericalNorm :: MonadWidget t m => IxTask -> m ()
+rowSphericalNorm ix = do
+    pb <- getPostBuild
+    ln <- holdDyn Nothing =<< getTaskLengthNormSphere ix pb
+    rowNorm "Sphere" "Haversines" ln
+
 rowEllipsoid :: MonadWidget t m => IxTask -> m ()
 rowEllipsoid ix = do
     pb <- getPostBuild
     let x = holdDyn emptyRoute =<< getTaskLengthEllipsoidEdge ix pb
     rowOptimal "Ellipsoid" "Vincenty" x
+
+rowEllipsoidNorm :: MonadWidget t m => IxTask -> m ()
+rowEllipsoidNorm ix = do
+    pb <- getPostBuild
+    ln <- holdDyn Nothing =<< getTaskLengthNormEllipse ix pb
+    rowNorm "Ellipsoid" "Vincenty" ln
 
 rowTrackLine
     :: MonadWidget t m
@@ -69,6 +81,25 @@ rowTrackLine earthOut algoOut ln = do
             ffor ln (maybe "" $ T.pack . show . length . (\TrackLine{legs = xs} -> xs))
 
     el "tr" $ do
+        el "td" $ text earthOut
+        el "td" $ text algoOut
+        elClass "td" "td-geo-distance" $ dynText d
+        elClass "td" "td-geo-legs" $ dynText legs
+
+rowNorm
+    :: MonadWidget t m
+    => T.Text
+    -> T.Text
+    -> Dynamic t (Maybe TrackLine)
+    -> m ()
+rowNorm earthOut algoOut ln = do
+    let d = ffor ln (maybe "" $ \TrackLine{distance = x} -> showTaskDistance x)
+
+    let legs =
+            ffor ln (maybe "" $ T.pack . show . length . (\TrackLine{legs = xs} -> xs))
+
+    elClass "tr" "norm" $ do
+        elAttr "td" ("colspan" =: "2") $ text "✓"
         el "td" $ text earthOut
         el "td" $ text algoOut
         elClass "td" "td-geo-distance" $ dynText d
@@ -138,12 +169,15 @@ tableCmp ix = do
                 rowProjectedEllipsoid ix
 
                 rowSpherical ix
+                rowSphericalNorm ix
                 rowEllipsoid ix
+                rowEllipsoidNorm ix
 
             let tr = el "tr" . elAttr "td" ("colspan" =: "6")
             _ <- el "tfoot" $ do
                 tr $ text "* The Earth model and algorithm used when constructing a network of points with distance between pairs as the cost to be minimized when finding the shortest path through the network"
                 tr $ text "† The Earth model and algorithm used when reporting the sum of distances between pairs of points along the path as the path distance"
+                tr $ text "✓ An expected value as calculated by the official scoring program, FS."
 
             return ()
 
