@@ -169,8 +169,9 @@ tableCmp ix = do
                 rowProjectedEllipsoid ix
 
                 rowSpherical ix
-                rowSphericalNorm ix
                 rowEllipsoid ix
+
+                rowSphericalNorm ix
                 rowEllipsoidNorm ix
 
             let tr = el "tr" . elAttr "td" ("colspan" =: "6")
