@@ -1,15 +1,11 @@
 ### Extracting Scoring Inputs
 
-    $ __shake-build/extract-input --help
+    $ __shake-build/fs-score --help
 
-    Extracts just the inputs needed for scoring a competition.
+    Extracts the expected or normative scores from a competition.
 
-    Where 'c' is the comp name and '.' is the folder with competition inputs;
-        Reads  ./c.fsdb
-        Writes ./c.comp-inputs.yaml 
-
-    extract-input [OPTIONS]
+    fs-score [OPTIONS]
 
     Source:
-      -d --dir=ITEM   Over all the competition FSDB files in this directory
-      -f --file=ITEM  With this one competition FSDB file
+      -d --dir=ITEM                  Over all *.comp.yaml files in this directory
+      -f --file=ITEM                 With this one competition *.comp.yaml file
