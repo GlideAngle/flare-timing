@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 94957405d3195621514ae19cc50823074296c4b36630bb6ccca56bc22cab1470
+-- hash: 41397d6e8f2ebe46c7fe3ed4983cd757667e7051b0f0bf32266323bc76764939
 
 name:           flare-timing
 version:        0.1.0
@@ -160,6 +160,43 @@ executable extract-input
     , bytestring
     , clock
     , cmdargs
+    , directory
+    , filemanip
+    , filepath
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-fsdb
+    , flight-gap
+    , flight-latlng
+    , flight-mask
+    , flight-scribe
+    , flight-time
+    , flight-zone
+    , formatting
+    , mtl
+    , raw-strings-qq
+    , transformers
+    , uom-plugin
+    , yaml
+  default-language: Haskell2010
+
+executable fs-route
+  main-is: FsRouteMain.hs
+  other-modules:
+      FsRouteOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/fs-route
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , containers
     , directory
     , filemanip
     , filepath

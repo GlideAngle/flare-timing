@@ -79,6 +79,23 @@ in    defs
               , source-dirs =
                   "prod-apps/fs-score"
               }
+          , fs-route =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "flight-earth"
+                    , "flight-fsdb"
+                    , "flight-gap"
+                    , "flight-mask"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+              , main =
+                  "FsRouteMain.hs"
+              , source-dirs =
+                  "prod-apps/fs-route"
+              }
           , task-length =
               { dependencies =
                     deps
