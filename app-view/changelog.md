@@ -6,6 +6,9 @@ of this changelog.
 ## app-view-0.21
 
 * Compare task validities side-by-side with those of FS.
+* Show the optimal task route from FS on the map.
+* Compare optimal task route from FS with those of FS in the Geo table.
+* Show the extra distance from glide above goal in the Score Distance table.
 
 # Stopped Validity and Bonus Reach
 ## app-view-0.20
