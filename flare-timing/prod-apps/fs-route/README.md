@@ -2,7 +2,7 @@
 
     $ __shake-build/fs-route --help
 
-    Extracts the expected or normative optimal route from a competition.
+    Extracts the expected or normative optimal routes from a competition.
 
     fs-route [OPTIONS]
 

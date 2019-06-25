@@ -5,5 +5,5 @@ import Flight.Cmd.Options (Description(..))
 
 description :: Description
 description = Description [r|
-Extracts the expected or normative optimal route from a competition.
+Extracts the expected or normative optimal routes from a competition.
 |]

@@ -87,6 +87,7 @@ in    defs
                     , "flight-fsdb"
                     , "flight-gap"
                     , "flight-mask"
+                    , "flight-route"
                     , "flight-zone"
                     ]
               , ghc-options =

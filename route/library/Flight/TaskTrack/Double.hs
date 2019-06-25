@@ -1,7 +1,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.TaskTrack.Double (taskTracks) where
+module Flight.TaskTrack.Double (taskTracks, geoTrack) where
 
 import Data.Either (partitionEithers)
 import Data.List (nub)
@@ -60,6 +60,10 @@ trackLines excludeWaypoints zs =
             <$> distanceEdgeEllipsoid (costSegment spanE) zs
         , projected = goByProj excludeWaypoints zs
         }
+
+geoTrack :: Bool -> [RawLatLng] -> GeoLines
+geoTrack excludeWaypoints xs =
+    let zs = toPoint <$> xs in trackLines excludeWaypoints zs
 
 taskTracks
     :: Bool

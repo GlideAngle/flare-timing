@@ -13,10 +13,12 @@ module Flight.Route.TrackLine
 
 import Prelude hiding (span)
 import Data.List (nub, foldl')
+import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, zero)
 
+import Flight.Field (FieldOrdering(..))
 import Flight.EastNorth (EastingNorthing(..), UtmZone(..))
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
@@ -40,6 +42,55 @@ data GeoLines =
         , ellipse :: Maybe TrackLine
         , projected :: Maybe ProjectedTrackLine
         }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+instance FieldOrdering GeoLines where
+    fieldOrder _ = cmpGeoLines
+
+cmpGeoLines :: (Ord a, IsString a) => a -> a -> Ordering
+cmpGeoLines a b =
+    case (a, b) of
+        ("point", _) -> LT
+
+        ("sphere", "point") -> GT
+        ("sphere", _) -> LT
+
+        ("ellipse", "projected") -> LT
+        ("ellipse", _) -> GT
+
+        ("projected", _) -> GT
+
+        -- EastingNorthing fields
+        ("easting", _) -> LT
+        ("northing", _) -> GT
+
+        -- UtmZone fields
+        ("latZone", _) -> LT
+        ("lngZone", _) -> GT
+
+        -- RawLatLng fields
+        ("lat", _) -> LT
+        ("lng", _) -> GT
+
+        -- PlanarTrackLine fields
+        ("distance", _) -> LT
+
+        ("legs", "distance") -> GT
+        ("legs", _) -> LT
+
+        ("legsSum", "distance") -> GT
+        ("legsSum", "legs") -> GT
+        ("legsSum", _) -> LT
+
+        ("flipSum", "distance") -> GT
+        ("flipSum", "legs") -> GT
+        ("flipSum", "legsSum") -> GT
+        ("flipSum", _) -> LT
+
+        ("wayPoints", _) -> GT
+
+        _ ->  compare a b
 
 -- | Once a track line is found on a plane, what are its equivalent latitudes
 -- and longitudes on the sphere and ellipsoid?

@@ -1,5 +1,6 @@
 module Flight.Scribe
     ( readNormScore, writeNormScore
+    , readNormRoute, writeNormRoute
     , readComp, writeComp
     , readRoute, writeRoute
     , readCrossing , writeCrossing
@@ -32,10 +33,12 @@ import Flight.Track.Mask
     (MaskingArrival, MaskingEffort, MaskingLead, MaskingReach, MaskingSpeed)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, NormPointing)
+import Flight.Route (GeoLines)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
-    ( CompInputFile(..)
-    , NormScoreFile(..)
+    ( NormScoreFile(..)
+    , NormRouteFile(..)
+    , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
@@ -80,6 +83,20 @@ writeNormScore :: NormScoreFile -> NormPointing -> IO ()
 writeNormScore (NormScoreFile path) pointing = do
     let cfg = Y.setConfCompare (fieldOrder pointing) Y.defConfig
     let yaml = Y.encodePretty cfg pointing
+    BS.writeFile path yaml
+
+readNormRoute
+    :: (MonadThrow m, MonadIO m)
+    => NormRouteFile
+    -> m [GeoLines]
+readNormRoute (NormRouteFile path) = do
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
+
+writeNormRoute :: NormRouteFile -> [GeoLines] -> IO ()
+writeNormRoute (NormRouteFile path) track = do
+    let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
+    let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
 
 readRoute

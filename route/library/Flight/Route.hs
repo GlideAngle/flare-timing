@@ -4,9 +4,9 @@ module Flight.Route
     ( ToTrackLine(..)
     , TaskDistanceMeasure(..)
     , OptimalRoute(..)
-    , NormTaskTrack(..)
     , TaskTrack(..)
     , TrackLine(..)
+    , GeoLines(..)
     , ProjectedTrackLine(..)
     , PlanarTrackLine(..)
     , cmpFields
@@ -18,7 +18,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Route.TrackLine
-    ( ToTrackLine(..), TrackLine(..)
+    ( ToTrackLine(..), TrackLine(..), GeoLines(..)
     , ProjectedTrackLine(..), PlanarTrackLine(..)
     )
 import Flight.Route.Optimal (OptimalRoute(..))
@@ -30,17 +30,6 @@ data TaskDistanceMeasure
     | TaskDistanceByEdges
     | TaskDistanceByProjection
     deriving (Eq, Ord, Show)
-
-data NormTaskTrack =
-    NormTaskTrack
-        { sphericalPointToPoint :: Maybe TrackLine
-        , ellipsoidPointToPoint :: Maybe TrackLine
-        }
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
-
-instance FieldOrdering NormTaskTrack where
-    fieldOrder _ = cmpFields
 
 data TaskTrack =
     TaskTrack
