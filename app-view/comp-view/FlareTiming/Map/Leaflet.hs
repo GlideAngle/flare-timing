@@ -223,7 +223,7 @@ layersControl
         ns :: [String]
         ns =
             [ "Task"
-            , "Path (expected)"
+            , "Path (✓ expected)"
             , "Path (spherical)"
             , "Path (ellipsoid)"
             , "Path (planar)"
