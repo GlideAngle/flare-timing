@@ -65,7 +65,7 @@ import Flight.Score
     , ReachStats(..)
     )
 import Flight.Scribe
-    ( readComp, readScore
+    ( readComp, readNormScore
     , readRoute, readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
@@ -110,7 +110,7 @@ import Flight.Comp
     , GapPointFile(..)
     , NormScoreFile(..)
     , findCompInput
-    , compToScore
+    , compToNormScore
     , compToTaskLength
     , compToCross
     , compToMaskArrival
@@ -353,7 +353,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
-    let normFile@(NormScoreFile normPath) = compToScore compFile
+    let normFile@(NormScoreFile normPath) = compToNormScore compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
@@ -436,7 +436,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
 
     norming <-
         catchIO
-            (Just <$> readScore normFile)
+            (Just <$> readNormScore normFile)
             (const $ return Nothing)
 
     case (compSettings, routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, norming) of

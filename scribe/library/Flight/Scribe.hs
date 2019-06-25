@@ -1,6 +1,6 @@
 module Flight.Scribe
-    ( readComp, writeComp
-    , readScore, writeScore
+    ( readNormScore, writeNormScore
+    , readComp, writeComp
     , readRoute, writeRoute
     , readCrossing , writeCrossing
     , readTagging, writeTagging
@@ -68,16 +68,16 @@ writeComp (CompInputFile path) compInput = do
     let yaml = Y.encodePretty cfg compInput
     BS.writeFile path yaml
 
-readScore
+readNormScore
     :: (MonadThrow m, MonadIO m)
     => NormScoreFile
     -> m NormPointing
-readScore (NormScoreFile path) = do
+readNormScore (NormScoreFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeScore :: NormScoreFile -> NormPointing -> IO ()
-writeScore (NormScoreFile path) pointing = do
+writeNormScore :: NormScoreFile -> NormPointing -> IO ()
+writeNormScore (NormScoreFile path) pointing = do
     let cfg = Y.setConfCompare (fieldOrder pointing) Y.defConfig
     let yaml = Y.encodePretty cfg pointing
     BS.writeFile path yaml

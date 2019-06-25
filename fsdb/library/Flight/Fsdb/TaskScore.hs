@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Fsdb.TaskScore (parseScores) where
+module Flight.Fsdb.TaskScore (parseNormScores) where
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
@@ -584,8 +584,8 @@ getValidity ng nl nd md nt =
             >>> hasName "FsTaskScoreParams"
             >>> arr (unpickleDoc' xpStopValidityWorking)
 
-parseScores :: Nominal -> String -> IO (Either String NormPointing)
-parseScores
+parseNormScores :: Nominal -> String -> IO (Either String NormPointing)
+parseNormScores
     Nominal
         { goal = ng
         , launch = nl

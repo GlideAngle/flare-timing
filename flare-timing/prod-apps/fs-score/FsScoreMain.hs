@@ -16,7 +16,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNominal, parseScores)
+import Flight.Fsdb (parseNominal, parseNormScores)
 import Flight.Track.Speed (TrackSpeed)
 import qualified Flight.Track.Speed as Time (TrackSpeed(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
@@ -26,7 +26,7 @@ import Flight.Comp
     , FsdbXml(..)
     , Pilot(..)
     , Nominal(..)
-    , fsdbToScore
+    , fsdbToNormScore
     , findFsdb
     , ensureExt
     )
@@ -37,7 +37,7 @@ import Flight.Score
     , ArrivalFraction(..), ArrivalPoints(..)
     , speedFraction
     )
-import Flight.Scribe (writeScore)
+import Flight.Scribe (writeNormScore)
 import FsScoreOptions (description)
 
 main :: IO ()
@@ -66,7 +66,7 @@ go fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ normScores (FsdbXml contents')
-    either print (writeScore (fsdbToScore fsdbFile)) settings
+    either print (writeNormScore (fsdbToNormScore fsdbFile)) settings
 
 fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
 fsdbNominal (FsdbXml contents) = do
@@ -81,7 +81,7 @@ fsdbNominal (FsdbXml contents) = do
 
 fsdbScores :: Nominal -> FsdbXml -> ExceptT String IO NormPointing
 fsdbScores n (FsdbXml contents) = do
-    fs <- lift $ parseScores n contents
+    fs <- lift $ parseNormScores n contents
     ExceptT $ return fs
 
 normScores :: FsdbXml -> ExceptT String IO NormPointing

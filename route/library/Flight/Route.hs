@@ -1,7 +1,10 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 module Flight.Route
     ( ToTrackLine(..)
     , TaskDistanceMeasure(..)
     , OptimalRoute(..)
+    , NormTaskTrack(..)
     , TaskTrack(..)
     , TrackLine(..)
     , ProjectedTrackLine(..)
@@ -27,6 +30,17 @@ data TaskDistanceMeasure
     | TaskDistanceByEdges
     | TaskDistanceByProjection
     deriving (Eq, Ord, Show)
+
+data NormTaskTrack =
+    NormTaskTrack
+        { sphericalPointToPoint :: Maybe TrackLine
+        , ellipsoidPointToPoint :: Maybe TrackLine
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+instance FieldOrdering NormTaskTrack where
+    fieldOrder _ = cmpFields
 
 data TaskTrack =
     TaskTrack

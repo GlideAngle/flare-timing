@@ -18,7 +18,7 @@ module Flight.Fsdb
     , parsePilots
     , parseTracks
     , parseTaskFolders
-    , parseScores
+    , parseNormScores
     ) where
 
 import Flight.Fsdb.Comp
