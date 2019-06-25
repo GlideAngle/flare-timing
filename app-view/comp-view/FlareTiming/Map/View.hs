@@ -67,7 +67,7 @@ import WireTypes.ZoneKind (Radius(..), Shape(..))
 import WireTypes.Route
     ( OptimalRoute, TrackLine
     , TaskRoute(..), TaskRouteSubset(..), SpeedRoute(..)
-    , optimalTaskRoute, planarRoute
+    , optimalTaskRoute, lineToRoute
     , optimalTaskRoute, optimalTaskRouteSubset, optimalSpeedRoute
     )
 import qualified FlareTiming.Turnpoint as TP (getName)
@@ -314,6 +314,7 @@ viewMap
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
     -> Dynamic t (Maybe TrackLine)
+    -> Dynamic t (Maybe TrackLine)
     -> Event t
         (
             (Pilot
@@ -328,11 +329,12 @@ viewMap
             )
         )
     -> m (Event t Pilot)
-viewMap utcOffset ix task sRoute eRoute pRoute pilotFlyingTrack = do
+viewMap utcOffset ix task sRoute eRoute pRoute nRoute pilotFlyingTrack = do
     task' <- sample . current $ task
     sRoute' <- sample . current $ sRoute
     eRoute' <- sample . current $ eRoute
     pRoute' <- sample . current $ pRoute
+    nRoute' <- sample . current $ nRoute
 
     map
         utcOffset
@@ -344,7 +346,8 @@ viewMap utcOffset ix task sRoute eRoute pRoute pilotFlyingTrack = do
         (optimalTaskRoute eRoute')
         (optimalTaskRouteSubset eRoute')
         (optimalSpeedRoute eRoute')
-        (planarRoute pRoute')
+        (lineToRoute pRoute')
+        (lineToRoute nRoute')
         pilotFlyingTrack
 
 splitZones :: Task -> ([RawZone], [(AzimuthFwd, RawZone)])
@@ -373,6 +376,7 @@ map
     -> TaskRouteSubset
     -> SpeedRoute
     -> TaskRoute
+    -> TaskRoute
     -> Event t
         (
             (Pilot
@@ -388,18 +392,18 @@ map
         )
     -> m (Event t Pilot)
 
-map _ _ Task{zones = Zones{raw = []}} _ _ _ _ _ _ _ _ = do
+map _ _ Task{zones = Zones{raw = []}} _ _ _ _ _ _ _ _ _ = do
     el "p" $ text "The task has no turnpoints."
     return never
 
-map _ _ _ (TaskRoute []) _ _ _ _ _ _ _ = do
+map _ _ _ (TaskRoute []) _ _ _ _ _ _ _ _ = do
     return never
 
-map _ _ _ _ (TaskRouteSubset []) _ _ _ _ _ _ = do
+map _ _ _ _ (TaskRouteSubset []) _ _ _ _ _ _ _ = do
     el "p" $ text "The optimal task route speed section has no turnpoints."
     return never
 
-map _ _ _ _ _ (SpeedRoute []) _ _ _ _ _ = do
+map _ _ _ _ _ (SpeedRoute []) _ _ _ _ _ _ = do
     el "p" $ text "The optimal route through only the speed section has no turnpoints."
     return never
 
@@ -414,6 +418,7 @@ map
     (TaskRouteSubset taskEllipsoidRouteSubset)
     (SpeedRoute speedEllipsoidRoute)
     (TaskRoute taskPlanarRoute)
+    (TaskRoute taskNormRoute)
     pilotFlyingTrack = do
 
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
@@ -495,6 +500,8 @@ map
             let ptsCircle :: [(Double, Double)] = fmap zoneToLL xsCircle
             let ptsLine :: [(Double, Double)] = fmap zoneToLL $ snd <$> xsLine
 
+            let ptsTaskNormRoute :: [(Double, Double)] = fmap rawToLL taskNormRoute
+
             let ptsTaskSphericalRoute :: [(Double, Double)] = fmap rawToLL taskSphericalRoute
             let ptsTaskSphericalRouteSubset :: [(Double, Double)] = fmap rawToLL taskSphericalRouteSubset
             let ptsSpeedSphericalRoute :: [(Double, Double)] = fmap rawToLL speedSphericalRoute
@@ -542,34 +549,36 @@ map
             courseLine <- L.routeLine pts "gray"
             courseGroup <- L.layerGroup courseLine tpMarks
 
+            taskNormRouteLine <- L.routeLine ptsTaskNormRoute "black"
+            taskNormRouteMarks <- sequence $ zipWith marker cs ptsTaskNormRoute
+            taskNormRouteGroup <- L.layerGroup taskNormRouteLine taskNormRouteMarks
+
             taskSphericalRouteLine <- L.routeLine ptsTaskSphericalRoute "red"
-            taskSphericalRouteSubsetLine <- L.routeLine ptsTaskSphericalRouteSubset "green"
-            speedSphericalRouteLine <- L.routeLine ptsSpeedSphericalRoute "magenta"
-
             taskSphericalRouteMarks <- sequence $ zipWith marker cs ptsTaskSphericalRoute
-            taskSphericalRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskSphericalRouteSubset
-            speedSphericalRouteMarks <- sequence $ zipWith marker cs ptsSpeedSphericalRoute
-
             taskSphericalRouteGroup <- L.layerGroup taskSphericalRouteLine taskSphericalRouteMarks
+
+            taskSphericalRouteSubsetLine <- L.routeLine ptsTaskSphericalRouteSubset "green"
+            taskSphericalRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskSphericalRouteSubset
             taskSphericalRouteSubsetGroup <- L.layerGroup taskSphericalRouteSubsetLine taskSphericalRouteSubsetMarks
+
+            speedSphericalRouteLine <- L.routeLine ptsSpeedSphericalRoute "magenta"
+            speedSphericalRouteMarks <- sequence $ zipWith marker cs ptsSpeedSphericalRoute
             speedSphericalRouteGroup <- L.layerGroup speedSphericalRouteLine speedSphericalRouteMarks
 
             taskEllipsoidRouteLine <- L.routeLine ptsTaskEllipsoidRoute "crimson"
-            taskEllipsoidRouteSubsetLine <- L.routeLine ptsTaskEllipsoidRouteSubset "lime"
-            speedEllipsoidRouteLine <- L.routeLine ptsSpeedEllipsoidRoute "cyan"
-
             taskEllipsoidRouteMarks <- sequence $ zipWith marker cs ptsTaskEllipsoidRoute
-            taskEllipsoidRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskEllipsoidRouteSubset
-            speedEllipsoidRouteMarks <- sequence $ zipWith marker cs ptsSpeedEllipsoidRoute
-
             taskEllipsoidRouteGroup <- L.layerGroup taskEllipsoidRouteLine taskEllipsoidRouteMarks
+
+            taskEllipsoidRouteSubsetLine <- L.routeLine ptsTaskEllipsoidRouteSubset "lime"
+            taskEllipsoidRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskEllipsoidRouteSubset
             taskEllipsoidRouteSubsetGroup <- L.layerGroup taskEllipsoidRouteSubsetLine taskEllipsoidRouteSubsetMarks
+
+            speedEllipsoidRouteLine <- L.routeLine ptsSpeedEllipsoidRoute "cyan"
+            speedEllipsoidRouteMarks <- sequence $ zipWith marker cs ptsSpeedEllipsoidRoute
             speedEllipsoidRouteGroup <- L.layerGroup speedEllipsoidRouteLine speedEllipsoidRouteMarks
 
             taskPlanarRouteLine <- L.routeLine ptsTaskPlanarRoute "salmon"
-
             taskPlanarRouteMarks <- sequence $ zipWith marker cs ptsTaskPlanarRoute
-
             taskPlanarRouteGroup <- L.layerGroup taskPlanarRouteLine taskPlanarRouteMarks
 
             -- NOTE: Adding the route now so that it displays by default but
@@ -584,6 +593,7 @@ map
                     mapLayer
                     lmap
                     courseGroup
+                    taskNormRouteGroup
                     taskSphericalRouteGroup
                     taskSphericalRouteSubsetGroup
                     speedSphericalRouteGroup

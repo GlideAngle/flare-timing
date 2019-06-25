@@ -26,6 +26,7 @@ import FlareTiming.Comms
     , getTaskEffort
     , getTaskArrival, getTaskLead, getTaskTime
     , getTaskValidityWorking, getNormTaskValidityWorking
+    , getTaskLengthNormSphere
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -191,9 +192,13 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
     dfNt <- holdDyn (DfNoTrack []) =<< getTaskPilotDfNoTrack ix pb
+
     sphericalRoutes <- holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
     ellipsoidRoutes <- holdDyn emptyRoute =<< getTaskLengthEllipsoidEdge ix pb
-    planarRoutes <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
+
+    planarRoute <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
+    normRoute <- holdDyn Nothing =<< getTaskLengthNormSphere ix pb
+
     let ln = taskLength <$> sphericalRoutes
     let legs = taskLegs <$> sphericalRoutes
 
@@ -211,7 +216,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                 TaskTabTask -> taskTable
 
                 TaskTabMap -> mdo
-                    p <- viewMap utc ix task sphericalRoutes ellipsoidRoutes planarRoutes pt
+                    p <- viewMap utc ix task sphericalRoutes ellipsoidRoutes planarRoute normRoute pt
                     p' <- holdDyn nullPilot p
 
                     tfs <- getTaskPilotTrackFlyingSection ix p

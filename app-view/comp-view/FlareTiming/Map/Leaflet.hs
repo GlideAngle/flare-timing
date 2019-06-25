@@ -187,6 +187,7 @@ layersControl
     :: TileLayer
     -> Map
     -> LayerGroup -- ^ Point to point course line
+    -> LayerGroup -- ^ Expected optimal course line
     -> LayerGroup -- ^ Optimal spherical route of the course
     -> LayerGroup -- ^ Subset of the optimal spherical route's course line
     -> LayerGroup -- ^ Optimal spherical route through the waypoints of the speed section
@@ -197,6 +198,7 @@ layersControl
     -> IO Layers
 layersControl
     x lmap course
+    normRoute
     taskSphericalRoute taskSphericalRouteSubset speedSphericalRoute
     taskEllipsoidRoute taskEllipsoidRouteSubset speedEllipsoidRoute
 
@@ -208,6 +210,7 @@ layersControl
     where
         gs =
             [ course
+            , normRoute
             , taskSphericalRoute
             , taskEllipsoidRoute
             , taskPlanarRoute
@@ -220,6 +223,7 @@ layersControl
         ns :: [String]
         ns =
             [ "Task"
+            , "Path (expected)"
             , "Path (spherical)"
             , "Path (ellipsoid)"
             , "Path (planar)"
