@@ -6,7 +6,7 @@ import Reflex.Dom
 import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
-import WireTypes.Route (TaskLength(..), TaskDistance(..))
+import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
@@ -258,7 +258,7 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                 pd)
 
     (xF, xE, yF, yDiffF, yE, yDiffE, yPts, yPtsDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' xx@(_, Bk.Breakdown{reach, breakdown = Points{distance = dPts}}) ->
+                $ ffor3 pilot sEx x (\pilot' sEx' (_, Bk.Breakdown{reach, breakdown = Points{distance = dPts}}) ->
                     fromMaybe ("", "", "", "", "", "", "", "") $ do
                         Norm.NormBreakdown
                             { distance = dPtsN
