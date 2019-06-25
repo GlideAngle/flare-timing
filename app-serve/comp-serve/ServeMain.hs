@@ -236,8 +236,11 @@ type GapPointApi k =
     :<|> "fs-score" :> (Capture "task" Int) :> "score"
         :> Get '[JSON] [(Pilot, Norm.NormBreakdown)]
 
-    :<|> "fs-route" :> Capture "task" Int :> "route"
-        :> Get '[JSON] GeoLines
+    :<|> "fs-route" :> Capture "task" Int :> "sphere"
+        :> Get '[JSON] (Maybe TrackLine)
+
+    :<|> "fs-route" :> Capture "task" Int :> "ellipse"
+        :> Get '[JSON] (Maybe TrackLine)
 
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
@@ -522,7 +525,8 @@ serverGapPointApi cfg =
         :<|> getValidity <$> n
         :<|> getNormTaskValidityWorking
         :<|> getTaskNormScore
-        :<|> getTaskNormRoute
+        :<|> getTaskNormRouteSphere
+        :<|> getTaskNormRouteEllipse
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
         :<|> getTaskRouteProjectedSphericalEdge
@@ -1058,13 +1062,24 @@ getTaskNormScore ii = do
 
         _ -> throwError $ errTaskStep "fs-score" ii
 
-getTaskNormRoute :: Int -> AppT k IO GeoLines
-getTaskNormRoute ii = do
+getTaskNormRouteSphere :: Int -> AppT k IO (Maybe TrackLine)
+getTaskNormRouteSphere ii = do
     xs' <- asks normRoute
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
-                x : _ -> return x
+                x : _ -> return $ sphere x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "fs-route" ii
+
+getTaskNormRouteEllipse :: Int -> AppT k IO (Maybe TrackLine)
+getTaskNormRouteEllipse ii = do
+    xs' <- asks normRoute
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return $ ellipse x
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "fs-route" ii
