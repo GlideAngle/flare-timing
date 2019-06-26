@@ -167,8 +167,15 @@ showPilotDistance dp (PilotDistance d) =
 
 showPilotDistanceDiff :: Int -> PilotDistance -> PilotDistance -> T.Text
 showPilotDistanceDiff dp (PilotDistance expected) (PilotDistance actual)
-    | printf "%.*f" dp actual == (printf "%.*f" dp expected :: String) = "="
-    | otherwise = T.pack . printf "%+.*f" dp $ actual - expected
+    | f actual == f expected = "="
+    | dp > 0 && (filter (not . (flip elem) ['.', '+', '-', '0']) $ f (actual - expected)) == "" =
+        T.pack $ printf "%+.*f" (dp + 1) (actual - expected)
+    | otherwise = g (actual - expected)
+    where
+        f :: Double -> String
+        f = printf "%+.*f" dp
+
+        g = T.pack . f
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
