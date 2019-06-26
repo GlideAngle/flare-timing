@@ -6,10 +6,14 @@ module WireTypes.Fraction
     , ArrivalFraction(..)
     , LeadingFraction(..)
     , Fractions(..)
+    , showReachFrac, showReachFracDiff
+    , showLeadingFrac, showLeadingFracDiff
     ) where
 
+import Text.Printf (printf)
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
+import qualified Data.Text as T (Text, pack)
 
 newtype ReachFraction = ReachFraction Double
     deriving (Eq, Ord, Show, Generic)
@@ -46,3 +50,22 @@ data Fractions =
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
+showReachFrac :: ReachFraction -> T.Text
+showReachFrac (ReachFraction x) = T.pack $ printf "%.3f" x
+
+showReachFracDiff :: ReachFraction -> ReachFraction -> T.Text
+showReachFracDiff (ReachFraction expected) (ReachFraction actual)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.3f"
+
+showLeadingFrac :: LeadingFraction -> T.Text
+showLeadingFrac (LeadingFraction x) = T.pack $ printf "%.3f" x
+
+showLeadingFracDiff :: LeadingFraction -> LeadingFraction -> T.Text
+showLeadingFracDiff (LeadingFraction expected) (LeadingFraction actual)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.3f"

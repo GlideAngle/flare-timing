@@ -69,6 +69,7 @@ import Data.Aeson
     , genericParseJSON, defaultOptions
     )
 import qualified Data.Text as T (Text, pack, unpack)
+
 import WireTypes.Speed (PilotTime)
 import WireTypes.Lead (LeadingArea, LeadingCoefficient)
 import WireTypes.Fraction (Fractions)

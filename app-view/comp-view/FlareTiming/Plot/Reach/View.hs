@@ -1,10 +1,8 @@
 module FlareTiming.Plot.Reach.View (reachPlot) where
 
 import Data.Maybe (isJust)
-import Text.Printf (printf)
 import Reflex.Dom
 import Reflex.Time (delay)
-import qualified Data.Text as T (Text, pack)
 import Data.List (sortOn)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
@@ -12,11 +10,14 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
 
-import WireTypes.Fraction (ReachFraction(..))
+import qualified WireTypes.Fraction as Frac (Fractions(..))
+import WireTypes.Fraction (ReachFraction(..), showReachFrac, showReachFracDiff)
 import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
+import WireTypes.Point
+    (ReachToggle(..), PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import FlareTiming.Pilot (showPilotName)
 
 placings :: [TrackReach] -> [[Double]]
@@ -42,10 +43,11 @@ reValue pxs pys =
 reachPlot
     :: MonadWidget t m
     => Dynamic t Task
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
-reachPlot task reach bonusReach = do
+reachPlot task sEx reach bonusReach = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -82,7 +84,7 @@ reachPlot task reach bonusReach = do
 
         elClass "div" "tile is-child" $ do
             _ <- dyn $ ffor task (\case
-                    Task{stopped = Nothing} -> tablePilotReach reach
+                    Task{stopped = Nothing} -> tablePilotReach sEx reach
                     Task{stopped = Just _} -> tablePilotReachBonus reach bonusReach)
 
             return ()
@@ -91,33 +93,65 @@ reachPlot task reach bonusReach = do
 
 tablePilotReach
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackReach)]
+    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
-tablePilotReach reach = do
+tablePilotReach sEx reach = do
+    let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elClass "th" "th-plot-reach" $ text "Reach (km)"
+                    elClass "th" "th-norm" $ text "✓"
+                    elClass "th" "th-norm" $ text "Δ"
+
                     elClass "th" "th-plot-frac" $ text "Fraction"
+                    elClass "th" "th-norm" $ text "✓"
+                    elClass "th" "th-norm" $ text "Δ"
+
                     el "th" $ text "Pilot"
 
                     return ()
 
             _ <- el "tbody" $
-                    simpleList reach (uncurry rowReach . splitDynPure)
+                    simpleList reach (uncurry (rowReach sEx') . splitDynPure)
 
             return ()
     return ()
 
 rowReach
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m ()
-rowReach p r = do
+rowReach sEx p r = do
+    (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
+                $ ffor3 p sEx r (\pilot sEx' TrackReach{reach, frac} ->
+                    case Map.lookup pilot sEx' of
+                        Just
+                            Norm.NormBreakdown
+                                { reach = ReachToggle{extra = reachN}
+                                , fractions = Frac.Fractions{reach = fracN}
+                                } ->
+                            ( showPilotDistance 1 reachN
+                            , showPilotDistanceDiff 1 reachN reach
+
+                            , showReachFrac fracN
+                            , showReachFracDiff fracN frac
+                            )
+
+                        _ -> ("", "", "", ""))
+
     el "tr" $ do
         elClass "td" "td-plot-reach" . dynText $ (showPilotDistance 1) . reach <$> r
-        elClass "td" "td-plot-frac" . dynText $ showFrac . frac <$> r
+        elClass "th" "th-norm" $ text yReach
+        elClass "th" "th-norm" $ text yReachDiff
+
+        elClass "td" "td-plot-frac" . dynText $ showReachFrac . frac <$> r
+        elClass "th" "th-norm" $ text yFrac
+        elClass "th" "th-norm" $ text yFracDiff
+
         elClass "td" "td-pilot" . dynText $ showPilotName <$> p
 
         return ()
@@ -180,7 +214,7 @@ rowReachBonus mapR p r = do
                         in
                             ( showPilotDistance 1 $ reach br
                             , showPilotDistanceDiff 1 rFlown rBonus
-                            , showFrac . frac $ br
+                            , showReachFrac . frac $ br
                             )
 
                     _ -> ("", "", ""))
@@ -190,12 +224,9 @@ rowReachBonus mapR p r = do
         elClass "td" "td-plot-reach-bonus" $ text bReach
         elClass "td" "td-plot-reach-bonus-diff" $ text diffReach
 
-        elClass "td" "td-plot-frac" . dynText $ showFrac . frac <$> r
+        elClass "td" "td-plot-frac" . dynText $ showReachFrac . frac <$> r
         elClass "td" "td-plot-frac-bonus" $ text bFrac
 
         elClass "td" "td-pilot" . dynText $ showPilotName <$> p
 
         return ()
-
-showFrac :: ReachFraction -> T.Text
-showFrac (ReachFraction x) = T.pack $ printf "%.3f" x

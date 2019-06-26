@@ -9,7 +9,10 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Lead.Plot as P (leadPlot)
 
-import WireTypes.Fraction (Fractions(..), LeadingFraction(..))
+import WireTypes.Fraction
+    ( Fractions(..), LeadingFraction(..)
+    , showLeadingFrac, showLeadingFracDiff
+    )
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead
     (TrackLead(..), LeadingArea(..), LeadingCoefficient(..))
@@ -112,7 +115,7 @@ rowLeadSimple pilot av = do
     el "tr" $ do
         el "td" . dynText $ showArea . area <$> av
         el "td" . dynText $ showCoef . coef <$> av
-        el "td" . dynText $ showFrac . frac <$> av
+        el "td" . dynText $ showLeadingFrac . frac <$> av
         el "td" . dynText $ showPilotName <$> pilot
 
         return ()
@@ -178,8 +181,8 @@ rowLeadCompare _maxPts sEx pilot av = do
                             , showCoef coef'
                             , showCoefDiff coef' coef
 
-                            , showFrac frac'
-                            , showFracDiff frac' frac
+                            , showLeadingFrac frac'
+                            , showLeadingFracDiff frac' frac
                             )
 
                         _ -> ("", "", "", "", "", ""))
@@ -191,7 +194,7 @@ rowLeadCompare _maxPts sEx pilot av = do
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> av
         elClass "td" "td-norm td-norm" . text $ yCoef
         elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
-        elClass "td" "td-lead-frac" . dynText $ showFrac . frac <$> av
+        elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> av
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ pFrac
         el "td" . dynText $ showPilotName <$> pilot
@@ -203,9 +206,6 @@ showArea (LeadingArea a) = T.pack $ printf "%.0f" a
 
 showCoef :: LeadingCoefficient -> T.Text
 showCoef (LeadingCoefficient lc) = T.pack $ printf "%.3f" lc
-
-showFrac :: LeadingFraction -> T.Text
-showFrac (LeadingFraction x) = T.pack $ printf "%.3f" x
 
 showAreaDiff :: LeadingArea -> LeadingArea -> T.Text
 showAreaDiff (LeadingArea expected) (LeadingArea actual)
@@ -220,12 +220,3 @@ showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
     | otherwise = f (actual - expected)
     where
         f = T.pack . printf "%+.3f"
-
-showFracDiff :: LeadingFraction -> LeadingFraction -> T.Text
-showFracDiff (LeadingFraction expected) (LeadingFraction actual)
-    | f actual == f expected = "="
-    | otherwise = f (actual - expected)
-    where
-        f = T.pack . printf "%+.3f"
-
-
