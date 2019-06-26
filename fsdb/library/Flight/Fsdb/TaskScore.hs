@@ -19,7 +19,7 @@ import Text.XML.HXT.Arrow.Pickle
     , xpWrap, xpElem, xpAttr
     , xpFilterAttr, xpFilterCont
     , xpInt, xpPrim
-    , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp11Tuple
+    , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp13Tuple
     , xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -48,10 +48,14 @@ import Text.XML.HXT.Core
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
+import qualified Flight.Track.Point as Norm (NormBreakdown(..))
 import Flight.Comp
     (PilotId(..), Pilot(..), Nominal(..), DfNoTrackPilot(..))
 import Flight.Score
     ( TaskPoints(..), TaskPlacing(..)
+    , Points(..)
+    , LinearPoints(..)
+    , DifficultyPoints(..)
     , DistancePoints(..)
     , LeadingPoints(..)
     , ArrivalPoints(..)
@@ -97,6 +101,8 @@ xpRankScore =
     $ xpFilterAttr
         ( hasName "rank"
         <+> hasName "points"
+        <+> hasName "linear_distance_points"
+        <+> hasName "difficulty_distance_points"
         <+> hasName "distance_points"
         <+> hasName "leading_points"
         <+> hasName "arrival_points"
@@ -108,14 +114,19 @@ xpRankScore =
         <+> hasName "distance"
         )
     $ xpWrap
-        ( \(r, p, dp, l, a, t, dM, dE, ss, es, ssE) ->
+        ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, ss, es, ssE) ->
             NormBreakdown
                 { place = TaskPlacing . fromIntegral $ r
                 , total = TaskPoints . toRational $ p
-                , distance = DistancePoints . dToR $ dp
-                , leading = LeadingPoints . dToR $ l
-                , arrival = ArrivalPoints . dToR $ a
-                , time = TimePoints . dToR $ t
+                , breakdown =
+                    Points
+                        { reach = LinearPoints $ dToR ldp
+                        , effort = DifficultyPoints $ dToR ddp
+                        , distance = DistancePoints $ dToR dp
+                        , leading = LeadingPoints $ dToR l
+                        , arrival = ArrivalPoints $ dToR a
+                        , time = TimePoints $ dToR t
+                        }
                 , reach =
                     ReachToggle
                         { flown = taskKmToMetres . TaskDistance . MkQuantity $ dE
@@ -137,10 +148,15 @@ xpRankScore =
         , \NormBreakdown
                 { place = TaskPlacing r
                 , total = TaskPoints p
-                , distance = DistancePoints dp
-                , leading = LeadingPoints l
-                , arrival = ArrivalPoints a
-                , time = TimePoints t
+                , breakdown =
+                    Points
+                        { reach = LinearPoints ldp
+                        , effort = DifficultyPoints ddp
+                        , distance = DistancePoints dp
+                        , leading = LeadingPoints l
+                        , arrival = ArrivalPoints a
+                        , time = TimePoints t
+                        }
                 , reach =
                     ReachToggle
                         { extra = TaskDistance (MkQuantity dE)
@@ -152,6 +168,8 @@ xpRankScore =
                 } ->
                     ( fromIntegral r
                     , round p
+                    , fromRational ldp
+                    , fromRational ddp
                     , fromRational dp
                     , fromRational l
                     , fromRational a
@@ -163,9 +181,11 @@ xpRankScore =
                     , show <$> timeElapsed
                     )
         )
-    $ xp11Tuple
+    $ xp13Tuple
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
+        (xpAttr "linear_distance_points" xpPrim)
+        (xpAttr "difficulty_distance_points" xpPrim)
         (xpAttr "distance_points" xpPrim)
         (xpAttr "leading_points" xpPrim)
         (xpAttr "arrival_points" xpPrim)
@@ -443,7 +463,7 @@ getScore pilots =
                     return
                         n
                             { distanceFrac = frac
-                            , reach =
+                            , Norm.reach =
                                 maybe
                                     r
                                     (\((TaskDistance (d :: Quantity _ [u| m |]))

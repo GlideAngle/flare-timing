@@ -261,7 +261,7 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                 $ ffor3 pilot sEx x (\pilot' sEx' (_, Bk.Breakdown{reach, breakdown = Points{distance = dPts}}) ->
                     fromMaybe ("", "", "", "", "", "", "", "") $ do
                         Norm.NormBreakdown
-                            { distance = dPtsN
+                            { breakdown = Points{distance = dPtsN}
                             , reach =
                                 ReachToggle
                                     { flown = rFN

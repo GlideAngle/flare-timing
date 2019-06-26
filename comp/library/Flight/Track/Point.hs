@@ -31,7 +31,6 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Score
     ( GoalRatio, TaskPlacing
     , TaskPoints, Points
-    , DistancePoints, LeadingPoints, ArrivalPoints, TimePoints
     , Validity, ValidityWorking, Weights
     , LaunchValidityWorking
     , TimeValidityWorking
@@ -79,10 +78,7 @@ data NormBreakdown =
     NormBreakdown
         { place :: TaskPlacing
         , total :: TaskPoints
-        , distance :: DistancePoints
-        , leading :: LeadingPoints
-        , arrival :: ArrivalPoints
-        , time :: TimePoints
+        , breakdown :: Points
         , reach :: ReachToggle Land
         , reachMade :: Land
         , distanceFrac :: Double

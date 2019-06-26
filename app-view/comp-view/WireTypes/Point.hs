@@ -396,10 +396,7 @@ data NormBreakdown =
     NormBreakdown
         { place :: TaskPlacing
         , total :: TaskPoints
-        , distance :: DistancePoints
-        , leading :: LeadingPoints
-        , arrival :: ArrivalPoints
-        , time :: TimePoints
+        , breakdown :: Points
         , reach :: ReachToggle PilotDistance
         , reachMade :: PilotDistance
         , distanceFrac :: Double

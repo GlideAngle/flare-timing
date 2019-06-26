@@ -14,7 +14,7 @@ import WireTypes.Lead
     (TrackLead(..), LeadingArea(..), LeadingCoefficient(..), LeadingFraction(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Point (LeadingPoints(..))
+import WireTypes.Point (Points(..), LeadingPoints(..))
 import FlareTiming.Pilot (showPilotName)
 
 placings :: [TrackLead] -> [[Double]]
@@ -123,7 +123,7 @@ tablePilotCompare
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
 tablePilotCompare _ sEx xs = do
-    let pts = fmap ((\(LeadingPoints x) -> x) . Norm.leading . snd) <$> sEx
+    let pts = fmap ((\Points{leading = LeadingPoints x} -> x) . Norm.breakdown . snd) <$> sEx
     let maxPts = ffor pts (\case [] -> 0; pts' -> maximum pts')
     let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do

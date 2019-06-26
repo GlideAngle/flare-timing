@@ -444,10 +444,13 @@ pointRow cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
                         Norm.NormBreakdown
                             { place = nth
                             , total = p@(TaskPoints pts)
-                            , distance = d
-                            , leading = l
-                            , arrival = a
-                            , time = t
+                            , breakdown =
+                                Points
+                                    { distance = d
+                                    , leading = l
+                                    , arrival = a
+                                    , time = t
+                                    }
                             } ->
                         ( showRank nth
                         , showRounded pts

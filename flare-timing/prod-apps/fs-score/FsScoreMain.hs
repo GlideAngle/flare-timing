@@ -35,6 +35,7 @@ import Flight.Score
     ( BestTime(..), PilotTime(..)
     , LeadingFraction(..), LeadingPoints(..)
     , ArrivalFraction(..), ArrivalPoints(..)
+    , Points(..)
     , speedFraction
     )
 import Flight.Scribe (writeNormScore)
@@ -153,7 +154,7 @@ arrivals xs =
     <$> maxArrivalPoints cs
     where
         ys :: [(Pilot, ArrivalPoints)]
-        ys = (\(p, NormBreakdown{arrival = c}) -> (p,c)) <$> xs
+        ys = (\(p, NormBreakdown{breakdown = Points{arrival = c}}) -> (p,c)) <$> xs
 
         cs :: [ArrivalPoints]
         cs = snd <$> ys
@@ -175,7 +176,7 @@ leads xs =
     <$> maxLeadingPoints cs
     where
         ys :: [(Pilot, LeadingPoints)]
-        ys = (\(p, NormBreakdown{leading = c}) -> (p,c)) <$> xs
+        ys = (\(p, NormBreakdown{breakdown = Points{leading = c}}) -> (p,c)) <$> xs
 
         cs :: [LeadingPoints]
         cs = snd <$> ys

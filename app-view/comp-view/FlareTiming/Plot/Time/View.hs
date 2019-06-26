@@ -11,8 +11,9 @@ import qualified FlareTiming.Plot.Time.Plot as P (timePlot)
 
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Speed (TrackSpeed(..), PilotTime(..), SpeedFraction(..))
+import qualified WireTypes.Speed as Speed (TrackSpeed(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Point (StartGate, TimePoints(..))
+import WireTypes.Point (StartGate, Points(..), TimePoints(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (showHmsForHours, showHours)
 import FlareTiming.Task.Score.Show
@@ -76,7 +77,7 @@ tablePilot
     -> Dynamic t [(Pilot, TrackSpeed)]
     -> m ()
 tablePilot sgs sEx xs = do
-    let pts = fmap ((\(TimePoints x) -> x) . Norm.time . snd) <$> sEx
+    let pts = fmap ((\Points{time = TimePoints x} -> x) . Norm.breakdown . snd) <$> sEx
     let maxPts = ffor pts (\case [] -> 0; pts' -> maximum pts')
     let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do
@@ -123,7 +124,7 @@ rowSpeed maxPts sEx pilot tm = do
                     case Map.lookup pilot' sEx' of
                         Just
                             Norm.NormBreakdown
-                                { time = (TimePoints pts)
+                                { breakdown = Points{time = TimePoints pts}
                                 , timeElapsed = elap'
                                 , timeFrac = tf
                                 } ->
@@ -136,8 +137,8 @@ rowSpeed maxPts sEx pilot tm = do
                         _ -> ("", "", "", ""))
 
     el "tr" $ do
-        el "td" . dynText $ showHr . time <$> tm
-        el "td" . dynText $ showHms . time <$> tm
+        el "td" . dynText $ showHr . Speed.time <$> tm
+        el "td" . dynText $ showHms . Speed.time <$> tm
         elClass "td" "td-norm td-norm-pace" . text $ yEl
         elClass "td" "td-norm td-time-diff" . text $ yElDiff
         el "td" . dynText $ showFrac . frac <$> tm
