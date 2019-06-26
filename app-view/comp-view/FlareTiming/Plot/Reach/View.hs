@@ -218,9 +218,9 @@ rowReachBonus
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m ()
-rowReachBonus mapR mapN p r = do
+rowReachBonus mapR mapN p tr = do
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p r (\pilot TrackReach{reach, frac} ->
+                $ ffor2 p tr (\pilot TrackReach{reach, frac} ->
                     case Map.lookup pilot mapN of
                         Just
                             Norm.NormBreakdown
@@ -237,11 +237,10 @@ rowReachBonus mapR mapN p r = do
                         _ -> ("", "", "", ""))
 
     (bReach, diffReach, bFrac) <- sample . current
-            $ ffor2 p r (\pilot r' ->
+            $ ffor2 p tr (\pilot TrackReach{reach = rFlown} ->
                 fromMaybe ("", "", "") $ do
                     br <- Map.lookup pilot mapR
                     let rBonus = reach br
-                    let rFlown = reach r'
 
                     return
                         ( showPilotDistance 1 $ reach br
@@ -250,13 +249,13 @@ rowReachBonus mapR mapN p r = do
                         ))
 
     el "tr" $ do
-        elClass "td" "td-plot-reach" . dynText $ showPilotDistance 1 . reach <$> r
+        elClass "td" "td-plot-reach" . dynText $ showPilotDistance 1 . reach <$> tr
         elClass "td" "td-plot-reach-bonus" $ text bReach
         elClass "td" "td-plot-reach-bonus-diff" $ text diffReach
         elClass "th" "th-norm" $ text yReach
         elClass "th" "th-norm" $ text yReachDiff
 
-        elClass "td" "td-plot-frac" . dynText $ showReachFrac . frac <$> r
+        elClass "td" "td-plot-frac" . dynText $ showReachFrac . frac <$> tr
         elClass "td" "td-plot-frac-bonus" $ text bFrac
         elClass "th" "th-norm" $ text yFrac
         elClass "th" "th-norm" $ text yFracDiff

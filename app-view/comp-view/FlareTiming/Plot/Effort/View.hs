@@ -97,9 +97,9 @@ rowEffort
     -> Dynamic t Pilot
     -> Dynamic t TrackEffort
     -> m ()
-rowEffort mapN p e = do
+rowEffort mapN p te = do
     (yEffort, yEffortDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p e (\pilot TrackEffort{effort, frac} ->
+                $ ffor2 p te (\pilot TrackEffort{effort, frac} ->
                     case Map.lookup pilot mapN of
                         Just
                             Norm.NormBreakdown
@@ -116,11 +116,11 @@ rowEffort mapN p e = do
                         _ -> ("", "", "", ""))
 
     el "tr" $ do
-        elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> e
+        elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> te
         elClass "th" "th-norm" $ text yEffort
         elClass "th" "th-norm" $ text yEffortDiff
 
-        el "td" . dynText $ showEffortFrac . frac <$> e
+        el "td" . dynText $ showEffortFrac . frac <$> te
         elClass "th" "th-norm" $ text yFrac
         elClass "th" "th-norm" $ text yFracDiff
 

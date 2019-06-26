@@ -90,9 +90,9 @@ rowArrival
     -> Dynamic t Pilot
     -> Dynamic t TrackArrival
     -> m ()
-rowArrival sEx p av = do
+rowArrival sEx p ta = do
     (yFrac, diffFrac) <- sample . current
-                $ ffor3 p sEx av (\p' sEx' TrackArrival{frac = f} ->
+                $ ffor3 p sEx ta (\p' sEx' TrackArrival{frac = f} ->
                     case Map.lookup p' sEx' of
                         Just Norm.NormBreakdown {fractions = Fractions{arrival = f'}} ->
                             ( showFrac f', showFracDiff f' f)
@@ -100,8 +100,8 @@ rowArrival sEx p av = do
                         _ -> ("", ""))
 
     el "tr" $ do
-        el "td" . dynText $ showRank . rank <$> av
-        el "td" . dynText $ showFrac . frac <$> av
+        el "td" . dynText $ showRank . rank <$> ta
+        el "td" . dynText $ showFrac . frac <$> ta
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ diffFrac
         el "td" . dynText $ showPilotName <$> p

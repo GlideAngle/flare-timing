@@ -165,9 +165,9 @@ rowLeadCompare
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m ()
-rowLeadCompare _maxPts sEx pilot av = do
+rowLeadCompare _maxPts sEx pilot tl = do
     (yArea, yAreaDiff, yCoef, yCoefDiff, yFrac, pFrac) <- sample . current
-                $ ffor3 pilot sEx av (\pilot' sEx' TrackLead{area, coef, frac} ->
+                $ ffor3 pilot sEx tl (\pilot' sEx' TrackLead{area, coef, frac} ->
                     case Map.lookup pilot' sEx' of
                         Just
                             Norm.NormBreakdown
@@ -188,13 +188,13 @@ rowLeadCompare _maxPts sEx pilot av = do
                         _ -> ("", "", "", "", "", ""))
 
     el "tr" $ do
-        elClass "td" "td-lead-area" . dynText $ showArea . area <$> av
+        elClass "td" "td-lead-area" . dynText $ showArea . area <$> tl
         elClass "td" "td-norm td-norm" . text $ yArea
         elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
-        elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> av
+        elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
         elClass "td" "td-norm td-norm" . text $ yCoef
         elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
-        elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> av
+        elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> tl
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ pFrac
         el "td" . dynText $ showPilotName <$> pilot
