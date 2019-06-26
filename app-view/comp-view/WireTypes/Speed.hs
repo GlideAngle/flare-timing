@@ -1,6 +1,5 @@
 module WireTypes.Speed
     ( PilotTime(..)
-    , SpeedFraction(..)
     , TrackSpeed(..)
     ) where
 
@@ -9,9 +8,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..), Value(..))
 import qualified Data.Text as T (unpack)
 
-newtype SpeedFraction = SpeedFraction Double
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (FromJSON)
+import WireTypes.Fraction (SpeedFraction)
 
 newtype PilotTime = PilotTime Double
     deriving (Eq, Ord, Show)

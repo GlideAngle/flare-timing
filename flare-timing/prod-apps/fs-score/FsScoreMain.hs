@@ -31,6 +31,7 @@ import Flight.Comp
     , ensureExt
     )
 import qualified Flight.Score as Gap (bestTime')
+import qualified Flight.Gap.Fraction as Frac (Fractions(..))
 import Flight.Score
     ( BestTime(..), PilotTime(..)
     , LeadingFraction(..), LeadingPoints(..)
@@ -107,8 +108,8 @@ normScores fsdbXml = do
                                     Time.TrackSpeed
                                         { Time.time = tt
                                         , Time.frac = tf
-                                        } -> (p, x{timeElapsed = Just tt, timeFrac = tf})
-                        | px@(p, x) <- xs
+                                        } -> (p, x{timeElapsed = Just tt, fractions = fracs{Frac.time = tf}})
+                        | px@(p, x@NormBreakdown{fractions = fracs}) <- xs
                         ])
                     vs
 
@@ -121,9 +122,9 @@ normScores fsdbXml = do
                 maybe
                     ts
                     (\ls ->
-                        [ (p, t{leadingFrac = c})
+                        [ (p, t{fractions = fracs{Frac.leading = c}})
                         | (_, c) <- ls
-                        | (p, t) <- ts
+                        | (p, t@NormBreakdown{fractions = fracs}) <- ts
                         ]
                     )
                     (leads ts)
@@ -136,9 +137,9 @@ normScores fsdbXml = do
                 maybe
                     ls
                     (\as ->
-                        [ (p, t{arrivalFrac = c})
+                        [ (p, t{fractions = fracs{Frac.arrival = c}})
                         | (_, c) <- as
-                        | (p, t) <- ls
+                        | (p, t@NormBreakdown{fractions = fracs}) <- ls
                         ]
                     )
                     (arrivals ls)

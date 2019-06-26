@@ -10,8 +10,9 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Arrival.Plot as P (hgPlot)
 
+import WireTypes.Fraction (Fractions(..), ArrivalFraction(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..), ArrivalFraction(..))
+import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotName)
 
@@ -100,7 +101,7 @@ rowArrival sEx p av = do
     (yFrac, diffFrac) <- sample . current
                 $ ffor3 p sEx av (\p' sEx' TrackArrival{frac = f} ->
                     case Map.lookup p' sEx' of
-                        Just Norm.NormBreakdown {arrivalFrac = f'} ->
+                        Just Norm.NormBreakdown {fractions = Fractions{arrival = f'}} ->
                             ( showFrac f', showFracDiff f' f)
 
                         _ -> ("", ""))

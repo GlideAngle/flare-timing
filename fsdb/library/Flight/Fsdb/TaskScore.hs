@@ -51,6 +51,7 @@ import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
 import qualified Flight.Track.Point as Norm (NormBreakdown(..))
 import Flight.Comp
     (PilotId(..), Pilot(..), Nominal(..), DfNoTrackPilot(..))
+import qualified Flight.Gap.Fraction as Frac (Fractions(..))
 import Flight.Score
     ( TaskPoints(..), TaskPlacing(..)
     , Points(..)
@@ -61,9 +62,13 @@ import Flight.Score
     , ArrivalPoints(..)
     , TimePoints(..)
     , PilotTime(..)
+    , LinearFraction(..)
+    , DifficultyFraction(..)
+    , DistanceFraction(..)
+    , LeadingFraction(..)
     , SpeedFraction(..)
     , ArrivalFraction(..)
-    , LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
+    , LeadingArea(..), LeadingCoef(..)
     , Validity(..), TaskValidity(..), StopValidity(..)
     , LaunchValidity(..), LaunchValidityWorking(..)
     , DistanceValidity(..), DistanceValidityWorking(..)
@@ -127,23 +132,29 @@ xpRankScore =
                         , arrival = ArrivalPoints $ dToR a
                         , time = TimePoints $ dToR t
                         }
+                , fractions =
+                    Frac.Fractions
+                        { Frac.reach = LinearFraction 0
+                        , Frac.effort = DifficultyFraction 0
+                        , Frac.distance = DistanceFraction 0
+                        , Frac.leading = LeadingFraction 0
+                        , Frac.arrival = ArrivalFraction 0
+                        , Frac.time = SpeedFraction 0
+                        }
+
                 , reach =
                     ReachToggle
                         { flown = taskKmToMetres . TaskDistance . MkQuantity $ dE
                         , extra = taskKmToMetres . TaskDistance . MkQuantity $ dE
                         }
                 , reachMade = taskKmToMetres . TaskDistance . MkQuantity $ dM
-                , distanceFrac = 0
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
                 , timeElapsed =
                     if ssE == Just "00:00:00" then Nothing else
                     toPilotTime . parseHmsTime <$> ssE
-                , timeFrac = SpeedFraction 0
                 , leadingArea = LeadingArea zero
                 , leadingCoef = LeadingCoef zero
-                , leadingFrac = LeadingFraction 0
-                , arrivalFrac = ArrivalFraction 0
                 }
         , \NormBreakdown
                 { place = TaskPlacing r
@@ -457,12 +468,12 @@ getScore pilots =
         in
             [
                 (,) p $ do
-                    n@NormBreakdown{reachMade = dm, reach = r} <- x
+                    n@NormBreakdown{reachMade = dm, reach = r, fractions = fracs} <- x
                     let dKm = taskMetresToKm dm
-                    AwardedDistance{awardedFrac = frac} <- asAwardReach t (Just dKm)
+                    AwardedDistance{awardedFrac = dFrac} <- asAwardReach t (Just dKm)
                     return
                         n
-                            { distanceFrac = frac
+                            { fractions = fracs{Frac.distance = DistanceFraction $ toRational dFrac}
                             , Norm.reach =
                                 maybe
                                     r

@@ -28,6 +28,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.LatLng (QAlt)
 import Flight.Field (FieldOrdering(..))
+import Flight.Gap.Fraction (Fractions(..))
 import Flight.Score
     ( GoalRatio, TaskPlacing
     , TaskPoints, Points
@@ -38,9 +39,7 @@ import Flight.Score
     , StopValidityWorking
     , Pilot, BestTime, PilotTime, PilotDistance, PilotVelocity
     , PointPenalty
-    , SpeedFraction
-    , ArrivalFraction
-    , LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
+    , LeadingArea(..), LeadingCoef(..)
     , ReachToggle(..)
     )
 import Flight.Track.Distance (Land)
@@ -79,17 +78,14 @@ data NormBreakdown =
         { place :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points
+        , fractions :: Fractions
         , reach :: ReachToggle Land
         , reachMade :: Land
-        , distanceFrac :: Double
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
-        , timeFrac :: SpeedFraction
         , leadingArea :: LeadingArea (Quantity Double [u| (km^2)*s |])
         , leadingCoef :: LeadingCoef (Quantity Double [u| 1 |])
-        , leadingFrac :: LeadingFraction
-        , arrivalFrac :: ArrivalFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

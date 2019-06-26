@@ -1,6 +1,5 @@
 module WireTypes.Arrival
-    ( ArrivalFraction(..)
-    , ArrivalPlacing(..)
+    ( ArrivalPlacing(..)
     , TrackArrival(..)
     ) where
 
@@ -9,9 +8,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (Value(..), FromJSON(..))
 import qualified Data.Text as T (unpack)
 
-newtype ArrivalFraction = ArrivalFraction Double
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (FromJSON)
+import WireTypes.Fraction (ArrivalFraction)
 
 data ArrivalPlacing
     = ArrivalPlacing Integer

@@ -75,6 +75,7 @@ module Flight.Score
     -- * Fractional allotment of linear distance points
     , PilotDistance(..)
     , LinearFraction(..)
+    , DistanceFraction(..)
     , linearFraction
     , bestDistance'
     -- * Fractional allotment of difficulty distance points
@@ -195,6 +196,7 @@ import Flight.Gap.Pilots
 import Flight.Gap.Fraction.Launch
 import Flight.Gap.Fraction.Linear
 import Flight.Gap.Fraction.Difficulty
+import Flight.Gap.Fraction.Distance
 import Flight.Gap.Fraction.Arrival
 import Flight.Gap.Fraction.Leading
 import Flight.Gap.Fraction.Goal

@@ -33,7 +33,11 @@ in    defs
             , "flight-units"
             ]
       , library =
-          { source-dirs = "library", exposed-modules = "Flight.Score" }
+          { source-dirs =
+              "library"
+          , exposed-modules =
+              [ "Flight.Score", "Flight.Gap.Fraction" ]
+          }
       , tests =
             ./../default-tests.dhall
           ⫽ { score =

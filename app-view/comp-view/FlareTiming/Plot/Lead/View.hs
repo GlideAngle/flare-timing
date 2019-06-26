@@ -9,9 +9,10 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Lead.Plot as P (leadPlot)
 
+import WireTypes.Fraction (Fractions(..), LeadingFraction(..))
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead
-    (TrackLead(..), LeadingArea(..), LeadingCoefficient(..), LeadingFraction(..))
+    (TrackLead(..), LeadingArea(..), LeadingCoefficient(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (Points(..), LeadingPoints(..))
@@ -167,7 +168,7 @@ rowLeadCompare _maxPts sEx pilot av = do
                             Norm.NormBreakdown
                                 { leadingArea = area'
                                 , leadingCoef = coef'
-                                , leadingFrac = frac'
+                                , fractions = Fractions{leading = frac'}
                                 } ->
                             ( showArea area'
                             , showAreaDiff area' area

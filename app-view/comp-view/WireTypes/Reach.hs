@@ -1,6 +1,5 @@
 module WireTypes.Reach
-    ( ReachFraction(..)
-    , TrackReach(..)
+    ( TrackReach(..)
     , BolsterStats(..)
     , dfNoTrackReach
     ) where
@@ -11,11 +10,8 @@ import Data.Aeson (FromJSON(..))
 import WireTypes.Point (PilotDistance(..), ReachToggle(..))
 import WireTypes.ValidityWorking (ReachStats(..))
 import WireTypes.Route (TaskDistance(..))
+import WireTypes.Fraction (ReachFraction(..))
 import WireTypes.Pilot (Pilot, AwardedDistance(..), DfNoTrackPilot(..))
-
-newtype ReachFraction = ReachFraction Double
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (FromJSON)
 
 data TrackReach =
     TrackReach

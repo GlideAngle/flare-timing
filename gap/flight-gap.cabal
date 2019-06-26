@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2fa15ff87fbd8297aeecfc06c2bace3377daba3abfe7e309980513517bb00114
+-- hash: f1f4f0ed1104abb16409b35f0fd9a75026ac53bc045efb8cdf54d1b11849158d
 
 name:           flight-gap
 version:        0.1.0
@@ -33,6 +33,7 @@ source-repository head
 library
   exposed-modules:
       Flight.Score
+      Flight.Gap.Fraction
   other-modules:
       Flight.Gap.Allot
       Flight.Gap.Distance.Chunk
@@ -46,6 +47,7 @@ library
       Flight.Gap.Equation
       Flight.Gap.Fraction.Arrival
       Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
       Flight.Gap.Fraction.Goal
       Flight.Gap.Fraction.Launch
       Flight.Gap.Fraction.Leading
@@ -120,8 +122,10 @@ test-suite doctest
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
+      Flight.Gap.Fraction
       Flight.Gap.Fraction.Arrival
       Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
       Flight.Gap.Fraction.Goal
       Flight.Gap.Fraction.Launch
       Flight.Gap.Fraction.Leading
@@ -199,8 +203,10 @@ test-suite score
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
+      Flight.Gap.Fraction
       Flight.Gap.Fraction.Arrival
       Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
       Flight.Gap.Fraction.Goal
       Flight.Gap.Fraction.Launch
       Flight.Gap.Fraction.Leading

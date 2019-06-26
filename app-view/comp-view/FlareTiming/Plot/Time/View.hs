@@ -9,8 +9,9 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Time.Plot as P (timePlot)
 
+import WireTypes.Fraction (Fractions(..), SpeedFraction(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Speed (TrackSpeed(..), PilotTime(..), SpeedFraction(..))
+import WireTypes.Speed (TrackSpeed(..), PilotTime(..))
 import qualified WireTypes.Speed as Speed (TrackSpeed(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (StartGate, Points(..), TimePoints(..))
@@ -126,7 +127,7 @@ rowSpeed maxPts sEx pilot tm = do
                             Norm.NormBreakdown
                                 { breakdown = Points{time = TimePoints pts}
                                 , timeElapsed = elap'
-                                , timeFrac = tf
+                                , fractions = Fractions{time = tf}
                                 } ->
                             ( maybe "" showPilotTime elap'
                             , maybe "" (flip showPilotTimeDiff elap) elap'

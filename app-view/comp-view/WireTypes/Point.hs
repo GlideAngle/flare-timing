@@ -69,9 +69,9 @@ import Data.Aeson
     , genericParseJSON, defaultOptions
     )
 import qualified Data.Text as T (Text, pack, unpack)
-import WireTypes.Arrival (ArrivalFraction)
-import WireTypes.Speed (PilotTime, SpeedFraction)
-import WireTypes.Lead (LeadingFraction, LeadingArea, LeadingCoefficient)
+import WireTypes.Speed (PilotTime)
+import WireTypes.Lead (LeadingArea, LeadingCoefficient)
+import WireTypes.Fraction (Fractions)
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
@@ -421,17 +421,14 @@ data NormBreakdown =
         { place :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points
+        , fractions :: Fractions
         , reach :: ReachToggle PilotDistance
         , reachMade :: PilotDistance
-        , distanceFrac :: Double
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe PilotTime
-        , timeFrac :: SpeedFraction
         , leadingArea :: LeadingArea
         , leadingCoef :: LeadingCoefficient
-        , leadingFrac :: LeadingFraction
-        , arrivalFrac :: ArrivalFraction
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

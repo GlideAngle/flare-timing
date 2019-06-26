@@ -12,8 +12,9 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
 
+import WireTypes.Fraction (ReachFraction(..))
 import WireTypes.Comp (Task(..))
-import WireTypes.Reach (TrackReach(..), ReachFraction(..))
+import WireTypes.Reach (TrackReach(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import FlareTiming.Pilot (showPilotName)
