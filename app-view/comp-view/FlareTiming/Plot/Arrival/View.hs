@@ -67,7 +67,6 @@ tablePilot
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
 tablePilot sEx xs = do
-    let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -79,21 +78,25 @@ tablePilot sEx xs = do
 
                     return ()
 
-            el "tbody" $ do
-                simpleList xs (uncurry (rowArrival sEx') . splitDynPure)
+            _ <- dyn $ ffor sEx (\sEx' -> do
+                    let mapN = Map.fromList sEx'
 
+                    el "tbody" $
+                        simpleList xs (uncurry (rowArrival mapN) . splitDynPure))
+
+            return ()
     return ()
 
 rowArrival
     :: MonadWidget t m
-    => Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    => Map.Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackArrival
     -> m ()
-rowArrival sEx p ta = do
+rowArrival mapN p ta = do
     (yFrac, diffFrac) <- sample . current
-                $ ffor3 p sEx ta (\p' sEx' TrackArrival{frac = f} ->
-                    case Map.lookup p' sEx' of
+                $ ffor2 p ta (\pilot TrackArrival{frac = f} ->
+                    case Map.lookup pilot mapN of
                         Just Norm.NormBreakdown {fractions = Fractions{arrival = f'}} ->
                             ( showFrac f', showFracDiff f' f)
 

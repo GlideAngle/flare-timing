@@ -18,7 +18,6 @@ import WireTypes.Lead
     (TrackLead(..), LeadingArea(..), LeadingCoefficient(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Point (Points(..), LeadingPoints(..))
 import FlareTiming.Pilot (showPilotName)
 
 placings :: [TrackLead] -> [[Double]]
@@ -127,9 +126,6 @@ tablePilotCompare
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
 tablePilotCompare _ sEx xs = do
-    let pts = fmap ((\Points{leading = LeadingPoints x} -> x) . Norm.breakdown . snd) <$> sEx
-    let maxPts = ffor pts (\case [] -> 0; pts' -> maximum pts')
-    let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -153,22 +149,25 @@ tablePilotCompare _ sEx xs = do
 
                     return ()
 
-            el "tbody" $ do
-                simpleList xs (uncurry (rowLeadCompare maxPts sEx') . splitDynPure)
+            _ <- dyn $ ffor sEx (\sEx' -> do
+                    let mapN = Map.fromList sEx'
 
+                    el "tbody" $
+                        simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure))
+
+            return ()
     return ()
 
 rowLeadCompare
     :: MonadWidget t m
-    => Dynamic t Double
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    => Map.Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m ()
-rowLeadCompare _maxPts sEx pilot tl = do
+rowLeadCompare mapN p tl = do
     (yArea, yAreaDiff, yCoef, yCoefDiff, yFrac, pFrac) <- sample . current
-                $ ffor3 pilot sEx tl (\pilot' sEx' TrackLead{area, coef, frac} ->
-                    case Map.lookup pilot' sEx' of
+                $ ffor2 p tl (\pilot TrackLead{area, coef, frac} ->
+                    case Map.lookup pilot mapN of
                         Just
                             Norm.NormBreakdown
                                 { leadingArea = area'
@@ -197,7 +196,7 @@ rowLeadCompare _maxPts sEx pilot tl = do
         elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> tl
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ pFrac
-        el "td" . dynText $ showPilotName <$> pilot
+        el "td" . dynText $ showPilotName <$> p
 
         return ()
 
