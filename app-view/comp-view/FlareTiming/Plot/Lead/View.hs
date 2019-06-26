@@ -185,13 +185,13 @@ rowLeadCompare _maxPts sEx pilot av = do
                         _ -> ("", "", "", "", "", ""))
 
     el "tr" $ do
-        el "td" . dynText $ showArea . area <$> av
+        elClass "td" "td-lead-area" . dynText $ showArea . area <$> av
         elClass "td" "td-norm td-norm" . text $ yArea
         elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
-        el "td" . dynText $ showCoef . coef <$> av
+        elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> av
         elClass "td" "td-norm td-norm" . text $ yCoef
         elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
-        el "td" . dynText $ showFrac . frac <$> av
+        elClass "td" "td-lead-frac" . dynText $ showFrac . frac <$> av
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ pFrac
         el "td" . dynText $ showPilotName <$> pilot
