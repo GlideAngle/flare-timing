@@ -19,7 +19,7 @@ import Text.XML.HXT.Arrow.Pickle
     , xpWrap, xpElem, xpAttr
     , xpFilterAttr, xpFilterCont
     , xpInt, xpPrim
-    , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp13Tuple
+    , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp15Tuple
     , xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -106,6 +106,8 @@ xpRankScore =
     $ xpFilterAttr
         ( hasName "rank"
         <+> hasName "points"
+        <+> hasName "linear_distance_fraction"
+        <+> hasName "difficulty_distance_fraction"
         <+> hasName "linear_distance_points"
         <+> hasName "difficulty_distance_points"
         <+> hasName "distance_points"
@@ -119,7 +121,7 @@ xpRankScore =
         <+> hasName "distance"
         )
     $ xpWrap
-        ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, ss, es, ssE) ->
+        ( \(r, p, ldf, ddf, ldp, ddp, dp, l, a, t, dM, dE, ss, es, ssE) ->
             NormBreakdown
                 { place = TaskPlacing . fromIntegral $ r
                 , total = TaskPoints . toRational $ p
@@ -134,8 +136,11 @@ xpRankScore =
                         }
                 , fractions =
                     Frac.Fractions
-                        { Frac.reach = LinearFraction 0
-                        , Frac.effort = DifficultyFraction 0
+                        -- NOTE: The fractions for linear and difficulty from
+                        -- FS are fractions of distance points, not fractions of
+                        -- linear and not fractions of difficulty.
+                        { Frac.reach = LinearFraction . dToR $ 2 * ldf
+                        , Frac.effort = DifficultyFraction . dToR $ 2 * ddf
                         , Frac.distance = DistanceFraction 0
                         , Frac.leading = LeadingFraction 0
                         , Frac.arrival = ArrivalFraction 0
@@ -168,6 +173,11 @@ xpRankScore =
                         , arrival = ArrivalPoints a
                         , time = TimePoints t
                         }
+                , fractions =
+                    Frac.Fractions
+                        { Frac.reach = LinearFraction ldf
+                        , Frac.effort = DifficultyFraction ddf
+                        }
                 , reach =
                     ReachToggle
                         { extra = TaskDistance (MkQuantity dE)
@@ -179,6 +189,8 @@ xpRankScore =
                 } ->
                     ( fromIntegral r
                     , round p
+                    , fromRational $ ldf / 2
+                    , fromRational $ ddf / 2
                     , fromRational ldp
                     , fromRational ddp
                     , fromRational dp
@@ -192,9 +204,11 @@ xpRankScore =
                     , show <$> timeElapsed
                     )
         )
-    $ xp13Tuple
+    $ xp15Tuple
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
+        (xpAttr "linear_distance_fraction" xpPrim)
+        (xpAttr "difficulty_distance_fraction" xpPrim)
         (xpAttr "linear_distance_points" xpPrim)
         (xpAttr "difficulty_distance_points" xpPrim)
         (xpAttr "distance_points" xpPrim)
