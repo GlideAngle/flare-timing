@@ -130,9 +130,11 @@ tablePilotCompare _ sEx xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elAttr "th" ("colspan" =: "3") $ text "Area"
+                    elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
+                        $ text "Area"
                     elAttr "th" ("colspan" =: "3") $ text "Coefficient"
-                    elAttr "th" ("colspan" =: "3") $ text "Fraction"
+                    elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-frac"))
+                        $ text "Fraction"
                     el "th" $ text "Pilot"
                 el "tr" $ do
                     el "th" $ text ""
