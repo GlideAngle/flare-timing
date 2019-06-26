@@ -219,44 +219,39 @@ rowReachBonus
     -> Dynamic t TrackReach
     -> m ()
 rowReachBonus mapR mapN p tr = do
-    (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p tr (\pilot TrackReach{reach, frac} ->
-                    case Map.lookup pilot mapN of
-                        Just
-                            Norm.NormBreakdown
-                                { reach = ReachToggle{extra = reachN}
-                                , fractions = Frac.Fractions{reach = fracN}
-                                } ->
-                            ( showPilotDistance 1 reachN
-                            , showPilotDistanceDiff 1 reachN reach
+    (eReach, eReachDiff, eFrac
+        , yReach, yReachDiff
+        , yFrac, yFracDiff) <- sample . current
+            $ ffor2 p tr (\pilot TrackReach{reach = reachF} ->
+                fromMaybe ("", "", "", "", "", "", "") $ do
+                    TrackReach{reach = reachE, frac = fracE} <- Map.lookup pilot mapR
 
-                            , showReachFrac fracN
-                            , showReachFracDiff fracN frac
-                            )
-
-                        _ -> ("", "", "", ""))
-
-    (bReach, diffReach, bFrac) <- sample . current
-            $ ffor2 p tr (\pilot TrackReach{reach = rFlown} ->
-                fromMaybe ("", "", "") $ do
-                    br <- Map.lookup pilot mapR
-                    let rBonus = reach br
+                    Norm.NormBreakdown
+                        { reach = ReachToggle{extra = reachN}
+                        , fractions = Frac.Fractions{reach = fracN}
+                        } <- Map.lookup pilot mapN
 
                     return
-                        ( showPilotDistance 1 $ reach br
-                        , showPilotDistanceDiff 1 rFlown rBonus
-                        , showReachFrac . frac $ br
+                        ( showPilotDistance 1 $ reachE
+                        , showPilotDistanceDiff 1 reachF reachE
+                        , showReachFrac fracE
+
+                        , showPilotDistance 1 reachN
+                        , showPilotDistanceDiff 1 reachN reachE
+
+                        , showReachFrac fracN
+                        , showReachFracDiff fracN fracE
                         ))
 
     el "tr" $ do
         elClass "td" "td-plot-reach" . dynText $ showPilotDistance 1 . reach <$> tr
-        elClass "td" "td-plot-reach-bonus" $ text bReach
-        elClass "td" "td-plot-reach-bonus-diff" $ text diffReach
+        elClass "td" "td-plot-reach-bonus" $ text eReach
+        elClass "td" "td-plot-reach-bonus-diff" $ text eReachDiff
         elClass "td" "td-norm" $ text yReach
         elClass "td" "td-norm" $ text yReachDiff
 
         elClass "td" "td-plot-frac" . dynText $ showReachFrac . frac <$> tr
-        elClass "td" "td-plot-frac-bonus" $ text bFrac
+        elClass "td" "td-plot-frac-bonus" $ text eFrac
         elClass "td" "td-norm" $ text yFrac
         elClass "td" "td-norm" $ text yFracDiff
 
