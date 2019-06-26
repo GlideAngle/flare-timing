@@ -71,13 +71,6 @@ tablePilot sEx xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elAttr "th" ("colspan" =: "2") $ text ""
-                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm")
-                        $ text "Fraction"
-
-                    el "th" $ text ""
-
-                el "tr" $ do
                     el "th" $ text "#"
                     el "th" $ text "Fraction"
                     elClass "th" "th-norm th-norm-arrival" $ text "✓"
