@@ -13,11 +13,11 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 
 import Flight.Units ()
-import Flight.Gap.Distance.Linear (PilotDistance(..))
+import Flight.Gap.Distance.Pilot (PilotDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
 import Flight.Gap.Distance.Stop (FlownMax(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
-import Flight.Gap.Distance.Fraction (DifficultyFraction(..))
+import Flight.Gap.Fraction.Difficulty (DifficultyFraction(..))
 import Flight.Gap.Distance.Chunk
     ( IxChunk(..)
     , Lookahead(..)

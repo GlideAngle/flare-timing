@@ -492,7 +492,7 @@ points'
             ]
 
         ws =
-            [ Gap.Weights dw rw ew lw aw (timeWeight dw lw aw)
+            [ Gap.Weights rw ew dw lw aw (timeWeight dw lw aw)
             | dw <- dws
             | rw <- rws
             | ew <- ews

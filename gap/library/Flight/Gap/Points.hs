@@ -94,7 +94,7 @@ deriving instance Eq (Penalty a)
 deriving instance Show (Penalty a)
 
 data Points =
-    Points 
+    Points
         { reach :: LinearPoints
         , effort :: DifficultyPoints
         , distance :: DistancePoints

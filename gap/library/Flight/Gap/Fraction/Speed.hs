@@ -1,4 +1,4 @@
-module Flight.Gap.Ratio.Speed (SpeedFraction(..)) where
+module Flight.Gap.Fraction.Speed (SpeedFraction(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)

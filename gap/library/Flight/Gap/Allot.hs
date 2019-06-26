@@ -18,8 +18,8 @@ import Flight.Gap.Pilots (PilotsAtEss(..))
 import Flight.Gap.Place.Arrival (ArrivalPlacing(..))
 import Flight.Gap.Time.Best (BestTime(..))
 import Flight.Gap.Time.Pilot (PilotTime(..))
-import Flight.Gap.Ratio.Arrival (ArrivalFraction(..))
-import Flight.Gap.Ratio.Speed (SpeedFraction(..))
+import Flight.Gap.Fraction.Arrival (ArrivalFraction(..))
+import Flight.Gap.Fraction.Speed (SpeedFraction(..))
 import Flight.Gap.Equation (powerFraction)
 
 -- | Given the placing and the number of pilots making the end of the speed

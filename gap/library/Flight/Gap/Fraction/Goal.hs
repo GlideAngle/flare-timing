@@ -1,4 +1,4 @@
-module Flight.Gap.Ratio.Goal (NominalGoal(..)) where
+module Flight.Gap.Fraction.Goal (NominalGoal(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific

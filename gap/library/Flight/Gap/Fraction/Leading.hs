@@ -1,4 +1,4 @@
-module Flight.Gap.Ratio.Leading
+module Flight.Gap.Fraction.Leading
     ( LeadingFraction(..)
     , EssTime(..)
     , LwScaling(..)

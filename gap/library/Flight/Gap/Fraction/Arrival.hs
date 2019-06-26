@@ -1,4 +1,4 @@
-module Flight.Gap.Ratio.Arrival
+module Flight.Gap.Fraction.Arrival
     ( ArrivalFraction(..)
     , AwScaling(..)
     ) where

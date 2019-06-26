@@ -1,4 +1,4 @@
-module Flight.Gap.Ratio.Launch (NominalLaunch(..)) where
+module Flight.Gap.Fraction.Launch (NominalLaunch(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific

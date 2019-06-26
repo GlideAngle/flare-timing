@@ -28,14 +28,14 @@ import Flight.Gap.Weight.Distance
 import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
-import Flight.Gap.Ratio.Arrival (AwScaling(..))
-import Flight.Gap.Ratio.Leading (LwScaling(..))
+import Flight.Gap.Fraction.Arrival (AwScaling(..))
+import Flight.Gap.Fraction.Leading (LwScaling(..))
 
 data Weights =
     Weights
-        { distance :: DistanceWeight
-        , reach :: ReachWeight
+        { reach :: ReachWeight
         , effort :: EffortWeight
+        , distance :: DistanceWeight
         , leading :: LeadingWeight
         , arrival :: ArrivalWeight
         , time :: TimeWeight

@@ -1,6 +1,5 @@
-module Flight.Gap.Distance.Linear
-    ( PilotDistance(..)
-    , LinearFraction(..)
+module Flight.Gap.Fraction.Linear
+    ( LinearFraction(..)
     , linearFraction
     , bestDistance'
     ) where
