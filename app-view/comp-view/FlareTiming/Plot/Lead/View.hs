@@ -165,7 +165,7 @@ rowLeadCompare
     -> Dynamic t TrackLead
     -> m ()
 rowLeadCompare mapN p tl = do
-    (yArea, yAreaDiff, yCoef, yCoefDiff, yFrac, pFrac) <- sample . current
+    (yArea, yAreaDiff, yCoef, yCoefDiff, yFrac, yFracDiff) <- sample . current
                 $ ffor2 p tl (\pilot TrackLead{area, coef, frac} ->
                     case Map.lookup pilot mapN of
                         Just
@@ -195,7 +195,7 @@ rowLeadCompare mapN p tl = do
         elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
         elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> tl
         elClass "td" "td-norm" . text $ yFrac
-        elClass "td" "td-norm" . text $ pFrac
+        elClass "td" "td-norm" . text $ yFracDiff
         el "td" . dynText $ showPilotName <$> p
 
         return ()

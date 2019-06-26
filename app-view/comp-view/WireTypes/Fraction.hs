@@ -10,6 +10,7 @@ module WireTypes.Fraction
     , showEffortFrac, showEffortFracDiff
     , showLeadingFrac, showLeadingFracDiff
     , showSpeedFrac, showSpeedFracDiff
+    , showArrivalFrac, showArrivalFracDiff
     ) where
 
 import Text.Printf (printf)
@@ -87,6 +88,16 @@ showSpeedFrac (SpeedFraction x) = T.pack $ printf "%.3f" x
 
 showSpeedFracDiff :: SpeedFraction -> SpeedFraction -> T.Text
 showSpeedFracDiff (SpeedFraction expected) (SpeedFraction actual)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.3f"
+
+showArrivalFrac :: ArrivalFraction -> T.Text
+showArrivalFrac (ArrivalFraction x) = T.pack $ printf "%.3f" x
+
+showArrivalFracDiff :: ArrivalFraction -> ArrivalFraction -> T.Text
+showArrivalFracDiff (ArrivalFraction expected) (ArrivalFraction actual)
     | f actual == f expected = "="
     | otherwise = f (actual - expected)
     where

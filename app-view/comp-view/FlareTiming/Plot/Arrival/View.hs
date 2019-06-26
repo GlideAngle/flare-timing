@@ -1,6 +1,5 @@
 module FlareTiming.Plot.Arrival.View (arrivalPlot) where
 
-import Text.Printf (printf)
 import Reflex.Dom
 import Reflex.Time (delay)
 import qualified Data.Text as T (Text, pack)
@@ -10,7 +9,8 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Arrival.Plot as P (hgPlot)
 
-import WireTypes.Fraction (Fractions(..), ArrivalFraction(..))
+import WireTypes.Fraction
+    (Fractions(..), ArrivalFraction(..), showArrivalFrac, showArrivalFracDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..))
 import WireTypes.Pilot (Pilot(..))
@@ -94,19 +94,19 @@ rowArrival
     -> Dynamic t TrackArrival
     -> m ()
 rowArrival mapN p ta = do
-    (yFrac, diffFrac) <- sample . current
-                $ ffor2 p ta (\pilot TrackArrival{frac = f} ->
+    (yFrac, yFracDiff) <- sample . current
+                $ ffor2 p ta (\pilot TrackArrival{frac} ->
                     case Map.lookup pilot mapN of
-                        Just Norm.NormBreakdown {fractions = Fractions{arrival = f'}} ->
-                            ( showFrac f', showFracDiff f' f)
+                        Just Norm.NormBreakdown {fractions = Fractions{arrival = fracN}} ->
+                            (showArrivalFrac fracN, showArrivalFracDiff fracN frac)
 
                         _ -> ("", ""))
 
     el "tr" $ do
         el "td" . dynText $ showRank . rank <$> ta
-        el "td" . dynText $ showFrac . frac <$> ta
+        el "td" . dynText $ showArrivalFrac . frac <$> ta
         elClass "td" "td-norm" . text $ yFrac
-        elClass "td" "td-norm" . text $ diffFrac
+        elClass "td" "td-norm" . text $ yFracDiff
         el "td" . dynText $ showPilotName <$> p
 
         return ()
@@ -114,13 +114,3 @@ rowArrival mapN p ta = do
 showRank :: ArrivalPlacing -> T.Text
 showRank (ArrivalPlacing p) = T.pack . show $ p
 showRank (ArrivalPlacingEqual p _) = T.pack $ show p ++ "="
-
-showFrac :: ArrivalFraction -> T.Text
-showFrac (ArrivalFraction x) = T.pack $ printf "%.3f" x
-
-showFracDiff :: ArrivalFraction -> ArrivalFraction -> T.Text
-showFracDiff (ArrivalFraction expected) (ArrivalFraction actual)
-    | f actual == f expected = "="
-    | otherwise = f (actual - expected)
-    where
-        f = T.pack . printf "%+.3f"
