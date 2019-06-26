@@ -97,7 +97,6 @@ tablePilotReach
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 tablePilotReach sEx reach = do
-    let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -172,8 +171,11 @@ tablePilotReachBonus sEx reach bonusReach = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elAttr "th" ("colspan" =: "5") $ text "Reach (km)"
-                    elAttr "th" ("colspan" =: "4") $ text "Fraction"
+                    elAttr "th" ("colspan" =: "5")
+                        $ text "Reach (km)"
+                    elAttr "th" (("colspan" =: "4") <> ("class" =: "th-reach-frac"))
+                        $ text "Fraction"
+
                     el "th" $ text ""
 
                     return ()
