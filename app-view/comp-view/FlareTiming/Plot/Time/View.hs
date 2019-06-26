@@ -83,8 +83,10 @@ tablePilot sgs sEx xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elAttr "th" ("colspan" =: "4")
-                        $ text "Time"
+                    elAttr "th" ("colspan" =: "2")
+                        $ text ""
+                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm time-or-pace") . dynText
+                        $ ffor sgs (\case [] -> "Pace"; _ -> "Time")
                     elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-frac")
                         $ text "Fraction"
 
@@ -93,11 +95,8 @@ tablePilot sgs sEx xs = do
                 el "tr" $ do
                     el "th" $ text "H.hhh"
                     el "th" $ text "HH:MM:SS"
-                    elClass "th" "th-norm th-norm-pace" . dynText
-                        $ ffor sgs (\case [] -> "✓-Pace"; _ -> "✓-Time")
-
-                    elClass "th" "th-norm th-time-diff" $ dynText
-                        $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
+                    elClass "th" "th-norm th-norm-pace" $ text "✓"
+                    elClass "th" "th-norm th-time-diff" $ text "Δ"
 
                     el "th" $ text ""
                     elClass "th" "th-norm" $ text "✓"

@@ -100,8 +100,11 @@ th.th-speed
 .th-norm, .td-norm, .th-diff, .validity
     @extend .has-text-right;
 
-.td-norm.td-norm-start, .td-norm.td-norm-end, .th-norm.th-start, .th-norm.th-end, .th-norm.th-time-diff, .th-norm.th-norm-pace, .td-norm.td-norm-pace
+.td-norm.td-norm-start, .td-norm.td-norm-end, .th-norm.th-start
     @extend .has-text-left;
+
+.th-norm.th-end, .th-norm.th-time-diff, .th-norm.th-norm-pace, .td-norm.td-norm-pace
+    @extend .has-text-right;
 
 .th-total-points
     @extend .has-text-right;
@@ -602,8 +605,14 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #hg-plot-valid-stop-by-vary path.origin
     stroke: white;
 
-.th-lead-area, .th-lead-frac, .th-reach-frac, .th-effort-frac, .th-time-frac
+.th-lead-area, .th-lead-frac,
+.th-reach-frac, .th-effort-frac,
+.th-time-frac
     @extend .is-light;
 
 .td-norm.td-time-diff, .td-lead-area, .td-lead-coef, .td-lead-frac
     @extend .has-text-right;
+
+.th-norm.time-or-pace
+    @extend .has-text-left;
+
