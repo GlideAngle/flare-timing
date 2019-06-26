@@ -274,7 +274,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                             (\case
                                 PlotTabSplit -> plotSplit
                                 PlotTabReach -> reachPlot task sEx reach bonusReach
-                                PlotTabEffort -> effortPlot hgOrPg ef
+                                PlotTabEffort -> effortPlot hgOrPg sEx ef
                                 PlotTabTime -> timePlot sgs sEx sd
                                 PlotTabLead -> leadPlot tweak sEx ld
                                 PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av

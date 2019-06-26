@@ -1,16 +1,19 @@
 module FlareTiming.Plot.Effort.View (effortPlot) where
 
-import Text.Printf (printf)
 import Reflex.Dom
 import Reflex.Time (delay)
-import qualified Data.Text as T (Text, pack)
+import Data.Map (Map)
+import qualified Data.Map.Strict as Map
 
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Effort.Plot as P (effortPlot)
 
-import WireTypes.Effort (TrackEffort(..), EffortFraction(..))
+import qualified WireTypes.Fraction as Frac (Fractions(..))
+import WireTypes.Fraction (EffortFraction(..), showEffortFrac, showEffortFracDiff)
+import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Point (PilotDistance(..), showPilotDistance)
+import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import FlareTiming.Pilot (showPilotName)
 
 placings :: [TrackEffort] -> [[Double]]
@@ -28,9 +31,10 @@ timeRange xs =
 
 effortPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackEffort)]
+    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackEffort)]
     -> m ()
-effortPlot tm = do
+effortPlot sEx tm = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -56,15 +60,16 @@ effortPlot tm = do
 
                     return ()
 
-        elClass "div" "tile is-child" $ tablePilot tm
+        elClass "div" "tile is-child" $ tablePilot sEx tm
 
     return ()
 
 tablePilot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackEffort)]
+    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackEffort)]
     -> m ()
-tablePilot xs = do
+tablePilot sEx xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -74,23 +79,49 @@ tablePilot xs = do
 
                     return ()
 
-            el "tbody" $ do
-                simpleList xs (uncurry rowEffort . splitDynPure)
+            _ <- dyn $ ffor sEx (\sEx' -> do
+                    let mapN = Map.fromList sEx'
 
+                    el "tbody" $
+                        simpleList xs (uncurry (rowEffort mapN). splitDynPure))
+
+            return ()
     return ()
 
 rowEffort
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Map Pilot Norm.NormBreakdown
+    -> Dynamic t Pilot
     -> Dynamic t TrackEffort
     -> m ()
-rowEffort p tm = do
+rowEffort mapN p e = do
+    (yEffort, yEffortDiff, yFrac, yFracDiff) <- sample . current
+                $ ffor2 p e (\pilot TrackEffort{effort, frac} ->
+                    case Map.lookup pilot mapN of
+                        Just
+                            Norm.NormBreakdown
+                                { reachMade = effortN
+                                , fractions = Frac.Fractions{effort = fracN}
+                                } ->
+                            ( showPilotDistance 1 effortN
+                            , showPilotDistanceDiff 1 effortN effort
+
+                            , showEffortFrac fracN
+                            , showEffortFracDiff fracN frac
+                            )
+
+                        _ -> ("", "", "", ""))
+
     el "tr" $ do
-        elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> tm
-        el "td" . dynText $ showFrac . frac <$> tm
+        elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> e
+        elClass "th" "th-norm" $ text yEffort
+        elClass "th" "th-norm" $ text yEffortDiff
+
+        el "td" . dynText $ showEffortFrac . frac <$> e
+        elClass "th" "th-norm" $ text yFrac
+        elClass "th" "th-norm" $ text yFracDiff
+
         el "td" . dynText $ showPilotName <$> p
 
         return ()
 
-showFrac :: EffortFraction -> T.Text
-showFrac (EffortFraction x) = T.pack $ printf "%.3f" x

@@ -7,6 +7,7 @@ module WireTypes.Fraction
     , LeadingFraction(..)
     , Fractions(..)
     , showReachFrac, showReachFracDiff
+    , showEffortFrac, showEffortFracDiff
     , showLeadingFrac, showLeadingFracDiff
     ) where
 
@@ -65,6 +66,16 @@ showLeadingFrac (LeadingFraction x) = T.pack $ printf "%.3f" x
 
 showLeadingFracDiff :: LeadingFraction -> LeadingFraction -> T.Text
 showLeadingFracDiff (LeadingFraction expected) (LeadingFraction actual)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.3f"
+
+showEffortFrac :: EffortFraction -> T.Text
+showEffortFrac (EffortFraction x) = T.pack $ printf "%.3f" x
+
+showEffortFracDiff :: EffortFraction -> EffortFraction -> T.Text
+showEffortFracDiff (EffortFraction expected) (EffortFraction actual)
     | f actual == f expected = "="
     | otherwise = f (actual - expected)
     where
