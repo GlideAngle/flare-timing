@@ -147,12 +147,12 @@ rowReach mapN p r = do
 
     el "tr" $ do
         elClass "td" "td-plot-reach" . dynText $ (showPilotDistance 1) . reach <$> r
-        elClass "th" "th-norm" $ text yReach
-        elClass "th" "th-norm" $ text yReachDiff
+        elClass "td" "td-norm" $ text yReach
+        elClass "td" "td-norm" $ text yReachDiff
 
         elClass "td" "td-plot-frac" . dynText $ showReachFrac . frac <$> r
-        elClass "th" "th-norm" $ text yFrac
-        elClass "th" "th-norm" $ text yFracDiff
+        elClass "td" "td-norm" $ text yFrac
+        elClass "td" "td-norm" $ text yFracDiff
 
         elClass "td" "td-pilot" . dynText $ showPilotName <$> p
 
@@ -252,13 +252,13 @@ rowReachBonus mapR mapN p tr = do
         elClass "td" "td-plot-reach" . dynText $ showPilotDistance 1 . reach <$> tr
         elClass "td" "td-plot-reach-bonus" $ text bReach
         elClass "td" "td-plot-reach-bonus-diff" $ text diffReach
-        elClass "th" "th-norm" $ text yReach
-        elClass "th" "th-norm" $ text yReachDiff
+        elClass "td" "td-norm" $ text yReach
+        elClass "td" "td-norm" $ text yReachDiff
 
         elClass "td" "td-plot-frac" . dynText $ showReachFrac . frac <$> tr
         elClass "td" "td-plot-frac-bonus" $ text bFrac
-        elClass "th" "th-norm" $ text yFrac
-        elClass "th" "th-norm" $ text yFracDiff
+        elClass "td" "td-norm" $ text yFrac
+        elClass "td" "td-norm" $ text yFracDiff
 
         elClass "td" "td-pilot" . dynText $ showPilotName <$> p
 

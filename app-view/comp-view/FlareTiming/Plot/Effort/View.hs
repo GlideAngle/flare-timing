@@ -117,12 +117,12 @@ rowEffort mapN p te = do
 
     el "tr" $ do
         elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> te
-        elClass "th" "th-norm" $ text yEffort
-        elClass "th" "th-norm" $ text yEffortDiff
+        elClass "td" "td-norm" $ text yEffort
+        elClass "td" "td-norm" $ text yEffortDiff
 
         el "td" . dynText $ showEffortFrac . frac <$> te
-        elClass "th" "th-norm" $ text yFrac
-        elClass "th" "th-norm" $ text yFracDiff
+        elClass "td" "td-norm" $ text yFrac
+        elClass "td" "td-norm" $ text yFracDiff
 
         el "td" . dynText $ showPilotName <$> p
 
