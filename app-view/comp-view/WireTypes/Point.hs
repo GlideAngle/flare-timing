@@ -40,10 +40,14 @@ module WireTypes.Point
     , showTaskPoints
     , showRounded
     , showTaskPointsDiff
+    , showLinearPoints
+    , showDifficultyPoints
     , showDistancePoints
     , showLeadingPoints
     , showArrivalPoints
     , showTimePoints
+    , showLinearPointsDiff
+    , showDifficultyPointsDiff
     , showDistancePointsDiff
     , showLeadingPointsDiff
     , showArrivalPointsDiff
@@ -254,6 +258,12 @@ showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
 showTaskPoints task (TaskPoints p) =
     showMaxRounded p (\(TaskPoints x) -> x) task
 
+showLinearPoints :: LinearPoints -> T.Text
+showLinearPoints (LinearPoints p) = T.pack $ printf "%.1f" p
+
+showDifficultyPoints :: DifficultyPoints -> T.Text
+showDifficultyPoints (DifficultyPoints p) = T.pack $ printf "%.1f" p
+
 showDistancePoints :: DistancePoints -> T.Text
 showDistancePoints (DistancePoints p) = T.pack $ printf "%.1f" p
 
@@ -265,6 +275,20 @@ showArrivalPoints (ArrivalPoints p) = T.pack $ printf "%.1f" p
 
 showTimePoints :: TimePoints -> T.Text
 showTimePoints (TimePoints p) = T.pack $ printf "%.1f" p
+
+showLinearPointsDiff :: LinearPoints -> LinearPoints -> T.Text
+showLinearPointsDiff (LinearPoints expected) (LinearPoints actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.1f"
+
+showDifficultyPointsDiff :: DifficultyPoints -> DifficultyPoints -> T.Text
+showDifficultyPointsDiff (DifficultyPoints expected) (DifficultyPoints actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.1f"
 
 showDistancePointsDiff :: DistancePoints -> DistancePoints -> T.Text
 showDistancePointsDiff (DistancePoints expected) (DistancePoints actual)
