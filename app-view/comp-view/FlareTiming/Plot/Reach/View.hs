@@ -113,22 +113,25 @@ tablePilotReach sEx reach = do
 
                     return ()
 
-            _ <- el "tbody" $
-                    simpleList reach (uncurry (rowReach sEx') . splitDynPure)
+            _ <- dyn $ ffor sEx (\sEx' -> do
+                    let mapN = Map.fromList sEx'
+
+                    el "tbody" $
+                        simpleList reach (uncurry (rowReach mapN) . splitDynPure))
 
             return ()
     return ()
 
 rowReach
     :: MonadWidget t m
-    => Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    => Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m ()
-rowReach sEx p r = do
+rowReach mapN p r = do
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor3 p sEx r (\pilot sEx' TrackReach{reach, frac} ->
-                    case Map.lookup pilot sEx' of
+                $ ffor2 p r (\pilot TrackReach{reach, frac} ->
+                    case Map.lookup pilot mapN of
                         Just
                             Norm.NormBreakdown
                                 { reach = ReachToggle{extra = reachN}
@@ -163,7 +166,6 @@ tablePilotReachBonus
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 tablePilotReachBonus sEx reach bonusReach = do
-    let sEx' = Map.fromList <$> sEx
     let tdFoot = elAttr "td" ("colspan" =: "6")
     let foot = el "tr" . tdFoot . text
 
@@ -193,11 +195,12 @@ tablePilotReachBonus sEx reach bonusReach = do
 
                     return ()
 
-            _ <- dyn $ ffor bonusReach (\br -> do
+            _ <- dyn $ ffor2 bonusReach sEx (\br sEx' -> do
                     let mapR = Map.fromList br
+                    let mapN = Map.fromList sEx'
 
                     el "tbody" $
-                        simpleList reach (uncurry (rowReachBonus mapR sEx') . splitDynPure))
+                        simpleList reach (uncurry (rowReachBonus mapR mapN) . splitDynPure))
 
             el "tfoot" $ do
                 foot "† Reach as scored."
@@ -209,14 +212,14 @@ tablePilotReachBonus sEx reach bonusReach = do
 rowReachBonus
     :: MonadWidget t m
     => Map Pilot TrackReach
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m ()
-rowReachBonus mapR sEx p r = do
+rowReachBonus mapR mapN p r = do
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor3 p sEx r (\pilot sEx' TrackReach{reach, frac} ->
-                    case Map.lookup pilot sEx' of
+                $ ffor2 p r (\pilot TrackReach{reach, frac} ->
+                    case Map.lookup pilot mapN of
                         Just
                             Norm.NormBreakdown
                                 { reach = ReachToggle{extra = reachN}
