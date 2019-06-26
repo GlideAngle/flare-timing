@@ -73,8 +73,11 @@ tablePilot sEx xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elClass "th" "th-plot-effort" $ text "Effort (km)"
-                    el "th" $ text "Fraction"
+                    elAttr "th" (("colspan" =: "3") <> ("class" =: "th-plot-effort"))
+                        $ text "Effort (km)"
+                    elAttr "th" (("colspan" =: "3") <> ("class" =: "th-effort-frac"))
+                        $ text "Fraction"
+
                     el "th" $ text "Pilot"
 
                     return ()
