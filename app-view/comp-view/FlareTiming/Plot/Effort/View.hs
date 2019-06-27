@@ -82,6 +82,20 @@ tablePilot sEx xs = do
 
                     return ()
 
+            el "thead" $ do
+                el "tr" $ do
+                    el "th" $ text ""
+                    elClass "th" "th-norm" $ text "✓"
+                    elClass "th" "th-norm" $ text "Δ"
+
+                    el "th" $ text ""
+                    elClass "th" "th-norm" $ text "✓"
+                    elClass "th" "th-norm" $ text "Δ"
+
+                    el "th" $ text ""
+
+                    return ()
+
             _ <- dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
 

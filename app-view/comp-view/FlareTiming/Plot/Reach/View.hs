@@ -176,7 +176,7 @@ tablePilotReachBonus sEx reach bonusReach = do
                     elAttr "th" (("colspan" =: "4") <> ("class" =: "th-reach-frac"))
                         $ text "Fraction"
 
-                    el "th" $ text ""
+                    el "th" $ text "Pilot"
 
                     return ()
 
@@ -193,7 +193,7 @@ tablePilotReachBonus sEx reach bonusReach = do
                     elClass "th" "th-norm" $ text "✓"
                     elClass "th" "th-norm" $ text "Δ"
 
-                    el "th" $ text "Pilot"
+                    el "th" $ text ""
 
                     return ()
 
