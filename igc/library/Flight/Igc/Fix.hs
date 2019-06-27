@@ -141,7 +141,8 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
             `addUTCTime`
             (UTCTime (fromGregorian y mm dd) 0)
 
--- TODO: Why is Scott's tracklog not sorted when marked for time or ticks?
+-- TODO: Why are Scott's tracklog and Jason's tracklog not sorted when marked
+-- for time or ticks?
 
 -- |
 -- >>> let xs = markTimes markSasha fixesSasha in xs == sort xs
@@ -156,6 +157,9 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
 -- >>> let xs = markTimes markGordon fixesGordon in xs == sort xs
 -- True
 --
+-- >>> let xs = markTimes markJason fixesJason in xs == sort xs
+-- False
+--
 -- >>> let xs = markTimes markSasha fixesSasha in (head xs, head $ reverse xs)
 -- (2018-01-03 03:13:00 UTC,2018-01-03 06:57:50 UTC)
 --
@@ -167,6 +171,9 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
 --
 -- >>> let xs = markTimes markGordon fixesGordon in (head xs, head $ reverse xs)
 -- (2018-01-02 00:44:29 UTC,2018-01-02 09:07:43 UTC)
+--
+-- >>> let xs = markTimes markJason fixesJason in (head xs, head $ reverse xs)
+-- (2017-12-31 01:46:49 UTC,2017-12-31 08:14:12 UTC)
 markTimes :: IgcRecord -> [IgcRecord] -> [UTCTime]
 markTimes = mark unStampTime
 
@@ -183,6 +190,9 @@ markTimes = mark unStampTime
 -- >>> let xs = markTicks markGordon fixesGordon in xs == sort xs
 -- True
 --
+-- >>> let xs = markTicks markJason fixesJason in xs == sort xs
+-- False
+--
 -- >>> let xs = markTicks markSasha fixesSasha in (head xs, head $ reverse xs)
 -- (00:00:00,03:44:50)
 --
@@ -194,6 +204,9 @@ markTimes = mark unStampTime
 --
 -- >>> let xs = markTicks markGordon fixesGordon in (head xs, head $ reverse xs)
 -- (00:00:00,08:23:14)
+--
+-- >>> let xs = markTicks markJason fixesJason in (head xs, head $ reverse xs)
+-- (00:00:00,06:27:23)
 markTicks :: IgcRecord -> [IgcRecord] -> [Second]
 markTicks = mark unStampTick
 
@@ -217,6 +230,7 @@ toFixTick mark0 t = Second . round $ t `diffUTCTime` mark0
 -- $setup
 -- >>> :set -XTemplateHaskell
 -- >>> import Test.QuickCheck
+-- >>> import System.IO (readFile)
 -- >>> import Data.List
 -- >>> import Language.Haskell.TH
 -- >>> import Language.Haskell.TH.Syntax (lift)
@@ -232,8 +246,10 @@ toFixTick mark0 t = Second . round $ t `diffUTCTime` mark0
 -- >>> fileBrad  = "./test-suite-doctest/Brad-Porter.20180104-095852.36822.34.igc"
 -- >>> fileScott = "./test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc"
 -- >>> fileGordon = "./test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc"
+-- >>> fileJason = "./test-suite-doctest/Jason_Kath.20180101-000746.18332.30.igc"
 --
--- >>> (markSasha : _, (fixesSasha, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileSasha)) in (partition isFix <$> partition isMark xs)
--- >>> (markBrad : _, (fixesBrad, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileBrad)) in (partition isFix <$> partition isMark xs)
--- >>> (markScott : _, (fixesScott, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileScott)) in (partition isFix <$> partition isMark xs)
--- >>> (markGordon : _, (fixesGordon, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileGordon)) in (partition isFix <$> partition isMark xs)
+-- >>> (markSasha : _, (fixesSasha, _)) = let (Right xs) = parse $(embedStr (readFile fileSasha)) in (partition isFix <$> partition isMark xs)
+-- >>> (markBrad : _, (fixesBrad, _)) = let (Right xs) = parse $(embedStr (readFile fileBrad)) in (partition isFix <$> partition isMark xs)
+-- >>> (markScott : _, (fixesScott, _)) = let (Right xs) = parse $(embedStr (readFile fileScott)) in (partition isFix <$> partition isMark xs)
+-- >>> (markGordon : _, (fixesGordon, _)) = let (Right xs) = parse $(embedStr (readFile fileGordon)) in (partition isFix <$> partition isMark xs)
+-- >>> (markJason : _, (fixesJason, _)) = let (Right xs) = parse $(embedStr (readFile fileJason)) in (partition isFix <$> partition isMark xs)
