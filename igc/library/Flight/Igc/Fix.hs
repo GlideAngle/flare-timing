@@ -12,7 +12,7 @@ import Data.Time.Calendar (fromGregorian)
 import Data.Bifunctor (first)
 import Data.Maybe (catMaybes)
 import Flight.Igc.Record
-import Flight.Track.Range (asRollovers, asRolloversBy)
+import Flight.Track.Range (asRollovers, asRolloversBy, deleteSort)
 
 type Fix t a = (t, a)
 type IgcFix = Fix HMS Pos
@@ -46,20 +46,51 @@ secondsCompare t0 t1 =
 slipFwdOnTime :: Second -> IgcRecord -> IgcRecord -> Ordering
 slipFwdOnTime slip B{hms = t0} B{hms = t1} =
     if | secondsDiff t1 t0 > Second 0 -> LT
-       | secondsDiff t0 t1 < slip -> LT
+       | secondsDiff t0 t1 <= slip -> LT
        | otherwise -> secondsCompare t0 t1
 slipFwdOnTime _ a b = a `compare` b
 
 -- | The B record only records time of day. If the sequence is not increasing
--- then for every rollback add a bump 24 hrs.
+-- then for every rollback a hour or more add a bump 24 hrs. Filter out any
+-- rollback of less than one hour.
 --
 -- >>> asRollovers [7,9,2,3]
 -- [[7,9],[2,3]]
+--
+-- >>> let xs = markTimes markJason fixesJason in take 4 xs
+-- [2017-12-31 01:46:49 UTC,2017-12-31 01:46:45 UTC,2017-12-31 01:46:51 UTC,2017-12-31 01:46:52 UTC]
+--
+-- >>> :{
+-- let f = _bumpOverBy (slipFwdOnTime $ Second 0) (flip $ addHoursIgc . Hour) [0 :: Int, 24..]
+--     xs = markTimes markJason (f fixesJason)
+-- in take 4 xs
+-- :}
+-- [2017-12-31 01:46:49 UTC,2018-01-01 01:46:45 UTC,2018-01-01 01:46:51 UTC,2018-01-01 01:46:52 UTC]
+--
+-- >>> :{
+-- let f = _bumpOverBy (slipFwdOnTime $ Second 4) (flip $ addHoursIgc . Hour) [0 :: Int, 24..]
+--     xs = markTimes markJason (f fixesJason)
+-- in take 4 xs
+-- :}
+-- [2017-12-31 01:46:49 UTC,2017-12-31 01:46:45 UTC,2017-12-31 01:46:51 UTC,2017-12-31 01:46:52 UTC]
+--
+-- >>> :{
+-- let f = _bumpOverBy (slipFwdOnTime $ Second 3) (flip $ addHoursIgc . Hour) [0 :: Int, 24..]
+--     xs = markTimes markJason (f fixesJason)
+-- in take 4 xs
+-- :}
+-- [2017-12-31 01:46:49 UTC,2018-01-01 01:46:45 UTC,2018-01-01 01:46:51 UTC,2018-01-01 01:46:52 UTC]
+--
+-- >>> :{
+-- let f = deleteSort . _bumpOverBy (slipFwdOnTime $ Second 4) (flip $ addHoursIgc . Hour) [0 :: Int, 24..]
+--     xs = markTimes markJason (f fixesJason)
+-- in take 4 xs
+-- :}
+-- [2017-12-31 01:46:51 UTC,2017-12-31 01:46:52 UTC,2017-12-31 01:46:53 UTC,2017-12-31 01:46:54 UTC]
 bumpOver :: [IgcRecord] -> [IgcRecord]
 bumpOver xs =
-    -- TODO: Investigate using slippage. This is switched off for now by
-    -- setting it to zero.
-    _bumpOverBy (slipFwdOnTime $ Second 0)
+    deleteSort $
+    _bumpOverBy (slipFwdOnTime $ Second 3599)
         (flip $ addHoursIgc . Hour)
         [0 :: Int, 24..]
         xs
@@ -76,6 +107,18 @@ _bumpOver add ns xs =
     | n <- ns
     ]
 
+-- |
+-- >>> _bumpOverBy compare (+) [0,10..] [7,9,2,3,1]
+-- [7,9,12,13,21]
+--
+-- >>> _bumpOverBy (flip compare) (+) [0,10..] [7,9,2,3,1]
+-- [7,19,12,23,21]
+--
+-- >>> _bumpOverBy (\a b -> a `compare` (b + 1)) (+) [0,10..] [7,9,2,3,1]
+-- [7,9,12,13,21]
+--
+-- >>> _bumpOverBy (\a b -> a `compare` (b + 2)) (+) [0,10..] [7,9,2,3,1]
+-- [7,9,12,13,11]
 _bumpOverBy
     :: Ord a
     => (a -> a -> Ordering)

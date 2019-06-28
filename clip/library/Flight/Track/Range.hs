@@ -1,6 +1,11 @@
-module Flight.Track.Range (asRanges, asRollovers, asRolloversBy) where
+module Flight.Track.Range
+    ( asRanges
+    , asRollovers
+    , asRolloversBy
+    , deleteSort
+    ) where
 
-import Data.List (findIndex)
+import Data.List (findIndex, sort)
 import Data.List.Split (chop)
 
 -- | Compresses sequences of consecutive values as ranges.
@@ -54,11 +59,21 @@ asRollovers zs =
     chop
         (\xs@(x0 : _) ->
             let xys = zip (x0 : xs) xs in
-            case findIndex (\(x, y) -> y < x) xys of
+            case findIndex (\(x, y) -> x > y) xys of
                 Nothing -> (xs, [])
                 Just i -> (take i xs, drop i xs))
         zs
 
+-- | Splits the list every time there's a decrement.
+-- prop> \xs -> asRolloversBy compare xs == asRollovers xs
+-- True
+--
+-- >>> asRolloversBy (\a b -> compare a (b + 1)) [1]
+-- [[1]]
+-- >>> asRolloversBy (\a b -> compare a (b + 1)) [2,1]
+-- [[2,1]]
+-- >>> asRolloversBy (\a b -> compare a (b + 1)) [3,1]
+-- [[3],[1]]
 asRolloversBy :: Ord a => (a -> a -> Ordering) -> [a] -> [[a]]
 asRolloversBy _ [] = []
 asRolloversBy p [x, y] = if x `p` y /= GT then [[x, y]] else [[x],[y]]
@@ -66,7 +81,15 @@ asRolloversBy p zs =
     chop
         (\xs@(x0 : _) ->
             let xys = zip (x0 : xs) xs in
-            case findIndex (\(x, y) -> y `p` x == LT) xys of
+            case findIndex (\(x, y) -> x `p` y == GT) xys of
                 Nothing -> (xs, [])
                 Just i -> (take i xs, drop i xs))
         zs
+-- |
+-- prop> \xs -> length (deleteSort xs) <= length xs
+-- True
+-- prop> \xs -> deleteSort xs == sort (deleteSort xs)
+-- True
+deleteSort :: Ord a => [a] -> [a]
+deleteSort xs =
+    fmap fst $ filter (\(a, b) -> a == b) $ zip xs (sort xs)
