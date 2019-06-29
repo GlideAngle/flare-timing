@@ -11,6 +11,11 @@ of this changelog.
 * Show the extra distance from glide above goal in the score distance table.
 * Compare reach and effort with linear and difficulty from FS in the score
   distance table, in the tables beside the reach and effort plots.
+* Handle glitches in the ordering `*.igc` file B record times. Time is meant to
+  only increment during the day as fixes are logged. Discard times going
+  backward less than an hour and roll over the day when the time goes backwards
+  more than that. There's no rule in the GAP document about this but that is
+  what FS does.
 
 # Stopped Validity and Bonus Reach
 ## app-view-0.20
