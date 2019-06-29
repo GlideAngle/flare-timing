@@ -5,7 +5,7 @@ module Flight.Track.Range
     , deleteSort
     ) where
 
-import Data.List (findIndex, sort)
+import Data.List (findIndex)
 import Data.List.Split (chop)
 
 -- | Compresses sequences of consecutive values as ranges.
@@ -89,19 +89,17 @@ asRolloversBy p zs =
 -- prop> \xs -> length (deleteSort xs) <= length xs
 -- True
 --
--- prop> \xs -> deleteSort xs == sort (deleteSort xs)
--- True
---
 -- >>> permutations [1..3]
 -- [[1,2,3],[2,1,3],[3,2,1],[2,3,1],[3,1,2],[1,3,2]]
 --
 -- >>> deleteSort <$> permutations [1,2,3]
--- [[1,2,3],[3],[2],[],[],[1]]
+-- [[1,2,3],[2,3],[3],[2,3],[3],[1,3]]
 deleteSort :: Ord a => [a] -> [a]
-deleteSort xs =
-    fmap fst
-    $ filter (\(a, b) -> a == b)
-    $ zip xs (sort xs)
+deleteSort [] = []
+deleteSort [x] = [x]
+deleteSort xs@(x0 : _) =
+    let ys = fmap snd $ filter (\(i, j) -> i <= j) $ zip (x0 : xs) xs
+    in if ys /= xs then deleteSort ys else xs
 
 -- $setup
 -- >>> import Data.List (permutations)
