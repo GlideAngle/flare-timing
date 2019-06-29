@@ -88,8 +88,20 @@ asRolloversBy p zs =
 -- |
 -- prop> \xs -> length (deleteSort xs) <= length xs
 -- True
+--
 -- prop> \xs -> deleteSort xs == sort (deleteSort xs)
 -- True
+--
+-- >>> permutations [1..3]
+-- [[1,2,3],[2,1,3],[3,2,1],[2,3,1],[3,1,2],[1,3,2]]
+--
+-- >>> deleteSort <$> permutations [1,2,3]
+-- [[1,2,3],[3],[2],[],[],[1]]
 deleteSort :: Ord a => [a] -> [a]
 deleteSort xs =
-    fmap fst $ filter (\(a, b) -> a == b) $ zip xs (sort xs)
+    fmap fst
+    $ filter (\(a, b) -> a == b)
+    $ zip xs (sort xs)
+
+-- $setup
+-- >>> import Data.List (permutations)
