@@ -158,6 +158,27 @@ data Config k
         , normRoute :: Maybe [GeoLines]
         }
 
+nullConfig :: CompInputFile -> CompSettings k -> Config k
+nullConfig cf cs =
+    Config
+        { compFile = cf
+        , compSettings = cs
+        , routing = Nothing
+        , crossing = Nothing
+        , tagging = Nothing
+        , framing = Nothing
+        , maskingArrival = Nothing
+        , maskingEffort = Nothing
+        , maskingLead = Nothing
+        , maskingReach = Nothing
+        , maskingSpeed = Nothing
+        , bonusReach = Nothing
+        , landing = Nothing
+        , pointing = Nothing
+        , normScore = Nothing
+        , normRoute = Nothing
+        }
+
 newtype AppT k m a =
     AppT
         { unApp :: ReaderT (Config k) (ExceptT ServantErr m) a
@@ -384,100 +405,102 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
         catchIO
             (Just <$> readComp compFile)
             (const $ return Nothing)
+    case compSettings of
+        Nothing -> putStrLn "Couldn't read the comp settings"
+        Just cs -> do
+            let cfg = nullConfig compFile cs
 
-    routes <-
-        catchIO
-            (Just <$> readRoute lenFile)
-            (const $ return Nothing)
+            routes <-
+                catchIO
+                    (Just <$> readRoute lenFile)
+                    (const $ return Nothing)
 
-    crossing <-
-        catchIO
-            (Just <$> readCrossing crossFile)
-            (const $ return Nothing)
+            crossing <-
+                catchIO
+                    (Just <$> readCrossing crossFile)
+                    (const $ return Nothing)
 
-    tagging <-
-        catchIO
-            (Just <$> readTagging tagFile)
-            (const $ return Nothing)
+            tagging <-
+                catchIO
+                    (Just <$> readTagging tagFile)
+                    (const $ return Nothing)
 
-    framing <-
-        catchIO
-            (Just <$> readFraming stopFile)
-            (const $ return Nothing)
+            framing <-
+                catchIO
+                    (Just <$> readFraming stopFile)
+                    (const $ return Nothing)
 
-    maskingArrival <-
-        catchIO
-            (Just <$> readMaskingArrival maskArrivalFile)
-            (const $ return Nothing)
+            maskingArrival <-
+                catchIO
+                    (Just <$> readMaskingArrival maskArrivalFile)
+                    (const $ return Nothing)
 
-    maskingEffort <-
-        catchIO
-            (Just <$> readMaskingEffort maskEffortFile)
-            (const $ return Nothing)
+            maskingEffort <-
+                catchIO
+                    (Just <$> readMaskingEffort maskEffortFile)
+                    (const $ return Nothing)
 
-    maskingLead <-
-        catchIO
-            (Just <$> readMaskingLead maskLeadFile)
-            (const $ return Nothing)
+            maskingLead <-
+                catchIO
+                    (Just <$> readMaskingLead maskLeadFile)
+                    (const $ return Nothing)
 
-    maskingReach <-
-        catchIO
-            (Just <$> readMaskingReach maskReachFile)
-            (const $ return Nothing)
+            maskingReach <-
+                catchIO
+                    (Just <$> readMaskingReach maskReachFile)
+                    (const $ return Nothing)
 
-    bonusReach <-
-        catchIO
-            (Just <$> readBonusReach bonusReachFile)
-            (const $ return Nothing)
+            bonusReach <-
+                catchIO
+                    (Just <$> readBonusReach bonusReachFile)
+                    (const $ return Nothing)
 
-    maskingSpeed <-
-        catchIO
-            (Just <$> readMaskingSpeed maskSpeedFile)
-            (const $ return Nothing)
+            maskingSpeed <-
+                catchIO
+                    (Just <$> readMaskingSpeed maskSpeedFile)
+                    (const $ return Nothing)
 
-    landing <-
-        catchIO
-            (Just <$> readLanding landFile)
-            (const $ return Nothing)
+            landing <-
+                catchIO
+                    (Just <$> readLanding landFile)
+                    (const $ return Nothing)
 
-    pointing <-
-        catchIO
-            (Just <$> readPointing pointFile)
-            (const $ return Nothing)
+            pointing <-
+                catchIO
+                    (Just <$> readPointing pointFile)
+                    (const $ return Nothing)
 
-    normS <-
-        catchIO
-            (Just <$> readNormScore normScoreFile)
-            (const $ return Nothing)
+            normS <-
+                catchIO
+                    (Just <$> readNormScore normScoreFile)
+                    (const $ return Nothing)
 
-    normR <-
-        catchIO
-            (Just <$> readNormRoute normRouteFile)
-            (const $ return Nothing)
+            normR <-
+                catchIO
+                    (Just <$> readNormRoute normRouteFile)
+                    (const $ return Nothing)
 
-    case (compSettings, routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS, normR) of
-        (Nothing, _, _, _, _, _, _, _, _, _, _, _, _, _, _) ->
-            putStrLn "Couldn't read the comp settings"
-        (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _), nr@(Just _)) ->
-            f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS bR lo gp ns nr)
-        (Just cs, rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
-            putStrLn "WARNING: Only serving comp inputs and task lengths"
-            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
-        (Just cs, _, _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
-            putStrLn "WARNING: Only serving comp inputs"
-            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
-    where
-        -- NOTE: Add gzip with wai gzip middleware.
-        -- SEE: https://github.com/haskell-servant/servant/issues/786
-        f = runSettings settings . gzip def
+            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
+                (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
+                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS bR lo gp ns normR)
+                (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _) -> do
+                    putStrLn "WARNING: Only serving comp inputs and task lengths"
+                    f =<< mkTaskLengthApp cfg{routing = rt}
+                (_, _, _, _, _, _, _, _, _, _, _, _, _) -> do
+                    putStrLn "WARNING: Only serving comp inputs"
+                    f =<< mkCompInputApp cfg
+            where
+                -- NOTE: Add gzip with wai gzip middleware.
+                -- SEE: https://github.com/haskell-servant/servant/issues/786
+                f = runSettings settings . gzip def
 
-        port = 3000
+                port = 3000
 
-        settings =
-            setPort port $
-            setBeforeMainLoop
-                (hPutStrLn stderr ("listening on port " ++ show port))
-                defaultSettings
+                settings =
+                    setPort port $
+                    setBeforeMainLoop
+                        (hPutStrLn stderr ("listening on port " ++ show port))
+                        defaultSettings
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
 mkCompInputApp :: Config k -> IO Application
