@@ -18,7 +18,7 @@ import Text.XML.HXT.Arrow.Pickle
     , unpickleDoc, unpickleDoc'
     , xpWrap, xpElem, xpAttr
     , xpFilterAttr, xpFilterCont
-    , xpInt, xpPrim
+    , xpInt, xpPrim, xpDefault
     , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp13Tuple
     , xpTextAttr, xpOption
     )
@@ -195,8 +195,8 @@ xpRankScore =
     $ xp13Tuple
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
-        (xpAttr "linear_distance_points" xpPrim)
-        (xpAttr "difficulty_distance_points" xpPrim)
+        (xpDefault (0 :: Double) $ xpAttr "linear_distance_points" xpPrim)
+        (xpDefault (0 :: Double) $ xpAttr "difficulty_distance_points" xpPrim)
         (xpAttr "distance_points" xpPrim)
         (xpAttr "leading_points" xpPrim)
         (xpAttr "arrival_points" xpPrim)
