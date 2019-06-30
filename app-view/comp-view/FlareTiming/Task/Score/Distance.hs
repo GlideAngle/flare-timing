@@ -18,9 +18,9 @@ import WireTypes.Point
     , PilotDistance(..)
     , Points(..)
     , ReachToggle(..)
-    , showLinearPoints, showLinearPointsDiff
-    , showDifficultyPoints, showDifficultyPointsDiff
-    , showDistancePoints, showDistancePointsDiff
+    , LinearPoints(..), showLinearPoints, showLinearPointsDiff
+    , DifficultyPoints(..), showDifficultyPoints, showDifficultyPointsDiff
+    , DistancePoints(..), showDistancePoints, showDistancePointsDiff
     , showPilotDistance, showPilotDistanceDiff
     , showPilotAlt
     , showTaskLinearPoints
@@ -303,6 +303,12 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                             } <- Map.lookup pilot' sEx'
                         ReachToggle{extra = rE, flown = rF} <- reach
 
+                        let quieten s =
+                                case (rPtsN, ePtsN, dPtsN) of
+                                    (LinearPoints 0, DifficultyPoints 0, DistancePoints 0) -> s
+                                    (LinearPoints 0, DifficultyPoints 0, _) -> ""
+                                    _ -> s
+
                         return
                             ( showPilotDistance 3 rF
                             , showPilotDistance 3 rE
@@ -310,10 +316,10 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                             , showPilotDistanceDiff 3 rFN rF
                             , showPilotDistance 3 rEN
                             , showPilotDistanceDiff 3 rEN rE
-                            , showLinearPoints rPtsN
-                            , showLinearPointsDiff rPtsN rPts
-                            , showDifficultyPoints ePtsN
-                            , showDifficultyPointsDiff ePtsN ePts
+                            , quieten $ showLinearPoints rPtsN
+                            , quieten $ showLinearPointsDiff rPtsN rPts
+                            , quieten $ showDifficultyPoints ePtsN
+                            , quieten $ showDifficultyPointsDiff ePtsN ePts
                             , showDistancePoints dPtsN
                             , showDistancePointsDiff dPtsN dPts
                             ))
