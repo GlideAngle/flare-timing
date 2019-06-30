@@ -217,6 +217,9 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
 --
 -- >>> let xs = markTimes markJason fixesJason in (head xs, head $ reverse xs)
 -- (2017-12-31 01:46:49 UTC,2017-12-31 08:14:12 UTC)
+--
+-- >>> let xs = markTimes markJeff fixesJeff in (head xs, head $ reverse xs)
+-- (2016-05-09 18:09:04 UTC,2016-05-09 20:00:35 UTC)
 markTimes :: IgcRecord -> [IgcRecord] -> [UTCTime]
 markTimes = mark unStampTime
 
@@ -250,6 +253,9 @@ markTimes = mark unStampTime
 --
 -- >>> let xs = markTicks markJason fixesJason in (head xs, head $ reverse xs)
 -- (00:00:00,06:27:23)
+--
+-- >>> let xs = markTicks markJeff fixesJeff in (head xs, head $ reverse xs)
+-- (00:00:00,01:51:31)
 markTicks :: IgcRecord -> [IgcRecord] -> [Second]
 markTicks = mark unStampTick
 
@@ -290,9 +296,11 @@ toFixTick mark0 t = Second . round $ t `diffUTCTime` mark0
 -- >>> fileScott = "./test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc"
 -- >>> fileGordon = "./test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc"
 -- >>> fileJason = "./test-suite-doctest/Jason_Kath.20180101-000746.18332.30.igc"
+-- >>> fileJeff = "./test-suite-doctest/T4.kannard.126.igc"
 --
 -- >>> (markSasha : _, (fixesSasha, _)) = let (Right xs) = parse $(embedStr (readFile fileSasha)) in (partition isFix <$> partition isMark xs)
 -- >>> (markBrad : _, (fixesBrad, _)) = let (Right xs) = parse $(embedStr (readFile fileBrad)) in (partition isFix <$> partition isMark xs)
 -- >>> (markScott : _, (fixesScott, _)) = let (Right xs) = parse $(embedStr (readFile fileScott)) in (partition isFix <$> partition isMark xs)
 -- >>> (markGordon : _, (fixesGordon, _)) = let (Right xs) = parse $(embedStr (readFile fileGordon)) in (partition isFix <$> partition isMark xs)
 -- >>> (markJason : _, (fixesJason, _)) = let (Right xs) = parse $(embedStr (readFile fileJason)) in (partition isFix <$> partition isMark xs)
+-- >>> (markJeff : _, (fixesJeff, _)) = let (Right xs) = parse $(embedStr (readFile fileJeff)) in (partition isFix <$> partition isMark xs)

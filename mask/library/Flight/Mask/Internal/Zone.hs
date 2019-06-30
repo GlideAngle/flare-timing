@@ -2,6 +2,7 @@ module Flight.Mask.Internal.Zone
     ( MadeZones(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
+    , ExcludedCrossings(..)
     , ZoneEntry(..)
     , ZoneExit(..)
     , Crossing
@@ -46,14 +47,23 @@ data MadeZones =
         { flying :: TrackFlyingSection
         , selectedCrossings :: SelectedCrossings
         , nomineeCrossings :: NomineeCrossings
+        , excludedCrossings :: ExcludedCrossings
         }
 
+-- | Crossings from the set of nominee crossings selected for possible tagging.
 newtype SelectedCrossings =
     SelectedCrossings { unSelectedCrossings :: [Maybe ZoneCross] }
     deriving Show
 
+-- | All crossings except those excluded.
 newtype NomineeCrossings =
     NomineeCrossings { unNomineeCrossings :: [[Maybe ZoneCross]] }
+    deriving Show
+
+-- | Crossings excluded because they are outside of the open time window of the
+-- zone.
+newtype ExcludedCrossings =
+    ExcludedCrossings { unExcludedCrossings :: [[Maybe ZoneCross]] }
     deriving Show
 
 data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving (Eq, Show)

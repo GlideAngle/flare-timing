@@ -50,6 +50,7 @@ import Flight.Mask
     , MadeZones(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
+    , ExcludedCrossings(..)
     , unSelectedCrossings
     , unNomineeCrossings
     , checkTracks
@@ -158,6 +159,7 @@ madeZonesToCross x =
     TrackCross
         { zonesCrossSelected = unSelectedCrossings . selectedCrossings $ x
         , zonesCrossNominees = unNomineeCrossings . nomineeCrossings $ x
+        , zonesCrossExcluded = unExcludedCrossings . excludedCrossings $ x
         }
 
 crossings :: (Pilot, Maybe MadeZones) -> PilotTrackCross
@@ -194,6 +196,7 @@ flown math tasks (IxTask i) fs =
                 { flying = nullFlying
                 , selectedCrossings = SelectedCrossings []
                 , nomineeCrossings = NomineeCrossings []
+                , excludedCrossings = ExcludedCrossings []
                 }
 
         Just task ->

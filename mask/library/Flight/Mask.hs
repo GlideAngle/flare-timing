@@ -17,6 +17,7 @@ module Flight.Mask
     , RaceSections(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
+    , ExcludedCrossings(..)
     , MadeZones(..)
     , Sliver(..)
     , FlyClipSection(..)

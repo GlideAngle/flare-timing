@@ -89,7 +89,9 @@ data TrackCross =
         { zonesCrossSelected :: [Maybe ZoneCross]
         -- ^ The crossing selected as making the zone, for each zone.
         , zonesCrossNominees :: [[Maybe ZoneCross]]
-        -- ^ Every crossing of every zone.
+        -- ^ Every crossing of every zone not excluded.
+        , zonesCrossExcluded :: [[Maybe ZoneCross]]
+        -- ^ Excluded crossing of every zone.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -235,7 +237,9 @@ cmp a b =
         ("trackLogError", _) -> GT
 
         ("zonesCrossSelected", _) -> LT
-        ("zonesCrossNominees", _) -> GT
+        ("zonesCrossNominees", "zonesCrossSelected") -> GT
+        ("zonesCrossNominees", _) -> LT
+        ("zonesCrossExcluded", _) -> GT
 
         ("fix", _) -> LT
         ("time", "fix") -> GT
