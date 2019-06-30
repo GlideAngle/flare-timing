@@ -1,5 +1,6 @@
 module FlareTiming.Plot.Effort.View (effortPlot) where
 
+import Data.Maybe (fromMaybe)
 import Reflex.Dom
 import Reflex.Time (delay)
 import Data.Map (Map)
@@ -9,7 +10,10 @@ import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Effort.Plot as P (effortPlot)
 
 import qualified WireTypes.Fraction as Frac (Fractions(..))
-import WireTypes.Fraction (EffortFraction(..), showEffortFrac, showEffortFracDiff)
+import WireTypes.Fraction
+    ( ReachFraction(..), EffortFraction(..), DistanceFraction(..)
+    , showEffortFrac, showEffortFracDiff
+    )
 import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
@@ -113,21 +117,31 @@ rowEffort
     -> m ()
 rowEffort mapN p te = do
     (yEffort, yEffortDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p te (\pilot TrackEffort{effort, frac} ->
-                    case Map.lookup pilot mapN of
-                        Just
-                            Norm.NormBreakdown
-                                { reachMade = effortN
-                                , fractions = Frac.Fractions{effort = fracN}
-                                } ->
-                            ( showPilotDistance 1 effortN
-                            , showPilotDistanceDiff 1 effortN effort
+            $ ffor2 p te (\pilot TrackEffort{effort, frac} ->
+                fromMaybe ("", "", "", "") $ do
+                    Norm.NormBreakdown
+                        { reachMade = effortN
+                        , fractions =
+                            Frac.Fractions
+                                { reach = rFracN
+                                , effort = eFracN
+                                , distance = dFracN
+                                }
+                        } <- Map.lookup pilot mapN
 
-                            , showEffortFrac fracN
-                            , showEffortFracDiff fracN frac
-                            )
+                    let quieten s =
+                            case (rFracN, eFracN, dFracN) of
+                                (ReachFraction 0, EffortFraction 0, DistanceFraction 0) -> s
+                                (ReachFraction 0, EffortFraction 0, _) -> ""
+                                _ -> s
 
-                        _ -> ("", "", "", ""))
+                    return
+                        ( showPilotDistance 1 effortN
+                        , showPilotDistanceDiff 1 effortN effort
+
+                        , quieten $ showEffortFrac eFracN
+                        , quieten $ showEffortFracDiff eFracN frac
+                        ))
 
     el "tr" $ do
         elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> te

@@ -11,7 +11,10 @@ import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
 
 import qualified WireTypes.Fraction as Frac (Fractions(..))
-import WireTypes.Fraction (ReachFraction(..), showReachFrac, showReachFracDiff)
+import WireTypes.Fraction
+    ( ReachFraction(..), EffortFraction(..), DistanceFraction(..)
+    , showReachFrac, showReachFracDiff
+    )
 import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
 import WireTypes.Pilot (Pilot(..))
@@ -129,21 +132,31 @@ rowReach
     -> m ()
 rowReach mapN p r = do
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p r (\pilot TrackReach{reach, frac} ->
-                    case Map.lookup pilot mapN of
-                        Just
-                            Norm.NormBreakdown
-                                { reach = ReachToggle{extra = reachN}
-                                , fractions = Frac.Fractions{reach = fracN}
-                                } ->
-                            ( showPilotDistance 1 reachN
-                            , showPilotDistanceDiff 1 reachN reach
+            $ ffor2 p r (\pilot TrackReach{reach, frac} ->
+                fromMaybe ("", "", "", "") $ do
+                    Norm.NormBreakdown
+                        { reach = ReachToggle{extra = reachN}
+                        , fractions =
+                            Frac.Fractions
+                                { reach = rFracN
+                                , effort = eFracN
+                                , distance = dFracN
+                                }
+                        } <- Map.lookup pilot mapN
 
-                            , showReachFrac fracN
-                            , showReachFracDiff fracN frac
-                            )
+                    let quieten s =
+                            case (rFracN, eFracN, dFracN) of
+                                (ReachFraction 0, EffortFraction 0, DistanceFraction 0) -> s
+                                (ReachFraction 0, EffortFraction 0, _) -> ""
+                                _ -> s
 
-                        _ -> ("", "", "", ""))
+                    return
+                        ( showPilotDistance 1 reachN
+                        , showPilotDistanceDiff 1 reachN reach
+
+                        , quieten $ showReachFrac rFracN
+                        , quieten $ showReachFracDiff rFracN frac
+                        ))
 
     el "tr" $ do
         elClass "td" "td-plot-reach" . dynText $ (showPilotDistance 1) . reach <$> r
@@ -228,8 +241,19 @@ rowReachBonus mapR mapN p tr = do
 
                     Norm.NormBreakdown
                         { reach = ReachToggle{extra = reachN}
-                        , fractions = Frac.Fractions{reach = fracN}
+                        , fractions =
+                            Frac.Fractions
+                                { reach = rFracN
+                                , effort = eFracN
+                                , distance = dFracN
+                                }
                         } <- Map.lookup pilot mapN
+
+                    let quieten s =
+                            case (rFracN, eFracN, dFracN) of
+                                (ReachFraction 0, EffortFraction 0, DistanceFraction 0) -> s
+                                (ReachFraction 0, EffortFraction 0, _) -> ""
+                                _ -> s
 
                     return
                         ( showPilotDistance 1 $ reachE
@@ -239,8 +263,8 @@ rowReachBonus mapR mapN p tr = do
                         , showPilotDistance 1 reachN
                         , showPilotDistanceDiff 1 reachN reachE
 
-                        , showReachFrac fracN
-                        , showReachFracDiff fracN fracE
+                        , quieten $ showReachFrac rFracN
+                        , quieten $ showReachFracDiff rFracN fracE
                         ))
 
     el "tr" $ do
