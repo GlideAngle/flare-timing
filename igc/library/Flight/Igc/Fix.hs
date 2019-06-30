@@ -86,7 +86,7 @@ slipFwdOnTime _ a b = a `compare` b
 --     xs = markTimes markJason (f fixesJason)
 -- in take 4 xs
 -- :}
--- [2017-12-31 01:46:51 UTC,2017-12-31 01:46:52 UTC,2017-12-31 01:46:53 UTC,2017-12-31 01:46:54 UTC]
+-- [2017-12-31 01:46:49 UTC,2017-12-31 01:46:51 UTC,2017-12-31 01:46:52 UTC,2017-12-31 01:46:53 UTC]
 bumpOver :: [IgcRecord] -> [IgcRecord]
 bumpOver xs =
     deleteSort $
