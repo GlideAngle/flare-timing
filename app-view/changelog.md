@@ -16,6 +16,7 @@ of this changelog.
   backward less than an hour and roll over the day when the time goes backwards
   more than that. There's no rule in the GAP document about this but that is
   what FS does.
+* Exclude zone crossings that fall outside opening times of the zones.
 
 # Stopped Validity and Bonus Reach
 ## app-view-0.20
