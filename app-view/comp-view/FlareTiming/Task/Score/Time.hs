@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Speed (tableScoreTime) where
+module FlareTiming.Task.Score.Time (tableScoreTime) where
 
 import Prelude hiding (min)
 import Reflex.Dom

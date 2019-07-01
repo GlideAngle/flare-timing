@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Point (tableScoreSplit) where
+module FlareTiming.Task.Score.Split (tableScoreSplit) where
 
 import Prelude hiding (min)
 import Reflex.Dom
