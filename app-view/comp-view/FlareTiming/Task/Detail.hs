@@ -55,7 +55,8 @@ import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Score.Over (tableScoreOver)
 import FlareTiming.Task.Score.Point (tableScorePoint)
 import FlareTiming.Task.Score.Speed (tableScoreSpeed)
-import FlareTiming.Task.Score.Distance (tableScoreDistance)
+import FlareTiming.Task.Score.Reach (tableScoreReach)
+import FlareTiming.Task.Score.Effort (tableScoreEffort)
 import FlareTiming.Task.Geo (tableGeo)
 import FlareTiming.Task.Turnpoints (tableTask)
 import FlareTiming.Task.Absent (tableAbsent)
@@ -259,9 +260,12 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                                 ScoreTabSpeed ->
                                     elAttr "div" ("id" =: "score-speed") $
                                         tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
-                                ScoreTabDistance ->
-                                    elAttr "div" ("id" =: "score-distance") $
-                                        tableScoreDistance utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
+                                ScoreTabReach ->
+                                    elAttr "div" ("id" =: "score-reach") $
+                                        tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                ScoreTabEffort ->
+                                    elAttr "div" ("id" =: "score-effort") $
+                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
 
                             <$> tabScore
 

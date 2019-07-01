@@ -23,6 +23,7 @@ $arrival: #984ea3;
 $valid: #000000;
 
 $reach-invert: $primary-invert;
+$effort-invert: $primary-invert;
 $time-invert: $primary-invert;
 $leading-invert: $primary-invert;
 $arrival-invert: $primary-invert;
@@ -538,11 +539,17 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-overview .th-distance-points, #score-overview .td-distance-points,
 #score-points .th-distance-points-breakdown,
 #score-points .th-distance-points, #score-points .td-distance-points,
-#score-distance .th-distance-points-breakdown,
-#score-distance .th-distance-points, #score-distance .td-distance-points
+#score-reach .th-distance-points-breakdown,
+#score-reach .th-distance-points, #score-reach .td-distance-points
     color: $reach-invert;
     border-color: $reach;
     background-color: $reach;
+
+#score-effort .th-distance-points-breakdown,
+#score-effort .th-distance-points, #score-effort .td-distance-points
+    color: $effort-invert;
+    border-color: $effort;
+    background-color: $effort;
 
 #score-overview .th-time-points, #score-overview .td-time-points,
 #score-points .th-time-points, #score-points .td-time-points
@@ -576,7 +583,7 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-points .th-norm.th-leading-points,
 #score-points .th-norm.th-arrival-points,
 #score-points .th-norm.th-total-points,
-#score-distance .th-norm.th-distance-points
+#score-reach .th-norm.th-distance-points
     @extend .has-text-right;
 
 #score-points .th-norm.th-distance-points,
@@ -585,7 +592,8 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-points .th-norm.th-arrival-points,
 #score-overview .th-norm.th-total-points,
 #score-points .th-norm.th-total-points,
-#score-distance .th-norm.th-distance-points
+#score-reach .th-norm.th-distance-points,
+#score-effort .th-norm.th-distance-points
     @extend .is-black;
 
 #score-points .td-norm.td-distance-points,
@@ -594,7 +602,8 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-points .td-norm.td-arrival-points,
 #score-overview .td-norm.td-total-points,
 #score-points .td-norm.td-total-points,
-#score-distance .td-norm.td-distance-points
+#score-reach .td-norm.td-distance-points,
+#score-effort .td-norm.td-distance-points
     @extend .is-black;
 
 #hg-plot-valid-launch path.origin,

@@ -7,7 +7,8 @@ data ScoreTab
     = ScoreTabOver
     | ScoreTabPoint
     | ScoreTabSpeed
-    | ScoreTabDistance
+    | ScoreTabReach
+    | ScoreTabEffort
 
 tabsScore
     :: MonadWidget t m
@@ -18,44 +19,59 @@ tabsScore =
             (over, _) <- elDynClass' "li" overClass $ el "a" (text "Overview")
             (point, _) <- elDynClass' "li" pointClass $ el "a" (text "Points")
             (speed, _) <- elDynClass' "li" speedClass $ el "a" (text "Speed")
-            (dist, _) <- elDynClass' "li" distClass $ el "a" (text "Distance")
+            (reach, _) <- elDynClass' "li" reachClass $ el "a" (text "Reach")
+            (effort, _) <- elDynClass' "li" effortClass $ el "a" (text "Effort")
 
             let eOver = (const ScoreTabOver) <$> domEvent Click over
             let ePoint = (const ScoreTabPoint) <$> domEvent Click point
             let eSpeed = (const ScoreTabSpeed) <$> domEvent Click speed
-            let eDist = (const ScoreTabDistance) <$> domEvent Click dist
+            let eReach = (const ScoreTabReach) <$> domEvent Click reach
+            let eEffort = (const ScoreTabEffort) <$> domEvent Click effort
 
             overClass <- holdDyn "is-active" . leftmost $
                             [ "is-active" <$ eOver
                             , "" <$ ePoint
                             , "" <$ eSpeed
-                            , "" <$ eDist
+                            , "" <$ eReach
+                            , "" <$ eEffort
                             ]
 
             pointClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
                             , "is-active" <$ ePoint
                             , "" <$ eSpeed
-                            , "" <$ eDist
+                            , "" <$ eReach
+                            , "" <$ eEffort
                             ]
 
             speedClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
                             , "" <$ ePoint
                             , "is-active" <$ eSpeed
-                            , "" <$ eDist
+                            , "" <$ eReach
+                            , "" <$ eEffort
                             ]
 
-            distClass <- holdDyn "" . leftmost $
+            reachClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
                             , "" <$ ePoint
                             , "" <$ eSpeed
-                            , "is-active" <$ eDist
+                            , "is-active" <$ eReach
+                            , "" <$ eEffort
+                            ]
+
+            effortClass <- holdDyn "" . leftmost $
+                            [ "" <$ eOver
+                            , "" <$ ePoint
+                            , "" <$ eSpeed
+                            , "" <$ eReach
+                            , "is-active" <$ eEffort
                             ]
 
             return . leftmost $
                 [ eOver
                 , ePoint
                 , eSpeed
-                , eDist
+                , eReach
+                , eEffort
                 ]

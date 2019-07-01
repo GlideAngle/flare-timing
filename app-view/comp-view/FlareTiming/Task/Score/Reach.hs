@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Distance (tableScoreDistance) where
+module FlareTiming.Task.Score.Reach (tableScoreReach) where
 
 import Data.Maybe (fromMaybe)
 import Text.Printf (printf)
@@ -34,7 +34,7 @@ import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Task.Score.Show
 
-tableScoreDistance
+tableScoreReach
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
@@ -51,7 +51,7 @@ tableScoreDistance
     -> Dynamic t [(Pilot, Bk.Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
