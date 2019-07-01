@@ -152,7 +152,11 @@ xpRankScore =
                         { flown = taskKmToMetres . TaskDistance . MkQuantity $ dM
                         , extra = taskKmToMetres . TaskDistance . MkQuantity $ dE
                         }
-                , landedMade = taskKmToMetres . TaskDistance . MkQuantity $ dL
+                -- WARNING: Sometimes FS writes min double to last_distance.
+                -- last_distance="-1.79769313486232E+305"
+                , landedMade =
+                    taskKmToMetres . TaskDistance . MkQuantity
+                    $ Stats.max 0 dL
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
                 , timeElapsed =
