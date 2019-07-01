@@ -22,7 +22,6 @@ import WireTypes.Point
     , DifficultyPoints(..)
     , DistancePoints(..)
     , showPilotDistance, showPilotDistanceDiff
-    , showPilotAlt
     , showTaskLinearPoints
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
@@ -71,7 +70,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
 
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "11") $ text ""
+                elAttr "th" ("colspan" =: "9") $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Reach"
 
             el "tr" $ do
@@ -86,9 +85,6 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
                 elClass "th" "th-distance-extra" $ text "Extra ‡"
                 elClass "th" "th-norm th-best-distance" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
-
-                elClass "th" "th-alt-distance" $ text "Alt"
-                elClass "th" "th-landed-distance" $ text "Landed"
 
                 elClass "th" "th-reach-points" $ text "Reach ¶"
                 elClass "th" "th-norm th-reach-points" $ text "✓"
@@ -105,9 +101,6 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
                 elClass "th" "th-best-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"
-
-                elClass "th" "th-alt-distance-units" $ text "(m)"
-                elClass "th" "th-landed-distance-units" $ text "(km)"
 
                 elClass "th" "th-reach-alloc" . dynText $
                     maybe
@@ -214,7 +207,6 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
 
-    let alt = Bk.stoppedAlt <$> xB
     let extraReach = fmap extra . Bk.reach <$> xB
     let points = Bk.breakdown <$> xB
 
@@ -225,17 +217,12 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                            else ("", n))
 
     let awardFree = ffor extraReach (\pd ->
-            let c = ("td-best-distance", "td-landed-distance") in
+            let c = "td-best-distance" in
             maybe
                 (c, "")
                 (\(PilotDistance r) ->
                     if r >= free' then (c, "") else
-                       let c' =
-                               ( fst c <> " award-free"
-                               , snd c <> " award-free"
-                               )
-
-                       in (c', T.pack $ printf "%.1f" free'))
+                    (c <> " award-free", T.pack $ printf "%.1f" free'))
                 pd)
 
     (xF, xE
@@ -289,18 +276,13 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
 
-        elDynClass "td" (fst . fst <$> awardFree) $ text xF
+        elDynClass "td" (fst <$> awardFree) $ text xF
         elClass "td" "td-norm td-best-distance" $ text yF
         elClass "td" "td-norm td-diff" $ text yDiffF
 
-        elDynClass "td" (fst . fst <$> awardFree) $ text xE
+        elDynClass "td" (fst <$> awardFree) $ text xE
         elClass "td" "td-norm td-best-distance" $ text yE
         elClass "td" "td-norm td-diff" $ text yDiffE
-
-        elClass "td" "td-alt-distance" . dynText
-            $ maybe "" showPilotAlt <$> alt
-        elDynClass "td" (snd . fst <$> awardFree) . dynText
-            $ maybe "" (showPilotDistance 3) . Bk.landedMade <$> xB
 
         elClass "td" "td-reach-points" . dynText
             $ showMax Pt.reach showTaskLinearPoints pt points
@@ -343,7 +325,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "12"
+                        <> "colspan" =: "10"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
