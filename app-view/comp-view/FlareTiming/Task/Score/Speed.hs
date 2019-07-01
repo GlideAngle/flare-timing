@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Speed (tableScoreSpeed) where
+module FlareTiming.Task.Score.Speed (tableScoreTime) where
 
 import Prelude hiding (min)
 import Reflex.Dom
@@ -22,7 +22,7 @@ import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (timeZone, showT, showTDiff)
 import FlareTiming.Task.Score.Show
 
-tableScoreSpeed
+tableScoreTime
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
@@ -39,7 +39,7 @@ tableScoreSpeed
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sEx = do
+tableScoreTime utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs

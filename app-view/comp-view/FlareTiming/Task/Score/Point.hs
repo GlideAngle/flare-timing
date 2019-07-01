@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Point (tableScorePoint) where
+module FlareTiming.Task.Score.Point (tableScoreSplit) where
 
 import Prelude hiding (min)
 import Reflex.Dom
@@ -53,7 +53,7 @@ import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Task.Score.Show
 
-tableScorePoint
+tableScoreSplit
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
@@ -70,7 +70,7 @@ tableScorePoint
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
+tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
