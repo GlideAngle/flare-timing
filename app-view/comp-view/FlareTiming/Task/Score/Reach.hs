@@ -19,13 +19,11 @@ import WireTypes.Point
     , Points(..)
     , ReachToggle(..)
     , LinearPoints(..), showLinearPoints, showLinearPointsDiff
-    , DifficultyPoints(..), showDifficultyPoints, showDifficultyPointsDiff
-    , DistancePoints(..), showDistancePoints, showDistancePointsDiff
+    , DifficultyPoints(..)
+    , DistancePoints(..)
     , showPilotDistance, showPilotDistanceDiff
     , showPilotAlt
     , showTaskLinearPoints
-    , showTaskDifficultyPoints
-    , showTaskDistancePoints
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -74,7 +72,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "11") $ text ""
-                elAttr "th" ("colspan" =: "9" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Reach"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "#"
@@ -94,14 +92,6 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
 
                 elClass "th" "th-reach-points" $ text "Reach ¶"
                 elClass "th" "th-norm th-reach-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-
-                elClass "th" "th-effort-points" $ text "Effort §"
-                elClass "th" "th-norm th-effort-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-
-                elClass "th" "th-distance-points" $ text "Subtotal"
-                elClass "th" "th-norm th-distance-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
@@ -130,29 +120,6 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
                 thSpace
                 thSpace
 
-
-                elClass "th" "th-effort-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskDifficultyPoints (Just x) x)
-                        . Pt.effort
-                        )
-                    <$> pt
-
-                thSpace
-                thSpace
-
-
-                elClass "th" "th-distance-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskDistancePoints (Just x) x)
-                        . Pt.distance
-                        )
-                    <$> pt
-
-                thSpace
-                thSpace
 
         _ <- el "tbody" $ do
             _ <-
@@ -274,20 +241,16 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
     (xF, xE
         , yF, yDiffF
         , yE, yDiffE
-        , rPts, rPtsDiff
-        , ePts, ePtsDiff
-        , yPts, yPtsDiff) <- sample . current
+        , rPts, rPtsDiff) <- sample . current
                 $ ffor3 pilot sEx x (\pilot' sEx' (_, Bk.Breakdown
                                                         { reach
                                                         , breakdown =
                                                             Points
                                                                 { reach = rPts
-                                                                , effort = ePts
-                                                                , distance = dPts
                                                                 }
                                                         }
                                                   ) ->
-                    fromMaybe ("", "", "", "", "", "", "", "", "", "", "", "") $ do
+                    fromMaybe ("", "", "", "", "", "", "", "") $ do
                         Norm.NormBreakdown
                             { breakdown =
                                 Points
@@ -318,10 +281,6 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                             , showPilotDistanceDiff 3 rEN rE
                             , quieten $ showLinearPoints rPtsN
                             , quieten $ showLinearPointsDiff rPtsN rPts
-                            , quieten $ showDifficultyPoints ePtsN
-                            , quieten $ showDifficultyPointsDiff ePtsN ePts
-                            , showDistancePoints dPtsN
-                            , showDistancePointsDiff dPtsN dPts
                             ))
 
     elDynClass "tr" (fst <$> classPilot) $ do
@@ -347,16 +306,6 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
             $ showMax Pt.reach showTaskLinearPoints pt points
         elClass "td" "td-norm td-reach-points" . text $ rPts
         elClass "td" "td-norm td-reach-points" . text $ rPtsDiff
-
-        elClass "td" "td-effort-points" . dynText
-            $ showMax Pt.effort showTaskDifficultyPoints pt points
-        elClass "td" "td-norm td-effort-points" . text $ ePts
-        elClass "td" "td-norm td-effort-points" . text $ ePtsDiff
-
-        elClass "td" "td-distance-points" . dynText
-            $ showMax Pt.distance showTaskDistancePoints pt points
-        elClass "td" "td-norm td-distance-points" . text $ yPts
-        elClass "td" "td-norm td-distance-points" . text $ yPtsDiff
 
 dnfRows
     :: MonadWidget t m
@@ -394,7 +343,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "8"
+                        <> "colspan" =: "12"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
