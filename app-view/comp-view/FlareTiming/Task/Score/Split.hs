@@ -130,8 +130,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance-points") $ text ""
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Distance"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points") $ text "Time"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-leading-points") $ text "Lead"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points") $ text "Arrival"
@@ -141,10 +140,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "#"
                 elClass "th" "th-pilot" $ text "Pilot"
-                elClass "th" "th-reach-points" $ text "Reach ‡"
-                elClass "th" "th-effort-points" $ text "Effort §"
 
-                elClass "th" "th-distance-points" $ text "Subtotal"
+                elClass "th" "th-distance-points" $ text ""
                 elClass "th" "th-norm th-distance-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
@@ -360,13 +357,11 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "24")
+        let tdFoot = elAttr "td" ("colspan" =: "21")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
-            foot "‡ Points award for reach are also called linear distance points."
-            foot "§ Points award for effort are also called distance difficulty points."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
@@ -478,11 +473,6 @@ pointRow cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-reach-points" . dynText
-            $ showMax Pt.reach showTaskLinearPoints pt points
-        elClass "td" "td-effort-points" . dynText
-            $ showMax Pt.effort showTaskDifficultyPoints pt points
-
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
         elClass "td" "td-norm td-distance-points" . text $ yDistance
@@ -545,7 +535,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "14"
+                        <> "colspan" =: "12"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
