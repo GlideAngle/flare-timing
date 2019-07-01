@@ -130,7 +130,10 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Distance"
+
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown")
+                    $ text "Distance"
+
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points") $ text "Time"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-leading-points") $ text "Lead"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points") $ text "Arrival"
@@ -362,7 +365,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
 
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
-            foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
             dyn_ $ ffor hgOrPg (\case
