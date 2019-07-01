@@ -120,7 +120,7 @@ rowEffort mapN p te = do
             $ ffor2 p te (\pilot TrackEffort{effort, frac} ->
                 fromMaybe ("", "", "", "") $ do
                     Norm.NormBreakdown
-                        { reachMade = effortN
+                        { landedMade = effortN
                         , fractions =
                             Frac.Fractions
                                 { reach = rFracN

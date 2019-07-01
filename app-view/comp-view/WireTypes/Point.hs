@@ -431,7 +431,7 @@ data NormBreakdown =
         , breakdown :: Points
         , fractions :: Fractions
         , reach :: ReachToggle PilotDistance
-        , reachMade :: PilotDistance
+        , landedMade :: PilotDistance
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe PilotTime

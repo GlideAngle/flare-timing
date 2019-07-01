@@ -445,7 +445,7 @@ tablePilotReach free reach bonusReach sEx = do
                     let esN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{extra = PilotDistance d}}) <- sEx]
                     let esNO = fOver <$> esN
 
-                    let bsN = [d | (_, Norm.NormBreakdown{reachMade = PilotDistance d}) <- sEx]
+                    let bsN = [d | (_, Norm.NormBreakdown{landedMade = PilotDistance d}) <- sEx]
                     let bsNO = fOver <$> bsN
 
                     let ds = zipWith (-) bs rs
@@ -700,7 +700,7 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                                     { extra = extraN
                                     , flown = reachN
                                     }
-                            , reachMade = landedMadeN
+                            , landedMade = landedMadeN
                             }
                         , Just br) ->
                         let reachE@(PilotDistance dE) = reach br
