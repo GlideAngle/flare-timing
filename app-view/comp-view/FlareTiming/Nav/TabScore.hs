@@ -6,9 +6,9 @@ import Reflex.Dom
 data ScoreTab
     = ScoreTabOver
     | ScoreTabSplit
-    | ScoreTabTime
     | ScoreTabReach
     | ScoreTabEffort
+    | ScoreTabTime
 
 tabsScore
     :: MonadWidget t m
@@ -26,10 +26,6 @@ tabsScore =
                             elClass "span" "legend-arrival" $ text "▩"
                             text "Split"
 
-            (time, _) <- elDynClass' "li" timeClass . el "a" $ do
-                            elClass "span" "legend-time" $ text "▩"
-                            text "Time"
-
             (reach, _) <- elDynClass' "li" reachClass . el "a" $ do
                             elClass "span" "legend-reach" $ text "▩"
                             text "Reach"
@@ -38,56 +34,61 @@ tabsScore =
                             elClass "span" "legend-effort" $ text "▩"
                             text "Effort"
 
+            (time, _) <- elDynClass' "li" timeClass . el "a" $ do
+                            elClass "span" "legend-time" $ text "▩"
+                            elClass "span" "legend-arrival" $ text "▩"
+                            text "Time & Arrival"
+
             let eOver = (const ScoreTabOver) <$> domEvent Click over
             let eSplit = (const ScoreTabSplit) <$> domEvent Click split
-            let eTime = (const ScoreTabTime) <$> domEvent Click time
             let eReach = (const ScoreTabReach) <$> domEvent Click reach
             let eEffort = (const ScoreTabEffort) <$> domEvent Click effort
+            let eTime = (const ScoreTabTime) <$> domEvent Click time
 
             overClass <- holdDyn "is-active" . leftmost $
                             [ "is-active" <$ eOver
                             , "" <$ eSplit
-                            , "" <$ eTime
                             , "" <$ eReach
                             , "" <$ eEffort
+                            , "" <$ eTime
                             ]
 
             splitClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
                             , "is-active" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eEffort
                             , "" <$ eTime
-                            , "" <$ eReach
-                            , "" <$ eEffort
-                            ]
-
-            timeClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
-                            , "" <$ eSplit
-                            , "is-active" <$ eTime
-                            , "" <$ eReach
-                            , "" <$ eEffort
                             ]
 
             reachClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
                             , "" <$ eSplit
-                            , "" <$ eTime
                             , "is-active" <$ eReach
                             , "" <$ eEffort
+                            , "" <$ eTime
                             ]
 
             effortClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
                             , "" <$ eSplit
-                            , "" <$ eTime
                             , "" <$ eReach
                             , "is-active" <$ eEffort
+                            , "" <$ eTime
+                            ]
+
+            timeClass <- holdDyn "" . leftmost $
+                            [ "" <$ eOver
+                            , "" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eEffort
+                            , "is-active" <$ eTime
                             ]
 
             return . leftmost $
                 [ eOver
                 , eSplit
-                , eTime
                 , eReach
                 , eEffort
+                , eTime
                 ]
