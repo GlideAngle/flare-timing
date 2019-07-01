@@ -19,7 +19,7 @@ import Text.XML.HXT.Arrow.Pickle
     , xpWrap, xpElem, xpAttr
     , xpFilterAttr, xpFilterCont
     , xpInt, xpPrim, xpDefault
-    , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp13Tuple
+    , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp14Tuple
     , xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -106,20 +106,25 @@ xpRankScore =
     $ xpFilterAttr
         ( hasName "rank"
         <+> hasName "points"
+
         <+> hasName "linear_distance_points"
         <+> hasName "difficulty_distance_points"
+
         <+> hasName "distance_points"
         <+> hasName "leading_points"
         <+> hasName "arrival_points"
         <+> hasName "time_points"
+
+        <+> hasName "real_distance"
+        <+> hasName "distance"
+        <+> hasName "last_distance"
+
         <+> hasName "started_ss"
         <+> hasName "finished_ss"
         <+> hasName "ss_time"
-        <+> hasName "real_distance"
-        <+> hasName "distance"
         )
     $ xpWrap
-        ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, ss, es, ssE) ->
+        ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, dL, ss, es, ssE) ->
             NormBreakdown
                 { place = TaskPlacing . fromIntegral $ r
                 , total = TaskPoints . toRational $ p
@@ -144,10 +149,10 @@ xpRankScore =
 
                 , reach =
                     ReachToggle
-                        { flown = taskKmToMetres . TaskDistance . MkQuantity $ dE
+                        { flown = taskKmToMetres . TaskDistance . MkQuantity $ dM
                         , extra = taskKmToMetres . TaskDistance . MkQuantity $ dE
                         }
-                , reachMade = taskKmToMetres . TaskDistance . MkQuantity $ dM
+                , landedMade = taskKmToMetres . TaskDistance . MkQuantity $ dL
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
                 , timeElapsed =
@@ -170,9 +175,10 @@ xpRankScore =
                         }
                 , reach =
                     ReachToggle
-                        { extra = TaskDistance (MkQuantity dE)
+                        { flown = TaskDistance (MkQuantity dM)
+                        , extra = TaskDistance (MkQuantity dE)
                         }
-                , reachMade = TaskDistance (MkQuantity dM)
+                , landedMade = TaskDistance (MkQuantity dL)
                 , ss
                 , es
                 , timeElapsed
@@ -187,22 +193,28 @@ xpRankScore =
                     , fromRational t
                     , dE
                     , dM
+                    , dL
                     , show <$> ss
                     , show <$> es
                     , show <$> timeElapsed
                     )
         )
-    $ xp13Tuple
+    $ xp14Tuple
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
+
         (xpDefault (0 :: Double) $ xpAttr "linear_distance_points" xpPrim)
         (xpDefault (0 :: Double) $ xpAttr "difficulty_distance_points" xpPrim)
+
         (xpAttr "distance_points" xpPrim)
         (xpAttr "leading_points" xpPrim)
         (xpAttr "arrival_points" xpPrim)
         (xpAttr "time_points" xpPrim)
+
         (xpAttr "real_distance" xpPrim)
         (xpAttr "distance" xpPrim)
+        (xpDefault (0 :: Double) $ xpAttr "last_distance" xpPrim)
+
         (xpOption $ xpTextAttr "started_ss")
         (xpOption $ xpTextAttr "finished_ss")
         (xpOption $ xpTextAttr "ss_time")
@@ -468,7 +480,7 @@ getScore pilots =
         in
             [
                 (,) p $ do
-                    n@NormBreakdown{reachMade = dm, reach = r, fractions = fracs} <- x
+                    n@NormBreakdown{reach = r@ReachToggle{flown = dm}, fractions = fracs} <- x
                     let dKm = taskMetresToKm dm
                     AwardedDistance{awardedFrac = dFrac} <- asAwardReach t (Just dKm)
                     return
@@ -643,7 +655,7 @@ parseNormScores
             [
                 unzip
                 [ (extra, flown)
-                  | NormBreakdown{reach = ReachToggle{extra, flown}} <- ys
+                | NormBreakdown{reach = ReachToggle{extra, flown}} <- ys
                 ]
             | ys <- (fmap . fmap) snd yss
             ]
@@ -654,7 +666,7 @@ parseNormScores
                     (ysMean, ysVar) = Stats.meanVariance ys
                 in
                     ReachStats
-                        { max = FlownMax . MkQuantity $ maximum ys
+                        { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
                         , mean = FlownMean $ MkQuantity ysMean
                         , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
                         }
@@ -667,7 +679,7 @@ parseNormScores
                     (ysMean, ysVar) = Stats.meanVariance ys
                 in
                     ReachStats
-                        { max = FlownMax . MkQuantity $ maximum ys
+                        { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
                         , mean = FlownMean $ MkQuantity ysMean
                         , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
                         }

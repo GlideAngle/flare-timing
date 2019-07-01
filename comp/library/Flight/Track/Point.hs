@@ -80,7 +80,7 @@ data NormBreakdown =
         , breakdown :: Points
         , fractions :: Fractions
         , reach :: ReachToggle Land
-        , reachMade :: Land
+        , landedMade :: Land
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
@@ -181,7 +181,7 @@ cmpNorm a b =
         ("time", "arrival") -> GT
         ("time", _) -> LT
 
-        ("reach", "reachMade") -> LT
+        ("reach", "landedMade") -> LT
         ("reach", "distanceFrac") -> LT
         ("reach", "ss") -> LT
         ("reach", "es") -> LT
@@ -193,16 +193,16 @@ cmpNorm a b =
         ("reach", "arrivalFrac") -> LT
         ("reach", _) -> GT
 
-        ("reachMade", "distanceFrac") -> LT
-        ("reachMade", "ss") -> LT
-        ("reachMade", "es") -> LT
-        ("reachMade", "timeElapsed") -> LT
-        ("reachMade", "timeFrac") -> LT
-        ("reachMade", "leadingArea") -> LT
-        ("reachMade", "leadingCoef") -> LT
-        ("reachMade", "leadingFrac") -> LT
-        ("reachMade", "arrivalFrac") -> LT
-        ("reachMade", _) -> GT
+        ("landedMade", "distanceFrac") -> LT
+        ("landedMade", "ss") -> LT
+        ("landedMade", "es") -> LT
+        ("landedMade", "timeElapsed") -> LT
+        ("landedMade", "timeFrac") -> LT
+        ("landedMade", "leadingArea") -> LT
+        ("landedMade", "leadingCoef") -> LT
+        ("landedMade", "leadingFrac") -> LT
+        ("landedMade", "arrivalFrac") -> LT
+        ("landedMade", _) -> GT
 
         ("distanceFrac", "ss") -> LT
         ("distanceFrac", "es") -> LT
