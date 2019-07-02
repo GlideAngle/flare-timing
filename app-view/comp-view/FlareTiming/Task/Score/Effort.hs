@@ -21,7 +21,7 @@ import WireTypes.Point
     , LinearPoints(..)
     , DifficultyPoints(..), showDifficultyPoints, showDifficultyPointsDiff
     , DistancePoints(..)
-    , showPilotDistance
+    , showPilotDistance, showPilotDistanceDiff
     , showPilotAlt
     , showTaskDifficultyPoints
     )
@@ -71,7 +71,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "5") $ text ""
+                elAttr "th" ("colspan" =: "7") $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort"
 
             el "tr" $ do
@@ -80,7 +80,10 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                 elClass "th" "th-min-distance" $ text "Min"
 
                 elClass "th" "th-alt-distance" $ text "Alt"
+
                 elClass "th" "th-landed-distance" $ text "Landed"
+                elClass "th" "th-norm th-effort-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-effort-points" $ text "Effort †"
                 elClass "th" "th-norm th-effort-points" $ text "✓"
@@ -91,6 +94,9 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                 elClass "th" "th-min-distance-units" $ text "(km)"
 
                 elClass "th" "th-alt-distance-units" $ text "(m)"
+
+                elClass "th" "th-landed-distance-units" $ text "(km)"
+                elClass "th" "th-landed-distance-units" $ text "(km)"
                 elClass "th" "th-landed-distance-units" $ text "(km)"
 
                 elClass "th" "th-effort-alloc" . dynText $
@@ -103,7 +109,6 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
                 thSpace
                 thSpace
-
 
         _ <- el "tbody" $ do
             _ <-
@@ -214,9 +219,13 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                     (c <> " award-free", T.pack $ printf "%.1f" free'))
                 pd)
 
-    (ePts, ePtsDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Bk.Breakdown{breakdown = Points{effort = ePts}}) ->
-                    fromMaybe ("", "") $ do
+    (landed, landedN, landedDiff, ePts, ePtsDiff) <- sample . current
+                $ ffor3 pilot sEx x (\pilot' sEx' (_, Bk.Breakdown
+                                                          { breakdown =
+                                                              Points{effort = ePts}
+                                                          , landedMade
+                                                          }) ->
+                    fromMaybe ("", "", "", "", "") $ do
                         Norm.NormBreakdown
                             { breakdown =
                                 Points
@@ -224,6 +233,7 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                                     , effort = ePtsN
                                     , distance = dPtsN
                                     }
+                            , landedMade = landedN
                             } <- Map.lookup pilot' sEx'
 
                         let quieten s =
@@ -233,7 +243,10 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
                                     _ -> s
 
                         return
-                            ( quieten $ showDifficultyPoints ePtsN
+                            ( maybe "" (showPilotDistance 3) landedMade
+                            , showPilotDistance 3 landedN
+                            , maybe "" (showPilotDistanceDiff 3 landedN) landedMade
+                            , quieten $ showDifficultyPoints ePtsN
                             , quieten $ showDifficultyPointsDiff ePtsN ePts
                             ))
 
@@ -245,8 +258,10 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
 
         elClass "td" "td-alt-distance" . dynText
             $ maybe "" showPilotAlt <$> alt
-        elDynClass "td" (fst <$> awardFree) . dynText
-            $ maybe "" (showPilotDistance 3) . Bk.landedMade <$> xB
+
+        elDynClass "td" (fst <$> awardFree) . text $ landed
+        elClass "td" "td-norm td-landed-distance" . text $ landedN
+        elClass "td" "td-norm td-landed-distance" . text $ landedDiff
 
         elClass "td" "td-effort-points" . dynText
             $ showMax Pt.effort showTaskDifficultyPoints pt points
