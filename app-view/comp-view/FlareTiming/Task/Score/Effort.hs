@@ -82,7 +82,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                 elClass "th" "th-alt-distance" $ text "Alt"
                 elClass "th" "th-landed-distance" $ text "Landed"
 
-                elClass "th" "th-effort-points" $ text "Effort §"
+                elClass "th" "th-effort-points" $ text "Effort †"
                 elClass "th" "th-norm th-effort-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
@@ -125,10 +125,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
-            foot "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
-            foot "‡ With altitude above goal converted to extra reach via glide."
-            foot "¶ Points award for reach are also called linear distance points."
-            foot "§ Points award for effort are also called distance difficulty points."
+            foot "† Points award for effort are also called distance difficulty points."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
