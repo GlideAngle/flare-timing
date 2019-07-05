@@ -118,7 +118,7 @@ difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
             ]
 
         es :: [Maybe Difficulty] =
-            [ (\bd -> Gap.gradeDifficulty md bd ps ds) <$> b
+            [ (\bd -> Gap.gradeDifficulty bd ps ds) <$> b
             | b <- bests
             | ps <- pss
             | ds <- dss
@@ -132,7 +132,7 @@ difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
                 dws' <- dws
                 rs' <- rs
                 mergeChunks los is' js' ks' dws' rs' <$> fs
-            | los <- [Gap.landouts md ps ds | ps <- pss| ds <- dss]
+            | los <- [Gap.landouts ps ds | ps <- pss| ds <- dss]
             | is <- (fmap . fmap) startChunk es
             | js <- (fmap . fmap) endChunk es
             | ks <- (fmap . fmap) endAhead es

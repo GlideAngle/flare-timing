@@ -15,7 +15,6 @@ import GHC.Generics (Generic)
 
 import Flight.Units ()
 import Flight.Gap.Distance.Pilot (PilotDistance(..))
-import Flight.Gap.Distance.Min (MinimumDistance(..))
 import Flight.Gap.Distance.Stop (FlownMax(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 import Flight.Gap.Fraction.Difficulty (DifficultyFraction(..))
@@ -66,18 +65,17 @@ data Difficulty =
 -- chunk of landing and then so many chunks further along the course. How far
 -- to look ahead depends on the task and the number of landouts.
 gradeDifficulty
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> FlownMax (Quantity Double [u| km |])
+    :: FlownMax (Quantity Double [u| km |])
     -> [Pilot]
     -> [PilotDistance (Quantity Double [u| km |])]
     -> Difficulty
-gradeDifficulty md best@(FlownMax bd) pilots landings =
+gradeDifficulty best@(FlownMax bd) pilots landings =
     Difficulty
         { sumOf = SumOfDifficulty sumOfDiff
         , startChunk = zip ys nubStarts
         , endChunk = zip ys nubEnds
         , endAhead = zip ys nubEndsAhead
-        , downward = collectDowns md pilots xs downList
+        , downward = collectDowns pilots xs downList
         , relative =
             catMaybes $
             (\y -> do
@@ -101,8 +99,8 @@ gradeDifficulty md best@(FlownMax bd) pilots landings =
 
         ahead@(Lookahead n) = lookahead best xs
         gd = PilotDistance bd
-        gIx = toIxChunk md gd
-        ix0 = toIxChunk md (PilotDistance [u| 0 km |])
+        gIx = toIxChunk gd
+        ix0 = toIxChunk (PilotDistance [u| 0 km |])
 
         ixs = [ix0 .. gIx]
 
@@ -113,26 +111,20 @@ gradeDifficulty md best@(FlownMax bd) pilots landings =
 
         -- The indices of the chunks in which pilots landed out. More than one
         -- pilot can landout in the same chunk.
-        -- A: [218,279,354,424,426,472,581,605,663,704,712,714,771,780,780,863,905,932,938,991,1248,1283,1325,1429]
-        zs = chunkLandouts md xs
+        zs = chunkLandouts xs
 
-        -- A: [218,279,354,424,426,472,581,605,663,704,712,714,771,780,863,905,932,938,991,1248,1283,1325,1429]
         ys :: [IxChunk]
         ys = nub zs
 
-        -- A: [[u| 26.700000000000003 km |],[u| 32.8 km |],[u| 40.300000000000004 km |],...,[u| 133.20000000000002 km |],[u| 137.4 km |],[u| 147.8 km |]]
-        starts = toChunk md . (\(IxChunk x) -> IxChunk $ x - 1) <$> ys
+        starts = toChunk <$> ys
         nubStarts = nub starts
 
-        -- A: [[u| 26.8 km |],[u| 32.900000000000006 km |],[u| 40.4 km |],...,[u| 133.3 km |],[u| 137.5 km |],[u| 147.9 km |]]
-        ends = toChunk md <$> ys
+        ends = toChunk . (\(IxChunk x) -> IxChunk $ x + 1) <$> ys
         nubEnds = nub ends
 
-        -- A: [[u| 46.800000000000004 km |],[u| 52.900000000000006 km |],[u| 60.400000000000006 km |],...,[u| 153.3 km |],[u| 157.5 km |],[u| 167.9 km |]]
-        endsAhead = toChunk md . (\(IxChunk x) -> IxChunk $ x + n) <$> ys
+        endsAhead = toChunk . (\(IxChunk x) -> IxChunk $ x + n + 1) <$> ys
         nubEndsAhead = nub endsAhead
 
-        -- A: [(218,1),(279,1),(354,1),...,(1283,1),(1325,1),(1429,1)]
         ns :: [(IxChunk, Int)]
         ns = sumLandouts zs
 
@@ -140,35 +132,27 @@ gradeDifficulty md best@(FlownMax bd) pilots landings =
         vMap = Map.fromList ns
 
         -- Sum the number of landouts in the next so many chunks to lookahead.
-        -- A: [(218,3),(279,5),(354,4),...,(1283,3),(1325,2),(1429,1)]
         downList = (\y -> (y, sumMap ahead vMap y)) <$> ys
         downMap = Map.fromList downList
 
-        -- A: [(-50,0),(-49,0),(-48,0),,...,(1549,0),(1550,0),(1551,0)]
         listOfAll = (\j -> (j, sumMap ahead vMap j)) <$> ixs
 
-        -- A: [(0,0),(1,0),(2,0),...,(1549,4800),(1550,4800),(1551,4800)]
         listOfDiffs = scanl1 (\(_, b) (c, d) -> (c, b + d)) listOfAll
 
-        -- A: [(0,0),(1,0),(2,0),...,(1549,0),(1550,0),(1551,0)]
         lookaheadMap :: Map.Map IxChunk Integer
         lookaheadMap = toInteger <$> Map.fromList listOfAll
 
-        -- A: 4800
         sumOfDiff :: Integer
         sumOfDiff = toInteger . sum . take 1 . reverse . sort $ snd <$> listOfDiffs
 
-        -- A: [(0,0.0),(1,0.0),(2,0.0),...,(1549,0.0),(1550,0.0),(1551,0.0)]
         relativeDiffMap :: Map.Map IxChunk Double
         relativeDiffMap = (\d -> fromRational $ d % (2 * sumOfDiff)) <$> lookaheadMap
 
         relList = sortOn fst $ Map.toList relativeDiffMap
         sumRels = scanl1 (\(_, b) (c, d) -> (c, b + d)) relList
 
-        -- A: [(218,4.19791666666667e-2),(279,6.666666666666679e-2),(354,9.791666666666647e-2),...,(1283,0.4804166666666674),(1325,0.4891666666666664),(1429,0.5000000000000014)]
         fracMap = Map.intersection (Map.fromList sumRels) downMap
 
-        -- A: [(218,3.125e-4),(279,5.208333333333333e-4),(354,4.166666666666667e-4),...,(1283,3.125e-4),(1325,2.0833333333333335e-4),(1429,1.0416666666666667e-4)]
         relMap = Map.intersection (Map.fromList relList) downMap
 
 sumMap :: Lookahead -> Map.Map IxChunk Int -> IxChunk -> Int

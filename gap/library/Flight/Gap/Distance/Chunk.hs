@@ -23,7 +23,7 @@ import Data.Maybe (catMaybes)
 import Data.List (sort, group)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure ((*:), (+:), (-:), u, convert)
+import Data.UnitsOfMeasure ((*:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import qualified Data.Map as Map
@@ -34,7 +34,6 @@ import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 import Flight.Gap.Fraction.Difficulty (DifficultyFraction(..))
 import Flight.Gap.Distance.Pilot (PilotDistance(..))
-import Flight.Gap.Distance.Min (MinimumDistance(..))
 import Flight.Gap.Distance.Stop (FlownMax(..))
 import Flight.Gap.Pilots (Pilot)
 
@@ -197,77 +196,65 @@ lookahead (FlownMax (MkQuantity best)) xs =
 -- up for the competition. Pilots that fly less than minimum distance get
 -- awarded that distance.
 chunks
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> FlownMax (Quantity Double [u| km |])
+    :: FlownMax (Quantity Double [u| km |])
     -> Chunks (Quantity Double [u| km |])
-chunks (MinimumDistance md) (FlownMax best) =
-    Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN]
+chunks (FlownMax best) =
+    Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN + 1]
     where
-        MkQuantity x0 = md
-        MkQuantity x1 = md +: convert [u| 100m |]
+        MkQuantity x0 = [u| 0 km |] :: Quantity Double [u| km |]
+        MkQuantity x1 = convert [u| 100m |] :: Quantity Double [u| km |]
         MkQuantity xN = best
 
--- | Converts from a chunk, a number of 100m chunks offset from the minium
--- distance set for the competition to the end of the chunks range.
-toChunk
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> IxChunk
-    -> Chunk (Quantity Double [u| km |])
-toChunk (MinimumDistance md) (IxChunk ix) =
-    Chunk $ d +: md
+-- | Converts from a chunk index, a number of 100m chunks offset to the start of
+-- the chunks range.
+toChunk :: IxChunk -> Chunk (Quantity Double [u| km |])
+toChunk (IxChunk ix) =
+    Chunk d
     where
         d :: Quantity Double [u| km |]
         d = convert $ fromIntegral ix *: [u| 1 hm |]
 
--- | Converts from pilot distance to distance in units of the number of 100m
--- chunks offset from the minium distance set for the competition.
-toIxChunk
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> PilotDistance (Quantity Double [u| km |])
-    -> IxChunk
-toIxChunk (MinimumDistance md) (PilotDistance d) =
-    IxChunk $ ceiling x
+-- | Converts from pilot distance a chunk index.
+toIxChunk :: PilotDistance (Quantity Double [u| km |]) -> IxChunk
+toIxChunk (PilotDistance d) =
+    IxChunk $ floor x
     where
-        MkQuantity x = convert (d -: md) :: Quantity _ [u| hm |]
+        MkQuantity x = convert d :: Quantity _ [u| hm |]
 
 -- | In each 100m chunk where pilots landed out, how many pilots landed in that
 -- chunk.
 landouts
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> [Pilot]
+    :: [Pilot]
     -> [PilotDistance (Quantity Double [u| km |])]
     -> [ChunkLandings]
-landouts md ps xs =
-    collectDowns md ps xs $ sumLandouts (chunkLandouts md xs)
+landouts ps xs =
+    collectDowns ps xs $ sumLandouts (chunkLandouts xs)
 
 toIxDowns
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> [Pilot]
+    :: [Pilot]
     -> [PilotDistance (Quantity Double [u| km |])]
     -> Map.Map IxChunk [(Pilot, PilotDistance (Quantity Double [u| km |]))]
-toIxDowns md ps xs =
+toIxDowns ps xs =
     Map.fromListWith (++)
-    $ zipWith (\p x -> (toIxChunk md x, [(p, x)])) ps xs
+    $ zipWith (\p x -> (toIxChunk x, [(p, x)])) ps xs
 
 collectDowns
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> [Pilot]
+    :: [Pilot]
     -> [PilotDistance (Quantity Double [u| km |])]
     -> [(IxChunk, Int)]
     -> [ChunkLandings]
-collectDowns md ps xs =
+collectDowns ps xs =
     fmap (\(ix, n) ->
         let (ps', ds) = unzip $ Map.findWithDefault [] ix dss
         in ChunkLandings ix n ds ps')
     where
-        dss = toIxDowns md ps xs
+        dss = toIxDowns ps xs
 
 sumLandouts:: [IxChunk] -> [(IxChunk, Int)]
 sumLandouts = fmap (\gXs@(gX : _) -> (gX, length gXs)) . group
 
 chunkLandouts
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> [PilotDistance (Quantity Double [u| km |])]
+    :: [PilotDistance (Quantity Double [u| km |])]
     -> [IxChunk]
-chunkLandouts md xs =
-    toIxChunk md <$> sort xs
+chunkLandouts xs =
+    toIxChunk <$> sort xs

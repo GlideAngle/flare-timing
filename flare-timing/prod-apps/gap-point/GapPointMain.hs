@@ -867,11 +867,11 @@ madeDifficultyDf
     -> Map IxChunk DifficultyFraction
     -> TrackDistance Land
     -> DifficultyFraction
-madeDifficultyDf md mapIxToFrac td =
+madeDifficultyDf _ mapIxToFrac td =
     fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
     where
         pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
-        ix = toIxChunk md pd
+        ix = toIxChunk pd
 
 madeDifficultyDfNoTrack
     :: MinimumDistance (Quantity Double [u| km |])
@@ -879,7 +879,7 @@ madeDifficultyDfNoTrack
     -> Map IxChunk DifficultyFraction
     -> Maybe AwardedDistance
     -> DifficultyFraction
-madeDifficultyDfNoTrack md@(MinimumDistance dMin) td mapIxToFrac dAward =
+madeDifficultyDfNoTrack (MinimumDistance dMin) td mapIxToFrac dAward =
     fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
     where
         pd :: Quantity Double [u| km |]
@@ -889,7 +889,7 @@ madeDifficultyDfNoTrack md@(MinimumDistance dMin) td mapIxToFrac dAward =
                 (Nothing, _) -> dMin
                 (Just td', Just dAward') -> awardByFrac (Clamp True) td' dAward'
 
-        ix = toIxChunk md (PilotDistance pd)
+        ix = toIxChunk (PilotDistance pd)
 
 madeAwarded
     :: MinimumDistance (Quantity Double [u| km |])
