@@ -73,7 +73,10 @@ instance (FromJSON (Chunk a)) => FromJSON (Chunks a)
 
 -- | A sequence of chunk ends, distances on course in km.
 newtype Chunks a = Chunks [Chunk a]
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Generic)
+
+instance Show a => Show (Chunks a) where
+    show (Chunks xs) = show xs
 
 -- | How far to look ahead, in units of 100m chunks.
 newtype Lookahead = Lookahead Int
@@ -181,6 +184,15 @@ overlay
 
 -- | How many 100 m chunks to look ahead when working out the distance
 -- difficulty.
+--
+-- >>> lookahead (FlownMax [u| 0 km |]) []
+-- Lookahead 30
+--
+-- >>> lookahead (FlownMax [u| 100 km |]) (take 100 $ PilotDistance . MkQuantity <$> [0 .. ])
+-- Lookahead 30
+--
+-- >>> lookahead (FlownMax [u| 100 km |]) (take 10 $ PilotDistance . MkQuantity <$> [0 .. ])
+-- Lookahead 300
 lookahead
     :: FlownMax (Quantity Double [u| km |])
     -> [PilotDistance (Quantity Double [u| km |])]
@@ -195,11 +207,20 @@ lookahead (FlownMax (MkQuantity best)) xs =
 -- | A list of 100m chunks of distance starting from the minimum distance set
 -- up for the competition. Pilots that fly less than minimum distance get
 -- awarded that distance.
+--
+-- >>> chunks (FlownMax [u| 0 km |])
+-- [[u| 0.0 km |]]
+--
+-- >>> chunks (FlownMax [u| 0.1 km |])
+-- [[u| 0.0 km |],[u| 0.1 km |]]
+--
+-- >>> chunks (FlownMax [u| 0.3 km |])
+-- [[u| 0.0 km |],[u| 0.1 km |],[u| 0.2 km |],[u| 0.30000000000000004 km |]]
 chunks
     :: FlownMax (Quantity Double [u| km |])
     -> Chunks (Quantity Double [u| km |])
 chunks (FlownMax best) =
-    Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN + 1]
+    Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN]
     where
         MkQuantity x0 = [u| 0 km |] :: Quantity Double [u| km |]
         MkQuantity x1 = convert [u| 100m |] :: Quantity Double [u| km |]
@@ -207,6 +228,8 @@ chunks (FlownMax best) =
 
 -- | Converts from a chunk index, a number of 100m chunks offset to the start of
 -- the chunks range.
+--
+-- prop> \x -> toChunk (IxChunk x) >= Chunk [u| 0 km |]
 --
 -- >>> toChunk (IxChunk 0)
 -- [u| 0.0 km |]
@@ -221,12 +244,31 @@ toChunk (IxChunk ix) =
     Chunk d
     where
         d :: Quantity Double [u| km |]
-        d = convert $ fromIntegral ix *: [u| 1 hm |]
+        d = convert $ fromIntegral (max 0 ix) *: [u| 1 hm |]
 
 -- | Converts from pilot distance a chunk index.
+--
+-- prop> \x -> toIxChunk (PilotDistance $ MkQuantity x) >= IxChunk 0
+--
+-- prop> \x -> let Chunk y = toChunk (IxChunk x) in toIxChunk (PilotDistance y) == IxChunk (max 0 x)
+--
+-- >>> toIxChunk $ PilotDistance [u| 0 km |]
+-- 0
+--
+-- >>> toIxChunk $ PilotDistance [u| 0.1 km |]
+-- 1
+--
+-- >>> toIxChunk $ PilotDistance [u| -0.1 km |]
+-- 0
+--
+-- >>> toIxChunk $ PilotDistance [u| 1 km |]
+-- 10
+--
+-- >>> toIxChunk $ PilotDistance [u| 1.4 km |]
+-- 14
 toIxChunk :: PilotDistance (Quantity Double [u| km |]) -> IxChunk
 toIxChunk (PilotDistance d) =
-    IxChunk $ floor x
+    IxChunk . max 0 $ floor x
     where
         MkQuantity x = convert d :: Quantity _ [u| hm |]
 
