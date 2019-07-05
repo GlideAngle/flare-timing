@@ -157,49 +157,49 @@ bestTime' xs =
 -- 1.000
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t2))
--- 0.948
+-- 0.961
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t3))
--- 0.927
+-- 0.945
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t4))
--- 0.641
+-- 0.728
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t5))
--- 0.550
+-- 0.659
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t6))
--- 0.520
+-- 0.636
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t7))
--- 0.506
+-- 0.626
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t8))
--- 0.381
+-- 0.531
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t9))
--- 0.380
+-- 0.531
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t10))
--- 0.297
+-- 0.468
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t11))
--- 0.252
+-- 0.433
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t12))
--- 0.162
+-- 0.365
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t13))
--- 0.088
+-- 0.309
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t14))
--- 0.086
+-- 0.308
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t15))
--- 0.079
+-- 0.303
 --
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t16))
--- 0.047
+-- 0.279
 speedFraction
     :: BestTime (Quantity Double [u| h |])
     -> PilotTime (Quantity Double [u| h |])
