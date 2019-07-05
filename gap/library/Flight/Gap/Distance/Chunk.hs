@@ -207,6 +207,15 @@ chunks (FlownMax best) =
 
 -- | Converts from a chunk index, a number of 100m chunks offset to the start of
 -- the chunks range.
+--
+-- >>> toChunk (IxChunk 0)
+-- [u| 0.0 km |]
+--
+-- >>> toChunk (IxChunk 1)
+-- [u| 0.1 km |]
+--
+-- >>> toChunk (IxChunk 10)
+-- [u| 1.0 km |]
 toChunk :: IxChunk -> Chunk (Quantity Double [u| km |])
 toChunk (IxChunk ix) =
     Chunk d

@@ -5,8 +5,13 @@ import Test.DocTest (doctest)
 arguments :: [String]
 arguments =
     [ "-isrc"
-    , "library/Flight/Gap/Ratio/Arrival.hs"
-    , "library/Flight/Gap/Ratio/Speed.hs"
+    , "library/Flight/Gap/Distance/Chunk.hs"
+    , "library/Flight/Gap/Distance/Pilot.hs"
+    , "library/Flight/Gap/Distance/Relative.hs"
+    , "library/Flight/Gap/Distance/Stop.hs"
+    , "library/Flight/Gap/Fraction/Arrival.hs"
+    , "library/Flight/Gap/Fraction/Speed.hs"
+    , "library/Flight/Gap/Fraction/Difficulty.hs"
     , "library/Flight/Gap/Place/Arrival.hs"
     , "library/Flight/Gap/Time/Best.hs"
     , "library/Flight/Gap/Time/Pilot.hs"
@@ -22,10 +27,15 @@ arguments =
     , "-XGADTs"
     , "-XGeneralizedNewtypeDeriving"
     , "-XMultiParamTypeClasses"
+    , "-XNamedFieldPuns"
     , "-XPackageImports"
+    , "-XParallelListComp"
+    , "-XPartialTypeSignatures"
     , "-XTemplateHaskell"
     , "-XQuasiQuotes"
+    , "-XUndecidableInstances"
     , "-fplugin Data.UnitsOfMeasure.Plugin"
+    , "-fno-warn-partial-type-signatures"
     ]
 
 main :: IO ()
