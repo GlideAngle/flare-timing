@@ -41,11 +41,18 @@ import Flight.Gap.Pilots (Pilot)
 -- | The index of a 100m chunk. The zeroth chunk is any distance less than or
 -- equal to minimum distance.
 newtype IxChunk = IxChunk Int
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
+    deriving newtype (Enum, Num)
+
+instance Show IxChunk where
+    show (IxChunk x) = show x
 
 newtype Chunk a = Chunk a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
+
+instance Show a => Show (Chunk a) where
+    show (Chunk x) = show x
 
 instance (q ~ Quantity Double [u| km |]) => DefaultDecimalPlaces (Chunk q) where
     defdp _ = DecimalPlaces 1
@@ -62,12 +69,12 @@ instance (q ~ Quantity Double [u| km |]) => FromJSON (Chunk q) where
         ViaQ x <- parseJSON o
         return x
 
+instance (ToJSON (Chunk a)) => ToJSON (Chunks a)
+instance (FromJSON (Chunk a)) => FromJSON (Chunks a)
+
 -- | A sequence of chunk ends, distances on course in km.
 newtype Chunks a = Chunks [Chunk a]
     deriving (Eq, Ord, Show, Generic)
-
-instance (ToJSON (Chunk a)) => ToJSON (Chunks a)
-instance (FromJSON (Chunk a)) => FromJSON (Chunks a)
 
 -- | How far to look ahead, in units of 100m chunks.
 newtype Lookahead = Lookahead Int
@@ -119,19 +126,19 @@ mergeChunks
     :: [ChunkLandings] -- ^ Landings in each chunk
     -> [(IxChunk, Chunk (Quantity Double [u| km |]))] -- ^ Start of each chunk
     -> [(IxChunk, Chunk (Quantity Double [u| km |]))] -- ^ End of each chunk
-    -> [ChunkLandings] -- ^ Landings summed over the lookahead
     -> [(IxChunk, Chunk (Quantity Double [u| km |]))] -- ^ End of ahead chunk
+    -> [ChunkLandings] -- ^ Landings summed over the lookahead
     -> [ChunkRelativeDifficulty]
     -> [ChunkDifficultyFraction]
     -> [ChunkDifficulty]
-mergeChunks ls ils jls as jas rs ds =
+mergeChunks ls is js ks as rs ds =
     catMaybes
-    [ overlay l il jl a ja r d
+    [ overlay l i j k a r d
     | l <- ls
-    | il <- ils
-    | jl <- jls
+    | i <- is
+    | j <- js
+    | k <- ks
     | a <- as
-    | ja <- jas
     | r <- rs
     | d <- ds
     ]
@@ -140,30 +147,30 @@ overlay
     :: ChunkLandings
     -> (IxChunk, Chunk (Quantity Double [u| km |]))
     -> (IxChunk, Chunk (Quantity Double [u| km |]))
-    -> ChunkLandings
     -> (IxChunk, Chunk (Quantity Double [u| km |]))
+    -> ChunkLandings
     -> ChunkRelativeDifficulty
     -> ChunkDifficultyFraction
     -> Maybe ChunkDifficulty
 overlay
     ChunkLandings{chunk = l, down, downs, downers}
-    (il, sl) 
-    (jl, el) 
+    (i, iStart)
+    (j, jEnd)
+    (k, kEnd)
     ChunkLandings{chunk = a, down = ahead}
-    (ja, ea) 
     ChunkRelativeDifficulty{chunk = r, rel}
     ChunkDifficultyFraction{chunk = d, frac}
-        | (l == il)
-        && (il == jl)
-        && (jl == a)
-        && (a == ja)
-        && (ja == r)
+        | (l == i)
+        && (i == j)
+        && (j == a)
+        && (a == k)
+        && (k == r)
         && (r == d) =
           Just ChunkDifficulty
               { chunk = l
-              , startChunk = sl
-              , endChunk = el
-              , endAhead = ea
+              , startChunk = iStart
+              , endChunk = jEnd
+              , endAhead = kEnd
               , down = down
               , downs = downs
               , downers = downers
@@ -206,9 +213,8 @@ toChunk
     :: MinimumDistance (Quantity Double [u| km |])
     -> IxChunk
     -> Chunk (Quantity Double [u| km |])
-toChunk (MinimumDistance md) (IxChunk ix)
-    | ix <= 0 = Chunk md
-    | otherwise = Chunk $ d +: md
+toChunk (MinimumDistance md) (IxChunk ix) =
+    Chunk $ d +: md
     where
         d :: Quantity Double [u| km |]
         d = convert $ fromIntegral ix *: [u| 1 hm |]
@@ -219,9 +225,8 @@ toIxChunk
     :: MinimumDistance (Quantity Double [u| km |])
     -> PilotDistance (Quantity Double [u| km |])
     -> IxChunk
-toIxChunk (MinimumDistance md) (PilotDistance d)
-    | d <= md = IxChunk 0
-    | otherwise = IxChunk $ ceiling x
+toIxChunk (MinimumDistance md) (PilotDistance d) =
+    IxChunk $ ceiling x
     where
         MkQuantity x = convert (d -: md) :: Quantity _ [u| hm |]
 

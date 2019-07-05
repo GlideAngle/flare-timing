@@ -5,7 +5,10 @@ import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonVi
 
 -- | The relative difficulty of a chunk.
 newtype RelativeDifficulty = RelativeDifficulty Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
+
+instance Show RelativeDifficulty where
+    show (RelativeDifficulty x) = show (fromRational x :: Double)
 
 instance Newtype RelativeDifficulty Rational where
     pack = RelativeDifficulty

@@ -126,17 +126,17 @@ difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
 
         cs :: [Maybe [Gap.ChunkDifficulty]] =
             [ do
-                ils' <- ils
-                jls' <- jls
-                as' <- as
-                jas' <- jas
+                is' <- is
+                js' <- js
+                ks' <- ks
+                dws' <- dws
                 rs' <- rs
-                mergeChunks ls ils' jls' as' jas' rs' <$> fs
-            | ls <- [Gap.landouts md ps ds | ps <- pss| ds <- dss]
-            | ils <- (fmap . fmap) startChunk es
-            | jls <- (fmap . fmap) endChunk es
-            | as <- fmap downward <$> es
-            | jas <- (fmap . fmap) endAhead es
+                mergeChunks los is' js' ks' dws' rs' <$> fs
+            | los <- [Gap.landouts md ps ds | ps <- pss| ds <- dss]
+            | is <- (fmap . fmap) startChunk es
+            | js <- (fmap . fmap) endChunk es
+            | ks <- (fmap . fmap) endAhead es
+            | dws <- fmap downward <$> es
             | rs <- fmap relative <$> es
             | fs <- fmap fractional <$> es
             ]
