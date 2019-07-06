@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Flight.Track.Mask
 Copyright   : (c) Block Scope Limited 2017
@@ -9,10 +11,13 @@ Tracks masked with task control zones.
 -}
 module Flight.Track.Land
     ( Landing(..)
+    , TaskLanding(..)
     , TrackEffort(..)
+    , taskLanding
     , effortRank
     ) where
 
+import Control.Lens ((^?), element)
 import Data.List (sortOn)
 import Data.String (IsString())
 import GHC.Generics (Generic)
@@ -24,7 +29,7 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Score
     ( Lookahead
-    , SumOfDifficulty
+    , Chunking(..)
     , ChunkDifficulty(..)
     , MinimumDistance(..)
     , FlownMax(..)
@@ -32,6 +37,7 @@ import Flight.Score
     , DifficultyFraction(..)
     , Pilot(..)
     )
+import Flight.Comp (IxTask(..))
 
 data TrackEffort =
     TrackEffort
@@ -73,24 +79,61 @@ effortRank Landing{difficulty} =
     | d <- difficulty
     ]
 
--- | For each task, the masking for that task.
+taskLanding :: IxTask -> Landing -> Maybe TaskLanding
+taskLanding (IxTask iTask) Landing{..} = do
+    let i = fromIntegral iTask - 1
+    bd <- bestDistance ^? element i
+    lo <- landout ^? element i
+    la <- lookahead ^? element i
+    cg <- chunking ^? element i
+    df <- difficulty ^? element i
+    return
+        TaskLanding
+            { minDistance = minDistance
+            , bestDistance = bd
+            , landout = lo
+            , lookahead = la
+            , chunking = cg
+            , difficulty = df
+            }
+
+-- | The landing for a single task.
+data TaskLanding =
+    TaskLanding
+        { minDistance :: MinimumDistance (Quantity Double [u| km |])
+        -- ^ The mimimum distance, set once for the comp. All pilots landing
+        -- before this distance get this distance. The 100m segments start from
+        -- here.
+        , bestDistance :: Maybe (FlownMax (Quantity Double [u| km |]))
+        -- ^ For each task, the best distance flown.
+        , landout :: Int
+        -- ^ For each task, the number of pilots landing out.
+        , lookahead :: Maybe Lookahead
+        -- ^ For each task, how many 100m chunks to look ahead for land outs.
+        , chunking :: Maybe Chunking
+        -- ^ For each task, the chunking.
+        , difficulty :: Maybe [ChunkDifficulty]
+        -- ^ The difficulty of each chunk.
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | For each task, the landing for that task.
 data Landing =
     Landing
         { minDistance :: MinimumDistance (Quantity Double [u| km |])
         -- ^ The mimimum distance, set once for the comp. All pilots landing
         -- before this distance get this distance. The 100m segments start from
         -- here.
+        , bestDistance :: [Maybe (FlownMax (Quantity Double [u| km |]))]
+        -- ^ For each task, the best distance flown.
         , landout :: [Int]
         -- ^ For each task, the number of pilots landing out.
         , lookahead :: [Maybe Lookahead]
         -- ^ For each task, how many 100m chunks to look ahead for land outs.
-        , sumOfDifficulty :: [Maybe SumOfDifficulty]
-        -- ^ The difficulty of each chunk is relative to the sum of
-        -- difficulties.
+        , chunking :: [Maybe Chunking]
+        -- ^ For each task, the chunking.
         , difficulty :: [Maybe [ChunkDifficulty]]
         -- ^ The difficulty of each chunk.
-        , bestDistance :: [Maybe (FlownMax (Quantity Double [u| km |]))]
-        -- ^ For each task, the best distance flown.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

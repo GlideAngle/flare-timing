@@ -6,6 +6,7 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
+import Control.Monad.Zip (munzip)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
 import Data.UnitsOfMeasure (u)
@@ -38,7 +39,9 @@ import Flight.Score
     , mergeChunks
     )
 import qualified Flight.Score as Gap
-    (ChunkDifficulty(..), landouts, lookahead, gradeDifficulty)
+    ( Chunking(..), ChunkDifficulty(..)
+    , landouts, lookahead, gradeDifficulty
+    )
 import LandOutOptions (description)
 
 main :: IO ()
@@ -89,7 +92,7 @@ difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
         , bestDistance = bests
         , landout = length <$> land
         , lookahead = ahead
-        , sumOfDifficulty = fmap sumOf <$> es
+        , chunking = cgs
         , difficulty = cs
         }
     where
@@ -117,7 +120,9 @@ difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
             | ds <- dss
             ]
 
-        es :: [Maybe Difficulty] =
+        (cgs, es) :: ([Maybe Gap.Chunking], [Maybe Difficulty]) =
+            unzip $
+            munzip <$>
             [ (\bd -> Gap.gradeDifficulty bd ps ds) <$> b
             | b <- bests
             | ps <- pss

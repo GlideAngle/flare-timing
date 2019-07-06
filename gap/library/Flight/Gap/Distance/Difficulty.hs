@@ -1,5 +1,8 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 module Flight.Gap.Distance.Difficulty
     ( SumOfDifficulty(..)
+    , Chunking(..)
     , Difficulty(..)
     , gradeDifficulty
     ) where
@@ -39,11 +42,34 @@ newtype SumOfDifficulty = SumOfDifficulty Integer
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-data Difficulty =
-    Difficulty
+-- | The range of chunking used in working out difficulty.  For each chunk in
+-- the range, add together the number of pilots down in that chunk to the
+-- number of pilots downward bound within the lookahead number of chunks to get
+-- the difficulty of a single chunk. The ratio of this to the sum of all
+-- difficulty is the relative difficulty of a chunk. To get to the landing
+-- chunk, the pilot had to overcome the difficulty of each chunk flown over.
+-- The difficulty fraction then is the sum of difficulties up until the chunk
+-- of landing.
+--
+-- Note that in the GAP docs and here, this fraction is not normalized. It is
+-- expressed as a fraction of the maximum distance points and so is in the
+-- range zero to a half as only half of the distance points are available for
+-- difficulty.
+data Chunking =
+    Chunking
         { sumOf :: SumOfDifficulty
         -- ^ The sum of the downward counts.
-        , startChunk :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
+        , startChunk :: (IxChunk, Chunk (Quantity Double [u| km |]))
+        -- ^ The task distance to the start of this chunk.
+        , endChunk :: (IxChunk, Chunk (Quantity Double [u| km |]))
+        -- ^ The task distance to the end of this chunk.
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | A sparse record of the difficulty for each chunk landed in.
+data Difficulty =
+    Difficulty
+        { startChunk :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
         -- ^ The task distance to the start of this chunk.
         , endChunk :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
         -- ^ The task distance to the end of this chunk.
@@ -68,11 +94,15 @@ gradeDifficulty
     :: FlownMax (Quantity Double [u| km |])
     -> [Pilot]
     -> [PilotDistance (Quantity Double [u| km |])]
-    -> Difficulty
+    -> (Chunking, Difficulty)
 gradeDifficulty best@(FlownMax bd) pilots landings =
-    Difficulty
+    ( Chunking
         { sumOf = SumOfDifficulty sumOfDiff
-        , startChunk = zip ys nubStarts
+        , startChunk = (ix0, toChunk ix0)
+        , endChunk = (ixN, toChunk ixN)
+        }
+    , Difficulty
+        { startChunk = zip ys nubStarts
         , endChunk = zip ys nubEnds
         , endAhead = zip ys nubEndsAhead
         , downward = collectDowns pilots xs downList
@@ -91,6 +121,7 @@ gradeDifficulty best@(FlownMax bd) pilots landings =
                 return $ f (y, frac))
             <$> ys
         }
+    )
     where
         -- When pilots fly away from goal looking for lift but land out they
         -- can end up with a negative distance along the course. We'll zero
@@ -98,11 +129,14 @@ gradeDifficulty best@(FlownMax bd) pilots landings =
         xs = (\(PilotDistance d) -> PilotDistance $ max d [u| 0 km |]) <$> landings
 
         ahead@(Lookahead n) = lookahead best xs
-        gd = PilotDistance bd
-        gIx = toIxChunk gd
-        ix0 = toIxChunk (PilotDistance [u| 0 km |])
 
-        ixs = [ix0 .. gIx]
+        dN = PilotDistance bd
+        ixN = toIxChunk dN
+
+        d0 = PilotDistance [u| 0 km |]
+        ix0 = toIxChunk d0
+
+        ixs = [ix0 .. ixN]
 
         -- The following snippets labelled A & B are from scoring tasks #1 & #7
         -- from the QuestAir Open competition, 2016-05-07 to 2016-05-13,

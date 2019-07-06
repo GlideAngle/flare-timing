@@ -96,6 +96,7 @@ module Flight.Score
     , ChunkDifficultyFraction(..)
     , ChunkLandings(..)
     , ChunkDifficulty(..)
+    , Chunking(..)
     , Difficulty(..)
     , gradeDifficulty
     -- * Fractional allotment of leading points 

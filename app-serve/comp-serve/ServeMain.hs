@@ -38,7 +38,8 @@ import qualified Flight.Track.Stop as Sp (Framing(..))
 import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..))
 import Flight.Track.Stop (TrackScoredSection(..))
 import Flight.Track.Distance (TrackReach(..))
-import Flight.Track.Land (Landing(..), TrackEffort(..), effortRank)
+import Flight.Track.Land
+    (Landing(..), TaskLanding(..), TrackEffort(..), effortRank, taskLanding)
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
@@ -342,6 +343,9 @@ type GapPointApi k =
     :<|> "land-out" :> (Capture "task" Int) :> "effort"
         :> Get '[JSON] [(Pilot, TrackEffort)]
 
+    :<|> "land-out" :> (Capture "task" Int) :> "landing"
+        :> Get '[JSON] (Maybe TaskLanding)
+
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy
 
@@ -579,6 +583,7 @@ serverGapPointApi cfg =
         :<|> getTaskLead
         :<|> getTaskTime
         :<|> getTaskEffort
+        :<|> getTaskLanding
     where
         c = asks compSettings
         p = asks pointing
@@ -1117,6 +1122,11 @@ getTaskEffort ii = do
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "land-out" ii
+
+getTaskLanding :: Int -> AppT k IO (Maybe TaskLanding)
+getTaskLanding ii = do
+    x <- asks landing
+    return . join $ taskLanding (IxTask ii) <$> x
 
 getTaskArrival :: Int -> AppT k IO [(Pilot, TrackArrival)]
 getTaskArrival ii = do
