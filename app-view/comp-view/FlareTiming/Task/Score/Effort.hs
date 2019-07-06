@@ -125,7 +125,8 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+                elClass "th" "th-chunk-units" $ text "(km)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
 
                 elClass "th" "th-alt-distance-units" $ text "(m)"
@@ -292,7 +293,8 @@ pointRow _utcOffset free _ln dfNt pt sEx ixChunkMap x = do
                 $ ffor2 pilot ixChunkMap (\pilot' ixChunkMap' ->
                     fromMaybe "" $ do
                         IxChunk i <- Map.lookup pilot' ixChunkMap'
-                        return . T.pack $ show i)
+                        let pd = PilotDistance (0.1 * fromIntegral i :: Double)
+                        return $ showPilotDistance 1 pd)
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
