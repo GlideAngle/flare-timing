@@ -23,7 +23,7 @@ import FlareTiming.Comms
     ( getTaskScore, getTaskNormScore
     , getTaskBolsterStats, getTaskBonusBolsterStats
     , getTaskReach, getTaskBonusReach
-    , getTaskEffort
+    , getTaskEffort, getTaskLanding
     , getTaskArrival, getTaskLead, getTaskTime
     , getTaskValidityWorking, getNormTaskValidityWorking
     , getTaskLengthNormSphere
@@ -184,6 +184,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
     reach <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
     bonusReach <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusReach ix pb)
     ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)
+    lg <- holdDyn Nothing =<< (getTaskLanding ix pb)
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
     ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
     sd <- holdDyn Nothing =<< (fmap Just <$> getTaskTime ix pb)
@@ -265,7 +266,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                                         tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabEffort ->
                                     elAttr "div" ("id" =: "score-effort") $
-                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
+                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg)
 
                             <$> tabScore
 

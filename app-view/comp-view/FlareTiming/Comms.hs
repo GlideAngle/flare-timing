@@ -34,6 +34,7 @@ module FlareTiming.Comms
     , getTaskReach
     , getTaskBonusReach
     , getTaskEffort
+    , getTaskLanding
     , getTaskNormScore
     , getTaskArrival
     , getTaskLead
@@ -51,7 +52,7 @@ import Control.Monad.IO.Class (MonadIO)
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Reach (TrackReach, BolsterStats)
-import WireTypes.Effort (TrackEffort)
+import WireTypes.Effort (TrackEffort, TaskLanding)
 import WireTypes.Arrival (TrackArrival)
 import WireTypes.Lead (TrackLead)
 import WireTypes.Speed (TrackSpeed)
@@ -181,6 +182,9 @@ getTaskBonusReach = getIxTask "mask-track" "bonus-reach"
 
 getTaskEffort :: GetIxTask' t m [(Pilot, TrackEffort)]
 getTaskEffort = getIxTask "land-out" "effort"
+
+getTaskLanding :: GetIxTask' t m (Maybe TaskLanding)
+getTaskLanding = getIxTask "land-out" "landing"
 
 getTaskNormScore :: GetIxTask' t m [(Pilot, NormBreakdown)]
 getTaskNormScore = getIxTask "fs-score" "score"

@@ -28,6 +28,11 @@ import WireTypes.Point
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
+import WireTypes.Effort
+    ( TaskLanding(..), Lookahead(..)
+    , Chunking(..), IxChunk(..), Chunk(..)
+    , SumOfDifficulty(..)
+    )
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Task.Score.Show
@@ -48,8 +53,9 @@ tableScoreEffort
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Bk.Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t (Maybe TaskLanding)
     -> m ()
-tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx lg' = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -57,6 +63,28 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
             (if lenDnf == 1 then TaskPlacing else TaskPlacingEqual)
             . fromIntegral
             $ lenDfs + 1
+
+    let msgChunking = ffor lg' (\case
+            Just
+                TaskLanding
+                    { landout
+                    , lookahead = Just (Lookahead n)
+                    , chunking =
+                        Just
+                            Chunking
+                                { sumOf = SumOfDifficulty diff
+                                , startChunk = (IxChunk ix0, Chunk sc)
+                                , endChunk = (IxChunk ixN, Chunk ec)
+                                }
+                    } ->
+                        (T.pack $ printf "%d landouts, looking ahead %.1f km" landout ((0.1 * fromIntegral n) :: Double))
+                        <> (T.pack $ printf " over chunks %d..%d or " ix0 ixN)
+                        <> (showPilotDistance 1 sc) <> " km"
+                        <> " to "
+                        <> (showPilotDistance 1 ec) <> " km"
+                        <> " with a sum of difficulty of "
+                        <> T.pack (show diff)
+            _ -> "")
 
     let thSpace = elClass "th" "th-space" $ text ""
 
@@ -71,7 +99,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "7") $ text ""
+                elAttr "th" ("colspan" =: "7") $ dynText msgChunking
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort"
 
             el "tr" $ do
