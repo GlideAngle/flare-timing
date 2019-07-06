@@ -105,16 +105,17 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "7") $ dynText msgChunking
+                elAttr "th" ("colspan" =: "8") $ dynText msgChunking
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "#"
                 elClass "th" "th-pilot" $ text "Pilot"
-                elClass "th" "th-chunk" $ text "Chunk"
                 elClass "th" "th-min-distance" $ text "Min"
 
                 elClass "th" "th-alt-distance" $ text "Alt"
+
+                elClass "th" "th-chunk" $ text "Chunk"
 
                 elClass "th" "th-landed-distance" $ text "Landed"
                 elClass "th" "th-norm th-effort-points" $ text "✓"
@@ -126,10 +127,11 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                elClass "th" "th-chunk-units" $ text "(km)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
 
                 elClass "th" "th-alt-distance-units" $ text "(m)"
+
+                elClass "th" "th-chunk-units" $ text "(km)"
 
                 elClass "th" "th-landed-distance-units" $ text "(km)"
                 elClass "th" "th-landed-distance-units" $ text "(km)"
@@ -300,11 +302,11 @@ pointRow _utcOffset free _ln dfNt pt sEx ixChunkMap x = do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-chunk" $ text ixChunk
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
-
         elClass "td" "td-alt-distance" . dynText
             $ maybe "" showPilotAlt <$> alt
+
+        elClass "td" "td-chunk" $ text ixChunk
 
         elDynClass "td" (fst <$> awardFree) . text $ landed
         elClass "td" "td-norm td-landed-distance" . text $ landedN
@@ -351,7 +353,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "6"
+                        <> "colspan" =: "9"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
