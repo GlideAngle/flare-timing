@@ -73,16 +73,14 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                         Just
                             Chunking
                                 { sumOf = SumOfDifficulty diff
-                                , startChunk = (IxChunk ix0, Chunk sc)
-                                , endChunk = (IxChunk ixN, Chunk ec)
+                                , endChunk = (IxChunk ixN, Chunk (PilotDistance ec))
                                 }
                     } ->
-                        (T.pack $ printf "%d landouts, looking ahead %.1f km" landout ((0.1 * fromIntegral n) :: Double))
-                        <> (T.pack $ printf " over chunks %d..%d or " ix0 ixN)
-                        <> (showPilotDistance 1 sc) <> " km"
-                        <> " to "
-                        <> (showPilotDistance 1 ec) <> " km"
-                        <> " with a sum of difficulty of "
+                        (T.pack $ printf "%d landouts over " landout)
+                        <> (showPilotDistance 1 (PilotDistance $ ec + 0.1)) <> " km"
+                        <> (T.pack $ printf " divided into %d chunks" ixN)
+                        <> (T.pack $ printf " and looking ahead %.1f km" (0.1 * fromIntegral n :: Double))
+                        <> " we sum difficulty to "
                         <> T.pack (show diff)
             _ -> "")
 
