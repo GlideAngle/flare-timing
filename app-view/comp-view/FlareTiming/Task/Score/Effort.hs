@@ -1,5 +1,7 @@
 module FlareTiming.Task.Score.Effort (tableScoreEffort) where
 
+import Data.Ord (comparing)
+import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
 import Text.Printf (printf)
 import Reflex.Dom
@@ -106,10 +108,10 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "8") $ dynText msgChunking
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort (Descending)"
 
             el "tr" $ do
-                elClass "th" "th-placing" $ text "#"
+                elClass "th" "th-placing" $ text "Task Rank"
                 elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-min-distance" $ text "Min"
 
@@ -151,7 +153,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
         _ <- el "tbody" $ do
             _ <-
                 simpleList
-                    sDfs
+                    (sortBy cmp <$> sDfs)
                     (pointRow
                         utcOffset
                         free
@@ -364,3 +366,7 @@ dnfRow place rows pilot = do
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         dnfMega
         return ()
+
+-- SEE: https://stackoverflow.com/questions/2349798/in-haskell-how-can-i-use-the-built-in-sortby-function-to-sort-a-list-of-pairst
+cmp :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
+cmp = flip (comparing (effort . Bk.breakdown . snd )) `mappend` comparing (Bk.place . snd)
