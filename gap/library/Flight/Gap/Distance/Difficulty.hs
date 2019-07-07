@@ -12,7 +12,7 @@ import Data.Maybe (catMaybes)
 import Data.List (sort, sortOn, nub)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure ((+:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 
@@ -95,7 +95,7 @@ gradeDifficulty
     -> [Pilot]
     -> [PilotDistance (Quantity Double [u| km |])]
     -> (Chunking, Difficulty)
-gradeDifficulty best@(FlownMax bd) pilots landings =
+gradeDifficulty best@(FlownMax (MkQuantity bd)) pilots landings =
     ( Chunking
         { sumOf = SumOfDifficulty sumOfDiff
         , startChunk = (ix0, toChunk ix0)
@@ -130,7 +130,15 @@ gradeDifficulty best@(FlownMax bd) pilots landings =
 
         ahead@(Lookahead n) = lookahead best xs
 
-        dN = PilotDistance bd
+        -- WARNING: The GAP docs don't mention this but FS takes the chunking
+        -- out to the end of the whole kilometer in which the task ends and
+        -- then adds another 100m for good measure.
+        dKm :: Quantity Double [u| km |]
+        dKm =
+            let whole = MkQuantity . fromIntegral $ (ceiling bd :: Integer)
+            in whole +: convert [u| 100 m |]
+
+        dN = PilotDistance dKm
         ixN = toIxChunk dN
 
         d0 = PilotDistance [u| 0 km |]
