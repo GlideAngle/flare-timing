@@ -63,7 +63,7 @@ tableScoreTime utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs s
                     $ showSpeedSection <$> ln
 
             el "tr" $ do
-                elClass "th" "th-placing" $ text "#"
+                elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-start-start" $ text "Start"
 

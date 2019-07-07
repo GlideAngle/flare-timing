@@ -111,7 +111,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort (Descending)"
 
             el "tr" $ do
-                elClass "th" "th-placing" $ text "Task Rank"
+                elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-min-distance" $ text "Min"
 
@@ -369,4 +369,4 @@ dnfRow place rows pilot = do
 
 -- SEE: https://stackoverflow.com/questions/2349798/in-haskell-how-can-i-use-the-built-in-sortby-function-to-sort-a-list-of-pairst
 cmp :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
-cmp = flip (comparing (effort . Bk.breakdown . snd )) `mappend` comparing (Bk.place . snd)
+cmp = flip (comparing (effort . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)

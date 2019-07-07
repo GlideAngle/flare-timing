@@ -118,7 +118,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
-                elClass "th" "th-placing" $ text "#"
+                elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-start-gate" $ text "Gate"

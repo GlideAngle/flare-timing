@@ -1,5 +1,7 @@
 module FlareTiming.Task.Score.Reach (tableScoreReach) where
 
+import Data.Ord (comparing)
+import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
 import Text.Printf (printf)
 import Reflex.Dom
@@ -71,10 +73,10 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "9") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Reach"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Reach (Descending)"
 
             el "tr" $ do
-                elClass "th" "th-placing" $ text "#"
+                elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-min-distance" $ text "Min"
 
@@ -117,7 +119,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
         _ <- el "tbody" $ do
             _ <-
                 simpleList
-                    sDfs
+                    (sortBy cmp <$> sDfs)
                     (pointRow
                         utcOffset
                         free
@@ -335,3 +337,6 @@ dnfRow place rows pilot = do
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         dnfMega
         return ()
+
+cmp :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
+cmp = flip (comparing (reach . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)

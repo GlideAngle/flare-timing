@@ -141,7 +141,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
-                elClass "th" "th-placing" $ text "#"
+                elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "Pilot"
 
                 elClass "th" "th-distance-points" $ text ""
