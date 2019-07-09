@@ -36,7 +36,7 @@ import WireTypes.Effort
     , ChunkDifficulty(..), SumOfDifficulty(..)
     )
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
-import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Pilot (showPilot, showPilotName)
 import FlareTiming.Task.Score.Show
 
 tableScoreEffort
@@ -112,7 +112,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
-                elClass "th" "th-pilot" $ text "Pilot"
+                elClass "th" "th-pilot" $ text "###-Pilot"
                 elClass "th" "th-min-distance" $ text "Min"
 
                 elClass "th" "th-alt-distance" $ text "Alt"
@@ -247,11 +247,13 @@ pointRow _utcOffset free _ln dfNt pt sEx ixChunkMap x = do
     let extraReach = fmap extra . Bk.reach <$> xB
     let points = Bk.breakdown <$> xB
 
-    let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
-                        let n = showPilotName p in
-                        if p `elem` (Pilot.pilot <$> ps)
-                           then ("pilot-dfnt", n <> " ☞ ")
-                           else ("", n))
+    (classPilot, idNamePilot) <- sample . current $
+            ffor2 pilot dfNt (\p (DfNoTrack ps) ->
+                let sp = showPilot p
+                in
+                    if p `elem` (Pilot.pilot <$> ps)
+                       then ("pilot-dfnt", sp <> " ☞ ")
+                       else ("", sp))
 
     let awardFree = ffor extraReach (\pd ->
             let c = "td-landed-distance" in
@@ -300,9 +302,9 @@ pointRow _utcOffset free _ln dfNt pt sEx ixChunkMap x = do
                         let pd = PilotDistance (0.1 * fromIntegral i :: Double)
                         return $ showPilotDistance 1 pd)
 
-    elDynClass "tr" (fst <$> classPilot) $ do
+    elClass "tr" classPilot $ do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
-        elClass "td" "td-pilot" . dynText $ snd <$> classPilot
+        elClass "td" "td-pilot" $ text idNamePilot
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
         elClass "td" "td-alt-distance" . dynText

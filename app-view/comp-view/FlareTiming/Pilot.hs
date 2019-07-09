@@ -1,6 +1,7 @@
 module FlareTiming.Pilot
     ( showPilotId
     , showPilotName
+    , showPilot
     , rowPilot
     , rowDfNt
     , rowDfNtReach
@@ -114,3 +115,6 @@ showPilotId (Pilot (PilotId x, _)) = T.pack x
 
 showPilotName :: Pilot -> T.Text
 showPilotName (Pilot (_, PilotName x)) = T.pack x
+
+showPilot :: Pilot -> T.Text
+showPilot (Pilot (PilotId x, PilotName y)) = T.pack $ printf "%03s-%s" x y
