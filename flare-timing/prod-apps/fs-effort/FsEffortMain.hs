@@ -63,7 +63,7 @@ fsdbNominal (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbEfforts :: FsdbXml -> ExceptT String IO [Maybe TaskLanding]
+fsdbEfforts :: FsdbXml -> ExceptT String IO [TaskLanding]
 fsdbEfforts (FsdbXml contents) = do
     fs <- lift $ parseNormEfforts contents
     ExceptT $ return fs

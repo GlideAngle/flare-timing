@@ -3,8 +3,8 @@ module Flight.Fsdb.TaskEffort (parseNormEfforts) where
 import Data.UnitsOfMeasure (u)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
-    , xpInt, xpOption
-    , unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr, xpPair
+    , xpFilterAttr, xpFilterCont
+    , xpInt, unpickleDoc', xpWrap, xpElem, xpAttr, xpPair
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -20,6 +20,7 @@ import Text.XML.HXT.Core
     , getChildren
     , arr
     , deep
+    , isAttr
     )
 
 import Flight.Units ()
@@ -41,36 +42,35 @@ nullLanding =
 xpDifficulty :: PU TaskLanding
 xpDifficulty =
     xpElem "FsTaskDifficulty"
-    $ xpFilterAttr (hasName "lookahead" <+> hasName "no_of_pilots_lo")
+    -- WARNING: Filter only attributes, ignoring child elements such as
+    -- <FsChunk ... />. If not then the pickling will fail with
+    -- "xpCheckEmptyContents: unprocessed XML content detected".
+    $ xpFilterCont(isAttr)
+    $ xpFilterAttr (hasName "look_ahead" <+> hasName "no_of_pilots_lo")
     $ xpWrap
         ( \(ahead, lo) ->
             nullLanding
-                { lookahead = Lookahead <$> ahead
+                { lookahead = Just $ Lookahead ahead
                 , landout = lo
                 }
         , \TaskLanding{..} ->
-            ( (\(Lookahead ahead) -> ahead) <$> lookahead
+            ( maybe 0 (\(Lookahead ahead) -> ahead) lookahead
             , landout
             )
         )
     $ xpPair
-        (xpOption $ xpAttr "lookahead" xpInt)
+        (xpAttr "look_ahead" xpInt)
         (xpAttr "no_of_pilots_lo" xpInt)
 
-getEffort :: ArrowXml a => a XmlTree (Maybe TaskLanding)
+getEffort :: ArrowXml a => a XmlTree (Either String TaskLanding)
 getEffort =
     getChildren
-    >>> deep (hasName "FsTask")
-    >>> getDifficulty
-    where
-        getDifficulty =
-            getChildren
-            >>> deep (hasName "FsTaskDifficulty")
-            >>> arr (unpickleDoc xpDifficulty)
+    >>> deep (hasName "FsTaskDifficulty")
+    >>> arr (unpickleDoc' xpDifficulty)
 
 
-parseNormEfforts :: String -> IO (Either String [Maybe TaskLanding])
+parseNormEfforts :: String -> IO (Either String [TaskLanding])
 parseNormEfforts contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getEffort
-    return $ Right xs
+    return $ sequence xs

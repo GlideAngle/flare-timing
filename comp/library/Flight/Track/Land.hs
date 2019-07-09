@@ -19,7 +19,6 @@ module Flight.Track.Land
     ) where
 
 import Control.Lens ((^?), element)
-import Control.Monad (join)
 import Data.Maybe (fromMaybe, listToMaybe)
 import Data.List (sortOn)
 import Data.String (IsString())
@@ -120,22 +119,22 @@ data TaskLanding =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-compLanding :: MinimumDistance (Quantity Double [u| km |]) -> [Maybe TaskLanding] -> Landing
+compLanding :: MinimumDistance (Quantity Double [u| km |]) -> [TaskLanding] -> Landing
 compLanding free xs =
     Landing
         { minDistance =
             fromMaybe free . listToMaybe $
-            [ fromMaybe free $ (\TaskLanding{minDistance = md} -> md) <$> x | x <- xs ]
+            (\TaskLanding{minDistance = md} -> md) <$> xs
         , bestDistance =
-            [ join $ (\TaskLanding{bestDistance = bd} -> bd) <$> x | x <- xs ]
+            (\TaskLanding{bestDistance = bd} -> bd) <$> xs
         , landout =
-            [ maybe 0 (\TaskLanding{landout = lo} -> lo) x | x <- xs ]
+            (\TaskLanding{landout = lo} -> lo) <$> xs
         , lookahead =
-            [ join $ (\TaskLanding{lookahead = ahead} -> ahead) <$> x| x <- xs ]
+            (\TaskLanding{lookahead = ahead} -> ahead) <$> xs
         , chunking =
-            [ join $ (\TaskLanding{chunking = cg} -> cg) <$> x| x <- xs ]
+            (\TaskLanding{chunking = cg} -> cg) <$> xs
         , difficulty =
-            [ join $ (\TaskLanding{difficulty = dy} -> dy) <$> x| x <- xs ]
+            (\TaskLanding{difficulty = dy} -> dy) <$> xs
         }
 
 -- | For each task, the landing for that task.
