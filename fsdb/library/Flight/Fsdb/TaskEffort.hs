@@ -1,10 +1,12 @@
 module Flight.Fsdb.TaskEffort (parseNormEfforts) where
 
 import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , xpFilterAttr, xpFilterCont
-    , xpInt, unpickleDoc', xpWrap, xpElem, xpAttr, xpPair
+    , xpInt, xpPrim, unpickleDoc', xpWrap, xpElem, xpAttr, xp5Tuple
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -26,7 +28,10 @@ import Text.XML.HXT.Core
 import Flight.Units ()
 import Flight.Fsdb.Internal.XmlPickle ()
 import Flight.Track.Land (TaskLanding(..))
-import Flight.Score (MinimumDistance(..), Lookahead(..))
+import Flight.Score
+    ( MinimumDistance(..), Lookahead(..), SumOfDifficulty(..)
+    , IxChunk(..), Chunk(..), Chunking(..)
+    )
 
 nullLanding :: TaskLanding
 nullLanding =
@@ -46,20 +51,49 @@ xpDifficulty =
     -- <FsChunk ... />. If not then the pickling will fail with
     -- "xpCheckEmptyContents: unprocessed XML content detected".
     $ xpFilterCont(isAttr)
-    $ xpFilterAttr (hasName "look_ahead" <+> hasName "no_of_pilots_lo")
+    $ xpFilterAttr
+        ( hasName "look_ahead"
+        <+> hasName "start_chunks"
+        <+> hasName "end_chunks"
+        <+> hasName "sum_of_difficulty"
+        <+> hasName "no_of_pilots_lo"
+        )
     $ xpWrap
-        ( \(ahead, lo) ->
+        ( \(ahead, sc, ec, sumDiff, lo) ->
             nullLanding
                 { lookahead = Just $ Lookahead ahead
+                , chunking =
+                    Just $
+                    Chunking
+                        { sumOf = SumOfDifficulty $ fromIntegral sumDiff
+                        , startChunk = (IxChunk 0, Chunk $ MkQuantity sc)
+                        , endChunk = (IxChunk 0, Chunk $ MkQuantity ec)
+                        }
                 , landout = lo
                 }
         , \TaskLanding{..} ->
-            ( maybe 0 (\(Lookahead ahead) -> ahead) lookahead
-            , landout
-            )
+            let (sc', ec', sumDiff') =
+                    maybe
+                        (0, 0, 0)
+                        (\Chunking
+                            { sumOf = SumOfDifficulty sumDiff
+                            , startChunk = (_, Chunk (MkQuantity sc))
+                            , endChunk = (_, Chunk (MkQuantity ec))
+                            } -> (sc, ec, sumDiff))
+                        chunking
+            in
+                ( maybe 0 (\(Lookahead ahead) -> ahead) lookahead
+                , sc'
+                , ec'
+                , fromIntegral sumDiff'
+                , landout
+                )
         )
-    $ xpPair
+    $ xp5Tuple
         (xpAttr "look_ahead" xpInt)
+        (xpAttr "start_chunks" xpPrim)
+        (xpAttr "end_chunks" xpPrim)
+        (xpAttr "sum_of_difficulty" xpInt)
         (xpAttr "no_of_pilots_lo" xpInt)
 
 getEffort :: ArrowXml a => a XmlTree (Either String TaskLanding)
