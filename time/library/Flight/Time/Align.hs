@@ -249,7 +249,13 @@ group
                     concat
                     [
                         case leg of
-                            Nothing -> []
+                            Nothing ->
+                                -- NOTE: Pilots not tagging any zones. This can
+                                -- happen when they launch outside the launch
+                                -- zone and fail to tag the start zone.
+                                let legL = LegIdx 0
+                                    (_, reticked) = retick ticked (LegIdx start) legL
+                                in legDistances ssOnly reticked times task legL ys
                             Just (GroupLeg{groupLeg = That (LegIdx legR)}) ->
                                 let legL = LegIdx $ legR - 1
                                     (_, reticked) = retick ticked (LegIdx start) legL
