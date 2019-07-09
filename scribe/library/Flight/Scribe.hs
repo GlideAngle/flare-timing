@@ -1,6 +1,7 @@
 module Flight.Scribe
-    ( readNormScore, writeNormScore
+    ( readNormEffort, writeNormEffort
     , readNormRoute, writeNormRoute
+    , readNormScore, writeNormScore
     , readComp, writeComp
     , readRoute, writeRoute
     , readCrossing , writeCrossing
@@ -36,8 +37,9 @@ import Flight.Track.Point (Pointing, NormPointing)
 import Flight.Route (GeoLines)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
-    ( NormScoreFile(..)
+    ( NormEffortFile(..)
     , NormRouteFile(..)
+    , NormScoreFile(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
@@ -83,6 +85,20 @@ writeNormScore :: NormScoreFile -> NormPointing -> IO ()
 writeNormScore (NormScoreFile path) pointing = do
     let cfg = Y.setConfCompare (fieldOrder pointing) Y.defConfig
     let yaml = Y.encodePretty cfg pointing
+    BS.writeFile path yaml
+
+readNormEffort
+    :: (MonadThrow m, MonadIO m)
+    => NormEffortFile
+    -> m Landing
+readNormEffort (NormEffortFile path) = do
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
+
+writeNormEffort :: NormEffortFile -> Landing -> IO ()
+writeNormEffort (NormEffortFile path) track = do
+    let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
+    let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
 
 readNormRoute

@@ -1,31 +1,27 @@
-import Data.Coerce (coerce)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
+import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
-import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
-import Flight.LatLng.Raw (RawLatLng(..), RawLat(..), RawLng(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNormRoutes)
+import Flight.Fsdb (parseNominal, parseNormEfforts)
+import Flight.Track.Land (Landing(..), TaskLanding(..), compLanding)
 import Flight.Comp
     ( FileType(Fsdb)
     , FsdbFile(..)
     , FsdbXml(..)
-    , fsdbToNormRoute
+    , Nominal(..)
+    , fsdbToNormEffort
     , findFsdb
     , ensureExt
     )
-import Flight.Route
-import Flight.TaskTrack.Double
-import Flight.Scribe (writeNormRoute)
+import Flight.Scribe (writeNormEffort)
 import FsEffortOptions (description)
 
 main :: IO ()
@@ -53,21 +49,27 @@ go :: FsdbFile -> IO ()
 go fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
-    settings <- runExceptT $ normRoutes (FsdbXml contents')
-    either print (writeNormRoute (fsdbToNormRoute fsdbFile)) settings
+    settings <- runExceptT $ normEfforts (FsdbXml contents')
+    either print (writeNormEffort (fsdbToNormEffort fsdbFile)) settings
 
-fsdbRoutes :: FsdbXml -> ExceptT String IO [[RawLatLng]]
-fsdbRoutes (FsdbXml contents) = do
-    fs <- lift $ parseNormRoutes contents
-    let fs' = (fmap . fmap . fmap) convertLatLng fs
-    ExceptT $ return fs'
+fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
+fsdbNominal (FsdbXml contents) = do
+    ns <- lift $ parseNominal contents
+    case ns of
+        Left msg -> ExceptT . return $ Left msg
+        Right [n] -> ExceptT . return $ Right n
+        _ -> do
+            let msg = "Expected only one set of nominals for the comp"
+            lift $ print msg
+            throwE msg
 
-normRoutes :: FsdbXml -> ExceptT String IO [GeoLines]
-normRoutes fsdbXml = do
-    rs <- fsdbRoutes fsdbXml
-    let rs' = fmap (geoTrack False) rs
-    return rs'
+fsdbEfforts :: FsdbXml -> ExceptT String IO [Maybe TaskLanding]
+fsdbEfforts (FsdbXml contents) = do
+    fs <- lift $ parseNormEfforts contents
+    ExceptT $ return fs
 
-convertLatLng :: LatLng Rational [u| deg |] -> RawLatLng
-convertLatLng (LatLng (Lat lat, Lng lng)) =
-    RawLatLng{lat = RawLat $ coerce lat, lng = RawLng $ coerce lng}
+normEfforts :: FsdbXml -> ExceptT String IO Landing
+normEfforts fsdbXml = do
+    Nominal{free} <- fsdbNominal fsdbXml
+    es <- fsdbEfforts fsdbXml
+    return $ compLanding free es

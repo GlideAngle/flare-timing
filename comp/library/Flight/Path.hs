@@ -4,8 +4,9 @@ module Flight.Path
     , KmlFile(..)
     , FsdbFile(..)
     , FsdbXml(..)
-    , NormScoreFile(..)
+    , NormEffortFile(..)
     , NormRouteFile(..)
+    , NormScoreFile(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
@@ -28,10 +29,12 @@ module Flight.Path
     , AlignTimeDir(..)
     , DiscardFurtherDir(..)
     , PegThenDiscardDir(..)
-    , fsdbToNormScore
-    , compToNormScore
+    , fsdbToNormEffort
+    , compToNormEffort
     , fsdbToNormRoute
     , compToNormRoute
+    , fsdbToNormScore
+    , compToNormScore
     , fsdbToComp
     , compToTaskLength
     , compToCross
@@ -54,8 +57,9 @@ module Flight.Path
     , alignTimePath
     , discardFurtherPath
     , pegThenDiscardPath
-    , findNormScore
+    , findNormEffort
     , findNormRoute
+    , findNormScore
     , findFsdb
     , findCompInput
     , findCrossZone
@@ -76,11 +80,14 @@ import System.FilePath.Find
 import qualified System.FilePath.Find as Find (FileType(..))
 import Flight.Score (PilotId(..), PilotName(..), Pilot(..))
 
--- | The path to a competition expected score file.
-newtype NormScoreFile = NormScoreFile FilePath deriving Show
+-- | The path to a competition expected effort file.
+newtype NormEffortFile = NormEffortFile FilePath deriving Show
 
 -- | The path to a competition expected optimal route file.
 newtype NormRouteFile = NormRouteFile FilePath deriving Show
+
+-- | The path to a competition expected score file.
+newtype NormScoreFile = NormScoreFile FilePath deriving Show
 
 -- | The path to a *.igc file.
 newtype IgcFile = IgcFile FilePath deriving Show
@@ -160,13 +167,13 @@ newtype LandOutFile = LandOutFile FilePath deriving Show
 -- | The path to as gap point file.
 newtype GapPointFile = GapPointFile FilePath deriving Show
 
-compToNormScore :: CompInputFile -> NormScoreFile
-compToNormScore (CompInputFile p) =
-    NormScoreFile $ flip replaceExtension (ext NormScore) $ dropExtension p
+compToNormEffort :: CompInputFile -> NormEffortFile
+compToNormEffort (CompInputFile p) =
+    NormEffortFile $ flip replaceExtension (ext NormEffort) $ dropExtension p
 
-fsdbToNormScore :: FsdbFile -> NormScoreFile
-fsdbToNormScore (FsdbFile p) =
-    NormScoreFile $ replaceExtension p (ext NormScore)
+fsdbToNormEffort :: FsdbFile -> NormEffortFile
+fsdbToNormEffort (FsdbFile p) =
+    NormEffortFile $ replaceExtension p (ext NormEffort)
 
 compToNormRoute :: CompInputFile -> NormRouteFile
 compToNormRoute (CompInputFile p) =
@@ -175,6 +182,14 @@ compToNormRoute (CompInputFile p) =
 fsdbToNormRoute :: FsdbFile -> NormRouteFile
 fsdbToNormRoute (FsdbFile p) =
     NormRouteFile $ replaceExtension p (ext NormRoute)
+
+compToNormScore :: CompInputFile -> NormScoreFile
+compToNormScore (CompInputFile p) =
+    NormScoreFile $ flip replaceExtension (ext NormScore) $ dropExtension p
+
+fsdbToNormScore :: FsdbFile -> NormScoreFile
+fsdbToNormScore (FsdbFile p) =
+    NormScoreFile $ replaceExtension p (ext NormScore)
 
 fsdbToComp :: FsdbFile -> CompInputFile
 fsdbToComp (FsdbFile p) =
@@ -276,8 +291,9 @@ data FileType
     = Fsdb
     | Kml
     | Igc
-    | NormScore
+    | NormEffort
     | NormRoute
+    | NormScore
     | CompInput
     | TaskLength
     | CrossZone
@@ -300,8 +316,9 @@ ext :: FileType -> FilePath
 ext Fsdb = ".fsdb"
 ext Kml = ".kml"
 ext Igc = ".igc"
-ext NormScore = ".norm-score.yaml"
+ext NormEffort = ".norm-effort.yaml"
 ext NormRoute = ".norm-route.yaml"
+ext NormScore = ".norm-score.yaml"
 ext CompInput = ".comp-input.yaml"
 ext TaskLength = ".task-length.yaml"
 ext CrossZone = ".cross-zone.yaml"
@@ -324,8 +341,9 @@ ensureExt :: FileType -> FilePath -> FilePath
 ensureExt Fsdb = flip replaceExtensions "fsdb"
 ensureExt Kml = id
 ensureExt Igc = id
-ensureExt NormScore = flip replaceExtensions "norm-score.yaml"
+ensureExt NormEffort = flip replaceExtensions "norm-effort.yaml"
 ensureExt NormRoute = flip replaceExtensions "norm-route.yaml"
+ensureExt NormScore = flip replaceExtensions "norm-score.yaml"
 ensureExt CompInput = flip replaceExtensions "comp-input.yaml"
 ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
 ensureExt CrossZone = flip replaceExtensions "cross-zone.yaml"
@@ -344,23 +362,32 @@ ensureExt BonusReach = flip replaceExtensions "bonus-reach.yaml"
 ensureExt LandOut = flip replaceExtensions "land-out.yaml"
 ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"
 
-findNormScore' :: FilePath -> IO [NormScoreFile]
-findNormScore' dir = fmap NormScoreFile <$> findFiles NormScore dir
+findNormEffort' :: FilePath -> IO [NormEffortFile]
+findNormEffort' dir = fmap NormEffortFile <$> findFiles NormEffort dir
+
+findNormEffort
+    :: (HasField "dir" o String, HasField "file" o String)
+    => o
+    -> IO [NormEffortFile]
+findNormEffort = findFileType NormEffort findNormEffort' NormEffortFile
 
 findNormRoute' :: FilePath -> IO [NormRouteFile]
 findNormRoute' dir = fmap NormRouteFile <$> findFiles NormRoute dir
-
-findNormScore
-    :: (HasField "dir" o String, HasField "file" o String)
-    => o
-    -> IO [NormScoreFile]
-findNormScore = findFileType NormScore findNormScore' NormScoreFile
 
 findNormRoute
     :: (HasField "dir" o String, HasField "file" o String)
     => o
     -> IO [NormRouteFile]
 findNormRoute = findFileType NormRoute findNormRoute' NormRouteFile
+
+findNormScore' :: FilePath -> IO [NormScoreFile]
+findNormScore' dir = fmap NormScoreFile <$> findFiles NormScore dir
+
+findNormScore
+    :: (HasField "dir" o String, HasField "file" o String)
+    => o
+    -> IO [NormScoreFile]
+findNormScore = findFileType NormScore findNormScore' NormScoreFile
 
 findFsdb' :: FilePath -> IO [FsdbFile]
 findFsdb' dir = fmap FsdbFile <$> findFiles Fsdb dir

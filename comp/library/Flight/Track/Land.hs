@@ -13,11 +13,14 @@ module Flight.Track.Land
     ( Landing(..)
     , TaskLanding(..)
     , TrackEffort(..)
+    , compLanding
     , taskLanding
     , effortRank
     ) where
 
 import Control.Lens ((^?), element)
+import Control.Monad (join)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Data.List (sortOn)
 import Data.String (IsString())
 import GHC.Generics (Generic)
@@ -116,6 +119,24 @@ data TaskLanding =
         -- ^ The difficulty of each chunk.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+compLanding :: MinimumDistance (Quantity Double [u| km |]) -> [Maybe TaskLanding] -> Landing
+compLanding free xs =
+    Landing
+        { minDistance =
+            fromMaybe free . listToMaybe $
+            [ fromMaybe free $ (\TaskLanding{minDistance = md} -> md) <$> x | x <- xs ]
+        , bestDistance =
+            [ join $ (\TaskLanding{bestDistance = bd} -> bd) <$> x | x <- xs ]
+        , landout =
+            [ maybe 0 (\TaskLanding{landout = lo} -> lo) x | x <- xs ]
+        , lookahead =
+            [ join $ (\TaskLanding{lookahead = ahead} -> ahead) <$> x| x <- xs ]
+        , chunking =
+            [ join $ (\TaskLanding{chunking = cg} -> cg) <$> x| x <- xs ]
+        , difficulty =
+            [ join $ (\TaskLanding{difficulty = dy} -> dy) <$> x| x <- xs ]
+        }
 
 -- | For each task, the landing for that task.
 data Landing =
