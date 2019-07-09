@@ -62,7 +62,7 @@ in    defs
               , source-dirs =
                   "prod-apps/extract-input"
               }
-          , fs-score =
+          , fs-effort =
               { dependencies =
                     deps
                   # [ "containers"
@@ -70,14 +70,15 @@ in    defs
                     , "flight-fsdb"
                     , "flight-gap"
                     , "flight-mask"
+                    , "flight-route"
                     , "flight-zone"
                     ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
-                  "FsScoreMain.hs"
+                  "FsEffortMain.hs"
               , source-dirs =
-                  "prod-apps/fs-score"
+                  "prod-apps/fs-effort"
               }
           , fs-route =
               { dependencies =
@@ -96,6 +97,23 @@ in    defs
                   "FsRouteMain.hs"
               , source-dirs =
                   "prod-apps/fs-route"
+              }
+          , fs-score =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "flight-earth"
+                    , "flight-fsdb"
+                    , "flight-gap"
+                    , "flight-mask"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+              , main =
+                  "FsScoreMain.hs"
+              , source-dirs =
+                  "prod-apps/fs-score"
               }
           , task-length =
               { dependencies =

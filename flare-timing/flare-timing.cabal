@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3789813a42bf0f1c5b8d9faaf30cdb8ef2409643b20f1729615d62685cd506a1
+-- hash: a2212b4428f1bdbb1678be10577e7c016d0d7a1912b46d98ac70a3e1160e6d7c
 
 name:           flare-timing
 version:        0.1.0
@@ -170,6 +170,44 @@ executable extract-input
     , flight-gap
     , flight-latlng
     , flight-mask
+    , flight-scribe
+    , flight-time
+    , flight-zone
+    , formatting
+    , mtl
+    , raw-strings-qq
+    , transformers
+    , uom-plugin
+    , yaml
+  default-language: Haskell2010
+
+executable fs-effort
+  main-is: FsEffortMain.hs
+  other-modules:
+      FsEffortOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/fs-effort
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , containers
+    , directory
+    , filemanip
+    , filepath
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-fsdb
+    , flight-gap
+    , flight-latlng
+    , flight-mask
+    , flight-route
     , flight-scribe
     , flight-time
     , flight-zone
