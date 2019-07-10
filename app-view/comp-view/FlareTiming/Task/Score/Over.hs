@@ -30,7 +30,7 @@ import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
-import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Pilot (showPilot)
 import FlareTiming.Time (timeZone)
 import FlareTiming.Task.Score.Show
 
@@ -119,7 +119,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
-                elClass "th" "th-pilot" $ text "Pilot"
+                elClass "th" "th-pilot" $ text "###-Pilot"
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-start-gate" $ text "Gate"
                 elClass "th" "th-end" $ text "End"
@@ -295,7 +295,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let v = velocity . snd <$> x
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
-                        let n = showPilotName p in
+                        let n = showPilot p in
                         if p `elem` (Pilot.pilot <$> ps)
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
@@ -398,7 +398,7 @@ dnfRow place rows pilot = do
     elClass "tr" "tr-dnf" $ do
         elClass "td" "td-norm td-placing" $ text ""
         elClass "td" "td-placing" . text $ showRank place
-        elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
+        elClass "td" "td-pilot" . dynText $ showPilot <$> pilot
         dnfMajor
         elClass "td" "td-total-points" $ text "0"
         dnfMinor
