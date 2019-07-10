@@ -113,11 +113,11 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "9" <> "class" =: "th-norm chunking") $ dynText msgChunkingN
+                elAttr "th" ("colspan" =: "10" <> "class" =: "th-norm chunking") $ dynText msgChunkingN
                 elAttr "th" ("colspan" =: "3") $ text ""
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "9") $ dynText msgChunking
+                elAttr "th" ("colspan" =: "10") $ dynText msgChunking
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort (Descending)"
 
             el "tr" $ do
@@ -145,6 +145,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
                 elClass "th" "th-alt-distance-units" $ text "(m)"
 
+                elClass "th" "th-chunk-units" $ text "(km)"
                 elClass "th" "th-chunk-units" $ text "(km)"
                 elClass "th" "th-chunk-units" $ text "(km)"
 
