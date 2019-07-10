@@ -60,15 +60,6 @@ tableScoreArrive utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
-                elClass "th" "th-start-start" $ text "Start"
-
-                elClass "th" "th-norm th-start" . dynText
-                    $ ffor sgs (\case [] -> "✓-Start"; _ -> "✓-Gate")
-
-                elClass "th" "th-norm th-time-diff" . dynText
-                    $ ffor sgs (\case [] -> "Δ-Start"; _ -> "Δ-Gate")
-
-                elClass "th" "th-start-gate" $ text "Gate"
 
                 elClass "th" "th-end" $ text "End"
                 elClass "th" "th-norm th-end" $ text "✓-End"
@@ -197,12 +188,6 @@ pointRow utcOffset dfNt sEx x = do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
-        elClass "td" "td-norm td-norm-start" . text $ ySs
-        elClass "td" "td-norm td-time-diff" . text $ ySsDiff
-
-        elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
-
         elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
         elClass "td" "td-norm td-norm-end" . text $ yEs
         elClass "td" "td-norm td-time-diff" . text $ yEsDiff
@@ -247,7 +232,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "10"
+                        <> "colspan" =: "6"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
