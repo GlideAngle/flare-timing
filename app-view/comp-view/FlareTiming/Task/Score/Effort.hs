@@ -129,6 +129,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
                 elClass "th" "th-chunk" $ text "Chunk"
                 elClass "th" "th-norm th-chunk" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-landed-distance" $ text "Landed"
                 elClass "th" "th-norm th-effort-points" $ text "✓"
@@ -309,13 +310,20 @@ pointRow _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
                             , quieten $ showDifficultyPointsDiff ePtsN ePts
                             ))
 
-    let pilotChunk pilot' ixChunkMap' = fromMaybe "" $ do
-        IxChunk i <- Map.lookup pilot' ixChunkMap'
+    let pilotChunk pilot' ixChunkMap' = fromMaybe (IxChunk 0, PilotDistance 0) $ do
+        ic@(IxChunk i) <- Map.lookup pilot' ixChunkMap'
         let pd = PilotDistance (0.1 * fromIntegral i :: Double)
-        return $ showPilotDistance 1 pd
+        return $ (ic, pd)
 
-    ixChunk <- sample . current $ ffor2 pilot ixChunkMap pilotChunk
-    ixChunkN <- sample . current $ ffor2 pilot ixChunkMapN pilotChunk
+    (ixChunk, ixChunkN, ixChunkDiff) <- sample . current
+            $ ffor3 pilot ixChunkMap ixChunkMapN (\p map mapN ->
+                let (_, pd) = pilotChunk p map
+                    (_, pdN) = pilotChunk p mapN
+                in
+                    ( showPilotDistance 1 pd
+                    , showPilotDistance 1 pdN
+                    , showPilotDistanceDiff 1 pdN pd
+                    ))
 
     elClass "tr" classPilot $ do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
@@ -327,6 +335,7 @@ pointRow _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
 
         elClass "td" "td-chunk" $ text ixChunk
         elClass "td" "td-norm td-chunk" $ text ixChunkN
+        elClass "td" "td-norm td-diff" $ text ixChunkDiff
 
         elDynClass "td" (fst <$> awardFree) . text $ landed
         elClass "td" "td-norm td-landed-distance" . text $ landedN
@@ -373,7 +382,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "10"
+                        <> "colspan" =: "11"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
