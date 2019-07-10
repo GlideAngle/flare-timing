@@ -21,7 +21,7 @@ import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point
     (ReachToggle(..), PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Pilot (showPilot)
 
 placings :: [TrackReach] -> [[Double]]
 placings = fmap xy
@@ -111,7 +111,7 @@ tablePilotReach sEx reach = do
                     elClass "th" "th-norm" $ text "✓"
                     elClass "th" "th-norm" $ text "Δ"
 
-                    el "th" $ text "Pilot"
+                    el "th" $ text "###-Pilot"
 
                     return ()
 
@@ -167,7 +167,7 @@ rowReach mapN p r = do
         elClass "td" "td-norm" $ text yFrac
         elClass "td" "td-norm" $ text yFracDiff
 
-        elClass "td" "td-pilot" . dynText $ showPilotName <$> p
+        elClass "td" "td-pilot" . dynText $ showPilot <$> p
 
         return ()
 
@@ -189,7 +189,7 @@ tablePilotReachBonus sEx reach bonusReach = do
                     elAttr "th" (("colspan" =: "4") <> ("class" =: "th-reach-frac"))
                         $ text "Fraction"
 
-                    el "th" $ text "Pilot"
+                    el "th" $ text "###-Pilot"
 
                     return ()
 
@@ -279,6 +279,6 @@ rowReachBonus mapR mapN p tr = do
         elClass "td" "td-norm" $ text yFrac
         elClass "td" "td-norm" $ text yFracDiff
 
-        elClass "td" "td-pilot" . dynText $ showPilotName <$> p
+        elClass "td" "td-pilot" . dynText $ showPilot <$> p
 
         return ()

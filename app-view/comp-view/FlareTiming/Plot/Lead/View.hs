@@ -18,7 +18,7 @@ import WireTypes.Lead
     (TrackLead(..), LeadingArea(..), LeadingCoefficient(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
-import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Pilot (showPilot)
 
 placings :: [TrackLead] -> [[Double]]
 placings = fmap xy
@@ -96,7 +96,7 @@ tablePilotSimple xs = do
                     el "th" $ text "Area"
                     el "th" $ text "Coef"
                     el "th" $ text "Frac"
-                    el "th" $ text "Pilot"
+                    el "th" $ text "###-Pilot"
 
                     return ()
 
@@ -115,7 +115,7 @@ rowLeadSimple pilot av = do
         el "td" . dynText $ showArea . area <$> av
         el "td" . dynText $ showCoef . coef <$> av
         el "td" . dynText $ showLeadingFrac . frac <$> av
-        el "td" . dynText $ showPilotName <$> pilot
+        el "td" . dynText $ showPilot <$> pilot
 
         return ()
 
@@ -134,7 +134,7 @@ tablePilotCompare _ sEx xs = do
                     elAttr "th" ("colspan" =: "3") $ text "Coefficient"
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-frac"))
                         $ text "Fraction"
-                    el "th" $ text "Pilot"
+                    el "th" $ text "###-Pilot"
                 el "tr" $ do
                     el "th" $ text ""
                     elClass "th" "th-norm" $ text "✓"
@@ -196,7 +196,7 @@ rowLeadCompare mapN p tl = do
         elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> tl
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ showPilotName <$> p
+        el "td" . dynText $ showPilot <$> p
 
         return ()
 

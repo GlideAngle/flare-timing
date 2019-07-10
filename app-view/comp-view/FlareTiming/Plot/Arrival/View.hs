@@ -14,7 +14,7 @@ import WireTypes.Fraction
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..))
 import WireTypes.Pilot (Pilot(..))
-import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Pilot (showPilot)
 
 placings :: [TrackArrival] -> ([[Double]], [[Double]])
 placings arrivals =
@@ -74,7 +74,7 @@ tablePilot sEx xs = do
                     el "th" $ text "Fraction"
                     elClass "th" "th-norm th-norm-arrival" $ text "✓"
                     elClass "th" "th-norm th-arrival-diff" $ text "Δ"
-                    el "th" $ text "Pilot"
+                    el "th" $ text "###-Pilot"
 
                     return ()
 
@@ -107,7 +107,7 @@ rowArrival mapN p ta = do
         el "td" . dynText $ showArrivalFrac . frac <$> ta
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ showPilotName <$> p
+        el "td" . dynText $ showPilot <$> p
 
         return ()
 

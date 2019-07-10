@@ -17,7 +17,7 @@ import WireTypes.Speed (TrackSpeed(..), PilotTime(..))
 import qualified WireTypes.Speed as Speed (TrackSpeed(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (StartGate)
-import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Pilot (showPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
 import FlareTiming.Task.Score.Show
 
@@ -101,7 +101,7 @@ tablePilot sgs sEx xs = do
                     el "th" $ text ""
                     elClass "th" "th-norm" $ text "✓"
                     elClass "th" "th-norm" $ text "Δ"
-                    el "th" $ text "Pilot"
+                    el "th" $ text "###-Pilot"
 
                     return ()
 
@@ -146,7 +146,7 @@ rowSpeed mapN p ts = do
         el "td" . dynText $ showSpeedFrac . frac <$> ts
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ showPilotName <$> p
+        el "td" . dynText $ showPilot <$> p
 
         return ()
 

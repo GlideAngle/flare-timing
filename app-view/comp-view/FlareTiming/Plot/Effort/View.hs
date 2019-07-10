@@ -18,7 +18,7 @@ import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Pilot (showPilot)
 
 placings :: [TrackEffort] -> [[Double]]
 placings = fmap xy
@@ -82,7 +82,7 @@ tablePilot sEx xs = do
                     elAttr "th" (("colspan" =: "3") <> ("class" =: "th-effort-frac"))
                         $ text "Fraction"
 
-                    el "th" $ text "Pilot"
+                    el "th" $ text "###-Pilot"
 
                     return ()
 
@@ -152,7 +152,7 @@ rowEffort mapN p te = do
         elClass "td" "td-norm" $ text yFrac
         elClass "td" "td-norm" $ text yFracDiff
 
-        el "td" . dynText $ showPilotName <$> p
+        el "td" . dynText $ showPilot <$> p
 
         return ()
 
