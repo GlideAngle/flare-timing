@@ -1,6 +1,7 @@
 module Flight.Fsdb.TaskEffort (parseNormEfforts) where
 
 import Data.Either (partitionEithers)
+import Data.Map (Map)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -34,7 +35,7 @@ import Text.XML.HXT.Core
 import Flight.Units ()
 import Flight.Fsdb.Internal.XmlPickle ()
 import Flight.Track.Land (TaskLanding(..))
-import Flight.Comp (Pilot(..), PilotId(..), PilotName(..))
+import Flight.Comp (Pilot(..), PilotId(..))
 import Flight.Score
     ( MinimumDistance(..), PilotDistance(..)
     , Lookahead(..), SumOfDifficulty(..)
@@ -43,6 +44,8 @@ import Flight.Score
     , toIxChunk
     )
 import qualified Flight.Score as Gap (ChunkDifficulty(..))
+import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
+import Flight.Fsdb.Pilot (getCompPilot)
 
 nullLanding :: TaskLanding
 nullLanding =
@@ -75,8 +78,8 @@ xpDown =
     xpElem "FsDown"
     $ xpPair (xpAttr "id" xpText) (xpAttr "down" xpPrim)
 
-xpChunk :: PU Gap.ChunkDifficulty
-xpChunk =
+xpChunk :: Map PilotId Pilot -> PU Gap.ChunkDifficulty
+xpChunk pidMap =
     xpElem "FsChunk"
     $ xpWrap
         ( \(c, s, e, ea, d, dw, rel :: Double, frac :: Double, ds) ->
@@ -92,10 +95,7 @@ xpChunk =
                     . MkQuantity
                     . snd
                     <$> ds
-                , Gap.downers =
-                    (\x -> Pilot (PilotId x, PilotName "-"))
-                    . fst
-                    <$> ds
+                , Gap.downers = unKeyPilot pidMap . PilotId . fst <$> ds
                 , Gap.rel = RelativeDifficulty $ toRational rel
                 , Gap.frac = DifficultyFraction $ toRational frac
                 }
@@ -184,8 +184,8 @@ xpDifficulty =
         (xpAttr "sum_of_difficulty" xpInt)
         (xpAttr "no_of_pilots_lo" xpInt)
 
-getEffort :: ArrowXml a => a XmlTree (Either String TaskLanding)
-getEffort =
+getEffort :: ArrowXml a => [Pilot] -> a XmlTree (Either String TaskLanding)
+getEffort pilots =
     getChildren
     >>> deep (hasName "FsTaskDifficulty")
     >>> arr (unpickleDoc' xpDifficulty)
@@ -197,10 +197,12 @@ getEffort =
                 (s : _, _) -> Left s
                 ([], rs) -> Right $ x{difficulty = Just rs})
     where
+        kps = keyMap $ keyPilots pilots
+
         getChunk =
             getChildren
             >>> hasName "FsChunk"
-            >>> arr (unpickleDoc' xpChunk)
+            >>> arr (unpickleDoc' $ xpChunk kps)
 
 parseNormEfforts :: String -> IO (Either String [TaskLanding])
 parseNormEfforts contents = do
@@ -212,5 +214,6 @@ parseNormEfforts contents = do
                 ]
                 contents
 
-    xs <- runX $ doc >>> getEffort
+    ps <- runX $ doc >>> getCompPilot
+    xs <- runX $ doc >>> getEffort ps
     return $ sequence xs
