@@ -41,7 +41,7 @@ tableScoreArrive
     -> Dynamic t [(Pilot, Bk.Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreArrive utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -61,7 +61,7 @@ tableScoreArrive utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs 
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "5") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrive-points-breakdown") $ text "Points for Arrival (Descending)"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points-breakdown") $ text "Points for Arrival (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"

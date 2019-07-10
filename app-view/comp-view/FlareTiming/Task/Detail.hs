@@ -270,7 +270,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                                     elAttr "div" ("id" =: "score-speed") $
                                         tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabArrive ->
-                                    elAttr "div" ("id" =: "score-arrive") $
+                                    elAttr "div" ("id" =: "score-arrival") $
                                         tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
 
                             <$> tabScore
