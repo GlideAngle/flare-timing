@@ -58,11 +58,6 @@ tableScoreArrive utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "12" <> "class" =: "th-speed-section") . dynText
-                    $ showSpeedSection <$> ln
-
-            el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
                 elClass "th" "th-start-start" $ text "Start"
@@ -86,9 +81,6 @@ tableScoreArrive utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs
 
                 elClass "th" "th-norm th-time-diff" $ dynText
                     $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
-
-                elClass "th" "th-pace" $ text "Pace ¶"
-                elClass "th" "th-speed" $ text "Velocity (km/h)"
 
         _ <- el "tbody" $ do
             _ <-
@@ -219,9 +211,6 @@ pointRow utcOffset dfNt sEx x = do
         elClass "td" "td-norm td-norm-pace" . text $ yEl
         elClass "td" "td-norm td-time-diff" . text $ yElDiff
 
-        elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
-        elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
-
 dnfRows
     :: MonadWidget t m
     => TaskPlacing
@@ -258,7 +247,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "12"
+                        <> "colspan" =: "10"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
