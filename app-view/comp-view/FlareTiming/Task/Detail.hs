@@ -23,9 +23,9 @@ import FlareTiming.Comms
     ( getTaskScore, getTaskNormScore
     , getTaskBolsterStats, getTaskBonusBolsterStats
     , getTaskReach, getTaskBonusReach
-    , getTaskEffort, getTaskLanding
+    , getTaskEffort, getTaskLanding, getTaskNormLanding
     , getTaskArrival, getTaskLead, getTaskTime
-    , getTaskValidityWorking, getNormTaskValidityWorking
+    , getTaskValidityWorking, getTaskNormValidityWorking
     , getTaskLengthNormSphere
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
@@ -185,12 +185,13 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
     bonusReach <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusReach ix pb)
     ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)
     lg <- holdDyn Nothing =<< (getTaskLanding ix pb)
+    lgN <- holdDyn Nothing =<< (getTaskNormLanding ix pb)
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
     ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
     sd <- holdDyn Nothing =<< (fmap Just <$> getTaskTime ix pb)
     ft <- holdDyn Nothing =<< (fmap Just <$> getTaskFlyingSectionTimes ix pb)
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
-    vwNorm <- holdDyn Nothing =<< getNormTaskValidityWorking ix pb
+    vwNorm <- holdDyn Nothing =<< getTaskNormValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
     dfNt <- holdDyn (DfNoTrack []) =<< getTaskPilotDfNoTrack ix pb
@@ -266,7 +267,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                                         tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabEffort ->
                                     elAttr "div" ("id" =: "score-effort") $
-                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg)
+                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN)
 
                             <$> tabScore
 

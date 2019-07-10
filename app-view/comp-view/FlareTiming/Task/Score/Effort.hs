@@ -56,8 +56,9 @@ tableScoreEffort
     -> Dynamic t [(Pilot, Bk.Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t (Maybe TaskLanding)
+    -> Dynamic t (Maybe TaskLanding)
     -> m ()
-tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx lg' = do
+tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx lg' lgN' = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -66,7 +67,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
             . fromIntegral
             $ lenDfs + 1
 
-    let msgChunking = ffor lg' (\case
+    let describeChunking = \case
             Just
                 TaskLanding
                     { landout
@@ -80,11 +81,14 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                     } ->
                         (T.pack $ printf "%d landouts over " landout)
                         <> (showPilotDistance 1 (PilotDistance $ ec + 0.1)) <> " km"
-                        <> (T.pack $ printf " divided into %d chunks" ixN)
-                        <> (T.pack $ printf " and looking ahead %.1f km" (0.1 * fromIntegral n :: Double))
-                        <> " we sum difficulty to "
+                        <> (T.pack $ printf " or %d chunks" ixN)
+                        <> " sums to "
                         <> T.pack (show diff)
-            _ -> "")
+                        <> (T.pack $ printf " looking ahead %.1f km" (0.1 * fromIntegral n :: Double))
+            _ -> ""
+
+    let msgChunkingN = ffor lgN' describeChunking
+    let msgChunking = ffor lg' describeChunking
 
     let pChunks = ffor lg' (\case
             Just TaskLanding{difficulty = Just ds} ->
@@ -105,6 +109,9 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
+            el "tr" $ do
+                elAttr "th" ("colspan" =: "8" <> "class" =: "th-norm chunking") $ dynText msgChunkingN
+                elAttr "th" ("colspan" =: "3") $ text ""
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "8") $ dynText msgChunking
