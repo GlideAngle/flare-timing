@@ -1,5 +1,6 @@
 module FlareTiming.Task.Score.Effort (tableScoreEffort) where
 
+import Prelude hiding (map)
 import Data.Ord (comparing)
 import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
@@ -24,7 +25,6 @@ import WireTypes.Point
     , DifficultyPoints(..), showDifficultyPoints, showDifficultyPointsDiff
     , DistancePoints(..)
     , showPilotDistance, showPilotDistanceDiff
-    , showPilotAlt
     , showTaskDifficultyPoints
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
@@ -113,19 +113,16 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "10") $ dynText msgChunking
+                elAttr "th" ("colspan" =: "8") $ dynText msgChunking
                 elAttr "th" ("colspan" =: "3") $ text ""
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "10" <> "class" =: "th-norm chunking") $ dynText msgChunkingN
+                elAttr "th" ("colspan" =: "8" <> "class" =: "th-norm chunking") $ dynText msgChunkingN
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
-                elClass "th" "th-min-distance" $ text "Min"
-
-                elClass "th" "th-alt-distance" $ text "Alt"
 
                 elClass "th" "th-chunk" $ text "Chunk"
                 elClass "th" "th-norm th-chunk" $ text "✓"
@@ -141,9 +138,6 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                elClass "th" "th-min-distance-units" $ text "(km)"
-
-                elClass "th" "th-alt-distance-units" $ text "(m)"
 
                 elClass "th" "th-chunk-units" $ text "(km)"
                 elClass "th" "th-chunk-units" $ text "(km)"
@@ -259,7 +253,6 @@ pointRow _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
     let pilot = fst <$> x
     let xB = snd <$> x
 
-    let alt = Bk.stoppedAlt <$> xB
     let extraReach = fmap extra . Bk.reach <$> xB
     let points = Bk.breakdown <$> xB
 
@@ -330,10 +323,6 @@ pointRow _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
         elClass "td" "td-pilot" $ text idNamePilot
 
-        elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
-        elClass "td" "td-alt-distance" . dynText
-            $ maybe "" showPilotAlt <$> alt
-
         elClass "td" "td-chunk" $ text ixChunk
         elClass "td" "td-norm td-chunk" $ text ixChunkN
         elClass "td" "td-norm td-diff" $ text ixChunkDiff
@@ -383,7 +372,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "11"
+                        <> "colspan" =: "9"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
