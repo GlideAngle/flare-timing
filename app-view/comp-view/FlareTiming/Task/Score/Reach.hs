@@ -120,7 +120,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
         _ <- el "tbody" $ do
             _ <-
                 simpleList
-                    (sortBy cmp <$> sDfs)
+                    (sortBy cmpReach <$> sDfs)
                     (pointRow
                         utcOffset
                         free
@@ -339,5 +339,5 @@ dnfRow place rows pilot = do
         dnfMega
         return ()
 
-cmp :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
-cmp = flip (comparing (reach . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)
+cmpReach :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
+cmpReach = flip (comparing (reach . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)

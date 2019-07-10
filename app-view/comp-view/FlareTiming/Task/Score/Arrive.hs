@@ -1,8 +1,10 @@
 module FlareTiming.Task.Score.Arrive (tableScoreArrive) where
 
 import Prelude hiding (min)
-import Reflex.Dom
+import Data.Ord (comparing)
 import Data.Maybe (fromMaybe)
+import Data.List (sortBy)
+import Reflex.Dom
 import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
@@ -78,7 +80,7 @@ tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs
         _ <- el "tbody" $ do
             _ <-
                 simpleList
-                    sDfs
+                    (sortBy cmpArrival <$> sDfs)
                     (pointRow
                         utcOffset
                         dfNt
@@ -251,3 +253,6 @@ dnfRow place rows pilot = do
         elClass "td" "td-pilot" . dynText $ showPilot <$> pilot
         dnfMega
         return ()
+
+cmpArrival :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
+cmpArrival = flip (comparing (arrival . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)

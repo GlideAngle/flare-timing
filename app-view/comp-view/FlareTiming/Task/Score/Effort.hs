@@ -161,7 +161,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
         _ <- el "tbody" $ do
             _ <-
                 simpleList
-                    (sortBy cmp <$> sDfs)
+                    (sortBy cmpEffort <$> sDfs)
                     (pointRow
                         utcOffset
                         free
@@ -385,5 +385,5 @@ dnfRow place rows pilot = do
         return ()
 
 -- SEE: https://stackoverflow.com/questions/2349798/in-haskell-how-can-i-use-the-built-in-sortby-function-to-sort-a-list-of-pairst
-cmp :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
-cmp = flip (comparing (effort . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)
+cmpEffort :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
+cmpEffort = flip (comparing (effort . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)
