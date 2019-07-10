@@ -25,8 +25,6 @@ import WireTypes.Point
     , showTimePoints
     , showTimePointsDiff
 
-    , showTaskLinearPoints
-    , showTaskDifficultyPoints
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
@@ -80,6 +78,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
             $ lenDfs + 1
 
     let thSpace = elClass "th" "th-space" $ text ""
+    let thNorm = elClass "th" "th-norm" $ text ""
 
     let tableClass =
             let tc = "table is-striped is-narrow is-fullwidth" in
@@ -128,6 +127,163 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
+            elClass "tr" "tr-validity" $ do
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $
+                    maybe
+                        ""
+                        ( (\v ->
+                            "Validity (Launch = "
+                            <> showLaunchValidity v
+                            <> ")")
+                        . Vy.launch
+                        )
+                    <$> vy
+
+                elClass "th" "th-distance-validity" . dynText $
+                    maybe
+                        ""
+                        ( showDistanceValidity
+                        . Vy.distance
+                        )
+                    <$> vy
+
+                thNorm
+                thNorm
+
+                elClass "th" "th-time-validity" . dynText $
+                    maybe
+                        ""
+                        ( showTimeValidity
+                        . Vy.time
+                        )
+                    <$> vy
+
+                thNorm
+                thNorm
+                thSpace
+                thNorm
+                thNorm
+                thSpace
+                thNorm
+                thNorm
+
+                elClass "th" "th-task-validity" . dynText $
+                    maybe
+                        ""
+                        ( showTaskValidity
+                        . Vy.task
+                        )
+                    <$> vy
+
+                thNorm
+                thNorm
+
+            elClass "tr" "tr-weight" $ do
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
+
+                elClass "th" "th-distance-weight" . dynText $
+                    maybe
+                        ""
+                        ( showDistanceWeight
+                        . Wg.distance
+                        )
+                    <$> wg
+
+                thNorm
+                thNorm
+
+                elClass "th" "th-time-weight" . dynText$
+                    maybe
+                        ""
+                        ( showTimeWeight
+                        . Wg.time
+                        )
+                    <$> wg
+
+                thNorm
+                thNorm
+
+                elClass "th" "th-leading-weight" . dynText$
+                    maybe
+                        ""
+                        ( showLeadingWeight
+                        . Wg.leading
+                        )
+                    <$> wg
+
+                thNorm
+                thNorm
+
+                elClass "th" "th-arrival-weight" . dynText$
+                    maybe
+                        ""
+                        ( showArrivalWeight
+                        . Wg.arrival
+                        )
+                    <$> wg
+
+                thNorm
+                thNorm
+                thSpace
+                thNorm
+                thNorm
+
+            elClass "tr" "tr-allocation" $ do
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
+
+                elClass "th" "th-distance-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showTaskDistancePoints (Just x) x)
+                        . Pt.distance
+                        )
+                    <$> pt
+
+                thNorm
+                thNorm
+
+                elClass "th" "th-time-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showTaskTimePoints (Just x) x)
+                        . Pt.time
+                        )
+                    <$> pt
+
+                thNorm
+                thNorm
+
+                elClass "th" "th-leading-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showTaskLeadingPoints (Just x) x)
+                        . Pt.leading
+                        )
+                    <$> pt
+
+                thNorm
+                thNorm
+
+                elClass "th" "th-arrival-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showTaskArrivalPoints (Just x) x)
+                        . Pt.arrival
+                        )
+                    <$> pt
+
+                thNorm
+                thNorm
+
+                elClass "th" "th-task-alloc" . dynText $
+                    maybe
+                        ""
+                        (\x -> showTaskPoints (Just x) x)
+                    <$> tp
+
+                thNorm
+                thNorm
+
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
 
@@ -163,163 +319,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elClass "th" "th-total-points" $ text ""
                 elClass "th" "th-norm th-total-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
-
-            elClass "tr" "tr-validity" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $
-                    maybe
-                        ""
-                        ( (\v ->
-                            "Validity (Launch = "
-                            <> showLaunchValidity v
-                            <> ")")
-                        . Vy.launch
-                        )
-                    <$> vy
-
-                elClass "th" "th-distance-validity" . dynText $
-                    maybe
-                        ""
-                        ( showDistanceValidity
-                        . Vy.distance
-                        )
-                    <$> vy
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-time-validity" . dynText $
-                    maybe
-                        ""
-                        ( showTimeValidity
-                        . Vy.time
-                        )
-                    <$> vy
-
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-
-                elClass "th" "th-task-validity" . dynText $
-                    maybe
-                        ""
-                        ( showTaskValidity
-                        . Vy.task
-                        )
-                    <$> vy
-
-                thSpace
-                thSpace
-
-            elClass "tr" "tr-weight" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
-
-                elClass "th" "th-distance-weight" . dynText $
-                    maybe
-                        ""
-                        ( showDistanceWeight
-                        . Wg.distance
-                        )
-                    <$> wg
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-time-weight" . dynText$
-                    maybe
-                        ""
-                        ( showTimeWeight
-                        . Wg.time
-                        )
-                    <$> wg
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-leading-weight" . dynText$
-                    maybe
-                        ""
-                        ( showLeadingWeight
-                        . Wg.leading
-                        )
-                    <$> wg
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-arrival-weight" . dynText$
-                    maybe
-                        ""
-                        ( showArrivalWeight
-                        . Wg.arrival
-                        )
-                    <$> wg
-
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-
-            elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
-
-                elClass "th" "th-distance-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskDistancePoints (Just x) x)
-                        . Pt.distance
-                        )
-                    <$> pt
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-time-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskTimePoints (Just x) x)
-                        . Pt.time
-                        )
-                    <$> pt
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-leading-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskLeadingPoints (Just x) x)
-                        . Pt.leading
-                        )
-                    <$> pt
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-arrival-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskArrivalPoints (Just x) x)
-                        . Pt.arrival
-                        )
-                    <$> pt
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-task-alloc" . dynText $
-                    maybe
-                        ""
-                        (\x -> showTaskPoints (Just x) x)
-                    <$> tp
-
-                thSpace
-                thSpace
 
         _ <- el "tbody" $ do
             _ <-
