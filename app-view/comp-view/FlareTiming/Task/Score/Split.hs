@@ -176,9 +176,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> vy
 
-                thSpace
-                thSpace
-
                 elClass "th" "th-distance-validity" . dynText $
                     maybe
                         ""
@@ -220,9 +217,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
 
             elClass "tr" "tr-weight" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
-
-                thSpace
-                thSpace
 
                 elClass "th" "th-distance-weight" . dynText $
                     maybe
@@ -273,22 +267,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
-
-                elClass "th" "th-reach-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskLinearPoints (Just x) x)
-                        . Pt.reach
-                        )
-                    <$> pt
-
-                elClass "th" "th-effort-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskDifficultyPoints (Just x) x)
-                        . Pt.effort
-                        )
-                    <$> pt
 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
