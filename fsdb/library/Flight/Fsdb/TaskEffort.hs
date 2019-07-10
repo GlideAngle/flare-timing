@@ -33,9 +33,11 @@ import Flight.Units ()
 import Flight.Fsdb.Internal.XmlPickle ()
 import Flight.Track.Land (TaskLanding(..))
 import Flight.Score
-    ( MinimumDistance(..), Lookahead(..), SumOfDifficulty(..)
+    ( MinimumDistance(..), PilotDistance(..)
+    , Lookahead(..), SumOfDifficulty(..)
     , IxChunk(..), Chunk(..), Chunking(..)
     , RelativeDifficulty(..), DifficultyFraction(..)
+    , toIxChunk
     )
 import qualified Flight.Score as Gap (ChunkDifficulty(..))
 
@@ -107,6 +109,9 @@ xpChunk =
         (xpAttr "down" xpInt)
         (xpAttr "downward" xpInt)
 
+ixc :: Double -> (IxChunk, Chunk (Quantity Double [u| km |]))
+ixc x = let q = MkQuantity x in (toIxChunk $ PilotDistance q, Chunk q)
+
 xpDifficulty :: PU TaskLanding
 xpDifficulty =
     xpElem "FsTaskDifficulty"
@@ -129,8 +134,8 @@ xpDifficulty =
                     Just $
                     Chunking
                         { sumOf = SumOfDifficulty $ fromIntegral sumDiff
-                        , startChunk = (IxChunk 0, Chunk $ MkQuantity sc)
-                        , endChunk = (IxChunk 0, Chunk $ MkQuantity ec)
+                        , startChunk = ixc sc
+                        , endChunk = ixc ec
                         }
                 , landout = lo
                 }
