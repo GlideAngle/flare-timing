@@ -72,7 +72,8 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
 
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "9") $ text ""
+                elAttr "th" ("colspan" =: "6") $ text ""
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-stopped") $ text "Only with Stopped Tasks"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Reach (Descending)"
 
             el "tr" $ do
