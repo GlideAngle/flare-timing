@@ -82,7 +82,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                         (T.pack $ printf "%d landouts over " landout)
                         <> (showPilotDistance 1 (PilotDistance $ ec + 0.1)) <> " km"
                         <> (T.pack $ printf " or %d chunks" ixN)
-                        <> " sums to "
+                        <> " sum to "
                         <> T.pack (show diff)
                         <> (T.pack $ printf " looking ahead %.1f km" (0.1 * fromIntegral n :: Double))
             _ -> ""
