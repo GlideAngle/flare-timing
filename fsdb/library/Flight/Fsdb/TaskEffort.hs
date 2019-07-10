@@ -1,18 +1,21 @@
 module Flight.Fsdb.TaskEffort (parseNormEfforts) where
 
+import Data.Either (partitionEithers)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , xpFilterAttr, xpFilterCont
-    , xpInt, xpPrim, unpickleDoc', xpWrap, xpElem, xpAttr, xp5Tuple
+    , xpInt, xpPrim, unpickleDoc', xpWrap, xpElem, xpAttr
+    , xp5Tuple, xp6Tuple
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
     ( ArrowXml
     , (<+>)
     , (>>>)
+    , (&&&)
     , runX
     , withValidate
     , withWarnings
@@ -23,6 +26,7 @@ import Text.XML.HXT.Core
     , arr
     , deep
     , isAttr
+    , listA
     )
 
 import Flight.Units ()
@@ -31,7 +35,9 @@ import Flight.Track.Land (TaskLanding(..))
 import Flight.Score
     ( MinimumDistance(..), Lookahead(..), SumOfDifficulty(..)
     , IxChunk(..), Chunk(..), Chunking(..)
+    , RelativeDifficulty(..), DifficultyFraction(..)
     )
+import qualified Flight.Score as Gap (ChunkDifficulty(..))
 
 nullLanding :: TaskLanding
 nullLanding =
@@ -43,6 +49,63 @@ nullLanding =
         , chunking = Nothing
         , difficulty = Nothing
         }
+
+nullChunkDifficulty :: Gap.ChunkDifficulty
+nullChunkDifficulty =
+    Gap.ChunkDifficulty
+        { Gap.chunk = IxChunk 0
+        , Gap.startChunk = Chunk [u| 0 km |]
+        , Gap.endChunk = Chunk [u| 0 km |]
+        , Gap.endAhead = Chunk [u| 0 km |]
+        , Gap.down = 0
+        , Gap.downs = []
+        , Gap.downers = []
+        , Gap.downward = 0
+        , Gap.rel = RelativeDifficulty 0
+        , Gap.frac = DifficultyFraction 0
+        }
+
+xpChunk :: PU Gap.ChunkDifficulty
+xpChunk =
+    xpElem "FsChunk"
+    -- WARNING: Filter only attributes, ignoring child elements such as
+    -- <FsChunk ... />. If not then the pickling will fail with
+    -- "xpCheckEmptyContents: unprocessed XML content detected".
+    $ xpFilterCont(isAttr)
+    $ xpFilterAttr
+        ( hasName "chunk"
+        <+> hasName "start"
+        <+> hasName "end"
+        <+> hasName "end_ahead"
+        <+> hasName "down"
+        <+> hasName "downward"
+        )
+    $ xpWrap
+        ( \(c, s, e, ea, d, dw) ->
+            nullChunkDifficulty
+                { Gap.chunk = IxChunk c
+                , Gap.startChunk = Chunk $ MkQuantity s
+                , Gap.endChunk = Chunk $ MkQuantity e
+                , Gap.endAhead = Chunk $ MkQuantity ea
+                , Gap.down = d
+                , Gap.downward = dw
+                }
+        , \Gap.ChunkDifficulty
+                { Gap.chunk = IxChunk c
+                , Gap.startChunk = Chunk (MkQuantity s)
+                , Gap.endChunk = Chunk (MkQuantity e)
+                , Gap.endAhead = Chunk (MkQuantity ea)
+                , Gap.down = d
+                , Gap.downward = dw
+                } -> ( c, s, e, ea, d, dw)
+        )
+    $ xp6Tuple
+        (xpAttr "chunk" xpInt)
+        (xpAttr "start" xpPrim)
+        (xpAttr "end" xpPrim)
+        (xpAttr "end_ahead" xpPrim)
+        (xpAttr "down" xpInt)
+        (xpAttr "downward" xpInt)
 
 xpDifficulty :: PU TaskLanding
 xpDifficulty =
@@ -101,7 +164,18 @@ getEffort =
     getChildren
     >>> deep (hasName "FsTaskDifficulty")
     >>> arr (unpickleDoc' xpDifficulty)
-
+    &&& listA getChunk
+    >>> arr (\case
+        (Left s, _) -> Left s
+        (Right x, cs) ->
+            case partitionEithers cs of
+                (s : _, _) -> Left s
+                ([], rs) -> Right $ x{difficulty = Just rs})
+    where
+        getChunk =
+            getChildren
+            >>> hasName "FsChunk"
+            >>> arr (unpickleDoc' xpChunk)
 
 parseNormEfforts :: String -> IO (Either String [TaskLanding])
 parseNormEfforts contents = do
