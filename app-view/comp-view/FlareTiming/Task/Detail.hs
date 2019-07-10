@@ -54,9 +54,10 @@ import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Score.Over (tableScoreOver)
 import FlareTiming.Task.Score.Split (tableScoreSplit)
-import FlareTiming.Task.Score.Time (tableScoreTime)
 import FlareTiming.Task.Score.Reach (tableScoreReach)
 import FlareTiming.Task.Score.Effort (tableScoreEffort)
+import FlareTiming.Task.Score.Time (tableScoreTime)
+import FlareTiming.Task.Score.Arrive (tableScoreArrive)
 import FlareTiming.Task.Geo (tableGeo)
 import FlareTiming.Task.Turnpoints (tableTask)
 import FlareTiming.Task.Absent (tableAbsent)
@@ -259,15 +260,18 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                                 ScoreTabSplit ->
                                     elAttr "div" ("id" =: "score-points") $
                                         tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
-                                ScoreTabTime ->
-                                    elAttr "div" ("id" =: "score-speed") $
-                                        tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabReach ->
                                     elAttr "div" ("id" =: "score-reach") $
                                         tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabEffort ->
                                     elAttr "div" ("id" =: "score-effort") $
-                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN)
+                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN
+                                ScoreTabTime ->
+                                    elAttr "div" ("id" =: "score-speed") $
+                                        tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                ScoreTabArrive ->
+                                    elAttr "div" ("id" =: "score-arrive") $
+                                        tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
 
                             <$> tabScore
 
