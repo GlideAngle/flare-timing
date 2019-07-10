@@ -8,7 +8,7 @@ import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , xpFilterAttr, xpFilterCont
     , xpInt, xpPrim, unpickleDoc', xpWrap, xpElem, xpAttr
-    , xp5Tuple, xp6Tuple
+    , xp5Tuple, xp8Tuple
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -81,9 +81,11 @@ xpChunk =
         <+> hasName "end_ahead"
         <+> hasName "down"
         <+> hasName "downward"
+        <+> hasName "rel"
+        <+> hasName "frac"
         )
     $ xpWrap
-        ( \(c, s, e, ea, d, dw) ->
+        ( \(c, s, e, ea, d, dw, rel, frac) ->
             nullChunkDifficulty
                 { Gap.chunk = IxChunk c
                 , Gap.startChunk = Chunk $ MkQuantity s
@@ -91,6 +93,8 @@ xpChunk =
                 , Gap.endAhead = Chunk $ MkQuantity ea
                 , Gap.down = d
                 , Gap.downward = dw
+                , Gap.rel = RelativeDifficulty $ toRational rel
+                , Gap.frac = DifficultyFraction $ toRational frac
                 }
         , \Gap.ChunkDifficulty
                 { Gap.chunk = IxChunk c
@@ -99,15 +103,19 @@ xpChunk =
                 , Gap.endAhead = Chunk (MkQuantity ea)
                 , Gap.down = d
                 , Gap.downward = dw
-                } -> ( c, s, e, ea, d, dw)
+                , Gap.rel = RelativeDifficulty rel
+                , Gap.frac = DifficultyFraction frac
+                } -> (c, s, e, ea, d, dw, fromRational rel, fromRational frac)
         )
-    $ xp6Tuple
+    $ xp8Tuple
         (xpAttr "chunk" xpInt)
         (xpAttr "start" xpPrim)
         (xpAttr "end" xpPrim)
         (xpAttr "end_ahead" xpPrim)
         (xpAttr "down" xpInt)
         (xpAttr "downward" xpInt)
+        (xpAttr "rel" xpPrim)
+        (xpAttr "frac" xpPrim)
 
 ixc :: Double -> (IxChunk, Chunk (Quantity Double [u| km |]))
 ixc x = let q = MkQuantity x in (toIxChunk $ PilotDistance q, Chunk q)
