@@ -7,8 +7,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , xpFilterAttr, xpFilterCont
-    , xpInt, xpPrim, unpickleDoc', xpWrap, xpElem, xpAttr
-    , xp5Tuple, xp8Tuple
+    , xpText, xpInt, xpPrim, unpickleDoc', xpWrap, xpElem, xpAttr
+    , xpPair, xp5Tuple, xp9Tuple, xpList
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -19,8 +19,10 @@ import Text.XML.HXT.Core
     , runX
     , withValidate
     , withWarnings
+    , withRemoveWS
     , readString
     , no
+    , yes
     , hasName
     , getChildren
     , arr
@@ -32,6 +34,7 @@ import Text.XML.HXT.Core
 import Flight.Units ()
 import Flight.Fsdb.Internal.XmlPickle ()
 import Flight.Track.Land (TaskLanding(..))
+import Flight.Comp (Pilot(..), PilotId(..), PilotName(..))
 import Flight.Score
     ( MinimumDistance(..), PilotDistance(..)
     , Lookahead(..), SumOfDifficulty(..)
@@ -67,25 +70,16 @@ nullChunkDifficulty =
         , Gap.frac = DifficultyFraction 0
         }
 
+xpDown :: PU (String, Double)
+xpDown =
+    xpElem "FsDown"
+    $ xpPair (xpAttr "id" xpText) (xpAttr "down" xpPrim)
+
 xpChunk :: PU Gap.ChunkDifficulty
 xpChunk =
     xpElem "FsChunk"
-    -- WARNING: Filter only attributes, ignoring child elements such as
-    -- <FsChunk ... />. If not then the pickling will fail with
-    -- "xpCheckEmptyContents: unprocessed XML content detected".
-    $ xpFilterCont(isAttr)
-    $ xpFilterAttr
-        ( hasName "chunk"
-        <+> hasName "start"
-        <+> hasName "end"
-        <+> hasName "end_ahead"
-        <+> hasName "down"
-        <+> hasName "downward"
-        <+> hasName "rel"
-        <+> hasName "frac"
-        )
     $ xpWrap
-        ( \(c, s, e, ea, d, dw, rel, frac) ->
+        ( \(c, s, e, ea, d, dw, rel :: Double, frac :: Double, ds) ->
             nullChunkDifficulty
                 { Gap.chunk = IxChunk c
                 , Gap.startChunk = Chunk $ MkQuantity s
@@ -93,6 +87,15 @@ xpChunk =
                 , Gap.endAhead = Chunk $ MkQuantity ea
                 , Gap.down = d
                 , Gap.downward = dw
+                , Gap.downs =
+                    PilotDistance
+                    . MkQuantity
+                    . snd
+                    <$> ds
+                , Gap.downers =
+                    (\x -> Pilot (PilotId x, PilotName "-"))
+                    . fst
+                    <$> ds
                 , Gap.rel = RelativeDifficulty $ toRational rel
                 , Gap.frac = DifficultyFraction $ toRational frac
                 }
@@ -103,11 +106,19 @@ xpChunk =
                 , Gap.endAhead = Chunk (MkQuantity ea)
                 , Gap.down = d
                 , Gap.downward = dw
+                , Gap.downs = dns
+                , Gap.downers = drs
                 , Gap.rel = RelativeDifficulty rel
                 , Gap.frac = DifficultyFraction frac
-                } -> (c, s, e, ea, d, dw, fromRational rel, fromRational frac)
+                } ->
+                    let ds =
+                            [ (pid, pd)
+                            | PilotDistance (MkQuantity pd) <- dns
+                            | Pilot (PilotId pid, _) <- drs
+                            ]
+                    in (c, s, e, ea, d, dw, fromRational rel, fromRational frac, ds)
         )
-    $ xp8Tuple
+    $ xp9Tuple
         (xpAttr "chunk" xpInt)
         (xpAttr "start" xpPrim)
         (xpAttr "end" xpPrim)
@@ -116,6 +127,7 @@ xpChunk =
         (xpAttr "downward" xpInt)
         (xpAttr "rel" xpPrim)
         (xpAttr "frac" xpPrim)
+        (xpList xpDown)
 
 ixc :: Double -> (IxChunk, Chunk (Quantity Double [u| km |]))
 ixc x = let q = MkQuantity x in (toIxChunk $ PilotDistance q, Chunk q)
@@ -192,6 +204,13 @@ getEffort =
 
 parseNormEfforts :: String -> IO (Either String [TaskLanding])
 parseNormEfforts contents = do
-    let doc = readString [ withValidate no, withWarnings no ] contents
+    let doc =
+            readString
+                [ withValidate no
+                , withWarnings no
+                , withRemoveWS yes
+                ]
+                contents
+
     xs <- runX $ doc >>> getEffort
     return $ sequence xs
