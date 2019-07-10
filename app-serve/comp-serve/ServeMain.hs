@@ -66,7 +66,7 @@ import Flight.Score
     , ReachStats(..)
     )
 import Flight.Scribe
-    ( readComp, readNormScore, readNormRoute
+    ( readComp, readNormEffort, readNormRoute, readNormScore
     , readRoute, readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
@@ -109,11 +109,13 @@ import Flight.Comp
     , BonusReachFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
-    , NormScoreFile(..)
+    , NormEffortFile(..)
     , NormRouteFile(..)
+    , NormScoreFile(..)
     , findCompInput
-    , compToNormScore
+    , compToNormEffort
     , compToNormRoute
+    , compToNormScore
     , compToTaskLength
     , compToCross
     , compToMaskArrival
@@ -155,8 +157,9 @@ data Config k
         , bonusReach :: Maybe MaskingReach
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
-        , normScore :: Maybe Norm.NormPointing
+        , normEffort :: Maybe Landing
         , normRoute :: Maybe [GeoLines]
+        , normScore :: Maybe Norm.NormPointing
         }
 
 nullConfig :: CompInputFile -> CompSettings k -> Config k
@@ -176,8 +179,9 @@ nullConfig cf cs =
         , bonusReach = Nothing
         , landing = Nothing
         , pointing = Nothing
-        , normScore = Nothing
+        , normEffort = Nothing
         , normRoute = Nothing
+        , normScore = Nothing
         }
 
 newtype AppT k m a =
@@ -249,6 +253,15 @@ type GapPointApi k =
     :<|> "comp-input" :> "pilots"
         :> Get '[JSON] [Pilot]
 
+    :<|> "fs-effort" :> (Capture "task" Int) :> "landing"
+        :> Get '[JSON] (Maybe TaskLanding)
+
+    :<|> "fs-route" :> Capture "task" Int :> "sphere"
+        :> Get '[JSON] (Maybe TrackLine)
+
+    :<|> "fs-route" :> Capture "task" Int :> "ellipse"
+        :> Get '[JSON] (Maybe TrackLine)
+
     :<|> "fs-score" :> "validity"
         :> Get '[JSON] [Maybe Vy.Validity]
 
@@ -257,12 +270,6 @@ type GapPointApi k =
 
     :<|> "fs-score" :> (Capture "task" Int) :> "score"
         :> Get '[JSON] [(Pilot, Norm.NormBreakdown)]
-
-    :<|> "fs-route" :> Capture "task" Int :> "sphere"
-        :> Get '[JSON] (Maybe TrackLine)
-
-    :<|> "fs-route" :> Capture "task" Int :> "ellipse"
-        :> Get '[JSON] (Maybe TrackLine)
 
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
@@ -387,8 +394,9 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
-    let normScoreFile@(NormScoreFile normScorePath) = compToNormScore compFile
+    let normEffortFile@(NormEffortFile normEffortPath) = compToNormEffort compFile
     let normRouteFile@(NormRouteFile normRoutePath) = compToNormRoute compFile
+    let normScoreFile@(NormScoreFile normScorePath) = compToNormScore compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
@@ -402,8 +410,9 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading bonus reach from '" ++ takeFileName bonusReachPath ++ "'"
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
-    putStrLn $ "Reading expected or normative scores from '" ++ takeFileName normScorePath ++ "'"
+    putStrLn $ "Reading expected or normative land outs from '" ++ takeFileName normEffortPath ++ "'"
     putStrLn $ "Reading expected or normative optimal routes from '" ++ takeFileName normRoutePath ++ "'"
+    putStrLn $ "Reading expected or normative scores from '" ++ takeFileName normScorePath ++ "'"
 
     compSettings <-
         catchIO
@@ -474,9 +483,9 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readPointing pointFile)
                     (const $ return Nothing)
 
-            normS <-
+            normE <-
                 catchIO
-                    (Just <$> readNormScore normScoreFile)
+                    (Just <$> readNormEffort normEffortFile)
                     (const $ return Nothing)
 
             normR <-
@@ -484,9 +493,14 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readNormRoute normRouteFile)
                     (const $ return Nothing)
 
+            normS <-
+                catchIO
+                    (Just <$> readNormScore normScoreFile)
+                    (const $ return Nothing)
+
             case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
                 (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS bR lo gp ns normR)
+                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS bR lo gp normE normR ns)
                 (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs and task lengths"
                     f =<< mkTaskLengthApp cfg{routing = rt}
@@ -549,11 +563,12 @@ serverGapPointApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
+        :<|> getTaskNormLanding
+        :<|> getTaskNormRouteSphere
+        :<|> getTaskNormRouteEllipse
         :<|> getValidity <$> n
         :<|> getNormTaskValidityWorking
         :<|> getTaskNormScore
-        :<|> getTaskNormRouteSphere
-        :<|> getTaskNormRouteEllipse
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
         :<|> getTaskRouteProjectedSphericalEdge
@@ -1122,6 +1137,11 @@ getTaskEffort ii = do
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "land-out" ii
+
+getTaskNormLanding :: Int -> AppT k IO (Maybe TaskLanding)
+getTaskNormLanding ii = do
+    x <- asks normEffort
+    return . join $ taskLanding (IxTask ii) <$> x
 
 getTaskLanding :: Int -> AppT k IO (Maybe TaskLanding)
 getTaskLanding ii = do
