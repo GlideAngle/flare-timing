@@ -69,12 +69,12 @@ tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
 
-                elClass "th" "th-end" $ text "End"
-                elClass "th" "th-norm th-end" $ text "✓-End"
+                elClass "th" "th-time-end" $ text "End"
+                elClass "th" "th-norm th-time-end" $ text "✓-End"
                 elClass "th" "th-norm th-time-diff" $ text "Δ-End"
 
-                elClass "th" "th-arrive-points" $ text "Arrive †"
-                elClass "th" "th-norm th-arrive-points" $ text "✓"
+                elClass "th" "th-arrival-points" $ text "Arrive †"
+                elClass "th" "th-norm th-arrival-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         _ <- el "tbody" $ do
@@ -197,14 +197,14 @@ pointRow utcOffset dfNt pt sEx x = do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
-        elClass "td" "td-norm td-norm-end" . text $ yEs
+        elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
+        elClass "td" "td-norm td-time-end" . text $ yEs
         elClass "td" "td-norm td-time-diff" . text $ yEsDiff
 
         elClass "td" "td-effort-points" . dynText
             $ showMax Pt.arrival showTaskArrivalPoints pt points
-        elClass "td" "td-norm td-arrive-points" . text $ aPts
-        elClass "td" "td-norm td-arrive-points" . text $ aPtsDiff
+        elClass "td" "td-norm td-arrival-points" . text $ aPts
+        elClass "td" "td-norm td-arrival-points" . text $ aPtsDiff
 
 dnfRows
     :: MonadWidget t m
