@@ -19,8 +19,7 @@ import WireTypes.Point
     , Velocity(..)
     , StartGate(..)
     , Points(..)
-    , showArrivalPoints, showArrivalPointsDiff
-    , showTaskArrivalPoints
+    , showArrivalPoints, showArrivalPointsDiff, showTaskArrivalPoints
     , cmpArrival
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
@@ -185,10 +184,9 @@ pointRow utcOffset dfNt pt sEx x = do
                         Velocity{es} <- v'
 
                         Norm.NormBreakdown
-                            {breakdown = Points{arrival = aPtsN}} <- Map.lookup pilot' sEx'
-
-                        Norm.NormBreakdown
-                            {es = es'} <- Map.lookup pilot' sEx'
+                            { es = es'
+                            , breakdown = Points{arrival = aPtsN}
+                            } <- Map.lookup pilot' sEx'
 
                         return
                             ( maybe "" (showT tz') es'
@@ -196,7 +194,6 @@ pointRow utcOffset dfNt pt sEx x = do
                             , showArrivalPoints aPtsN
                             , showArrivalPointsDiff aPtsN aPts
                             ))
-
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
@@ -206,7 +203,7 @@ pointRow utcOffset dfNt pt sEx x = do
         elClass "td" "td-norm td-time-end" . text $ yEs
         elClass "td" "td-norm td-time-diff" . text $ yEsDiff
 
-        elClass "td" "td-effort-points" . dynText
+        elClass "td" "td-arrival-points" . dynText
             $ showMax Pt.arrival showTaskArrivalPoints pt points
         elClass "td" "td-norm td-arrival-points" . text $ aPts
         elClass "td" "td-norm td-arrival-points" . text $ aPtsDiff
