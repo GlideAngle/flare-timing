@@ -58,9 +58,15 @@ module WireTypes.Point
     , showTimeWeight
     , showLeadingWeight
     , zeroWeights
+    -- * Comparisons
+    , cmpReach
+    , cmpEffort
+    , cmpTime
+    , cmpArrival
     ) where
 
 import Text.Printf (printf)
+import Data.Ord (comparing)
 import Control.Applicative (empty)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
@@ -462,3 +468,38 @@ data Allocation =
         , taskPoints :: TaskPoints
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
+
+breakdown' :: Breakdown -> Points
+breakdown' = breakdown
+
+place' :: Breakdown -> TaskPlacing
+place' = place
+
+reach' :: Points -> LinearPoints
+reach' = reach
+
+effort' :: Points -> DifficultyPoints
+effort' = effort
+
+time' :: Points -> TimePoints
+time' = time
+
+arrival' :: Points -> ArrivalPoints
+arrival' = arrival
+
+-- SEE: https://stackoverflow.com/questions/2349798/in-haskell-how-can-i-use-the-built-in-sortby-function-to-sort-a-list-of-pairst
+cmpReach :: (a, Breakdown) -> (a, Breakdown) -> Ordering
+cmpReach =
+    flip (comparing (reach' . breakdown' . snd)) `mappend` comparing (place' . snd)
+
+cmpEffort :: (a, Breakdown) -> (a, Breakdown) -> Ordering
+cmpEffort =
+    flip (comparing (effort' . breakdown' . snd)) `mappend` comparing (place' . snd)
+
+cmpTime :: (a, Breakdown) -> (a, Breakdown) -> Ordering
+cmpTime =
+    flip (comparing (time' . breakdown' . snd)) `mappend` comparing (place' . snd)
+
+cmpArrival :: (a, Breakdown) -> (a, Breakdown) -> Ordering
+cmpArrival =
+    flip (comparing (arrival' . breakdown' . snd)) `mappend` comparing (place' . snd)

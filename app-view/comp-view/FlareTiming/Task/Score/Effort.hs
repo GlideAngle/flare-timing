@@ -1,7 +1,6 @@
 module FlareTiming.Task.Score.Effort (tableScoreEffort) where
 
 import Prelude hiding (map)
-import Data.Ord (comparing)
 import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
 import Text.Printf (printf)
@@ -26,6 +25,7 @@ import WireTypes.Point
     , DistancePoints(..)
     , showPilotDistance, showPilotDistanceDiff
     , showTaskDifficultyPoints
+    , cmpEffort
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -383,7 +383,3 @@ dnfRow place rows pilot = do
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         dnfMega
         return ()
-
--- SEE: https://stackoverflow.com/questions/2349798/in-haskell-how-can-i-use-the-built-in-sortby-function-to-sort-a-list-of-pairst
-cmpEffort :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
-cmpEffort = flip (comparing (effort . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)

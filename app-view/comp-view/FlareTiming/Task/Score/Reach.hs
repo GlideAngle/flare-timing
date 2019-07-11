@@ -1,6 +1,5 @@
 module FlareTiming.Task.Score.Reach (tableScoreReach) where
 
-import Data.Ord (comparing)
 import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
 import Text.Printf (printf)
@@ -25,6 +24,7 @@ import WireTypes.Point
     , DistancePoints(..)
     , showPilotDistance, showPilotDistanceDiff
     , showTaskLinearPoints
+    , cmpReach
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -338,6 +338,3 @@ dnfRow place rows pilot = do
         elClass "td" "td-pilot" . dynText $ showPilot <$> pilot
         dnfMega
         return ()
-
-cmpReach :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
-cmpReach = flip (comparing (reach . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)

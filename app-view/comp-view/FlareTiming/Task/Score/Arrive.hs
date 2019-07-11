@@ -1,7 +1,6 @@
 module FlareTiming.Task.Score.Arrive (tableScoreArrive) where
 
 import Prelude hiding (min)
-import Data.Ord (comparing)
 import Data.Maybe (fromMaybe)
 import Data.List (sortBy)
 import Reflex.Dom
@@ -16,7 +15,7 @@ import qualified WireTypes.Point as Bk (Breakdown(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.Point
     ( TaskPlacing(..), TaskPoints(..), Velocity(..), StartGate(..), Points(..)
-    , showArrivalPoints, showArrivalPointsDiff, showTaskArrivalPoints
+    , showArrivalPoints, showArrivalPointsDiff, showTaskArrivalPoints, cmpArrival
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -253,6 +252,3 @@ dnfRow place rows pilot = do
         elClass "td" "td-pilot" . dynText $ showPilot <$> pilot
         dnfMega
         return ()
-
-cmpArrival :: (a, Bk.Breakdown) -> (a, Bk.Breakdown) -> Ordering
-cmpArrival = flip (comparing (arrival . Bk.breakdown . snd)) `mappend` comparing (Bk.place . snd)

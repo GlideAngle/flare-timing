@@ -2,6 +2,7 @@ module FlareTiming.Task.Score.Time (tableScoreTime) where
 
 import Prelude hiding (min)
 import Reflex.Dom
+import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
@@ -13,6 +14,7 @@ import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.Point
     ( TaskPlacing(..), TaskPoints(..), Breakdown(..), Velocity(..), StartGate(..)
+    , cmpTime
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -93,7 +95,7 @@ tableScoreTime utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs s
         _ <- el "tbody" $ do
             _ <-
                 simpleList
-                    sDfs
+                    (sortBy cmpTime <$> sDfs)
                     (pointRow
                         utcOffset
                         dfNt
