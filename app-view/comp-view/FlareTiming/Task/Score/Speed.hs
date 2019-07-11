@@ -81,15 +81,15 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
                 elClass "th" "th-norm th-time-end" $ text "✓-End"
                 elClass "th" "th-norm th-time-diff" $ text "Δ-End"
 
-                elClass "th" "th-time" $ text "Time ‖"
+                elClass "th" "th-time" $ text "Time †"
 
-                elClass "th" "th-norm th-pace" . dynText
+                elClass "th" "th-norm th-time" . dynText
                     $ ffor sgs (\case [] -> "✓-Pace"; _ -> "✓-Time")
 
                 elClass "th" "th-norm th-time-diff" $ dynText
                     $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
 
-                elClass "th" "th-pace" $ text "Pace ¶"
+                elClass "th" "th-pace" $ text "Pace ‡"
                 elClass "th" "th-speed" $ text "Speed (km/h)"
 
         _ <- el "tbody" $ do
@@ -108,8 +108,8 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
-            foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
-            foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
+            foot "† \"Time\" is the time across the speed section from time zero of the start gate taken."
+            foot "‡ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
