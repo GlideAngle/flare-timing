@@ -56,6 +56,7 @@ import FlareTiming.Task.Score.Over (tableScoreOver)
 import FlareTiming.Task.Score.Split (tableScoreSplit)
 import FlareTiming.Task.Score.Reach (tableScoreReach)
 import FlareTiming.Task.Score.Effort (tableScoreEffort)
+import FlareTiming.Task.Score.Speed (tableScoreSpeed)
 import FlareTiming.Task.Score.Time (tableScoreTime)
 import FlareTiming.Task.Score.Arrive (tableScoreArrive)
 import FlareTiming.Task.Geo (tableGeo)
@@ -266,8 +267,11 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                                 ScoreTabEffort ->
                                     elAttr "div" ("id" =: "score-effort") $
                                         tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN
-                                ScoreTabTime ->
+                                ScoreTabSpeed ->
                                     elAttr "div" ("id" =: "score-speed") $
+                                        tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                ScoreTabTime ->
+                                    elAttr "div" ("id" =: "score-time") $
                                         tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabArrive ->
                                     elAttr "div" ("id" =: "score-arrival") $

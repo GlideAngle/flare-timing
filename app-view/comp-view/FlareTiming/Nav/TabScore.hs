@@ -8,6 +8,7 @@ data ScoreTab
     | ScoreTabSplit
     | ScoreTabReach
     | ScoreTabEffort
+    | ScoreTabSpeed
     | ScoreTabTime
     | ScoreTabArrive
 
@@ -35,6 +36,10 @@ tabsScore =
                             elClass "span" "legend-effort" $ text "▩"
                             text "Effort"
 
+            (speed, _) <- elDynClass' "li" speedClass . el "a" $ do
+                            elClass "span" "legend-time" $ text "▩"
+                            text "Speed"
+
             (time, _) <- elDynClass' "li" timeClass . el "a" $ do
                             elClass "span" "legend-time" $ text "▩"
                             text "Time"
@@ -47,6 +52,7 @@ tabsScore =
             let eSplit = (const ScoreTabSplit) <$> domEvent Click split
             let eReach = (const ScoreTabReach) <$> domEvent Click reach
             let eEffort = (const ScoreTabEffort) <$> domEvent Click effort
+            let eSpeed = (const ScoreTabSpeed) <$> domEvent Click speed
             let eTime = (const ScoreTabTime) <$> domEvent Click time
             let eArrive = (const ScoreTabArrive) <$> domEvent Click arrive
 
@@ -55,6 +61,7 @@ tabsScore =
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
+                            , "" <$ eSpeed
                             , "" <$ eTime
                             , "" <$ eArrive
                             ]
@@ -64,6 +71,7 @@ tabsScore =
                             , "is-active" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
+                            , "" <$ eSpeed
                             , "" <$ eTime
                             , "" <$ eArrive
                             ]
@@ -73,6 +81,7 @@ tabsScore =
                             , "" <$ eSplit
                             , "is-active" <$ eReach
                             , "" <$ eEffort
+                            , "" <$ eSpeed
                             , "" <$ eTime
                             , "" <$ eArrive
                             ]
@@ -82,7 +91,18 @@ tabsScore =
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "is-active" <$ eEffort
+                            , "" <$ eSpeed
                             , "" <$ eTime
+                            , "" <$ eArrive
+                            ]
+
+            speedClass <- holdDyn "" . leftmost $
+                            [ "" <$ eOver
+                            , "" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eEffort
+                            , "" <$ eSpeed
+                            , "is-active" <$ eTime
                             , "" <$ eArrive
                             ]
 
@@ -91,7 +111,8 @@ tabsScore =
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
-                            , "is-active" <$ eTime
+                            , "is-active" <$ eSpeed
+                            , "" <$ eTime
                             , "" <$ eArrive
                             ]
 
@@ -100,6 +121,7 @@ tabsScore =
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
+                            , "" <$ eSpeed
                             , "" <$ eTime
                             , "is-active" <$ eArrive
                             ]
@@ -109,6 +131,7 @@ tabsScore =
                 , eSplit
                 , eReach
                 , eEffort
+                , eSpeed
                 , eTime
                 , eArrive
                 ]

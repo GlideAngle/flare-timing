@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 05f02809ad74d99252f92e56d2c008f72ca452433af75f9b82376f16c3f0e17c
+-- hash: 9a0b16a87c067bbb8e5afd015f68b104f5d10799f84de546ea539be4da824d59
 
 name:           app-view
 version:        0.1.0
@@ -86,6 +86,7 @@ executable comp-view
       FlareTiming.Task.Score.Over
       FlareTiming.Task.Score.Reach
       FlareTiming.Task.Score.Show
+      FlareTiming.Task.Score.Speed
       FlareTiming.Task.Score.Split
       FlareTiming.Task.Score.Time
       FlareTiming.Task.Turnpoints
