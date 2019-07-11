@@ -125,7 +125,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-end" $ text "End"
                 elClass "th" "th-time" $ text "Time ‖"
                 elClass "th" "th-pace" $ text "Pace ¶"
-                elClass "th" "th-speed" $ text "Velocity"
+                elClass "th" "th-speed" $ text "Speed"
 
                 elClass "th" "th-min-distance" $ text "Min"
                 elClass "th" "th-best-distance" $ text "Reach †"
