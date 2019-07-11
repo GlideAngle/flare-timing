@@ -469,37 +469,30 @@ data Allocation =
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
-breakdown' :: Breakdown -> Points
-breakdown' = breakdown
-
-place' :: Breakdown -> TaskPlacing
-place' = place
-
-reach' :: Points -> LinearPoints
-reach' = reach
-
-effort' :: Points -> DifficultyPoints
-effort' = effort
-
-time' :: Points -> TimePoints
-time' = time
-
-arrival' :: Points -> ArrivalPoints
-arrival' = arrival
-
--- SEE: https://stackoverflow.com/questions/2349798/in-haskell-how-can-i-use-the-built-in-sortby-function-to-sort-a-list-of-pairst
 cmpReach :: (a, Breakdown) -> (a, Breakdown) -> Ordering
-cmpReach =
-    flip (comparing (reach' . breakdown' . snd)) `mappend` comparing (place' . snd)
+cmpReach = cmpBreakdownPoints (reach :: Points -> LinearPoints)
 
 cmpEffort :: (a, Breakdown) -> (a, Breakdown) -> Ordering
-cmpEffort =
-    flip (comparing (effort' . breakdown' . snd)) `mappend` comparing (place' . snd)
+cmpEffort = cmpBreakdownPoints (effort :: Points -> DifficultyPoints)
 
 cmpTime :: (a, Breakdown) -> (a, Breakdown) -> Ordering
-cmpTime =
-    flip (comparing (time' . breakdown' . snd)) `mappend` comparing (place' . snd)
+cmpTime = cmpBreakdownPoints (time :: Points -> TimePoints)
 
 cmpArrival :: (a, Breakdown) -> (a, Breakdown) -> Ordering
-cmpArrival =
-    flip (comparing (arrival' . breakdown' . snd)) `mappend` comparing (place' . snd)
+cmpArrival = cmpBreakdownPoints (arrival :: Points -> ArrivalPoints)
+
+-- SEE: https://stackoverflow.com/questions/2349798/in-haskell-how-can-i-use-the-built-in-sortby-function-to-sort-a-list-of-pairst
+cmpBreakdownPoints
+    :: Ord b
+    => (Points -> b)
+    -> (a, Breakdown)
+    -> (a, Breakdown)
+    -> Ordering
+cmpBreakdownPoints f =
+    flip (comparing (f . breakdown' . snd)) `mappend` comparing (place' . snd)
+    where
+        breakdown' :: Breakdown -> Points
+        breakdown' = breakdown
+
+        place' :: Breakdown -> TaskPlacing
+        place' = place
