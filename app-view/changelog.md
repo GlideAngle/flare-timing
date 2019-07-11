@@ -29,6 +29,7 @@ of this changelog.
 * Switch to using the B612 font, designed for use in aircraft cockpit screens.
 * Add fs-effort, a command line tool for extracting the landings, chunking and
   relative difficulties from a competition `*.fsdb`.
+* Show two more decimal places when point difference is +0.0 or -0.0.
 
 # Stopped Validity and Bonus Reach
 ## app-view-0.20
