@@ -34,7 +34,7 @@ hgWeightPlot tweak' alloc' = do
     let gr@(GoalRatio gr') = maybe (GoalRatio 0) goalRatio alloc
     let w = maybe zeroWeights weight alloc
     pb <- delay 1 =<< getPostBuild
-    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-weight") <> ("style" =: "height: 360px;width: 320px")) $ return ()
+    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-weight") <> ("style" =: "height: 640px;width: 640px")) $ return ()
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 _ <- P.hgWeightPlot (_element_raw elPlot) tweak gr w
@@ -76,7 +76,7 @@ pgWeightPlot tweak' alloc' = do
     alloc <- sample . current $ alloc'
     let w = maybe zeroWeights weight alloc
     pb <- delay 1 =<< getPostBuild
-    (elPlot, _) <- elAttr' "div" (("id" =: "pg-plot-weight") <> ("style" =: "height: 360px;width: 320px")) $ return ()
+    (elPlot, _) <- elAttr' "div" (("id" =: "pg-plot-weight") <> ("style" =: "height: 640px;width: 640px")) $ return ()
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 let gr = maybe (GoalRatio 0) goalRatio alloc

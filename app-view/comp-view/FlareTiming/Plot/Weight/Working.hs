@@ -368,30 +368,32 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                                         elClass "span" "tag" $ do text "pf = pilots flying"
                                         elClass "span" "tag is-dark" . text
                                             $ (T.pack . show $ pf)
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "pg = pilots in goal"
                                         elClass "span" "tag is-warning" . text
                                             $ textf "%.0f" pg
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "gr = goal ratio"
                                         elClass "span" "tag is-primary" . text
                                             $ textf "%.3f" gr'
 
-                            if hgOrPg == Paragliding
-                                then
-                                    elClass "div" "field is-grouped is-grouped-multiline" $ do
-                                        elClass "div" "control" $ do
-                                            elClass "div" "tags has-addons" $ do
-                                                elClass "span" "tag" $ do text "td = task distance"
-                                                elClass "span" "tag is-info"
-                                                    $ text (showTaskDistance td)
-                                        elClass "div" "control" $ do
-                                            elClass "div" "tags has-addons" $ do
-                                                elClass "span" "tag" $ do text "bd = best distance"
-                                                elClass "span" "tag is-dark"
-                                                    $ text (T.pack . show $ bd)
+                            if hgOrPg == Paragliding then do
+                                elClass "div" "field is-grouped is-grouped-multiline" $ do
+                                    elClass "div" "control" $ do
+                                        elClass "div" "tags has-addons" $ do
+                                            elClass "span" "tag" $ do text "td = task distance"
+                                            elClass "span" "tag is-info"
+                                                $ text (showTaskDistance td)
+                                elClass "div" "field is-grouped is-grouped-multiline" $ do
+                                    elClass "div" "control" $ do
+                                        elClass "div" "tags has-addons" $ do
+                                            elClass "span" "tag" $ do text "bd = best distance"
+                                            elClass "span" "tag is-dark"
+                                                $ text (T.pack . show $ bd)
                             else
                                 return ()
 
@@ -401,6 +403,7 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                                         elClass "span" "tag" $ do text "lws = leading weight scaling"
                                         elClass "span" "tag is-danger" . text
                                             $ T.pack lwS
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "aws = arrival weight scaling"
@@ -413,16 +416,19 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                                         elClass "span" "tag" $ do text "dw = distance weight"
                                         elClass "span" "tag is-info" . text
                                             $ textf "%.3f" dw
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "tw = time weight"
                                         elClass "span" "tag is-success" . text
                                             $ textf "%.3f" tw
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "lw = leading weight"
                                         elClass "span" "tag is-danger" . text
                                             $ textf "%.3f" lw
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "aw = arrival weight"
@@ -455,16 +461,19 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                                         elClass "span" "tag" $ do text "dp = distance points"
                                         elClass "span" "tag is-info" . text
                                             $ textf "%.2f" dp
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "tp = time points"
                                         elClass "span" "tag is-success" . text
                                             $ textf "%.2f" tp
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "lp = leading points"
                                         elClass "span" "tag is-danger" . text
                                             $ textf "%.2f" lp
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "ap = arrival points"

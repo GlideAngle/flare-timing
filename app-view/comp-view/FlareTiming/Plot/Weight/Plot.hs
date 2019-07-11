@@ -30,8 +30,8 @@ foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-weight'\
     \, title: 'Split of Available Points'\
-    \, width: 320\
-    \, height: 360\
+    \, width: 640\
+    \, height: 640\
     \, disableZoom: true\
     \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
     \, yAxis: {domain: [0, 1]}\
@@ -122,8 +122,8 @@ foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#pg-plot-weight'\
     \, title: 'Split of Available Points'\
-    \, width: 320\
-    \, height: 360\
+    \, width: 640\
+    \, height: 640\
     \, disableZoom: true\
     \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
     \, yAxis: {domain: [0, 1]}\

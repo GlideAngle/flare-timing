@@ -21,8 +21,8 @@ weightPlot
     -> m ()
 weightPlot hgOrPg vy vw tweak alloc ln = do
     elClass "div" "tile is-ancestor" $ do
-        elClass "div" "tile" $
-            elClass "div" "tile is-4 is-parent" $
+        elClass "div" "tile is-6" $
+            elClass "div" "tile is-parent" $
                 elClass "article" "tile is-child" $ do
                     _ <- dyn $ ffor hgOrPg (\case
                             HangGliding -> W.hgWeightPlot tweak alloc
@@ -30,7 +30,7 @@ weightPlot hgOrPg vy vw tweak alloc ln = do
 
                     return ()
 
-        elClass "div" "tile is-8 is-child" $ do
+        elClass "div" "tile is-child" $ do
             _ <- dyn $ ffor hgOrPg (\x -> viewWeightWorking x vy vw tweak alloc ln)
             return ()
 
