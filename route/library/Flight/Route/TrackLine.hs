@@ -12,7 +12,7 @@ module Flight.Route.TrackLine
     ) where
 
 import Prelude hiding (span)
-import Data.List (nub, foldl')
+import Data.List (foldl')
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -156,7 +156,9 @@ pathVertices
     => PathDistance a
     -> ([LatLng a [u| rad |]], [RawLatLng])
 pathVertices ed =
-    let vs = nub $ vertices ed in (vs, convertLatLng <$> vs)
+    -- WARNING: I used to drop duplicate vertices but this caused complications
+    -- later on when rendering the task table.
+    let vs = vertices ed in (vs, convertLatLng <$> vs)
 
 instance ToTrackLine Double (PathDistance Double) where
     toTrackLine span excludeWaypoints ed =
