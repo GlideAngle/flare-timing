@@ -73,7 +73,7 @@ tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs
                 elClass "th" "th-norm th-time-end" $ text "✓-End"
                 elClass "th" "th-norm th-time-diff" $ text "Δ-End"
 
-                elClass "th" "th-arrival-points" $ text "Arrive †"
+                elClass "th" "th-arrival-points" $ text "Arrival †"
                 elClass "th" "th-norm th-arrival-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 

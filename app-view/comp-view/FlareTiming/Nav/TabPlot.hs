@@ -44,7 +44,7 @@ tabsPlot =
 
             (arrive, _) <- elDynClass' "li" arriveClass . el "a" $ do
                             elClass "span" "legend-arrival" $ text "▩"
-                            text "Arrive"
+                            text "Arrival"
 
             (valid, _) <- elDynClass' "li" validClass . el "a" $ do
                             elClass "span" "legend-valid" $ text "▩"

@@ -41,7 +41,7 @@ tabsScore =
 
             (arrive, _) <- elDynClass' "li" arriveClass . el "a" $ do
                             elClass "span" "legend-arrival" $ text "▩"
-                            text "Arrive"
+                            text "Arrival"
 
             let eOver = (const ScoreTabOver) <$> domEvent Click over
             let eSplit = (const ScoreTabSplit) <$> domEvent Click split
