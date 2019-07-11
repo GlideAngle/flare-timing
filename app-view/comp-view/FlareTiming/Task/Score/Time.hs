@@ -23,7 +23,6 @@ import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot)
-import FlareTiming.Time (timeZone, showT, showTDiff)
 import FlareTiming.Task.Score.Show
 
 tableScoreTime
@@ -43,7 +42,7 @@ tableScoreTime
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreTime utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -88,7 +87,6 @@ tableScoreTime utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                 simpleList
                     (sortBy cmpTime <$> sDfs)
                     (pointRow
-                        utcOffset
                         dfNt
                         pt
                         (Map.fromList <$> sEx))
@@ -157,15 +155,12 @@ tableScoreTime utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs s
 
 pointRow
     :: MonadWidget t m
-    => Dynamic t UtcOffset
-    -> Dynamic t DfNoTrack
+    => Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow utcOffset dfNt pt sEx x = do
-    let tz = timeZone <$> utcOffset
-    tz' <- sample . current $ timeZone <$> utcOffset
+pointRow dfNt pt sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     let v = velocity . snd <$> x
@@ -177,43 +172,33 @@ pointRow utcOffset dfNt pt sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    (ySs, ySsDiff
-        , yEs, yEsDiff
-        , yEl, yElDiff
-        , tPts, tPtsDiff) <- sample . current
+    (yEl, yElDiff, tPts, tPtsDiff) <- sample . current
                 $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown
                                                           { velocity = v'
                                                           , breakdown =
                                                               Points{time = tPts}
                                                           }) ->
-                fromMaybe ("", "", "", "", "", "", "", "") $ do
+                fromMaybe ("", "", "", "") $ do
                     Velocity
                         { ss
                         , gs
-                        , es
                         , gsElapsed = gsElap
                         , ssElapsed = ssElap
                         } <- v'
 
                     Norm.NormBreakdown
-                        { ss = ss'
-                        , es = es'
-                        , timeElapsed = elap'
+                        { timeElapsed = elap'
                         , breakdown = Points{time = tPtsN}
                         } <- Map.lookup pilot' sEx'
 
-                    let (start, elap) =
+                    let elap =
                             case (ss, gs) of
-                                (_, Just (StartGate g)) -> (Just g, gsElap)
-                                (Just _, _) -> (ss, ssElap)
-                                _ -> (Nothing, Nothing)
+                                (_, Just _) -> gsElap
+                                (Just _, _) -> ssElap
+                                _ -> Nothing
 
                     return
-                        ( maybe "" (showT tz') ss'
-                        , fromMaybe "" (showTDiff <$> ss' <*> start)
-                        , maybe "" (showT tz') es'
-                        , fromMaybe "" (showTDiff <$> es' <*> es)
-                        , maybe "" showPilotTime elap'
+                        ( maybe "" showPilotTime elap'
                         , fromMaybe "" (showPilotTimeDiff <$> elap' <*> elap)
                         , showTimePoints tPtsN
                         , showTimePointsDiff tPtsN tPts
