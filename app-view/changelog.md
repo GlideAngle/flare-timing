@@ -17,6 +17,18 @@ of this changelog.
   more than that. There's no rule in the GAP document about this but that is
   what FS does.
 * Exclude zone crossings that fall outside opening times of the zones.
+* Workout task difficulty using relative difficulty from every chunk of the
+  task, not just those where a pilot has landed.
+* Add score tables for effort, speed, time and arrival. In these, sort the rows
+  by descreasing order of the relevant points.
+* Include the pilot race number with the pilot in each ###-Pilot column of
+  tables.
+* Enlarge the split plot.
+* Squish and stretch the leading plot to make room for the width of the
+  associated table.
+* Switch to using the B612 font, designed for use in aircraft cockpit screens.
+* Add fs-effort, a command line tool for extracting the landings, chunking and
+  relative difficulties from a competition `*.fsdb`.
 
 # Stopped Validity and Bonus Reach
 ## app-view-0.20
