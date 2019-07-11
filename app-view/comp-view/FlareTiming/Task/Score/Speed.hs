@@ -61,8 +61,10 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "12" <> "class" =: "th-speed-section") . dynText
+                elAttr "th" ("colspan" =: "11" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
+
+                elClass "th" "th-speed" $ text "Speed"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
@@ -90,7 +92,7 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
                     $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
 
                 elClass "th" "th-pace" $ text "Pace ‡"
-                elClass "th" "th-speed" $ text "Speed (km/h)"
+                elClass "th" "th-speed-units" $ text "(km/h)"
 
         _ <- el "tbody" $ do
             _ <-
