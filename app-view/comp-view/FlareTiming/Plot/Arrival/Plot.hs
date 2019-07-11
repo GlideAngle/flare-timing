@@ -14,8 +14,8 @@ foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-arrival'\
     \, title: 'Arrival Point Distribution'\
-    \, width: 360\
-    \, height: 360\
+    \, width: 640\
+    \, height: 460\
     \, disableZoom: true\
     \, xAxis: {label: 'Arrival Placing', domain: [0, $2 + 1]}\
     \, yAxis: {domain: [0, 1.01]}\

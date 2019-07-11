@@ -45,7 +45,7 @@ arrivalPlot sEx av = do
         elClass "div" "tile" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
-                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival") <> ("style" =: "height: 360px;width: 360px")) $ return ()
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
                                 let (soloPlaces, equalPlaces) = placings . snd . unzip $ av'
