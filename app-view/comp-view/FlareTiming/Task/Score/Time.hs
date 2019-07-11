@@ -81,7 +81,7 @@ tableScoreTime utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs s
 
                 elClass "th" "th-time" $ text "Time ‖"
 
-                elClass "th" "th-norm th-norm-pace" . dynText
+                elClass "th" "th-norm th-pace" . dynText
                     $ ffor sgs (\case [] -> "✓-Pace"; _ -> "✓-Time")
 
                 elClass "th" "th-norm th-time-diff" $ dynText

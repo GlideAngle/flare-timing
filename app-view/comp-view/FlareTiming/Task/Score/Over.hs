@@ -122,7 +122,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-pilot" $ text "###-Pilot"
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-start-gate" $ text "Gate"
-                elClass "th" "th-end" $ text "End"
+                elClass "th" "th-time-end" $ text "End"
                 elClass "th" "th-time" $ text "Time ‖"
                 elClass "th" "th-pace" $ text "Pace ¶"
                 elClass "th" "th-speed" $ text "Speed"
@@ -316,7 +316,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
         elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
-        elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
+        elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
         elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
         elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
