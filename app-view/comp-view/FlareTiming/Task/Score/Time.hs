@@ -43,7 +43,7 @@ tableScoreTime
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreTime utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+tableScoreTime utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -62,28 +62,12 @@ tableScoreTime utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "12" <> "class" =: "th-speed-section") . dynText
-                    $ showSpeedSection <$> ln
-
+                elAttr "th" ("colspan" =: "6") $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points-breakdown") $ text "Points for Time (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
-                elClass "th" "th-start-start" $ text "Start"
-
-                elClass "th" "th-norm th-start" . dynText
-                    $ ffor sgs (\case [] -> "✓-Start"; _ -> "✓-Gate")
-
-                elClass "th" "th-norm th-time-diff" . dynText
-                    $ ffor sgs (\case [] -> "Δ-Start"; _ -> "Δ-Gate")
-
-                elClass "th" "th-start-gate" $ text "Gate"
-
-                elClass "th" "th-time-end" $ text "End"
-                elClass "th" "th-norm th-time-end" $ text "✓-End"
-                elClass "th" "th-norm th-time-diff" $ text "Δ-End"
 
                 elClass "th" "th-time" $ text "Time ‖"
 
@@ -94,7 +78,6 @@ tableScoreTime utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
                     $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
 
                 elClass "th" "th-pace" $ text "Pace ¶"
-                elClass "th" "th-speed" $ text "Speed (km/h)"
 
                 elClass "th" "th-time-points" $ text "Time"
                 elClass "th" "th-norm th-time-points" $ text "✓"
@@ -240,22 +223,11 @@ pointRow utcOffset dfNt pt sEx x = do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
-        elClass "td" "td-norm td-start-gate" . text $ ySs
-        elClass "td" "td-norm td-time-diff" . text $ ySsDiff
-
-        elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
-
-        elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
-        elClass "td" "td-norm td-time-end" . text $ yEs
-        elClass "td" "td-norm td-time-diff" . text $ yEsDiff
-
         elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
         elClass "td" "td-norm td-time" . text $ yEl
         elClass "td" "td-norm td-time-diff" . text $ yElDiff
 
         elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
-        elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
 
         elClass "td" "td-effort-points" . dynText
             $ showMax Pt.time showTaskTimePoints pt points
@@ -298,7 +270,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "15"
+                        <> "colspan" =: "7"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
