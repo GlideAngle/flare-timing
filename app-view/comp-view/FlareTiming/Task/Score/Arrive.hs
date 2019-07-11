@@ -11,11 +11,17 @@ import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..))
 import qualified WireTypes.Point as Wg (Weights(..))
-import qualified WireTypes.Point as Bk (Breakdown(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.Point
-    ( TaskPlacing(..), TaskPoints(..), Velocity(..), StartGate(..), Points(..)
-    , showArrivalPoints, showArrivalPointsDiff, showTaskArrivalPoints, cmpArrival
+    ( TaskPlacing(..)
+    , TaskPoints(..)
+    , Breakdown(..)
+    , Velocity(..)
+    , StartGate(..)
+    , Points(..)
+    , showArrivalPoints, showArrivalPointsDiff
+    , showTaskArrivalPoints
+    , cmpArrival
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -39,7 +45,7 @@ tableScoreArrive
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t [(Pilot, Bk.Breakdown)]
+    -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
 tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
@@ -153,15 +159,15 @@ pointRow
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
-    -> Dynamic t (Pilot, Bk.Breakdown)
+    -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow utcOffset dfNt pt sEx x = do
     let tz = timeZone <$> utcOffset
     tz' <- sample . current $ timeZone <$> utcOffset
     let pilot = fst <$> x
     let xB = snd <$> x
-    let v = Bk.velocity . snd <$> x
-    let points = Bk.breakdown <$> xB
+    let v = velocity . snd <$> x
+    let points = breakdown <$> xB
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
                         let n = showPilot p in
@@ -170,7 +176,7 @@ pointRow utcOffset dfNt pt sEx x = do
                            else ("", n))
 
     (yEs, yEsDiff, aPts, aPtsDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Bk.Breakdown
+                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown
                                                           { velocity = v'
                                                           , breakdown =
                                                               Points{arrival = aPts}
@@ -193,7 +199,7 @@ pointRow utcOffset dfNt pt sEx x = do
 
 
     elDynClass "tr" (fst <$> classPilot) $ do
-        elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
+        elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
         elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
