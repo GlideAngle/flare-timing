@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a2212b4428f1bdbb1678be10577e7c016d0d7a1912b46d98ac70a3e1160e6d7c
+-- hash: 12e677121aca45271843a06003caa493ea2307f235fa67a6726661dd2ea54169
 
 name:           flare-timing
 version:        0.1.0
@@ -188,6 +188,44 @@ executable fs-effort
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/fs-effort
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , containers
+    , directory
+    , filemanip
+    , filepath
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-fsdb
+    , flight-gap
+    , flight-latlng
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-time
+    , flight-zone
+    , formatting
+    , mtl
+    , raw-strings-qq
+    , transformers
+    , uom-plugin
+    , yaml
+  default-language: Haskell2010
+
+executable fs-filter
+  main-is: FsFilterMain.hs
+  other-modules:
+      FsFilterOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/fs-filter
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
   build-depends:

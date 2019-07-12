@@ -80,6 +80,24 @@ in    defs
               , source-dirs =
                   "prod-apps/fs-effort"
               }
+          , fs-filter =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "flight-earth"
+                    , "flight-fsdb"
+                    , "flight-gap"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+              , main =
+                  "FsFilterMain.hs"
+              , source-dirs =
+                  "prod-apps/fs-filter"
+              }
           , fs-route =
               { dependencies =
                     deps
