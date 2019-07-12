@@ -15,6 +15,7 @@ module Flight.Scribe
     , readBonusReach, writeBonusReach
     , readLanding, writeLanding
     , readPointing, writePointing
+    , readFilterFsdb, writeFilterFsdb
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -37,7 +38,8 @@ import Flight.Track.Point (Pointing, NormPointing)
 import Flight.Route (GeoLines)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
-    ( NormEffortFile(..)
+    ( FilterFsdbFile(..)
+    , NormEffortFile(..)
     , NormRouteFile(..)
     , NormScoreFile(..)
     , CompInputFile(..)
@@ -54,10 +56,19 @@ import Flight.Comp
     , LandOutFile(..)
     , GapPointFile(..)
     , CompSettings(..)
+    , FsdbXml(..)
     )
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
+
+readFilterFsdb :: FilterFsdbFile -> IO FsdbXml
+readFilterFsdb (FilterFsdbFile path) =
+    FsdbXml <$> readFile path
+
+writeFilterFsdb :: FilterFsdbFile -> FsdbXml -> IO ()
+writeFilterFsdb (FilterFsdbFile path) (FsdbXml contents) =
+    writeFile path contents
 
 readComp
     :: (MonadThrow m, MonadIO m)

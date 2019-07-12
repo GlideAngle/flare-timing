@@ -4,24 +4,21 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
-import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNominal, parseNormEfforts)
-import Flight.Track.Land (Landing(..), TaskLanding(..), compLanding)
+import qualified Flight.Fsdb as Fsdb (filterComp)
 import Flight.Comp
     ( FileType(Fsdb)
     , FsdbFile(..)
     , FsdbXml(..)
-    , Nominal(..)
-    , fsdbToNormEffort
+    , fsdbToFilterFsdb
     , findFsdb
     , ensureExt
     )
-import Flight.Scribe (writeNormEffort)
+import Flight.Scribe (writeFilterFsdb)
 import FsFilterOptions (description)
 
 main :: IO ()
@@ -49,27 +46,10 @@ go :: FsdbFile -> IO ()
 go fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
-    settings <- runExceptT $ normEfforts (FsdbXml contents')
-    either print (writeNormEffort (fsdbToNormEffort fsdbFile)) settings
+    settings <- runExceptT $ filterComp (FsdbXml contents')
+    either print (writeFilterFsdb (fsdbToFilterFsdb fsdbFile)) settings
 
-fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
-fsdbNominal (FsdbXml contents) = do
-    ns <- lift $ parseNominal contents
-    case ns of
-        Left msg -> ExceptT . return $ Left msg
-        Right [n] -> ExceptT . return $ Right n
-        _ -> do
-            let msg = "Expected only one set of nominals for the comp"
-            lift $ print msg
-            throwE msg
-
-fsdbEfforts :: FsdbXml -> ExceptT String IO [TaskLanding]
-fsdbEfforts (FsdbXml contents) = do
-    fs <- lift $ parseNormEfforts contents
-    ExceptT $ return fs
-
-normEfforts :: FsdbXml -> ExceptT String IO Landing
-normEfforts fsdbXml = do
-    Nominal{free} <- fsdbNominal fsdbXml
-    es <- fsdbEfforts fsdbXml
-    return $ compLanding free es
+filterComp :: FsdbXml -> ExceptT String IO FsdbXml
+filterComp fsdbXml = do
+    x <- lift $ Fsdb.filterComp fsdbXml
+    ExceptT $ return x

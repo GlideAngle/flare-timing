@@ -3,6 +3,7 @@ module Flight.Path
     , IgcFile(..)
     , KmlFile(..)
     , FsdbFile(..)
+    , FilterFsdbFile(..)
     , FsdbXml(..)
     , NormEffortFile(..)
     , NormRouteFile(..)
@@ -35,6 +36,7 @@ module Flight.Path
     , compToNormRoute
     , fsdbToNormScore
     , compToNormScore
+    , fsdbToFilterFsdb
     , fsdbToComp
     , compToTaskLength
     , compToCross
@@ -61,6 +63,7 @@ module Flight.Path
     , findNormRoute
     , findNormScore
     , findFsdb
+    , findFilterFsdb
     , findCompInput
     , findCrossZone
     , findIgc
@@ -97,6 +100,9 @@ newtype KmlFile = KmlFile FilePath deriving Show
 
 -- | The path to a competition *.fsdb file.
 newtype FsdbFile = FsdbFile FilePath deriving Show
+
+-- | The path to a competition *.fsdb-filter.xml file, an *.fsdb filtered.
+newtype FilterFsdbFile = FilterFsdbFile FilePath deriving Show
 
 -- | The XML string contents of a *.fsdb file.
 newtype FsdbXml = FsdbXml String deriving Show
@@ -195,6 +201,10 @@ fsdbToComp :: FsdbFile -> CompInputFile
 fsdbToComp (FsdbFile p) =
     CompInputFile $ replaceExtension p (ext CompInput)
 
+fsdbToFilterFsdb :: FsdbFile -> FilterFsdbFile
+fsdbToFilterFsdb (FsdbFile p) =
+    FilterFsdbFile $ replaceExtension p (ext FilterFsdb)
+
 compFileToCompDir :: CompInputFile -> CompDir
 compFileToCompDir (CompInputFile p) =
     CompDir $ takeDirectory p
@@ -289,6 +299,7 @@ dotDir (CompDir dir) name task =
 
 data FileType
     = Fsdb
+    | FilterFsdb
     | Kml
     | Igc
     | NormEffort
@@ -314,6 +325,7 @@ data FileType
 
 ext :: FileType -> FilePath
 ext Fsdb = ".fsdb"
+ext FilterFsdb = ".fsdb-filter.xml"
 ext Kml = ".kml"
 ext Igc = ".igc"
 ext NormEffort = ".norm-effort.yaml"
@@ -339,6 +351,7 @@ ext GapPoint = ".gap-point.yaml"
 
 ensureExt :: FileType -> FilePath -> FilePath
 ensureExt Fsdb = flip replaceExtensions "fsdb"
+ensureExt FilterFsdb = flip replaceExtensions "fsdb-filter.xml"
 ensureExt Kml = id
 ensureExt Igc = id
 ensureExt NormEffort = flip replaceExtensions "norm-effort.yaml"
@@ -392,6 +405,9 @@ findNormScore = findFileType NormScore findNormScore' NormScoreFile
 findFsdb' :: FilePath -> IO [FsdbFile]
 findFsdb' dir = fmap FsdbFile <$> findFiles Fsdb dir
 
+findFilterFsdb' :: FilePath -> IO [FilterFsdbFile]
+findFilterFsdb' dir = fmap FilterFsdbFile <$> findFiles Fsdb dir
+
 findCompInput' :: FilePath -> IO [CompInputFile]
 findCompInput' dir = fmap CompInputFile <$> findFiles CompInput dir
 
@@ -413,6 +429,12 @@ findFsdb
     => o
     -> IO [FsdbFile]
 findFsdb = findFileType Fsdb findFsdb' FsdbFile
+
+findFilterFsdb
+    :: (HasField "dir" o String, HasField "file" o String)
+    => o
+    -> IO [FilterFsdbFile]
+findFilterFsdb = findFileType FilterFsdb findFilterFsdb' FilterFsdbFile
 
 findCompInput
     :: (HasField "dir" o String, HasField "file" o String)
