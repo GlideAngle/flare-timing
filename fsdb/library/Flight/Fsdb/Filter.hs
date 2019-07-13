@@ -48,6 +48,8 @@ filterComp (FsdbXml contents) = do
                 , fsCompetitionNotes
                 , fsScoreFormula
                 , fsParticipant
+                , fsFlightData
+                , fsResult
                 ])
         >>> writeDocumentToString [withIndent yes]
 
@@ -153,3 +155,86 @@ fsParticipant =
         $ (flip when)
             (isElem >>> hasName "FsParticipant")
             (processAttrl . filterA $ hasName "id" <+> hasName "name")
+
+-- <FsFlightData
+--     distance="47.762"
+--     bonus_distance="48.282"
+--     started_ss="2016-05-07T13:50:26-04:00"
+--     finished_ss=""
+--     altitude_at_ess="0"
+--     finished_task="2016-05-07T14:39:09-04:00"
+--     tracklog_filename="t1.straub.101.IGC"
+--     lc="5.52514210861473"
+--     iv="224993640"
+--     ts="2019-07-09T23:47:10+12:00"
+--     alt="133"
+--     bonus_alt="144"
+--     max_alt="1832"
+--     last_tracklog_point_distance="47.353"
+--     bonus_last_tracklog_point_distance="47.368"
+--     last_tracklog_point_time="2016-05-07T14:41:58-04:00"
+--     last_tracklog_point_alt="40"
+--     landed_before_deadline="1" />
+fsFlightData :: ArrowXml a => a XmlTree XmlTree
+fsFlightData =
+    processTopDown
+        $ (flip when)
+            (isElem >>> hasName "FsFlightData")
+            (processAttrl . filterA . hasNameWith $
+                ( `elem`
+                    [ "tracklog_filename"
+                    ])
+                . localPart)
+
+-- <FsResult
+--     rank="40"
+--     points="121"
+--     distance="47.762"
+--     ss_time="00:00:00"
+--     finished_ss_rank="19"
+--     distance_points="121.2"
+--     linear_distance_points="68.66"
+--     difficulty_distance_points="52.54"
+--     time_points="0"
+--     arrival_points="0"
+--     departure_points="0"
+--     leading_points="0"
+--     penalty="0"
+--     penalty_points="0"
+--     penalty_reason=""
+--     penalty_points_auto="0"
+--     penalty_reason_auto=""
+--     penalty_min_dist_points="0"
+--     got_time_but_not_goal_penalty="False"
+--     started_ss="2016-05-07T13:50:00-04:00"
+--     ss_time_dec_hours="0"
+--     ts="2019-07-09T23:47:14+12:00"
+--     real_distance="47.762"
+--     last_distance="47.353"
+--     last_altitude_above_goal="0"
+--     altitude_bonus_seconds="0"
+--     altitude_bonus_time="00:00:00"
+--     altitude_at_ess="0"
+--     scored_ss_time="00:00:00"
+--     landed_before_stop="False" />
+fsResult :: ArrowXml a => a XmlTree XmlTree
+fsResult =
+    processTopDown
+        $ (flip when)
+            (isElem >>> hasName "FsResult")
+            (processAttrl . filterA . hasNameWith $
+                ( `elem`
+                    [ "rank"
+                    , "points"
+                    , "distance"
+                    , "ss_time"
+                    , "distance_points"
+                    , "linear_distance_points"
+                    , "difficulty_distance_points"
+                    , "time_points"
+                    , "arrival_points"
+                    , "leading_points"
+                    , "real_distance"
+                    , "last_distance"
+                    ])
+                . localPart)
