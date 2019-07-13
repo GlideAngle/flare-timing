@@ -51,9 +51,10 @@ filterComp (FsdbXml contents) = do
 
 fs :: ArrowXml a => a XmlTree XmlTree
 fs =
-    processTopDown $ f `when` (isElem >>> hasName "Fs")
-    where
-        f = processAttrl (none `whenNot` hasName "version")
+    processTopDown
+        $ (flip when)
+            (isElem >>> hasName "Fs")
+            (processAttrl (none `whenNot` hasName "version"))
 
 fsCompetitionNotes :: ArrowXml a => a XmlTree XmlTree
 fsCompetitionNotes =
@@ -62,6 +63,7 @@ fsCompetitionNotes =
 
 fsParticipant :: ArrowXml a => a XmlTree XmlTree
 fsParticipant =
-    processTopDown $ f `when` (isElem >>> hasName "FsParticipant")
-    where
-        f = processAttrl (none `whenNot` (hasName "id" <+> hasName "name"))
+    processTopDown
+        $ (flip when)
+            (isElem >>> hasName "FsParticipant")
+            (processAttrl (none `whenNot` (hasName "id" <+> hasName "name")))
