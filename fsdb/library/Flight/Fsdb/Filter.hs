@@ -17,12 +17,13 @@ import Text.XML.HXT.Core
     , processTopDown
     , no
     , yes
+    , localPart
     , hasName
+    , hasNameWith
     , none
     , processAttrl
     , isElem
     , when
-    , whenNot
     , seqA
     , filterA
     )
@@ -43,6 +44,7 @@ filterComp (FsdbXml contents) = do
         $ doc
         >>> (processChildren . seqA $
                 [ fs
+                , fsCompetition
                 , fsCompetitionNotes
                 , fsParticipant
                 ])
@@ -50,6 +52,8 @@ filterComp (FsdbXml contents) = do
 
     return . maybe (Left "Couldn't filter FSDB.") Right . listToMaybe $ FsdbXml <$> xs
 
+-- <Fs version="3.4"
+--     comment="Supports only a single Fs element in a .fsdb file which must be the root element." />
 fs :: ArrowXml a => a XmlTree XmlTree
 fs =
     processTopDown
@@ -62,6 +66,42 @@ fsCompetitionNotes =
     processTopDown
         $ none `when` (isElem >>> hasName "FsCompetitionNotes")
 
+-- <FsCompetition
+--     id="0"
+--     name="QuestAir Open"
+--     location="Groveland, Florida, USA"
+--     from="2016-05-07"
+--     to="2016-05-13"
+--     utc_offset="-4"
+--     discipline="hg"
+--     ftv_factor="0" />
+fsCompetition :: ArrowXml a => a XmlTree XmlTree
+fsCompetition =
+    processTopDown
+        $ (flip when)
+            (isElem >>> hasName "FsCompetition")
+            (processAttrl . filterA . hasNameWith $
+                ( `elem`
+                    [ "discipline"
+                    , "name"
+                    , "location"
+                    , "from"
+                    , "to"
+                    , "utc_offset"
+                    ])
+                . localPart)
+
+-- <FsParticipant
+--     id="101"
+--     name="Davis Straub"
+--     nat_code_3166_a3="USA"
+--     female="0"
+--     birthday="19XX-XX-XX"
+--     glider="Wills Wing T2C 144"
+--     glider_main_colors="Blue window"
+--     sponsor="The Oz Report"
+--     fai_licence="1"
+--     CIVLID="XXXX" />
 fsParticipant :: ArrowXml a => a XmlTree XmlTree
 fsParticipant =
     processTopDown
