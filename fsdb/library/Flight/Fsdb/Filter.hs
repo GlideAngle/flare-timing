@@ -24,6 +24,7 @@ import Text.XML.HXT.Core
     , when
     , whenNot
     , seqA
+    , filterA
     )
 
 import Flight.Comp (FsdbXml(..))
@@ -54,7 +55,7 @@ fs =
     processTopDown
         $ (flip when)
             (isElem >>> hasName "Fs")
-            (processAttrl (none `whenNot` hasName "version"))
+            (processAttrl . filterA $ hasName "version")
 
 fsCompetitionNotes :: ArrowXml a => a XmlTree XmlTree
 fsCompetitionNotes =
@@ -66,4 +67,4 @@ fsParticipant =
     processTopDown
         $ (flip when)
             (isElem >>> hasName "FsParticipant")
-            (processAttrl (none `whenNot` (hasName "id" <+> hasName "name")))
+            (processAttrl . filterA $ hasName "id" <+> hasName "name")
