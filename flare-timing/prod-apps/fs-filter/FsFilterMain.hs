@@ -9,16 +9,17 @@ import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import qualified Flight.Fsdb as Fsdb (filterComp)
+import qualified Flight.Fsdb as Fsdb (cleanComp, trimComp)
 import Flight.Comp
     ( FileType(Fsdb)
     , FsdbFile(..)
     , FsdbXml(..)
-    , fsdbToFilterFsdb
+    , fsdbToCleanFsdb
+    , fsdbToTrimFsdb
     , findFsdb
     , ensureExt
     )
-import Flight.Scribe (writeFilterFsdb)
+import Flight.Scribe (writeCleanFsdb, readCleanFsdb, writeTrimFsdb)
 import FsFilterOptions (description)
 
 main :: IO ()
@@ -40,16 +41,28 @@ drive o = do
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
     end <- getTime Monotonic
-    fprint ("Extracting expected or normative optimal routes completed in " % timeSpecs % "\n") start end
+    fprint ("Read *.fsdb, wrote it clean and wrote it trim in " % timeSpecs % "\n") start end
 
 go :: FsdbFile -> IO ()
 go fsdbFile@(FsdbFile fsdbPath) = do
-    contents <- readFile fsdbPath
-    let contents' = dropWhile (/= '<') contents
-    settings <- runExceptT $ filterComp (FsdbXml contents')
-    either print (writeFilterFsdb (fsdbToFilterFsdb fsdbFile)) settings
+    rawContents <- readFile fsdbPath
+    let rawXml = dropWhile (/= '<') rawContents
 
-filterComp :: FsdbXml -> ExceptT String IO FsdbXml
-filterComp fsdbXml = do
-    x <- lift $ Fsdb.filterComp fsdbXml
+    cleanXml :: Either String FsdbXml <- runExceptT $ cleanComp (FsdbXml rawXml)
+    either print (writeCleanFsdb (fsdbToCleanFsdb fsdbFile)) cleanXml
+
+    FsdbXml cleanContents <- readCleanFsdb $ fsdbToCleanFsdb fsdbFile
+    let cleanXml' = dropWhile (/= '<') cleanContents
+
+    trimXml :: Either String FsdbXml <- runExceptT $ trimComp (FsdbXml cleanXml')
+    either print (writeTrimFsdb (fsdbToTrimFsdb fsdbFile)) trimXml
+
+cleanComp :: FsdbXml -> ExceptT String IO FsdbXml
+cleanComp fsdbXml = do
+    x <- lift $ Fsdb.cleanComp fsdbXml
+    ExceptT $ return x
+
+trimComp :: FsdbXml -> ExceptT String IO FsdbXml
+trimComp fsdbXml = do
+    x <- lift $ Fsdb.trimComp fsdbXml
     ExceptT $ return x

@@ -1,4 +1,4 @@
-module Flight.Fsdb.Filter (filterComp) where
+module Flight.Fsdb.Trim (trimComp) where
 
 import Data.Maybe (listToMaybe)
 import Text.XML.HXT.Core
@@ -30,8 +30,12 @@ import Text.XML.HXT.Core
 
 import Flight.Comp (FsdbXml(..))
 
-filterComp :: FsdbXml -> IO (Either String FsdbXml)
-filterComp (FsdbXml contents) = do
+-- | Trims the XML of the *.fsdb leaving only inputs to scoring by flare-timing
+-- or outputs from the scoring made by FS that flare-timing can compare with.
+-- In any other scoring program can be made to work with this subset of the
+-- *.fsdb format then flare-timing can be used to check the resultant scores.
+trimComp :: FsdbXml -> IO (Either String FsdbXml)
+trimComp (FsdbXml contents) = do
     let doc =
             readString
                 [ withValidate no

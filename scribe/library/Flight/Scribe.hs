@@ -15,7 +15,8 @@ module Flight.Scribe
     , readBonusReach, writeBonusReach
     , readLanding, writeLanding
     , readPointing, writePointing
-    , readFilterFsdb, writeFilterFsdb
+    , readCleanFsdb, writeCleanFsdb
+    , readTrimFsdb, writeTrimFsdb
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -38,7 +39,8 @@ import Flight.Track.Point (Pointing, NormPointing)
 import Flight.Route (GeoLines)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
-    ( FilterFsdbFile(..)
+    ( CleanFsdbFile(..)
+    , TrimFsdbFile(..)
     , NormEffortFile(..)
     , NormRouteFile(..)
     , NormScoreFile(..)
@@ -62,12 +64,20 @@ import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
 
-readFilterFsdb :: FilterFsdbFile -> IO FsdbXml
-readFilterFsdb (FilterFsdbFile path) =
+readCleanFsdb :: CleanFsdbFile -> IO FsdbXml
+readCleanFsdb (CleanFsdbFile path) =
     FsdbXml <$> readFile path
 
-writeFilterFsdb :: FilterFsdbFile -> FsdbXml -> IO ()
-writeFilterFsdb (FilterFsdbFile path) (FsdbXml contents) =
+writeCleanFsdb :: CleanFsdbFile -> FsdbXml -> IO ()
+writeCleanFsdb (CleanFsdbFile path) (FsdbXml contents) =
+    writeFile path contents
+
+readTrimFsdb :: TrimFsdbFile -> IO FsdbXml
+readTrimFsdb (TrimFsdbFile path) =
+    FsdbXml <$> readFile path
+
+writeTrimFsdb :: TrimFsdbFile -> FsdbXml -> IO ()
+writeTrimFsdb (TrimFsdbFile path) (FsdbXml contents) =
     writeFile path contents
 
 readComp

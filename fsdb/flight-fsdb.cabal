@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 159342f8ecab227cbcb86848bb59d70bc1595f1b09a397e806130ef794c616ee
+-- hash: 39bdd4ddda9b672039e0f5ddcf56b0da265162c63342c5c045370790eff93432
 
 name:           flight-fsdb
 version:        0.1.0
@@ -34,9 +34,9 @@ library
   exposed-modules:
       Flight.Fsdb
   other-modules:
+      Flight.Fsdb.Clean
       Flight.Fsdb.Comp
       Flight.Fsdb.Distance
-      Flight.Fsdb.Filter
       Flight.Fsdb.Internal.Parse
       Flight.Fsdb.Internal.XmlPickle
       Flight.Fsdb.KeyPilot
@@ -47,6 +47,7 @@ library
       Flight.Fsdb.TaskEffort
       Flight.Fsdb.TaskRoute
       Flight.Fsdb.TaskScore
+      Flight.Fsdb.Trim
       Flight.Fsdb.Tweak
       Paths_flight_fsdb
   hs-source-dirs:
@@ -81,9 +82,9 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Fsdb
+      Flight.Fsdb.Clean
       Flight.Fsdb.Comp
       Flight.Fsdb.Distance
-      Flight.Fsdb.Filter
       Flight.Fsdb.Internal.Parse
       Flight.Fsdb.Internal.XmlPickle
       Flight.Fsdb.KeyPilot
@@ -94,6 +95,7 @@ test-suite doctest
       Flight.Fsdb.TaskEffort
       Flight.Fsdb.TaskRoute
       Flight.Fsdb.TaskScore
+      Flight.Fsdb.Trim
       Flight.Fsdb.Tweak
       Paths_flight_fsdb
   hs-source-dirs:

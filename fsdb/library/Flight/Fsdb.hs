@@ -8,7 +8,8 @@ Stability   : experimental
 Provides parsing the fsdb format for competitors, tasks and results.
 -}
 module Flight.Fsdb
-    ( filterComp
+    ( cleanComp
+    , trimComp
     , parseComp
     , parseNominal
     , parseTweak
@@ -24,7 +25,8 @@ module Flight.Fsdb
     , parseNormEfforts
     ) where
 
-import Flight.Fsdb.Filter
+import Flight.Fsdb.Clean
+import Flight.Fsdb.Trim
 import Flight.Fsdb.Comp
 import Flight.Fsdb.Nominal
 import Flight.Fsdb.Tweak
