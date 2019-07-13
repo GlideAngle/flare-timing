@@ -50,6 +50,7 @@ filterComp (FsdbXml contents) = do
                 , fsParticipant
                 , fsFlightData
                 , fsResult
+                , fsTaskScoreParams
                 ])
         >>> writeDocumentToString [withIndent yes]
 
@@ -236,5 +237,78 @@ fsResult =
                     , "leading_points"
                     , "real_distance"
                     , "last_distance"
+                    ])
+                . localPart)
+
+-- <FsTaskScoreParams
+--     ss_distance="150.41"
+--     task_distance="160.044"
+--     launch_to_ess_distance="160.044"
+--     no_of_pilots_present="43"
+--     no_of_pilots_flying="43"
+--     no_of_pilots_lo="25"
+--     no_of_pilots_reaching_nom_dist="37"
+--     no_of_pilots_reaching_es="18"
+--     no_of_pilots_reaching_goal="18"
+--     sum_flown_distance="4954.745"
+--     best_dist="160.044"
+--     best_time="3.46694444444444"
+--     worst_time="4.10222222222222"
+--     no_of_pilots_in_competition="43"
+--     no_of_pilots_landed_before_stop="0"
+--     sum_dist_over_min="4739.745"
+--     sum_real_dist_over_min="4739.745"
+--     sum_flown_distances="4954.745"
+--     best_real_dist="160.044"
+--     last_start_time="2016-05-07T14:30:00-04:00"
+--     first_start_time="2016-05-07T13:50:00-04:00"
+--     first_finish_time="2016-05-07T17:18:01-04:00"
+--     max_time_to_get_time_points="5.32891771075211"
+--     no_of_pilots_with_time_points="18"
+--     goalratio="0.418604651162791"
+--     arrival_weight="0.0674832058812432"
+--     departure_weight="0"
+--     leading_weight="0.0944764882337404"
+--     time_weight="0.377905952934962"
+--     distance_weight="0.460134352950055"
+--     smallest_leading_coefficient="2.16684339766897"
+--     available_points_distance="460.134352950055"
+--     available_points_time="377.905952934962"
+--     available_points_departure="0"
+--     available_points_leading="94.4764882337404"
+--     available_points_arrival="67.4832058812432"
+--     time_validity="1"
+--     launch_validity="1"
+--     distance_validity="1"
+--     stop_validity="1"
+--     day_quality="1"
+--     ftv_day_validity="1"
+--     time_points_stop_correction="0" />
+fsTaskScoreParams :: ArrowXml a => a XmlTree XmlTree
+fsTaskScoreParams =
+    processTopDown
+        $ (flip when)
+            (isElem >>> hasName "FsTaskScoreParams")
+            (processAttrl . filterA . hasNameWith $
+                ( `elem`
+                    [ "ss_distance"
+                    , "task_distance"
+
+                    , "no_of_pilots_present"
+                    , "no_of_pilots_flying"
+                    , "no_of_pilots_lo"
+                    , "goal_ratio"
+
+                    , "goalratio"
+                    , "arrival_weight"
+                    , "leading_weight"
+                    , "time_weight"
+                    , "distance_weight"
+
+                    , "time_validity"
+                    , "launch_validity"
+                    , "distance_validity"
+                    , "stop_validity"
+                    , "day_quality"
                     ])
                 . localPart)
