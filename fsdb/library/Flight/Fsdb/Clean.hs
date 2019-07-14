@@ -17,15 +17,14 @@ import Text.XML.HXT.Core
     , processTopDown
     , no
     , yes
-    , localPart
     , hasName
-    , hasNameWith
     , none
     , processAttrl
     , isElem
     , when
     , seqA
     , filterA
+    , removeAttr
     )
 
 import Flight.Comp (FsdbXml(..))
@@ -47,6 +46,7 @@ cleanComp (FsdbXml contents) = do
         >>> (processChildren . seqA $
                 [ fsCompetitionNotes
                 , fsParticipant
+                , fsTimeStamp
                 ])
         >>> writeDocumentToString [withIndent yes]
 
@@ -57,20 +57,23 @@ fsCompetitionNotes =
     processTopDown
         $ none `when` (isElem >>> hasName "FsCompetitionNotes")
 
--- <FsParticipant
---     id="101"
---     name="Davis Straub"
---     nat_code_3166_a3="USA"
---     female="0"
---     birthday="19XX-XX-XX"
---     glider="Wills Wing T2C 144"
---     glider_main_colors="Blue window"
---     sponsor="The Oz Report"
---     fai_licence="1"
---     CIVLID="XXXX" />
 fsParticipant :: ArrowXml a => a XmlTree XmlTree
 fsParticipant =
     processTopDown
         $ (flip when)
             (isElem >>> hasName "FsParticipant")
             (processAttrl . filterA $ hasName "id" <+> hasName "name")
+
+-- | The FsFlightData and FsResult elements of an *.fsdb have ts "time stamp"
+-- attributes . Having these gets in the way of doing a file comparison. Two
+-- *.fsdb files for the same competition that have been rescored will have many
+-- ts attribute differences, up to two changes per-pilot per-task. The clean
+-- and trim files are typically source controlled and as such will have commit
+-- times. This function drops timestamp attributes from FsFlightData and
+-- FsResult elements.
+fsTimeStamp :: ArrowXml a => a XmlTree XmlTree
+fsTimeStamp =
+    processTopDown
+        $ (flip when)
+            (isElem >>> (hasName "FsFlightData" <+> hasName "FsResult"))
+            (removeAttr "ts")
