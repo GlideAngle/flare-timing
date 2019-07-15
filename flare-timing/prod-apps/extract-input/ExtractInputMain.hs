@@ -24,7 +24,7 @@ import Flight.Fsdb
     )
 import Flight.Comp
     ( FileType(Fsdb)
-    , FsdbFile(..)
+    , TrimFsdbFile(..)
     , FsdbXml(..)
     , CompSettings(..)
     , EarthMath(..)
@@ -36,8 +36,8 @@ import Flight.Comp
     , Pilot(..)
     , PilotGroup(..)
     , PilotTrackLogFile(..)
-    , fsdbToComp
-    , findFsdb
+    , trimFsdbToComp
+    , findTrimFsdb
     , ensureExt
     )
 import qualified Flight.Comp as C (Comp(earth, earthMath))
@@ -91,7 +91,7 @@ drive
     = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findFsdb o
+    files <- findTrimFsdb o
 
     putStrLn $ "Using a give fraction of " ++ printf "%.5f" gf
     case gd of
@@ -111,12 +111,12 @@ drive
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
 
-go :: EarthMath -> Raw.Give -> FsdbFile -> IO ()
-go dm zg fsdbFile@(FsdbFile fsdbPath) = do
+go :: EarthMath -> Raw.Give -> TrimFsdbFile -> IO ()
+go dm zg fsdbFile@(TrimFsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ fsdbSettings dm zg (FsdbXml contents')
-    either print (writeComp (fsdbToComp fsdbFile)) settings
+    either print (writeComp (trimFsdbToComp fsdbFile)) settings
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
 fsdbComp (FsdbXml contents) = do

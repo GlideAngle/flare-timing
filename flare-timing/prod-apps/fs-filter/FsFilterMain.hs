@@ -15,7 +15,7 @@ import Flight.Comp
     , FsdbFile(..)
     , FsdbXml(..)
     , fsdbToCleanFsdb
-    , fsdbToTrimFsdb
+    , cleanFsdbToTrimFsdb
     , findFsdb
     , ensureExt
     )
@@ -51,11 +51,12 @@ go fsdbFile@(FsdbFile fsdbPath) = do
     cleanXml :: Either String FsdbXml <- runExceptT $ cleanComp (FsdbXml rawXml)
     either print (writeCleanFsdb (fsdbToCleanFsdb fsdbFile)) cleanXml
 
-    FsdbXml cleanContents <- readCleanFsdb $ fsdbToCleanFsdb fsdbFile
+    let cleanFsdbFile =  fsdbToCleanFsdb fsdbFile
+    FsdbXml cleanContents <- readCleanFsdb cleanFsdbFile
     let cleanXml' = dropWhile (/= '<') cleanContents
 
     trimXml :: Either String FsdbXml <- runExceptT $ trimComp (FsdbXml cleanXml')
-    either print (writeTrimFsdb (fsdbToTrimFsdb fsdbFile)) trimXml
+    either print (writeTrimFsdb (cleanFsdbToTrimFsdb cleanFsdbFile)) trimXml
 
 cleanComp :: FsdbXml -> ExceptT String IO FsdbXml
 cleanComp fsdbXml = do

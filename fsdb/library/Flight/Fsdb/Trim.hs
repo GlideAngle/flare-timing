@@ -231,16 +231,22 @@ fsResult =
                 ( `elem`
                     [ "rank"
                     , "points"
-                    , "distance"
-                    , "ss_time"
-                    , "distance_points"
+
                     , "linear_distance_points"
                     , "difficulty_distance_points"
-                    , "time_points"
-                    , "arrival_points"
+
+                    , "distance_points"
                     , "leading_points"
+                    , "arrival_points"
+                    , "time_points"
+
                     , "real_distance"
+                    , "distance"
                     , "last_distance"
+
+                    , "started_ss"
+                    , "finished_ss"
+                    , "ss_time"
                     ])
                 . localPart)
 
@@ -297,11 +303,20 @@ fsTaskScoreParams =
                 ( `elem`
                     [ "ss_distance"
                     , "task_distance"
+                    , "launch_to_ess_distance"
 
                     , "no_of_pilots_present"
                     , "no_of_pilots_flying"
                     , "no_of_pilots_lo"
+                    , "no_of_pilots_reaching_es"
+                    , "no_of_pilots_landed_before_stop"
                     , "goal_ratio"
+
+                    , "best_time"
+                    , "best_dist"
+                    , "best_real_dist"
+
+                    , "sum_real_dist_over_min"
 
                     , "goalratio"
                     , "arrival_weight"

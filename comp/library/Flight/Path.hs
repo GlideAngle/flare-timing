@@ -31,15 +31,15 @@ module Flight.Path
     , AlignTimeDir(..)
     , DiscardFurtherDir(..)
     , PegThenDiscardDir(..)
-    , fsdbToNormEffort
+    , trimFsdbToNormEffort
+    , trimFsdbToNormRoute
+    , trimFsdbToNormScore
     , compToNormEffort
-    , fsdbToNormRoute
     , compToNormRoute
-    , fsdbToNormScore
     , compToNormScore
     , fsdbToCleanFsdb
-    , fsdbToTrimFsdb
-    , fsdbToComp
+    , cleanFsdbToTrimFsdb
+    , trimFsdbToComp
     , compToTaskLength
     , compToCross
     , compToMaskArrival
@@ -185,37 +185,37 @@ compToNormEffort :: CompInputFile -> NormEffortFile
 compToNormEffort (CompInputFile p) =
     NormEffortFile $ flip replaceExtension (ext NormEffort) $ dropExtension p
 
-fsdbToNormEffort :: FsdbFile -> NormEffortFile
-fsdbToNormEffort (FsdbFile p) =
-    NormEffortFile $ replaceExtension p (ext NormEffort)
+trimFsdbToNormEffort :: TrimFsdbFile -> NormEffortFile
+trimFsdbToNormEffort (TrimFsdbFile p) =
+    NormEffortFile $ flip replaceExtension (ext NormEffort) $ dropExtension p
 
 compToNormRoute :: CompInputFile -> NormRouteFile
 compToNormRoute (CompInputFile p) =
     NormRouteFile $ flip replaceExtension (ext NormRoute) $ dropExtension p
 
-fsdbToNormRoute :: FsdbFile -> NormRouteFile
-fsdbToNormRoute (FsdbFile p) =
-    NormRouteFile $ replaceExtension p (ext NormRoute)
+trimFsdbToNormRoute :: TrimFsdbFile -> NormRouteFile
+trimFsdbToNormRoute (TrimFsdbFile p) =
+    NormRouteFile $ flip replaceExtension (ext NormRoute) $ dropExtension p
 
 compToNormScore :: CompInputFile -> NormScoreFile
 compToNormScore (CompInputFile p) =
     NormScoreFile $ flip replaceExtension (ext NormScore) $ dropExtension p
 
-fsdbToNormScore :: FsdbFile -> NormScoreFile
-fsdbToNormScore (FsdbFile p) =
-    NormScoreFile $ replaceExtension p (ext NormScore)
+trimFsdbToNormScore :: TrimFsdbFile -> NormScoreFile
+trimFsdbToNormScore (TrimFsdbFile p) =
+    NormScoreFile $ flip replaceExtension (ext NormScore) $ dropExtension p
 
-fsdbToComp :: FsdbFile -> CompInputFile
-fsdbToComp (FsdbFile p) =
+trimFsdbToComp :: TrimFsdbFile -> CompInputFile
+trimFsdbToComp (TrimFsdbFile p) =
     CompInputFile $ replaceExtension p (ext CompInput)
 
 fsdbToCleanFsdb :: FsdbFile -> CleanFsdbFile
 fsdbToCleanFsdb (FsdbFile p) =
     CleanFsdbFile $ replaceExtension p (ext CleanFsdb)
 
-fsdbToTrimFsdb :: FsdbFile -> TrimFsdbFile
-fsdbToTrimFsdb (FsdbFile p) =
-    TrimFsdbFile $ replaceExtension p (ext TrimFsdb)
+cleanFsdbToTrimFsdb :: CleanFsdbFile -> TrimFsdbFile
+cleanFsdbToTrimFsdb (CleanFsdbFile p) =
+    TrimFsdbFile $ flip replaceExtension (ext TrimFsdb) $ dropExtension p
 
 compFileToCompDir :: CompInputFile -> CompDir
 compFileToCompDir (CompInputFile p) =

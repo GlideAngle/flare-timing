@@ -16,16 +16,16 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Fsdb (parseNormRoutes)
 import Flight.Comp
-    ( FileType(Fsdb)
-    , FsdbFile(..)
+    ( FileType(TrimFsdb)
+    , TrimFsdbFile(..)
     , FsdbXml(..)
-    , fsdbToNormRoute
-    , findFsdb
+    , trimFsdbToNormRoute
+    , findTrimFsdb
     , ensureExt
     )
 import Flight.Route
 import Flight.TaskTrack.Double
-import Flight.Scribe (writeNormRoute)
+import Flight.Scribe (readTrimFsdb, writeNormRoute)
 import FsRouteOptions (description)
 
 main :: IO ()
@@ -33,7 +33,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt Fsdb}
+    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
@@ -42,19 +42,19 @@ drive :: CmdBatchOptions -> IO ()
 drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findFsdb o
+    files <- findTrimFsdb o
 
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
     end <- getTime Monotonic
     fprint ("Extracting expected or normative optimal routes completed in " % timeSpecs % "\n") start end
 
-go :: FsdbFile -> IO ()
-go fsdbFile@(FsdbFile fsdbPath) = do
-    contents <- readFile fsdbPath
+go :: TrimFsdbFile -> IO ()
+go trimFsdbFile = do
+    FsdbXml contents <- readTrimFsdb trimFsdbFile
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ normRoutes (FsdbXml contents')
-    either print (writeNormRoute (fsdbToNormRoute fsdbFile)) settings
+    either print (writeNormRoute (trimFsdbToNormRoute trimFsdbFile)) settings
 
 fsdbRoutes :: FsdbXml -> ExceptT String IO [[RawLatLng]]
 fsdbRoutes (FsdbXml contents) = do
