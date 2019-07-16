@@ -153,12 +153,6 @@ cleanRules = do
     phony "clean-cabal-files" $
         removeFilesAfter "." ["//*.cabal"]
 
-    phony "clean-prod-apps" $
-        removeFilesAfter "__shake-build" prodApps
-
-    phony "clean-test-apps" $
-        removeFilesAfter "__shake-build" testApps
-
 lintWithRule :: Tooling -> String -> Rules ()
 lintWithRule t' s = do
     let t = tooling t'
@@ -316,7 +310,7 @@ buildWithRules t' = do
     phony (t ++ "-www-apps") $ need $ f <$> wwwApps
     phony (t ++ "-test-suites") $ need $ g <$> testPkgs
     phony (t ++ "-doctest-suites") $ need $ h <$> docTestPkgs
-    
+
     where
         t = tooling t'
         f s = t ++ "-flare-timing-" ++ s

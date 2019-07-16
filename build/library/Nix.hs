@@ -169,7 +169,7 @@ fromCabalRules = do
 
         cabal2nix :: String -> String
         cabal2nix x =
-            "../__shake-build/cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
+            "cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
 
 cleanRules :: Rules ()
 cleanRules = do
@@ -190,7 +190,7 @@ shellRules = do
         need [dir </> "shell.nix"]
         cmd
             (Cwd dir)
-            Shell "../__shake-build/cabal2nix --shell . > drv.nix"
+            Shell "cabal2nix --shell . > drv.nix"
 
     where
         drvs = (\s -> s </> "drv.nix") <$> shellPkgs

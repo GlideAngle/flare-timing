@@ -2,5 +2,5 @@
 
 #set +v
 
-stack build build-flare-timing --copy-bins
-__shake-build/build-flare-timing $@
+stack install build-flare-timing
+build-flare-timing $@

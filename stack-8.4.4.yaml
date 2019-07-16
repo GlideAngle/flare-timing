@@ -5,5 +5,4 @@ packages:
 - detour-via-sci
 - siggy-chardust
 - tasty-compare
-local-bin-path: __shake-build
 work-dir: .stack-work-844

@@ -13,5 +13,4 @@ extra-deps:
 - hackage-db-2.0.1
 - hpack-0.29.6
 - infer-license-0.2.0
-local-bin-path: __shake-build
 work-dir: .stack-work-cabal2nix

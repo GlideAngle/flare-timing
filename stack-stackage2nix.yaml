@@ -15,5 +15,4 @@ extra-deps:
   subdirs:
   - gitlib
   - gitlib-libgit2
-local-bin-path: __shake-build
 work-dir: .stack-work-stackage2nix

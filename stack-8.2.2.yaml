@@ -6,5 +6,4 @@ packages:
 - detour-via-uom
 - siggy-chardust
 - tasty-compare
-local-bin-path: __shake-build
 work-dir: .stack-work-822

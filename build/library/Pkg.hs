@@ -65,18 +65,18 @@ dhallRootImports =
 formatPkg :: Folder -> Rules ()
 formatPkg folder =
     phony ("dhall-format-" ++ folder)
-    $ cmd Shell ("__shake-build/dhall format --inplace " ++ (folder </> "package.dhall"))
+    $ cmd Shell ("dhall format --inplace " ++ (folder </> "package.dhall"))
 
 formatRoot :: String -> Rules ()
 formatRoot x =
     phony ("dhall-format-" ++ x)
-    $ cmd Shell ("__shake-build/dhall format --inplace " ++ (x <.> ".dhall"))
+    $ cmd Shell ("dhall format --inplace " ++ (x <.> ".dhall"))
 
 hpack :: Folder -> Rules ()
 hpack folder =
     phony ("hpack-dhall-" ++ folder) $ do
         need ["dhall-format-" ++ folder]
-        cmd (Cwd folder) Shell ("../__shake-build/dhall-hpack-cabal --package-dhall=package.dhall")
+        cmd (Cwd folder) Shell ("dhall-hpack-cabal --package-dhall=package.dhall")
 
 cabal :: (Folder, Pkg) -> Rules ()
 cabal (folder, pkg) =

@@ -41,4 +41,3 @@ extra-deps:
 - doctest-0.15.0
 - megaparsec-7.0.4
 - parser-combinators-1.0.0
-local-bin-path: __shake-build
