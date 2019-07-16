@@ -53,7 +53,6 @@ a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).
 9. Group and count land outs with
 [`land-out`](flare-timing/prod-apps/land-out).  
 10. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
-[`land-out`](flare-timing/prod-apps/land-out).  
 
 To host the backend server for the comp data locally:
 
