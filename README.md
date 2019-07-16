@@ -54,7 +54,7 @@ a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).
 [`land-out`](flare-timing/prod-apps/land-out).  
 10. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 
-To host the backend server for the comp data locally:
+To get the backend server for hosting the comp data running locally:
 
 1. Unpack the `*.igc` or `*.kml` tracklogs with
 [`unpack-track`](flare-timing/prod-apps/unpack-track).  
