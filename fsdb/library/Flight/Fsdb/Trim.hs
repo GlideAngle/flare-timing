@@ -197,6 +197,12 @@ fsFlightData =
             (processAttrl . filterA . hasNameWith $
                 ( `elem`
                     [ "tracklog_filename"
+                    , "iv"
+                    , "lc"
+                    , "distance"
+                    , "bonus_distance"
+                    , "started_ss"
+                    , "finished_ss"
                     ])
                 . localPart)
 

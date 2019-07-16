@@ -704,14 +704,15 @@ parseNormScores
             ]
 
     return $
-        (\(vs, lw, tw, dw, sw) -> NormPointing
-            { bestTime = tss
-            , validityWorkingLaunch = Just <$> lw
-            , validityWorkingTime = Just <$> tw
-            , validityWorkingDistance = Just <$> dw
-            , validityWorkingStop = Just <$> sw
-            , validity = Just <$> vs
-            , score = yss
-            })
+        (\(vs, lw, tw, dw, sw) ->
+            NormPointing
+                { bestTime = tss
+                , validityWorkingLaunch = Just <$> lw
+                , validityWorkingTime = Just <$> tw
+                , validityWorkingDistance = Just <$> dw
+                , validityWorkingStop = Just <$> sw
+                , validity = Just <$> vs
+                , score = yss
+                })
         . unzip5
         <$> sequence vws
