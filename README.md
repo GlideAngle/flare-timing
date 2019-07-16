@@ -30,7 +30,7 @@ comparisons between flare-timing and FS.
 3. Grab the scores from FS with
 [`fs-score`](flare-timing/prod-apps/fs-score).  
 
-That's the `*.fsdb` file done with. From here flare-timing deals with the
+That's the `*.fsdb` file done with. From here on, flare-timing deals with the
 trimmed XML, the `*.trim-fsdb.xml`. If we have the track logs we can score the
 tasks:
 
