@@ -207,7 +207,7 @@ trimFsdbToNormScore (TrimFsdbFile p) =
 
 trimFsdbToComp :: TrimFsdbFile -> CompInputFile
 trimFsdbToComp (TrimFsdbFile p) =
-    CompInputFile $ replaceExtension p (ext CompInput)
+    CompInputFile $ flip replaceExtension (ext CompInput) $ dropExtension p
 
 fsdbToCleanFsdb :: FsdbFile -> CleanFsdbFile
 fsdbToCleanFsdb (FsdbFile p) =
