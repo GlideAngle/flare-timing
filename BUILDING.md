@@ -3,6 +3,93 @@
 This mono-repo contains many packages. The subset of these that are generally
 useful are published to hackage and stackage.
 
+There are many ways to build listed here. Mainly because I wanted to explore
+the many ways of building haskell projects. Some are likely broken as I only
+build with stack regularly.
+
+## Building with Stack
+
+The project as a whole can be built with [`stack
+build`](https://docs.haskellstack.org) and executables installed with;
+
+    flare-timing> stack install
+    ...
+    Copied executables to /.../flare-timing/__shake-build:
+    - align-time
+    - build-flare-timing
+    - comp-serve
+    - cross-zone
+    - discard-further
+    - extract-input
+    - fs-score
+    - gap-point
+    - land-out
+    - mask-track
+    - tag-zone
+    - task-length
+    - test-fsdb-parser
+    - test-igc-parser
+    - test-kml-parser
+    - unpack-track
+
+Individual packages can be built by specifying either the folder or the package
+name;
+
+    flare-timing> stack build units
+    flare-timing> stack build flight-units
+
+## Building with Cabal
+
+As we're depending on some git packages, draw these down using
+[stack2cabal](https://github.com/brunjlar/stack2cabal);
+
+    flare-timing> stack install stack2cabal
+    flare-timing> stack exec stack2cabal -- .
+    ...
+    flare-timing> cabal new-build all
+    cabal: Could not resolve dependencies:
+    [__0] trying: aeson-via-sci-0.1.0 (user goal)
+    [__1] trying: template-haskell-2.13.0.0/installed-2.1... (dependency of
+    aeson-via-sci)
+    [__2] next goal: uom-plugin (user goal)
+    [__2] rejecting: uom-plugin-0.2.0.1 (conflict:
+    template-haskell==2.13.0.0/installed-2.1..., uom-plugin =>
+    template-haskell>=2.9 && <2.13)
+    [__2] rejecting: uom-plugin-0.2.0.0, uom-plugin-0.1.1.0, uom-plugin-0.1.0.0
+    (constraint from user target requires ==0.2.0.1)
+    After searching the rest of the dependency tree exhaustively, these were the
+    goals I've had most trouble fulfilling: template-haskell, uom-plugin,
+    aeson-via-sci
+
+If the build is working with `stack` then we might be able to get it to work
+with `cabal`;
+
+    > mv cabal.project __cabal.project
+    > stack exec stack2cabal -- .
+    > mv cabal.project cabal.project.local
+    > mv __cabal.project cabal.project
+
+Edit `cabal.project.local` so that it looks something like;
+
+    with-compiler:
+        /Users/.../.stack/programs/x86_64-osx/ghc-8.2.2/bin/ghc
+    constraints:
+        Cabal == 2.0.1.1
+        , Only == 0.1
+        , QuickCheck == 2.10.1
+        ...
+        , void == 0.7.2
+        , yaml == 0.8.29
+
+Now let's do the build again;
+
+    > cabal new-build all
+    Build profile: -w ghc-8.2.2 -O1
+    In order, the following will be built (use -v for more details):
+    ...
+    > cabal new-build all
+    Up to date
+
 ## Building with Nix
 Wherever there's a `.cabal` file, there's a matching `default.nix` that enables
 a [nix build](https://nixos.org/nix/manual/#sec-building-simple). There's
@@ -547,89 +634,6 @@ test-fsdb-parser
 test-igc-parser
 test-kml-parser
 ```
-
-## Building with Stack
-
-The project as a whole can be built with [`stack
-build`](https://docs.haskellstack.org) and executables installed with;
-
-    flare-timing> stack install
-    ...
-    Copied executables to /.../flare-timing/__shake-build:
-    - align-time
-    - build-flare-timing
-    - comp-serve
-    - cross-zone
-    - discard-further
-    - extract-input
-    - fs-score
-    - gap-point
-    - land-out
-    - mask-track
-    - tag-zone
-    - task-length
-    - test-fsdb-parser
-    - test-igc-parser
-    - test-kml-parser
-    - unpack-track
-
-Individual packages can be built by specifying either the folder or the package
-name;
-
-    flare-timing> stack build units
-    flare-timing> stack build flight-units
-
-## Building with Cabal
-
-As we're depending on some git packages, draw these down using
-[stack2cabal](https://github.com/brunjlar/stack2cabal);
-
-    flare-timing> stack install stack2cabal
-    flare-timing> stack exec stack2cabal -- .
-    ...
-    flare-timing> cabal new-build all
-    cabal: Could not resolve dependencies:
-    [__0] trying: aeson-via-sci-0.1.0 (user goal)
-    [__1] trying: template-haskell-2.13.0.0/installed-2.1... (dependency of
-    aeson-via-sci)
-    [__2] next goal: uom-plugin (user goal)
-    [__2] rejecting: uom-plugin-0.2.0.1 (conflict:
-    template-haskell==2.13.0.0/installed-2.1..., uom-plugin =>
-    template-haskell>=2.9 && <2.13)
-    [__2] rejecting: uom-plugin-0.2.0.0, uom-plugin-0.1.1.0, uom-plugin-0.1.0.0
-    (constraint from user target requires ==0.2.0.1)
-    After searching the rest of the dependency tree exhaustively, these were the
-    goals I've had most trouble fulfilling: template-haskell, uom-plugin,
-    aeson-via-sci
-
-If the build is working with `stack` then we might be able to get it to work
-with `cabal`;
-
-    > mv cabal.project __cabal.project
-    > stack exec stack2cabal -- .
-    > mv cabal.project cabal.project.local
-    > mv __cabal.project cabal.project
-
-Edit `cabal.project.local` so that it looks something like;
-
-    with-compiler:
-        /Users/.../.stack/programs/x86_64-osx/ghc-8.2.2/bin/ghc
-    constraints:
-        Cabal == 2.0.1.1
-        , Only == 0.1
-        , QuickCheck == 2.10.1
-        ...
-        , void == 0.7.2
-        , yaml == 0.8.29
-
-Now let's do the build again;
-
-    > cabal new-build all
-    Build profile: -w ghc-8.2.2 -O1
-    In order, the following will be built (use -v for more details):
-    ...
-    > cabal new-build all
-    Up to date
 
 ## Building with Pier
 As pier doesn't yet support git dependencies, let's bring those down first;
