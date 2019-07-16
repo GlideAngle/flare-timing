@@ -49,9 +49,9 @@ sensitive personal information such as birthdays, phone numbers and notes that
 we'll want to avoid publishing. We'll also want some output data for making
 comparisons between flare-timing and FS.
 
-1. Clean out that stuff and trim that data with
+1. Clean out the sensitive stuff and trim away data we don't need with
 [`fs-filter`](flare-timing/prod-apps/fs-filter).  
-2. Grab the routes from FS with
+2. Grab the optimal route around the tasks found by FS with
 [`fs-route`](flare-timing/prod-apps/fs-route).  
 3. Grab the landouts from FS with
 [`fs-effort`](flare-timing/prod-apps/fs-effort).  
@@ -59,8 +59,8 @@ comparisons between flare-timing and FS.
 [`fs-score`](flare-timing/prod-apps/fs-score).  
 
 That's the `*.fsdb` file done with. From here flare-timing deals with the
-trimmed XML, the `*.trim-fsdb.xml`. If we have the track log we can score the
-tasks of a comp:
+trimmed XML, the `*.trim-fsdb.xml`. If we have the track logs we can score the
+tasks:
 
 1. Extract the inputs with
 [`extract-input`](flare-timing/prod-apps/extract-input).  
