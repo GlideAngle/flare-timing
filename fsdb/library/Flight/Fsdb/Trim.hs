@@ -99,7 +99,8 @@ fsCompetition =
             (isElem >>> hasName "FsCompetition")
             (processAttrl . filterA . hasNameWith $
                 ( `elem`
-                    [ "discipline"
+                    [ "id"
+                    , "discipline"
                     , "name"
                     , "location"
                     , "from"
