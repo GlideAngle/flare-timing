@@ -9,7 +9,7 @@ as needed for longer flights.
 
 The official scoring program for hang gliding and paragliding competitions is
 [FS](http://fs.fai.org/). Outputs for a scored competition task are mingled
-with inputs in the `*.fsdb` file. Once scored, a task and competitions reports
+with inputs in the `*.fsdb` file. Once scored, task and competitions reports
 can be made. These simple static html pages with tables of pilot scores can be
 hosted on any web server when publishing the results. In addition to the points
 scored, there are columns in the task table for the time on course, the
