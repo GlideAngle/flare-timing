@@ -40,14 +40,14 @@ working of how a pilot's score is calculated.
 
 ## Usage
 
-See the separate discussion of [building](BUILDING.md) and
-[testing](TESTING.md). We'll outline the steps here for getting inputs and
-outputs, doing the scoring and hosting the comp locally.
+Let's get the inputs and outputs from FS, do the scoring and host the comp
+locally. [Building](BUILDING.md) and [testing](TESTING.md) have their own
+guides.
 
-Let's start with some preparatory work on the FS comp
-file, the `*.fsdb`. This will often contain sensitive personal
-information such as birthdays, phone numbers and notes. We'll also want to
-ready some data for comparisons between flare-timing and FS.
+Start by preparing the FS comp file, the `*.fsdb`. This will often contain
+sensitive personal information such as birthdays, phone numbers and notes that
+we'll want to avoid publishing. We'll also want some output data for making
+comparisons between flare-timing and FS.
 
 1. Clean out that stuff and trim that data with
 [`fs-filter`](flare-timing/prod-apps/fs-filter).  
