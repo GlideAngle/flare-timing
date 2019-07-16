@@ -30,6 +30,12 @@ of this changelog.
 * Add fs-effort, a command line tool for extracting the landings, chunking and
   relative difficulties from a competition `*.fsdb`.
 * Show two more decimal places when point difference is +0.0 or -0.0.
+* Clean and trim elements and attributes of the `*.fsdb` before use with
+  `fs-filter`, a new command line app that writes `*.clean-fsdb.xml` and
+  `*.trim-fsdb.xml`. The cleaned file has sensitive information removed that
+  would allow its publication. The trimmed file is the minimal set required by
+  flare-timing, taking some data as inputs for scoring and other data for
+  comparisons of the scores.
 
 # Stopped Validity and Bonus Reach
 ## app-view-0.20
