@@ -41,7 +41,10 @@ working of how a pilot's score is calculated.
 ## Usage
 
 See the separate discussion of [building](BUILDING.md) and
-[testing](TESTING.md). Let's start with some preparatory work on the FS comp
+[testing](TESTING.md). We'll outline the steps here for getting inputs and
+outputs, doing the scoring and hosting the comp locally.
+
+Let's start with some preparatory work on the FS comp
 file, the `*.fsdb`. This will often contain sensitive personal
 information such as birthdays, phone numbers and notes. We'll also want to
 ready some data for comparisons between flare-timing and FS.
@@ -79,8 +82,22 @@ a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).
 [`land-out`](flare-timing/prod-apps/land-out).  
 10. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 [`land-out`](flare-timing/prod-apps/land-out).  
-11. Unpack the `*.igc` or `*.kml` tracklogs too with
+
+To host the backend server for the comp data locally:
+
+1. Unpack the `*.igc` or `*.kml` tracklogs with
 [`unpack-track`](flare-timing/prod-apps/unpack-track).  
+2. Start the server with
+[`comp-serve`](flare-timing/app-serve).  
+
+To host the frontend web app for the comp locally:
+
+1. Open a try-reflex shell with:
+> reflex-platform/try-reflex
+2. Build the frontend and start its webpack dev server with:
+> ./stack-shake-build.sh view-start-ghcjs
+3. Open a browser at the hosted URL, usually http://localhost:9000/app.html.
+
 
 Documentation is available online at
 [flare-timing.readthedocs.io](http://flare-timing.readthedocs.io/) and there's
