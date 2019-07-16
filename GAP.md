@@ -1,11 +1,11 @@
 # GAP
 
-Hang gliding and paragliding competitions are scored measuring pilots against
-one another along several axes. The exact combination of formulae we call GAP,
-after the initials of the first names of the three inventors of this method.
-The vario flying instruments pilots carry with them are also GPS receivers and
-are able to log fairly accurate position fixes every few seconds for many hours
-as needed for longer flights.
+The vario flying instruments pilots carry with them are also GPS receivers,
+able to log fairly accurate position fixes every few seconds for many hours as
+needed for longer flights. This data in combination with the task set for the
+day's flying we number crunch to measure pilots against one another and the
+course along several axes. The exact combination of formulae we call GAP, after
+the initials of the first names of the three inventors of this method.
 
 The official scoring program for hang gliding and paragliding competitions is
 [FS](http://fs.fai.org/). Outputs for a scored competition task are mingled
