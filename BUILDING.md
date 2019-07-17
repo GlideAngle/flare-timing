@@ -13,17 +13,21 @@ build`](https://docs.haskellstack.org) and executables installed with;
 
     flare-timing> stack install
     ...
-    Copied executables to /.../flare-timing/__shake-build:
+    Copied executables to /Users/_/.local/bin:
     - align-time
     - build-flare-timing
     - comp-serve
     - cross-zone
     - discard-further
     - extract-input
+    - fs-effort
+    - fs-filter
+    - fs-route
     - fs-score
     - gap-point
     - land-out
     - mask-track
+    - peg-frame
     - tag-zone
     - task-length
     - test-fsdb-parser
@@ -32,7 +36,7 @@ build`](https://docs.haskellstack.org) and executables installed with;
     - unpack-track
 
 Individual packages can be built by specifying either the folder or the package
-name;
+name.
 
     flare-timing> stack build units
     flare-timing> stack build flight-units
