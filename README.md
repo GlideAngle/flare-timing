@@ -105,7 +105,7 @@ flare-timing includes or not.
 * Type of Zone
     - [x] Cylinder
     - [ ] Inverted cone (can be defined but treated as a cylinder)
-* Type of goal
+* Type of Goal
     - [x] Circle
     - [x] Line
 * Final Glide Decelerator
