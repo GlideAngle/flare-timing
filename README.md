@@ -111,6 +111,9 @@ flare-timing includes or not.
 * Final Glide Decelerator
     - [ ] Conical end of speed section (CESS)
     - [ ] Arrival altitude time bonus (AATB)
+* Type of Alitude
+    - [x] GPS
+    - [ ] Pressure (QNH)
 * Validities
     - [x] Launch
     - [x] Distance
@@ -118,10 +121,21 @@ flare-timing includes or not.
 * Points
     - [x] Linear distance (reach)
     - [x] Distance difficulty (effort)
-    - [x] Arrival
+    - [x] Arrival position points
+    - [ ] Arrival time points
     - [x] Time
     - [x] Leading
     - [ ] Departure
+* Point Overrides
+    - [ ] Day quality override
+    - [ ] 1000 points for winner if no pilot made goal
+    - [ ] 1000 points for winner before day quality applied
+    - [ ] Use distance squared for leading coefficient
+    - [x] Double leading points weight
+    - [ ] Proportional leading points weight if no pilot made goal
+    - [ ] Adjustable stopped task bonus glide ratio (fixed at 4:1 for PG and 5:1 for HG)
+    - [ ] Jump-the-gun factor
+    - [ ] Jump-the-gun maximum
 * Special Cases
     - [ ] End of the speed section but not goal
     - [ ] Early start
