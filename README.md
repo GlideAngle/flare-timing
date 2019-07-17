@@ -10,33 +10,6 @@ checks and comparisons with expected or official results. It is possible to
 publish the data alongside this web app standalone as done at [flaretiming, the
 web site](https://flaretiming.com).
 
-## What's Included
-
-The GAP rules have changed over the years. Here are the features that
-flare-timing includes or not.
-
-* Earth Model
-    - [x] FAI sphere
-    - [x] WGS84 ellipsoid
-* Distance Method
-    - [x] Pythagorus on a UTM plane
-    - [x] Haversines on the sphere
-    - [x] Vincenty on the ellipsoid
-    - [ ] Andoyer on the ellipsoid
-* Type of Task
-    - [x] Race
-    - [x] Elapsed time
-    - [ ] Open distance (can be declared but not yet scored)
-* Type of Zone
-    - [x] Cylinder
-    - [ ] Inverted cone (can be defined but treated as a cylinder)
-* Type of goal
-    - [x] Cylinder
-    - [x] Line
-* Final Glide Decelerator
-    - [ ] Conical end of speed section (CESS)
-    - [ ] Arrival altitude time bonus (AATB)
-
 ## Installation
 
 Download the source, build and install with [stack](https://docs.haskellstack.org):
@@ -108,10 +81,36 @@ To host the frontend web app for the comp locally:
     `> ./stack-shake-build.sh view-start-ghcjs`
 3. Open a browser at the hosted URL, usually http://localhost:9000/app.html.
 
-
 Documentation is available online at
 [flare-timing.readthedocs.io](http://flare-timing.readthedocs.io/) and there's
 a [worked example](EXAMPLE.md) too.
+
+## What's Included
+
+The GAP rules have changed over the years. Here are the features that
+flare-timing includes or not.
+
+* Earth Model
+    - [x] FAI sphere
+    - [x] WGS84 ellipsoid
+* Distance Method
+    - [x] Pythagorus on a UTM plane
+    - [x] Haversines on the sphere
+    - [x] Vincenty on the ellipsoid
+    - [ ] Andoyer on the ellipsoid
+* Type of Task
+    - [x] Race
+    - [x] Elapsed time
+    - [ ] Open distance (can be declared but not yet scored)
+* Type of Zone
+    - [x] Cylinder
+    - [ ] Inverted cone (can be defined but treated as a cylinder)
+* Type of goal
+    - [x] Cylinder
+    - [x] Line
+* Final Glide Decelerator
+    - [ ] Conical end of speed section (CESS)
+    - [ ] Arrival altitude time bonus (AATB)
 
 ## License
 
