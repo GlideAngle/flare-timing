@@ -111,6 +111,30 @@ flare-timing includes or not.
 * Final Glide Decelerator
     - [ ] Conical end of speed section (CESS)
     - [ ] Arrival altitude time bonus (AATB)
+* Special Cases
+    - [ ] End of the speed section but not goal
+    - [ ] Early start
+    - [x] Stopped tasks
+* Stopped Tasks
+    - [x] Stopped task time as announcement minus score back
+    - [ ] Requirements checking, goal or duration
+    - [x] Validity
+    - [ ] Score time window
+    - [ ] Time points for pilots at or after the end of the speed section
+    - [x] Distance points with altitude bonus
+* Penalties
+    - [x] Absolute
+    - [x] Fractional
+* Task Ranking
+    - [x] Overall
+    - [ ] Female
+    - [ ] Country
+* Competition Ranking
+    - [ ] Overall
+    - [ ] Female
+    - [ ] Country
+    - [ ] Ties
+    - [ ] Fixed Total Validity
 
 ## License
 
