@@ -10,8 +10,8 @@ let
       , flight-igc, flight-kml, flight-latlng, flight-lookup, flight-mask
       , flight-route, flight-scribe, flight-span, flight-time
       , flight-units, flight-zone, formatting, lens, mtl, raw-strings-qq
-      , safe-exceptions, siggy-chardust, stdenv, time, transformers
-      , uom-plugin, yaml
+      , safe-exceptions, siggy-chardust, statistics, stdenv, time
+      , transformers, uom-plugin, vector, yaml
       }:
       mkDerivation {
         pname = "flare-timing";
@@ -25,8 +25,8 @@ let
           flight-fsdb flight-gap flight-igc flight-kml flight-latlng
           flight-lookup flight-mask flight-route flight-scribe flight-span
           flight-time flight-units flight-zone formatting lens mtl
-          raw-strings-qq safe-exceptions siggy-chardust time transformers
-          uom-plugin yaml
+          raw-strings-qq safe-exceptions siggy-chardust statistics time
+          transformers uom-plugin vector yaml
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";

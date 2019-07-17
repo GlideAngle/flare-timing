@@ -7,7 +7,8 @@ let
   f = { mkDerivation, aeson, base, containers, detour-via-sci
       , doctest, flight-comp, flight-gap, flight-latlng, flight-units
       , flight-zone, hxt, hxt-pickle-utils, hxt-xpath, megaparsec
-      , newtype, path, scientific, split, stdenv, time, uom-plugin
+      , newtype, path, scientific, split, statistics, stdenv, time
+      , uom-plugin, vector
       }:
       mkDerivation {
         pname = "flight-fsdb";
@@ -16,12 +17,13 @@ let
         libraryHaskellDepends = [
           aeson base containers detour-via-sci flight-comp flight-gap
           flight-latlng flight-units flight-zone hxt hxt-xpath megaparsec
-          newtype path scientific split time uom-plugin
+          newtype path scientific split statistics time uom-plugin vector
         ];
         testHaskellDepends = [
           aeson base containers detour-via-sci doctest flight-comp flight-gap
           flight-latlng flight-units flight-zone hxt hxt-pickle-utils
-          hxt-xpath megaparsec newtype path scientific split time uom-plugin
+          hxt-xpath megaparsec newtype path scientific split statistics time
+          uom-plugin vector
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "A parser for fsdb, the database XML format of FS";

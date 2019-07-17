@@ -5,10 +5,10 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, base, bifunctors, detour-via-sci
-      , detour-via-uom, fgl, flight-latlng, flight-units, flight-zone
-      , hcoord, hcoord-utm, mtl, numbers, scientific, siggy-chardust
-      , smallcheck, stdenv, tasty, tasty-compare, tasty-hunit
-      , tasty-quickcheck, tasty-smallcheck, uom-plugin
+      , detour-via-uom, doctest, fgl, flight-latlng, flight-units
+      , flight-zone, hcoord, hcoord-utm, mtl, numbers, scientific
+      , siggy-chardust, smallcheck, stdenv, tasty, tasty-compare
+      , tasty-hunit, tasty-quickcheck, tasty-smallcheck, uom-plugin
       }:
       mkDerivation {
         pname = "flight-earth";
@@ -20,7 +20,7 @@ let
           numbers scientific siggy-chardust uom-plugin
         ];
         testHaskellDepends = [
-          aeson base bifunctors detour-via-sci detour-via-uom fgl
+          aeson base bifunctors detour-via-sci detour-via-uom doctest fgl
           flight-latlng flight-units flight-zone hcoord hcoord-utm mtl
           numbers scientific siggy-chardust smallcheck tasty tasty-compare
           tasty-hunit tasty-quickcheck tasty-smallcheck uom-plugin

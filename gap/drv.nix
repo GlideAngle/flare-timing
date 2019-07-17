@@ -16,8 +16,8 @@ let
         src = ./.;
         libraryHaskellDepends = [
           aeson base cassava containers detour-via-sci detour-via-uom
-          flight-units newtype scientific siggy-chardust statistics
-          template-haskell text uom-plugin vector
+          flight-units newtype scientific siggy-chardust template-haskell
+          text uom-plugin
         ];
         testHaskellDepends = [
           aeson base cassava containers detour-via-sci detour-via-uom doctest
