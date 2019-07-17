@@ -28,16 +28,14 @@ packages:
 - zone
 - flare-timing
 - app-serve
-- location:
-    git: https://github.com/blockscope/hcoord.git
-    commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
-  subdirs:
-  - hcoord
-  - hcoord-utm
-  extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
 - uom-plugin-0.3.0.0
 - doctest-0.15.0
 - megaparsec-7.0.4
 - parser-combinators-1.0.0
+- git: https://github.com/blockscope/hcoord.git
+  commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
+  subdirs:
+  - hcoord
+  - hcoord-utm
