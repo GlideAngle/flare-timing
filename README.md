@@ -15,14 +15,27 @@ web site](https://flaretiming.com).
 The GAP rules have changed over the years. Here are the features that
 flare-timing includes or not.
 
-* Earth model
+* Earth Model
     - [x] FAI sphere
     - [x] WGS84 ellipsoid
-* Distance method
+* Distance Method
     - [x] Pythagorus on a UTM plane
     - [x] Haversines on the sphere
     - [x] Vincenty on the ellipsoid
     - [ ] Andoyer on the ellipsoid
+* Type of Task
+    - [x] Race
+    - [x] Elapsed time
+    - [ ] Open distance
+* Type of Zone
+    - [x] Cylinder
+    - [ ] Inverted cone (can be defined but treated as a cylinder)
+* Type of goal
+    - [x] Cylinder
+    - [x] Line
+* Final Glide Decelerator
+    - [ ] Conical end of speed section (CESS)
+    - [ ] Arrival altitude time bonus (AATB)
 
 ## Installation
 
