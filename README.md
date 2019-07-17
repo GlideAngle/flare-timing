@@ -126,7 +126,7 @@ flare-timing includes or not.
     - [x] Time
     - [x] Leading
     - [ ] Departure
-* Point Overrides
+* Parameter Tweaks
     - [ ] Day quality override
     - [ ] 1000 points for winner if no pilot made goal
     - [ ] 1000 points for winner before day quality applied
