@@ -20,11 +20,13 @@ Download the source, build and install with [stack](https://docs.haskellstack.or
 > stack install
 ```
 
+There's more in the [building](BUILDING.md) guide. There's a guide for
+[testing](TESTING.md) too.
+
 ## Usage
 
 Let's get the inputs and outputs from FS, do the scoring and host the comp
-locally. [Building](BUILDING.md) and [testing](TESTING.md) have their own
-guides.
+locally.
 
 Start by preparing the FS comp file, the `*.fsdb`. This will often contain
 sensitive personal information such as birthdays, phone numbers and notes that
