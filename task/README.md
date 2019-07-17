@@ -1,3 +1,3 @@
-[![Build Status](https://travis-ci.org/BlockScope/haskell-flight-task.svg)](https://travis-ci.org/BlockScope/haskell-flight-task)
+# flight-task
 
-For working out the shortest possibly distance to fly a competition task.
+The shortest path around a competition task, tagging all control zones.
