@@ -106,7 +106,7 @@ flare-timing includes or not.
     - [x] Cylinder
     - [ ] Inverted cone (can be defined but treated as a cylinder)
 * Type of goal
-    - [x] Cylinder
+    - [x] Circle
     - [x] Line
 * Final Glide Decelerator
     - [ ] Conical end of speed section (CESS)
