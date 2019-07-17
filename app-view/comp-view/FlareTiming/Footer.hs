@@ -2,10 +2,10 @@ module FlareTiming.Footer (footer) where
 
 import Reflex.Dom
 
-attribution :: MonadWidget t m => m () 
+attribution :: MonadWidget t m => m ()
 attribution =
     elClass "div" "is-size-7" $ do
-    elAttr "strong" ("title" =: "app-view-0.20 2019-06-05T11:41") $ text "Flare Timing"
+    elAttr "strong" ("title" =: "app-view-0.21 2019-07-17T13:14") $ text "Flare Timing"
     text " by "
     elAttr
         "a"
