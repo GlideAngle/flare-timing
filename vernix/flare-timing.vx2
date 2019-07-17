@@ -9,7 +9,7 @@ package_spec  =  [
     HaskellPackage("detour-via-uom", ft(subpath = "detour-via-uom"), Local("../detour-via-uom"), dontCheck = True),
     HaskellPackage("tasty-compare", ft(subpath = "tasty-compare"), Local("../tasty-compare")),
 
-    HaskellPackage("flight-clip", ft(subpath = "clip"), Local("../clip")),
+    HaskellPackage("flight-clip", ft(subpath = "clip"), Local("../clip"), dontCheck = True),
     HaskellPackage("flight-cmd", ft(subpath = "cmd"), Local("../cmd")),
     HaskellPackage("flight-comp", ft(subpath = "comp"), Local("../comp"), dontCheck = True, dontHaddock = True),
     HaskellPackage("flight-earth", ft(subpath = "earth"), Local("../earth"), dontCheck = True, dontHaddock = True),

@@ -18,11 +18,11 @@ let
               fetchgit = p.fetchgit;
                app-serve = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cmdargs, directory
-                 , filemanip, filepath, flight-cmd, flight-comp, flight-gap
-                 , flight-kml, flight-latlng, flight-mask, flight-route
+                 , filemanip, filepath, flight-clip, flight-cmd, flight-comp
+                 , flight-gap, flight-kml, flight-latlng, flight-mask, flight-route
                  , flight-scribe, hlint, mtl, raw-strings-qq, safe-exceptions
-                 , servant, servant-server, siggy-chardust, stdenv, transformers
-                 , uom-plugin, wai, wai-cors, wai-extra, warp, yaml
+                 , servant, servant-server, siggy-chardust, stdenv, time
+                 , transformers, uom-plugin, wai, wai-cors, wai-extra, warp, yaml
                  }:
                  mkDerivation {
                    pname = "app-serve";
@@ -32,10 +32,11 @@ let
                    isExecutable = true;
                    executableHaskellDepends = [
                      aeson base bytestring cmdargs directory filemanip filepath
-                     flight-cmd flight-comp flight-gap flight-kml flight-latlng
-                     flight-mask flight-route flight-scribe mtl raw-strings-qq
-                     safe-exceptions servant servant-server siggy-chardust transformers
-                     uom-plugin wai wai-cors wai-extra warp yaml
+                     flight-clip flight-cmd flight-comp flight-gap flight-kml
+                     flight-latlng flight-mask flight-route flight-scribe mtl
+                     raw-strings-qq safe-exceptions servant servant-server
+                     siggy-chardust time transformers uom-plugin wai wai-cors wai-extra
+                     warp yaml
                    ];
                    testHaskellDepends = [ base flight-comp hlint ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
@@ -121,8 +122,8 @@ let
                  , flight-kml, flight-latlng, flight-lookup, flight-mask
                  , flight-route, flight-scribe, flight-span, flight-time
                  , flight-units, flight-zone, formatting, lens, mtl, raw-strings-qq
-                 , safe-exceptions, siggy-chardust, stdenv, time, transformers
-                 , uom-plugin, yaml
+                 , safe-exceptions, siggy-chardust, statistics, stdenv, time
+                 , transformers, uom-plugin, vector, yaml
                  }:
                  mkDerivation {
                    pname = "flare-timing";
@@ -136,15 +137,15 @@ let
                      flight-fsdb flight-gap flight-igc flight-kml flight-latlng
                      flight-lookup flight-mask flight-route flight-scribe flight-span
                      flight-time flight-units flight-zone formatting lens mtl
-                     raw-strings-qq safe-exceptions siggy-chardust time transformers
-                     uom-plugin yaml
+                     raw-strings-qq safe-exceptions siggy-chardust statistics time
+                     transformers uom-plugin vector yaml
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {});
-               flight-clip = super.callPackage (
+               flight-clip = dontCheck (super.callPackage (
                  { mkDerivation, base, doctest, split, stdenv, time }:
                  mkDerivation {
                    pname = "flight-clip";
@@ -156,7 +157,7 @@ let
                    description = "Clipping a pilot's tracklogs";
                    license = stdenv.lib.licenses.mpl20;
                  }
-                 ) {};
+                 ) {});
                flight-cmd = super.callPackage (
                  { mkDerivation, base, cmdargs, directory, filemanip, filepath
                  , flight-span, mtl, raw-strings-qq, stdenv, transformers
@@ -209,10 +210,10 @@ let
                  ) {}));
                flight-earth = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bifunctors, detour-via-sci
-                 , detour-via-uom, fgl, flight-latlng, flight-units, flight-zone
-                 , hcoord, hcoord-utm, mtl, numbers, scientific, siggy-chardust
-                 , smallcheck, stdenv, tasty, tasty-compare, tasty-hunit
-                 , tasty-quickcheck, tasty-smallcheck, uom-plugin
+                 , detour-via-uom, doctest, fgl, flight-latlng, flight-units
+                 , flight-zone, hcoord, hcoord-utm, mtl, numbers, scientific
+                 , siggy-chardust, smallcheck, stdenv, tasty, tasty-compare
+                 , tasty-hunit, tasty-quickcheck, tasty-smallcheck, uom-plugin
                  }:
                  mkDerivation {
                    pname = "flight-earth";
@@ -224,7 +225,7 @@ let
                      numbers scientific siggy-chardust uom-plugin
                    ];
                    testHaskellDepends = [
-                     aeson base bifunctors detour-via-sci detour-via-uom fgl
+                     aeson base bifunctors detour-via-sci detour-via-uom doctest fgl
                      flight-latlng flight-units flight-zone hcoord hcoord-utm mtl
                      numbers scientific siggy-chardust smallcheck tasty tasty-compare
                      tasty-hunit tasty-quickcheck tasty-smallcheck uom-plugin
@@ -238,7 +239,7 @@ let
                  { mkDerivation, aeson, base, containers, detour-via-sci, doctest
                  , flight-comp, flight-gap, flight-latlng, flight-units, flight-zone
                  , hxt, hxt-pickle-utils, hxt-xpath, megaparsec, newtype, path
-                 , scientific, split, stdenv, time, uom-plugin
+                 , scientific, split, statistics, stdenv, time, uom-plugin, vector
                  }:
                  mkDerivation {
                    pname = "flight-fsdb";
@@ -247,12 +248,13 @@ let
                    libraryHaskellDepends = [
                      aeson base containers detour-via-sci flight-comp flight-gap
                      flight-latlng flight-units flight-zone hxt hxt-xpath megaparsec
-                     newtype path scientific split time uom-plugin
+                     newtype path scientific split statistics time uom-plugin vector
                    ];
                    testHaskellDepends = [
                      aeson base containers detour-via-sci doctest flight-comp flight-gap
                      flight-latlng flight-units flight-zone hxt hxt-pickle-utils
-                     hxt-xpath megaparsec newtype path scientific split time uom-plugin
+                     hxt-xpath megaparsec newtype path scientific split statistics time
+                     uom-plugin vector
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "A parser for fsdb, the database XML format of FS";
@@ -272,8 +274,8 @@ let
                    src = ../gap;
                    libraryHaskellDepends = [
                      aeson base cassava containers detour-via-sci detour-via-uom
-                     flight-units newtype scientific siggy-chardust statistics
-                     template-haskell text uom-plugin vector
+                     flight-units newtype scientific siggy-chardust template-haskell
+                     text uom-plugin
                    ];
                    testHaskellDepends = [
                      aeson base cassava containers detour-via-sci detour-via-uom doctest
