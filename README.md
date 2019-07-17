@@ -10,6 +10,15 @@ checks and comparisons with expected or official results. It is possible to
 publish the data alongside this web app standalone as done at [flaretiming, the
 web site](https://flaretiming.com).
 
+## What's Included
+
+The GAP rules have changed over the years. Here are the features that
+flare-timing includes or not.
+
+Earth model, [x] FAI Sphere, [x] WGS84 ellipsoid
+Distance method, [x] Pythagorus on a UTM plane, [x] Haversines on the sphere,
+[x] Vincenty on the ellipsoid, [ ] Andoyer on the ellipsoid.
+
 ## Installation
 
 Download the source, build and install with [stack](https://docs.haskellstack.org):
