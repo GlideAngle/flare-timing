@@ -26,7 +26,7 @@ flare-timing includes or not.
 * Type of Task
     - [x] Race
     - [x] Elapsed time
-    - [ ] Open distance
+    - [ ] Open distance (can be declared but not yet scored)
 * Type of Zone
     - [x] Cylinder
     - [ ] Inverted cone (can be defined but treated as a cylinder)
