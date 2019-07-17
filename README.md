@@ -15,15 +15,14 @@ web site](https://flaretiming.com).
 The GAP rules have changed over the years. Here are the features that
 flare-timing includes or not.
 
-Earth model
-- [x] FAI sphere
-- [x] WGS84 ellipsoid
-
-Distance method
-- [x] Pythagorus on a UTM plane
-- [x] Haversines on the sphere
-- [x] Vincenty on the ellipsoid
-- [ ] Andoyer on the ellipsoid
+* Earth model
+    - [x] FAI sphere
+    - [x] WGS84 ellipsoid
+* Distance method
+    - [x] Pythagorus on a UTM plane
+    - [x] Haversines on the sphere
+    - [x] Vincenty on the ellipsoid
+    - [ ] Andoyer on the ellipsoid
 
 ## Installation
 
