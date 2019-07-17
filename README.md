@@ -10,6 +10,16 @@ checks and comparisons with expected or official results. It is possible to
 publish the data alongside this web app standalone as done at [flaretiming, the
 web site](https://flaretiming.com).
 
+## Installation
+
+Download the source, build and install with [stack](https://docs.haskellstack.org):
+
+```bash
+> git clone https://github.com/BlockScope/flare-timing.git --recursive
+> cd flare-timing
+> stack install
+```
+
 ## Usage
 
 Let's get the inputs and outputs from FS, do the scoring and host the comp
