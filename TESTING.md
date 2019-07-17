@@ -4,7 +4,7 @@ Many library packages have their own test suites and the following command line
 apps can be used to test the parsing of `*.fsdb`, `*.igc` and `*.kml` files by
 dumping what is parsed to stdout.
 
-```bash
+```
     $ test-kml-parser --help
     A parser of KML, the Keyhole Markup Language, an XML format.
 
