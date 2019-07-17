@@ -121,8 +121,8 @@ flare-timing includes or not.
 * Points
     - [x] Linear distance (reach)
     - [x] Distance difficulty (effort)
-    - [x] Arrival position points
-    - [ ] Arrival time points
+    - [x] Arrival position
+    - [ ] Arrival time
     - [x] Time
     - [x] Leading
     - [ ] Departure
