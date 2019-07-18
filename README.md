@@ -1,7 +1,5 @@
 # Flare Timing
 
-[![Build Status](https://travis-ci.org/BlockScope/flare-timing.svg)](https://travis-ci.org/BlockScope/flare-timing)
-
 **Flare Timing** is a reference implementation of [GAP](GAP.md). It consists of
 a series of small command line console apps that write down the working from
 each step in calculating pilot scores. As such data entry and scoring is
