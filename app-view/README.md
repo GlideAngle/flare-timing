@@ -1,142 +1,166 @@
-# Flare Timing's View App
+# app-view
 
-This internally named `app-view` project is a web app written in
-[ghcjs](https://github.com/ghcjs/ghcjs) and
-[reflex-frp](https://reflex-frp.org/) to show the task, the map and the scores
+This is the frontend of flare-timing, the web app. Like most other apps here,
+it too is written in Haskell but compiled with
+[ghcjs](https://github.com/ghcjs/ghcjs), targeting javascript.
+A [reflex-frp](https://reflex-frp.org/) app, it shows the task, map and scores
 of a competition as can be seen for [Forbes Flatlands
 2018](http://2018-forbes.flaretiming.com).
 
-Fire up the [`app-serve`](../app-serve) internal project first. We'll
-need that to supply data for the viewer. The `FlareTiming.Comms` module fetches
-this data.
-
-To host it locally with webpack's [dev
-server](https://webpack.js.org/configuration/dev-server/), follow the following
-command sequence starting from the root directory of this repository:
+Start [`app-serve`](../app-serve), the backend, first. From the root directory
+of this repository, host the frontend [locally](http://localhost:9000/app.html)
+with:
 
 ```
 > reflex-platform/try-reflex
 [nix-shell:flare-timing]$ ./stack-shake-build.sh view-start-ghcjs
 
-Copied executables to .../__shake-build:
-- build-flare-timing
-
 ghcjs
             -DGHCJS_BROWSER
-            -XConstraintKinds ... -XUndecidableInstances
+            -XConstraintKinds -XDataKinds -XDeriveFunctor
+            -XDeriveGeneric-XDeriveAnyClass -XDerivingStrategies
+            -XDisambiguateRecordFields -XDuplicateRecordFields
+            -XFlexibleContexts -XFlexibleInstances -XGeneralizedNewtypeDeriving
+            -XGADTs -XKindSignatures -XLambdaCase -XMonoLocalBinds
+            -XMultiParamTypeClasses -XMultiWayIf -XNamedFieldPuns
+            -XOverloadedStrings -XPackageImports -XParallelListComp
+            -XPartialTypeSignatures -XPatternSynonyms -XQuasiQuotes
+            -XRankNTypes -XRecursiveDo -XRecordWildCards -XScopedTypeVariables
+            -XStandaloneDeriving -XTemplateHaskell -XTypeApplications
+            -XTypeFamilies -XTypeOperators -XTypeSynonymInstances
+            -XTupleSections -XUndecidableInstances
             -Wall
             -outputdir ../../__www-build-ghcjs/app.jsout
             -o ../../__www-build-ghcjs/app.jsexe
             App.hs
 # ghcjs (for __www-build-ghcjs/app.jsexe/all.js)
-[ 1 of 33] Compiling FlareTiming.Comp.Tab
-[ 2 of 33] Compiling FlareTiming.Events
-[ 3 of 33] Compiling FlareTiming.Footer
-[ 4 of 33] Compiling FlareTiming.Task.Tab
-[ 5 of 33] Compiling WireTypes.Pilot
-[ 6 of 33] Compiling FlareTiming.Pilot
-[ 7 of 33] Compiling FlareTiming.Map.Leaflet
-[ 8 of 33] Compiling WireTypes.Point
-[ 9 of 33] Compiling WireTypes.Validity
-[10 of 33] Compiling WireTypes.ZoneKind
-[11 of 33] Compiling WireTypes.Zone
-[12 of 33] Compiling WireTypes.Route
-[13 of 33] Compiling WireTypes.Comp
-[14 of 33] Compiling FlareTiming.Time
-[15 of 33] Compiling WireTypes.ValidityWorking
-[16 of 33] Compiling FlareTiming.Task.Validity
-[17 of 33] Compiling FlareTiming.Task.Score
-[18 of 33] Compiling FlareTiming.Comp.Header
-[19 of 33] Compiling FlareTiming.Comms
-[20 of 33] Compiling FlareTiming.Task.Geo
-[21 of 33] Compiling FlareTiming.Task.Absent
-[22 of 33] Compiling FlareTiming.Comp.Pilot
-[23 of 33] Compiling FlareTiming.Breadcrumb
-[24 of 33] Compiling FlareTiming.Turnpoint
-[25 of 33] Compiling FlareTiming.Comp.Tasks
-[26 of 33] Compiling FlareTiming.Task.Turnpoints
-[27 of 33] Compiling FlareTiming.Map.View
-[28 of 33] Compiling FlareTiming.Task.Detail
-[29 of 33] Compiling FlareTiming.Comp.Settings
-[30 of 33] Compiling FlareTiming.Comp.Detail
-[31 of 33] Compiling FlareTiming.Task
-[32 of 33] Compiling FlareTiming.View
-[33 of 33] Compiling Main
+[ 1 of 87] Compiling Data.Ratio.Rounding
+[ 2 of 87] Compiling FlareTiming.Comp.Tab
+[ 3 of 87] Compiling FlareTiming.Events
+[ 4 of 87] Compiling FlareTiming.Footer
+[ 5 of 87] Compiling FlareTiming.Katex
+[ 6 of 87] Compiling FlareTiming.Nav.TabBasis
+[ 7 of 87] Compiling FlareTiming.Nav.TabPlot
+[ 8 of 87] Compiling FlareTiming.Nav.TabScore
+[ 9 of 87] Compiling FlareTiming.Nav.TabTask
+[10 of 87] Compiling FlareTiming.Plot.Foreign
+[11 of 87] Compiling FlareTiming.Plot.Effort.Plot
+[12 of 87] Compiling FlareTiming.Plot.Arrival.Plot
+[13 of 87] Compiling FlareTiming.Plot.Lead.Plot
+[14 of 87] Compiling FlareTiming.Plot.Reach.Plot
+[15 of 87] Compiling FlareTiming.Plot.Time.Plot
+[16 of 87] Compiling FlareTiming.Statistics
+[17 of 87] Compiling FlareTiming.Task.Validity.Widget
+[18 of 87] Compiling WireTypes.Fraction
+[19 of 87] Compiling WireTypes.Arrival
+[20 of 87] Compiling WireTypes.Lead
+[21 of 87] Compiling WireTypes.Speed
+[22 of 87] Compiling WireTypes.Point
+[23 of 87] Compiling WireTypes.Pilot
+[24 of 87] Compiling WireTypes.Effort
+[25 of 87] Compiling WireTypes.Validity
+[26 of 87] Compiling WireTypes.ZoneKind
+[27 of 87] Compiling WireTypes.Zone
+[28 of 87] Compiling WireTypes.Route
+[29 of 87] Compiling WireTypes.Cross
+[30 of 87] Compiling FlareTiming.Earth
+[31 of 87] Compiling FlareTiming.Map.Leaflet
+[32 of 87] Compiling WireTypes.Comp
+[33 of 87] Compiling FlareTiming.Time
+[34 of 87] Compiling WireTypes.ValidityWorking
+[35 of 87] Compiling WireTypes.Reach 
+[36 of 87] Compiling FlareTiming.Task.Validity.Time
+[37 of 87] Compiling FlareTiming.Task.Validity.Task
+[38 of 87] Compiling FlareTiming.Task.Validity.Stop.StdDev
+[39 of 87] Compiling FlareTiming.Task.Validity.Stop.Mean
+[40 of 87] Compiling FlareTiming.Task.Validity.Stop.Max
+[41 of 87] Compiling FlareTiming.Task.Validity.Stop.Counts
+[42 of 87] Compiling FlareTiming.Task.Validity.Launch
+[43 of 87] Compiling FlareTiming.Task.Validity.Distance
+[44 of 87] Compiling FlareTiming.Plot.Valid.Plot
+[45 of 87] Compiling FlareTiming.Plot.Valid.View
+[46 of 87] Compiling FlareTiming.Plot.Valid
+[47 of 87] Compiling FlareTiming.Task.Score.Show
+[48 of 87] Compiling FlareTiming.Plot.Weight.Working
+[49 of 87] Compiling FlareTiming.Plot.Weight.Plot
+[50 of 87] Compiling FlareTiming.Plot.Weight.View
+[51 of 87] Compiling FlareTiming.Plot.Weight
+[52 of 87] Compiling FlareTiming.Pilot
+[53 of 87] Compiling FlareTiming.Task.Validity.Stop
+[54 of 87] Compiling FlareTiming.Task.Validity
+[55 of 87] Compiling FlareTiming.Task.Score.Time
+[56 of 87] Compiling FlareTiming.Task.Score.Split
+[57 of 87] Compiling FlareTiming.Task.Score.Speed
+[58 of 87] Compiling FlareTiming.Task.Score.Reach
+[59 of 87] Compiling FlareTiming.Task.Score.Over
+[60 of 87] Compiling FlareTiming.Task.Score.Effort
+[61 of 87] Compiling FlareTiming.Task.Score.Arrive
+[62 of 87] Compiling FlareTiming.Plot.Time.View
+[63 of 87] Compiling FlareTiming.Plot.Time
+[64 of 87] Compiling FlareTiming.Plot.Reach.View
+[65 of 87] Compiling FlareTiming.Plot.Reach
+[66 of 87] Compiling FlareTiming.Plot.Lead.View
+[67 of 87] Compiling FlareTiming.Plot.Lead
+[68 of 87] Compiling FlareTiming.Plot.Effort.View
+[69 of 87] Compiling FlareTiming.Plot.Effort
+[70 of 87] Compiling FlareTiming.Plot.Arrival.View
+[71 of 87] Compiling FlareTiming.Plot.Arrival
+[72 of 87] Compiling FlareTiming.Comp.Header
+[73 of 87] Compiling FlareTiming.Comms
+[74 of 87] Compiling FlareTiming.Task.Geo
+[75 of 87] Compiling FlareTiming.Task.Absent
+[76 of 87] Compiling FlareTiming.Comp.Pilot
+[77 of 87] Compiling FlareTiming.Breadcrumb
+[78 of 87] Compiling FlareTiming.Turnpoint
+[79 of 87] Compiling FlareTiming.Comp.Tasks
+[80 of 87] Compiling FlareTiming.Task.Turnpoints
+[81 of 87] Compiling FlareTiming.Map.View
+[82 of 87] Compiling FlareTiming.Task.Detail
+[83 of 87] Compiling FlareTiming.Comp.Settings
+[84 of 87] Compiling FlareTiming.Comp.Detail
+[85 of 87] Compiling FlareTiming.Task
+[86 of 87] Compiling FlareTiming.View
+[87 of 87] Compiling Main
 Linking ../../__www-build-ghcjs/app.jsexe
 # copy all.js
 # pack app.html
 # yarn (for __www-dist-ghcjs/task-view/app.html)
-yarn run v1.12.3
-$ webpack --config=webpack-ghcjs.config.js
-Hash: c5836405997231ab1664
-Version: webpack 3.12.0
-Time: 2161ms
-                                 Asset      Size  Chunks                    Chunk Names
-  674f50d287a8c48dc19ba404d20fe713.eot    166 kB          [emitted]
-af7ae505a9eed503f8b8e6982036873e.woff2   77.2 kB          [emitted]
- fee66e712a8a08eef5805a46892932ad.woff     98 kB          [emitted]
-  b06871f281fee6b241d60582ae9369b9.ttf    166 kB          [emitted]
-  912ec66d7572ff821749319396470bde.svg    444 kB          [emitted]  [big]
-                              app.html   1.35 kB          [emitted]
-                                app.js   2.82 kB       0  [emitted]         app
-                            styles.css    305 kB       0  [emitted]  [big]  app
-                            app.js.map   3.09 kB       0  [emitted]         app
-                        styles.css.map  87 bytes       0  [emitted]         app
-   [0] ./app.js 62 bytes {0} [built]
-   [1] ./app.html 54 bytes {0} [built]
-   [2] ./site.sass 41 bytes {0} [built]
-    + 8 hidden modules
-Child extract-text-webpack-plugin:
-     5 assets
-       [0] ./node_modules/css-loader!./node_modules/sass-loader/lib/loader.js!./site.sass 317 kB {0} [built]
-        + 8 hidden modules
-✨  Done in 2.86s.
-# yarn (for view-start-ghcjs)
-yarn run v1.12.3
+yarn run v1.17.3
 $ webpack-dev-server --config=webpack-ghcjs.config.js
-Project is running at http://localhost:9000/
-webpack output is served from /
-Content not from webpack is served from .../__www-dist-ghcjs/task-view
-Hash: c55bab2449a0d0bde4c0
-Version: webpack 3.12.0
-Time: 2196ms
+ℹ ｢wds｣: Project is running at http://localhost:9000/
+ℹ ｢wds｣: webpack output is served from /
+ℹ ｢wds｣: Content not from webpack is served from /Users/_/flare-timing/__www-dist-ghcjs/task-view
+ℹ ｢wdm｣: Compiled with warnings.
+⚠ ｢wdm｣: Hash: 39196bd52bb6f363bfff
+Version: webpack 4.33.0
+Time: 4644ms
+Built at: 2019-07-18 12:32:29
                                  Asset      Size  Chunks                    Chunk Names
-  674f50d287a8c48dc19ba404d20fe713.eot    166 kB          [emitted]
-af7ae505a9eed503f8b8e6982036873e.woff2   77.2 kB          [emitted]
- fee66e712a8a08eef5805a46892932ad.woff     98 kB          [emitted]
-  b06871f281fee6b241d60582ae9369b9.ttf    166 kB          [emitted]
-  912ec66d7572ff821749319396470bde.svg    444 kB          [emitted]  [big]
-                              app.html   1.35 kB          [emitted]
-                                app.js    325 kB       0  [emitted]  [big]  app
-                            styles.css    305 kB       0  [emitted]  [big]  app
-                            app.js.map    386 kB       0  [emitted]         app
+  674f50d287a8c48dc19ba404d20fe713.eot   162 KiB          [emitted]
+  912ec66d7572ff821749319396470bde.svg   434 KiB          [emitted]  [big]
+af7ae505a9eed503f8b8e6982036873e.woff2  75.4 KiB          [emitted]
+                              app.html  1.57 KiB          [emitted]
+                                app.js   145 KiB       0  [emitted]         app
+                            app.js.map   470 KiB       0  [emitted]         app
+  b06871f281fee6b241d60582ae9369b9.ttf   162 KiB          [emitted]
+ fee66e712a8a08eef5805a46892932ad.woff  95.7 KiB          [emitted]
+                            styles.css   673 KiB       0  [emitted]  [big]  app
                         styles.css.map  87 bytes       0  [emitted]         app
-   [2] multi (webpack)-dev-server/client?http://localhost:9000 ./app.js 40 bytes {0} [built]
-   [3] (webpack)-dev-server/client?http://localhost:9000 7.93 kB {0} [built]
-   [4] ./node_modules/url/url.js 23.3 kB {0} [built]
-   [5] ./node_modules/punycode/punycode.js 14.7 kB {0} [built]
-  [11] ./node_modules/strip-ansi/index.js 161 bytes {0} [built]
-  [13] ./node_modules/loglevel/lib/loglevel.js 7.86 kB {0} [built]
-  [14] (webpack)-dev-server/client/socket.js 1.08 kB {0} [built]
-  [16] (webpack)-dev-server/client/overlay.js 3.67 kB {0} [built]
-  [18] ./node_modules/html-entities/index.js 231 bytes {0} [built]
-  [21] (webpack)/hot nonrecursive ^\.\/log$ 170 bytes {0} [built]
-  [23] (webpack)/hot/emitter.js 77 bytes {0} [built]
-  [25] ./app.js 62 bytes {0} [built]
-  [26] ./app.html 54 bytes {0} [built]
-  [27] ./site.sass 41 bytes {0} [built]
-  [34] ./node_modules/font-awesome/fonts/fontawesome-webfont.ttf?v=4.7.0 82 bytes [built]
-    + 21 hidden modules
-Child extract-text-webpack-plugin:
-     5 assets
-       [0] ./node_modules/css-loader!./node_modules/sass-loader/lib/loader.js!./site.sass 317 kB {0} [built]
-       [1] ./node_modules/css-loader/lib/url/escape.js 448 bytes {0} [built]
-       [2] ./node_modules/css-loader/lib/css-base.js 2.26 kB {0} [built]
-       [3] ./node_modules/font-awesome/fonts/fontawesome-webfont.eot?v=4.7.0 82 bytes {0} [built]
-       [4] ./node_modules/font-awesome/fonts/fontawesome-webfont.eot 82 bytes {0} [built]
-       [5] ./node_modules/font-awesome/fonts/fontawesome-webfont.woff2?v=4.7.0 84 bytes {0} [built]
-       [6] ./node_modules/font-awesome/fonts/fontawesome-webfont.woff?v=4.7.0 83 bytes {0} [built]
-       [7] ./node_modules/font-awesome/fonts/fontawesome-webfont.ttf?v=4.7.0 82 bytes {0} [built]
-       [8] ./node_modules/font-awesome/fonts/fontawesome-webfont.svg?v=4.7.0 82 bytes {0} [built]
-webpack: Compiled successfully.
+Entrypoint app [big] = app.js styles.css app.js.map styles.css.map
+ [0] (webpack)-dev-server/lib/clients/SockJSClient.js 598 bytes {0} [built]
+ [3] (webpack)-dev-server/client/utils/log.js 964 bytes {0} [built]
+ [4] ./node_modules/querystring-es3/index.js 127 bytes {0} [built]
+ [5] multi (webpack)-dev-server/client?http://localhost:9000 ./app.js 40 bytes {0} [built]
+ [6] (webpack)-dev-server/client?http://localhost:9000 4.29 KiB {0} [built]
+ [7] ./node_modules/strip-ansi/index.js 161 bytes {0} [built]
+ [8] ./node_modules/ansi-regex/index.js 135 bytes {0} [built]
+ [9] (webpack)-dev-server/client/socket.js 1.04 KiB {0} [built]
+[12] (webpack)-dev-server/client/overlay.js 3.59 KiB {0} [built]
+[18] (webpack)-dev-server/client/utils/sendMessage.js 402 bytes {0} [built]
+[19] (webpack)-dev-server/client/utils/reloadApp.js 1.63 KiB {0} [built]
+[22] (webpack)-dev-server/client/utils/createSocketUrl.js 2.77 KiB {0} [built]
+[30] (webpack)/hot sync nonrecursive ^\.\/log$ 170 bytes {0} [built]
+[32] ./app.js 62 bytes {0} [built]
+[33] ./app.html 54 bytes {0} [built]
+    + 28 hidden modules
 ```
