@@ -1,7 +1,7 @@
 # app-serve
 
 
-This is the backend of flare-timing, the web app. This uses
+The backend of flare-timing, the web app, this uses
 [servant](https://haskell-servant.readthedocs.io) to serve the data needed by
 the [frontend](../app-view).
 
