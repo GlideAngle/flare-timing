@@ -28,6 +28,7 @@ in    defs
             , "filemanip"
             , "mtl"
             , "safe-exceptions"
+            , "text"
             , "yaml"
             , "vector"
             , "detour-via-sci"

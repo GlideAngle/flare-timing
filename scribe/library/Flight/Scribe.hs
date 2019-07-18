@@ -22,10 +22,13 @@ module Flight.Scribe
     , module Flight.DiscardFurther
     ) where
 
+import Prelude hiding (readFile, writeFile)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeThrow)
+import qualified Data.Text.Encoding as T
+import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 
 import Flight.Route (TaskTrack(..), cmpFields)
@@ -64,21 +67,27 @@ import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
 
+readFsdbXml :: FilePath -> IO FsdbXml
+readFsdbXml path =
+    FsdbXml . T.unpack . T.decodeUtf8 <$> BS.readFile path
+
+writeFsdbXml :: FilePath -> FsdbXml -> IO ()
+writeFsdbXml path (FsdbXml contents) =
+    BS.writeFile path (T.encodeUtf8 $ T.pack contents)
+
 readCleanFsdb :: CleanFsdbFile -> IO FsdbXml
-readCleanFsdb (CleanFsdbFile path) =
-    FsdbXml <$> readFile path
+readCleanFsdb (CleanFsdbFile path) = readFsdbXml path
 
 writeCleanFsdb :: CleanFsdbFile -> FsdbXml -> IO ()
-writeCleanFsdb (CleanFsdbFile path) (FsdbXml contents) =
-    writeFile path contents
+writeCleanFsdb (CleanFsdbFile path) fsdbXml  =
+    writeFsdbXml path fsdbXml
 
 readTrimFsdb :: TrimFsdbFile -> IO FsdbXml
-readTrimFsdb (TrimFsdbFile path) =
-    FsdbXml <$> readFile path
+readTrimFsdb (TrimFsdbFile path) = readFsdbXml path
 
 writeTrimFsdb :: TrimFsdbFile -> FsdbXml -> IO ()
-writeTrimFsdb (TrimFsdbFile path) (FsdbXml contents) =
-    writeFile path contents
+writeTrimFsdb (TrimFsdbFile path) fsdbXml =
+    writeFsdbXml path fsdbXml
 
 readComp
     :: (MonadThrow m, MonadIO m)

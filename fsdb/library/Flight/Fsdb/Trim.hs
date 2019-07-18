@@ -11,9 +11,6 @@ import Text.XML.HXT.Core
     , withWarnings
     , withRemoveWS
     , withIndent
-    , withXmlPi
-    , withOutputEncoding
-    , utf8
     , readString
     , writeDocumentToString
     , processChildren
@@ -61,10 +58,13 @@ trimComp (FsdbXml contents) = do
                 ])
         >>> writeDocumentToString
                 [ withIndent yes
+                -- WARNING: I have not been able to output the processing
+                -- instruction without getting encoding problems such as
+                -- Igor Eržen encoded as Igor ErÅ¾en.
                 -- NOTE: Need both withXmlPi and withOutputEncoding to get:
                 -- <?xml version="1.0" encoding="UTF-8"?>
-                , withXmlPi yes
-                , withOutputEncoding utf8
+                -- , withXmlPi yes
+                -- , withOutputEncoding utf8
                 ]
 
     return . maybe (Left "Couldn't filter FSDB.") Right . listToMaybe $ FsdbXml <$> xs

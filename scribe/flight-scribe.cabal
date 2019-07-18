@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7a17a29bf03bf6a72c8fa4fd5ccab8c3da1638a8c415e3b15b898e1a83a284d9
+-- hash: 13141c8815a3671dc6bb7f8ba65f0685cca0180371348462ab27e0bf28a155db
 
 name:           flight-scribe
 version:        0.1.0
@@ -63,6 +63,7 @@ library
     , safe-exceptions
     , scientific
     , split
+    , text
     , time
     , unordered-containers
     , vector
