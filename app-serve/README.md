@@ -1,37 +1,33 @@
-# Flare Timing's Data Server
+# app-serve
 
-This internally named `app-serve` project is
-a [servant](https://haskell-servant.readthedocs.io) web app.
 
-To install it run `stack install app-serve` from the root of this repository.
-Note the `local-bin-path: __shake-build` setting in stack's `stack.yaml`
-configuration. The installed app is named `comp-serve`.
+This is the backend of flare-timing, the web app. This uses
+[servant](https://haskell-servant.readthedocs.io) to serve the data needed by
+the [frontend](../app-view).
 
-To serve a competition that has already been scored, go to the root folder of
-the competition passing in the common base name as the `--file` option. These
-are the set of the files with the inputs, workings and outputs of scoring:
+To serve a comp that has already been scored, go to its root folder and start
+the server like so for the [QuestAir Open
+2016](https://github.com/FlareTiming/comps/tree/master/Quest/2016) data:
 
 ```
-> comp-serve --file=forbes2018
-```
-
-A scored competition will have a set of files the server reads its data from:
-
-```
-> ls -1
-forbes2018.comp-input.yaml
-forbes2018.cross-zone.yaml
-forbes2018.fsdb
-forbes2018.gap-point.yaml
-forbes2018.land-out.yaml
-forbes2018.mask-track.yaml
-forbes2018.tag-zone.yaml
-forbes2018.task-length.yaml
-task 1
-task 2
-task 3
-task 4
-task 5
-task 6
-task 7
+> git clone https://github.com/FlareTiming/comps.git
+> cd comps/Quest/2016
+> comp-serve --file=2016QuestAirOpen
+Reading task length from '2016QuestAirOpen.task-length.yaml'
+Reading competition & pilots DNF from '2016QuestAirOpen.comp-input.yaml'
+Reading flying time range from '2016QuestAirOpen.cross-zone.yaml'
+Reading zone tags from '2016QuestAirOpen.tag-zone.yaml'
+Reading scored section from '2016QuestAirOpen.peg-frame.yaml'
+Reading arrivals from '2016QuestAirOpen.mask-arrival.yaml'
+Reading effort from '2016QuestAirOpen.mask-effort.yaml'
+Reading leading from '2016QuestAirOpen.mask-lead.yaml'
+Reading reach from '2016QuestAirOpen.mask-reach.yaml'
+Reading speed from '2016QuestAirOpen.mask-speed.yaml'
+Reading bonus reach from '2016QuestAirOpen.bonus-reach.yaml'
+Reading land outs from '2016QuestAirOpen.land-out.yaml'
+Reading scores from '2016QuestAirOpen.gap-point.yaml'
+Reading expected or normative land outs from '2016QuestAirOpen.norm-effort.yaml'
+Reading expected or normative optimal routes from '2016QuestAirOpen.norm-route.yaml'
+Reading expected or normative scores from '2016QuestAirOpen.norm-score.yaml'
+listening on port 3000
 ```
