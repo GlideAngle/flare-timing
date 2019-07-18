@@ -88,6 +88,10 @@ a [worked example](EXAMPLE.md) too.
 The GAP rules have changed over the years. Here are the features that
 flare-timing includes or not.
 
+* Scoring Method
+    - [x] GAP
+    - [ ] Linear distance
+    - [ ] Time-based scoring (TBS)
 * Earth Model
     - [x] FAI sphere
     - [x] WGS84 ellipsoid
