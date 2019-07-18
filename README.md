@@ -14,7 +14,7 @@ web site](https://flaretiming.com).
 
 Download the source, build and install with [stack](https://docs.haskellstack.org):
 
-```bash
+```
 > git clone https://github.com/BlockScope/flare-timing.git --recursive
 > cd flare-timing
 > stack install
