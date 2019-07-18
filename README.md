@@ -115,9 +115,11 @@ flare-timing includes or not.
     - [x] GPS
     - [ ] Pressure (QNH)
 * Validities
+    - [x] Task (day quality)
     - [x] Launch
     - [x] Distance
     - [x] Time
+    - [x] Stop
 * Points
     - [x] Linear distance (reach)
     - [x] Distance difficulty (effort)
@@ -143,7 +145,6 @@ flare-timing includes or not.
 * Stopped Tasks
     - [x] Stopped task time as announcement minus score back
     - [ ] Requirements checking, goal or duration
-    - [x] Validity
     - [ ] Score time window
     - [ ] Time points for pilots at or after the end of the speed section
     - [x] Distance points with altitude bonus
