@@ -3,9 +3,8 @@
 This is the frontend of flare-timing, the web app. Like most other apps here,
 it too is written in Haskell but compiled with
 [ghcjs](https://github.com/ghcjs/ghcjs), targeting javascript.
-A [reflex-frp](https://reflex-frp.org/) app, it shows the task, map and scores
-of a competition as can be seen for [Forbes Flatlands
-2018](http://2018-forbes.flaretiming.com).
+A [reflex-frp](https://reflex-frp.org/) app, it shows the tasks, maps and scores
+of a competition as for [QuestAir Open 2016](http://2016-quest.flaretiming.com).
 
 Start [`app-serve`](../app-serve), the backend, first. From the root directory
 of this repository, host the frontend [locally](http://localhost:9000/app.html)
