@@ -102,16 +102,16 @@ flare-timing includes or not.
     - [x] Race
     - [x] Elapsed time
     - [ ] Open distance (can be declared but not yet scored)
-* Type of Zone
+* Shape of Zone
     - [x] Cylinder
     - [ ] Inverted cone (can be defined but treated as a cylinder)
-* Type of Goal
+* Shape of Goal
     - [x] Circle
     - [x] Line
 * Final Glide Decelerator
     - [ ] Conical end of speed section (CESS)
     - [ ] Arrival altitude time bonus (AATB)
-* Type of Alitude
+* Source of Altitude
     - [x] GPS
     - [ ] Pressure (QNH)
 * Validities
