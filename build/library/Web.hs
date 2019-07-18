@@ -22,7 +22,7 @@ import Dhall
     ( Interpret, InterpretOptions(..)
     , defaultInterpretOptions, input, autoWith
     )
-import qualified Data.Text.Lazy as T (Text, pack, unpack)
+import qualified Data.Text as T (Text, pack, unpack)
 
 data DefaultExtensions =
     DefaultExtentions
