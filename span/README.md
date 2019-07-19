@@ -1,3 +1,4 @@
-[![Build Status](https://travis-ci.org/BlockScope/haskell-flight-comp.svg)](https://travis-ci.org/BlockScope/haskell-flight-comp)
+# `flight-span`
 
-For masking a competition flight task with a pilot's flown track.
+How to measure the distance or span between points, using rational or floating
+point math?

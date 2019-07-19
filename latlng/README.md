@@ -1,3 +1,3 @@
-[![Build Status](https://travis-ci.org/BlockScope/haskell-flight-task.svg)](https://travis-ci.org/BlockScope/haskell-flight-task)
+# `flight-latlng`
 
-Defines units of measure used in scoring.
+Latitudes, longitudes and altitude with units, easting and northings without.

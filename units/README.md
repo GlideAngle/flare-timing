@@ -1,3 +1,4 @@
-[![Build Status](https://travis-ci.org/BlockScope/haskell-flight-task.svg)](https://travis-ci.org/BlockScope/haskell-flight-task)
+# `flight-units`
 
-Defines units of measure used in scoring.
+Base units of measure used in scoring as well as derived units with conversion
+factors.

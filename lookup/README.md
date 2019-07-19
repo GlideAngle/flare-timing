@@ -1,3 +1,4 @@
-[![Build Status](https://travis-ci.org/BlockScope/haskell-flight-comp.svg)](https://travis-ci.org/BlockScope/haskell-flight-comp)
+# `flight-lookup`
 
-Data for competitions, competitors and tasks covering the subset of [`fsdb`](../fsdb) used as inputs to scoring. Also defines data for the [`mask`](../mask) outputs. The mask operation finds the intersection of a pilot track with competition task's zones.
+Has type and newtype declarations and functions for looking up fields from
+records for a particular task and a particular pilot.

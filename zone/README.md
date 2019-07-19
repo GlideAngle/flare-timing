@@ -1,3 +1,6 @@
-[![Build Status](https://travis-ci.org/BlockScope/haskell-flight-task.svg)](https://travis-ci.org/BlockScope/haskell-flight-task)
+# `flight-zone`
 
-For working out the shortest possibly distance to fly a competition task.
+Control zones of a task.
+
+Functions for sampling points from the margin of a zone given an arc sweep
+angle and starting sample point.

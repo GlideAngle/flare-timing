@@ -1,3 +1,3 @@
-[![Build Status](https://travis-ci.org/BlockScope/haskell-flight-task.svg)](https://travis-ci.org/BlockScope/haskell-flight-task)
+# `flight-cmd`
 
-For working out the shortest possibly distance to fly a competition task.
+Command line option records and smart constructors.
