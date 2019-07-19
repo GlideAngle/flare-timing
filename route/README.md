@@ -1,6 +1,6 @@
 # `flight-route`
 
-Conversions between latitudes and longitudes to eastings and northings.
+Conversions between latitudes, longitudes and eastings, northings.
 
 Records for track lines with fields for waypoints, the overall track distance
 and the cummulative distance of the legs, both forward along the course and in
