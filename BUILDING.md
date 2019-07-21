@@ -639,17 +639,12 @@ test-kml-parser
 ```
 
 ## Building with Pier
-As pier doesn't yet support git dependencies, let's bring those down first;
-
-```
-> stack install stack2cabal
-> __shake-build/stack2cabal .
-```
 
 ```
 > stack install pier --stack-yaml=stack-pier.yaml
-> stack exec pier -- test flight-fsdb:test-suite:parse
-> stack exec pier -- build flare-timing:exe
+> pier build
+> pier run flare-timing:exe:fs-filter -- --help
+> pier test siggy-chardust:test-suite:digits
 ```
 
 ## Building with Shake

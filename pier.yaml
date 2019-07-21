@@ -1,6 +1,6 @@
-resolver: lts-11.14
+resolver: lts-11.22
+tested-with: GHC == 8.2.2
 packages:
-- build
 - detour-via-sci
 - detour-via-uom
 - clip
@@ -25,10 +25,15 @@ packages:
 - units
 - zone
 - flare-timing
-- .stack2cabal/hcoord/hcoord
-- .stack2cabal/hcoord/hcoord-utm
+- app-serve
+- hcoord/hcoord
+- hcoord/hcoord-utm
 extra-deps:
 - hxt-xpath-9.1.2.2
 - uom-plugin-0.3.0.0
+- doctest-0.15.0
+- megaparsec-7.0.4
+- parser-combinators-1.0.0
 - chell-0.4.0.2
 - chell-quickcheck-0.2.5.1
+- ghc-paths-0.1.0.9

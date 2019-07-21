@@ -39,38 +39,6 @@ packages:
       sha256: ea2b83e0b1ddd632012a4ee4d4e87b73038e7be3f9e999a65788d01064bf713a
   original:
     hackage: parser-combinators-1.0.0
-- completed:
-    subdir: hcoord
-    cabal-file:
-      size: 1835
-      sha256: 4b75a0815319bb886b2982aa13c0979c23a3f9f77439bcf67c49e93551baf36e
-    name: hcoord
-    version: 2.1.0
-    git: https://github.com/blockscope/hcoord.git
-    pantry-tree:
-      size: 986
-      sha256: f59d9ea891254853a11aabfb520718596cc43aba8f9a17706315e18fd58a8b74
-    commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
-  original:
-    subdir: hcoord
-    git: https://github.com/blockscope/hcoord.git
-    commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
-- completed:
-    subdir: hcoord-utm
-    cabal-file:
-      size: 1712
-      sha256: 206b85300dc28a805235ea7a50ec9fd4dae8309665bdeece37f9066fdbfb11fc
-    name: hcoord-utm
-    version: 2.1.0
-    git: https://github.com/blockscope/hcoord.git
-    pantry-tree:
-      size: 594
-      sha256: c3885ed6fbd367d13d17e0261af7520c5755447d1778e19fbce9f05131714362
-    commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
-  original:
-    subdir: hcoord-utm
-    git: https://github.com/blockscope/hcoord.git
-    commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
 snapshots:
 - completed:
     size: 527836
