@@ -5,7 +5,6 @@ repository ghcjs-overlay
     root-keys:
     key-threshold: 0
 packages:
-    build\
     detour-via-sci\
     detour-via-uom\
     clip\
@@ -30,5 +29,6 @@ packages:
     units\
     zone\
     flare-timing\
+    app-serve\
     hcoord/hcoord\
     hcoord/hcoord-utm\
