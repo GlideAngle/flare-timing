@@ -3,9 +3,6 @@
 This mono-repo contains many packages. The subset of these that are generally
 useful are published to hackage and stackage.
 
-There are many ways to build listed here because I wanted to explore the
-alternatives. Some are likely broken as I only build with stack regularly.
-
 ## Building with Stack
 
 The project as a whole can be built with [`stack
