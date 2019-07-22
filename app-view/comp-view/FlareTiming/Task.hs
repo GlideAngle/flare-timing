@@ -60,8 +60,8 @@ view () = do
                         (IxTask ii) -> do
                             taskDetail
                                 ix
-                                cs
-                                ns
+                                (head <$> cs)
+                                (head <$> ns)
                                 ((!! (ii - 1)) <$> xs)
                                 (join . nth (ii - 1) <$> vs)
                                 (join . nth (ii - 1) <$> nvs)

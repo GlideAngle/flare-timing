@@ -12,6 +12,7 @@ import WireTypes.Pilot
 import qualified WireTypes.Comp as Comp
 import WireTypes.Comp
     ( UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..), ScoreBackTime
+    , EarthModel(..), EarthMath(..)
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
     , showScoreBackTime
     )
@@ -162,19 +163,19 @@ taskTileZones utcOffset sb t len = do
 taskDetail
     :: MonadWidget t m
     => IxTask
-    -> Dynamic t [Comp]
-    -> Dynamic t [Nominal]
+    -> Dynamic t Comp
+    -> Dynamic t Nominal
     -> Dynamic t Task
     -> Dynamic t (Maybe Validity)
     -> Dynamic t (Maybe Validity)
     -> Dynamic t (Maybe Allocation)
     -> m (Event t IxTask)
 
-taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
-    let utc = utcOffset . head <$> cs
-    let sb = scoreBack . head <$> cs
-    let hgOrPg = discipline . head <$> cs
-    let free' = free . head <$> ns
+taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
+    let utc = utcOffset <$> comp
+    let sb = scoreBack <$> comp
+    let hgOrPg = discipline <$> comp
+    let free' = free <$> nom
     let sgs = startGates <$> task
     let penal = Penal . Comp.penals <$> task
     let tweak = Comp.taskTweak <$> task
@@ -200,19 +201,24 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
 
     sphericalRoutes <- holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
     ellipsoidRoutes <- holdDyn emptyRoute =<< getTaskLengthEllipsoidEdge ix pb
+    let earthMathRoutes = ffor3 comp sphericalRoutes ellipsoidRoutes (\Comp{..} s e ->
+            case (earth, earthMath) of
+                (EarthAsSphere{}, Haversines) -> s
+                (EarthAsEllipsoid{}, Vincenty) -> e
+                _ -> s)
 
     planarRoute <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
     normRoute <- holdDyn Nothing =<< getTaskLengthNormSphere ix pb
 
-    let ln = taskLength <$> sphericalRoutes
-    let legs = taskLegs <$> sphericalRoutes
+    let ln = taskLength <$> earthMathRoutes
+    let legs = taskLegs <$> earthMathRoutes
 
     let ps = (fmap . fmap) points alloc
     let tp = (fmap . fmap) taskPoints alloc
     let wg = (fmap . fmap) weight alloc
 
     taskTileZones utc sb task ln
-    es <- simpleList cs (crumbTask task)
+    es <- crumbTask task comp
     tabTask <- tabsTask
     let taskTable = tableTask utc task legs
 
@@ -320,7 +326,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
 
             <$> tabTask
 
-    return $ switchDyn (leftmost <$> es)
+    return es
 
 taskDetail IxTaskNone _ _ _ _ _ _ = return never
 
