@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
+import Prelude hiding (span)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -25,6 +26,8 @@ import Flight.Comp
     , IxTask(..)
     , Task(..)
     , Zones
+    , Comp(..)
+    , EarthModel(..), EarthMath(..)
     , compToCross
     , findCompInput
     , ensureExt
@@ -39,10 +42,15 @@ import Flight.Track.Cross
     , trackLogErrors
     )
 import Flight.LatLng.Rational (defEps)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
+import Flight.Earth.Ellipsoid (wgs84)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as RatS
     (azimuthFwd, distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
+import qualified Flight.Earth.Sphere.PointToPoint.Double as DblS
     (azimuthFwd, distanceHaversine)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as RatE
+    (azimuthFwd, distanceVincenty)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as DblE
+    (azimuthFwd, distanceVincenty)
 import Flight.Mask
     ( TaskZone
     , FnIxTask
@@ -93,12 +101,12 @@ go co@CmdBatchOptions{pilot, task} compFile@(CompInputFile compPath) = do
 
     case compSettings of
         Nothing -> putStrLn "Couldn't read the comp settings."
-        Just cs@CompSettings{tasks} -> do
+        Just cs@CompSettings{comp, tasks} -> do
             let ixs = IxTask <$> task
             let ps = pilotNamed cs $ PilotName <$> pilot
             tracks <-
                 catchIO
-                    (Just <$> (checkAll $ math co) compFile ixs ps)
+                    (Just <$> checkAll comp (math co) compFile ixs ps)
                     (const $ return Nothing)
 
             case tracks of
@@ -180,16 +188,17 @@ madeZonesToFlying :: MadeZones -> TrackFlyingSection
 madeZonesToFlying MadeZones{flying} = flying
 
 checkAll
-    :: Math
+    :: Comp
+    -> Math
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]
     -> IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
-checkAll math =
-    checkTracks $ \CompSettings{tasks} -> flown math tasks
+checkAll c math =
+    checkTracks $ \CompSettings{tasks} -> flown c math tasks
 
-flown :: Math -> FnIxTask k MadeZones
-flown math tasks (IxTask i) fs =
+flown :: Comp -> Math -> FnIxTask k MadeZones
+flown c math tasks (IxTask i) fs =
     case tasks ^? element (i - 1) of
         Nothing ->
             MadeZones
@@ -200,20 +209,46 @@ flown math tasks (IxTask i) fs =
                 }
 
         Just task ->
-            flownTask math task fs
+            flownTask c math task fs
 
-flownTask :: Math -> FnTask k MadeZones
-flownTask =
-    \case
-        Rational ->
-            let az = Rat.azimuthFwd defEps in
+flownTask :: Comp -> Math -> FnTask k MadeZones
+flownTask Comp{earth, earthMath} math =
+    case (earth, earthMath, math) of
+        (EarthAsSphere{}, Haversines, Rational) -> ratHaversines
+        (EarthAsEllipsoid{}, Vincenty, Rational) -> ratVincenty
+        (_, _, Rational) -> ratHaversines
+        (EarthAsSphere{}, Haversines, Floating) -> dblHaversines
+        (EarthAsEllipsoid{}, Vincenty, Floating) -> dblVincenty
+        (_, _, Floating) -> dblHaversines
+    where
+        ratHaversines =
+            let az = RatS.azimuthFwd defEps
+                span = RatS.distanceHaversine defEps
+            in
+                madeZones
+                    az
+                    span
+                    (zonesToTaskZones az :: Zones -> [TaskZone Rational])
+
+        ratVincenty =
+            let az = RatE.azimuthFwd defEps wgs84
+                span = RatE.distanceVincenty defEps wgs84
+            in
+                madeZones
+                    az
+                    span
+                    (zonesToTaskZones az :: Zones -> [TaskZone Rational])
+
+        dblHaversines =
+            let az = DblS.azimuthFwd in
             madeZones
                 az
-                (Rat.distanceHaversine defEps)
-                (zonesToTaskZones az :: Zones -> [TaskZone Rational])
-        Floating ->
-            let az = Dbl.azimuthFwd in
+                DblS.distanceHaversine
+                (zonesToTaskZones az :: Zones -> [TaskZone Double])
+
+        dblVincenty =
+            let az = DblE.azimuthFwd wgs84 in
             madeZones
                 az
-                Dbl.distanceHaversine
+                (DblE.distanceVincenty wgs84)
                 (zonesToTaskZones az :: Zones -> [TaskZone Double])
