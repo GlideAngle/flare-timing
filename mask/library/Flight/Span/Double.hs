@@ -1,12 +1,7 @@
 module Flight.Span.Double
-    ( fromZonesF
-    , azimuthF
-    , spanF
-    , csF
-    , cutF
+    ( sliver
+    , fromZones
     , nextCutF
-    , dppF
-    , csegF
     ) where
 
 import Data.UnitsOfMeasure ((/:))
@@ -23,6 +18,23 @@ import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
 import qualified Flight.Earth.Sphere.Cylinder.Double as Dbl (circumSample)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
+import Flight.Comp (EarthMath(..))
+import Flight.Span.Sliver (Sliver(..))
+
+sliver :: EarthMath -> Sliver Double
+sliver _earthMath =
+    Sliver
+        { az = azimuthF
+        , span = spanF
+        , dpp = dppF
+        , cseg = csegF
+        , cs = csF
+        , angleCut = cutF
+        }
+
+fromZones :: EarthMath -> Zones -> [TaskZone Double]
+fromZones _earthMath =
+    fromZonesF azimuthF
 
 fromZonesF :: AzimuthFwd Double -> Zones -> [TaskZone Double]
 fromZonesF = zonesToTaskZones

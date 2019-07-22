@@ -34,13 +34,13 @@ import Flight.Comp
     , FirstLead(..)
     , FirstStart(..)
     , OpenClose(..)
+    , EarthMath(..)
     , compFileToCompDir
     , alignTimePath
     , openClose
     )
-import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
-    ( FnIxTask, RaceSections(..), GroupLeg(..), Ticked, Sliver(..)
+    ( FnIxTask, RaceSections(..), GroupLeg(..), Ticked
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (Fix(..), ZoneTag(..), asIfFix)
@@ -53,7 +53,9 @@ import Flight.Scribe (writeAlignTime)
 import Flight.Lookup.Stop(ScoredLookup(..))
 import Flight.Lookup.Tag
     (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
-import Flight.Span.Double (fromZonesF, azimuthF, spanF, csF, cutF, dppF, csegF)
+import Flight.Span.Math (Math(..))
+import qualified Flight.Span.Double as Dbl (fromZones, sliver)
+import qualified Flight.Span.Rational as Rat (fromZones, sliver, fromR)
 
 unTaskDistance :: QTaskDistance Double [u| m |] -> Double
 unTaskDistance (TaskDistance d) =
@@ -94,7 +96,9 @@ writeTime selectTasks selectPilots compFile f = do
                 ys
 
 checkAll
-    :: Bool -- ^ Exclude zones outside speed section
+    :: Math
+    -> EarthMath
+    -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
     -> Tagging
     -> CompInputFile
@@ -107,8 +111,10 @@ checkAll
                  (Pilot, Pilot -> [TimeRow])
              ]
          ]
-checkAll ssOnly scoredLookup tagging =
-    checkTracks (\CompSettings{tasks} -> group ssOnly scoredLookup tagging tasks)
+checkAll math earthMath ssOnly scoredLookup tagging =
+    checkTracks
+        (\CompSettings{tasks} ->
+            group math earthMath ssOnly scoredLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -176,11 +182,15 @@ mkTimeRow lead start legIdx fixIdx (Just Fix{..}) (Just d) =
             }
 
 group
-    :: Bool -- ^ Exclude zones outside speed section
+    :: Math
+    -> EarthMath
+    -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
     -> Tagging
     -> FnIxTask k (Pilot -> [TimeRow])
 group
+    math
+    earthMath
     ssOnly
     (ScoredLookup lookupScored)
     tags@Tagging{timing}
@@ -226,7 +236,21 @@ group
                     =<< openClose ss (zoneTimes task)
 
                 xs :: [(Maybe GroupLeg, MarkedFixes)]
-                xs = groupByLeg sliver (fromZonesF azimuthF) task scoredMarkedFixes
+                xs =
+                    case math of
+                        Floating ->
+                            groupByLeg
+                                (Dbl.sliver earthMath)
+                                (Dbl.fromZones earthMath)
+                                task
+                                scoredMarkedFixes
+
+                        Rational ->
+                            groupByLeg
+                                (Rat.sliver earthMath)
+                                (Rat.fromZones earthMath)
+                                task
+                                scoredMarkedFixes
 
                 yss = (fmap $ FlyCut scoredTimeRange) <$> xs
 
@@ -246,6 +270,7 @@ group
 
                 zs' :: [TimeRow]
                 zs' =
+                    let f = legDistances math earthMath ssOnly in
                     concat
                     [
                         case leg of
@@ -255,17 +280,17 @@ group
                                 -- zone and fail to tag the start zone.
                                 let legL = LegIdx 0
                                     (_, reticked) = retick ticked (LegIdx start) legL
-                                in legDistances ssOnly reticked times task legL ys
+                                in f reticked times task legL ys
                             Just (GroupLeg{groupLeg = That (LegIdx legR)}) ->
                                 let legL = LegIdx $ legR - 1
                                     (_, reticked) = retick ticked (LegIdx start) legL
-                                in legDistances ssOnly reticked times task legL ys
+                                in f reticked times task legL ys
                             Just (GroupLeg{groupLeg = These legL _}) ->
                                 let (_, reticked) = retick ticked (LegIdx start) legL
-                                in legDistances ssOnly reticked times task legL ys
+                                in f reticked times task legL ys
                             Just (GroupLeg{groupLeg = This legL}) ->
                                 let (_, reticked) = retick ticked (LegIdx start) legL in
-                                legDistances ssOnly reticked times task legL ys
+                                f reticked times task legL ys
 
                     | (leg, ys) <- yss
                     ]
@@ -278,7 +303,6 @@ group
     where
         (TickLookup lookupTicked) = tagTicked (Just tags)
         (TagLookup lookupZoneTags) = tagPilotTag (Just tags)
-        sliver = Sliver azimuthF spanF dppF csegF csF cutF
 
 -- | For a given leg, only so many race zones can be ticked.
 retick :: Ticked -> LegIdx -> LegIdx -> (LegIdx, Ticked)
@@ -291,40 +315,69 @@ retick rs@RaceSections{prolog, race} (LegIdx start) (LegIdx leg) =
         rs' = rs { race = take (leg - start + 1) race }
 
 allLegDistances
-    :: Ticked
-    -> TrackTime
-    -> Task k
-    -> LegIdx
-    -> FlyCut UTCTime MarkedFixes
-    -> [TimeRow]
-allLegDistances ticked times task@Task{speedSection, zoneTimes} leg xs =
-    mkTimeRows lead start leg xs'
-    where
-        xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
-        xs' = dashDistancesToGoal ticked sliver (fromZonesF azimuthF) task xs
-
-        sliver = Mask.Sliver azimuthF spanF dppF csegF csF cutF
-        ts = zonesFirst times
-
-        lead = firstLead speedSection ts
-
-        start =
-            (\OpenClose{open} -> firstStart speedSection open ts)
-            =<< openClose speedSection zoneTimes
-
-legDistances
-    :: Bool -- ^ Exclude zones outside speed section
+    :: Math
+    -> EarthMath
     -> Ticked
     -> TrackTime
     -> Task k
     -> LegIdx
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
-legDistances False ticked times task leg xs=
-    allLegDistances ticked times task leg xs
 
-legDistances True ticked times task@Task{speedSection} leg xs =
-    if excludeLeg then [] else allLegDistances ticked times task leg xs
+allLegDistances Floating earthMath ticked times task@Task{speedSection, zoneTimes} leg xs =
+    mkTimeRows lead start leg xs'
+    where
+        xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
+        xs' =
+            dashDistancesToGoal
+                ticked
+                (Dbl.sliver earthMath)
+                (Dbl.fromZones earthMath)
+                task
+                xs
+
+        ts = zonesFirst times
+        lead = firstLead speedSection ts
+        start =
+            (\OpenClose{open} -> firstStart speedSection open ts)
+            =<< openClose speedSection zoneTimes
+
+allLegDistances Rational earthMath ticked times task@Task{speedSection, zoneTimes} leg xs =
+    mkTimeRows lead start leg xs'
+    where
+        xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
+        xs' =
+            (fmap . fmap . fmap . fmap) Rat.fromR $
+            dashDistancesToGoal
+                ticked
+                (Rat.sliver earthMath)
+                (Rat.fromZones earthMath)
+                task
+                xs
+
+        ts = zonesFirst times
+        lead = firstLead speedSection ts
+        start =
+            (\OpenClose{open} -> firstStart speedSection open ts)
+            =<< openClose speedSection zoneTimes
+
+legDistances
+    :: Math
+    -> EarthMath
+    -> Bool -- ^ Exclude zones outside speed section
+    -> Ticked
+    -> TrackTime
+    -> Task k
+    -> LegIdx
+    -> FlyCut UTCTime MarkedFixes
+    -> [TimeRow]
+legDistances math earthMath False ticked times task leg xs=
+    allLegDistances math earthMath ticked times task leg xs
+
+legDistances math earthMath True ticked times task@Task{speedSection} leg xs =
+    if excludeLeg
+       then []
+       else allLegDistances math earthMath ticked times task leg xs
     where
         LegIdx leg' = leg
 

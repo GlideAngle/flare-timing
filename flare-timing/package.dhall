@@ -181,7 +181,12 @@ in    defs
           , tag-zone =
               { dependencies =
                     deps
-                  # [ "safe-exceptions", "time", "flight-mask", "flight-zone" ]
+                  # [ "safe-exceptions"
+                    , "time"
+                    , "flight-mask"
+                    , "flight-span"
+                    , "flight-zone"
+                    ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"

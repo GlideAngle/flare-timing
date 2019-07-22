@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2b171d3308e7b0a18667bed1a03961226c5a290441e027e007200704aa3fa294
+-- hash: 66a9c7cc18e827541fea59208299b8403a9ba82cbfafd654819829fe81e824bc
 
 name:           flight-time
 version:        0.1.0
@@ -50,6 +50,7 @@ library
     , flight-lookup
     , flight-mask
     , flight-scribe
+    , flight-span
     , lens
     , mtl
     , safe-exceptions
@@ -82,6 +83,7 @@ test-suite golden
     , flight-lookup
     , flight-mask
     , flight-scribe
+    , flight-span
     , flight-time
     , lens
     , microlens

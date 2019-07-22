@@ -20,6 +20,8 @@ import Flight.Comp
     , PegFrameFile(..)
     , PilotName(..)
     , IxTask(..)
+    , CompSettings(..)
+    , Comp(..)
     , compToCross
     , crossToTag
     , tagToPeg
@@ -81,10 +83,10 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing) -> putStrLn "Couldn't read the scored frame."
-        (Just cs, Just t, Just _) ->
+        (Just cs@CompSettings{comp = Comp{earthMath}}, Just t, Just _) ->
             let f =
                     writeTime
                         (IxTask <$> task)
                         (pilotNamed cs $ PilotName <$> pilot)
                         (CompInputFile compPath)
-            in (f . checkAll speedSectionOnly scoredLookup) t
+            in (f . checkAll math earthMath speedSectionOnly scoredLookup) t

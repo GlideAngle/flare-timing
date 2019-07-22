@@ -31,6 +31,7 @@ in    defs
             , "flight-lookup"
             , "flight-mask"
             , "flight-scribe"
+            , "flight-span"
             , "siggy-chardust"
             ]
       , library =

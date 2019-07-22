@@ -96,6 +96,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
         (Just cs, Just _, Just _, Just _) ->
             writeMask
+                math
                 cs
                 lookupTaskLength
                 (tagTaskLeading tagging)

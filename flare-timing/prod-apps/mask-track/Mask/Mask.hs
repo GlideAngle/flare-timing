@@ -17,6 +17,7 @@ import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
+    , Comp(..)
     , Pilot(..)
     , PilotGroup(..)
     , Task(..)
@@ -25,6 +26,7 @@ import Flight.Comp
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
     , DfNoTrack(..)
+    , EarthMath(..)
     , dfNoTrackReach
     , compToMaskArrival
     , compToMaskEffort
@@ -80,7 +82,8 @@ import MaskSpeed (maskSpeed)
 import MaskPilots (maskPilots)
 
 writeMask
-    :: CompSettings k
+    :: Math
+    -> CompSettings k
     -> RoutesLookupTaskDistance
     -> TaskLeadingLookup
     -> [IxTask]
@@ -98,8 +101,10 @@ writeMask
             ])
     -> IO ()
 writeMask
+    math
     CompSettings
-        { nominal = Cmp.Nominal{free}
+        { comp = Comp{earthMath}
+        , nominal = Cmp.Nominal{free}
         , tasks
         , pilotGroups
         }
@@ -234,6 +239,8 @@ writeMask
             writeMaskingReach
                 (compToMaskReach compFile)
                 (maskReachTime
+                    math
+                    earthMath
                     free
                     dfNtReach
                     lsWholeTask
@@ -271,19 +278,20 @@ check
     -> [IxTask]
     -> [Pilot]
     -> m [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)]]
-check math lengths flying tags = checkTracks $ \CompSettings{tasks} ->
-    flown math lengths flying tags tasks
+check math lengths flying tags = checkTracks $ \CompSettings{tasks, comp = Comp{earthMath}} ->
+    flown math earthMath lengths flying tags tasks
 
 flown
     :: Math
+    -> EarthMath
     -> RoutesLookupTaskDistance
     -> ScoredLookup
     -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
-flown math (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask fixes =
+flown math earthMath (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask fixes =
     maybe
         (const nullStats)
-        (\d -> flown' d flying math tags tasks iTask fixes)
+        (\d -> flown' d flying math earthMath tags tasks iTask fixes)
         taskLength
     where
         taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
@@ -292,9 +300,10 @@ flown'
     :: QTaskDistance Double [u| m |]
     -> ScoredLookup
     -> Math
+    -> EarthMath
     -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
-flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
+flown' dTaskF flying math earthMath tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of
         Nothing -> nullStats
 
@@ -340,8 +349,8 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
 
         landDistance task =
             TrackDistance
-                { togo = togoAtLanding math ticked task xs
-                , made = madeAtLanding math dTaskF ticked task xs
+                { togo = togoAtLanding math earthMath ticked task xs
+                , made = madeAtLanding math earthMath dTaskF ticked task xs
                 }
 
         startGates' =

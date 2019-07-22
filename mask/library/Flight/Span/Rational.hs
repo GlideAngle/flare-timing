@@ -1,15 +1,11 @@
 module Flight.Span.Rational
-    ( fromZonesR
-    , azimuthR
-    , spanR
-    , csR
-    , cutR
+    ( sliver
+    , fromZones
     , nextCutR
-    , dppR
-    , csegR
+    , fromR
     ) where
 
-import Data.UnitsOfMeasure ((/:))
+import Data.UnitsOfMeasure ((/:), u, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Number.FixedFunctions as F
 
@@ -25,6 +21,27 @@ import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
+import Flight.Comp (EarthMath(..))
+import Flight.Span.Sliver (Sliver(..))
+import Flight.Distance (QTaskDistance, TaskDistance(..))
+
+fromR :: QTaskDistance Rational [u| m |] -> QTaskDistance Double [u| m |]
+fromR (TaskDistance d) = TaskDistance . fromRational' $ d
+
+sliver :: EarthMath -> Sliver Rational
+sliver _earthMath =
+    Sliver
+        { az = azimuthR
+        , span = spanR
+        , dpp = dppR
+        , cseg = csegR
+        , cs = csR
+        , angleCut = cutR
+        }
+
+fromZones :: EarthMath -> Zones -> [TaskZone Rational]
+fromZones _earthMath =
+    fromZonesR azimuthR
 
 fromZonesR :: AzimuthFwd Rational -> Zones -> [TaskZone Rational]
 fromZonesR = zonesToTaskZones

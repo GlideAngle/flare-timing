@@ -13,7 +13,6 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..), Extension(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 
-import Flight.Span.Double (azimuthF, spanF, csF, cutF, dppF, csegF)
 import Flight.Mask
     ( TaskZone, Sliver(..), TagInterpolate(..)
     , tagZones, zonesToTaskZones
@@ -23,6 +22,7 @@ import Flight.Comp
     , CompSettings(..)
     , CompInputFile(..)
     , CrossZoneFile(..)
+    , Comp(..)
     , Task(..)
     , compToCross
     , crossToTag
@@ -37,6 +37,9 @@ import Flight.Track.Tag
     )
 import Flight.Scribe (readComp, readCrossing, writeTagging)
 import TagZoneOptions (description)
+import qualified Flight.Span.Double as Dbl (sliver)
+import qualified Flight.Span.Rational as Rat (sliver)
+import Flight.Span.Math (Math(..))
 
 main :: IO ()
 main = do
@@ -52,17 +55,17 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{math} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
     files <- findCompInput o
     if null files then putStrLn "Couldn't find any input files."
-                  else mapM_ go files
+                  else mapM_ (go math) files
     end <- getTime Monotonic
     fprint ("Tagging zones completed in " % timeSpecs % "\n") start end
 
-go :: CompInputFile -> IO ()
-go compFile@(CompInputFile compPath) = do
+go :: Math -> CompInputFile -> IO ()
+go math compFile@(CompInputFile compPath) = do
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     putStrLn $ "Reading tasks from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
@@ -77,10 +80,15 @@ go compFile@(CompInputFile compPath) = do
             (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
-    case (cs, cgs) of
-        (Nothing, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing) -> putStrLn "Couldn't read the crossings."
-        (Just CompSettings{tasks}, Just Crossing{crossing, flying}) -> do
+    case (math, cs, cgs) of
+        (_, Nothing, _) ->
+            putStrLn "Couldn't read the comp settings."
+
+        (_, _, Nothing) ->
+            putStrLn "Couldn't read the crossings."
+
+        (Floating, Just CompSettings{tasks, comp = Comp{earthMath}}, Just Crossing{crossing, flying}) -> do
+            let sliver@Sliver{az} = Dbl.sliver earthMath
             let pss :: [[PilotTrackTag]] =
                     [
                         (\case
@@ -92,7 +100,34 @@ go compFile@(CompInputFile compPath) = do
                         <$> cg
 
                     | Task{zones} <- tasks
-                    , let zs = zonesToTaskZones azimuthF zones
+                    , let zs = zonesToTaskZones az zones
+                    | cg <- crossing
+                    ]
+
+            let times =
+                    [ timed ps fs
+                    | ps <- pss
+                    | fs <- fmap (endOfFlying . snd) <$> flying
+                    ]
+
+            let tagZone = Tagging{timing = times, tagging = pss}
+
+            writeTagging (crossToTag crossFile) tagZone
+
+        (Rational, Just CompSettings{tasks, comp = Comp{earthMath}}, Just Crossing{crossing, flying}) -> do
+            let sliver@Sliver{az} = Rat.sliver earthMath
+            let pss :: [[PilotTrackTag]] =
+                    [
+                        (\case
+                            PilotTrackCross p Nothing ->
+                                PilotTrackTag p Nothing
+
+                            PilotTrackCross p (Just xs) ->
+                                PilotTrackTag p (Just $ flownTag sliver zs xs))
+                        <$> cg
+
+                    | Task{zones} <- tasks
+                    , let zs = zonesToTaskZones az zones
                     | cg <- crossing
                     ]
 
@@ -117,6 +152,3 @@ flownTag tagInterp zs TrackCross{zonesCrossSelected} =
         { zonesTag = tagZones tagInterp zs zonesCrossSelected
         }
     where
-
-sliver :: Sliver Double
-sliver = Sliver azimuthF spanF dppF csegF csF cutF

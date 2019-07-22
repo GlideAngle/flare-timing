@@ -14,6 +14,7 @@ module Flight.Comp.Distance
     , compNighTick
     ) where
 
+import Prelude hiding (span)
 import Data.Maybe (mapMaybe, catMaybes, isJust)
 import Data.List (sortOn)
 import Data.Time.Clock (UTCTime)
@@ -24,7 +25,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Kml (MarkedFixes(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..), toKm, unTaskDistanceAsKm)
-import Flight.Comp (Pilot, Task(..), MadeGoal(..), LandedOut(..))
+import Flight.Comp (Pilot, EarthMath(..), Task(..), MadeGoal(..), LandedOut(..))
 import Flight.Route (TrackLine(..), toTrackLine)
 import Flight.Score (BestTime(..), MinimumDistance(..))
 import Flight.Track.Time (LeadTick(..))
@@ -33,8 +34,10 @@ import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Task (fromZs)
 import Flight.Mask (dashPathToGoalTimeRows)
 import Flight.Mask.Internal.Race (Ticked, FlyCut(..))
+import Flight.Span.Math (Math(..))
 import Flight.Span.Sliver (Sliver(..))
-import Flight.Span.Double (fromZonesF, azimuthF, spanF, csF, cutF, dppF, csegF)
+import qualified Flight.Span.Double as Dbl (fromZones, sliver)
+import qualified Flight.Span.Rational as Rat (fromZones, sliver)
 
 data DashPathInputs k =
     DashPathInputs
@@ -131,12 +134,14 @@ compDistance dMin lsTask psArriving psLandingOut tsBest rows =
 -- | How near did a pilot get to goal during the flight. This can be closer
 -- to goal than the landing spot if the pilot flew away from goal to land.
 compNighTime
-    :: [Maybe (QTaskDistance Double [u| m |])]
+    :: Math
+    -> EarthMath
+    -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Map Pilot (DashPathInputs k)]
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[(Pilot, TrackDistance Nigh)]]
-compNighTime lsTask zsTaskTicked rows =
-        [ timeNighTrackLine td zs <$> xs
+compNighTime math earthMath lsTask zsTaskTicked rows =
+        [ timeNighTrackLine math earthMath td zs <$> xs
         | td <- lsTask
         | zs <- zsTaskTicked
         | xs <- (catMaybes <$> rows)
@@ -162,18 +167,22 @@ fromKm d =
         d' = MkQuantity d
 
 timeNighTrackLine
-    :: Maybe (QTaskDistance Double [u| m |])
+    :: Math
+    -> EarthMath
+    -> Maybe (QTaskDistance Double [u| m |])
     -> Map Pilot (DashPathInputs k)
     -> (Pilot, Time.TimeRow)
     -> (Pilot, TrackDistance Nigh)
 
-timeNighTrackLine Nothing _ (p, Time.TimeRow{togo = d}) =
+timeNighTrackLine _ _ Nothing _ (p, Time.TimeRow{togo = d}) =
     (p,) TrackDistance
         { togo = Just . distanceOnlyLine . fromKm $ d
         , made = Nothing
         }
 
 timeNighTrackLine
+    math
+    earthMath
     (Just (TaskDistance td))
     zsTaskTicked
     (p, row@Time.TimeRow{togo = d}) =
@@ -187,7 +196,7 @@ timeNighTrackLine
         line =
             case Map.lookup p zsTaskTicked of
                 Nothing -> distanceOnlyLine togo'
-                Just dpi -> pathToGo dpi row togo'
+                Just dpi -> pathToGo math earthMath dpi row togo'
 
 tickNighTrackLine
     :: Maybe (QTaskDistance Double [u| m |])
@@ -224,23 +233,46 @@ distanceOnlyLine d =
         }
 
 pathToGo
-    :: DashPathInputs k
+    :: Math
+    -> EarthMath
+    -> DashPathInputs k
     -> Time.TimeRow
     -> Quantity Double [u| m |]
     -> TrackLine
-pathToGo DashPathInputs{..} x@Time.TimeRow{time} d =
+
+pathToGo Floating earthMath DashPathInputs{..} x@Time.TimeRow{time} d =
     case dashTask of
         Nothing -> distanceOnlyLine d
         Just dashTask' ->
             maybe
                 (distanceOnlyLine d)
-                (toTrackLine spanF False)
+                (toTrackLine span False)
                 (fromZs path)
             where
+                sliver@Sliver{span} = Dbl.sliver earthMath
+
                 path = dashPathToGoalTimeRows
                         dashTicked
-                        (Sliver azimuthF spanF dppF csegF csF cutF)
-                        (fromZonesF azimuthF)
+                        sliver
+                        (Dbl.fromZones earthMath)
+                        dashTask'
+                        FlyCut{cut = Just (time, time), uncut = [x]}
+
+pathToGo Rational earthMath DashPathInputs{..} x@Time.TimeRow{time} d =
+    case dashTask of
+        Nothing -> distanceOnlyLine d
+        Just dashTask' ->
+            maybe
+                (distanceOnlyLine d)
+                (toTrackLine span False)
+                (fromZs path)
+            where
+                sliver@Sliver{span} = Rat.sliver earthMath
+
+                path = dashPathToGoalTimeRows
+                        dashTicked
+                        sliver
+                        (Rat.fromZones earthMath)
                         dashTask'
                         FlyCut{cut = Just (time, time), uncut = [x]}
 

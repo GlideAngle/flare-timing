@@ -9,14 +9,14 @@ module Flight.Mask.Distance
 
 import Data.Time.Clock (UTCTime)
 import Data.List (inits)
-import Data.UnitsOfMeasure ((-:), u, fromRational', toRational')
+import Data.UnitsOfMeasure ((-:), u, toRational')
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
 import Flight.Track.Cross (Fix(..))
-import Flight.Comp (Task(..), Zones(..))
+import Flight.Comp (EarthMath(..), Task(..), Zones(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone (TaskZone(..), fixFromFix, fixToPoint, rowToPoint)
 import Flight.Mask.Internal.Race (Ticked)
@@ -25,8 +25,8 @@ import Flight.Distance (PathDistance(..), QTaskDistance, TaskDistance(..))
 import Flight.Task (Zs(..), fromZs)
 import Flight.Span.Math (Math(..))
 import Flight.Span.Sliver (Sliver(..))
-import Flight.Span.Double (fromZonesF, azimuthF, spanF, csF, cutF, dppF, csegF)
-import Flight.Span.Rational (fromZonesR, azimuthR, spanR, csR, cutR, dppR, csegR)
+import qualified Flight.Span.Double as Dbl (fromZones, sliver)
+import qualified Flight.Span.Rational as Rat (fromZones, sliver, fromR)
 
 dashDistancesToGoal
     :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
@@ -173,58 +173,54 @@ index = zip $ ZoneIdx <$> [1 .. ]
 
 togoAtLanding
     :: Math
+    -> EarthMath
     -> Ticked
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (QTaskDistance Double [u| m |])
-togoAtLanding math ticked task xs =
+togoAtLanding math earthMath ticked task xs =
     case math of
         Floating ->
             dashDistanceToGoal
                 ticked
-                (Sliver azimuthF spanF dppF csegF csF cutF)
-                (fromZonesF azimuthF)
+                (Dbl.sliver earthMath)
+                (Dbl.fromZones earthMath)
                 task
                 xs
 
         Rational ->
-            fromR <$>
+            Rat.fromR <$>
             dashDistanceToGoal
                 ticked
-                (Sliver azimuthR spanR dppR csegR csR cutR)
-                (fromZonesR azimuthR)
+                (Rat.sliver earthMath)
+                (Rat.fromZones earthMath)
                 task
                 xs
-    where
-        fromR :: QTaskDistance Rational [u| m |] -> QTaskDistance Double [u| m |]
-        fromR (TaskDistance d) = TaskDistance . fromRational' $ d
-
 madeAtLanding
     :: Math
+    -> EarthMath
     -> QTaskDistance Double [u| m |]
     -> Ticked
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (QTaskDistance Double [u| m |]) 
-madeAtLanding math dTaskF@(TaskDistance td) ticked task xs =
+madeAtLanding math earthMath dTaskF@(TaskDistance td) ticked task xs =
     case math of
         Floating ->
             dashDistanceFlown
                 dTaskF
                 ticked
-                (Sliver azimuthF spanF dppF csegF csF cutF)
-                (fromZonesF azimuthF)
+                (Dbl.sliver earthMath)
+                (Dbl.fromZones earthMath)
                 task
                 xs
 
         Rational ->
-            (\(TaskDistance d) -> TaskDistance . fromRational' $ d) <$>
+            Rat.fromR <$>
             dashDistanceFlown
-                dTaskR
+                (TaskDistance $ toRational' td)
                 ticked
-                (Sliver azimuthR spanR dppR csegR csR cutR)
-                (fromZonesR azimuthR)
+                (Rat.sliver earthMath)
+                (Rat.fromZones earthMath)
                 task
                 xs
-    where
-        dTaskR = TaskDistance $ toRational' td

@@ -13,7 +13,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList, maximum)
 
-import Flight.Comp (Pilot(..))
+import Flight.Comp (EarthMath, Pilot(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp.Distance (compNighTime)
 import qualified Flight.Track.Time as Time (TimeRow(..))
@@ -25,9 +25,12 @@ import Flight.Score
     , linearFraction
     )
 import Stats (DashPathInputs(..))
+import Flight.Span.Math (Math)
 
 maskReachTime
-    :: MinimumDistance (Quantity Double [u| km |])
+    :: Math
+    -> EarthMath
+    -> MinimumDistance (Quantity Double [u| km |])
     -> [[(Pilot, TrackReach)]]
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Map Pilot (DashPathInputs k)]
@@ -36,6 +39,8 @@ maskReachTime
     -> [[Pilot]]
     -> MaskingReach
 maskReachTime
+    math
+    earthMath
     (MinimumDistance dMin)
     dfNtNigh
     lsWholeTask
@@ -51,7 +56,7 @@ maskReachTime
         }
     where
         dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
-            compNighTime lsWholeTask zsTaskTicked dsNighRows
+            compNighTime math earthMath lsWholeTask zsTaskTicked dsNighRows
 
         trackedNigh :: [[(Pilot, TrackReach)]] =
             [
