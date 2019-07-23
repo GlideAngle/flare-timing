@@ -7,46 +7,51 @@ module Flight.Span.Double
 import Data.UnitsOfMeasure ((/:))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (AzimuthFwd)
-import Flight.Distance (PathDistance, SpanLatLng)
-import Flight.Zone (Zone, Bearing(..), ArcSweep(..))
+import Flight.Zone (Bearing(..), ArcSweep(..))
 import Flight.Zone.MkZones (Zones)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
-import Flight.Zone.Cylinder (CircumSample)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
+import qualified Flight.Earth.Sphere.PointToPoint.Double as DblS
     (azimuthFwd, distanceHaversine)
-import qualified Flight.Earth.Sphere.Cylinder.Double as Dbl (circumSample)
+import qualified Flight.Earth.Sphere.Cylinder.Double as DblS
+    (circumSample)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as DblE
+    (azimuthFwd, distanceVincenty)
+import qualified Flight.Earth.Ellipsoid.Cylinder.Double as DblE
+    (circumSample)
+import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
 import Flight.Comp (EarthMath(..))
 import Flight.Span.Sliver (Sliver(..))
 
 sliver :: EarthMath -> Sliver Double
-sliver _earthMath =
+
+sliver Vincenty =
     Sliver
-        { az = azimuthF
-        , span = spanF
-        , dpp = dppF
-        , cseg = csegF
-        , cs = csF
+        { az = DblE.azimuthFwd wgs84
+        , span = DblE.distanceVincenty wgs84
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ DblE.distanceVincenty wgs84
+        , cs = DblE.circumSample
         , angleCut = cutF
         }
 
+sliver Haversines =
+    Sliver
+        { az = DblS.azimuthFwd
+        , span = DblS.distanceHaversine
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ DblS.distanceHaversine
+        , cs = DblS.circumSample
+        , angleCut = cutF
+        }
+
+sliver _ = sliver Haversines
+
 fromZones :: EarthMath -> Zones -> [TaskZone Double]
-fromZones _earthMath =
-    fromZonesF azimuthF
-
-fromZonesF :: AzimuthFwd Double -> Zones -> [TaskZone Double]
-fromZonesF = zonesToTaskZones
-
-azimuthF :: AzimuthFwd Double
-azimuthF = Dbl.azimuthFwd
-
-spanF :: SpanLatLng Double
-spanF = Dbl.distanceHaversine
-
-csF :: CircumSample Double
-csF = Dbl.circumSample
+fromZones Vincenty = zonesToTaskZones $ DblE.azimuthFwd wgs84
+fromZones Haversines = zonesToTaskZones $ DblS.azimuthFwd
+fromZones _ = fromZones Haversines
 
 cutF :: AngleCut Double
 cutF =
@@ -58,9 +63,3 @@ cutF =
 nextCutF :: AngleCut Double -> AngleCut Double
 nextCutF x@AngleCut{sweep = ArcSweep (Bearing b)} =
     x{sweep = ArcSweep . Bearing $ b /: 2}
-
-dppF :: SpanLatLng Double -> [Zone Double] -> PathDistance Double
-dppF = distancePointToPoint
-
-csegF :: Zone Double -> Zone Double -> PathDistance Double
-csegF = costSegment spanF

@@ -9,15 +9,18 @@ import Data.UnitsOfMeasure ((/:), u, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Number.FixedFunctions as F
 
-import Flight.LatLng (AzimuthFwd)
-import Flight.Distance (PathDistance, SpanLatLng)
-import Flight.Zone (Zone, Bearing(..), ArcSweep(..))
+import Flight.Zone (Bearing(..), ArcSweep(..))
 import Flight.Zone.MkZones (Zones)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
-import Flight.Zone.Cylinder (CircumSample)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as RatS
     (azimuthFwd, distanceHaversine)
-import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
+import qualified Flight.Earth.Sphere.Cylinder.Rational as RatS
+    (circumSample)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as RatE
+    (azimuthFwd, distanceVincenty)
+import qualified Flight.Earth.Ellipsoid.Cylinder.Rational as RatE
+    (circumSample)
+import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
@@ -29,31 +32,33 @@ fromR :: QTaskDistance Rational [u| m |] -> QTaskDistance Double [u| m |]
 fromR (TaskDistance d) = TaskDistance . fromRational' $ d
 
 sliver :: EarthMath -> Sliver Rational
-sliver _earthMath =
+
+sliver Vincenty =
     Sliver
-        { az = azimuthR
-        , span = spanR
-        , dpp = dppR
-        , cseg = csegR
-        , cs = csR
+        { az = RatE.azimuthFwd defEps wgs84
+        , span = RatE.distanceVincenty defEps wgs84
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ RatE.distanceVincenty defEps wgs84
+        , cs = RatE.circumSample
         , angleCut = cutR
         }
 
+sliver Haversines =
+    Sliver
+        { az = RatS.azimuthFwd defEps
+        , span = RatS.distanceHaversine defEps
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ RatS.distanceHaversine defEps
+        , cs = RatS.circumSample
+        , angleCut = cutR
+        }
+
+sliver _ = sliver Haversines
+
 fromZones :: EarthMath -> Zones -> [TaskZone Rational]
-fromZones _earthMath =
-    fromZonesR azimuthR
-
-fromZonesR :: AzimuthFwd Rational -> Zones -> [TaskZone Rational]
-fromZonesR = zonesToTaskZones
-
-azimuthR :: AzimuthFwd Rational
-azimuthR = Rat.azimuthFwd defEps
-
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceHaversine defEps
-
-csR :: CircumSample Rational
-csR = Rat.circumSample
+fromZones Vincenty = zonesToTaskZones $ RatE.azimuthFwd defEps wgs84
+fromZones Haversines = zonesToTaskZones $ RatS.azimuthFwd defEps
+fromZones _ = fromZones Haversines
 
 cutR :: AngleCut Rational
 cutR =
@@ -67,9 +72,3 @@ cutR =
 nextCutR :: AngleCut Rational -> AngleCut Rational
 nextCutR x@AngleCut{sweep = ArcSweep (Bearing b)} =
     x{sweep = ArcSweep . Bearing $ b /: 2}
-
-dppR :: SpanLatLng Rational -> [Zone Rational] -> PathDistance Rational
-dppR = distancePointToPoint
-
-csegR :: Zone Rational -> Zone Rational -> PathDistance Rational
-csegR = costSegment spanR
