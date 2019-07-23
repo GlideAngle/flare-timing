@@ -277,7 +277,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                         , radial = Bearing tc
                         , orbit = yr
                         } :: ZonePoint Double
-                       
+
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint

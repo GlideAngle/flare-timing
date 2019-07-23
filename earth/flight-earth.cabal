@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7321b0f868ee0f532d00eafdac672d08002d5d4c3e62a3288d09bb45d51c6061
+-- hash: 4a4faa3e7284e917c13dbc8c93d09f3e7e4104eb2b0953ab67e7be3eb2081bd2
 
 name:           flight-earth
 version:        0.1.0
@@ -50,6 +50,8 @@ library
       Flight.Earth.Ellipsoid
       Flight.Earth.Geodesy
   other-modules:
+      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Double
+      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Rational
       Flight.Earth.Flat.Cylinder.Double
       Flight.Earth.Flat.Cylinder.Rational
       Flight.Earth.Flat.PointToPoint.Double
@@ -91,6 +93,8 @@ test-suite doctest
       Flight.Earth.Ellipsoid.Cylinder.Rational
       Flight.Earth.Ellipsoid.PointToPoint.Double
       Flight.Earth.Ellipsoid.PointToPoint.Rational
+      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Double
+      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Rational
       Flight.Earth.Ellipsoid.Separated
       Flight.Earth.Flat
       Flight.Earth.Flat.Cylinder.Double
@@ -146,6 +150,8 @@ test-suite earth
       Flight.Earth.Ellipsoid.Cylinder.Rational
       Flight.Earth.Ellipsoid.PointToPoint.Double
       Flight.Earth.Ellipsoid.PointToPoint.Rational
+      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Double
+      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Rational
       Flight.Earth.Ellipsoid.Separated
       Flight.Earth.Flat
       Flight.Earth.Flat.Cylinder.Double
