@@ -79,11 +79,10 @@ import Flight.Scribe
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
+import Flight.Earth.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(..)
-    , EarthModel(..)
-    , EarthMath(..)
     , Comp(..)
     , Task(..)
     , Nominal(..)
@@ -850,7 +849,8 @@ getRouteLength (EarthAsEllipsoid _) Vincenty
                             {distance = d}}} = Just d
 getRouteLength (EarthAsEllipsoid _) _ _ = Nothing
 getRouteLength _ Vincenty _ = Nothing
-getRouteLength _ Andoyer _ = Nothing -- TODO: Implement Andoyer algorithm for the ellipsoid
+getRouteLength _ AndoyerLambert _ = Nothing -- TODO: Implement AndoyerLambert algorithm for the ellipsoid
+getRouteLength _ ForsytheAndoyerLambert _ = Nothing -- TODO: Implement AndoyerLambert algorithm for the ellipsoid
 getRouteLength (EarthAsFlat _) Pythagorus
     TaskTrack
         { projection =

@@ -31,6 +31,7 @@ in    defs
             , "uom-plugin"
             , "detour-via-sci"
             , "flight-comp"
+            , "flight-earth"
             , "flight-gap"
             , "flight-latlng"
             , "flight-units"

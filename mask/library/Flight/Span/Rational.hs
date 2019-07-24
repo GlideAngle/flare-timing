@@ -17,14 +17,14 @@ import qualified Flight.Earth.Sphere.PointToPoint.Rational as RatS
 import qualified Flight.Earth.Sphere.Cylinder.Rational as RatS
     (circumSample)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as RatE
-    (azimuthFwd, distanceVincenty)
+    (azimuthFwd, distance)
 import qualified Flight.Earth.Ellipsoid.Cylinder.Rational as RatE
     (circumSample)
+import Flight.Earth.Geodesy (EarthMath(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
-import Flight.Comp (EarthMath(..))
 import Flight.Span.Sliver (Sliver(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 
@@ -33,15 +33,7 @@ fromR (TaskDistance d) = TaskDistance . fromRational' $ d
 
 sliver :: EarthMath -> Sliver Rational
 
-sliver Vincenty =
-    Sliver
-        { az = RatE.azimuthFwd defEps wgs84
-        , span = RatE.distanceVincenty defEps wgs84
-        , dpp = distancePointToPoint
-        , cseg = costSegment $ RatE.distanceVincenty defEps wgs84
-        , cs = RatE.circumSample
-        , angleCut = cutR
-        }
+sliver Pythagorus = sliver Haversines
 
 sliver Haversines =
     Sliver
@@ -53,12 +45,42 @@ sliver Haversines =
         , angleCut = cutR
         }
 
-sliver _ = sliver Haversines
+sliver em@Vincenty =
+    Sliver
+        { az = RatE.azimuthFwd em defEps wgs84
+        , span = RatE.distance em defEps wgs84
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ RatE.distance em defEps wgs84
+        , cs = RatE.circumSample
+        , angleCut = cutR
+        }
+
+sliver em@AndoyerLambert =
+    Sliver
+        { az = RatE.azimuthFwd em defEps wgs84
+        , span = RatE.distance em defEps wgs84
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ RatE.distance em defEps wgs84
+        , cs = RatE.circumSample
+        , angleCut = cutR
+        }
+
+sliver em@ForsytheAndoyerLambert =
+    Sliver
+        { az = RatE.azimuthFwd em defEps wgs84
+        , span = RatE.distance em defEps wgs84
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ RatE.distance em defEps wgs84
+        , cs = RatE.circumSample
+        , angleCut = cutR
+        }
 
 fromZones :: EarthMath -> Zones -> [TaskZone Rational]
-fromZones Vincenty = zonesToTaskZones $ RatE.azimuthFwd defEps wgs84
+fromZones Pythagorus = fromZones Haversines
 fromZones Haversines = zonesToTaskZones $ RatS.azimuthFwd defEps
-fromZones _ = fromZones Haversines
+fromZones em@Vincenty = zonesToTaskZones $ RatE.azimuthFwd em defEps wgs84
+fromZones em@AndoyerLambert = zonesToTaskZones $ RatE.azimuthFwd em defEps wgs84
+fromZones em@ForsytheAndoyerLambert = zonesToTaskZones $ RatE.azimuthFwd em defEps wgs84
 
 cutR :: AngleCut Rational
 cutR =

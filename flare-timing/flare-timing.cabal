@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3d047f4c3ea746efc9314e87f7f6862bf0b1350a75de436ba73f68d5279d04e2
+-- hash: c4b6694ed6448e41e6e8f8f5db7ccbcefbf5b5d908735ff378ef605ff2711039
 
 name:           flare-timing
 version:        0.1.0
@@ -435,6 +435,7 @@ executable mask-track
     , flight-clip
     , flight-cmd
     , flight-comp
+    , flight-earth
     , flight-gap
     , flight-kml
     , flight-latlng

@@ -27,7 +27,6 @@ import Flight.Comp
     , Task(..)
     , Zones
     , Comp(..)
-    , EarthModel(..), EarthMath(..)
     , compToCross
     , findCompInput
     , ensureExt
@@ -42,15 +41,16 @@ import Flight.Track.Cross
     , trackLogErrors
     )
 import Flight.LatLng.Rational (defEps)
+import Flight.Earth.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as RatS
     (azimuthFwd, distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Double as DblS
     (azimuthFwd, distanceHaversine)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as RatE
-    (azimuthFwd, distanceVincenty)
+    (azimuthFwd, distance)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as DblE
-    (azimuthFwd, distanceVincenty)
+    (azimuthFwd, distance)
 import Flight.Mask
     ( TaskZone
     , FnIxTask
@@ -214,41 +214,37 @@ flown c math tasks (IxTask i) fs =
 flownTask :: Comp -> Math -> FnTask k MadeZones
 flownTask Comp{earth, earthMath} math =
     case (earth, earthMath, math) of
-        (EarthAsSphere{}, Haversines, Rational) -> ratHaversines
-        (EarthAsEllipsoid{}, Vincenty, Rational) -> ratVincenty
-        (_, _, Rational) -> ratHaversines
-        (EarthAsSphere{}, Haversines, Floating) -> dblHaversines
-        (EarthAsEllipsoid{}, Vincenty, Floating) -> dblVincenty
-        (_, _, Floating) -> dblHaversines
+        (EarthAsSphere{}, Haversines, Rational) -> ratSphere
+        (EarthAsEllipsoid{}, Vincenty, Rational) -> ratEllipsoid
+        (_, _, Rational) -> ratSphere
+        (EarthAsSphere{}, Haversines, Floating) -> dblSphere
+        (EarthAsEllipsoid{}, Vincenty, Floating) -> dblEllipsoid
+        (_, _, Floating) -> dblSphere
     where
-        ratHaversines =
-            let az = RatS.azimuthFwd defEps
-                span = RatS.distanceHaversine defEps
-            in
-                madeZones
-                    az
-                    span
-                    (zonesToTaskZones az :: Zones -> [TaskZone Rational])
+        ratSphere =
+            let az = RatS.azimuthFwd defEps in
+            madeZones
+                az
+                (RatS.distanceHaversine defEps)
+                (zonesToTaskZones az :: Zones -> [TaskZone Rational])
 
-        ratVincenty =
-            let az = RatE.azimuthFwd defEps wgs84
-                span = RatE.distanceVincenty defEps wgs84
-            in
-                madeZones
-                    az
-                    span
-                    (zonesToTaskZones az :: Zones -> [TaskZone Rational])
+        ratEllipsoid =
+            let az = RatE.azimuthFwd earthMath defEps wgs84 in
+            madeZones
+                az
+                (RatE.distance earthMath defEps wgs84)
+                (zonesToTaskZones az :: Zones -> [TaskZone Rational])
 
-        dblHaversines =
+        dblSphere =
             let az = DblS.azimuthFwd in
             madeZones
                 az
                 DblS.distanceHaversine
                 (zonesToTaskZones az :: Zones -> [TaskZone Double])
 
-        dblVincenty =
-            let az = DblE.azimuthFwd wgs84 in
+        dblEllipsoid =
+            let az = DblE.azimuthFwd earthMath wgs84 in
             madeZones
                 az
-                (DblE.distanceVincenty wgs84)
+                (DblE.distance earthMath wgs84)
                 (zonesToTaskZones az :: Zones -> [TaskZone Double])

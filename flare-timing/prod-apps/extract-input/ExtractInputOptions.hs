@@ -23,7 +23,7 @@ import System.Console.CmdArgs.Implicit
     , enum
     )
 
-import Flight.Comp (Projection(..), EarthMath(..), EarthModel(..))
+import Flight.Earth.Geodesy (Projection(..), EarthMath(..), EarthModel(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 
@@ -71,13 +71,15 @@ mkOptions programName =
         , earthMath =
             enum
                 [ Pythagorus
-                &= help "Pythagorus' method on a plane"
+                &= help "Pythagorus method on a plane"
                 , Haversines
                 &= help "Haversines on a sphere"
                 , Vincenty
-                &= help "Vincenty's method on an ellipsoid"
-                , Andoyer
-                &= help "Andoyer's method on an ellipsoid"
+                &= help "Vincenty method on an ellipsoid"
+                , AndoyerLambert
+                &= help "Andoyer-Lambert method on an ellipsoid"
+                , ForsytheAndoyerLambert
+                &= help "Forsythe-Andoyer-Lambert method on an ellipsoid"
                 ]
         &= groupname "Earth math"
 
@@ -100,4 +102,5 @@ mkEarthModel :: EarthMath -> EarthModel
 mkEarthModel Pythagorus = EarthAsFlat UTM
 mkEarthModel Haversines = EarthAsSphere earthRadius
 mkEarthModel Vincenty = EarthAsEllipsoid wgs84
-mkEarthModel Andoyer= EarthAsEllipsoid wgs84
+mkEarthModel AndoyerLambert = EarthAsEllipsoid wgs84
+mkEarthModel ForsytheAndoyerLambert = EarthAsEllipsoid wgs84

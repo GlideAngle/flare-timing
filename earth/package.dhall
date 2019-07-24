@@ -16,13 +16,15 @@ in    defs
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , dependencies =
             defs.dependencies
-          # [ "numbers"
+          # [ "aeson"
+            , "numbers"
             , "fgl"
             , "uom-plugin"
             , "bifunctors"
             , "aeson"
             , "scientific"
             , "mtl"
+            , "text"
             , "hcoord"
             , "hcoord-utm"
             , "detour-via-sci"

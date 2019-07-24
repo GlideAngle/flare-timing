@@ -22,6 +22,7 @@ import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
     , allHeaders, commentOnFixRange
     )
+import Flight.Earth.Geodesy (EarthMath(..))
 import Flight.Comp
     ( AlignTimeDir(..)
     , CompInputFile(..)
@@ -34,7 +35,6 @@ import Flight.Comp
     , FirstLead(..)
     , FirstStart(..)
     , OpenClose(..)
-    , EarthMath(..)
     , compFileToCompDir
     , alignTimePath
     , openClose

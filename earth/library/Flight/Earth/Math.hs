@@ -49,4 +49,3 @@ atan2' e@(Epsilon eps) y x
     where
         atan' = F.atan eps
         pi' = F.pi eps
-

@@ -22,8 +22,8 @@ import Text.XML.HXT.Core
     )
 
 import Flight.Zone.MkZones (Discipline(..))
-import Flight.Comp
-    (Projection(..), EarthMath(..), EarthModel(..), Comp(..), UtcOffset(..))
+import Flight.Earth.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Comp (Projection(..), Comp(..), UtcOffset(..))
 
 xpComp :: PU Comp
 xpComp =

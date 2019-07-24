@@ -13,8 +13,6 @@ module Flight.Comp
     ( -- * Competition
       CompSettings(..)
     , Projection(..)
-    , EarthModel(..)
-    , EarthMath(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
@@ -64,22 +62,16 @@ module Flight.Comp
     ) where
 
 import Data.Ratio ((%))
-import Control.Applicative (empty)
 import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
-import Data.Aeson
-    ( Value(..), ToJSON(..), FromJSON(..), Options(..), SumEncoding(..)
-    , genericToJSON, genericParseJSON, defaultOptions
-    )
+import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Maybe (listToMaybe)
 import Data.List (intercalate, nub, sort)
 import Data.String (IsString())
-import qualified Data.Text as T (pack)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Zone (QRadius)
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.MkZones (Zones(..), Discipline(..))
 import Flight.Zone.Raw (Give, showZone)
@@ -102,7 +94,7 @@ import Flight.Score
     , AwScaling(..)
     , PointPenalty(..)
     )
-import Flight.Earth.Ellipsoid (Ellipsoid(..))
+import Flight.Earth.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -221,70 +213,6 @@ data CompSettings k =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
-
-data Projection = UTM
-    deriving (Eq, Ord, Show)
-
-instance ToJSON Projection where
-    toJSON = const $ String "UTM"
-
-instance FromJSON Projection where
-    parseJSON _ = return UTM
-
-data EarthMath
-    = Pythagorus
-    | Haversines
-    | Vincenty
-    | AndoyerLambert
-    | ForsytheAndoyerLambert
-    deriving (Eq, Ord, Show)
-
-instance ToJSON EarthMath where
-    toJSON em@Pythagorus = toJSON . String . T.pack $ show em
-    toJSON em@Haversines = toJSON . String . T.pack $ show em
-    toJSON em@Vincenty = toJSON . String . T.pack $ show em
-    toJSON AndoyerLambert = toJSON $ String "Andoyer-Lambert"
-    toJSON ForsytheAndoyerLambert = toJSON $ String "Forsythe-Andoyer-Lambert"
-
-instance FromJSON EarthMath where
-    parseJSON o@(String _) = do
-        s :: String <- parseJSON o
-        case s of
-            "Pythagorus" -> return Pythagorus
-            "Haversines" -> return Haversines
-            "Vincenty" -> return Vincenty
-            "Andoyer-Lambert" -> return AndoyerLamber
-            "Forsythe-Andoyer-Lambert" -> return ForsytheAndoyerLamber
-            _ -> empty
-
-    parseJSON _ = empty
-
-data EarthModel
-    = EarthAsSphere {radius :: QRadius Double [u| m |]}
-    | EarthAsEllipsoid (Ellipsoid Double)
-    | EarthAsFlat {projection :: Projection}
-    deriving (Eq, Ord, Show, Generic)
-
-earthModelCtorTag :: String -> String
-earthModelCtorTag s
-    | s == "EarthAsSphere" = "sphere"
-    | s == "EarthAsEllipsoid" = "ellipsoid"
-    | s == "EarthAsFlat" = "flat"
-    | otherwise = s
-
-instance ToJSON EarthModel where
-    toJSON = genericToJSON $
-        defaultOptions
-            { sumEncoding = ObjectWithSingleField
-            , constructorTagModifier = earthModelCtorTag
-            }
-
-instance FromJSON EarthModel where
-    parseJSON = genericParseJSON $
-        defaultOptions
-            { sumEncoding = ObjectWithSingleField
-            , constructorTagModifier = earthModelCtorTag
-            }
 
 -- | Groups of pilots for a task.
 data PilotGroup =

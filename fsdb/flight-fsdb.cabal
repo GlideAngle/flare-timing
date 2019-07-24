@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 39bdd4ddda9b672039e0f5ddcf56b0da265162c63342c5c045370790eff93432
+-- hash: 9e572c45e5fae9094c10d0c6eed38a8b51ca63169fbb9962880296833dcf1c80
 
 name:           flight-fsdb
 version:        0.1.0
@@ -60,6 +60,7 @@ library
     , containers
     , detour-via-sci
     , flight-comp
+    , flight-earth
     , flight-gap
     , flight-latlng
     , flight-units
@@ -110,6 +111,7 @@ test-suite doctest
     , detour-via-sci
     , doctest
     , flight-comp
+    , flight-earth
     , flight-gap
     , flight-latlng
     , flight-units

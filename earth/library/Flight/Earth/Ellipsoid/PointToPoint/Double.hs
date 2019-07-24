@@ -1,13 +1,8 @@
 module Flight.Earth.Ellipsoid.PointToPoint.Double
-    ( distanceAndoyer
-    , inverseAndoyer
-    , azimuthFwdAndoyer
-    , azimuthRevAndoyer
-
-    , distanceVincenty
-    , inverseVincenty
-    , azimuthFwdVincenty
-    , azimuthRevVincenty
+    ( distance
+    , inverse
+    , azimuthFwd
+    , azimuthRev
     ) where
 
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
@@ -16,26 +11,30 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.LatLng (QLat, QLng, LatLng(..), AzimuthFwd, AzimuthRev)
 import Flight.Distance (QTaskDistance, SpanLatLng)
 import Flight.Earth.Ellipsoid
-    ( Ellipsoid(..), Andoyer(..)
-    , GeodeticInverse(..), GeodeticAccuracy(..)
-    )
-import Flight.Earth.Geodesy (InverseProblem(..), InverseSolution(..))
+    (Ellipsoid(..), GeodeticInverse(..), GeodeticAccuracy(..))
+import qualified Flight.Earth.Ellipsoid as E (Andoyer(..))
+import Flight.Earth.Geodesy
+    (EarthMath(..), InverseProblem(..), InverseSolution(..))
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Andoyer.Double as A
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Double as V
 
-distanceAndoyer
+distance
     :: ( RealFloat a, Show a
        , KnownUnit (Unpack u), Show (QLat a u), Show (QLng a u)
        , u ~ [u| rad |]
        )
-    => Andoyer
+    => EarthMath
     -> Ellipsoid a
     -> SpanLatLng a
-distanceAndoyer = A.distance
+distance Pythagorus = error "Pythagorus on the Ellipsoid"
+distance Haversines = error "Haversines on the Ellipsoid"
+distance Vincenty = V.distance
+distance AndoyerLambert = A.distance E.AndoyerLambert
+distance ForsytheAndoyerLambert = A.distance E.ForsytheAndoyerLambert
 
-inverseAndoyer
+inverse
     :: (Num a, Floating a, Fractional a, RealFloat a, Show a)
-    => Andoyer
+    => EarthMath
     -> Ellipsoid a
     -> GeodeticAccuracy a
     -> InverseProblem (LatLng a [u| rad |])
@@ -44,45 +43,30 @@ inverseAndoyer
             (QTaskDistance a [u| m |])
             (Quantity a [u| rad |])
         )
-inverseAndoyer = A.inverse
+inverse Pythagorus = error "Pythagorus on the Ellipsoid"
+inverse Haversines = error "Haversines on the Ellipsoid"
+inverse Vincenty = V.inverse
+inverse AndoyerLambert = A.inverse E.AndoyerLambert
+inverse ForsytheAndoyerLambert = A.inverse E.ForsytheAndoyerLambert
 
-azimuthFwdAndoyer
+azimuthFwd
     :: (RealFloat a, Show a)
-    => Andoyer
+    => EarthMath
     -> Ellipsoid a
     -> AzimuthFwd a
-azimuthFwdAndoyer = A.azimuthFwd
+azimuthFwd Pythagorus = error "Pythagorus on the Ellipsoid"
+azimuthFwd Haversines = error "Haversines on the Ellipsoid"
+azimuthFwd Vincenty = V.azimuthFwd
+azimuthFwd AndoyerLambert = A.azimuthFwd E.AndoyerLambert
+azimuthFwd ForsytheAndoyerLambert = A.azimuthFwd E.ForsytheAndoyerLambert
 
-azimuthRevAndoyer
+azimuthRev
     :: (RealFloat a, Show a)
-    => Andoyer
+    => EarthMath
     -> Ellipsoid a
     -> AzimuthRev a
-azimuthRevAndoyer = A.azimuthRev
-
-distanceVincenty
-    :: ( RealFloat a, Show a
-       , KnownUnit (Unpack u), Show (QLat a u), Show (QLng a u)
-       , u ~ [u| rad |]
-       )
-    => Ellipsoid a
-    -> SpanLatLng a
-distanceVincenty = V.distance
-
-inverseVincenty
-    :: (Num a, Floating a, Fractional a, RealFloat a, Show a)
-    => Ellipsoid a
-    -> GeodeticAccuracy a
-    -> InverseProblem (LatLng a [u| rad |])
-    -> GeodeticInverse
-        (InverseSolution
-            (QTaskDistance a [u| m |])
-            (Quantity a [u| rad |])
-        )
-inverseVincenty = V.inverse
-
-azimuthFwdVincenty :: (RealFloat a, Show a) => Ellipsoid a -> AzimuthFwd a
-azimuthFwdVincenty = V.azimuthFwd
-
-azimuthRevVincenty :: (RealFloat a, Show a) => Ellipsoid a -> AzimuthRev a
-azimuthRevVincenty = V.azimuthRev
+azimuthRev Pythagorus = error "Pythagorus on the Ellipsoid"
+azimuthRev Haversines = error "Haversines on the Ellipsoid"
+azimuthRev Vincenty = V.azimuthRev
+azimuthRev AndoyerLambert = A.azimuthRev E.AndoyerLambert
+azimuthRev ForsytheAndoyerLambert = A.azimuthRev E.ForsytheAndoyerLambert

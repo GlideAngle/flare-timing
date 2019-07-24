@@ -15,26 +15,18 @@ import qualified Flight.Earth.Sphere.PointToPoint.Double as DblS
 import qualified Flight.Earth.Sphere.Cylinder.Double as DblS
     (circumSample)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as DblE
-    (azimuthFwd, distanceVincenty)
+    (azimuthFwd, distance)
 import qualified Flight.Earth.Ellipsoid.Cylinder.Double as DblE
     (circumSample)
+import Flight.Earth.Geodesy (EarthMath(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
-import Flight.Comp (EarthMath(..))
 import Flight.Span.Sliver (Sliver(..))
 
 sliver :: EarthMath -> Sliver Double
 
-sliver Vincenty =
-    Sliver
-        { az = DblE.azimuthFwd wgs84
-        , span = DblE.distanceVincenty wgs84
-        , dpp = distancePointToPoint
-        , cseg = costSegment $ DblE.distanceVincenty wgs84
-        , cs = DblE.circumSample
-        , angleCut = cutF
-        }
+sliver Pythagorus = sliver Haversines
 
 sliver Haversines =
     Sliver
@@ -46,12 +38,42 @@ sliver Haversines =
         , angleCut = cutF
         }
 
-sliver _ = sliver Haversines
+sliver em@Vincenty =
+    Sliver
+        { az = DblE.azimuthFwd em wgs84
+        , span = DblE.distance em wgs84
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ DblE.distance Vincenty wgs84
+        , cs = DblE.circumSample
+        , angleCut = cutF
+        }
+
+sliver em@AndoyerLambert =
+    Sliver
+        { az = DblE.azimuthFwd em wgs84
+        , span = DblE.distance em wgs84
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ DblE.distance Vincenty wgs84
+        , cs = DblE.circumSample
+        , angleCut = cutF
+        }
+
+sliver em@ForsytheAndoyerLambert =
+    Sliver
+        { az = DblE.azimuthFwd em wgs84
+        , span = DblE.distance em wgs84
+        , dpp = distancePointToPoint
+        , cseg = costSegment $ DblE.distance Vincenty wgs84
+        , cs = DblE.circumSample
+        , angleCut = cutF
+        }
 
 fromZones :: EarthMath -> Zones -> [TaskZone Double]
-fromZones Vincenty = zonesToTaskZones $ DblE.azimuthFwd wgs84
+fromZones Pythagorus = fromZones Haversines
 fromZones Haversines = zonesToTaskZones $ DblS.azimuthFwd
-fromZones _ = fromZones Haversines
+fromZones em@Vincenty = zonesToTaskZones $ DblE.azimuthFwd em wgs84
+fromZones em@AndoyerLambert = zonesToTaskZones $ DblE.azimuthFwd em wgs84
+fromZones em@ForsytheAndoyerLambert = zonesToTaskZones $ DblE.azimuthFwd em wgs84
 
 cutF :: AngleCut Double
 cutF =

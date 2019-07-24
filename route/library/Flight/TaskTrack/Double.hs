@@ -15,13 +15,15 @@ import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Cylinder (CircumSample)
+import Flight.Earth.Geodesy (EarthMath(..))
 import Flight.Earth.Flat (zoneToProjectedEastNorth)
 import Flight.Earth.Flat.Projected.Double (costEastNorth)
 import Flight.Earth.Sphere.Cylinder.Double (circumSample)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as S (azimuthFwd)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as E (azimuthFwd)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as S
+    (azimuthFwd)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as E
+    (azimuthFwd, distance)
 import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine)
-import Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty)
 import Flight.Route
     ( TaskDistanceMeasure(..)
     , OptimalRoute(..)
@@ -291,7 +293,7 @@ azimuthS :: AzimuthFwd Double
 azimuthS = S.azimuthFwd
 
 azimuthE :: AzimuthFwd Double
-azimuthE = E.azimuthFwd wgs84
+azimuthE = E.azimuthFwd Vincenty wgs84
 
 -- | Span on a flat projected plane.
 spanF :: SpanLatLng Double
@@ -304,7 +306,7 @@ spanS = distanceHaversine
 -- | Span on the WGS 84 ellipsoid using Vincenty's solution to the inverse
 -- problem.
 spanE :: SpanLatLng Double
-spanE = distanceVincenty wgs84
+spanE = E.distance Vincenty wgs84
 
 cut :: AngleCut Double
 cut =

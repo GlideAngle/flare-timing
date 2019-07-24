@@ -13,6 +13,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
+import Flight.Earth.Geodesy (EarthMath(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( CompInputFile(..)
@@ -26,7 +27,6 @@ import Flight.Comp
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
     , DfNoTrack(..)
-    , EarthMath(..)
     , dfNoTrackReach
     , compToMaskArrival
     , compToMaskEffort

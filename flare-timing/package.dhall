@@ -299,6 +299,7 @@ in    defs
                     , "statistics"
                     , "time"
                     , "vector"
+                    , "flight-earth"
                     , "flight-clip"
                     , "flight-gap"
                     , "flight-kml"

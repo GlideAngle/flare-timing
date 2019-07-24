@@ -19,13 +19,15 @@ import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center, toCylinder)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
+import Flight.Earth.Geodesy (EarthMath(..))
 import Flight.Earth.Flat (zoneToProjectedEastNorth)
 import Flight.Earth.Flat.Projected.Rational (costEastNorth)
 import Flight.Earth.Sphere.Cylinder.Rational (circumSample)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as S (azimuthFwd)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as E (azimuthFwd)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as S
+    (azimuthFwd)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as E
+    (azimuthFwd, distance)
 import Flight.Earth.Sphere.PointToPoint.Rational (distanceHaversine)
-import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty)
 import Flight.Route
     ( TaskDistanceMeasure(..)
     , OptimalRoute(..)
@@ -300,7 +302,7 @@ azimuthS :: AzimuthFwd Rational
 azimuthS = S.azimuthFwd defEps
 
 azimuthE :: AzimuthFwd Rational
-azimuthE = E.azimuthFwd defEps wgs84
+azimuthE = E.azimuthFwd Vincenty defEps wgs84
 
 -- | Span on a flat projected plane.
 spanF :: SpanLatLng Rational
@@ -314,7 +316,7 @@ spanS = distanceHaversine defEps
 -- problem.
 spanE :: SpanLatLng Rational
 spanE =
-    distanceVincenty e wgs84
+    E.distance Vincenty e wgs84
     where
         e = Epsilon $ 1 % 1000000000000000000
 

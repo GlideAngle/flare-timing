@@ -22,12 +22,12 @@ import Flight.Fsdb
     , parseTaskFolders
     , parseTracks
     )
+import Flight.Earth.Geodesy (EarthMath(..))
 import Flight.Comp
     ( FileType(Fsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , CompSettings(..)
-    , EarthMath(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)

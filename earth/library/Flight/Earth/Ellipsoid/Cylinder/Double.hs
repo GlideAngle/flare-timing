@@ -20,7 +20,7 @@ import Flight.Zone
     , realToFracLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty)
+import Flight.Earth.Ellipsoid.PointToPoint.Double (distance)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -38,7 +38,8 @@ import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), GeodeticAccuracy(..), GeodeticDirect(..)
     , defaultGeodeticAccuracy, wgs84, flattening, polarRadius
     )
-import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
+import Flight.Earth.Geodesy
+    (EarthMath(..), DirectProblem(..), DirectSolution(..))
 import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 
 cos2 :: (Num a, Num p) => (p -> a) -> p -> p -> (a, a)
@@ -60,7 +61,7 @@ iterateVincenty
     σ1
     σ =
     if abs (σ - σ') < tolerance
-        then σ 
+        then σ
         else
             iterateVincenty accuracy _A _B s b σ1 σ'
     where
@@ -281,5 +282,5 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint
-                (distanceVincenty wgs84)
+                (distance Vincenty wgs84)
                 (realToFracZone <$> [Point ptCenter, Point y])

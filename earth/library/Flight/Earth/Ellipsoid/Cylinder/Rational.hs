@@ -24,7 +24,7 @@ import Flight.Zone
     , toRationalLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty)
+import Flight.Earth.Ellipsoid.PointToPoint.Rational (distance)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -44,7 +44,8 @@ import Flight.Earth.Ellipsoid
     , defaultGeodeticAccuracy, wgs84, flattening, polarRadius
     )
 import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (vincentyDirect)
-import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
+import Flight.Earth.Geodesy
+    (EarthMath(..), DirectProblem(..), DirectSolution(..))
 import Flight.Earth.Ellipsoid.Cylinder.Double (cos2)
 import qualified Flight.Earth.Math as F (atan2')
 import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
@@ -396,5 +397,5 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint
-                (distanceVincenty defEps wgs84)
+                (distance Vincenty defEps wgs84)
                 [Point ptCenter, Point y]

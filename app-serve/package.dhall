@@ -40,6 +40,7 @@ in    defs
                   , "uom-plugin"
                   , "flight-cmd"
                   , "flight-clip"
+                  , "flight-earth"
                   , "flight-comp"
                   , "flight-gap"
                   , "flight-kml"
