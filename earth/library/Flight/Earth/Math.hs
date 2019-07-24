@@ -1,7 +1,13 @@
-module Flight.Earth.Math (mod', atan2', normalizeLng) where
+module Flight.Earth.Math
+    ( mod'
+    , atan2'
+    , normalizeLng
+    , normalizeLngR
+    ) where
 
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
+import qualified Data.Fixed as F (mod')
 
 import Flight.Ratio (pattern (:%))
 import Flight.LatLng.Rational (Epsilon(..))
@@ -10,8 +16,22 @@ mod' :: Rational -> Rational -> Rational
 mod' (a :% b) (c :% d) =
     ((d * a) `mod` (b * c)) % (b * d)
 
-normalizeLng :: Epsilon -> Rational -> Rational
-normalizeLng (Epsilon eps) lng =
+-- | In Vincenty's paper he says,
+--
+-- "The inverse formula may give no solution over a line between
+-- two nearly antipodal points. This will occur when λ, as computed
+-- by eqn. (11), is greater than π in absolute value."
+--
+-- (45°,-179°59'58.17367'') to (45°,180°)
+-- Comparing the above two points, longitudes are less than a minute apart.  To
+-- be able to get the difference using simple subtraction normalize the
+-- longitudes to a range 0 <= lng <= 2π.
+normalizeLng :: (Floating a, Real a) => a -> a
+normalizeLng lng =
+    lng `F.mod'` (2 * pi)
+
+normalizeLngR :: Epsilon -> Rational -> Rational
+normalizeLngR (Epsilon eps) lng =
    lng `mod'` (2 * F.pi eps)
 
 -- | The numbers package doesn't have atan2.

@@ -35,8 +35,8 @@ import Flight.Zone.Cylinder
     , sampleAngles
     )
 import Flight.Earth.Ellipsoid
-    ( Ellipsoid(..), VincentyAccuracy(..), VincentyDirect(..)
-    , defaultVincentyAccuracy, wgs84, flattening, polarRadius
+    ( Ellipsoid(..), GeodeticAccuracy(..), GeodeticDirect(..)
+    , defaultGeodeticAccuracy, wgs84, flattening, polarRadius
     )
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
@@ -50,9 +50,9 @@ cos2 cos' σ1 σ = (cos2σm, cos²2σm)
 
 iterateVincenty
     :: (Floating a, Ord a)
-    => VincentyAccuracy a -> a -> a -> a -> a -> a -> a -> a
+    => GeodeticAccuracy a -> a -> a -> a -> a -> a -> a -> a
 iterateVincenty
-    accuracy@(VincentyAccuracy tolerance)
+    accuracy@(GeodeticAccuracy tolerance)
     _A
     _B
     s
@@ -85,12 +85,12 @@ iterateVincenty
 vincentyDirect
     :: (Real a, Floating a, Fractional a, RealFloat a)
     => Ellipsoid a
-    -> VincentyAccuracy a
+    -> GeodeticAccuracy a
     -> DirectProblem
         (LatLng a [u| rad |])
         (TrueCourse a)
         (QRadius a [u| m |])
-    -> VincentyDirect
+    -> GeodeticDirect
         (DirectSolution
             (LatLng a [u| rad |])
             (TrueCourse a)
@@ -103,7 +103,7 @@ vincentyDirect
         , α₁ = TrueCourse (MkQuantity α1)
         , s = (Radius (MkQuantity s))
         } =
-    VincentyDirect $
+    GeodeticDirect $
     DirectSolution
         { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
         , α₂ = Just . TrueCourse . MkQuantity $ sinα / (-j)
@@ -154,13 +154,13 @@ circum
     -> LatLng Double [u| rad |]
 circum x r tc =
     case vincentyDirect wgs84 accuracy' prob of
-        VincentyDirectAbnormal _ -> error "Vincenty direct abnormal"
-        VincentyDirectEquatorial -> error "Vincenty direct equatorial"
-        VincentyDirectAntipodal -> error "Vincenty direct antipodal"
-        VincentyDirect DirectSolution{y} -> realToFracLatLng y
+        GeodeticDirectAbnormal _ -> error "Geodetic direct abnormal"
+        GeodeticDirectEquatorial -> error "Geodetic direct equatorial"
+        GeodeticDirectAntipodal -> error "Geodetic direct antipodal"
+        GeodeticDirect DirectSolution{y} -> realToFracLatLng y
     where
-        VincentyAccuracy accuracy = defaultVincentyAccuracy
-        accuracy' = VincentyAccuracy $ fromRational accuracy
+        GeodeticAccuracy accuracy = defaultGeodeticAccuracy
+        accuracy' = GeodeticAccuracy $ fromRational accuracy
 
         prob =
             DirectProblem

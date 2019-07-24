@@ -40,8 +40,8 @@ import Flight.Zone.Cylinder
     , sampleAngles
     )
 import Flight.Earth.Ellipsoid
-    (Ellipsoid(..), VincentyDirect(..), VincentyAccuracy(..)
-    , defaultVincentyAccuracy, wgs84, flattening, polarRadius
+    (Ellipsoid(..), GeodeticDirect(..), GeodeticAccuracy(..)
+    , defaultGeodeticAccuracy, wgs84, flattening, polarRadius
     )
 import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (vincentyDirect)
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
@@ -51,7 +51,7 @@ import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
 
 iterateVincenty
     :: Epsilon
-    -> VincentyAccuracy Rational
+    -> GeodeticAccuracy Rational
     -> Rational
     -> Rational
     -> Rational
@@ -61,7 +61,7 @@ iterateVincenty
     -> Rational
 iterateVincenty
     epsilon@(Epsilon eps)
-    accuracy@(VincentyAccuracy tolerance)
+    accuracy@(GeodeticAccuracy tolerance)
     _A
     _B
     s
@@ -96,12 +96,12 @@ iterateVincenty
 vincentyDirect'
     :: Epsilon
     -> Ellipsoid Rational
-    -> VincentyAccuracy Rational
+    -> GeodeticAccuracy Rational
     -> DirectProblem
         (LatLng Rational [u| rad |])
         (TrueCourse Rational)
         (QRadius Rational [u| m |])
-    -> VincentyDirect
+    -> GeodeticDirect
         (DirectSolution
             (LatLng Rational [u| rad |])
             (TrueCourse Rational)
@@ -115,8 +115,8 @@ vincentyDirect'
         , α₁= TrueCourse (MkQuantity α1)
         , s = Radius (MkQuantity s)
         } =
-    if (cosU1 * cosσ - sinU1 * sinσ * cosα1) == 0 then VincentyDirectEquatorial else
-    VincentyDirect $
+    if (cosU1 * cosσ - sinU1 * sinσ * cosα1) == 0 then GeodeticDirectEquatorial else
+    GeodeticDirect $
     DirectSolution
         { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
         , α₂ = Just . TrueCourse . MkQuantity $ sinα / (-j)
@@ -169,12 +169,12 @@ vincentyDirect'
 vincentyDirect
     :: Epsilon
     -> Ellipsoid Rational
-    -> VincentyAccuracy Rational
+    -> GeodeticAccuracy Rational
     -> DirectProblem
         (LatLng Rational [u| rad |])
         (TrueCourse Rational)
         (QRadius Rational [u| m |])
-    -> VincentyDirect
+    -> GeodeticDirect
         (DirectSolution
             (LatLng Rational [u| rad |])
             (TrueCourse Rational)
@@ -210,11 +210,11 @@ vincentyDirect
 
     | otherwise =
         case vincentyDirect' e ellipsoid accuracy prob of
-            v@(VincentyDirect _) -> v
+            v@(GeodeticDirect _) -> v
             _ -> v'
     where
-        VincentyAccuracy accuracy' = accuracy
-        accuracy'' = VincentyAccuracy $ fromRational accuracy'
+        GeodeticAccuracy accuracy' = accuracy
+        accuracy'' = GeodeticAccuracy $ fromRational accuracy'
 
         b' :: Quantity Double [u| deg |]
         b' = convert . fromRational' $ b
@@ -232,18 +232,18 @@ vincentyDirect
                 }
 
         v'
-            :: VincentyDirect
+            :: GeodeticDirect
                 (DirectSolution
                     (LatLng Rational [u| rad |])
                     (TrueCourse Rational)
                 )
         v' =
             case Dbl.vincentyDirect wgs84 accuracy'' prob' of
-                VincentyDirectAbnormal ab -> VincentyDirectAbnormal ab
-                VincentyDirectEquatorial -> VincentyDirectEquatorial
-                VincentyDirectAntipodal -> VincentyDirectAntipodal
-                VincentyDirect soln ->
-                    VincentyDirect $ toRationalDirectSolution soln
+                GeodeticDirectAbnormal ab -> GeodeticDirectAbnormal ab
+                GeodeticDirectEquatorial -> GeodeticDirectEquatorial
+                GeodeticDirectAntipodal -> GeodeticDirectAntipodal
+                GeodeticDirect soln ->
+                    GeodeticDirect $ toRationalDirectSolution soln
 
 toRationalDirectSolution
     :: DirectSolution (LatLng Double [u| rad |]) (TrueCourse Double)
@@ -264,11 +264,11 @@ circum
     -> TrueCourse Rational 
     -> LatLng Rational [u| rad |]
 circum e x r tc =
-    case vincentyDirect e wgs84 defaultVincentyAccuracy prob of
-        VincentyDirectAbnormal _ -> error "Vincenty direct abnormal"
-        VincentyDirectEquatorial -> error "Vincenty direct equatorial"
-        VincentyDirectAntipodal -> error "Vincenty direct antipodal"
-        VincentyDirect DirectSolution{y} -> y
+    case vincentyDirect e wgs84 defaultGeodeticAccuracy prob of
+        GeodeticDirectAbnormal _ -> error "Geodetic direct abnormal"
+        GeodeticDirectEquatorial -> error "Geodetic direct equatorial"
+        GeodeticDirectAntipodal -> error "Geodetic direct antipodal"
+        GeodeticDirect DirectSolution{y} -> y
     where
         prob =
             DirectProblem

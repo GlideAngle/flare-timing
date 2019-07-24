@@ -40,10 +40,11 @@
 module Flight.Earth.Ellipsoid
     ( Ellipsoid(..)
     , AbnormalLatLng(..)
-    , VincentyDirect(..)
-    , VincentyInverse(..)
-    , VincentyAccuracy(..)
-    , defaultVincentyAccuracy
+    , GeodeticDirect(..)
+    , GeodeticInverse(..)
+    , GeodeticAccuracy(..)
+    , Andoyer(..)
+    , defaultGeodeticAccuracy
     , wgs84
     , bessel
     , hayford
@@ -51,6 +52,7 @@ module Flight.Earth.Ellipsoid
     , flattening
     , polarRadius
     , toRationalEllipsoid
+    , tooFar
     ) where
 
 import Data.Ratio ((%))
@@ -60,7 +62,12 @@ import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Zone (Radius(..), QRadius)
+
+data Andoyer
+    = AndoyerLambert
+    | ForsytheAndoyerLambert
 
 data Ellipsoid a =
     Ellipsoid
@@ -81,29 +88,29 @@ data AbnormalLatLng
     | LngUnder
     | LngOver
 
-data VincentyDirect a
-    = VincentyDirectAbnormal AbnormalLatLng
+data GeodeticDirect a
+    = GeodeticDirectAbnormal AbnormalLatLng
     -- ^ Vincenty requires normalized latitude and longitude inputs, in radians
     -- the equivalent of -90 <= latitude <= 90 and -180 <= longitude <= 180
     -- degrees.
-    | VincentyDirectEquatorial
+    | GeodeticDirectEquatorial
     -- ^ Vincenty's solution to the direct problem is indeterminate if the
     -- points are equatorial, checked for when abs λ > π.
-    | VincentyDirectAntipodal
+    | GeodeticDirectAntipodal
     -- ^ Vincenty's solution to the direct problem is indeterminate if the
     -- points are antipodal, checked for when abs λ > π.
-    | VincentyDirect a
+    | GeodeticDirect a
     -- ^ Vincenty's solution to the inverse problem.
 
-data VincentyInverse a
-    = VincentyInverseAbnormal AbnormalLatLng
+data GeodeticInverse a
+    = GeodeticInverseAbnormal AbnormalLatLng
     -- ^ Vincenty requires normalized latitude and longitude inputs, in radians
     -- the equivalent of -90 <= latitude <= 90 and -180 <= longitude <= 180
     -- degrees.
-    | VincentyInverseAntipodal
+    | GeodeticInverseAntipodal
     -- ^ Vincenty's solution to the inverse problem is indeterminate if the
     -- points are antipodal, checked for when abs λ > π.
-    | VincentyInverse a
+    | GeodeticInverse a
     -- ^ Vincenty's solution to the inverse problem.
 
 toRationalEllipsoid :: Real a => Ellipsoid a -> Ellipsoid Rational
@@ -130,7 +137,6 @@ bessel =
     Ellipsoid
         { equatorialR = Radius [u| 6377397.155 m |]
         , recipF = 299.1528128
-
         }
 
 -- | The International ellipsoid 1924 also known as the Hayford ellipsoid from
@@ -165,7 +171,10 @@ polarRadius :: Fractional a => Ellipsoid a -> Quantity a [u| m |]
 polarRadius e@Ellipsoid{equatorialR = Radius (MkQuantity r)} =
     MkQuantity $ r * (1 - flattening e)
 
-newtype VincentyAccuracy a = VincentyAccuracy a
+newtype GeodeticAccuracy a = GeodeticAccuracy a
 
-defaultVincentyAccuracy :: VincentyAccuracy Rational
-defaultVincentyAccuracy = VincentyAccuracy $ 1 % 1000000000000
+defaultGeodeticAccuracy :: GeodeticAccuracy Rational
+defaultGeodeticAccuracy = GeodeticAccuracy $ 1 % 1000000000000
+
+tooFar :: Num a => QTaskDistance a [u| m |]
+tooFar = TaskDistance [u| 20000000 m |]
