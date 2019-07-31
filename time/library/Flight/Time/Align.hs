@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Time.Align
@@ -18,11 +19,17 @@ import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>))
 
 import Flight.Clip (FlyingSection, FlyCut(..))
+#if __EARTH_RAT__
+import Flight.LatLng.Rational (defEps)
+import qualified Flight.Span.Rational as Rat (fromR)
+#endif
 import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
     , allHeaders, commentOnFixRange
     )
-import Flight.Earth.Geodesy (EarthMath(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Earth.Sphere (earthRadius)
 import Flight.Comp
     ( AlignTimeDir(..)
     , CompInputFile(..)
@@ -40,7 +47,8 @@ import Flight.Comp
     , openClose
     )
 import Flight.Mask
-    ( FnIxTask, RaceSections(..), GroupLeg(..), Ticked
+    ( GeoDash(..)
+    , FnIxTask, RaceSections(..), GroupLeg(..), Ticked
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (Fix(..), ZoneTag(..), asIfFix)
@@ -54,8 +62,6 @@ import Flight.Lookup.Stop(ScoredLookup(..))
 import Flight.Lookup.Tag
     (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
 import Flight.Span.Math (Math(..))
-import qualified Flight.Span.Double as Dbl (fromZones, sliver)
-import qualified Flight.Span.Rational as Rat (fromZones, sliver, fromR)
 
 unTaskDistance :: QTaskDistance Double [u| m |] -> Double
 unTaskDistance (TaskDistance d) =
@@ -239,18 +245,18 @@ group
                 xs =
                     case math of
                         Floating ->
-                            groupByLeg
-                                (Dbl.sliver earthMath)
-                                (Dbl.fromZones earthMath)
+                            groupByLeg @Double @Double
+                                ( earthMath
+                                , let e = EarthAsEllipsoid wgs84 in case earthMath of
+                                      Pythagorus -> error "No Pythagorus"
+                                      Haversines -> EarthAsSphere earthRadius
+                                      Vincenty -> e
+                                      AndoyerLambert -> e
+                                      ForsytheAndoyerLambert -> e
+                                )
                                 task
                                 scoredMarkedFixes
-
-                        Rational ->
-                            groupByLeg
-                                (Rat.sliver earthMath)
-                                (Rat.fromZones earthMath)
-                                task
-                                scoredMarkedFixes
+                        Rational -> error "Grouping for rational math is not yet implemented."
 
                 yss = (fmap $ FlyCut scoredTimeRange) <$> xs
 
@@ -329,10 +335,16 @@ allLegDistances Floating earthMath ticked times task@Task{speedSection, zoneTime
     where
         xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
         xs' =
-            dashDistancesToGoal
+            dashDistancesToGoal @Double @Double
+                ( earthMath
+                , let e = EarthAsEllipsoid wgs84 in case earthMath of
+                      Pythagorus -> error "No Pythagorus"
+                      Haversines -> EarthAsSphere earthRadius
+                      Vincenty -> e
+                      AndoyerLambert -> e
+                      ForsytheAndoyerLambert -> e
+                )
                 ticked
-                (Dbl.sliver earthMath)
-                (Dbl.fromZones earthMath)
                 task
                 xs
 
@@ -342,6 +354,7 @@ allLegDistances Floating earthMath ticked times task@Task{speedSection, zoneTime
             (\OpenClose{open} -> firstStart speedSection open ts)
             =<< openClose speedSection zoneTimes
 
+#if __EARTH_RAT__
 allLegDistances Rational earthMath ticked times task@Task{speedSection, zoneTimes} leg xs =
     mkTimeRows lead start leg xs'
     where
@@ -349,9 +362,16 @@ allLegDistances Rational earthMath ticked times task@Task{speedSection, zoneTime
         xs' =
             (fmap . fmap . fmap . fmap) Rat.fromR $
             dashDistancesToGoal
+                ( earthMath
+                , let e = EarthAsEllipsoid wgs84 in case earthMath of
+                      Pythagorus -> error "No Pythagorus"
+                      Haversines -> EarthAsSphere earthRadius
+                      Vincenty -> e
+                      AndoyerLambert -> e
+                      ForsytheAndoyerLambert -> e
+                , defEps
+                )
                 ticked
-                (Rat.sliver earthMath)
-                (Rat.fromZones earthMath)
                 task
                 xs
 
@@ -360,6 +380,9 @@ allLegDistances Rational earthMath ticked times task@Task{speedSection, zoneTime
         start =
             (\OpenClose{open} -> firstStart speedSection open ts)
             =<< openClose speedSection zoneTimes
+#else
+allLegDistances Rational _ _ _ _ _ _ = error "Leg distances for rational math is not yet implemented."
+#endif
 
 legDistances
     :: Math

@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-binds #-}
-
 {-|
 Module      : Flight.Task
 Copyright   : (c) Block Scope Limited 2017
@@ -17,10 +15,8 @@ module Flight.Task
     , DistancePointToPoint
     , AngleCut(..)
     , Zs(..)
-    , distanceEdgeToEdge
     -- * Zones
     , fromZs
     ) where
 
-import Flight.EdgeToEdge
-import Flight.ShortestPath
+import Flight.ShortestPath.Cost

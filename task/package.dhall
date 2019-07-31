@@ -1,7 +1,8 @@
     let defs = ./../defaults.dhall
 
+in  let exts = ./../default-extensions.dhall
+
 in    defs
-    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-task"
       , synopsis =
@@ -14,6 +15,9 @@ in    defs
           "blockscope/flare-timing/task"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+      , default-extensions =
+            exts.default-extensions
+          # [ "AllowAmbiguousTypes", "InstanceSigs", "UndecidableSuperClasses" ]
       , dependencies =
             defs.dependencies
           # [ "numbers"
@@ -31,7 +35,15 @@ in    defs
             , "flight-zone"
             ]
       , library =
-          { source-dirs = "library", exposed-modules = "Flight.Task" }
+          { source-dirs =
+              "library"
+          , exposed-modules =
+              [ "Flight.ShortestPath"
+              , "Flight.ShortestPath.Double"
+              , "Flight.ShortestPath.Rational"
+              , "Flight.Task"
+              ]
+          }
       , tests =
             ./../default-tests.dhall
           ⫽ { task =

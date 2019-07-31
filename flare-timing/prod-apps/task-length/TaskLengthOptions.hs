@@ -46,11 +46,15 @@ import System.Console.CmdArgs.Implicit
     , name
     , opt
     , explicit
+    , enum
     , help
     , (&=)
     )
+import Flight.Geodesy (EarthMath(..))
 import Flight.Route (TaskDistanceMeasure(..))
 
+deriving instance Data EarthMath
+deriving instance Typeable EarthMath
 deriving instance Data TaskDistanceMeasure
 
 instance Default TaskDistanceMeasure where
@@ -68,6 +72,7 @@ data CmdOptions
                  -- ^ Use the given measure(s).
                  , noTaskWaypoints :: Bool
                  -- ^ Exclude task waypoints
+                 , earthMath :: EarthMath
                  }
                  deriving (Data, Typeable, Show)
 
@@ -101,6 +106,21 @@ mkOptions programName =
         &= help "Which way to measure task distances, taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges"
         &= typ "METHOD"
         &= groupname "Filter"
+
+        , earthMath =
+            enum
+                [ Pythagorus
+                &= help "Pythagorus method on a plane"
+                , Haversines
+                &= help "Haversines on a sphere"
+                , Vincenty
+                &= help "Vincenty method on an ellipsoid"
+                , AndoyerLambert
+                &= help "Andoyer-Lambert method on an ellipsoid"
+                , ForsytheAndoyerLambert
+                &= help "Forsythe-Andoyer-Lambert method on an ellipsoid"
+                ]
+        &= groupname "Earth math"
 
         , noTaskWaypoints = def
         &= help "Exclude the task waypoints?"

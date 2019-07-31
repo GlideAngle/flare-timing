@@ -63,18 +63,12 @@ distanceViaCenters span xs = distance span xs
 sum :: Num a => [Quantity a [u| m |]] -> Quantity a [u| m |]
 sum = foldr (+:) zero
 
-distance
-    :: Num a
-    => SpanLatLng a
-    -> [Zone a]
-    -> QTaskDistance a [u| m |]
+distance :: Num a => SpanLatLng a -> [Zone a] -> QTaskDistance a [u| m |]
 distance span xs =
     TaskDistance $ sum $ zipWith f ys (tail ys)
     where
         ys = center <$> xs
         unwrap (TaskDistance x) = x
 
-        f :: LatLng _ [u| rad |]
-          -> LatLng _ [u| rad |]
-          -> Quantity _ [u| m |]
+        f :: LatLng _ [u| rad |] -> LatLng _ [u| rad |] -> Quantity _ [u| m |]
         f = (unwrap .) . span

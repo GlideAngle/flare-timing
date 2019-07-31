@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bc46ecf0992c9ffc0573ecfc2b8362b0db2822cc6afbbc58cfe297828b399f91
+-- hash: b3ac5d38d8f38c6f54d0fcc94c308b3904a2beb2c5a8a206054669346896594e
 
 name:           flight-mask
 version:        0.1.0
@@ -34,25 +34,35 @@ library
   exposed-modules:
       Flight.Mask
       Flight.Comp.Distance
+      Flight.Comp.Distance.Double
       Flight.Span.Double
       Flight.Span.Rational
       Flight.Mask.Internal.Race
       Flight.Mask.Internal.Zone
       Flight.Mask.Tag
   other-modules:
+      Flight.Comp.Distance.Line
       Flight.Mask.Distance
+      Flight.Mask.Distance.Double
       Flight.Mask.Group
+      Flight.Mask.Group.Double
       Flight.Mask.Internal.Cross
       Flight.Mask.Internal.Dash
       Flight.Mask.Internal.Dot
       Flight.Mask.Interpolate
+      Flight.Mask.Interpolate.Double
+      Flight.Mask.Tag.Double
+      Flight.Mask.Tag.Motion
+      Flight.Mask.Tag.OrdLists
+      Flight.Mask.Tag.Prove
       Flight.Mask.Time
+      Flight.Mask.Time.Double
       Flight.Mask.Tracks
       Flight.Span.Sliver
       Paths_flight_mask
   hs-source-dirs:
       library
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       base >=4.10.1.0 && <5
@@ -94,17 +104,27 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Comp.Distance
+      Flight.Comp.Distance.Double
+      Flight.Comp.Distance.Line
       Flight.Mask
       Flight.Mask.Distance
+      Flight.Mask.Distance.Double
       Flight.Mask.Group
+      Flight.Mask.Group.Double
       Flight.Mask.Internal.Cross
       Flight.Mask.Internal.Dash
       Flight.Mask.Internal.Dot
       Flight.Mask.Internal.Race
       Flight.Mask.Internal.Zone
       Flight.Mask.Interpolate
+      Flight.Mask.Interpolate.Double
       Flight.Mask.Tag
+      Flight.Mask.Tag.Double
+      Flight.Mask.Tag.Motion
+      Flight.Mask.Tag.OrdLists
+      Flight.Mask.Tag.Prove
       Flight.Mask.Time
+      Flight.Mask.Time.Double
       Flight.Mask.Tracks
       Flight.Span.Double
       Flight.Span.Rational
@@ -113,7 +133,7 @@ test-suite doctest
   hs-source-dirs:
       library
       test-suite-doctest
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base >=4.10.1.0 && <5

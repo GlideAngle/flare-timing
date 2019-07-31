@@ -183,6 +183,7 @@ in    defs
                     deps
                   # [ "safe-exceptions"
                     , "time"
+                    , "flight-earth"
                     , "flight-mask"
                     , "flight-span"
                     , "flight-zone"
@@ -299,8 +300,8 @@ in    defs
                     , "statistics"
                     , "time"
                     , "vector"
-                    , "flight-earth"
                     , "flight-clip"
+                    , "flight-earth"
                     , "flight-gap"
                     , "flight-kml"
                     , "flight-lookup"

@@ -13,10 +13,10 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..), Extension(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 
-import Flight.Mask
-    ( TaskZone, Sliver(..), TagInterpolate(..)
-    , tagZones, zonesToTaskZones
-    )
+import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Mask (TaskZone, GeoTag(..), GeoSliver(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(..)
@@ -37,8 +37,6 @@ import Flight.Track.Tag
     )
 import Flight.Scribe (readComp, readCrossing, writeTagging)
 import TagZoneOptions (description)
-import qualified Flight.Span.Double as Dbl (sliver)
-import qualified Flight.Span.Rational as Rat (sliver)
 import Flight.Span.Math (Math(..))
 
 main :: IO ()
@@ -80,15 +78,14 @@ go math compFile@(CompInputFile compPath) = do
             (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
-    case (math, cs, cgs) of
-        (_, Nothing, _) ->
+    case (cs, cgs) of
+        (Nothing, _) ->
             putStrLn "Couldn't read the comp settings."
 
-        (_, _, Nothing) ->
+        (_, Nothing) ->
             putStrLn "Couldn't read the crossings."
 
-        (Floating, Just CompSettings{tasks, comp = Comp{earthMath}}, Just Crossing{crossing, flying}) -> do
-            let sliver@Sliver{az} = Dbl.sliver earthMath
+        (Just CompSettings{tasks, comp = Comp{earthMath}}, Just Crossing{crossing, flying}) -> do
             let pss :: [[PilotTrackTag]] =
                     [
                         (\case
@@ -96,38 +93,23 @@ go math compFile@(CompInputFile compPath) = do
                                 PilotTrackTag p Nothing
 
                             PilotTrackCross p (Just xs) ->
-                                PilotTrackTag p (Just $ flownTag sliver zs xs))
+                                PilotTrackTag p (Just $ flownTag math earthMath zs xs))
                         <$> cg
 
                     | Task{zones} <- tasks
-                    , let zs = zonesToTaskZones az zones
-                    | cg <- crossing
-                    ]
 
-            let times =
-                    [ timed ps fs
-                    | ps <- pss
-                    | fs <- fmap (endOfFlying . snd) <$> flying
-                    ]
+                    , let zs =
+                              fromZones @Double @Double
+                                  ( earthMath
+                                  , let e = EarthAsEllipsoid wgs84 in case earthMath of
+                                        Pythagorus -> error "No Pythagorus"
+                                        Haversines -> EarthAsSphere earthRadius
+                                        Vincenty -> e
+                                        AndoyerLambert -> e
+                                        ForsytheAndoyerLambert -> e
+                                  )
+                                  zones
 
-            let tagZone = Tagging{timing = times, tagging = pss}
-
-            writeTagging (crossToTag crossFile) tagZone
-
-        (Rational, Just CompSettings{tasks, comp = Comp{earthMath}}, Just Crossing{crossing, flying}) -> do
-            let sliver@Sliver{az} = Rat.sliver earthMath
-            let pss :: [[PilotTrackTag]] =
-                    [
-                        (\case
-                            PilotTrackCross p Nothing ->
-                                PilotTrackTag p Nothing
-
-                            PilotTrackCross p (Just xs) ->
-                                PilotTrackTag p (Just $ flownTag sliver zs xs))
-                        <$> cg
-
-                    | Task{zones} <- tasks
-                    , let zs = zonesToTaskZones az zones
                     | cg <- crossing
                     ]
 
@@ -142,13 +124,24 @@ go math compFile@(CompInputFile compPath) = do
             writeTagging (crossToTag crossFile) tagZone
 
 flownTag
-    :: (Real b, Fractional b, TagInterpolate a b)
-    => a
-    -> [TaskZone b]
+    :: Math
+    -> EarthMath
+    -> [TaskZone Double]
     -> TrackCross
     -> TrackTag
-flownTag tagInterp zs TrackCross{zonesCrossSelected} =
+flownTag Floating earthMath zs TrackCross{zonesCrossSelected} =
     TrackTag
-        { zonesTag = tagZones tagInterp zs zonesCrossSelected
+        { zonesTag =
+            tagZones @Double @Double
+                ( earthMath
+                , let e = EarthAsEllipsoid wgs84 in case earthMath of
+                      Pythagorus -> error "No Pythagorus"
+                      Haversines -> EarthAsSphere earthRadius
+                      Vincenty -> e
+                      AndoyerLambert -> e
+                      ForsytheAndoyerLambert -> e
+                )
+                zs
+                zonesCrossSelected
         }
-    where
+flownTag Rational _ _ _ = error "Flown tag not yet implemented for rational math."

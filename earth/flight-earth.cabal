@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d62e58ac10b8c44d7b21e1b71569e70fad6f0985fe553cc4489460e33ff888d7
+-- hash: 53a204f1905d874a2c4d6ae93ea553b836bc50d7af9337f6f5bf65b21fbbbc78
 
 name:           flight-earth
 version:        0.1.0
@@ -32,40 +32,47 @@ source-repository head
 
 library
   exposed-modules:
-      Flight.Earth.Flat.Projected.Double
-      Flight.Earth.Flat.Projected.Rational
-      Flight.Earth.Flat.Separated
-      Flight.Earth.Flat
-      Flight.Earth.Sphere.Cylinder.Double
-      Flight.Earth.Sphere.Cylinder.Rational
-      Flight.Earth.Sphere.PointToPoint.Double
-      Flight.Earth.Sphere.PointToPoint.Rational
-      Flight.Earth.Sphere.Separated
-      Flight.Earth.Sphere
-      Flight.Earth.Ellipsoid.Cylinder.Double
-      Flight.Earth.Ellipsoid.Cylinder.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Rational
-      Flight.Earth.Ellipsoid.Separated
       Flight.Earth.Ellipsoid
-      Flight.Earth.Geodesy
+      Flight.Earth.Flat
+      Flight.Earth.Flat.Double
+      Flight.Earth.Flat.Rational
+      Flight.Earth.Sphere
+      Flight.Geodesy
+      Flight.Geodesy.Solution
+      Flight.Geodesy.Double
+      Flight.Geodesy.Rational
   other-modules:
-      Flight.Earth.Ellipsoid.PointToPoint.Andoyer.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Andoyer.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Rational
-      Flight.Earth.Flat.Cylinder.Double
-      Flight.Earth.Flat.Cylinder.Rational
-      Flight.Earth.Flat.PointToPoint.Double
-      Flight.Earth.Flat.PointToPoint.Rational
-      Flight.Earth.Flat.Projected.Internal
       Flight.Earth.Math
       Flight.Earth.ZoneShape.Double
       Flight.Earth.ZoneShape.Rational
+      Flight.Geodesy.Math
+      Flight.Geodesy.Problem
+      Internal.Ellipsoid.Cylinder.Vincenty.Double
+      Internal.Ellipsoid.Cylinder.Vincenty.Rational
+      Internal.Ellipsoid.PointToPoint.Andoyer.Double
+      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
+      Internal.Ellipsoid.PointToPoint.Double
+      Internal.Ellipsoid.PointToPoint.Rational
+      Internal.Ellipsoid.PointToPoint.Vincenty.Double
+      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
+      Internal.Ellipsoid.Separated
+      Internal.Flat.Cylinder.Double
+      Internal.Flat.Cylinder.Rational
+      Internal.Flat.PointToPoint.Double
+      Internal.Flat.PointToPoint.Rational
+      Internal.Flat.Projected.Double
+      Internal.Flat.Projected.Internal
+      Internal.Flat.Projected.Rational
+      Internal.Flat.Separated
+      Internal.Sphere.Cylinder.Double
+      Internal.Sphere.Cylinder.Rational
+      Internal.Sphere.PointToPoint.Double
+      Internal.Sphere.PointToPoint.Rational
+      Internal.Sphere.Separated
       Paths_flight_earth
   hs-source-dirs:
       library
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -92,39 +99,46 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Earth.Ellipsoid
-      Flight.Earth.Ellipsoid.Cylinder.Double
-      Flight.Earth.Ellipsoid.Cylinder.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Andoyer.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Andoyer.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Rational
-      Flight.Earth.Ellipsoid.Separated
       Flight.Earth.Flat
-      Flight.Earth.Flat.Cylinder.Double
-      Flight.Earth.Flat.Cylinder.Rational
-      Flight.Earth.Flat.PointToPoint.Double
-      Flight.Earth.Flat.PointToPoint.Rational
-      Flight.Earth.Flat.Projected.Double
-      Flight.Earth.Flat.Projected.Internal
-      Flight.Earth.Flat.Projected.Rational
-      Flight.Earth.Flat.Separated
-      Flight.Earth.Geodesy
+      Flight.Earth.Flat.Double
+      Flight.Earth.Flat.Rational
       Flight.Earth.Math
       Flight.Earth.Sphere
-      Flight.Earth.Sphere.Cylinder.Double
-      Flight.Earth.Sphere.Cylinder.Rational
-      Flight.Earth.Sphere.PointToPoint.Double
-      Flight.Earth.Sphere.PointToPoint.Rational
-      Flight.Earth.Sphere.Separated
       Flight.Earth.ZoneShape.Double
       Flight.Earth.ZoneShape.Rational
+      Flight.Geodesy
+      Flight.Geodesy.Double
+      Flight.Geodesy.Math
+      Flight.Geodesy.Problem
+      Flight.Geodesy.Rational
+      Flight.Geodesy.Solution
+      Internal.Ellipsoid.Cylinder.Vincenty.Double
+      Internal.Ellipsoid.Cylinder.Vincenty.Rational
+      Internal.Ellipsoid.PointToPoint.Andoyer.Double
+      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
+      Internal.Ellipsoid.PointToPoint.Double
+      Internal.Ellipsoid.PointToPoint.Rational
+      Internal.Ellipsoid.PointToPoint.Vincenty.Double
+      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
+      Internal.Ellipsoid.Separated
+      Internal.Flat.Cylinder.Double
+      Internal.Flat.Cylinder.Rational
+      Internal.Flat.PointToPoint.Double
+      Internal.Flat.PointToPoint.Rational
+      Internal.Flat.Projected.Double
+      Internal.Flat.Projected.Internal
+      Internal.Flat.Projected.Rational
+      Internal.Flat.Separated
+      Internal.Sphere.Cylinder.Double
+      Internal.Sphere.Cylinder.Rational
+      Internal.Sphere.PointToPoint.Double
+      Internal.Sphere.PointToPoint.Rational
+      Internal.Sphere.Separated
       Paths_flight_earth
   hs-source-dirs:
       library
       test-suite-doctest
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -152,34 +166,41 @@ test-suite earth
   main-is: Earth.hs
   other-modules:
       Flight.Earth.Ellipsoid
-      Flight.Earth.Ellipsoid.Cylinder.Double
-      Flight.Earth.Ellipsoid.Cylinder.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Andoyer.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Andoyer.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Vincenty.Rational
-      Flight.Earth.Ellipsoid.Separated
       Flight.Earth.Flat
-      Flight.Earth.Flat.Cylinder.Double
-      Flight.Earth.Flat.Cylinder.Rational
-      Flight.Earth.Flat.PointToPoint.Double
-      Flight.Earth.Flat.PointToPoint.Rational
-      Flight.Earth.Flat.Projected.Double
-      Flight.Earth.Flat.Projected.Internal
-      Flight.Earth.Flat.Projected.Rational
-      Flight.Earth.Flat.Separated
-      Flight.Earth.Geodesy
+      Flight.Earth.Flat.Double
+      Flight.Earth.Flat.Rational
       Flight.Earth.Math
       Flight.Earth.Sphere
-      Flight.Earth.Sphere.Cylinder.Double
-      Flight.Earth.Sphere.Cylinder.Rational
-      Flight.Earth.Sphere.PointToPoint.Double
-      Flight.Earth.Sphere.PointToPoint.Rational
-      Flight.Earth.Sphere.Separated
       Flight.Earth.ZoneShape.Double
       Flight.Earth.ZoneShape.Rational
+      Flight.Geodesy
+      Flight.Geodesy.Double
+      Flight.Geodesy.Math
+      Flight.Geodesy.Problem
+      Flight.Geodesy.Rational
+      Flight.Geodesy.Solution
+      Internal.Ellipsoid.Cylinder.Vincenty.Double
+      Internal.Ellipsoid.Cylinder.Vincenty.Rational
+      Internal.Ellipsoid.PointToPoint.Andoyer.Double
+      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
+      Internal.Ellipsoid.PointToPoint.Double
+      Internal.Ellipsoid.PointToPoint.Rational
+      Internal.Ellipsoid.PointToPoint.Vincenty.Double
+      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
+      Internal.Ellipsoid.Separated
+      Internal.Flat.Cylinder.Double
+      Internal.Flat.Cylinder.Rational
+      Internal.Flat.PointToPoint.Double
+      Internal.Flat.PointToPoint.Rational
+      Internal.Flat.Projected.Double
+      Internal.Flat.Projected.Internal
+      Internal.Flat.Projected.Rational
+      Internal.Flat.Separated
+      Internal.Sphere.Cylinder.Double
+      Internal.Sphere.Cylinder.Rational
+      Internal.Sphere.PointToPoint.Double
+      Internal.Sphere.PointToPoint.Rational
+      Internal.Sphere.Separated
       Distance
       Ellipsoid.Coincident
       Ellipsoid.Cylinder.Inner
@@ -230,7 +251,7 @@ test-suite earth
   hs-source-dirs:
       library
       test-suite-earth
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

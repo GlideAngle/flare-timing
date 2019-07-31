@@ -9,21 +9,17 @@ import Data.UnitsOfMeasure ((/:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng (AzimuthFwd, LatLng(..))
+import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
-import Flight.Zone.Cylinder (CircumSample)
-import Flight.Earth.Geodesy (EarthMath(..))
+import Flight.Earth.Sphere (earthRadius)
 import Flight.Earth.Flat (zoneToProjectedEastNorth)
-import Flight.Earth.Flat.Projected.Double (costEastNorth)
-import Flight.Earth.Sphere.Cylinder.Double (circumSample)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as S
-    (azimuthFwd)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as E
-    (azimuthFwd, distance)
-import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine)
+import Flight.Earth.Flat.Double (costEastNorth)
+import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(UTM))
+import Flight.Geodesy.Solution as E (GeodesySolutions(..), GeoZones(..))
+import qualified Flight.Geodesy.Double as E ()
 import Flight.Route
     ( TaskDistanceMeasure(..)
     , OptimalRoute(..)
@@ -38,7 +34,9 @@ import Flight.TaskTrack.Internal
     , convertLatLng
     , toPoint
     )
-import Flight.Task (Zs(..), CostSegment, AngleCut(..) , fromZs, distanceEdgeToEdge)
+import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs)
+import Flight.ShortestPath (GeoPath(..))
+import Flight.ShortestPath.Double ()
 import Flight.Route.TrackLine
     ( ToTrackLine(..), GeoLines(..)
     , TrackLine(..), ProjectedTrackLine(..), PlanarTrackLine(..)
@@ -277,36 +275,33 @@ distanceEdgeSphere
     -> [Zone Double]
     -> Zs (PathDistance Double)
 distanceEdgeSphere segCost =
-    distanceEdgeToEdge azimuthS spanS distancePointToPoint segCost cs cut mm30
+    shortestPath @Double @Double e segCost cs cut mm30
+    where
+        e = (Haversines, EarthAsSphere earthRadius)
+        cs = circumSample @Double @Double e
 
 distanceEdgeEllipsoid
     :: CostSegment Double
     -> [Zone Double]
     -> Zs (PathDistance Double)
 distanceEdgeEllipsoid segCost =
-    distanceEdgeToEdge azimuthE spanE distancePointToPoint segCost cs cut mm30
-
-cs :: CircumSample Double
-cs = circumSample
-
-azimuthS :: AzimuthFwd Double
-azimuthS = S.azimuthFwd
-
-azimuthE :: AzimuthFwd Double
-azimuthE = E.azimuthFwd Vincenty wgs84
+    shortestPath @Double @Double e segCost cs cut mm30
+    where
+        e = (Vincenty, EarthAsEllipsoid wgs84)
+        cs = circumSample @Double @Double e
 
 -- | Span on a flat projected plane.
 spanF :: SpanLatLng Double
-spanF = distanceHaversine
+spanF = E.arcLength @Double @Double (Pythagorus, EarthAsFlat UTM)
 
 -- | Span on a sphere using haversines.
 spanS :: SpanLatLng Double
-spanS = distanceHaversine
+spanS = E.arcLength @Double @Double (Haversines, EarthAsSphere earthRadius)
 
 -- | Span on the WGS 84 ellipsoid using Vincenty's solution to the inverse
 -- problem.
 spanE :: SpanLatLng Double
-spanE = E.distance Vincenty wgs84
+spanE = E.arcLength @Double @Double (Vincenty, EarthAsEllipsoid wgs84)
 
 cut :: AngleCut Double
 cut =

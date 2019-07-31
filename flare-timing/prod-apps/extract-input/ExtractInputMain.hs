@@ -22,7 +22,7 @@ import Flight.Fsdb
     , parseTaskFolders
     , parseTracks
     )
-import Flight.Earth.Geodesy (EarthMath(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..))
 import Flight.Comp
     ( FileType(Fsdb)
     , TrimFsdbFile(..)
@@ -41,30 +41,34 @@ import Flight.Comp
     , ensureExt
     )
 import qualified Flight.Comp as C (Comp(earth, earthMath))
-import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..), Radius(..), center)
 import qualified Flight.Zone.Raw as Raw (RawZone(..), Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Score (ScoreBackTime(..), PointPenalty)
 import Flight.Scribe (writeComp)
+import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy.Solution (GeoZones(..))
 import Flight.Mask (zoneToCylinder)
 import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
 
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
-    (azimuthFwd, distanceHaversine)
-import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
+sepZs :: EarthMath -> [Zone Double] -> Bool
+sepZs earthMath =
+    separatedZones @Double @Double
+        ( earthMath
+        , let e = EarthAsEllipsoid wgs84 in case earthMath of
+              Pythagorus -> error "No Pythagorus"
+              Haversines -> EarthAsSphere earthRadius
+              Vincenty -> e
+              AndoyerLambert -> e
+              ForsytheAndoyerLambert -> e
+        )
 
-spanD :: SpanLatLng Double
-spanD = Dbl.distanceHaversine
-
-sepD :: [Zone Double] -> Bool
-sepD = S.separatedZones Dbl.azimuthFwd spanD
-
-separated :: Raw.RawZone -> Raw.RawZone -> Bool
-separated x y =
+separated :: EarthMath -> Raw.RawZone -> Raw.RawZone -> Bool
+separated em x y =
     let x' = zoneToCylinder x
         y' = zoneToCylinder y
-    in sepD [x', y'] && sepD [Point $ center x', y']
+    in sepZs em [x', y'] && sepZs em [Point $ center x', y']
 
 main :: IO ()
 main = do
@@ -86,7 +90,7 @@ drive
     o@CmdOptions
         { giveFraction = Just gf
         , giveDistance = gd
-        , earthMath = dm
+        , earthMath
         }
     = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
@@ -95,7 +99,7 @@ drive
 
     putStrLn $ "Using a give fraction of " ++ printf "%.5f" gf
     case gd of
-        Nothing -> 
+        Nothing ->
             putStrLn "The give distance was not supplied"
         Just gd' ->
             putStrLn $ "Using a give distance of " ++ printf "%.3f" gd' ++ " m"
@@ -107,15 +111,15 @@ drive
                 }
 
     if null files then putStrLn "Couldn't find any input files."
-                  else mapM_ (go dm give) files
+                  else mapM_ (go earthMath give) files
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
 
 go :: EarthMath -> Raw.Give -> TrimFsdbFile -> IO ()
-go dm zg fsdbFile@(TrimFsdbFile fsdbPath) = do
+go earthMath zg fsdbFile@(TrimFsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
-    settings <- runExceptT $ fsdbSettings dm zg (FsdbXml contents')
+    settings <- runExceptT $ fsdbSettings earthMath zg (FsdbXml contents')
     either print (writeComp (trimFsdbToComp fsdbFile)) settings
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
@@ -202,7 +206,7 @@ fsdbSettings
     -> Raw.Give
     -> FsdbXml
     -> ExceptT String IO (CompSettings k)
-fsdbSettings dm zg fsdbXml = do
+fsdbSettings earthMath zg fsdbXml = do
     c@Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
     tw <- Just <$> fsdbTweak hgOrPg fsdbXml
@@ -215,7 +219,7 @@ fsdbSettings dm zg fsdbXml = do
 
     let ts' =
             [ t
-                { zones = z{raw = Raw.zoneGive separated zg rz}
+                { zones = z{raw = Raw.zoneGive (separated earthMath) zg rz}
                 , penals = pn
                 }
             | t@Task{zones = z@Zones{raw = rz}} <- ts
@@ -236,8 +240,8 @@ fsdbSettings dm zg fsdbXml = do
                 c
                     { scoreBack = sb
                     , give = Just zg
-                    , C.earth = mkEarthModel dm
-                    , C.earthMath = dm
+                    , C.earth = mkEarthModel earthMath
+                    , C.earthMath = earthMath
 
                     }
             , nominal = n

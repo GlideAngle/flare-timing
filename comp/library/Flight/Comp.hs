@@ -94,7 +94,7 @@ import Flight.Score
     , AwScaling(..)
     , PointPenalty(..)
     )
-import Flight.Earth.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -239,7 +239,7 @@ data Comp =
         , utcOffset :: UtcOffset
         , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
         , give :: Maybe Give
-        , earth :: EarthModel
+        , earth :: EarthModel Double
         , earthMath :: EarthMath
         }
     deriving (Eq, Ord, Show, Generic)

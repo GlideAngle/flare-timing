@@ -1,7 +1,8 @@
     let defs = ./../defaults.dhall
 
+in  let exts = ./../default-extensions.dhall
+
 in    defs
-    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-mask"
       , synopsis =
@@ -14,6 +15,9 @@ in    defs
           "blockscope/flare-timing/mask"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+      , default-extensions =
+            exts.default-extensions
+          # [ "AllowAmbiguousTypes", "InstanceSigs", "UndecidableSuperClasses" ]
       , dependencies =
             defs.dependencies
           # [ "bytestring"
@@ -54,6 +58,7 @@ in    defs
           , exposed-modules =
               [ "Flight.Mask"
               , "Flight.Comp.Distance"
+              , "Flight.Comp.Distance.Double"
               , "Flight.Span.Double"
               , "Flight.Span.Rational"
               , "Flight.Mask.Internal.Race"

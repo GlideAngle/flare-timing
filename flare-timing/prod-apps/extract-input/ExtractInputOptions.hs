@@ -23,7 +23,7 @@ import System.Console.CmdArgs.Implicit
     , enum
     )
 
-import Flight.Earth.Geodesy (Projection(..), EarthMath(..), EarthModel(..))
+import Flight.Geodesy (Projection(..), EarthMath(..), EarthModel(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 
@@ -98,7 +98,7 @@ mkOptions programName =
         &= summary description
         &= program programName
 
-mkEarthModel :: EarthMath -> EarthModel
+mkEarthModel :: EarthMath -> EarthModel Double
 mkEarthModel Pythagorus = EarthAsFlat UTM
 mkEarthModel Haversines = EarthAsSphere earthRadius
 mkEarthModel Vincenty = EarthAsEllipsoid wgs84

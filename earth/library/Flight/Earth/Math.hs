@@ -1,6 +1,7 @@
 module Flight.Earth.Math
     ( mod'
     , atan2'
+    , cos2
     , normalizeLng
     , normalizeLngR
     ) where
@@ -49,3 +50,10 @@ atan2' e@(Epsilon eps) y x
     where
         atan' = F.atan eps
         pi' = F.pi eps
+
+cos2 :: (Num a, Num p) => (p -> a) -> p -> p -> (a, a)
+cos2 cos' σ1 σ = (cos2σm, cos²2σm)
+    where
+        _2σm = 2 * σ1 + σ
+        cos2σm = cos' _2σm
+        cos²2σm = cos2σm * cos2σm

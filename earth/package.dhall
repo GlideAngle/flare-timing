@@ -1,7 +1,8 @@
     let defs = ./../defaults.dhall
 
+in  let exts = ./../default-extensions.dhall
+
 in    defs
-    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-earth"
       , synopsis =
@@ -14,6 +15,9 @@ in    defs
           "blockscope/flare-timing/earth"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+      , default-extensions =
+            exts.default-extensions
+          # [ "AllowAmbiguousTypes", "InstanceSigs", "UndecidableSuperClasses" ]
       , dependencies =
             defs.dependencies
           # [ "aeson"
@@ -38,23 +42,15 @@ in    defs
           { source-dirs =
               "library"
           , exposed-modules =
-              [ "Flight.Earth.Flat.Projected.Double"
-              , "Flight.Earth.Flat.Projected.Rational"
-              , "Flight.Earth.Flat.Separated"
+              [ "Flight.Earth.Ellipsoid"
               , "Flight.Earth.Flat"
-              , "Flight.Earth.Sphere.Cylinder.Double"
-              , "Flight.Earth.Sphere.Cylinder.Rational"
-              , "Flight.Earth.Sphere.PointToPoint.Double"
-              , "Flight.Earth.Sphere.PointToPoint.Rational"
-              , "Flight.Earth.Sphere.Separated"
+              , "Flight.Earth.Flat.Double"
+              , "Flight.Earth.Flat.Rational"
               , "Flight.Earth.Sphere"
-              , "Flight.Earth.Ellipsoid.Cylinder.Double"
-              , "Flight.Earth.Ellipsoid.Cylinder.Rational"
-              , "Flight.Earth.Ellipsoid.PointToPoint.Double"
-              , "Flight.Earth.Ellipsoid.PointToPoint.Rational"
-              , "Flight.Earth.Ellipsoid.Separated"
-              , "Flight.Earth.Ellipsoid"
-              , "Flight.Earth.Geodesy"
+              , "Flight.Geodesy"
+              , "Flight.Geodesy.Solution"
+              , "Flight.Geodesy.Double"
+              , "Flight.Geodesy.Rational"
               ]
           }
       , tests =

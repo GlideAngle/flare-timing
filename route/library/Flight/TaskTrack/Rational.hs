@@ -11,23 +11,20 @@ import Data.UnitsOfMeasure ((/:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng (AzimuthFwd, LatLng(..))
+import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center, toCylinder)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
-import Flight.Zone.Cylinder (CircumSample)
-import Flight.Earth.Geodesy (EarthMath(..))
+import Flight.Geodesy (EarthMath(..))
+import Flight.Earth.Sphere (earthRadius)
 import Flight.Earth.Flat (zoneToProjectedEastNorth)
-import Flight.Earth.Flat.Projected.Rational (costEastNorth)
-import Flight.Earth.Sphere.Cylinder.Rational (circumSample)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as S
-    (azimuthFwd)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as E
-    (azimuthFwd, distance)
-import Flight.Earth.Sphere.PointToPoint.Rational (distanceHaversine)
+import Flight.Earth.Flat.Rational (costEastNorth)
+import Flight.Geodesy (EarthModel(..), Projection(UTM))
+import Flight.Geodesy.Solution as E (GeodesySolutions(..), GeoZones(..))
+import qualified Flight.Geodesy.Rational as E ()
 import Flight.Route
     ( TaskDistanceMeasure(..)
     , OptimalRoute(..)
@@ -43,7 +40,9 @@ import Flight.TaskTrack.Internal
     , toPoint
     , fromR
     )
-import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs, distanceEdgeToEdge)
+import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs)
+import Flight.ShortestPath (GeoPath(..))
+import Flight.ShortestPath.Rational()
 import Flight.Route.TrackLine
     ( ToTrackLine(..), GeoLines(..)
     , TrackLine(..), ProjectedTrackLine(..), PlanarTrackLine(..)
@@ -286,39 +285,33 @@ distanceEdgeSphere
     -> [Zone Rational]
     -> Zs (PathDistance Rational)
 distanceEdgeSphere segCost =
-    distanceEdgeToEdge azimuthS spanS distancePointToPoint segCost cs cut mm30
+    shortestPath @Rational @Rational e segCost cs cut mm30
+    where
+        e = (Haversines, EarthAsSphere earthRadius, defEps)
+        cs = circumSample @Rational @Rational e
 
 distanceEdgeEllipsoid
     :: CostSegment Rational
     -> [Zone Rational]
     -> Zs (PathDistance Rational)
 distanceEdgeEllipsoid segCost =
-    distanceEdgeToEdge azimuthE spanE distancePointToPoint segCost cs cut mm30
-
-cs :: CircumSample Rational
-cs = circumSample
-
-azimuthS :: AzimuthFwd Rational
-azimuthS = S.azimuthFwd defEps
-
-azimuthE :: AzimuthFwd Rational
-azimuthE = E.azimuthFwd Vincenty defEps wgs84
+    shortestPath @Rational @Rational e segCost cs cut mm30
+    where
+        e = (Vincenty, EarthAsEllipsoid wgs84, defEps)
+        cs = circumSample @_ @Rational e
 
 -- | Span on a flat projected plane.
 spanF :: SpanLatLng Rational
-spanF = distanceHaversine defEps
+spanF = E.arcLength @Rational @Rational (Pythagorus, EarthAsFlat UTM, defEps)
 
 -- | Span on a sphere using haversines.
 spanS :: SpanLatLng Rational
-spanS = distanceHaversine defEps
+spanS = E.arcLength @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
 
 -- | Span on the WGS 84 ellipsoid using Vincenty's solution to the inverse
 -- problem.
 spanE :: SpanLatLng Rational
-spanE =
-    E.distance Vincenty e wgs84
-    where
-        e = Epsilon $ 1 % 1000000000000000000
+spanE = E.arcLength @Rational @Rational (Vincenty, EarthAsEllipsoid wgs84, Epsilon $ 1 % 1000000000000000000)
 
 cut :: AngleCut Rational
 cut =

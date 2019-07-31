@@ -20,7 +20,10 @@ import Flight.TaskTrack.Double (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
 import Flight.Zone.MkZones (unkindZones)
 import Flight.Zone (unlineZones)
-import Flight.Earth.Sphere.PointToPoint.Double (azimuthFwd)
+import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Geodesy.Solution (GeodesySolutions(..))
 import TaskLengthOptions (CmdOptions(..), mkOptions)
 
 main :: IO ()
@@ -52,7 +55,19 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     where
         f compInput = do
             let ixs = speedSection <$> tasks compInput
-            let zss = unlineZones azimuthFwd . unkindZones . zones <$> tasks compInput
+
+            let az =
+                    azimuthFwd @Double @Double
+                        ( earthMath
+                        , let e = EarthAsEllipsoid wgs84 in case earthMath of
+                              Pythagorus -> error "No Pythagorus"
+                              Haversines -> EarthAsSphere earthRadius
+                              Vincenty -> e
+                              AndoyerLambert -> e
+                              ForsytheAndoyerLambert -> e
+                        )
+
+            let zss = unlineZones az . unkindZones . zones <$> tasks compInput
             let includeTask = if null task then const True else flip elem task
 
             writeRoute

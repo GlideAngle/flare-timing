@@ -12,8 +12,10 @@ import Control.Monad.Except (MonadIO)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy (EarthMath(..), EarthModel(..))
 import Flight.Clip (FlyCut(..), FlyClipping(..))
-import Flight.Earth.Geodesy (EarthMath(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( CompInputFile(..)
@@ -36,12 +38,7 @@ import Flight.Comp
     , compToBonusReach
     )
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
-import Flight.Mask
-    ( FnIxTask
-    , checkTracks
-    , togoAtLanding
-    , madeAtLanding
-    )
+import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
@@ -303,7 +300,8 @@ flown'
     -> EarthMath
     -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
-flown' dTaskF flying math earthMath tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
+flown' _ _ Rational _ _ _ _ _ _ = error "Nigh for rationals not yet implemented."
+flown' dTaskF flying Floating earthMath tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of
         Nothing -> nullStats
 
@@ -348,10 +346,32 @@ flown' dTaskF flying math earthMath tags tasks iTask@(IxTask i) mf@MarkedFixes{m
                 }
 
         landDistance task =
-            TrackDistance
-                { togo = togoAtLanding math earthMath ticked task xs
-                , made = madeAtLanding math earthMath dTaskF ticked task xs
-                }
+            let earth =
+                    ( earthMath
+                    , let e = EarthAsEllipsoid wgs84 in case earthMath of
+                          Pythagorus -> error "No Pythagorus"
+                          Haversines -> EarthAsSphere earthRadius
+                          Vincenty -> e
+                          AndoyerLambert -> e
+                          ForsytheAndoyerLambert -> e
+                    )
+            in
+                TrackDistance
+                    { togo =
+                        togoAtLanding @Double @Double
+                            earth
+                            ticked
+                            task
+                            xs
+
+                    , made =
+                        madeAtLanding @Double @Double
+                            earth
+                            dTaskF
+                            ticked
+                            task
+                            xs
+                    }
 
         startGates' =
             case tasks ^? element (fromIntegral i - 1) of

@@ -13,10 +13,13 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList, maximum)
 
-import Flight.Earth.Geodesy (EarthMath)
+import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy (EarthMath(..), EarthModel(..))
 import Flight.Comp (Pilot(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
-import Flight.Comp.Distance (compNighTime)
+import Flight.Comp.Distance (GeoNigh(..))
+import Flight.Comp.Distance.Double ()
 import qualified Flight.Track.Time as Time (TimeRow(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
 import Flight.Track.Mask (MaskingReach(..))
@@ -26,7 +29,7 @@ import Flight.Score
     , linearFraction
     )
 import Stats (DashPathInputs(..))
-import Flight.Span.Math (Math)
+import Flight.Span.Math (Math(..))
 
 maskReachTime
     :: Math
@@ -39,8 +42,9 @@ maskReachTime
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[Pilot]]
     -> MaskingReach
+maskReachTime Rational _ _ _ _ _ _ _ _ = error "Reach time not yet implemented for rational numbers."
 maskReachTime
-    math
+    Floating
     earthMath
     (MinimumDistance dMin)
     dfNtNigh
@@ -57,7 +61,18 @@ maskReachTime
         }
     where
         dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
-            compNighTime math earthMath lsWholeTask zsTaskTicked dsNighRows
+            compNighTime @Double @Double
+                ( earthMath
+                , let e = EarthAsEllipsoid wgs84 in case earthMath of
+                      Pythagorus -> error "No Pythagorus"
+                      Haversines -> EarthAsSphere earthRadius
+                      Vincenty -> e
+                      AndoyerLambert -> e
+                      ForsytheAndoyerLambert -> e
+                )
+                lsWholeTask
+                zsTaskTicked
+                dsNighRows
 
         trackedNigh :: [[(Pilot, TrackReach)]] =
             [

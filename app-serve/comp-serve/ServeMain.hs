@@ -79,7 +79,7 @@ import Flight.Scribe
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
-import Flight.Earth.Geodesy (EarthModel(..), EarthMath(..))
+import Flight.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(..)
@@ -825,7 +825,7 @@ getTaskRouteLengths = do
         _ -> throwError errTaskLengths
 
 getRouteLength
-    :: EarthModel
+    :: EarthModel Double
     -> EarthMath
     -> TaskTrack
     -> Maybe (QTaskDistance Double [u| m |])

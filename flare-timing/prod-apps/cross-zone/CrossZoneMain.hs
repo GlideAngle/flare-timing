@@ -25,7 +25,6 @@ import Flight.Comp
     , TrackFileFail(..)
     , IxTask(..)
     , Task(..)
-    , Zones
     , Comp(..)
     , compToCross
     , findCompInput
@@ -40,20 +39,9 @@ import Flight.Track.Cross
     , Crossing(..)
     , trackLogErrors
     )
-import Flight.LatLng.Rational (defEps)
-import Flight.Earth.Geodesy (EarthModel(..), EarthMath(..))
-import Flight.Earth.Ellipsoid (wgs84)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as RatS
-    (azimuthFwd, distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as DblS
-    (azimuthFwd, distanceHaversine)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as RatE
-    (azimuthFwd, distance)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as DblE
-    (azimuthFwd, distance)
+import Flight.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Mask
-    ( TaskZone
-    , FnIxTask
+    ( FnIxTask
     , FnTask
     , MadeZones(..)
     , SelectedCrossings(..)
@@ -63,7 +51,6 @@ import Flight.Mask
     , unNomineeCrossings
     , checkTracks
     , madeZones
-    , zonesToTaskZones
     , nullFlying
     )
 import Flight.Scribe (readComp, writeCrossing)
@@ -213,38 +200,12 @@ flown c math tasks (IxTask i) fs =
 
 flownTask :: Comp -> Math -> FnTask k MadeZones
 flownTask Comp{earth, earthMath} math =
-    case (earth, earthMath, math) of
-        (EarthAsSphere{}, Haversines, Rational) -> ratSphere
-        (EarthAsEllipsoid{}, Vincenty, Rational) -> ratEllipsoid
-        (_, _, Rational) -> ratSphere
-        (EarthAsSphere{}, Haversines, Floating) -> dblSphere
-        (EarthAsEllipsoid{}, Vincenty, Floating) -> dblEllipsoid
-        (_, _, Floating) -> dblSphere
-    where
-        ratSphere =
-            let az = RatS.azimuthFwd defEps in
-            madeZones
-                az
-                (RatS.distanceHaversine defEps)
-                (zonesToTaskZones az :: Zones -> [TaskZone Rational])
-
-        ratEllipsoid =
-            let az = RatE.azimuthFwd earthMath defEps wgs84 in
-            madeZones
-                az
-                (RatE.distance earthMath defEps wgs84)
-                (zonesToTaskZones az :: Zones -> [TaskZone Rational])
-
-        dblSphere =
-            let az = DblS.azimuthFwd in
-            madeZones
-                az
-                DblS.distanceHaversine
-                (zonesToTaskZones az :: Zones -> [TaskZone Double])
-
-        dblEllipsoid =
-            let az = DblE.azimuthFwd earthMath wgs84 in
-            madeZones
-                az
-                (DblE.distance earthMath wgs84)
-                (zonesToTaskZones az :: Zones -> [TaskZone Double])
+    case ((earthMath, earth), math) of
+        (e@(Haversines, EarthAsSphere{}), Floating) ->
+            madeZones @Double @Double e
+        (e@(Vincenty, EarthAsEllipsoid{}), Floating) ->
+            madeZones @Double @Double e
+        -- TODO: Implement rational instances of GeoTag typeclass.
+        -- No instance for (Flight.Mask.Tag.GeoTag Rational Rational)
+        -- arising from a use of ‘madeZones’
+        _ -> error "Combination of Earth model and math not yet implemented."
