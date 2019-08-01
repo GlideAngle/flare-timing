@@ -458,7 +458,7 @@ xpStopValidityWorking =
         )
     $ xp6Tuple
         (xpAttr "no_of_pilots_reaching_es" xpInt)
-        (xpAttr "no_of_pilots_landed_before_stop" xpInt)
+        (xpDefault 0 $ xpAttr "no_of_pilots_landed_before_stop" xpInt)
         (xpAttr "no_of_pilots_flying" xpInt)
         (xpAttr "best_dist" xpPrim)
         (xpAttr "best_real_dist" xpPrim)
