@@ -46,6 +46,7 @@ cleanComp (FsdbXml contents) = do
         >>> (processChildren . seqA $
                 [ fsCompetitionNotes
                 , fsParticipant
+                , fsCustomAttributes
                 , fsTimeStamp
                 ])
         >>> writeDocumentToString
@@ -65,6 +66,11 @@ fsCompetitionNotes :: ArrowXml a => a XmlTree XmlTree
 fsCompetitionNotes =
     processTopDown
         $ none `when` (isElem >>> hasName "FsCompetitionNotes")
+
+fsCustomAttributes :: ArrowXml a => a XmlTree XmlTree
+fsCustomAttributes =
+    processTopDown
+        $ none `when` (isElem >>> hasName "FsCustomAttributes")
 
 fsParticipant :: ArrowXml a => a XmlTree XmlTree
 fsParticipant =

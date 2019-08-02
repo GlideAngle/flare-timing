@@ -52,6 +52,7 @@ trimComp (FsdbXml contents) = do
                 , fsCompetitionNotes
                 , fsScoreFormula
                 , fsParticipant
+                , fsCustomAttributes
                 , fsFlightData
                 , fsResult
                 , fsTaskScoreParams
@@ -82,6 +83,11 @@ fsCompetitionNotes :: ArrowXml a => a XmlTree XmlTree
 fsCompetitionNotes =
     processTopDown
         $ none `when` (isElem >>> hasName "FsCompetitionNotes")
+
+fsCustomAttributes :: ArrowXml a => a XmlTree XmlTree
+fsCustomAttributes =
+    processTopDown
+        $ none `when` (isElem >>> hasName "FsCustomAttributes")
 
 -- <FsCompetition
 --     id="0"
@@ -164,6 +170,13 @@ fsScoreFormula =
 --     sponsor="The Oz Report"
 --     fai_licence="1"
 --     CIVLID="XXXX" />
+--
+-- <FsParticipant ...>
+--    <FsCustomAttributes>
+--      <FsCustomAttribute name="Grade" value="88"/>
+--      <FsCustomAttribute name="Team" value="Team Hangar Door"/>
+--    </FsCustomAttributes>
+--  </FsParticipant>
 fsParticipant :: ArrowXml a => a XmlTree XmlTree
 fsParticipant =
     processTopDown
