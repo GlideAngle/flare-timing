@@ -145,6 +145,10 @@ fsScoreFormula =
                     , "nom_launch"
                     , "nom_goal"
                     , "score_back_time"
+
+                    , "use_leading_points"
+                    , "double_leading_weight"
+                    , "use_arrival_position_points"
                     ])
                 . localPart)
 
