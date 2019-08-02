@@ -3,7 +3,6 @@ module Flight.Fsdb.Trim (trimComp) where
 import Data.Maybe (listToMaybe)
 import Text.XML.HXT.Core
     ( (>>>)
-    , (<+>)
     , XmlTree
     , ArrowXml
     , runX
@@ -20,7 +19,6 @@ import Text.XML.HXT.Core
     , localPart
     , hasName
     , hasNameWith
-    , none
     , processAttrl
     , isElem
     , when
@@ -29,6 +27,7 @@ import Text.XML.HXT.Core
     )
 
 import Flight.Comp (FsdbXml(..))
+import Flight.Fsdb.Internal.Xml (fsCompetitionNotes, fsCustomAttributes, fsParticipant)
 
 -- | Trims the XML of the *.fsdb leaving only inputs to scoring by flare-timing
 -- or outputs from the scoring made by FS that flare-timing can compare with.
@@ -78,16 +77,6 @@ fs =
         $ (flip when)
             (isElem >>> hasName "Fs")
             (processAttrl . filterA $ hasName "version")
-
-fsCompetitionNotes :: ArrowXml a => a XmlTree XmlTree
-fsCompetitionNotes =
-    processTopDown
-        $ none `when` (isElem >>> hasName "FsCompetitionNotes")
-
-fsCustomAttributes :: ArrowXml a => a XmlTree XmlTree
-fsCustomAttributes =
-    processTopDown
-        $ none `when` (isElem >>> hasName "FsCustomAttributes")
 
 -- <FsCompetition
 --     id="0"
@@ -158,31 +147,6 @@ fsScoreFormula =
                     , "score_back_time"
                     ])
                 . localPart)
-
--- <FsParticipant
---     id="101"
---     name="Davis Straub"
---     nat_code_3166_a3="USA"
---     female="0"
---     birthday="19XX-XX-XX"
---     glider="Wills Wing T2C 144"
---     glider_main_colors="Blue window"
---     sponsor="The Oz Report"
---     fai_licence="1"
---     CIVLID="XXXX" />
---
--- <FsParticipant ...>
---    <FsCustomAttributes>
---      <FsCustomAttribute name="Grade" value="88"/>
---      <FsCustomAttribute name="Team" value="Team Hangar Door"/>
---    </FsCustomAttributes>
---  </FsParticipant>
-fsParticipant :: ArrowXml a => a XmlTree XmlTree
-fsParticipant =
-    processTopDown
-        $ (flip when)
-            (isElem >>> hasName "FsParticipant")
-            (processAttrl . filterA $ hasName "id" <+> hasName "name")
 
 -- <FsFlightData
 --     distance="47.762"

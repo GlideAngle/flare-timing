@@ -18,16 +18,14 @@ import Text.XML.HXT.Core
     , no
     , yes
     , hasName
-    , none
-    , processAttrl
     , isElem
     , when
     , seqA
-    , filterA
     , removeAttr
     )
 
 import Flight.Comp (FsdbXml(..))
+import Flight.Fsdb.Internal.Xml (fsCompetitionNotes, fsCustomAttributes, fsParticipant)
 
 -- | Cleans the *.fsdb, removing any potentially sensitive personal information
 -- such as birthdays and phone numbers or messages left in comments.
@@ -61,23 +59,6 @@ cleanComp (FsdbXml contents) = do
                 ]
 
     return . maybe (Left "Couldn't filter FSDB.") Right . listToMaybe $ FsdbXml <$> xs
-
-fsCompetitionNotes :: ArrowXml a => a XmlTree XmlTree
-fsCompetitionNotes =
-    processTopDown
-        $ none `when` (isElem >>> hasName "FsCompetitionNotes")
-
-fsCustomAttributes :: ArrowXml a => a XmlTree XmlTree
-fsCustomAttributes =
-    processTopDown
-        $ none `when` (isElem >>> hasName "FsCustomAttributes")
-
-fsParticipant :: ArrowXml a => a XmlTree XmlTree
-fsParticipant =
-    processTopDown
-        $ (flip when)
-            (isElem >>> hasName "FsParticipant")
-            (processAttrl . filterA $ hasName "id" <+> hasName "name")
 
 -- | The FsFlightData and FsResult elements of an *.fsdb have ts "time stamp"
 -- attributes . Having these gets in the way of doing a file comparison. Two
