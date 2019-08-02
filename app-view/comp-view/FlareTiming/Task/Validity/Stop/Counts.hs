@@ -3,6 +3,7 @@ module FlareTiming.Task.Validity.Stop.Counts (viewStopCounts) where
 import Prelude hiding (sum)
 import Reflex.Dom
 import qualified Data.Text as T (pack)
+import Control.Monad.Zip (mzip)
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
@@ -99,10 +100,10 @@ viewStopCounts
                 el "td" $ text "ed"
                 el "td" $ text "Launch to ESS"
                 el "td" $ text ""
-                elV $ showLaunchToEss ed
+                elV $ maybe "" showLaunchToEss ed
                 el "td" $ text ""
-                elN $ showLaunchToEss edN
-                elD $ showLaunchToEssDiff edN ed
+                elN $ maybe "" showLaunchToEss edN
+                elD . maybe "" (uncurry showLaunchToEssDiff) $ mzip edN ed
                 return ()
 
             el "tr" $ do

@@ -128,7 +128,9 @@ data StopValidityWorking =
         , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
-        , launchToEssDistance :: LaunchToEss (Quantity Double [u| km |])
+        , launchToEssDistance :: Maybe (LaunchToEss (Quantity Double [u| km |]))
+        -- ^ The launch to ESS distance is parsed from an XML attribute that
+        -- may not exist.
         , reachStats :: ReachToggle ReachStats
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -414,7 +416,7 @@ stopValidity
                             { extra = extra
                             , flown = flown
                             }
-                    , launchToEssDistance = ed'
+                    , launchToEssDistance = Just ed'
                     }
 
 taskValidity

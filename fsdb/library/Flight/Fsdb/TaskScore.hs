@@ -432,7 +432,7 @@ xpStopValidityWorking =
                                     , stdDev = FlownStdDev [u| 0 km |]
                                     }
                             }
-                    , launchToEssDistance = LaunchToEss $ MkQuantity ed
+                    , launchToEssDistance = LaunchToEss . MkQuantity <$> ed
                     }
         , \StopValidityWorking
                 { pilotsAtEss = PilotsAtEss pe
@@ -443,7 +443,7 @@ xpStopValidityWorking =
                         { extra = ReachStats{max = FlownMax qExtraMax}
                         , flown = ReachStats{max = FlownMax qFlownMax}
                         }
-                , launchToEssDistance = LaunchToEss (MkQuantity ed)
+                , launchToEssDistance = ed
                 } ->
                     let (MkQuantity eMax) :: Quantity _ [u| km |] = convert qExtraMax
                         (MkQuantity fMax) :: Quantity _ [u| km |] = convert qFlownMax
@@ -453,7 +453,9 @@ xpStopValidityWorking =
                         , fromIntegral pf
                         , eMax
                         , fMax
-                        , ed
+                        , do
+                            LaunchToEss (MkQuantity d) <- ed
+                            return d
                         )
         )
     $ xp6Tuple
@@ -462,7 +464,7 @@ xpStopValidityWorking =
         (xpAttr "no_of_pilots_flying" xpInt)
         (xpAttr "best_dist" xpPrim)
         (xpAttr "best_real_dist" xpPrim)
-        (xpAttr "launch_to_ess_distance" xpPrim)
+        (xpOption $ xpAttr "launch_to_ess_distance" xpPrim)
 
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
