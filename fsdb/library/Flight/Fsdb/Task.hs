@@ -339,7 +339,10 @@ asAward t' (p, d, bd, v) =
 
         , awardedReach = do
             ad' <- ad
-            ab' <- ab
+            -- NOTE: The extra field is not a Maybe. It is the same as flown
+            -- reach when there is no extra reach from bonus glide due to
+            -- altitude above goal.
+            ab' <- Just $ fromMaybe ad' ab
             return $ ReachToggle{flown = ad', extra = ab'}
 
         , awardedVelocity = fromMaybe (AwardedVelocity Nothing Nothing) v
