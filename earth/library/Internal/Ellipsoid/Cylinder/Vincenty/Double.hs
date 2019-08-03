@@ -140,6 +140,13 @@ direct
         b² = b * b
         u² = cos²α * (a² - b²) / b²
 
+-- |
+--
+-- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 286.27334927563106 m |]) [u| 332.30076790172313 deg |]
+-- (-32.46133783488965°, 148.9890000000845°)
+--
+-- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
+-- (-32.465049082605454°, 148.9890000000324°)
 circum
     :: (Real a, Fractional a, RealFloat a)
     => LatLng a [u| rad |]
@@ -277,3 +284,30 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
             $ distancePointToPoint
                 (distance Vincenty wgs84)
                 (realToFracZone <$> [Point ptCenter, Point y])
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XQuasiQuotes
+-- >>> :set -XDataKinds
+-- >>> :set -XFlexibleContexts
+-- >>> :set -XFlexibleInstances
+-- >>> :set -XMultiParamTypeClasses
+-- >>> :set -XScopedTypeVariables
+-- >>> :set -XTypeOperators
+-- >>> :set -XTypeFamilies
+-- >>> :set -XUndecidableInstances
+-- >>> :set -fno-warn-partial-type-signatures
+--
+-- >>> import Data.UnitsOfMeasure ((*:), u, convert)
+-- >>> import Flight.LatLng (radToDegLL, degToRadLL)
+--
+-- >>> :{
+-- circumDeg
+--    :: RealFloat a
+--    => LatLng a [u| deg |]
+--    -> QRadius a [u| m |]
+--    -> (Quantity a [u| deg |])
+--    -> LatLng Double [u| deg |]
+-- circumDeg ll r tc =
+--     radToDegLL convert $ circum (degToRadLL convert ll) r (TrueCourse ((convert tc) :: Quantity _ [u| rad |]))
+-- :}

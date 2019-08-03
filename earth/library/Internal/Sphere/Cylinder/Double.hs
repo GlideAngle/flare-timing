@@ -192,7 +192,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
 -- >>> :set -XTypeFamilies
 -- >>> :set -XUndecidableInstances
 -- >>> :set -fno-warn-partial-type-signatures
--- 
+--
 -- >>> import Data.UnitsOfMeasure ((*:), u, convert)
 -- >>> import Flight.LatLng (radToDegLL, degToRadLL)
 --

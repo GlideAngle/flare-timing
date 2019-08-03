@@ -53,6 +53,13 @@ eastNorthToLatLng = runIdentity . runExceptT . HCEN.toLatLng
 errorHc :: a
 errorHc = error "Cannot convert between lat/lng and easting/northing."
 
+-- |
+--
+-- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 286.27334927563106 m |]) [u| 332.30076790172313 deg |]
+-- (-32.464787076769696°, 148.99172189459117°)
+--
+-- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
+-- (-32.462913617965945°, 148.9873148952786°)
 circum
     :: Real a
     => LatLng a [u| rad |]
@@ -221,3 +228,30 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
             $ distancePointToPoint
                 distance
                 (realToFracZone <$> [Point ptCenter, Point y])
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XQuasiQuotes
+-- >>> :set -XDataKinds
+-- >>> :set -XFlexibleContexts
+-- >>> :set -XFlexibleInstances
+-- >>> :set -XMultiParamTypeClasses
+-- >>> :set -XScopedTypeVariables
+-- >>> :set -XTypeOperators
+-- >>> :set -XTypeFamilies
+-- >>> :set -XUndecidableInstances
+-- >>> :set -fno-warn-partial-type-signatures
+--
+-- >>> import Data.UnitsOfMeasure ((*:), u, convert)
+-- >>> import Flight.LatLng (radToDegLL, degToRadLL)
+--
+-- >>> :{
+-- circumDeg
+--    :: RealFrac a
+--    => LatLng a [u| deg |]
+--    -> QRadius a [u| m |]
+--    -> (Quantity a [u| deg |])
+--    -> LatLng Double [u| deg |]
+-- circumDeg ll r tc =
+--     radToDegLL convert $ circum (degToRadLL convert ll) r (TrueCourse ((convert tc) :: Quantity _ [u| rad |]))
+-- :}
