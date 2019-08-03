@@ -77,13 +77,13 @@ circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing
     | otherwise =
         case (zoneM, zoneN) of
             (Nothing, _) -> ys
-            (Just _, Point _) -> ys
-            (Just _, Vector _ _) -> ys
-            (Just _, Cylinder _ _) -> ys
-            (Just _, Conical _ _ _) -> ys
-            (Just _, Line _ _ _) -> onLine mkLinePt θ ys
-            (Just _, Circle _ _) -> ys
-            (Just _, SemiCircle _ _ _) -> ys
+            (Just _, Point{}) -> ys
+            (Just _, Vector{}) -> ys
+            (Just _, Cylinder{}) -> ys
+            (Just _, Conical{}) -> ys
+            (Just _, Line{}) -> onLine mkLinePt θ ys
+            (Just _, Circle{}) -> ys
+            (Just _, SemiCircle{}) -> ys
     where
         zone' :: Zone Double
         zone' =
