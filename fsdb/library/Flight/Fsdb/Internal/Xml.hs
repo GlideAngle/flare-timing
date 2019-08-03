@@ -49,6 +49,6 @@ fsCustomAttributes =
 fsParticipant :: ArrowXml a => a XmlTree XmlTree
 fsParticipant =
     processTopDown
-        $ (flip when)
-            (isElem >>> hasName "FsParticipant")
+        $ when
             (processAttrl . filterA $ hasName "id" <+> hasName "name")
+            (isElem >>> hasName "FsParticipant")
