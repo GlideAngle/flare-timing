@@ -39,11 +39,11 @@ instance RealFloat a => GeodesySolutions Double a where
         P.azimuthFwd
     azimuthFwd (Haversines, _) =
         H.azimuthFwd
-    azimuthFwd (Vincenty, (EarthAsEllipsoid e)) =
+    azimuthFwd (Vincenty, EarthAsEllipsoid e) =
         V.azimuthFwd e
-    azimuthFwd (AndoyerLambert, (EarthAsEllipsoid e)) =
+    azimuthFwd (AndoyerLambert, EarthAsEllipsoid e) =
         A.azimuthFwd E.AndoyerLambert e
-    azimuthFwd (ForsytheAndoyerLambert, (EarthAsEllipsoid e)) =
+    azimuthFwd (ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         A.azimuthFwd E.ForsytheAndoyerLambert e
     azimuthFwd _ =
         error "Forward azimuth unexpected combination of Earth math and model."
@@ -53,25 +53,25 @@ instance RealFloat a => GeodesySolutions Double a where
         P.azimuthRev
     azimuthRev (Haversines, _) =
         H.azimuthRev
-    azimuthRev (Vincenty, (EarthAsEllipsoid e)) =
+    azimuthRev (Vincenty, EarthAsEllipsoid e) =
         V.azimuthRev e
-    azimuthRev (AndoyerLambert, (EarthAsEllipsoid e)) =
+    azimuthRev (AndoyerLambert, EarthAsEllipsoid e) =
         A.azimuthRev E.AndoyerLambert e
-    azimuthRev (ForsytheAndoyerLambert, (EarthAsEllipsoid e)) =
+    azimuthRev (ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         A.azimuthRev E.ForsytheAndoyerLambert e
     azimuthRev _ =
         error "Reverse azimuth unexpected combination of Earth math and model."
 
     arcLength :: Trig Double a => Earth Double -> SpanLatLng Double
-    arcLength (Pythagorus, (EarthAsFlat _)) =
+    arcLength (Pythagorus, EarthAsFlat _) =
         P.distance
-    arcLength (Haversines, (EarthAsSphere _)) =
+    arcLength (Haversines, EarthAsSphere _) =
         H.distance
-    arcLength (Vincenty, (EarthAsEllipsoid e)) =
+    arcLength (Vincenty, EarthAsEllipsoid e) =
         V.distance e
-    arcLength (AndoyerLambert, (EarthAsEllipsoid e)) =
+    arcLength (AndoyerLambert, EarthAsEllipsoid e) =
         A.distance E.AndoyerLambert e
-    arcLength (ForsytheAndoyerLambert, (EarthAsEllipsoid e)) =
+    arcLength (ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         A.distance E.ForsytheAndoyerLambert e
     arcLength _ =
         error "Distance unexpected combination of Earth math and model."
@@ -86,15 +86,15 @@ instance RealFloat a => GeodesySolutions Double a where
                 (QTaskDistance Double [u| m |])
                 (Quantity Double [u| rad |])
             )
-    inverse (Pythagorus, (EarthAsFlat _)) =
+    inverse (Pythagorus, EarthAsFlat _) =
         error "Pythagorus inverse not implemented."
-    inverse (Haversines, (EarthAsSphere _)) =
+    inverse (Haversines, EarthAsSphere _) =
         error "Haversines inverse not implemented."
-    inverse (Vincenty, (EarthAsEllipsoid e)) =
+    inverse (Vincenty, EarthAsEllipsoid e) =
         V.inverse e
-    inverse (AndoyerLambert, (EarthAsEllipsoid e)) =
+    inverse (AndoyerLambert, EarthAsEllipsoid e) =
         A.inverse E.AndoyerLambert e
-    inverse (ForsytheAndoyerLambert, (EarthAsEllipsoid e)) =
+    inverse (ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         A.inverse E.ForsytheAndoyerLambert e
     inverse _ =
         error "Inverse unexpected combination of Earth math and model."
