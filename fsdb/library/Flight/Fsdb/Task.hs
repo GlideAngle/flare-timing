@@ -10,7 +10,7 @@ module Flight.Fsdb.Task
     , asAward
     ) where
 
-import Data.Time.Clock (addUTCTime)
+import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (sort, sortOn, nub, find)
 import Data.UnitsOfMeasure (u)
@@ -47,7 +47,6 @@ import Text.XML.HXT.Core
     , hasAttr
     , neg
     )
-import Data.Time.Clock (UTCTime)
 
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..), QTaskDistance)
