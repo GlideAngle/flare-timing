@@ -74,9 +74,9 @@ trimComp (FsdbXml contents) = do
 fs :: ArrowXml a => a XmlTree XmlTree
 fs =
     processTopDown
-        $ (flip when)
-            (isElem >>> hasName "Fs")
+        $ when
             (processAttrl . filterA $ hasName "version")
+            (isElem >>> hasName "Fs")
 
 -- <FsCompetition
 --     id="0"
@@ -90,8 +90,7 @@ fs =
 fsCompetition :: ArrowXml a => a XmlTree XmlTree
 fsCompetition =
     processTopDown
-        $ (flip when)
-            (isElem >>> hasName "FsCompetition")
+        $ when
             (processAttrl . filterA . hasNameWith $
                 ( `elem`
                     [ "id"
@@ -103,6 +102,7 @@ fsCompetition =
                     , "utc_offset"
                     ])
                 . localPart)
+            (isElem >>> hasName "FsCompetition")
 
 -- <FsScoreFormula
 --     id="GAP2015"
@@ -134,8 +134,7 @@ fsCompetition =
 fsScoreFormula :: ArrowXml a => a XmlTree XmlTree
 fsScoreFormula =
     processTopDown
-        $ (flip when)
-            (isElem >>> hasName "FsScoreFormula")
+        $ when
             (processAttrl . filterA . hasNameWith $
                 ( `elem`
                     [ "id"
@@ -151,6 +150,7 @@ fsScoreFormula =
                     , "use_arrival_position_points"
                     ])
                 . localPart)
+            (isElem >>> hasName "FsScoreFormula")
 
 -- <FsFlightData
 --     distance="47.762"
@@ -174,8 +174,7 @@ fsScoreFormula =
 fsFlightData :: ArrowXml a => a XmlTree XmlTree
 fsFlightData =
     processTopDown
-        $ (flip when)
-            (isElem >>> hasName "FsFlightData")
+        $ when
             (processAttrl . filterA . hasNameWith $
                 ( `elem`
                     [ "tracklog_filename"
@@ -187,6 +186,7 @@ fsFlightData =
                     , "finished_ss"
                     ])
                 . localPart)
+            (isElem >>> hasName "FsFlightData")
 
 -- <FsResult
 --     rank="40"
@@ -222,8 +222,7 @@ fsFlightData =
 fsResult :: ArrowXml a => a XmlTree XmlTree
 fsResult =
     processTopDown
-        $ (flip when)
-            (isElem >>> hasName "FsResult")
+        $ when
             (processAttrl . filterA . hasNameWith $
                 ( `elem`
                     [ "rank"
@@ -246,6 +245,7 @@ fsResult =
                     , "ss_time"
                     ])
                 . localPart)
+            (isElem >>> hasName "FsResult")
 
 -- <FsTaskScoreParams
 --     ss_distance="150.41"
@@ -294,8 +294,7 @@ fsResult =
 fsTaskScoreParams :: ArrowXml a => a XmlTree XmlTree
 fsTaskScoreParams =
     processTopDown
-        $ (flip when)
-            (isElem >>> hasName "FsTaskScoreParams")
+        $ when
             (processAttrl . filterA . hasNameWith $
                 ( `elem`
                     [ "ss_distance"
@@ -328,3 +327,4 @@ fsTaskScoreParams =
                     , "day_quality"
                     ])
                 . localPart)
+            (isElem >>> hasName "FsTaskScoreParams")

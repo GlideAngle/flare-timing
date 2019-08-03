@@ -70,6 +70,6 @@ cleanComp (FsdbXml contents) = do
 fsTimeStamp :: ArrowXml a => a XmlTree XmlTree
 fsTimeStamp =
     processTopDown
-        $ (flip when)
-            (isElem >>> (hasName "FsFlightData" <+> hasName "FsResult"))
+        $ when
             (removeAttr "ts")
+            (isElem >>> (hasName "FsFlightData" <+> hasName "FsResult"))
