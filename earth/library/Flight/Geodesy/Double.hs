@@ -158,9 +158,14 @@ instance RealFloat a => GeoZones Double a where
         H.circumSample
     circumSample (Vincenty, EarthAsEllipsoid _) =
         V.circumSample
+
+    -- NOTE: Andoyer's is a method for solving the inverse geodesy problem.  We
+    -- still use Vincenty for the direct problem's solution. Other alternatives
+    -- might be Sjoberg 2006 and Karney 2013.
     circumSample (AndoyerLambert, _) =
-        error "Circumference Sample Andoyer-Lambert."
+        V.circumSample
     circumSample (ForsytheAndoyerLambert, _) =
-        error "Circumference Sample Forsythe-Andoyer-Lambert."
+        V.circumSample
+
     circumSample _ =
         error "Circumference Sample unexpected combination of Earth math and model."
