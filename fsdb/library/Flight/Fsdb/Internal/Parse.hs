@@ -105,9 +105,7 @@ decimal_ = lexeme L.decimal
 ddd :: ParsecT String String Identity Double
 ddd = do
     degSign <- option id $ const negate <$> char '-'
-    degs <- float_
-
-    return $ degSign degs
+    degSign <$> float_
 
 -- | Parser for degrees and decimal minutes.
 --
@@ -124,7 +122,7 @@ dmm = do
     degSign <- option id $ const negate <$> char '-'
     dd <- pNat
     mins <- pFloat
-    let degs = (fromIntegral dd) + mins / 60
+    let degs = fromIntegral dd + mins / 60
 
     return $ degSign degs
 
@@ -144,7 +142,7 @@ dms = do
     dd <- pNat
     mm <- pNat
     secs <- pFloat
-    let degs = (fromIntegral dd) + (fromIntegral mm) / 60 + secs / 3600
+    let degs = fromIntegral dd + fromIntegral mm / 60 + secs / 3600
 
     return $ degSign degs
 
