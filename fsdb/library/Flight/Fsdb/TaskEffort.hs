@@ -138,7 +138,7 @@ xpDifficulty =
     -- WARNING: Filter only attributes, ignoring child elements such as
     -- <FsChunk ... />. If not then the pickling will fail with
     -- "xpCheckEmptyContents: unprocessed XML content detected".
-    $ xpFilterCont(isAttr)
+    $ xpFilterCont isAttr
     $ xpFilterAttr
         ( hasName "look_ahead"
         <+> hasName "start_chunks"

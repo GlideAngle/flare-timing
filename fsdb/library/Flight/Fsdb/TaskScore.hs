@@ -237,7 +237,7 @@ xpValidity =
     -- WARNING: Filter only attributes, ignoring child elements such as
     -- <FsTaskDistToTp tp_no="1" distance="0.000" />. If not then the pickling
     -- will fail with "xpCheckEmptyContents: unprocessed XML content detected".
-    $ xpFilterCont(isAttr)
+    $ xpFilterCont isAttr
     $ xpFilterAttr
         ( hasName "day_quality"
         <+> hasName "launch_validity"
@@ -278,7 +278,7 @@ xpValidity =
 xpLaunchValidityWorking :: NominalLaunch -> PU LaunchValidityWorking
 xpLaunchValidityWorking nl =
     xpElem "FsTaskScoreParams"
-    $ xpFilterCont(isAttr)
+    $ xpFilterCont isAttr
     $ xpFilterAttr
         (hasName "no_of_pilots_flying" <+> hasName "no_of_pilots_present")
     $ xpWrap
@@ -304,7 +304,7 @@ xpTimeValidityWorking
     -> PU TimeValidityWorking
 xpTimeValidityWorking nd nt =
     xpElem "FsTaskScoreParams"
-    $ xpFilterCont(isAttr)
+    $ xpFilterCont isAttr
     $ xpFilterAttr
         (hasName "best_time"
         <+> hasName "best_dist"
@@ -351,7 +351,7 @@ xpDistanceValidityWorking
     nd'@(NominalDistance (MkQuantity nd))
     md'@(MinimumDistance (MkQuantity md)) =
     xpElem "FsTaskScoreParams"
-    $ xpFilterCont(isAttr)
+    $ xpFilterCont isAttr
     $ xpFilterAttr
         ( hasName "sum_real_dist_over_min"
         <+> hasName "no_of_pilots_flying"
@@ -398,7 +398,7 @@ xpDistanceValidityWorking
 xpStopValidityWorking :: PU StopValidityWorking
 xpStopValidityWorking =
     xpElem "FsTaskScoreParams"
-    $ xpFilterCont(isAttr)
+    $ xpFilterCont isAttr
     $ xpFilterAttr
         ( hasName "no_of_pilots_reaching_es"
         <+> hasName "no_of_pilots_landed_before_stop"
@@ -495,14 +495,14 @@ getScore pilots =
                             , Norm.reach =
                                 maybe
                                     r
-                                    (\((TaskDistance (d :: Quantity _ [u| m |]))
+                                    (\(TaskDistance (d :: Quantity _ [u| m |])
                                           , ReachToggle
                                               { flown = AwardedDistance{awardedFrac = fracF}
                                               , extra = AwardedDistance{awardedFrac = fracE}
                                               }) ->
                                         r
-                                            { flown = TaskDistance $ (MkQuantity fracF) *: d
-                                            , extra = TaskDistance $ (MkQuantity fracE) *: d
+                                            { flown = TaskDistance $ MkQuantity fracF *: d
+                                            , extra = TaskDistance $ MkQuantity fracE *: d
                                             })
                                     (do
                                         TaskDistance td' <- td

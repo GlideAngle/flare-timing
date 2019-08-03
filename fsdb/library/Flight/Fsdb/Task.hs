@@ -352,7 +352,7 @@ asAward t' (p, d, bd, v) =
         ab = asAwardReach t' bd
 
 
-getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree (PilotGroup)
+getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree PilotGroup
 getTaskPilotGroup ps =
     getChildren
     >>> deep (hasName "FsTask")
@@ -635,14 +635,14 @@ getTask discipline compTweak sb =
             >>> arr (unpickleDoc xpStopped)
 
         getTaskTweak =
-            (getChildren
+            getChildren
             >>> hasName "FsScoreFormula"
-            >>> arr (unpickleDoc $ xpTweak discipline))
+            >>> arr (unpickleDoc $ xpTweak discipline)
 
 getTaskPilotPenalties
     :: ArrowXml a
     => [Pilot]
-    -> a XmlTree ([(Pilot, [PointPenalty], String)])
+    -> a XmlTree [(Pilot, [PointPenalty], String)]
 getTaskPilotPenalties pilots =
     getChildren
     >>> deep (hasName "FsTask")
