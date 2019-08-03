@@ -71,7 +71,10 @@ stopWorkingSubA :: StopValidityWorking -> (Double, T.Text)
 
 stopWorkingSubA
     StopValidityWorking
-        { launchToEssDistance = ed@(LaunchToEss ed')
+        {launchToEssDistance = Nothing} = (0, "ed is missing")
+stopWorkingSubA
+    StopValidityWorking
+        { launchToEssDistance = Just (ed@(LaunchToEss ed'))
         , reachStats =
             ReachToggle
                 { flown =

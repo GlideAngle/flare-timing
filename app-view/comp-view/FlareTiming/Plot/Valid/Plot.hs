@@ -459,11 +459,13 @@ stopByReachPlot
 
 fnStopByReach :: StopValidityWorking -> Double -> Double
 fnStopByReach
+    StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByReach
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
         , landed = PilotsLanded landed
         , flying = PilotsFlying flying
-        , launchToEssDistance = LaunchToEss ed
+        , launchToEssDistance = Just (LaunchToEss ed)
         , reachStats =
             ReachToggle
                 { flown =
@@ -516,10 +518,12 @@ stopByLandedPlot
 
 fnStopByLanded :: StopValidityWorking -> Double -> Double
 fnStopByLanded
+    StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByLanded
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
         , flying = PilotsFlying flying
-        , launchToEssDistance = LaunchToEss ed
+        , launchToEssDistance = Just (LaunchToEss ed)
         , reachStats =
             ReachToggle
                 { flown =
@@ -578,11 +582,13 @@ stopByVaryPlot
 
 fnStopByVary :: StopValidityWorking -> Double -> Double
 fnStopByVary
+    StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByVary
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
         , landed = PilotsLanded landed
         , flying = PilotsFlying flying
-        , launchToEssDistance = LaunchToEss ed
+        , launchToEssDistance = Just (LaunchToEss ed)
         , reachStats =
             ReachToggle
                 { flown =

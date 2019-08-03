@@ -1,6 +1,7 @@
 resolver: lts-11.22
 tested-with: GHC == 8.2.2
 packages:
+- build
 - detour-via-sci
 - detour-via-uom
 - clip
