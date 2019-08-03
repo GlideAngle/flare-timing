@@ -6,7 +6,8 @@ arguments :: [String]
 arguments =
     [ "-isrc"
     , "library/Flight/Earth/ZoneShape/Double.hs"
-    , "library/Flight/Earth/Sphere/Cylinder/Double.hs"
+    , "library/Internal/Sphere/Cylinder/Double.hs"
+    , "library/Internal/Sphere/PointToPoint/Double.hs"
     , "-fplugin=Data.UnitsOfMeasure.Plugin"
     , "-XDataKinds"
     , "-XDeriveFunctor"
