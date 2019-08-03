@@ -20,7 +20,7 @@ onLine
     -> ([ZonePoint Double], [b]) -> ([ZonePoint Double], [b])
 onLine _ Nothing xs = xs
 onLine mkPt (Just theta) (xs, cs) =
-    unzip $
+    unzip
     [ let delta = angleDiff b theta in (ontoLine mkPt theta delta x, c)
     | x@ZonePoint{radial = Bearing b} <- xs
     | c <- cs
