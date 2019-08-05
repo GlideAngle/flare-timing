@@ -3,8 +3,8 @@
 
 module Sphere.Cylinder.Span
     ( ZonePointFilter
-    , spanD, csD, spD
-    , spanR, csR, spR
+    , spanD, sepD, csD, spD
+    , spanR, sepR, csR, spR
     , zpFilter
     ) where
 
@@ -21,25 +21,32 @@ import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Zone.Cylinder
     (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import qualified Flight.Earth.Sphere.Cylinder.Double as Dbl (circumSample)
-import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
+import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy (EarthModel(..), EarthMath(..))
+import Flight.Geodesy.Solution (GeodesySolutions(..), GeoZones(..))
+import Flight.Geodesy.Double ()
+import Flight.Geodesy.Rational ()
 
 mm30 :: Fractional a => Tolerance a
 mm30 = Tolerance . fromRational $ 30 % 1000
 
 spanD :: SpanLatLng Double
-spanD = Dbl.distanceHaversine
+spanD = arcLength @Double @Double (Haversines, EarthAsSphere earthRadius)
 
 spanR :: SpanLatLng Rational
-spanR = Rat.distanceHaversine defEps
+spanR = arcLength @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
+
+sepD :: [Zone Double] -> Bool
+sepD = separatedZones @Double @Double (Haversines, EarthAsSphere earthRadius)
+
+sepR :: [Zone Rational] -> Bool
+sepR = separatedZones @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
 
 csD :: CircumSample Double
-csD = Dbl.circumSample
+csD = circumSample @Double @Double (Haversines, EarthAsSphere earthRadius)
 
 csR :: CircumSample Rational
-csR = Rat.circumSample
+csR = circumSample @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
 
 spD :: SampleParams Double
 spD =

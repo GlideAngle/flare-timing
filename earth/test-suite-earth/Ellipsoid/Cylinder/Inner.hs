@@ -15,7 +15,7 @@ import Flight.Units ()
 import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (QBearing, Bearing(..), QRadius, Radius(..), Zone(..))
+import Flight.Zone (QBearing, Bearing(..), QRadius, Radius(..), Zone(..), ArcSweep(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
 import Ellipsoid.Cylinder.Span
@@ -129,7 +129,7 @@ innerCheck
             (<)
             ll
             (convert radius -: convert tolerance')
-            (fst $ cs sp br Nothing cyl)
+            (fst $ cs sp (ArcSweep br) Nothing Nothing cyl)
         @?= []
     ]
     where

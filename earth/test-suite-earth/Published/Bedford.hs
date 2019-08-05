@@ -19,9 +19,9 @@ import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
 -- WARNING: Import qualified here to work around a GHC panic.
 -- SEE: https://ghc.haskell.org/trac/ghc/ticket/12158
-import qualified Flight.Earth.Geodesy as I
+import qualified Flight.Geodesy as I
     (InverseProblem(..), InverseSolution(..))
-import Flight.Earth.Geodesy
+import Flight.Geodesy
     ( GeodesyProblems(..)
     , DProb, DSoln
     , IProb, ISoln

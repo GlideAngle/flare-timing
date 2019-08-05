@@ -9,9 +9,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), QLat, Lat(..), QLng, Lng(..))
 import Flight.Zone (Zone(..), Radius(..), toRationalLatLng)
-import Flight.Earth.Sphere.Separated (separatedZones)
-
-import Sphere.Cylinder.Span (spanR)
+import Sphere.Cylinder.Span (sepR)
 
 llr
     :: (QLat Double [u| rad |], QLng Double [u| rad |])
@@ -59,7 +57,7 @@ g39 = llr
     ( Lat $ convert [u| 43.75677 deg |]
     , Lng $ convert [u| 16.62018 deg |]
     )
-    
+
 task1 :: [Zone Rational]
 task1 =
     [ Cylinder (Radius [u|  400 m |]) gs1
@@ -76,5 +74,5 @@ gredaUnits :: TestTree
 gredaUnits =
     testGroup "greda 2011/2012 distances"
     [ HU.testCase "Task 1 zones are separated" $
-        separatedZones spanR task1 @?= True
+        sepR task1 @?= True
     ]

@@ -15,7 +15,7 @@ import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.Distance (QTaskDistance, TaskDistance(..), PathDistance(..))
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
@@ -24,16 +24,11 @@ import Flight.Zone
     , center
     )
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean)
-import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
-import Flight.Earth.Flat.Separated (separatedZones)
+import Flight.Earth.Sphere (earthRadius)
 
 import Props.Zone (ZonesTest(..))
 import Props.Euclidean (EuclideanTest(..))
-
--- | The radius of the earth in the FAI sphere is 6,371 km.
-earthRadius :: Num a => Quantity a [u| m |]
-earthRadius = [u| 6371000 m |]
+import Flat.Span (spanD, spanR, sepR)
 
 type Pt = (Rational, Rational)
 
@@ -54,19 +49,19 @@ vector x =
 
 cylinder :: (Rational, Rational) -> Zone Rational
 cylinder x =
-    Cylinder (Radius earthRadius) (toLL x)
+    Cylinder earthRadius (toLL x)
 
 conical :: (Rational, Rational) -> Zone Rational
 conical x =
-    Conical (Incline $ MkQuantity 1) (Radius earthRadius) (toLL x)
+    Conical (Incline $ MkQuantity 1) earthRadius (toLL x)
 
 line :: (Rational, Rational) -> Zone Rational
 line x =
-    Line (Radius earthRadius) (toLL x) 
+    Line Nothing earthRadius (toLL x)
 
 semicircle :: (Rational, Rational) -> Zone Rational
 semicircle x =
-    SemiCircle (Radius earthRadius) (toLL x)
+    SemiCircle Nothing earthRadius (toLL x)
 
 zoneUnits :: TestTree
 zoneUnits =
@@ -123,17 +118,18 @@ disjointUnits =
 emptyDistance :: TestTree
 emptyDistance = testGroup "Point-to-point distance"
     [ HU.testCase "No zones = zero point-to-point distance" $
-        edgesSum (distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
+        edgesSum (distancePointToPoint spanR []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
 toDistance :: String -> [[Zone Rational]] -> TestTree
 toDistance title xs =
     testGroup title (f <$> xs)
     where
+        Radius eR = earthRadius
         f x =
             HU.testCase (mconcat [ "distance ", show x, " = earth radius" ]) $
-                edgesSum (distancePointToPoint span x)
-                    @?= TaskDistance earthRadius
+                edgesSum (distancePointToPoint spanR x)
+                    @?= TaskDistance eR
 
 ptsDistance :: [[Pt]]
 ptsDistance =
@@ -170,7 +166,7 @@ coincident title xs =
                                  , show $ head x
                                  , " = not separate"
                                  ]) $
-                separatedZones span x
+                sepR x
                     @?= False
 
 ptsCoincident :: [[Pt]]
@@ -208,7 +204,7 @@ touching title xs =
                                  , show x
                                  , " = not separate"
                                  ]) $
-                separatedZones span x
+                sepR x
                     @?= False
 
 epsM :: Rational
@@ -241,7 +237,7 @@ disjoint title xs =
                                  , show x 
                                  , " = separate"
                                  ]) $
-                separatedZones span x
+                sepR x
                     @?= True
 
 eps :: Rational
@@ -280,7 +276,7 @@ lineDisjoint = disjoint "Line zones" ((fmap . fmap) line radiiDisjoint)
 semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
-correctPoint :: [Zone Rational] -> TaskDistance Rational -> Bool
+correctPoint :: [Zone Rational] -> QTaskDistance Rational [u| m |] -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [Cylinder xR x, Cylinder yR y] (TaskDistance (MkQuantity d))
@@ -296,18 +292,15 @@ distanceEuclideanF :: EuclideanTest Double -> Bool
 distanceEuclideanF (EuclideanTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Dbl.distanceEuclidean x y
+        TaskDistance d = spanD x y
 
 distanceEuclidean :: EuclideanTest Rational -> Bool
 distanceEuclidean (EuclideanTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Rat.distanceEuclidean x y
+        TaskDistance d = spanR x y
 
 distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
-    $ distancePointToPoint span xs
-
-span :: SpanLatLng Rational
-span = Rat.distanceEuclidean
+    $ distancePointToPoint spanR xs

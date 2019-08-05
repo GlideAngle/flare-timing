@@ -7,7 +7,7 @@ import Data.UnitsOfMeasure (u)
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..), DProb, DSoln)
+import Flight.Geodesy (DirectProblem(..), DirectSolution(..), DProb, DSoln)
 
 -- | With a common first station and ellipsoidal distance of;
 --

@@ -21,26 +21,26 @@ import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Zone.Cylinder
     (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
-import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (circumSample)
-import qualified Flight.Earth.Ellipsoid.Cylinder.Rational as Rat (circumSample)
 import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Geodesy (EarthModel(..), EarthMath(..))
+import Flight.Geodesy.Solution (GeodesySolutions(..), GeoZones(..))
+import Flight.Geodesy.Double ()
+import Flight.Geodesy.Rational ()
 
 mm30 :: Fractional a => Tolerance a
 mm30 = Tolerance . fromRational $ 30 % 1000
 
 spanD :: SpanLatLng Double
-spanD = Dbl.distanceVincenty wgs84
+spanD = arcLength @Double @Double (Vincenty, EarthAsEllipsoid wgs84)
 
 spanR :: SpanLatLng Rational
-spanR = Rat.distanceVincenty defEps wgs84
+spanR = arcLength @Rational @Rational (Vincenty, EarthAsEllipsoid wgs84, defEps)
 
 csD :: CircumSample Double
-csD = Dbl.circumSample
+csD = circumSample @Double @Double (Vincenty, EarthAsEllipsoid wgs84)
 
 csR :: CircumSample Rational
-csR = Rat.circumSample
+csR = circumSample @Rational @Rational (Vincenty, EarthAsEllipsoid wgs84, defEps)
 
 spD :: SampleParams Double
 spD =

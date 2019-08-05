@@ -7,7 +7,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Distance (QTaskDistance)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import qualified Forbes as F (mkDayUnits, mkPartDayUnits)
@@ -16,10 +16,7 @@ import Forbes
     , p1, p2, p3, p4, p5, p6, p7, p8
     )
 import Flight.Earth.Ellipsoid (wgs84)
-import qualified Ellipsoid.Span as Span (spanR)
-
-spanR :: SpanLatLng Rational
-spanR = Span.spanR wgs84
+import Ellipsoid.Span (spanR)
 
 mkDay
     :: TestName
@@ -27,14 +24,14 @@ mkDay
     -> Quantity Rational [u| km |]
     -> [Quantity Rational [u| km |]]
     -> TestTree
-mkDay = F.mkDayUnits (distancePointToPoint spanR)
+mkDay = F.mkDayUnits (distancePointToPoint $ spanR wgs84)
 
 mkPart
     :: TestName
     -> [Zone Rational]
-    -> TaskDistance Rational
+    -> QTaskDistance Rational [u| m |]
     -> TestTree
-mkPart = F.mkPartDayUnits (distancePointToPoint spanR)
+mkPart = F.mkPartDayUnits (distancePointToPoint $ spanR wgs84)
 
 forbesUnits :: TestTree
 forbesUnits =

@@ -10,7 +10,7 @@ import Data.UnitsOfMeasure ((-:), (*:), u, convert, negate', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone
-    ( HasArea(..), Zone(..), QRadius, Radius(..)
+    ( HasArea(..), Zone(..), QRadius
     , showZoneDMS, fromRationalZone, toRationalZone
     )
 import Flight.LatLng.Double (showAngle)
@@ -133,7 +133,7 @@ pts =
 
 distances :: (Real a, Fractional a) => [QRadius a [u| m |]]
 distances =
-    repeat $ Radius earthRadius
+    repeat earthRadius
 
 zonesTouching
     :: (Enum a, Real a, Fractional a)

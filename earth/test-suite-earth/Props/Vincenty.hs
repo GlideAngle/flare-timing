@@ -10,22 +10,18 @@ module Props.Vincenty
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
 import Prelude hiding (span)
-import Data.Ratio ((%))
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (LatLng(..))
-import Flight.LatLng.Rational (Epsilon(..), defEps)
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.Distance (QTaskDistance, TaskDistance(..), PathDistance(..))
 import Flight.Zone (Zone(..), center)
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
-    (distanceVincenty)
 import Flight.Earth.Ellipsoid (wgs84)
 import Props.Zone (ZonesTest(..))
+import Ellipsoid.Span (spanD, spanR)
 
 newtype VincentyTest a =
     VincentyTest (LatLng a [u| rad |], LatLng a [u| rad |])
@@ -46,7 +42,7 @@ instance
     => QC.Arbitrary (VincentyTest a) where
     arbitrary = VincentyTest <$> arbitrary
 
-correctPoint :: [Zone Rational] -> TaskDistance Rational -> Bool
+correctPoint :: [Zone Rational] -> QTaskDistance Rational [u| m |] -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [Cylinder xR x, Cylinder yR y] (TaskDistance (MkQuantity d))
@@ -62,19 +58,15 @@ distanceVincentyF :: VincentyTest Double -> Bool
 distanceVincentyF (VincentyTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Dbl.distanceVincenty wgs84 x y
+        TaskDistance d = (spanD wgs84) x y
 
 distanceVincenty :: VincentyTest Rational -> Bool
 distanceVincenty (VincentyTest (x, y)) =
     [u| 0 m |] <= d
     where
-        e = Epsilon $ 1 % 1000000000000000000
-        TaskDistance d = Rat.distanceVincenty e wgs84 x y
+        TaskDistance d = (spanR wgs84) x y
 
 distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
-    $ distancePointToPoint span xs
-
-span :: SpanLatLng Rational
-span = Rat.distanceVincenty defEps wgs84
+    $ distancePointToPoint (spanR wgs84) xs

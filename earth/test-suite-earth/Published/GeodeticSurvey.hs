@@ -97,7 +97,7 @@ module Published.GeodeticSurvey
 import Data.Maybe (catMaybes)
 
 import Flight.Units ()
-import Flight.Earth.Geodesy
+import Flight.Geodesy
     ( GeodesyProblems(..)
     , DProb, DSoln
     , IProb, ISoln

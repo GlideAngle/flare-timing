@@ -23,7 +23,7 @@ import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..), fromKms)
+import Flight.Distance (QTaskDistance, TaskDistance(..), PathDistance(..), fromKms)
 import Flight.Zone (Radius(..), Zone(..))
 import Data.Ratio.Rounding (dpRound)
 
@@ -33,7 +33,7 @@ import Data.Ratio.Rounding (dpRound)
 (.~=.) :: (Show a, Show b) => a -> b -> String
 (.~=.) x y = show x ++ " ~= " ++ show y
 
-tdRound :: TaskDistance Rational -> TaskDistance Rational
+tdRound :: QTaskDistance Rational v -> QTaskDistance Rational w
 tdRound (TaskDistance (MkQuantity d)) =
     TaskDistance . MkQuantity . dpRound 3 $ d
 
@@ -73,20 +73,20 @@ mkDayUnits pp title pDay dDay' dsDay' = testGroup title
         dDay = tdRound . fromKms $ dDay'
         dsDay = tdRound . fromKms <$> dsDay'
 
-        ppDay :: TaskDistance Rational
+        ppDay :: QTaskDistance Rational [u| m |]
         ppDay = tdRound . edgesSum $ pp pDay
 
         pDayInits :: [[Zone Rational]]
         pDayInits = drop 1 $ inits pDay
 
-        ppDayInits :: [TaskDistance Rational]
+        ppDayInits :: [QTaskDistance Rational [u| m |]]
         ppDayInits = tdRound . edgesSum . pp <$> pDayInits
 
 mkPartDayUnits
     :: ([Zone Rational] -> PathDistance Rational)
     -> TestName
     -> [Zone Rational]
-    -> TaskDistance Rational
+    -> QTaskDistance Rational [u| m |]
     -> TestTree
 mkPartDayUnits pp title zs (TaskDistance d) = testGroup title
     [ testCase
@@ -182,7 +182,7 @@ d8 =
 type MkPart
     = TestName
     -> [Zone Rational]
-    -> TaskDistance Rational
+    -> QTaskDistance Rational [u| m |]
     -> TestTree
 
 pairs :: [a] -> ([a], [a], [a])

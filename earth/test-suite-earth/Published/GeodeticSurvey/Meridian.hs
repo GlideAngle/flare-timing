@@ -7,7 +7,7 @@ import Data.UnitsOfMeasure (u)
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import Flight.Earth.Geodesy (InverseProblem(..), InverseSolution(..), IProb, ISoln)
+import Flight.Geodesy (InverseProblem(..), InverseSolution(..), IProb, ISoln)
 
 -- | With a common ellipsoid of;
 --

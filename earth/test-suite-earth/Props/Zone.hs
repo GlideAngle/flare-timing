@@ -52,11 +52,13 @@ instance
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             Line
+                Nothing
                 (Radius $ MkQuantity r)
                 (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             SemiCircle
+                Nothing
                 (Radius $ MkQuantity r)
                 (LatLng (lat, lng)))
 
@@ -93,10 +95,10 @@ instance
                     return $ Conical (Incline $ MkQuantity i) (Radius $ MkQuantity r) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    return $ Line (Radius $ MkQuantity r) ll
+                    return $ Line Nothing (Radius $ MkQuantity r) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    return $ SemiCircle (Radius $ MkQuantity r) ll
+                    return $ SemiCircle Nothing (Radius $ MkQuantity r) ll
                 ]
 
 instance

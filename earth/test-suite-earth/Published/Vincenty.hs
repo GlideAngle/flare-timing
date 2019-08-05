@@ -20,7 +20,7 @@ import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
 import Flight.Earth.Ellipsoid (Ellipsoid, bessel, hayford)
-import Flight.Earth.Geodesy
+import Flight.Geodesy
     ( GeodesyProblems(..)
     , InverseProblem(..), InverseSolution(..)
     , DProb, DSoln

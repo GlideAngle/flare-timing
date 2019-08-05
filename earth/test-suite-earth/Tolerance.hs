@@ -24,11 +24,11 @@ import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (LatLng, AzimuthFwd, AzimuthRev, fromDMS)
-import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Distance (QTaskDistance, TaskDistance(..), SpanLatLng)
 import Flight.Zone (toRationalLatLng)
-import qualified Flight.Earth.Geodesy as D (DirectProblem(..), DirectSolution(..))
-import qualified Flight.Earth.Geodesy as I (InverseProblem(..), InverseSolution(..))
-import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
+import qualified Flight.Geodesy as D (DirectProblem(..), DirectSolution(..))
+import qualified Flight.Geodesy as I (InverseProblem(..), InverseSolution(..))
+import Flight.Geodesy (DProb, DSoln, IProb, ISoln)
 
 type GetTolerance a = Quantity a [u| m |] -> Quantity a [u| km |]
 
@@ -40,11 +40,11 @@ showTolerance d
     where
         dm :: Quantity Double _
         dm = fromRational' . toRational' $ d
-        
+
         dkm = convert dm
         dmm = convert dm
 
-diff :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
+diff :: Num a => QTaskDistance a u -> QTaskDistance a u -> QTaskDistance a u
 diff (TaskDistance a) (TaskDistance b) =
     TaskDistance . abs' $ a -: b
 
@@ -62,7 +62,7 @@ describeDirect
     :: (Real a, Fractional a)
     => (DMS, DMS)
     -> DMS
-    -> TaskDistance a
+    -> QTaskDistance a [u| m |]
     -> (DMS, DMS)
     -> Quantity a [u| m |]
     -> String
@@ -81,7 +81,7 @@ describeInverseDistance
     :: (Real a, Fractional a)
     => (DMS, DMS)
     -> (DMS, DMS)
-    -> TaskDistance a
+    -> QTaskDistance a [u| m |]
     -> Quantity a [u| m |]
     -> String
 describeInverseDistance x y sExpected tolerance =
@@ -157,7 +157,7 @@ sFoundR span x y =
     where
         fromDMS' = toRationalLatLng . fromDMS
 
-expectedR :: Real a => Quantity a [u| m |] -> TaskDistance Rational
+expectedR :: Real a => Quantity a [u| m |] -> QTaskDistance Rational [u| m |]
 expectedR d = TaskDistance $ toRational' d
 
 dblDirectChecks

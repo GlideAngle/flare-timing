@@ -6,22 +6,22 @@ import Flight.Distance (SpanLatLng)
 import Flight.LatLng (AzimuthFwd, AzimuthRev)
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Earth.Ellipsoid (Ellipsoid)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl
-    (distanceVincenty, azimuthFwd, azimuthRev)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
-    (distanceVincenty)
+import Flight.Geodesy (EarthModel(..), EarthMath(..))
+import Flight.Geodesy.Solution (GeodesySolutions(..))
+import Flight.Geodesy.Double ()
+import Flight.Geodesy.Rational ()
 
-e :: Epsilon
-e = Epsilon $ 1 % 1000000000000000000
+eps :: Epsilon
+eps = Epsilon $ 1 % 1000000000000000000
 
 spanD :: Ellipsoid Double -> SpanLatLng Double
-spanD = Dbl.distanceVincenty
+spanD e = arcLength @Double @Double (Vincenty, EarthAsEllipsoid e)
 
 spanR :: Ellipsoid Rational -> SpanLatLng Rational
-spanR = Rat.distanceVincenty e
+spanR e = arcLength @Rational @Rational (Vincenty, EarthAsEllipsoid e, eps)
 
 azFwdD :: Ellipsoid Double -> AzimuthFwd Double
-azFwdD = Dbl.azimuthFwd
+azFwdD e = azimuthFwd @Double @Double (Vincenty, EarthAsEllipsoid e)
 
 azRevD :: Ellipsoid Double -> AzimuthRev Double
-azRevD = Dbl.azimuthRev
+azRevD e = azimuthRev @Double @Double (Vincenty, EarthAsEllipsoid e)

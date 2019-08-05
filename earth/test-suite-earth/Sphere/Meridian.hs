@@ -41,7 +41,7 @@ pts =
 
 distances :: (Real a, Fractional a) => [QRadius a [u| m |]]
 distances =
-    repeat $ Radius earthRadius
+    repeat earthRadius
 
 tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
 tolerancesD =

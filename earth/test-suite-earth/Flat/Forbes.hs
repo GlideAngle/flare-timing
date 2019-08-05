@@ -8,18 +8,16 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Distance (QTaskDistance)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
 import qualified Forbes as F (mkDayUnits, mkPartDayUnits)
 import Forbes
     ( d1, d2, d3, d4, d5, d6, d7, d8
     , p1, p2, p3, p4, p5, p6, p7, p8
     )
 
-span :: SpanLatLng Rational
-span = Rat.distanceEuclidean
+import Flat.Span (spanR)
 
 mkDay
     :: TestName
@@ -27,14 +25,14 @@ mkDay
     -> Quantity Rational [u| km |]
     -> [Quantity Rational [u| km |]]
     -> TestTree
-mkDay = F.mkDayUnits (distancePointToPoint span)
+mkDay = F.mkDayUnits (distancePointToPoint spanR)
 
 mkPart
     :: TestName
     -> [Zone Rational]
-    -> TaskDistance Rational
+    -> QTaskDistance Rational [u| m |]
     -> TestTree
-mkPart = F.mkPartDayUnits (distancePointToPoint span)
+mkPart = F.mkPartDayUnits (distancePointToPoint spanR)
 
 forbesUnits :: TestTree
 forbesUnits =

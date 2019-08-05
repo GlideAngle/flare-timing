@@ -16,13 +16,11 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng.Rational (defEps)
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.Distance (QTaskDistance, TaskDistance(..), PathDistance(..))
 import Flight.Zone (Zone(..), center)
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import Props.Zone (ZonesTest(..))
+import Sphere.Span (spanD, spanR)
 
 newtype HaversineTest a =
     HaversineTest (LatLng a [u| rad |], LatLng a [u| rad |])
@@ -46,7 +44,7 @@ instance Arbitrary a => QC.Arbitrary (HaversineTest a) where
                , LatLng (Lat $ MkQuantity ylat, Lng $ MkQuantity ylng)
                )
 
-correctPoint :: [Zone Rational] -> TaskDistance Rational -> Bool
+correctPoint :: [Zone Rational] -> QTaskDistance Rational [u| m |] -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [Cylinder xR x, Cylinder yR y] (TaskDistance (MkQuantity d))
@@ -62,18 +60,15 @@ distanceHaversineF :: HaversineTest Double -> Bool
 distanceHaversineF (HaversineTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Dbl.distanceHaversine x y
+        TaskDistance d = spanD x y
 
 distanceHaversine :: HaversineTest Rational -> Bool
 distanceHaversine (HaversineTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Rat.distanceHaversine defEps x y
+        TaskDistance d = spanR x y
 
 distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
-    $ distancePointToPoint span xs
-
-span :: SpanLatLng Rational
-span = Rat.distanceHaversine defEps
+    $ distancePointToPoint spanR xs

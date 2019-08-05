@@ -4,26 +4,26 @@ import Flight.LatLng.Rational (defEps)
 import Flight.LatLng (AzimuthFwd, AzimuthRev)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..))
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
-    (distanceHaversine, azimuthFwd, azimuthRev)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
-    (distanceHaversine)
-import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
+import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy (EarthModel(..), EarthMath(..))
+import Flight.Geodesy.Solution (GeodesySolutions(..), GeoZones(..))
+import Flight.Geodesy.Double ()
+import Flight.Geodesy.Rational ()
 
 spanD :: SpanLatLng Double
-spanD = Dbl.distanceHaversine
+spanD = arcLength @Double @Double (Haversines, EarthAsSphere earthRadius)
 
 spanR :: SpanLatLng Rational
-spanR = Rat.distanceHaversine defEps
+spanR = arcLength @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
 
 sepD :: [Zone Double] -> Bool
-sepD = S.separatedZones spanD
+sepD = separatedZones @Double @Double (Haversines, EarthAsSphere earthRadius)
 
 sepR :: [Zone Rational] -> Bool
-sepR = S.separatedZones spanR
+sepR = separatedZones @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
 
 azFwdD :: AzimuthFwd Double
-azFwdD = Dbl.azimuthFwd
+azFwdD = azimuthFwd @Double @Double (Haversines, EarthAsSphere earthRadius)
 
 azRevD :: AzimuthRev Double
-azRevD = Dbl.azimuthRev
+azRevD = azimuthRev @Double @Double (Haversines, EarthAsSphere earthRadius)

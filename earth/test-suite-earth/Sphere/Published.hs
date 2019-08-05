@@ -31,7 +31,7 @@ import qualified Tolerance as T
     , dblDirectChecks, ratDirectChecks
     , dblInverseChecks, ratInverseChecks
     )
-import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
+import Flight.Geodesy (DProb, DSoln, IProb, ISoln)
 import Sphere.Span (spanD, spanR, azFwdD, azRevD)
 
 azTolerance :: DMS

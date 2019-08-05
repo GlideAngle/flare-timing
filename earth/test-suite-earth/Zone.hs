@@ -61,12 +61,12 @@ conical r x =
 line :: (Eq b, Ord b, Fractional b) => MkZone a b
 line r x =
     fromRationalZone
-    $ Line (toRationalRadius r) (toLL x) 
+    $ Line Nothing (toRationalRadius r) (toLL x) 
 
 semicircle :: (Eq b, Ord b, Fractional b) => MkZone a b
 semicircle r x =
     fromRationalZone
-    $ SemiCircle (toRationalRadius r) (toLL x)
+    $ SemiCircle Nothing (toRationalRadius r) (toLL x)
 
 describedZones
     :: (Real a, Fractional a)
