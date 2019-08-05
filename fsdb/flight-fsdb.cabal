@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3556ff7da6fa9f74fd9e96833244a49efb11387887e67acddc23631beaecc625
+-- hash: fbd70c4c8e2b5fddbc203de940180e1541188eda8553f7d132765223f46e46a0
 
 name:           flight-fsdb
 version:        0.1.0
