@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Ellipsoid.Published (units) where
+module Ellipsoid.Published (units, unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
@@ -41,6 +41,15 @@ units =
     , ngsUnits
     , vincentyUnits
     , bedfordUnits
+    ]
+
+unitsR :: TestTree
+unitsR =
+    testGroup "With published data sets"
+    [ geoSciAuUnitsR
+    , ngsUnitsR
+    , vincentyUnitsR
+    , bedfordUnitsR
     ]
 
 azTolerance :: DMS
@@ -118,13 +127,6 @@ geoSciAuUnits =
                 (repeat wgs84)
                 G.inverseSolutions
                 G.inverseProblems
-
-        , testGroup "with rationals"
-            $ ratInverseChecks
-                geoSciAuTolerance
-                (repeat wgs84)
-                G.inverseSolutions
-                G.inverseProblems
         ]
 
     , testGroup "Direct Problem of Geodesy"
@@ -134,8 +136,23 @@ geoSciAuUnits =
                 (repeat wgs84)
                 G.directSolutions
                 G.directProblems
+        ]
+    ]
 
-        , testGroup "with rationals"
+geoSciAuUnitsR :: TestTree
+geoSciAuUnitsR =
+    testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with rationals"
+            $ ratInverseChecks
+                geoSciAuTolerance
+                (repeat wgs84)
+                G.inverseSolutions
+                G.inverseProblems
+        ]
+
+    , testGroup "Direct Problem of Geodesy"
+        [ testGroup "with rationals"
             $ ratDirectChecks
                 geoSciAuTolerance
                 (repeat wgs84)
@@ -154,13 +171,6 @@ ngsUnits =
                 (repeat wgs84)
                 N.inverseSolutions
                 N.inverseProblems
-
-        , testGroup "with rationals"
-            $ ratInverseChecks
-                ngsTolerance
-                (repeat wgs84)
-                N.inverseSolutions
-                N.inverseProblems
         ]
 
     , testGroup "Direct Problem of Geodesy"
@@ -170,8 +180,23 @@ ngsUnits =
                 (repeat wgs84)
                 N.directSolutions
                 N.directProblems
+        ]
+    ]
 
-        , testGroup "with rationals"
+ngsUnitsR :: TestTree
+ngsUnitsR =
+    testGroup "National Geodetic Survey distances, using Vincenty"
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with rationals"
+            $ ratInverseChecks
+                ngsTolerance
+                (repeat wgs84)
+                N.inverseSolutions
+                N.inverseProblems
+        ]
+
+    , testGroup "Direct Problem of Geodesy"
+        [ testGroup "with rationals"
             $ ratDirectChecks
                 ngsTolerance
                 (repeat wgs84)
@@ -190,13 +215,6 @@ vincentyUnits =
                 V.ellipsoids
                 V.inverseSolutions
                 V.inverseProblems
-
-        , testGroup "with rationals"
-            $ ratInverseChecks
-                vincentyTolerance
-                V.ellipsoids
-                V.inverseSolutions
-                V.inverseProblems
         ]
 
     , testGroup "Direct Problem of Geodesy"
@@ -206,8 +224,23 @@ vincentyUnits =
                 V.ellipsoids
                 V.directSolutions
                 V.directProblems
+        ]
+    ]
 
-        , testGroup "with rationals"
+vincentyUnitsR :: TestTree
+vincentyUnitsR =
+    testGroup "Vincenty's distances, from Rainsford 1955"
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with rationals"
+            $ ratInverseChecks
+                vincentyTolerance
+                V.ellipsoids
+                V.inverseSolutions
+                V.inverseProblems
+        ]
+
+    , testGroup "Direct Problem of Geodesy"
+        [ testGroup "with rationals"
             $ ratDirectChecks
                 vincentyTolerance
                 V.ellipsoids
@@ -226,13 +259,6 @@ bedfordUnits =
                 (repeat clarke)
                 B.inverseSolutions
                 B.inverseProblems
-
-        , testGroup "with rationals"
-            $ ratInverseChecks
-                bedfordTolerance
-                (repeat clarke)
-                B.inverseSolutions
-                B.inverseProblems
         ]
 
     , testGroup "Direct Problem of Geodesy"
@@ -242,8 +268,23 @@ bedfordUnits =
                 (repeat clarke)
                 B.directSolutions
                 B.directProblems
+        ]
+    ]
 
-        , testGroup "with rationals"
+bedfordUnitsR :: TestTree
+bedfordUnitsR =
+    testGroup "Bedford Institute of Oceanography distances"
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with rationals"
+            $ ratInverseChecks
+                bedfordTolerance
+                (repeat clarke)
+                B.inverseSolutions
+                B.inverseProblems
+        ]
+
+    , testGroup "Direct Problem of Geodesy"
+        [ testGroup "with rationals"
             $ ratDirectChecks
                 bedfordTolerance
                 (repeat clarke)

@@ -136,7 +136,22 @@ in    defs
                 , source-dirs =
                     [ "test-suite/zone"
                     , "test-suite/geodesy"
+                    , "test-suite/published"
                     , "test-suite-published"
+                    ]
+                }
+            , published-r =
+                { dependencies =
+                    [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "PublishedRMain.hs"
+                , source-dirs =
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite/published"
+                    , "test-suite-published-r"
                     ]
                 }
             , zones =

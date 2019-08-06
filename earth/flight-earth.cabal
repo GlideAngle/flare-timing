@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 80dd0c188cf5f966fbe61991e0b242da728d4abfcf6fb311fef5d7d894b5ca94
+-- hash: 7366cb8d3278fdfdda5aa292ff161d7bcc5de5fc4420444abe73c12df59b3df4
 
 name:           flight-earth
 version:        0.1.0
@@ -474,7 +474,66 @@ test-suite published
   hs-source-dirs:
       test-suite/zone
       test-suite/geodesy
+      test-suite/published
       test-suite-published
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite published-r
+  type: exitcode-stdio-1.0
+  main-is: PublishedRMain.hs
+  other-modules:
+      Zone
+      Distance
+      Ellipsoid.Span
+      Flat.Span
+      Forbes
+      ForbesComments
+      Sphere.Span
+      Tolerance
+      Ellipsoid.Published
+      Flat.Published
+      Published.Bedford
+      Published.GeodeticSurvey
+      Published.GeodeticSurvey.LatN00LngE000S40
+      Published.GeodeticSurvey.LatN00LngW180S40
+      Published.GeodeticSurvey.LatN45LngW180S40
+      Published.GeodeticSurvey.LatN90LngW180S40
+      Published.GeodeticSurvey.LatS90LngE180S40
+      Published.GeodeticSurvey.Meridian
+      Published.GeodeticSurvey.Parallel
+      Published.GeoscienceAustralia
+      Published.Vincenty
+      Sphere.Published
+      Paths_flight_earth
+  hs-source-dirs:
+      test-suite/zone
+      test-suite/geodesy
+      test-suite/published
+      test-suite-published-r
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
@@ -515,8 +574,8 @@ test-suite zones
       Tolerance
       Ellipsoid.Coincident
       Ellipsoid.Ellipsoid
+      Flat.Coincident
       Flat.Flat
-      Flat.General
       Sphere.Coincident
       Sphere.Disjoint
       Sphere.Sphere

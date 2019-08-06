@@ -1,4 +1,4 @@
-module PublishedMain where
+module PublishedRMain where
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
 
@@ -12,7 +12,7 @@ main = defaultMain tests
 tests :: TestTree
 tests =
     testGroup "Earth tests"
-        [ E.units
-        , S.units
-        , F.units
+        [ E.unitsR
+        , S.unitsR
+        , F.unitsR
         ]
