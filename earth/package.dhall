@@ -89,14 +89,7 @@ in    defs
                 }
             , forbes =
                 { dependencies =
-                    [ "flight-earth"
-                    , "tasty"
-                    , "tasty-hunit"
-                    , "tasty-quickcheck"
-                    , "tasty-smallcheck"
-                    , "smallcheck"
-                    , "tasty-compare"
-                    ]
+                    [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
@@ -109,14 +102,7 @@ in    defs
                 }
             , greda =
                 { dependencies =
-                    [ "flight-earth"
-                    , "tasty"
-                    , "tasty-hunit"
-                    , "tasty-quickcheck"
-                    , "tasty-smallcheck"
-                    , "smallcheck"
-                    , "tasty-compare"
-                    ]
+                    [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
