@@ -55,7 +55,17 @@ in    defs
           }
       , tests =
             ./../default-tests.dhall
-          ⫽ { earth =
+          ⫽ { doctest =
+                { dependencies =
+                    [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            , geodesy =
                 { dependencies =
                     [ "tasty"
                     , "tasty-hunit"
@@ -67,19 +77,25 @@ in    defs
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
-                    "Earth.hs"
+                    "Geodesy.hs"
                 , source-dirs =
-                    [ "library", "test-suite-earth" ]
+                    [ "library", "test-suite-geodesy" ]
                 }
-            , doctest =
+            , cylinder =
                 { dependencies =
-                    [ "doctest" ]
+                    [ "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    , "tasty-compare"
+                    ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
-                    "DocTest.hs"
+                    "Cylinder.hs"
                 , source-dirs =
-                    [ "library", "test-suite-doctest" ]
+                    [ "library", "test-suite-cylinder" ]
                 }
             }
       }

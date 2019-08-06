@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 53a204f1905d874a2c4d6ae93ea553b836bc50d7af9337f6f5bf65b21fbbbc78
+-- hash: 8265787eca50b24b4159f3331fa6c2f87c8a1c53510d6dddf3a4700b14d68a8e
 
 name:           flight-earth
 version:        0.1.0
@@ -94,76 +94,9 @@ library
     , uom-plugin
   default-language: Haskell2010
 
-test-suite doctest
+test-suite cylinder
   type: exitcode-stdio-1.0
-  main-is: DocTest.hs
-  other-modules:
-      Flight.Earth.Ellipsoid
-      Flight.Earth.Flat
-      Flight.Earth.Flat.Double
-      Flight.Earth.Flat.Rational
-      Flight.Earth.Math
-      Flight.Earth.Sphere
-      Flight.Earth.ZoneShape.Double
-      Flight.Earth.ZoneShape.Rational
-      Flight.Geodesy
-      Flight.Geodesy.Double
-      Flight.Geodesy.Math
-      Flight.Geodesy.Problem
-      Flight.Geodesy.Rational
-      Flight.Geodesy.Solution
-      Internal.Ellipsoid.Cylinder.Vincenty.Double
-      Internal.Ellipsoid.Cylinder.Vincenty.Rational
-      Internal.Ellipsoid.PointToPoint.Andoyer.Double
-      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
-      Internal.Ellipsoid.PointToPoint.Double
-      Internal.Ellipsoid.PointToPoint.Rational
-      Internal.Ellipsoid.PointToPoint.Vincenty.Double
-      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
-      Internal.Ellipsoid.Separated
-      Internal.Flat.Cylinder.Double
-      Internal.Flat.Cylinder.Rational
-      Internal.Flat.PointToPoint.Double
-      Internal.Flat.PointToPoint.Rational
-      Internal.Flat.Projected.Double
-      Internal.Flat.Projected.Internal
-      Internal.Flat.Projected.Rational
-      Internal.Flat.Separated
-      Internal.Sphere.Cylinder.Double
-      Internal.Sphere.Cylinder.Rational
-      Internal.Sphere.PointToPoint.Double
-      Internal.Sphere.PointToPoint.Rational
-      Internal.Sphere.Separated
-      Paths_flight_earth
-  hs-source-dirs:
-      library
-      test-suite-doctest
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , bifunctors
-    , detour-via-sci
-    , detour-via-uom
-    , doctest
-    , fgl
-    , flight-latlng
-    , flight-units
-    , flight-zone
-    , hcoord
-    , hcoord-utm
-    , mtl
-    , numbers
-    , scientific
-    , siggy-chardust
-    , text
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite earth
-  type: exitcode-stdio-1.0
-  main-is: Earth.hs
+  main-is: Cylinder.hs
   other-modules:
       Flight.Earth.Ellipsoid
       Flight.Earth.Flat
@@ -250,7 +183,192 @@ test-suite earth
       Paths_flight_earth
   hs-source-dirs:
       library
-      test-suite-earth
+      test-suite-cylinder
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , fgl
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.Earth.Ellipsoid
+      Flight.Earth.Flat
+      Flight.Earth.Flat.Double
+      Flight.Earth.Flat.Rational
+      Flight.Earth.Math
+      Flight.Earth.Sphere
+      Flight.Earth.ZoneShape.Double
+      Flight.Earth.ZoneShape.Rational
+      Flight.Geodesy
+      Flight.Geodesy.Double
+      Flight.Geodesy.Math
+      Flight.Geodesy.Problem
+      Flight.Geodesy.Rational
+      Flight.Geodesy.Solution
+      Internal.Ellipsoid.Cylinder.Vincenty.Double
+      Internal.Ellipsoid.Cylinder.Vincenty.Rational
+      Internal.Ellipsoid.PointToPoint.Andoyer.Double
+      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
+      Internal.Ellipsoid.PointToPoint.Double
+      Internal.Ellipsoid.PointToPoint.Rational
+      Internal.Ellipsoid.PointToPoint.Vincenty.Double
+      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
+      Internal.Ellipsoid.Separated
+      Internal.Flat.Cylinder.Double
+      Internal.Flat.Cylinder.Rational
+      Internal.Flat.PointToPoint.Double
+      Internal.Flat.PointToPoint.Rational
+      Internal.Flat.Projected.Double
+      Internal.Flat.Projected.Internal
+      Internal.Flat.Projected.Rational
+      Internal.Flat.Separated
+      Internal.Sphere.Cylinder.Double
+      Internal.Sphere.Cylinder.Rational
+      Internal.Sphere.PointToPoint.Double
+      Internal.Sphere.PointToPoint.Rational
+      Internal.Sphere.Separated
+      Paths_flight_earth
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , doctest
+    , fgl
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite geodesy
+  type: exitcode-stdio-1.0
+  main-is: Geodesy.hs
+  other-modules:
+      Flight.Earth.Ellipsoid
+      Flight.Earth.Flat
+      Flight.Earth.Flat.Double
+      Flight.Earth.Flat.Rational
+      Flight.Earth.Math
+      Flight.Earth.Sphere
+      Flight.Earth.ZoneShape.Double
+      Flight.Earth.ZoneShape.Rational
+      Flight.Geodesy
+      Flight.Geodesy.Double
+      Flight.Geodesy.Math
+      Flight.Geodesy.Problem
+      Flight.Geodesy.Rational
+      Flight.Geodesy.Solution
+      Internal.Ellipsoid.Cylinder.Vincenty.Double
+      Internal.Ellipsoid.Cylinder.Vincenty.Rational
+      Internal.Ellipsoid.PointToPoint.Andoyer.Double
+      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
+      Internal.Ellipsoid.PointToPoint.Double
+      Internal.Ellipsoid.PointToPoint.Rational
+      Internal.Ellipsoid.PointToPoint.Vincenty.Double
+      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
+      Internal.Ellipsoid.Separated
+      Internal.Flat.Cylinder.Double
+      Internal.Flat.Cylinder.Rational
+      Internal.Flat.PointToPoint.Double
+      Internal.Flat.PointToPoint.Rational
+      Internal.Flat.Projected.Double
+      Internal.Flat.Projected.Internal
+      Internal.Flat.Projected.Rational
+      Internal.Flat.Separated
+      Internal.Sphere.Cylinder.Double
+      Internal.Sphere.Cylinder.Rational
+      Internal.Sphere.PointToPoint.Double
+      Internal.Sphere.PointToPoint.Rational
+      Internal.Sphere.Separated
+      Distance
+      Ellipsoid.Coincident
+      Ellipsoid.Cylinder.Inner
+      Ellipsoid.Cylinder.Outer
+      Ellipsoid.Cylinder.Span
+      Ellipsoid.Ellipsoid
+      Ellipsoid.Forbes
+      Ellipsoid.Meridian
+      Ellipsoid.Published
+      Ellipsoid.Span
+      Flat.Flat
+      Flat.Forbes
+      Flat.General
+      Flat.Published
+      Flat.Span
+      Forbes
+      ForbesComments
+      Props.Euclidean
+      Props.Haversine
+      Props.Vincenty
+      Props.Zone
+      Published.Bedford
+      Published.GeodeticSurvey
+      Published.GeodeticSurvey.LatN00LngE000S40
+      Published.GeodeticSurvey.LatN00LngW180S40
+      Published.GeodeticSurvey.LatN45LngW180S40
+      Published.GeodeticSurvey.LatN90LngW180S40
+      Published.GeodeticSurvey.LatS90LngE180S40
+      Published.GeodeticSurvey.Meridian
+      Published.GeodeticSurvey.Parallel
+      Published.GeoscienceAustralia
+      Published.Vincenty
+      Sphere.Coincident
+      Sphere.Cylinder.Inner
+      Sphere.Cylinder.Outer
+      Sphere.Cylinder.Span
+      Sphere.Disjoint
+      Sphere.Forbes
+      Sphere.Greda
+      Sphere.Meridian
+      Sphere.Published
+      Sphere.Span
+      Sphere.Sphere
+      Sphere.Touching
+      Tolerance
+      Zone
+      Paths_flight_earth
+  hs-source-dirs:
+      library
+      test-suite-geodesy
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
