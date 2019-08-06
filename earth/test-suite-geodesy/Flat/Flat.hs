@@ -6,7 +6,6 @@ import Test.Tasty.QuickCheck as QC
 import Flat.General
     (zoneUnits, distancePoint, distanceEuclidean, distanceEuclideanF)
 import Flat.Published (publishedUnits)
-import Flat.Forbes (forbesUnits)
 
 tests :: TestTree
 tests =
@@ -26,7 +25,6 @@ units :: TestTree
 units =
     testGroup "Unit tests on the flat Earth using Pythagoras' theorem a² + b² = c²"
     [ publishedUnits
-    , forbesUnits
     , zoneUnits
     ]
 

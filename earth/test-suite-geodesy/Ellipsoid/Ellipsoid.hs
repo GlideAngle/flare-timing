@@ -7,7 +7,6 @@ import Test.Tasty.Providers as QC
 import Ellipsoid.Coincident (coincidentUnits)
 import Ellipsoid.Meridian (meridianUnits)
 import Ellipsoid.Published (publishedUnits)
-import Ellipsoid.Forbes (forbesUnits)
 import Props.Vincenty (distancePoint, distanceVincentyF, distanceVincenty)
 
 tests :: TestTree
@@ -28,7 +27,6 @@ units :: TestTree
 units =
     testGroup "Unit tests on the WGS84 ellipsoid using Vincenty's solution"
     [ publishedUnits
-    , forbesUnits
     , coincidentUnits
     , meridianUnits
     ]

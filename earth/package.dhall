@@ -107,6 +107,26 @@ in    defs
                     , "test-suite-forbes"
                     ]
                 }
+            , greda =
+                { dependencies =
+                    [ "flight-earth"
+                    , "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    , "tasty-compare"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "GredaMain.hs"
+                , source-dirs =
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite-greda"
+                    ]
+                }
             , cylinder =
                 { dependencies =
                     [ "flight-earth"

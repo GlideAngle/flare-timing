@@ -8,8 +8,6 @@ import Sphere.Meridian (meridianUnits)
 import Sphere.Touching (touchingUnits)
 import Sphere.Coincident (coincidentUnits)
 import Sphere.Disjoint (disjointUnits)
-import Sphere.Greda (gredaUnits)
-import Sphere.Forbes (forbesUnits)
 import Props.Haversine (distancePoint, distanceHaversineF, distanceHaversine)
 
 tests :: TestTree
@@ -29,8 +27,6 @@ units :: TestTree
 units =
     testGroup "Unit tests on the FAI sphere using haversines"
     [ publishedUnits
-    , gredaUnits
-    , forbesUnits
     , meridianUnits
     , disjointUnits
     , touchingUnits

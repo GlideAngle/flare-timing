@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8504e511737c0250f2a2a579df18ca7daaa80f27cb3a990ad992ca35b57510be
+-- hash: 4d1d0e52d69d170050b2eddeef6483497a2c38f755698d9a73652ebcdcd642f3
 
 name:           flight-earth
 version:        0.1.0
@@ -318,11 +318,9 @@ test-suite geodesy
       Tolerance
       Ellipsoid.Coincident
       Ellipsoid.Ellipsoid
-      Ellipsoid.Forbes
       Ellipsoid.Meridian
       Ellipsoid.Published
       Flat.Flat
-      Flat.Forbes
       Flat.General
       Flat.Published
       Props.Euclidean
@@ -342,8 +340,6 @@ test-suite geodesy
       Published.Vincenty
       Sphere.Coincident
       Sphere.Disjoint
-      Sphere.Forbes
-      Sphere.Greda
       Sphere.Meridian
       Sphere.Published
       Sphere.Sphere
@@ -353,6 +349,53 @@ test-suite geodesy
       test-suite/zone
       test-suite/geodesy
       test-suite-geodesy
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite greda
+  type: exitcode-stdio-1.0
+  main-is: GredaMain.hs
+  other-modules:
+      Zone
+      Distance
+      Ellipsoid.Span
+      Flat.Span
+      Forbes
+      ForbesComments
+      Sphere.Span
+      Tolerance
+      Sphere.Greda
+      Paths_flight_earth
+  hs-source-dirs:
+      test-suite/zone
+      test-suite/geodesy
+      test-suite-greda
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:

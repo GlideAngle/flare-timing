@@ -1,4 +1,4 @@
-module Sphere.Greda (gredaUnits) where
+module Sphere.Greda (units) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -8,6 +8,13 @@ import Flight.Units ()
 import Flight.LatLng (LatLng(..), QLat, Lat(..), QLng, Lng(..))
 import Flight.Zone (Zone(..), Radius(..), toRationalLatLng)
 import Sphere.Span (sepR)
+
+units :: TestTree
+units =
+    testGroup "greda 2011/2012 distances"
+    [ HU.testCase "Task 1 zones are separated" $
+        sepR task1 @?= True
+    ]
 
 llr
     :: (QLat Double [u| rad |], QLng Double [u| rad |])
@@ -66,11 +73,4 @@ task1 =
     , Cylinder (Radius [u| 1000 m |]) g17
     , Cylinder (Radius [u| 1000 m |]) g39
     , Cylinder (Radius [u|  400 m |]) g39
-    ]
-
-gredaUnits :: TestTree
-gredaUnits =
-    testGroup "greda 2011/2012 distances"
-    [ HU.testCase "Task 1 zones are separated" $
-        sepR task1 @?= True
     ]
