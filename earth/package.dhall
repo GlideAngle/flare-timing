@@ -97,5 +97,21 @@ in    defs
                 , source-dirs =
                     [ "library", "test-suite-cylinder" ]
                 }
+            , cylinder-r =
+                { dependencies =
+                    [ "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    , "tasty-compare"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "CylinderR.hs"
+                , source-dirs =
+                    [ "library", "test-suite-cylinder" ]
+                }
             }
       }

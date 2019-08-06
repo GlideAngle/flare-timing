@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Sphere.Cylinder.Outer (outerCylinderUnits) where
+module Sphere.Cylinder.Outer (outerUnits, outerUnitsR) where
 
 import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
@@ -22,6 +22,34 @@ import Sphere.Cylinder.Span
     , spanR, csR, spR
     , zpFilter
     )
+
+outerUnits :: TestTree
+outerUnits =
+    testGroup "When points meant to be on the boundary are outside a cylinder"
+        [ outerCheck spanD csD spD b t s zpFilter d p
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsD
+        , b <- bearingD
+        , (d, t, s) <-
+            [ (d, t, s)
+            | d <- distances
+            | t <- Tolerance . unQuantity <$> tolerancesD
+            | s <- searchRanges
+            ]
+        ]
+
+outerUnitsR :: TestTree
+outerUnitsR =
+    testGroup "When points meant to be on the boundary are outside a cylinder"
+        [ outerCheck spanR csR spR b t s zpFilter d p
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsR
+        , b <- bearingR
+        , (d, t, s) <-
+            [ (d, t, s)
+            | d <- distances
+            | t <- Tolerance . unQuantity <$> tolerancesR
+            | s <- searchRanges
+            ]
+        ]
 
 bearingD :: [QBearing Double [u| rad |]]
 bearingD =
@@ -95,34 +123,6 @@ searchRanges =
     , convert [u| 10 mm |]
     , convert [u| 100 mm |]
     , [u| 100 m |]
-    ]
-
-outerCylinderUnits :: TestTree
-outerCylinderUnits =
-    testGroup "When points meant to be on the boundary are outside a cylinder"
-    [ testGroup "With doubles"
-        [ outerCheck spanD csD spD b t s zpFilter d p
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsD
-        , b <- bearingD
-        , (d, t, s) <-
-            [ (d, t, s)
-            | d <- distances
-            | t <- Tolerance . unQuantity <$> tolerancesD
-            | s <- searchRanges
-            ]
-        ]
-
-    , testGroup "With rationals"
-        [ outerCheck spanR csR spR b t s zpFilter d p
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsR
-        , b <- bearingR
-        , (d, t, s) <-
-            [ (d, t, s)
-            | d <- distances
-            | t <- Tolerance . unQuantity <$> tolerancesR
-            | s <- searchRanges
-            ]
-        ]
     ]
 
 outerCheck

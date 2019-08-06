@@ -1,4 +1,4 @@
-module Cylinder where
+module CylinderR where
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
 
@@ -10,7 +10,7 @@ main = defaultMain tests
 
 tests :: TestTree
 tests =
-    testGroup "Cylinder tests with doubles"
-        [ E.tests
-        , S.tests
+    testGroup "Cylinder tests with rational numbers"
+        [ E.testsR
+        , S.testsR
         ]

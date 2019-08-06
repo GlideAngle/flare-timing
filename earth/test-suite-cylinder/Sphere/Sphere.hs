@@ -1,13 +1,20 @@
-module Sphere.Sphere (tests) where
+module Sphere.Sphere (tests, testsR) where
 
 import Test.Tasty (TestTree, testGroup)
 
-import Sphere.Cylinder.Outer (outerCylinderUnits)
-import Sphere.Cylinder.Inner (innerCylinderUnits)
+import Sphere.Cylinder.Outer (outerUnits, outerUnitsR)
+import Sphere.Cylinder.Inner (innerUnits, innerUnitsR)
 
 tests :: TestTree
 tests =
     testGroup "On the FAI sphere using haversines"
-    [ outerCylinderUnits
-    , innerCylinderUnits
+    [ outerUnits
+    , innerUnits
+    ]
+
+testsR :: TestTree
+testsR =
+    testGroup "On the FAI sphere using haversines"
+    [ outerUnitsR
+    , innerUnitsR
     ]

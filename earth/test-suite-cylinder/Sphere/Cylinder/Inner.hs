@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Sphere.Cylinder.Inner (innerCylinderUnits) where
+module Sphere.Cylinder.Inner (innerUnits, innerUnitsR) where
 
 import Prelude hiding (span)
 import qualified Data.Number.FixedFunctions as F
@@ -24,6 +24,26 @@ import Sphere.Cylinder.Span
     , spanR, csR, spR
     , zpFilter
     )
+
+innerUnits :: TestTree
+innerUnits =
+    testGroup "When points meant to be on the boundary are inside a cylinder"
+        [ let f = zpFilter in innerCheck spanD csD spD bearingD t s f d p
+        | d <- cycle distances
+        | t <- Tolerance . unQuantity <$> cycle tolerancesD
+        | s <- cycle searchRanges
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
+        ]
+
+innerUnitsR :: TestTree
+innerUnitsR =
+    testGroup "When points meant to be on the boundary are inside a cylinder"
+        [ let f = zpFilter in innerCheck spanR csR spR bearingR t s f d p
+        | d <- cycle distances
+        | t <- Tolerance . unQuantity <$> cycle tolerancesR
+        | s <- cycle searchRanges
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
+        ]
 
 bearingD :: QBearing Double [u| rad |]
 bearingD =
@@ -78,26 +98,6 @@ searchRanges =
     , convert [u| 10 mm |]
     , convert [u| 100 mm |]
     , [u| 100 m |]
-    ]
-
-innerCylinderUnits :: TestTree
-innerCylinderUnits =
-    testGroup "When points meant to be on the boundary are inside a cylinder"
-    [ testGroup "With doubles"
-        [ let f = zpFilter in innerCheck spanD csD spD bearingD t s f d p
-        | d <- cycle distances
-        | t <- Tolerance . unQuantity <$> cycle tolerancesD
-        | s <- cycle searchRanges
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
-        ]
-
-    , testGroup "With rationals"
-        [ let f = zpFilter in innerCheck spanR csR spR bearingR t s f d p
-        | d <- cycle distances
-        | t <- Tolerance . unQuantity <$> cycle tolerancesR
-        | s <- cycle searchRanges
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
-        ]
     ]
 
 innerCheck
