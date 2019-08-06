@@ -4,7 +4,6 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 
 import Sphere.Published (publishedUnits)
-import Sphere.Meridian (meridianUnits)
 import Sphere.Touching (touchingUnits)
 import Sphere.Coincident (coincidentUnits)
 import Sphere.Disjoint (disjointUnits)
@@ -27,7 +26,6 @@ units :: TestTree
 units =
     testGroup "Unit tests on the FAI sphere using haversines"
     [ publishedUnits
-    , meridianUnits
     , disjointUnits
     , touchingUnits
     , coincidentUnits

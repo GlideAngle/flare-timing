@@ -1,4 +1,4 @@
-module Ellipsoid.Meridian (meridianUnits) where
+module Ellipsoid.Meridian (units) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((*:), u, convert, fromRational')
@@ -11,8 +11,8 @@ import qualified Distance as D (DistanceClose, toDistanceClose)
 import Flight.Earth.Ellipsoid (wgs84)
 import Ellipsoid.Span (spanD, spanR)
 
-meridianUnits :: TestTree
-meridianUnits =
+units :: TestTree
+units =
     testGroup "Meridian arc distance tests"
     [ testGroup "With doubles" (uncurry f <$> describedZones)
     , testGroup "With rationals" (uncurry g <$> describedZones)

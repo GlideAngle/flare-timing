@@ -113,6 +113,19 @@ in    defs
                     , "test-suite-greda"
                     ]
                 }
+            , meridian =
+                { dependencies =
+                    [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "MeridianMain.hs"
+                , source-dirs =
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite-meridian"
+                    ]
+                }
             , cylinder =
                 { dependencies =
                     [ "flight-earth"
