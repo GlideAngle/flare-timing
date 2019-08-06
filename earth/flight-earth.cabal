@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7366cb8d3278fdfdda5aa292ff161d7bcc5de5fc4420444abe73c12df59b3df4
+-- hash: 8f5b53d236c714bb7ee9c431f77e28edfdcd34bf1d0c24aac87c3e44585531ce
 
 name:           flight-earth
 version:        0.1.0
@@ -261,7 +261,9 @@ test-suite forbes
   other-modules:
       Zone
       Distance
-      Ellipsoid.Span
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
       ForbesComments
@@ -307,7 +309,9 @@ test-suite geodesy
   other-modules:
       Zone
       Distance
-      Ellipsoid.Span
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
       ForbesComments
@@ -361,7 +365,9 @@ test-suite greda
   other-modules:
       Zone
       Distance
-      Ellipsoid.Span
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
       ForbesComments
@@ -405,7 +411,9 @@ test-suite meridian
   other-modules:
       Zone
       Distance
-      Ellipsoid.Span
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
       ForbesComments
@@ -450,13 +458,17 @@ test-suite published
   other-modules:
       Zone
       Distance
-      Ellipsoid.Span
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
       ForbesComments
       Sphere.Span
       Tolerance
-      Ellipsoid.Published
+      Ellipsoid.AndoyerLambert.Published
+      Ellipsoid.ForsytheAndoyerLambert.Published
+      Ellipsoid.Vincenty.Published
       Flat.Published
       Published.Bedford
       Published.GeodeticSurvey
@@ -508,13 +520,17 @@ test-suite published-r
   other-modules:
       Zone
       Distance
-      Ellipsoid.Span
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
       ForbesComments
       Sphere.Span
       Tolerance
-      Ellipsoid.Published
+      Ellipsoid.AndoyerLambert.Published
+      Ellipsoid.ForsytheAndoyerLambert.Published
+      Ellipsoid.Vincenty.Published
       Flat.Published
       Published.Bedford
       Published.GeodeticSurvey
@@ -566,7 +582,9 @@ test-suite zones
   other-modules:
       Zone
       Distance
-      Ellipsoid.Span
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
       ForbesComments

@@ -1,4 +1,4 @@
-module Ellipsoid.Span (spanD, spanR, azFwdD, azRevD) where
+module Ellipsoid.Vincenty.Span (spanD, spanR, azFwdD, azRevD) where
 
 import Data.Ratio ((%))
 
@@ -6,7 +6,7 @@ import Flight.Distance (SpanLatLng)
 import Flight.LatLng (AzimuthFwd, AzimuthRev)
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Earth.Ellipsoid (Ellipsoid)
-import Flight.Geodesy (EarthModel(..), EarthMath(..))
+import Flight.Geodesy (EarthModel(..), EarthMath(Vincenty))
 import Flight.Geodesy.Solution (GeodesySolutions(..))
 import Flight.Geodesy.Double ()
 import Flight.Geodesy.Rational ()

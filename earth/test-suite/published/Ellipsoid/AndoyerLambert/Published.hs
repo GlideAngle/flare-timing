@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Ellipsoid.Published (units, unitsR) where
+module Ellipsoid.AndoyerLambert.Published (units, unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
@@ -32,7 +32,7 @@ import qualified Tolerance as T
     , dblInverseChecks, ratInverseChecks
     )
 import Flight.Geodesy (DProb, DSoln, IProb, ISoln)
-import Ellipsoid.Span (spanD, spanR, azFwdD, azRevD)
+import Ellipsoid.AndoyerLambert.Span (spanD, spanR, azFwdD, azRevD)
 
 units :: TestTree
 units =
