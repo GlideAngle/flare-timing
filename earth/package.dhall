@@ -139,6 +139,19 @@ in    defs
                     , "test-suite-published"
                     ]
                 }
+            , zones =
+                { dependencies =
+                    [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "ZonesMain.hs"
+                , source-dirs =
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite-zones"
+                    ]
+                }
             , cylinder =
                 { dependencies =
                     [ "flight-earth"

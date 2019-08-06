@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 62174d080ecedf1672e9d50aab6c39dd4dbbcc8c1db3f3306d33b4176feaaad9
+-- hash: 80dd0c188cf5f966fbe61991e0b242da728d4abfcf6fb311fef5d7d894b5ca94
 
 name:           flight-earth
 version:        0.1.0
@@ -313,18 +313,14 @@ test-suite geodesy
       ForbesComments
       Sphere.Span
       Tolerance
-      Ellipsoid.Coincident
       Ellipsoid.Ellipsoid
+      Flat.Distance
       Flat.Flat
-      Flat.General
       Props.Euclidean
       Props.Haversine
       Props.Vincenty
       Props.Zone
-      Sphere.Coincident
-      Sphere.Disjoint
       Sphere.Sphere
-      Sphere.Touching
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone
@@ -479,6 +475,57 @@ test-suite published
       test-suite/zone
       test-suite/geodesy
       test-suite-published
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite zones
+  type: exitcode-stdio-1.0
+  main-is: ZonesMain.hs
+  other-modules:
+      Zone
+      Distance
+      Ellipsoid.Span
+      Flat.Span
+      Forbes
+      ForbesComments
+      Sphere.Span
+      Tolerance
+      Ellipsoid.Coincident
+      Ellipsoid.Ellipsoid
+      Flat.Flat
+      Flat.General
+      Sphere.Coincident
+      Sphere.Disjoint
+      Sphere.Sphere
+      Sphere.Touching
+      Paths_flight_earth
+  hs-source-dirs:
+      test-suite/zone
+      test-suite/geodesy
+      test-suite-zones
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:

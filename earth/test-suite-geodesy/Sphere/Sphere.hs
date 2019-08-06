@@ -1,32 +1,14 @@
-module Sphere.Sphere (properties, units, tests) where
+module Sphere.Sphere (properties) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 
-import Sphere.Touching (touchingUnits)
-import Sphere.Coincident (coincidentUnits)
-import Sphere.Disjoint (disjointUnits)
 import Props.Haversine (distancePoint, distanceHaversineF, distanceHaversine)
-
-tests :: TestTree
-tests =
-    testGroup "On the FAI sphere using haversines"
-    [ units
-    , properties
-    ]
 
 properties :: TestTree
 properties =
     testGroup "Property tests on the FAI sphere using haversines"
     [ qcProps
-    ]
-
-units :: TestTree
-units =
-    testGroup "Unit tests on the FAI sphere using haversines"
-    [ disjointUnits
-    , touchingUnits
-    , coincidentUnits
     ]
 
 qcProps :: TestTree

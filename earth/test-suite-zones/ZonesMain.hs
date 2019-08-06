@@ -10,8 +10,7 @@ main = defaultMain tests
 tests :: TestTree
 tests =
     testGroup "Earth tests"
-        [ F.units
-        , E.properties
-        , S.properties
-        , F.properties
+        [ E.units
+        , S.units
+        , F.units
         ]

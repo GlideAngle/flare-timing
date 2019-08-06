@@ -1,30 +1,16 @@
-module Ellipsoid.Ellipsoid (properties, units, tests) where
+module Ellipsoid.Ellipsoid (properties) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.Providers as QC
 
-import Ellipsoid.Coincident (coincidentUnits)
 import Props.Vincenty (distancePoint, distanceVincentyF, distanceVincenty)
-
-tests :: TestTree
-tests =
-    testGroup
-    "On the WGS84 ellipsoid using Vincenty's solution to the inverse geodetic problem"
-    [ units
-    , properties
-    ]
 
 properties :: TestTree
 properties =
-    testGroup "Property tests on the WGS84 ellipsoid using Vincenty's solution"
+    testGroup
+    "On the WGS84 ellipsoid using Vincenty's solution to the inverse geodetic problem"
     [ qcProps
-    ]
-
-units :: TestTree
-units =
-    testGroup "Unit tests on the WGS84 ellipsoid using Vincenty's solution"
-    [ coincidentUnits
     ]
 
 qcProps :: TestTree
