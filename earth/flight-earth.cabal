@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8265787eca50b24b4159f3331fa6c2f87c8a1c53510d6dddf3a4700b14d68a8e
+-- hash: 00f97293ebba53e45ab7fde974857d6699a6f0f3e7350b3e9aa6e2be5124d24e
 
 name:           flight-earth
 version:        0.1.0
@@ -135,49 +135,14 @@ test-suite cylinder
       Internal.Sphere.PointToPoint.Rational
       Internal.Sphere.Separated
       Distance
-      Ellipsoid.Coincident
       Ellipsoid.Cylinder.Inner
       Ellipsoid.Cylinder.Outer
       Ellipsoid.Cylinder.Span
       Ellipsoid.Ellipsoid
-      Ellipsoid.Forbes
-      Ellipsoid.Meridian
-      Ellipsoid.Published
-      Ellipsoid.Span
-      Flat.Flat
-      Flat.Forbes
-      Flat.General
-      Flat.Published
-      Flat.Span
-      Forbes
-      ForbesComments
-      Props.Euclidean
-      Props.Haversine
-      Props.Vincenty
-      Props.Zone
-      Published.Bedford
-      Published.GeodeticSurvey
-      Published.GeodeticSurvey.LatN00LngE000S40
-      Published.GeodeticSurvey.LatN00LngW180S40
-      Published.GeodeticSurvey.LatN45LngW180S40
-      Published.GeodeticSurvey.LatN90LngW180S40
-      Published.GeodeticSurvey.LatS90LngE180S40
-      Published.GeodeticSurvey.Meridian
-      Published.GeodeticSurvey.Parallel
-      Published.GeoscienceAustralia
-      Published.Vincenty
-      Sphere.Coincident
       Sphere.Cylinder.Inner
       Sphere.Cylinder.Outer
       Sphere.Cylinder.Span
-      Sphere.Disjoint
-      Sphere.Forbes
-      Sphere.Greda
-      Sphere.Meridian
-      Sphere.Published
-      Sphere.Span
       Sphere.Sphere
-      Sphere.Touching
       Tolerance
       Zone
       Paths_flight_earth
@@ -321,9 +286,6 @@ test-suite geodesy
       Internal.Sphere.Separated
       Distance
       Ellipsoid.Coincident
-      Ellipsoid.Cylinder.Inner
-      Ellipsoid.Cylinder.Outer
-      Ellipsoid.Cylinder.Span
       Ellipsoid.Ellipsoid
       Ellipsoid.Forbes
       Ellipsoid.Meridian
@@ -352,9 +314,6 @@ test-suite geodesy
       Published.GeoscienceAustralia
       Published.Vincenty
       Sphere.Coincident
-      Sphere.Cylinder.Inner
-      Sphere.Cylinder.Outer
-      Sphere.Cylinder.Span
       Sphere.Disjoint
       Sphere.Forbes
       Sphere.Greda

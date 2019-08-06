@@ -9,7 +9,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), QLat, Lat(..), QLng, Lng(..))
 import Flight.Zone (Zone(..), Radius(..), toRationalLatLng)
-import Sphere.Cylinder.Span (sepR)
+import Sphere.Span (sepR)
 
 llr
     :: (QLat Double [u| rad |], QLng Double [u| rad |])

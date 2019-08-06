@@ -10,8 +10,6 @@ import Sphere.Coincident (coincidentUnits)
 import Sphere.Disjoint (disjointUnits)
 import Sphere.Greda (gredaUnits)
 import Sphere.Forbes (forbesUnits)
-import Sphere.Cylinder.Outer (outerCylinderUnits)
-import Sphere.Cylinder.Inner (innerCylinderUnits)
 import Props.Haversine (distancePoint, distanceHaversineF, distanceHaversine)
 
 tests :: TestTree
@@ -37,8 +35,6 @@ units =
     , disjointUnits
     , touchingUnits
     , coincidentUnits
-    , outerCylinderUnits
-    , innerCylinderUnits
     ]
 
 qcProps :: TestTree
