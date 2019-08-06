@@ -3,7 +3,6 @@ module Sphere.Sphere (properties, units, tests) where
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 
-import Sphere.Published (publishedUnits)
 import Sphere.Touching (touchingUnits)
 import Sphere.Coincident (coincidentUnits)
 import Sphere.Disjoint (disjointUnits)
@@ -25,8 +24,7 @@ properties =
 units :: TestTree
 units =
     testGroup "Unit tests on the FAI sphere using haversines"
-    [ publishedUnits
-    , disjointUnits
+    [ disjointUnits
     , touchingUnits
     , coincidentUnits
     ]

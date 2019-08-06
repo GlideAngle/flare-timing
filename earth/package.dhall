@@ -126,6 +126,19 @@ in    defs
                     , "test-suite-meridian"
                     ]
                 }
+            , published =
+                { dependencies =
+                    [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "PublishedMain.hs"
+                , source-dirs =
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite-published"
+                    ]
+                }
             , cylinder =
                 { dependencies =
                     [ "flight-earth"
