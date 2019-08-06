@@ -13,10 +13,10 @@ main = defaultMain tests
 
 tests :: TestTree
 tests =
-    testGroup "Earth tests"
-        [ F.units
-        , S.units
-        , V.units
-        , AL.units
-        , FAL.units
+    testGroup "Earth tests with published data"
+        [ testGroup "Pythagorus Math" [F.units]
+        , testGroup "Haversines Math" [S.units]
+        , testGroup "Vincenty Math" [V.units]
+        , testGroup "Andoyer Math" [AL.units]
+        , testGroup "Forsythe Math" [FAL.units]
         ]
