@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 257b9ebef4c46b931576bab4c1ef3403d3c1c29890c196fbe594d7361efd7538
+-- hash: e6d16bda3a6df08818bf7bca4567454bba97ae87d904cb8592a4b90f04fd68bb
 
 name:           flight-earth
 version:        0.1.0
@@ -98,44 +98,7 @@ test-suite cylinder
   type: exitcode-stdio-1.0
   main-is: Cylinder.hs
   other-modules:
-      Flight.Earth.Ellipsoid
-      Flight.Earth.Flat
-      Flight.Earth.Flat.Double
-      Flight.Earth.Flat.Rational
-      Flight.Earth.Math
-      Flight.Earth.Sphere
-      Flight.Earth.ZoneShape.Double
-      Flight.Earth.ZoneShape.Rational
-      Flight.Geodesy
-      Flight.Geodesy.Double
-      Flight.Geodesy.Math
-      Flight.Geodesy.Problem
-      Flight.Geodesy.Rational
-      Flight.Geodesy.Solution
-      Internal.Ellipsoid.Cylinder.Vincenty.Double
-      Internal.Ellipsoid.Cylinder.Vincenty.Rational
-      Internal.Ellipsoid.PointToPoint.Andoyer.Double
-      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
-      Internal.Ellipsoid.PointToPoint.Double
-      Internal.Ellipsoid.PointToPoint.Rational
-      Internal.Ellipsoid.PointToPoint.Vincenty.Double
-      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
-      Internal.Ellipsoid.Separated
-      Internal.Flat.Cylinder.Double
-      Internal.Flat.Cylinder.Rational
-      Internal.Flat.PointToPoint.Double
-      Internal.Flat.PointToPoint.Rational
-      Internal.Flat.Projected.Double
-      Internal.Flat.Projected.Internal
-      Internal.Flat.Projected.Rational
-      Internal.Flat.Separated
-      Internal.Sphere.Cylinder.Double
-      Internal.Sphere.Cylinder.Rational
-      Internal.Sphere.PointToPoint.Double
-      Internal.Sphere.PointToPoint.Rational
-      Internal.Sphere.Separated
-      CylinderR
-      Distance
+      Zone
       Ellipsoid.Cylinder.Inner
       Ellipsoid.Cylinder.Outer
       Ellipsoid.Cylinder.Span
@@ -144,11 +107,10 @@ test-suite cylinder
       Sphere.Cylinder.Outer
       Sphere.Cylinder.Span
       Sphere.Sphere
-      Tolerance
-      Zone
       Paths_flight_earth
   hs-source-dirs:
-      library
+      test-suite/zone
+      test-suite/cylinder
       test-suite-cylinder
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
@@ -159,6 +121,7 @@ test-suite cylinder
     , detour-via-sci
     , detour-via-uom
     , fgl
+    , flight-earth
     , flight-latlng
     , flight-units
     , flight-zone
@@ -182,44 +145,7 @@ test-suite cylinder-r
   type: exitcode-stdio-1.0
   main-is: CylinderR.hs
   other-modules:
-      Flight.Earth.Ellipsoid
-      Flight.Earth.Flat
-      Flight.Earth.Flat.Double
-      Flight.Earth.Flat.Rational
-      Flight.Earth.Math
-      Flight.Earth.Sphere
-      Flight.Earth.ZoneShape.Double
-      Flight.Earth.ZoneShape.Rational
-      Flight.Geodesy
-      Flight.Geodesy.Double
-      Flight.Geodesy.Math
-      Flight.Geodesy.Problem
-      Flight.Geodesy.Rational
-      Flight.Geodesy.Solution
-      Internal.Ellipsoid.Cylinder.Vincenty.Double
-      Internal.Ellipsoid.Cylinder.Vincenty.Rational
-      Internal.Ellipsoid.PointToPoint.Andoyer.Double
-      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
-      Internal.Ellipsoid.PointToPoint.Double
-      Internal.Ellipsoid.PointToPoint.Rational
-      Internal.Ellipsoid.PointToPoint.Vincenty.Double
-      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
-      Internal.Ellipsoid.Separated
-      Internal.Flat.Cylinder.Double
-      Internal.Flat.Cylinder.Rational
-      Internal.Flat.PointToPoint.Double
-      Internal.Flat.PointToPoint.Rational
-      Internal.Flat.Projected.Double
-      Internal.Flat.Projected.Internal
-      Internal.Flat.Projected.Rational
-      Internal.Flat.Separated
-      Internal.Sphere.Cylinder.Double
-      Internal.Sphere.Cylinder.Rational
-      Internal.Sphere.PointToPoint.Double
-      Internal.Sphere.PointToPoint.Rational
-      Internal.Sphere.Separated
-      Cylinder
-      Distance
+      Zone
       Ellipsoid.Cylinder.Inner
       Ellipsoid.Cylinder.Outer
       Ellipsoid.Cylinder.Span
@@ -228,12 +154,11 @@ test-suite cylinder-r
       Sphere.Cylinder.Outer
       Sphere.Cylinder.Span
       Sphere.Sphere
-      Tolerance
-      Zone
       Paths_flight_earth
   hs-source-dirs:
-      library
-      test-suite-cylinder
+      test-suite/zone
+      test-suite/cylinder
+      test-suite-cylinder-r
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
@@ -243,6 +168,7 @@ test-suite cylinder-r
     , detour-via-sci
     , detour-via-uom
     , fgl
+    , flight-earth
     , flight-latlng
     , flight-units
     , flight-zone
@@ -333,43 +259,11 @@ test-suite geodesy
   type: exitcode-stdio-1.0
   main-is: Geodesy.hs
   other-modules:
-      Flight.Earth.Ellipsoid
-      Flight.Earth.Flat
-      Flight.Earth.Flat.Double
-      Flight.Earth.Flat.Rational
-      Flight.Earth.Math
-      Flight.Earth.Sphere
-      Flight.Earth.ZoneShape.Double
-      Flight.Earth.ZoneShape.Rational
-      Flight.Geodesy
-      Flight.Geodesy.Double
-      Flight.Geodesy.Math
-      Flight.Geodesy.Problem
-      Flight.Geodesy.Rational
-      Flight.Geodesy.Solution
-      Internal.Ellipsoid.Cylinder.Vincenty.Double
-      Internal.Ellipsoid.Cylinder.Vincenty.Rational
-      Internal.Ellipsoid.PointToPoint.Andoyer.Double
-      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
-      Internal.Ellipsoid.PointToPoint.Double
-      Internal.Ellipsoid.PointToPoint.Rational
-      Internal.Ellipsoid.PointToPoint.Vincenty.Double
-      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
-      Internal.Ellipsoid.Separated
-      Internal.Flat.Cylinder.Double
-      Internal.Flat.Cylinder.Rational
-      Internal.Flat.PointToPoint.Double
-      Internal.Flat.PointToPoint.Rational
-      Internal.Flat.Projected.Double
-      Internal.Flat.Projected.Internal
-      Internal.Flat.Projected.Rational
-      Internal.Flat.Separated
-      Internal.Sphere.Cylinder.Double
-      Internal.Sphere.Cylinder.Rational
-      Internal.Sphere.PointToPoint.Double
-      Internal.Sphere.PointToPoint.Rational
-      Internal.Sphere.Separated
+      Zone
       Distance
+      Forbes
+      ForbesComments
+      Tolerance
       Ellipsoid.Coincident
       Ellipsoid.Ellipsoid
       Ellipsoid.Forbes
@@ -381,8 +275,6 @@ test-suite geodesy
       Flat.General
       Flat.Published
       Flat.Span
-      Forbes
-      ForbesComments
       Props.Euclidean
       Props.Haversine
       Props.Vincenty
@@ -407,11 +299,10 @@ test-suite geodesy
       Sphere.Span
       Sphere.Sphere
       Sphere.Touching
-      Tolerance
-      Zone
       Paths_flight_earth
   hs-source-dirs:
-      library
+      test-suite/zone
+      test-suite/geodesy
       test-suite-geodesy
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
@@ -422,6 +313,7 @@ test-suite geodesy
     , detour-via-sci
     , detour-via-uom
     , fgl
+    , flight-earth
     , flight-latlng
     , flight-units
     , flight-zone

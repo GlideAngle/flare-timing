@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Sphere.Greda (gredaUnits) where
 
 import Test.Tasty (TestTree, testGroup)

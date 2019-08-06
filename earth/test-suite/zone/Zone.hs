@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Zone
     ( QLL, MkZone
     , point, vector, cylinder, line, conical, semicircle

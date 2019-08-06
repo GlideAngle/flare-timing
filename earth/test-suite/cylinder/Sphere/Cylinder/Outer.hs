@@ -1,7 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Ellipsoid.Cylinder.Outer (outerUnits, outerUnitsR) where
+module Sphere.Cylinder.Outer (outerUnits, outerUnitsR) where
 
 import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
@@ -16,7 +15,7 @@ import Flight.Distance (SpanLatLng)
 import Flight.Zone (QBearing, Bearing(..), QRadius, Radius(..), Zone(..), ArcSweep(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
-import Ellipsoid.Cylinder.Span
+import Sphere.Cylinder.Span
     ( ZonePointFilter
     , spanD, csD, spD
     , spanR, csR, spR

@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Sphere.Meridian (meridianUnits) where
 
 import Test.Tasty (TestTree, testGroup)

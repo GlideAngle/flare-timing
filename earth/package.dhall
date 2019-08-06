@@ -1,5 +1,7 @@
     let defs = ./../defaults.dhall
 
+in  let opts = [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+
 in  let exts = ./../default-extensions.dhall
 
 in    defs
@@ -67,7 +69,8 @@ in    defs
                 }
             , geodesy =
                 { dependencies =
-                    [ "tasty"
+                    [ "flight-earth"
+                    , "tasty"
                     , "tasty-hunit"
                     , "tasty-quickcheck"
                     , "tasty-smallcheck"
@@ -79,11 +82,15 @@ in    defs
                 , main =
                     "Geodesy.hs"
                 , source-dirs =
-                    [ "library", "test-suite-geodesy" ]
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite-geodesy"
+                    ]
                 }
             , cylinder =
                 { dependencies =
-                    [ "tasty"
+                    [ "flight-earth"
+                    , "tasty"
                     , "tasty-hunit"
                     , "tasty-quickcheck"
                     , "tasty-smallcheck"
@@ -95,11 +102,15 @@ in    defs
                 , main =
                     "Cylinder.hs"
                 , source-dirs =
-                    [ "library", "test-suite-cylinder" ]
+                    [ "test-suite/zone"
+                    , "test-suite/cylinder"
+                    , "test-suite-cylinder"
+                    ]
                 }
             , cylinder-r =
                 { dependencies =
-                    [ "tasty"
+                    [ "flight-earth"
+                    , "tasty"
                     , "tasty-hunit"
                     , "tasty-quickcheck"
                     , "tasty-smallcheck"
@@ -111,7 +122,10 @@ in    defs
                 , main =
                     "CylinderR.hs"
                 , source-dirs =
-                    [ "library", "test-suite-cylinder" ]
+                    [ "test-suite/zone"
+                    , "test-suite/cylinder"
+                    , "test-suite-cylinder-r"
+                    ]
                 }
             }
       }

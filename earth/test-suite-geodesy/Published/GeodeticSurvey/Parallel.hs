@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Published.GeodeticSurvey.Parallel (rev) where
 
 import Data.UnitsOfMeasure (u)

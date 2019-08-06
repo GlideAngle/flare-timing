@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Props.Euclidean (EuclideanTest(..)) where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.

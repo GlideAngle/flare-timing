@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Published.GeodeticSurvey.LatN90LngW180S40 (fwd) where
 
 import Data.UnitsOfMeasure (u)

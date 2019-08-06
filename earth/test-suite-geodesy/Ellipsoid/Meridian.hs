@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Ellipsoid.Meridian (meridianUnits) where
 
 import Test.Tasty (TestTree, testGroup)

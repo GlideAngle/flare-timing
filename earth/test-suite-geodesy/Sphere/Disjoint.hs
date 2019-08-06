@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Sphere.Disjoint (disjointUnits) where
 
 import Data.Ratio ((%))

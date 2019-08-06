@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Published.GeodeticSurvey.Meridian (rev) where
 
 import Data.UnitsOfMeasure (u)

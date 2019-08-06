@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Ellipsoid.Forbes (forbesUnits) where
 
 import Test.Tasty (TestTree, TestName, testGroup)

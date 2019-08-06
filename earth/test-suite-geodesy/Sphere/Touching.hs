@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Sphere.Touching (Overlay(..), separatedZones, touchingUnits) where
 
 import Data.Ratio ((%))

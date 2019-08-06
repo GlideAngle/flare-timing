@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Ellipsoid.Coincident (coincidentUnits) where
 
 import Test.Tasty (TestTree, testGroup)

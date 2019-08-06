@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 -- | Test data from ...
 -- 
 -- Direct and Inverse Solutions of Geodesics on the Ellipsoid with Applications

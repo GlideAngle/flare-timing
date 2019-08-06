@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 -- | Test data from ...
 -- 
 -- Bedford Institute of Oceanography
