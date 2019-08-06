@@ -1,4 +1,4 @@
-module CylinderR where
+module CylinderRMain where
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
 

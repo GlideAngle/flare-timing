@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e6d16bda3a6df08818bf7bca4567454bba97ae87d904cb8592a4b90f04fd68bb
+-- hash: 8504e511737c0250f2a2a579df18ca7daaa80f27cb3a990ad992ca35b57510be
 
 name:           flight-earth
 version:        0.1.0
@@ -96,7 +96,7 @@ library
 
 test-suite cylinder
   type: exitcode-stdio-1.0
-  main-is: Cylinder.hs
+  main-is: CylinderMain.hs
   other-modules:
       Zone
       Ellipsoid.Cylinder.Inner
@@ -143,7 +143,7 @@ test-suite cylinder
 
 test-suite cylinder-r
   type: exitcode-stdio-1.0
-  main-is: CylinderR.hs
+  main-is: CylinderRMain.hs
   other-modules:
       Zone
       Ellipsoid.Cylinder.Inner
@@ -255,26 +255,76 @@ test-suite doctest
     , uom-plugin
   default-language: Haskell2010
 
-test-suite geodesy
+test-suite forbes
   type: exitcode-stdio-1.0
-  main-is: Geodesy.hs
+  main-is: ForbesMain.hs
   other-modules:
       Zone
       Distance
+      Ellipsoid.Span
+      Flat.Span
       Forbes
       ForbesComments
+      Sphere.Span
+      Tolerance
+      Ellipsoid.Forbes
+      Flat.Forbes
+      Sphere.Forbes
+      Paths_flight_earth
+  hs-source-dirs:
+      test-suite/zone
+      test-suite/geodesy
+      test-suite-forbes
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite geodesy
+  type: exitcode-stdio-1.0
+  main-is: GeodesyMain.hs
+  other-modules:
+      Zone
+      Distance
+      Ellipsoid.Span
+      Flat.Span
+      Forbes
+      ForbesComments
+      Sphere.Span
       Tolerance
       Ellipsoid.Coincident
       Ellipsoid.Ellipsoid
       Ellipsoid.Forbes
       Ellipsoid.Meridian
       Ellipsoid.Published
-      Ellipsoid.Span
       Flat.Flat
       Flat.Forbes
       Flat.General
       Flat.Published
-      Flat.Span
       Props.Euclidean
       Props.Haversine
       Props.Vincenty
@@ -296,7 +346,6 @@ test-suite geodesy
       Sphere.Greda
       Sphere.Meridian
       Sphere.Published
-      Sphere.Span
       Sphere.Sphere
       Sphere.Touching
       Paths_flight_earth

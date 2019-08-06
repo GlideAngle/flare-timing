@@ -80,11 +80,31 @@ in    defs
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
-                    "Geodesy.hs"
+                    "GeodesyMain.hs"
                 , source-dirs =
                     [ "test-suite/zone"
                     , "test-suite/geodesy"
                     , "test-suite-geodesy"
+                    ]
+                }
+            , forbes =
+                { dependencies =
+                    [ "flight-earth"
+                    , "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    , "tasty-compare"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "ForbesMain.hs"
+                , source-dirs =
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite-forbes"
                     ]
                 }
             , cylinder =
@@ -100,7 +120,7 @@ in    defs
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
-                    "Cylinder.hs"
+                    "CylinderMain.hs"
                 , source-dirs =
                     [ "test-suite/zone"
                     , "test-suite/cylinder"
@@ -120,7 +140,7 @@ in    defs
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
-                    "CylinderR.hs"
+                    "CylinderRMain.hs"
                 , source-dirs =
                     [ "test-suite/zone"
                     , "test-suite/cylinder"
