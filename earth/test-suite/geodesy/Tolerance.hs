@@ -13,6 +13,7 @@ module Tolerance
     ) where
 
 import Prelude hiding (span)
+import Data.Bifunctor
 import Data.List (zipWith5)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit as HU (testCase)
@@ -51,13 +52,19 @@ diff (TaskDistance a) (TaskDistance b) =
 
 diffAz :: DMS -> DMS -> DMS
 diffAz x y =
-    fromQuantity $ x' -: y'
+    dxy
     where
-        x' :: Quantity _ [u| rad |]
+        x' :: Quantity _ [u| deg |]
         x' = toQuantity x
 
-        y' :: Quantity _ [u| rad |]
+        y' :: Quantity _ [u| deg |]
         y' = toQuantity y
+
+        dxy' :: Quantity _ [u| deg |]
+        dxy' = normalize $ x' -: y'
+
+        dxy :: DMS
+        dxy = normalize $ fromQuantity dxy'
 
 describeDirect
     :: (Real a, Fractional a)
@@ -113,6 +120,30 @@ describeAzimuthFwd x y azActual azExpected tolerance =
     ++ show azActual
     ++ ")"
 
+describeAzimuthFwd'
+    :: (DMS, DMS)
+    -> (DMS, DMS)
+    -> Maybe DMS
+    -> DMS
+    -> DMS
+    -> String
+describeAzimuthFwd' x y azActual _azExpected _tolerance =
+    show x'
+    ++ " to "
+    ++ show y'
+    ++ " -> _ ± _ ("
+    ++ show azActual'
+    ++ ")"
+    where
+        x' :: (Quantity _ [u| deg |], Quantity _ [u| deg |])
+        x' = bimap toQuantity toQuantity x
+
+        y' :: (Quantity _ [u| deg |], Quantity _ [u| deg |])
+        y' = bimap toQuantity toQuantity y
+
+        azActual' :: Maybe (Quantity _ [u| deg |])
+        azActual' = toQuantity <$> azActual
+
 describeAzimuthRev
     :: (DMS, DMS)
     -> (DMS, DMS)
@@ -131,6 +162,30 @@ describeAzimuthRev x y azActual azExpected tolerance =
     ++ " ("
     ++ show azActual
     ++ ")"
+
+describeAzimuthRev'
+    :: (DMS, DMS)
+    -> (DMS, DMS)
+    -> Maybe DMS
+    -> Maybe DMS
+    -> DMS
+    -> String
+describeAzimuthRev' x y azActual _azExpected _tolerance =
+    show x'
+    ++ " to "
+    ++ show y'
+    ++ " -> _ ± _ ("
+    ++ show azActual'
+    ++ ")"
+    where
+        x' :: (Quantity _ [u| deg |], Quantity _ [u| deg |])
+        x' = bimap toQuantity toQuantity x
+
+        y' :: (Quantity _ [u| deg |], Quantity _ [u| deg |])
+        y' = bimap toQuantity toQuantity y
+
+        azActual' :: Maybe (Quantity _ [u| deg |])
+        azActual' = toQuantity <$> azActual
 
 sFoundD
     :: (LatLng Double [u| rad |] -> LatLng Double [u| rad |] -> a)
@@ -242,10 +297,18 @@ dblInverseChecks
                 @?<= TaskDistance tolerance
 
             , HU.testCase (describeAzimuthFwd x y α₁' α₁ azTolerance)
-                $ flip diffAz α₁ <$> α₁'
+                $ (flip diffAz) α₁ <$> α₁'
+                @?<= Just azTolerance
+
+            , HU.testCase (describeAzimuthFwd' x y α₁' α₁ azTolerance)
+                $ (flip diffAz) α₁ <$> α₁'
                 @?<= Just azTolerance
 
             , HU.testCase (describeAzimuthRev x y α₂' α₂ azTolerance)
+                $ diffAz <$> α₂' <*> α₂
+                @?<= Just azTolerance
+
+            , HU.testCase (describeAzimuthRev' x y α₂' α₂ azTolerance)
                 $ diffAz <$> α₂' <*> α₂
                 @?<= Just azTolerance
             ]
