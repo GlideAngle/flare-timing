@@ -102,6 +102,12 @@ showDMS_ dms@(DMS (deg, min, sec)) =
     ++ secToShow_ sec
     ++ "''"
 
+-- |
+-- >>> toDeg $ DMS (0, 0, 0)
+-- 0.0
+--
+-- >>> toDeg $ DMS (289, 30, 0)
+-- 289.5
 toDeg :: DMS -> Double
 toDeg dms@(DMS (deg, min, s)) =
     signDMS dms * (abs d + abs m / 60 + abs s / 3600)

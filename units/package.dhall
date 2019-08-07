@@ -37,5 +37,16 @@ in    defs
               ]
           }
       , tests =
-          ./../default-tests.dhall
+            ./../default-tests.dhall
+          ⫽ { doctest =
+                { dependencies =
+                    [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            }
       }
