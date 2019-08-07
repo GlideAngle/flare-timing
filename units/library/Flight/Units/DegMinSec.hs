@@ -45,7 +45,7 @@ secToShow_ :: Double -> String
 secToShow_ sec =
     if fromIntegral isec == sec
         then show (abs isec)
-        else printf "%.1f" (abs sec)
+        else printf "%.6f" (abs sec)
     where
         isec :: Int
         isec = floor sec
