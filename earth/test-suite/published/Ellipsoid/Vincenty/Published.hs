@@ -65,7 +65,7 @@ vincentyAzTolerance :: AzTolerance
 vincentyAzTolerance = defaultAzTolerance
 
 bedfordAzTolerance :: AzTolerance
-bedfordAzTolerance = DMS (0, 0, 0.1)
+bedfordAzTolerance = DMS (0, 0, 0.139737)
 
 geoSciAuTolerance :: Fractional a => GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 0.5 mm |]
