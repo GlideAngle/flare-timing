@@ -8,7 +8,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
-import Flight.Earth.Ellipsoid (Ellipsoid, wgs84, clarke)
+import Flight.Earth.Ellipsoid (Ellipsoid, wgs84, bedfordClarke)
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -26,9 +26,9 @@ import qualified Published.Bedford as B
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
+import Tolerance (GetTolerance, AzTolerance)
 import qualified Tolerance as T
-    ( GetTolerance
-    , dblDirectChecks, ratDirectChecks
+    ( dblDirectChecks, ratDirectChecks
     , dblInverseChecks, ratInverseChecks
     )
 import Flight.Geodesy (DProb, DSoln, IProb, ISoln)
@@ -52,16 +52,28 @@ unitsR =
     , bedfordUnitsR
     ]
 
-azTolerance :: DMS
-azTolerance = DMS (0, 0, 0.001)
+defaultAzTolerance :: AzTolerance
+defaultAzTolerance = DMS (0, 0, 0.001)
 
-geoSciAuTolerance :: Fractional a => T.GetTolerance a
+geoSciAuAzTolerance :: AzTolerance
+geoSciAuAzTolerance = defaultAzTolerance
+
+ngsAzTolerance :: AzTolerance
+ngsAzTolerance = defaultAzTolerance
+
+vincentyAzTolerance :: AzTolerance
+vincentyAzTolerance = defaultAzTolerance
+
+bedfordAzTolerance :: AzTolerance
+bedfordAzTolerance = defaultAzTolerance
+
+geoSciAuTolerance :: Fractional a => GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 0.5 mm |]
 
-ngsTolerance :: Fractional a => T.GetTolerance a
+ngsTolerance :: Fractional a => GetTolerance a
 ngsTolerance = const . convert $ [u| 0.15 mm |]
 
-vincentyTolerance :: Fractional a => T.GetTolerance a
+vincentyTolerance :: Fractional a => GetTolerance a
 vincentyTolerance = const . convert $ [u| 0.8 mm |]
 
 bedfordTolerance
@@ -77,7 +89,7 @@ bedfordTolerance d'
         d = convert d'
 
 dblDirectChecks
-    :: T.GetTolerance Double
+    :: GetTolerance Double
     -> [Ellipsoid Double]
     -> [DSoln]
     -> [DProb]
@@ -86,7 +98,7 @@ dblDirectChecks tolerance ellipsoid =
     T.dblDirectChecks tolerance (spanD <$> ellipsoid)
 
 ratDirectChecks
-    :: T.GetTolerance Rational
+    :: GetTolerance Rational
     -> [Ellipsoid Rational]
     -> [DSoln]
     -> [DProb]
@@ -95,12 +107,13 @@ ratDirectChecks tolerance ellipsoid =
     T.ratDirectChecks tolerance (spanR <$> ellipsoid)
 
 dblInverseChecks
-    :: T.GetTolerance Double
+    :: GetTolerance Double
+    -> AzTolerance
     -> [Ellipsoid Double]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecks tolerance ellipsoid =
+dblInverseChecks tolerance azTolerance ellipsoid =
     T.dblInverseChecks
         tolerance
         azTolerance
@@ -109,13 +122,14 @@ dblInverseChecks tolerance ellipsoid =
         (azRevD <$> ellipsoid)
 
 ratInverseChecks
-    :: T.GetTolerance Rational
+    :: GetTolerance Rational
+    -> AzTolerance
     -> [Ellipsoid Rational]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-ratInverseChecks tolerance ellipsoid =
-    T.ratInverseChecks tolerance (spanR <$> ellipsoid)
+ratInverseChecks tolerance azTolerance ellipsoid =
+    T.ratInverseChecks tolerance azTolerance (spanR <$> ellipsoid)
 
 geoSciAuUnits :: TestTree
 geoSciAuUnits =
@@ -124,6 +138,7 @@ geoSciAuUnits =
         [ testGroup "with doubles"
             $ dblInverseChecks
                 geoSciAuTolerance
+                geoSciAuAzTolerance
                 (repeat wgs84)
                 G.inverseSolutions
                 G.inverseProblems
@@ -146,6 +161,7 @@ geoSciAuUnitsR =
         [ testGroup "with rationals"
             $ ratInverseChecks
                 geoSciAuTolerance
+                geoSciAuAzTolerance
                 (repeat wgs84)
                 G.inverseSolutions
                 G.inverseProblems
@@ -168,6 +184,7 @@ ngsUnits =
         [ testGroup "with doubles"
             $ dblInverseChecks
                 ngsTolerance
+                ngsAzTolerance
                 (repeat wgs84)
                 N.inverseSolutions
                 N.inverseProblems
@@ -190,6 +207,7 @@ ngsUnitsR =
         [ testGroup "with rationals"
             $ ratInverseChecks
                 ngsTolerance
+                ngsAzTolerance
                 (repeat wgs84)
                 N.inverseSolutions
                 N.inverseProblems
@@ -212,6 +230,7 @@ vincentyUnits =
         [ testGroup "with doubles"
             $ dblInverseChecks
                 vincentyTolerance
+                vincentyAzTolerance
                 V.ellipsoids
                 V.inverseSolutions
                 V.inverseProblems
@@ -234,6 +253,7 @@ vincentyUnitsR =
         [ testGroup "with rationals"
             $ ratInverseChecks
                 vincentyTolerance
+                vincentyAzTolerance
                 V.ellipsoids
                 V.inverseSolutions
                 V.inverseProblems
@@ -256,7 +276,8 @@ bedfordUnits =
         [ testGroup "with doubles"
             $ dblInverseChecks
                 bedfordTolerance
-                (repeat clarke)
+                bedfordAzTolerance
+                (repeat bedfordClarke)
                 B.inverseSolutions
                 B.inverseProblems
         ]
@@ -265,7 +286,7 @@ bedfordUnits =
         [ testGroup "with doubles"
             $ dblDirectChecks
                 bedfordTolerance
-                (repeat clarke)
+                (repeat bedfordClarke)
                 B.directSolutions
                 B.directProblems
         ]
@@ -278,7 +299,8 @@ bedfordUnitsR =
         [ testGroup "with rationals"
             $ ratInverseChecks
                 bedfordTolerance
-                (repeat clarke)
+                bedfordAzTolerance
+                (repeat bedfordClarke)
                 B.inverseSolutions
                 B.inverseProblems
         ]
@@ -287,7 +309,7 @@ bedfordUnitsR =
         [ testGroup "with rationals"
             $ ratDirectChecks
                 bedfordTolerance
-                (repeat clarke)
+                (repeat bedfordClarke)
                 B.directSolutions
                 B.directProblems
         ]

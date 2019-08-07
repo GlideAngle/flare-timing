@@ -49,6 +49,7 @@ module Flight.Earth.Ellipsoid
     , bessel
     , hayford
     , clarke
+    , bedfordClarke
     , flattening
     , polarRadius
     , toRationalEllipsoid
@@ -160,6 +161,12 @@ clarke =
         { equatorialR = Radius [u| 6378206.4 m |]
         , recipF = 294.978698214
         }
+
+-- | The ellipsoid used in Evaluation Direct and Inverse Geodetic Algorithms,
+-- by Paul Delorme, Bedford Institute of Oceanography, Dartmouth, Nova Scotia,
+-- Canada, 11978.
+bedfordClarke :: Fractional a => Ellipsoid a
+bedfordClarke = clarke{recipF = 294.9786986}
 
 -- | The flattening of the ellipsoid.
 flattening :: Fractional a => Ellipsoid a -> a

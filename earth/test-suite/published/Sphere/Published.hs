@@ -20,9 +20,9 @@ import qualified Published.Bedford as B
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
+import Tolerance (GetTolerance, AzTolerance)
 import qualified Tolerance as T
-    ( GetTolerance
-    , dblDirectChecks, ratDirectChecks
+    ( dblDirectChecks, ratDirectChecks
     , dblInverseChecks, ratInverseChecks
     )
 import Flight.Geodesy (DProb, DSoln, IProb, ISoln)
@@ -44,10 +44,19 @@ unitsR =
     , bedfordUnitsR
     ]
 
-azTolerance :: DMS
-azTolerance = DMS (0, 0, 0.001)
+defaultAzTolerance :: AzTolerance
+defaultAzTolerance = DMS (0, 0, 0.001)
 
-geoSciAuTolerance :: Fractional a => T.GetTolerance a
+geoSciAuAzTolerance :: AzTolerance
+geoSciAuAzTolerance = defaultAzTolerance
+
+vincentyAzTolerance :: AzTolerance
+vincentyAzTolerance = defaultAzTolerance
+
+bedfordAzTolerance :: AzTolerance
+bedfordAzTolerance = defaultAzTolerance
+
+geoSciAuTolerance :: Fractional a => GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 47 m |]
 
 vincentyTolerance
@@ -73,7 +82,7 @@ bedfordTolerance d'
         d = convert d'
 
 dblDirectChecks
-    :: T.GetTolerance Double
+    :: GetTolerance Double
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
@@ -81,7 +90,7 @@ dblDirectChecks tolerance =
     T.dblDirectChecks tolerance (repeat spanD)
 
 ratDirectChecks
-    :: T.GetTolerance Rational
+    :: GetTolerance Rational
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
@@ -89,11 +98,12 @@ ratDirectChecks tolerance =
     T.ratDirectChecks tolerance (repeat spanR)
 
 dblInverseChecks
-    :: T.GetTolerance Double
+    :: GetTolerance Double
+    -> AzTolerance
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecks tolerance =
+dblInverseChecks tolerance azTolerance =
     T.dblInverseChecks
         tolerance
         azTolerance
@@ -102,12 +112,13 @@ dblInverseChecks tolerance =
         (repeat azRevD)
 
 ratInverseChecks
-    :: T.GetTolerance Rational
+    :: GetTolerance Rational
+    -> AzTolerance
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-ratInverseChecks tolerance =
-    T.ratInverseChecks tolerance (repeat spanR)
+ratInverseChecks tolerance azTolerance =
+    T.ratInverseChecks tolerance azTolerance (repeat spanR)
 
 geoSciAuUnits :: TestTree
 geoSciAuUnits =
@@ -116,6 +127,7 @@ geoSciAuUnits =
         [ testGroup "with doubles"
             $ dblInverseChecks
                 geoSciAuTolerance
+                geoSciAuAzTolerance
                 G.inverseSolutions
                 G.inverseProblems
         ]
@@ -136,6 +148,7 @@ geoSciAuUnitsR =
         [ testGroup "with rationals"
             $ ratInverseChecks
                 geoSciAuTolerance
+                geoSciAuAzTolerance
                 G.inverseSolutions
                 G.inverseProblems
         ]
@@ -156,6 +169,7 @@ vincentyUnits =
         [ testGroup "with doubles"
             $ dblInverseChecks
                 vincentyTolerance
+                vincentyAzTolerance
                 V.inverseSolutions
                 V.inverseProblems
         ]
@@ -176,6 +190,7 @@ vincentyUnitsR =
         [ testGroup "with rationals"
             $ ratInverseChecks
                 vincentyTolerance
+                vincentyAzTolerance
                 V.inverseSolutions
                 V.inverseProblems
         ]
@@ -196,6 +211,7 @@ bedfordUnits =
         [ testGroup "with doubles"
             $ dblInverseChecks
                 bedfordTolerance
+                bedfordAzTolerance
                 B.inverseSolutions
                 B.inverseProblems
         ]
@@ -216,6 +232,7 @@ bedfordUnitsR =
         [ testGroup "with rationals"
             $ ratInverseChecks
                 bedfordTolerance
+                bedfordAzTolerance
                 B.inverseSolutions
                 B.inverseProblems
         ]
