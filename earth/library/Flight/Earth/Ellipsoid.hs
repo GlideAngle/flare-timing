@@ -46,6 +46,7 @@ module Flight.Earth.Ellipsoid
     , Andoyer(..)
     , defaultGeodeticAccuracy
     , wgs84
+    , nad83
     , bessel
     , hayford
     , clarke
@@ -129,6 +130,13 @@ wgs84 =
         { equatorialR = Radius [u| 6378137 m |]
         , recipF = 298.257223563
         }
+
+-- | As used by the National Geodetic Survey tool inverse when selecting the
+-- ellipsoid 1) GRS80 / WGS84  (NAD83)
+-- SEE: https://www.ngs.noaa.gov/PC_PROD/Inv_Fwd/
+nad83 :: Fractional a => Ellipsoid a
+nad83 =
+    wgs84{recipF = 298.25722210088}
 
 -- | The Bessel ellipsoid from Vincenty 1975. Note that the flattening from
 -- Wikipedia for the Bessel ellipsoid is 299.1528153513233 not 299.1528128.
