@@ -68,8 +68,8 @@ inverse
                 sinλ = sin λ
                 cosλ = cos λ
 
-                i' = cosU₁ * sinλ
-                j' = -sinU₁ * cosU₂ + cosU₁ * sinU₂ * cosλ
+                i' = -cosU₁ * sinλ
+                j' = sinU₁ * cosU₂ - cosU₁ * sinU₂ * cosλ
 
                 i = cosU₂ * sinλ
                 j = cosU₁ * sinU₂ - sinU₁ * cosU₂ * cosλ
@@ -83,7 +83,7 @@ inverse
                 sinα = cosU₁cosU₂ * sinλ / sinσ
                 cos²α = 1 - sinα * sinα
                 _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
-                u² = let b² = b * b in cos²α * (a * a - b²) / b² 
+                u² = let b² = b * b in cos²α * (a * a - b²) / b²
 
                 -- NOTE: Start and end points on the equator, _C = 0.
                 cos2σm = if cos²α == 0 then 0 else cosσ - 2 * sinU₁sinU₂ / cos²α
