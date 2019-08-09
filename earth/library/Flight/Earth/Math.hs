@@ -69,7 +69,10 @@ normalizeLngR (Epsilon eps) lng =
 -- >>> atan2 (negate 4) 3 == - atan (4 / 3)
 -- True
 --
--- >>> atan2'' e15 0 1
+-- >>> atan2'' e3 0 1
+-- 0.0
+--
+-- >>> atan2'' e21 0 1
 -- 0.0
 --
 -- >>> atan2'' e12 1 0
@@ -87,7 +90,19 @@ normalizeLngR (Epsilon eps) lng =
 -- >>> atan2'' e15 0 (negate 1)
 -- 3.141592653589793
 --
+-- >>> atan2'' e18 0 (negate 1)
+-- 3.141592653589793
+--
+-- >>> atan2'' e21 0 (negate 1)
+-- 3.141592653589793
+--
 -- >>> atan2'' e15 (negate 1) 0
+-- -1.5707963267948966
+--
+-- >>> atan2'' e18 (negate 1) 0
+-- -1.5707963267948966
+--
+-- >>> atan2'' e21 (negate 1) 0
 -- -1.5707963267948966
 --
 -- >>> atan2'' e15 4 3
@@ -96,10 +111,16 @@ normalizeLngR (Epsilon eps) lng =
 -- >>> atan2'' e18 4 3
 -- 0.9272952180016122
 --
+-- >>> atan2'' e21 4 3
+-- 0.9272952180016122
+--
 -- >>> atan2'' e15 (negate 4) 3
 -- -0.9272952180016129
 --
 -- >>> atan2'' e18 (negate 4) 3
+-- -0.9272952180016122
+--
+-- >>> atan2'' e21 (negate 4) 3
 -- -0.9272952180016122
 --
 -- >>> atan2'' e15 4 (negate 3)
@@ -108,10 +129,16 @@ normalizeLngR (Epsilon eps) lng =
 -- >>> atan2'' e18 4 (negate 3)
 -- 2.214297435588181
 --
+-- >>> atan2'' e21 4 (negate 3)
+-- 2.214297435588181
+--
 -- >>> atan2'' e15 (negate 4) (negate 3)
 -- -2.2142974355881804
 --
 -- >>> atan2'' e18 (negate 4) (negate 3)
+-- -2.214297435588181
+--
+-- >>> atan2'' e21 (negate 4) (negate 3)
 -- -2.214297435588181
 --
 -- >>> atan2'' e15 4 3 == atan (4 / 3)
@@ -120,10 +147,16 @@ normalizeLngR (Epsilon eps) lng =
 -- >>> atan2'' e18 4 3 == atan (4 / 3)
 -- True
 --
+-- >>> atan2'' e21 4 3 == atan (4 / 3)
+-- True
+--
 -- >>> atan2'' e15 (negate 4) 3 == - atan (4 / 3)
 -- False
 --
 -- >>> atan2'' e18 (negate 4) 3 == - atan (4 / 3)
+-- True
+--
+-- >>> atan2'' e21 (negate 4) 3 == - atan (4 / 3)
 -- True
 atan2' :: Epsilon -> Rational -> Rational -> Rational
 atan2' e@(Epsilon eps) y x
