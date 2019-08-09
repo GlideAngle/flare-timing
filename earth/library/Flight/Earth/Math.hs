@@ -38,6 +38,36 @@ normalizeLngR (Epsilon eps) lng =
 -- | The numbers package doesn't have atan2.
 -- SEE: https://hackage.haskell.org/package/base
 -- SEE: https://stackoverflow.com/questions/283406/what-is-the-difference-between-atan-and-atan2-in-c
+--
+-- >>> atan2 0 1
+-- 0.0
+--
+-- >>> atan2 1 0
+-- 1.5707963267948966
+--
+-- >>> atan2 0 (negate 1)
+-- 3.141592653589793
+--
+-- >>> atan2 (negate 1) 0
+-- -1.5707963267948966
+--
+-- >>> atan2 4 3
+-- 0.9272952180016122
+--
+-- >>> atan2 (negate 4) 3
+-- -0.9272952180016122
+--
+-- >>> atan2 4 (negate 3)
+-- 2.214297435588181
+--
+-- >>> atan2 (negate 4) (negate 3)
+-- -2.214297435588181
+--
+-- >>> atan2 4 3 == atan (4 / 3)
+-- True
+--
+-- >>> atan2 (negate 4) 3 == - atan (4 / 3)
+-- True
 atan2' :: Epsilon -> Rational -> Rational -> Rational
 atan2' e@(Epsilon eps) y x
     | x > 0 = atan' $ y / x
@@ -57,3 +87,6 @@ cos2 cos' σ1 σ = (cos2σm, cos²2σm)
         _2σm = 2 * σ1 + σ
         cos2σm = cos' _2σm
         cos²2σm = cos2σm * cos2σm
+
+-- $setup
+-- >>> import Flight.LatLng.Rational (Epsilon(..), defEps)
