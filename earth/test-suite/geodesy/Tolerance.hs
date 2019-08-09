@@ -174,7 +174,7 @@ describeAzimuthRev' x y azActual _azExpected _tolerance =
     show x'
     ++ " to "
     ++ show y'
-    ++ " -> _ ± _ ("
+    ++ " <- _ ± _ ("
     ++ show azActual'
     ++ ")"
     where
