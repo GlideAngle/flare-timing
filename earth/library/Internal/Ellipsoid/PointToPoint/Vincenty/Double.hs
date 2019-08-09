@@ -68,8 +68,24 @@ inverse
                 sinλ = sin λ
                 cosλ = cos λ
 
-                i' = -cosU₁ * sinλ
-                j' = sinU₁ * cosU₂ - cosU₁ * sinU₂ * cosλ
+                -- WARNING: The sign of numerator and denominator are important
+                -- in atan2. The sign of each term below follows Vincenty's
+                -- 1975 paper "Direct and Inverse Solutions of Geodesics on the
+                -- Ellipsoid with Application of Nested Equations"
+                --
+                -- i' = cosU₁ * sinλ
+                -- j' = -sinU₁ * cosU₂ + cosU₁ * sinU₂ * cosλ
+                --
+                -- By contrast Delorme's 1978 paper "Evaluation Direct and
+                -- Inverse Geodetic Algorithms" has this formulation with the
+                -- signs reversed.
+                --
+                -- i' = -cosU₁ * sinλ
+                -- j' = sinU₁ * cosU₂ - cosU₁ * sinU₂ * cosλ
+                --
+                -- As the method is Vincenty's I'm going their signage.
+                i' = cosU₁ * sinλ
+                j' = -sinU₁ * cosU₂ + cosU₁ * sinU₂ * cosλ
 
                 i = cosU₂ * sinλ
                 j = cosU₁ * sinU₂ - sinU₁ * cosU₂ * cosλ
