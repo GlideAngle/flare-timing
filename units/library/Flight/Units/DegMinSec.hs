@@ -3,6 +3,9 @@
 module Flight.Units.DegMinSec
     ( DMS(..)
     , DMS_(..)
+    , DiffDMS
+    , diffDMS
+    , diffDMS180
     , toDeg
     , toQDeg
     , toQRad
@@ -15,11 +18,13 @@ import Data.Text.Lazy (unpack)
 import Formatting (format)
 import Text.Printf (printf)
 import qualified Formatting.ShortFormatters as Fmt (sf)
-import Data.UnitsOfMeasure ((+:), u, convert)
+import Data.UnitsOfMeasure ((+:), (-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
 
 import Flight.Units.Angle (Angle(..))
+
+type DiffDMS = DMS -> DMS -> DMS
 
 newtype DMS = DMS (Int, Int, Double) deriving Eq
 
@@ -187,3 +192,109 @@ instance Ord DMS where
 
             y' :: Quantity Double [u| deg |]
             y' = toQuantity $ normalize y
+
+-- |
+-- >>> diffDMS (DMS (0,0,0)) (DMS (0,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (0,0,0)) (DMS (360,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (360,0,0)) (DMS (360,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (360,0,0)) (DMS (0,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (90,0,0)) (DMS (90,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (180,0,0)) (DMS (180,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (270,0,0)) (DMS (270,0,0))
+-- 0°
+--
+--
+-- >>> diffDMS (DMS (0,0,0)) (DMS (90,0,0))
+-- 270°
+--
+-- >>> diffDMS (DMS (360,0,0)) (DMS (90,0,0))
+-- 270°
+--
+-- >>> diffDMS (DMS (90,0,0)) (DMS (180,0,0))
+-- 270°
+--
+-- >>> diffDMS (DMS (180,0,0)) (DMS (270,0,0))
+-- 270°
+--
+-- >>> diffDMS (DMS (270,0,0)) (DMS (0,0,0))
+-- 270°
+--
+-- >>> diffDMS (DMS (270,0,0)) (DMS (360,0,0))
+-- 270°
+--
+--
+-- >>> diffDMS (DMS (0,0,0)) (DMS (180,0,0))
+-- 180°
+--
+-- >>> diffDMS (DMS (360,0,0)) (DMS (180,0,0))
+-- 180°
+--
+-- >>> diffDMS (DMS (90,0,0)) (DMS (270,0,0))
+-- 180°
+--
+-- >>> diffDMS (DMS (180,0,0)) (DMS (0,0,0))
+-- 180°
+--
+-- >>> diffDMS (DMS (180,0,0)) (DMS (360,0,0))
+-- 180°
+--
+-- >>> diffDMS (DMS (270,0,0)) (DMS (90,0,0))
+-- 180°
+--
+--
+-- >>> diffDMS (DMS (0,0,0)) (DMS (270,0,0))
+-- 90°
+--
+-- >>> diffDMS (DMS (360,0,0)) (DMS (270,0,0))
+-- 90°
+--
+-- >>> diffDMS (DMS (90,0,0)) (DMS (0,0,0))
+-- 90°
+--
+-- >>> diffDMS (DMS (90,0,0)) (DMS (360,0,0))
+-- 90°
+--
+-- >>> diffDMS (DMS (180,0,0)) (DMS (90,0,0))
+-- 90°
+--
+-- >>> diffDMS (DMS (270,0,0)) (DMS (180,0,0))
+-- 90°
+--
+--
+-- >>> diffDMS (DMS (95,27,59.63089)) (DMS (-95,28,0.3691116037646225))
+-- 190°56'1.6037483874242753e-6''
+diffDMS :: DiffDMS
+diffDMS y x =
+    dyx
+    where
+        y' :: Quantity Double [u| deg |]
+        y' = toQuantity y
+
+        x' :: Quantity Double [u| deg |]
+        x' = toQuantity x
+
+        dyx' :: Quantity Double [u| deg |]
+        dyx' = normalize $ y' -: x'
+
+        dyx :: DMS
+        dyx = normalize $ fromQuantity dyx'
+
+-- | Some of the papers have test data that flip the reverse azimuth 180°. The
+-- sign of the numerator and denominator vary in implementations of Vincenty's
+-- inverse solution and the call to atan2 to get the reverse azimuth is
+-- sensitive to this.
+diffDMS180 :: DiffDMS
+diffDMS180 x y = diffDMS180 (rotate (DMS (180, 0, 0)) x) y
+

@@ -4,8 +4,6 @@ module Tolerance
     ( GetTolerance
     , AzTolerance
     , diff
-    , diffAz
-    , diffAz180
     , showTolerance
     , describeInverseDistance
     , dblDirectChecks
@@ -24,7 +22,7 @@ import Data.UnitsOfMeasure ((-:), u, convert, fromRational', toRational', abs')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..))
+import Flight.Units.DegMinSec (DMS(..), DiffDMS)
 import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (LatLng, AzimuthFwd, AzimuthRev, fromDMS)
 import Flight.Distance (QTaskDistance, TaskDistance(..), SpanLatLng)
@@ -51,32 +49,6 @@ showTolerance d
 diff :: Num a => QTaskDistance a u -> QTaskDistance a u -> QTaskDistance a u
 diff (TaskDistance a) (TaskDistance b) =
     TaskDistance . abs' $ a -: b
-
-
-type DiffAz = DMS -> DMS -> DMS
-
-diffAz :: DiffAz
-diffAz x y =
-    dxy
-    where
-        x' :: Quantity _ [u| deg |]
-        x' = toQuantity x
-
-        y' :: Quantity _ [u| deg |]
-        y' = toQuantity y
-
-        dxy' :: Quantity _ [u| deg |]
-        dxy' = normalize $ x' -: y'
-
-        dxy :: DMS
-        dxy = normalize $ fromQuantity dxy'
-
--- | Some of the papers have test data that flip the reverse azimuth 180°. The
--- sign of the numerator and denominator vary in implementations of Vincenty's
--- inverse solution and the call to atan2 to get the reverse azimuth is
--- sensitive to this.
-diffAz180 :: DiffAz
-diffAz180 x y = diffAz (rotate (DMS (180, 0, 0)) x) y
 
 describeDirect
     :: (Real a, Fractional a)
@@ -280,8 +252,8 @@ ratDirectChecks getTolerance =
                     $ (\(TaskDistance q) -> q) sExpected
 
 dblInverseChecks
-    :: DiffAz -- ^ Difference in forward azimuth
-    -> DiffAz -- ^ Difference in reverse azimuth
+    :: DiffDMS -- ^ Difference in forward azimuth
+    -> DiffDMS -- ^ Difference in reverse azimuth
     -> GetTolerance Double
     -> AzTolerance
     -> [SpanLatLng Double]
@@ -316,17 +288,21 @@ dblInverseChecks
                 $ (flip diffAzFwd) α₁ <$> α₁'
                 @?<= Just azTolerance
 
+    {-
             , HU.testCase (describeAzimuthFwd' x y α₁' α₁ azTolerance)
                 $ (flip diffAzFwd) α₁ <$> α₁'
                 @?<= Just azTolerance
+                -}
 
             , HU.testCase (describeAzimuthRev x y α₂' α₂ azTolerance)
                 $ diffAzRev <$> α₂' <*> α₂
                 @?<= Just azTolerance
 
+    {-
             , HU.testCase (describeAzimuthRev' x y α₂' α₂ azTolerance)
                 $ diffAzRev <$> α₂' <*> α₂
                 @?<= Just azTolerance
+                -}
             ]
             where
                 tolerance = convert . getTolerance $ (\(TaskDistance q) -> q) s
