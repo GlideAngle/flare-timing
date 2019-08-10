@@ -22,16 +22,6 @@ import Flight.Earth.Ellipsoid
 import Flight.Geodesy (InverseProblem(..), InverseSolution(..))
 import Flight.Earth.Math (normalizeLng)
 
--- Intersection of Hyperbolae on the Earth
--- by N. Stuifbergen, Dec 1980, Tech. Report #77
--- UNB, Geodesy and Geomatics Engineering
--- SEE: http://www2.unb.ca/gge/Pubs/TR77.pdf
--- Section 3.1 Forsythe-Andoyer-Lamber Formulae
--- The Andoyer-Lambert method consists of calculating a spherical arc length on
--- an auxillary sphere of radius a, the ellipsoid major axis semi-diameter, and
--- applying correction terms to find the distance correpsondingg to the
--- ellipsoidal arc.
-
 inverse
     :: (Num a, Fractional a, RealFloat a)
     => Andoyer
@@ -57,7 +47,89 @@ inverse
                 TaskDistance . MkQuantity $
                     case andoyer of
                          AndoyerLambert -> a * (d + f * d₁)
-                         ForsytheAndoyerLambert -> a * (d + f * _Δd)
+                         ForsytheAndoyerLambert -> a * (d + f * (d₁ + d₂))
+
+            , α₁ = MkQuantity $ atan2 i j
+            , α₂ = Just . MkQuantity $ atan2 i' j'
+            }
+    where
+        f = flattening ellipsoid
+
+        auxLat = atan . ((1 - f) *) . tan
+        _U₁ = auxLat _Φ₁; _U₂ = auxLat _Φ₂
+
+        λ =
+            case _L₂ - _L₁ of
+                _L' | abs _L' <= pi -> _L'
+                _ -> normalizeLng _L₂ - normalizeLng _L₁
+
+        sinU₁ = sin _U₁; sinU₂ = sin _U₂
+        cosU₁ = cos _U₁; cosU₂ = cos _U₂
+
+        sinU₁sinU₂ = sinU₁ * sinU₂
+        cosU₁cosU₂ = cosU₁ * cosU₂
+
+        sinλ = sin λ
+        cosλ = cos λ
+
+        i' = cosU₁ * sinλ
+        j' = -sinU₁ * cosU₂ + cosU₁ * sinU₂ * cosλ
+
+        i = cosU₂ * sinλ
+        j = cosU₁ * sinU₂ - sinU₁ * cosU₂ * cosλ
+
+        cosd = sinU₁sinU₂ + cosU₁cosU₂ * cosλ
+        d = acos cosd
+        sind = sin d
+
+        -- NOTE: This is the same Andoyer correction as used in FS.
+        _K = let x = sinU₁ - sinU₂ in x * x
+        _L = let x = sinU₁ + sinU₂ in x * x
+        _3sind = 3 * sind
+
+        _1minuscosd = 1 - cosd
+        _1pluscosd = 1 + cosd
+
+        _H = if _1minuscosd == 0 then 0 else (d + _3sind) / _1minuscosd
+        _G = if _1pluscosd == 0 then 0 else (d - _3sind) / _1pluscosd
+        d₁ = -(f / 4) * (_H * _K + _G * _L)
+        d₂ = 0
+
+-- Intersection of Hyperbolae on the Earth
+-- by N. Stuifbergen, Dec 1980, Tech. Report #77
+-- UNB, Geodesy and Geomatics Engineering
+-- SEE: http://www2.unb.ca/gge/Pubs/TR77.pdf
+-- Section 3.1 Forsythe-Andoyer-Lamber Formulae
+-- The Andoyer-Lambert method consists of calculating a spherical arc length on
+-- an auxillary sphere of radius a, the ellipsoid major axis semi-diameter, and
+-- applying correction terms to find the distance correpsondingg to the
+-- ellipsoidal arc.
+_inversePaperVerbatim
+    :: (Num a, Fractional a, RealFloat a)
+    => Andoyer
+    -> Ellipsoid a
+    -> GeodeticAccuracy a
+    -> InverseProblem (LatLng a [u| rad |])
+    -> GeodeticInverse
+        (InverseSolution
+            (QTaskDistance a [u| m |])
+            (Quantity a [u| rad |])
+        )
+_inversePaperVerbatim
+    andoyer
+    ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
+    _
+    InverseProblem
+        { x = LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁))
+        , y = LatLng (Lat (MkQuantity _Φ₂), Lng (MkQuantity _L₂))
+        } =
+    GeodeticInverse $
+        InverseSolution
+            { s =
+                TaskDistance . MkQuantity $
+                    case andoyer of
+                         AndoyerLambert -> a * (d + f * d₁)
+                         ForsytheAndoyerLambert -> a * (d + f * (d₁ + d₂))
 
             , α₁ = MkQuantity $ atan2 i j
             , α₂ = Just . MkQuantity $ atan2 i' j'
@@ -116,8 +188,6 @@ inverse
         _E = 30 * sin2d
 
         d₂ = f * (_A * _X + _B * _Y + _C * _X * _X + _D * _X * _Y + _E * _Y * _Y) / 128
-
-        _Δd = d₁ + d₂
 
 -- | Spherical distance using inverse Andoyer and floating point numbers.
 distance

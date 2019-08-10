@@ -179,7 +179,7 @@ bedfordClarke = clarke{recipF = 294.9786986}
 -- | The flattening of the ellipsoid.
 flattening :: Fractional a => Ellipsoid a -> a
 flattening Ellipsoid{recipF} =
-    recip recipF 
+    recip recipF
 
 -- | The polar radius or semi-minor axis of the ellipsoid.
 polarRadius :: Fractional a => Ellipsoid a -> Quantity a [u| m |]
