@@ -197,7 +197,13 @@ instance Ord DMS where
 -- >>> diffDMS (DMS (0,0,0)) (DMS (0,0,0))
 -- 0°
 --
+-- >>> diffDMS (DMS (0,0,0)) (DMS (-0,0,0))
+-- 0°
+--
 -- >>> diffDMS (DMS (0,0,0)) (DMS (360,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (0,0,0)) (DMS (-360,0,0))
 -- 0°
 --
 -- >>> diffDMS (DMS (360,0,0)) (DMS (360,0,0))
@@ -213,6 +219,12 @@ instance Ord DMS where
 -- 0°
 --
 -- >>> diffDMS (DMS (270,0,0)) (DMS (270,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (270,0,0)) (DMS (-90,0,0))
+-- 0°
+--
+-- >>> diffDMS (DMS (-90,0,0)) (DMS (270,0,0))
 -- 0°
 --
 --
@@ -238,13 +250,22 @@ instance Ord DMS where
 -- >>> diffDMS (DMS (0,0,0)) (DMS (180,0,0))
 -- 180°
 --
+-- >>> diffDMS (DMS (0,0,0)) (DMS (-180,0,0))
+-- 180°
+--
 -- >>> diffDMS (DMS (360,0,0)) (DMS (180,0,0))
 -- 180°
 --
 -- >>> diffDMS (DMS (90,0,0)) (DMS (270,0,0))
 -- 180°
 --
+-- >>> diffDMS (DMS (90,0,0)) (DMS (-90,0,0))
+-- 180°
+--
 -- >>> diffDMS (DMS (180,0,0)) (DMS (0,0,0))
+-- 180°
+--
+-- >>> diffDMS (DMS (-180,0,0)) (DMS (0,0,0))
 -- 180°
 --
 -- >>> diffDMS (DMS (180,0,0)) (DMS (360,0,0))
@@ -275,6 +296,9 @@ instance Ord DMS where
 --
 -- >>> diffDMS (DMS (95,27,59.63089)) (DMS (-95,28,0.3691116037646225))
 -- 190°56'1.6037483874242753e-6''
+--
+-- >>> diffDMS (DMS (-95,28,0.3691116037646225)) (DMS (95,27,59.63089))
+-- -190°56'1.603721102583222e-6''
 diffDMS :: DiffDMS
 diffDMS y x =
     dyx
