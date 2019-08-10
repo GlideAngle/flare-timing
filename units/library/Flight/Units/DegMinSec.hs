@@ -296,5 +296,4 @@ diffDMS y x =
 -- inverse solution and the call to atan2 to get the reverse azimuth is
 -- sensitive to this.
 diffDMS180 :: DiffDMS
-diffDMS180 x y = diffDMS180 (rotate (DMS (180, 0, 0)) x) y
-
+diffDMS180 y x = diffDMS (rotate (DMS (180, 0, 0)) y) x
