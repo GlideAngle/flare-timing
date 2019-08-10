@@ -59,7 +59,7 @@ in    defs
             ./../default-tests.dhall
           ⫽ { doctest =
                 { dependencies =
-                    [ "doctest" ]
+                    [ "doctest", "QuickCheck" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8f5b53d236c714bb7ee9c431f77e28edfdcd34bf1d0c24aac87c3e44585531ce
+-- hash: 6618a7ac0f3e4ae9341f7466c2b70286d2e90c17126d8f7f6192b0c41e879a2c
 
 name:           flight-earth
 version:        0.1.0
@@ -235,7 +235,8 @@ test-suite doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      aeson
+      QuickCheck
+    , aeson
     , base >=4.10.1.0 && <5
     , bifunctors
     , detour-via-sci

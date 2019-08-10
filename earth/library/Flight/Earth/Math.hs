@@ -158,6 +158,16 @@ normalizeLngR (Epsilon eps) lng =
 --
 -- >>> atan2'' e21 (negate 4) 3 == - atan (4 / 3)
 -- True
+--
+-- >>> atan2'' e21 55 26
+-- 1.1292039644876055
+--
+-- >>> atan (55 / 26)
+-- 1.1292039644876053
+--
+-- prop> \(y :: Double) (x :: Double) -> y > 0 && x > 0 ==> let a = atan2'' e21 (toRational y) (toRational x) in let b = atan (y / x) in abs (a - b) <= delta
+--
+-- prop> \(y :: Double) (x :: Double) -> y > 0 && x > 0 ==> let a = atan2'' e21 (negate $ toRational y) (toRational x) in let b = - atan (y / x) in abs (a - b) <= delta
 atan2' :: Epsilon -> Rational -> Rational -> Rational
 atan2' e@(Epsilon eps) y x
     | x > 0 = atan' $ y / x
@@ -179,7 +189,11 @@ cos2 cos' σ1 σ = (cos2σm, cos²2σm)
         cos²2σm = cos2σm * cos2σm
 
 -- $setup
+-- >>> import Test.QuickCheck
 -- >>> import Flight.LatLng.Rational (Epsilon(..), defEps)
+--
+-- >>> delta = 0.0000000000000003
+--
 -- >>> e21 = Epsilon $ 1 % 1000000000000000000000
 -- >>> e18 = Epsilon $ 1 % 1000000000000000000
 -- >>> e15 = Epsilon $ 1 % 1000000000000000
