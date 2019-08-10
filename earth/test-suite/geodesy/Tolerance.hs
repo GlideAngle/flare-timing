@@ -101,7 +101,7 @@ describeAzimuthFwd x y azActual azExpected tolerance =
     ++ " ± "
     ++ show tolerance
     ++ " ("
-    ++ show azActual
+    ++ (show $ normalize <$> azActual)
     ++ ")"
 
 describeAzimuthFwd'
@@ -116,7 +116,7 @@ describeAzimuthFwd' x y azActual _azExpected _tolerance =
     ++ " to "
     ++ show y'
     ++ " -> _ ± _ ("
-    ++ show azActual'
+    ++ (show $ normalize <$> azActual')
     ++ ")"
     where
         x' :: (Quantity _ [u| deg |], Quantity _ [u| deg |])
@@ -144,7 +144,7 @@ describeAzimuthRev x y azActual azExpected tolerance =
     ++ " ± "
     ++ show tolerance
     ++ " ("
-    ++ show azActual
+    ++ (show $ normalize <$> azActual)
     ++ ")"
 
 describeAzimuthRev'
@@ -159,7 +159,7 @@ describeAzimuthRev' x y azActual _azExpected _tolerance =
     ++ " to "
     ++ show y'
     ++ " <- _ ± _ ("
-    ++ show azActual'
+    ++ (show $ normalize <$> azActual')
     ++ ")"
     where
         x' :: (Quantity _ [u| deg |], Quantity _ [u| deg |])
