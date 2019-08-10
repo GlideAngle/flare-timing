@@ -27,6 +27,30 @@ class Angle a where
     fromQuantity :: Convertible u [u| deg |] => Quantity Double u -> a
     toQuantity :: Convertible u [u| deg |] => a -> Quantity Double u
 
+-- |
+-- >>> normalize [u| 0.0 deg |]
+-- [u| 0.0 deg |]
+--
+-- >>> normalize [u| 180.0 deg |]
+-- [u| 180.0 deg |]
+--
+-- >>> normalize [u| 1.0 deg |]
+-- [u| 1.0 deg |]
+--
+-- >>> normalize [u| -180.0 deg |]
+-- [u| 180.0 deg |]
+--
+-- >>> normalize [u| -190.0 deg |]
+-- [u| 170.0 deg |]
+--
+-- >>> normalize [u| -170.0 deg |]
+-- [u| 190.0 deg |]
+--
+-- >>> normalize [u| -190.93544548 deg |]
+-- [u| 169.06455452 deg |]
+--
+-- >>> normalize [u| -169.06455452 deg |]
+-- [u| 190.93544548 deg |]
 instance Convertible u [u| deg |] => Angle (Quantity Double u) where
     normalize d' =
         convert n

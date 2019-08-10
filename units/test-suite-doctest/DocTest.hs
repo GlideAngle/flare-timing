@@ -5,6 +5,7 @@ import Test.DocTest (doctest)
 arguments :: [String]
 arguments =
     [ "-isrc"
+    , "library/Flight/Units/Angle.hs"
     , "library/Flight/Units/DegMinSec.hs"
     , "-fplugin=Data.UnitsOfMeasure.Plugin"
     , "-XDataKinds"

@@ -157,6 +157,27 @@ fromQ q' =
             (abs d - fromIntegral dd) * 3600.0
             - fromIntegral (mm * 60)
 
+-- |
+-- >>> normalize (DMS (0, 0, 0))
+-- 0°
+--
+-- >>> normalize (DMS (180, 0, 0))
+-- 180°
+--
+-- >>> normalize (DMS (1, 0, 0))
+-- 1°
+--
+-- >>> normalize (DMS (-180, 0, 0))
+-- 180°
+--
+-- >>> normalize (DMS (-1, 0, 0))
+-- 359°
+--
+-- >>> normalize (DMS (190,56,1.6037483874242753e-6))
+-- 190°56'1.6037483874242753e-6''
+--
+-- >>> normalize (DMS (-190,56,1.603721102583222e-6))
+-- -169°4'1.6037483874242753e-6''
 instance Angle DMS where
     normalize dms =
         fromQuantity n
