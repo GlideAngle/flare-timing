@@ -12,6 +12,9 @@ import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
+import qualified Published.GeodeticSurvey as N
+    ( directProblems, directSolutions
+    )
 import qualified Published.Vincenty as V
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -32,6 +35,7 @@ units :: TestTree
 units =
     testGroup "With published data sets"
     [ geoSciAuUnits
+    , ngsUnits
     , vincentyUnits
     , bedfordUnits
     ]
@@ -40,6 +44,7 @@ unitsR :: TestTree
 unitsR =
     testGroup "With published data sets"
     [ geoSciAuUnitsR
+    , ngsUnitsR
     , vincentyUnitsR
     , bedfordUnitsR
     ]
@@ -55,6 +60,9 @@ bedfordAzTolerance = DMS (0, 12, 0.017)
 
 geoSciAuTolerance :: Fractional a => GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 47 m |]
+
+ngsTolerance :: Fractional a => GetTolerance a
+ngsTolerance = const . convert $ [u| 613 m |]
 
 vincentyTolerance
     :: (Real a, Fractional a)
@@ -174,6 +182,57 @@ geoSciAuUnitsR =
                 geoSciAuTolerance
                 G.directSolutions
                 G.directProblems
+        ]
+    ]
+
+ngsUnits :: TestTree
+ngsUnits =
+    testGroup "National Geodetic Survey distances, using Vincenty"
+    -- TODO: Investigate why the Geodetic Survey inverse results often disagree
+    -- with the azimuth or reverse azimuth flipped 180°.
+    {-
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblInverseChecks
+                ngsTolerance
+                ngsAzTolerance
+                (repeat nad83)
+                N.inverseSolutions
+                N.inverseProblems
+        ]
+    -}
+
+    [ testGroup "Direct Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblDirectChecks
+                ngsTolerance
+                N.directSolutions
+                N.directProblems
+        ]
+    ]
+
+ngsUnitsR :: TestTree
+ngsUnitsR =
+    testGroup "National Geodetic Survey distances, using Vincenty"
+    -- TODO: Investigate why the Geodetic Survey inverse results often disagree
+    -- with the azimuth or reverse azimuth flipped 180°.
+    {-
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with rationals"
+            $ ratInverseChecks
+                ngsTolerance
+                ngsAzTolerance
+                N.inverseSolutions
+                N.inverseProblems
+        ]
+    -}
+
+    [ testGroup "Direct Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ ratDirectChecks
+                ngsTolerance
+                N.directSolutions
+                N.directProblems
         ]
     ]
 
