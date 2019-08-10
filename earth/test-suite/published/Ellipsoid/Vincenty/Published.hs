@@ -51,9 +51,6 @@ unitsR =
     , bedfordUnitsR
     ]
 
-defaultAzTolerance :: AzTolerance
-defaultAzTolerance = DMS (0, 0, 0.001)
-
 geoSciAuAzTolerance :: AzTolerance
 geoSciAuAzTolerance = DMS (0, 0, 0.016664)
 

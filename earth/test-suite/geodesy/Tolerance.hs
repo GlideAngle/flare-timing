@@ -288,21 +288,17 @@ dblInverseChecks
                 $ (flip diffAzFwd) α₁ <$> α₁'
                 @?<= Just azTolerance
 
-    {-
             , HU.testCase (describeAzimuthFwd' x y α₁' α₁ azTolerance)
                 $ (flip diffAzFwd) α₁ <$> α₁'
                 @?<= Just azTolerance
-                -}
 
             , HU.testCase (describeAzimuthRev x y α₂' α₂ azTolerance)
                 $ diffAzRev <$> α₂' <*> α₂
                 @?<= Just azTolerance
 
-    {-
             , HU.testCase (describeAzimuthRev' x y α₂' α₂ azTolerance)
                 $ diffAzRev <$> α₂' <*> α₂
                 @?<= Just azTolerance
-                -}
             ]
             where
                 tolerance = convert . getTolerance $ (\(TaskDistance q) -> q) s

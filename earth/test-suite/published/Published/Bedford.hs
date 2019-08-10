@@ -153,7 +153,22 @@ yAzimuths =
     xs ++
     [ (225,  5, 33.202)
     , (225, 26,  1.695)
-    , (226,  7, 13.935)
+
+    -- WARNING: (226, 7, 13.935) is the back azimuth and may have a typo in the
+    -- paper as its about 19' off. I'm replacing the expected value with the
+    -- one I found using Karney's method on the same ellipsoid.
+    --
+    -- https://geographiclib.sourceforge.io/cgi-bin/GeodSolve?type=I&input=70+-18+70.50359027777777+-16.47301222222222&format=d&azi2=f&unroll=r&prec=3&radius=6378388&flattening=1%2F297&option=Submit
+    -- lat1 lon1 fazi1 (°) = 70°00'00.0000"N 018°00'00.0000"W 044°59'59.4176"
+    -- lat2 lon2 fazi2 (°) = 70°30'12.9250"N 016°28'22.8440"W 046°26'13.3521"
+    --
+    -- lat1 lon1 fazi1 (°) = 70°00'00.0000"N 018°00'00.0000"W 044°59'59.4176"
+    -- lat2 lon2 bazi2 (°) = 70°30'12.9250"N 016°28'22.8440"W 226°26'13.3521"
+    --
+    -- , (226,  7, 13.935)
+    -- , ( 46, 26, 13.3521)
+    -- , (226, 26, 13.3521)
+    , (226, 26, 13.3521)
 
     , (270,  7, 38.779)
     , (270, 36, 20.315)
