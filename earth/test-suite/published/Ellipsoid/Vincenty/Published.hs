@@ -15,7 +15,6 @@ import qualified Published.GeoscienceAustralia as G
     )
 import qualified Published.GeodeticSurvey as N
     ( directProblems, directSolutions
-    , inverseProblems, inverseSolutions
     )
 import qualified Published.Vincenty as V
     ( directProblems, directSolutions
@@ -26,7 +25,7 @@ import qualified Published.Bedford as B
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
-import Tolerance (GetTolerance, AzTolerance)
+import Tolerance (GetTolerance, AzTolerance, diffAz, diffAz180)
 import qualified Tolerance as T
     ( dblDirectChecks, ratDirectChecks
     , dblInverseChecks, ratInverseChecks
@@ -58,11 +57,8 @@ defaultAzTolerance = DMS (0, 0, 0.001)
 geoSciAuAzTolerance :: AzTolerance
 geoSciAuAzTolerance = defaultAzTolerance
 
-ngsAzTolerance :: AzTolerance
-ngsAzTolerance = defaultAzTolerance
-
 vincentyAzTolerance :: AzTolerance
-vincentyAzTolerance = defaultAzTolerance
+vincentyAzTolerance = DMS (0, 0, 0.001027)
 
 bedfordAzTolerance :: AzTolerance
 bedfordAzTolerance = DMS (0, 0, 0.139737)
@@ -115,6 +111,25 @@ dblInverseChecks
     -> [TestTree]
 dblInverseChecks tolerance azTolerance ellipsoid =
     T.dblInverseChecks
+        diffAz
+        diffAz
+        tolerance
+        azTolerance
+        (spanD <$> ellipsoid)
+        (azFwdD <$> ellipsoid)
+        (azRevD <$> ellipsoid)
+
+dblInverseChecksDiffAzRev180
+    :: GetTolerance Double
+    -> AzTolerance
+    -> [Ellipsoid Double]
+    -> [ISoln]
+    -> [IProb]
+    -> [TestTree]
+dblInverseChecksDiffAzRev180 tolerance azTolerance ellipsoid =
+    T.dblInverseChecks
+        diffAz
+        diffAz180
         tolerance
         azTolerance
         (spanD <$> ellipsoid)
@@ -136,7 +151,7 @@ geoSciAuUnits =
     testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblInverseChecks
+            $ dblInverseChecksDiffAzRev180
                 geoSciAuTolerance
                 geoSciAuAzTolerance
                 (repeat wgs84)
@@ -233,7 +248,7 @@ ngsUnitsR =
 
 vincentyUnits :: TestTree
 vincentyUnits =
-    testGroup "Vincenty's distances, from Rainsford 1955"
+    testGroup "Vincenty's distances, from Vincenty 1975 (Rainsford 1955)"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecks
@@ -256,7 +271,7 @@ vincentyUnits =
 
 vincentyUnitsR :: TestTree
 vincentyUnitsR =
-    testGroup "Vincenty's distances, from Rainsford 1955"
+    testGroup "Vincenty's distances, from Vincenty 1975 (Rainsford 1955)"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with rationals"
             $ ratInverseChecks
@@ -282,7 +297,7 @@ bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblInverseChecks
+            $ dblInverseChecksDiffAzRev180
                 bedfordTolerance
                 bedfordAzTolerance
                 (repeat bedfordClarke)

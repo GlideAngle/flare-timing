@@ -20,7 +20,7 @@ import qualified Published.Bedford as B
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
-import Tolerance (GetTolerance, AzTolerance)
+import Tolerance (GetTolerance, AzTolerance, diffAz)
 import qualified Tolerance as T
     ( dblDirectChecks, ratDirectChecks
     , dblInverseChecks, ratInverseChecks
@@ -108,6 +108,8 @@ dblInverseChecks
     -> [TestTree]
 dblInverseChecks tolerance azTolerance =
     T.dblInverseChecks
+        diffAz
+        diffAz
         tolerance
         azTolerance
         (repeat spanD)
