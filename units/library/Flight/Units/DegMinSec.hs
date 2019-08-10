@@ -176,7 +176,19 @@ fromQ q' =
 -- >>> normalize (DMS (190,56,1.6037483874242753e-6))
 -- 190°56'1.6037483874242753e-6''
 --
+-- >>> normalize ((toQuantity $ DMS (190,56,1.6037483874242753e-6)) :: Quantity Double [u| deg |])
+-- [u| 190.93333333377882 deg |]
+--
+-- >>> fromQuantity [u| 190.93333333377882 deg |] :: DMS
+-- 190°56'1.6037483874242753e-6''
+--
 -- >>> normalize (DMS (-190,56,1.603721102583222e-6))
+-- -169°4'1.6037483874242753e-6''
+--
+-- >>> normalize ((toQuantity $ DMS (-190,56,1.603721102583222e-6)) :: Quantity Double [u| deg |])
+-- [u| 169.06666666622118 deg |]
+--
+-- >>> fromQuantity [u| 169.06666666622118 deg |] :: DMS
 -- -169°4'1.6037483874242753e-6''
 instance Angle DMS where
     normalize dms =
