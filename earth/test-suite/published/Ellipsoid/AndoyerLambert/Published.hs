@@ -7,7 +7,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..), diffDMS)
+import Flight.Units.DegMinSec (DMS(..), absDiffDMS)
 import Flight.Earth.Ellipsoid (Ellipsoid, wgs84, clarke)
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
@@ -115,8 +115,8 @@ dblInverseChecks
     -> [TestTree]
 dblInverseChecks tolerance azTolerance ellipsoid =
     T.dblInverseChecks
-        diffDMS
-        diffDMS
+        absDiffDMS
+        absDiffDMS
         tolerance
         azTolerance
         (spanD <$> ellipsoid)

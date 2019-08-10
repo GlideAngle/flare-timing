@@ -7,7 +7,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..), diffDMS, diffDMS180)
+import Flight.Units.DegMinSec (DMS(..), absDiffDMS, absDiffDMS180)
 import Flight.Earth.Ellipsoid (Ellipsoid, wgs84, nad83, bedfordClarke)
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
@@ -55,10 +55,10 @@ defaultAzTolerance :: AzTolerance
 defaultAzTolerance = DMS (0, 0, 0.001)
 
 geoSciAuAzTolerance :: AzTolerance
-geoSciAuAzTolerance = defaultAzTolerance
+geoSciAuAzTolerance = DMS (0, 0, 0.016664)
 
 vincentyAzTolerance :: AzTolerance
-vincentyAzTolerance = DMS (0, 0, 0.001027)
+vincentyAzTolerance = DMS (0, 0, 0.016667)
 
 bedfordAzTolerance :: AzTolerance
 bedfordAzTolerance = DMS (0, 0, 0.139737)
@@ -111,8 +111,8 @@ dblInverseChecks
     -> [TestTree]
 dblInverseChecks tolerance azTolerance ellipsoid =
     T.dblInverseChecks
-        diffDMS
-        diffDMS
+        absDiffDMS
+        absDiffDMS
         tolerance
         azTolerance
         (spanD <$> ellipsoid)
@@ -128,8 +128,8 @@ dblInverseChecksDiffAzRev180
     -> [TestTree]
 dblInverseChecksDiffAzRev180 tolerance azTolerance ellipsoid =
     T.dblInverseChecks
-        diffDMS
-        diffDMS180
+        absDiffDMS
+        absDiffDMS180
         tolerance
         azTolerance
         (spanD <$> ellipsoid)

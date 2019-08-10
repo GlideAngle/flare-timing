@@ -5,7 +5,9 @@ module Flight.Units.DegMinSec
     , DMS_(..)
     , DiffDMS
     , diffDMS
+    , absDiffDMS
     , diffDMS180
+    , absDiffDMS180
     , toDeg
     , toQDeg
     , toQRad
@@ -13,7 +15,7 @@ module Flight.Units.DegMinSec
     ) where
 
 import Prelude hiding (min)
-import Data.Fixed (mod')
+import Data.Fixed (mod', divMod')
 import Data.Text.Lazy (unpack)
 import Formatting (format)
 import Text.Printf (printf)
@@ -139,23 +141,37 @@ toQRad :: DMS -> Quantity Double [u| rad |]
 toQRad =
     convert . toQDeg
 
+-- |
+-- >>> fromQ [u| 0.0 deg |]
+-- 0°
+--
+-- >>> fromQ [u| 1.0 deg |]
+-- 1°
+--
+-- >>> fromQ [u| -1.0 deg |]
+-- -1°
+--
+-- >>> fromQ [u| 169.06666666622118 deg |]
+-- 169°3'0.9999999732708602''
+--
+-- >>> fromQ [u| -169.06666666622118 deg |]
+-- -169°3'0.9999999732708602''
 fromQ :: Convertible u [u| deg |] => Quantity Double u -> DMS
 fromQ q' =
-    DMS (s * dd, mm, ss)
+    DMS (truncate s * dd, mm, ss)
     where
         MkQuantity d = convert q' :: Quantity Double [u| deg |]
 
-        totalSecs :: Int
-        totalSecs = round $ 3600.0 * d
+        s = signum d
+        dAbs = abs d
 
-        s = signum totalSecs
+        dd :: Int
+        dd = floor dAbs
 
-        (dd, ms) = quotRem (abs totalSecs) 3600
-        mm = quot ms 60
+        dFrac :: Double
+        dFrac = dAbs - fromIntegral dd
 
-        ss =
-            (abs d - fromIntegral dd) * 3600.0
-            - fromIntegral (mm * 60)
+        (mm, ss) = divMod' (dFrac * 60.0) 1
 
 -- |
 -- >>> normalize (DMS (0, 0, 0))
@@ -174,22 +190,22 @@ fromQ q' =
 -- 359°
 --
 -- >>> normalize (DMS (190,56,1.6037483874242753e-6))
--- 190°56'1.6037483874242753e-6''
+-- 190°56'2.6729139790404588e-8''
 --
 -- >>> normalize ((toQuantity $ DMS (190,56,1.6037483874242753e-6)) :: Quantity Double [u| deg |])
 -- [u| 190.93333333377882 deg |]
 --
 -- >>> fromQuantity [u| 190.93333333377882 deg |] :: DMS
--- 190°56'1.6037483874242753e-6''
+-- 190°56'2.6729139790404588e-8''
 --
 -- >>> normalize (DMS (-190,56,1.603721102583222e-6))
--- -169°4'1.6037483874242753e-6''
+-- 169°3'0.9999999732708602''
 --
 -- >>> normalize ((toQuantity $ DMS (-190,56,1.603721102583222e-6)) :: Quantity Double [u| deg |])
 -- [u| 169.06666666622118 deg |]
 --
 -- >>> fromQuantity [u| 169.06666666622118 deg |] :: DMS
--- -169°4'1.6037483874242753e-6''
+-- 169°3'0.9999999732708602''
 instance Angle DMS where
     normalize dms =
         fromQuantity n
@@ -226,7 +242,8 @@ instance Ord DMS where
             y' :: Quantity Double [u| deg |]
             y' = toQuantity $ normalize y
 
--- |
+-- | The difference between two angles of DMS. The result is in the [0, 360)
+--
 -- >>> diffDMS (DMS (0,0,0)) (DMS (0,0,0))
 -- 0°
 --
@@ -328,10 +345,10 @@ instance Ord DMS where
 --
 --
 -- >>> diffDMS (DMS (95,27,59.63089)) (DMS (-95,28,0.3691116037646225))
--- 190°56'1.6037483874242753e-6''
+-- 190°56'4.4531134335557e-10''
 --
 -- >>> diffDMS (DMS (-95,28,0.3691116037646225)) (DMS (95,27,59.63089))
--- -190°56'1.603721102583222e-6''
+-- 169°3'1.6666666221681226e-2''
 diffDMS :: DiffDMS
 diffDMS y x =
     dyx
@@ -348,9 +365,131 @@ diffDMS y x =
         dyx :: DMS
         dyx = normalize $ fromQuantity dyx'
 
+-- | The absolute difference between two angles of DMS. The result is in the
+-- [0, 180)
+--
+-- >>> absDiffDMS (DMS (0,0,0)) (DMS (0,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (0,0,0)) (DMS (-0,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (0,0,0)) (DMS (360,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (0,0,0)) (DMS (-360,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (360,0,0)) (DMS (360,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (360,0,0)) (DMS (0,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (90,0,0)) (DMS (90,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (180,0,0)) (DMS (180,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (270,0,0)) (DMS (270,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (270,0,0)) (DMS (-90,0,0))
+-- 0°
+--
+-- >>> absDiffDMS (DMS (-90,0,0)) (DMS (270,0,0))
+-- 0°
+--
+--
+-- >>> absDiffDMS (DMS (0,0,0)) (DMS (90,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (360,0,0)) (DMS (90,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (90,0,0)) (DMS (180,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (180,0,0)) (DMS (270,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (270,0,0)) (DMS (0,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (270,0,0)) (DMS (360,0,0))
+-- 90°
+--
+--
+-- >>> absDiffDMS (DMS (0,0,0)) (DMS (180,0,0))
+-- 180°
+--
+-- >>> absDiffDMS (DMS (0,0,0)) (DMS (-180,0,0))
+-- 180°
+--
+-- >>> absDiffDMS (DMS (360,0,0)) (DMS (180,0,0))
+-- 180°
+--
+-- >>> absDiffDMS (DMS (90,0,0)) (DMS (270,0,0))
+-- 180°
+--
+-- >>> absDiffDMS (DMS (90,0,0)) (DMS (-90,0,0))
+-- 180°
+--
+-- >>> absDiffDMS (DMS (180,0,0)) (DMS (0,0,0))
+-- 180°
+--
+-- >>> absDiffDMS (DMS (-180,0,0)) (DMS (0,0,0))
+-- 180°
+--
+-- >>> absDiffDMS (DMS (180,0,0)) (DMS (360,0,0))
+-- 180°
+--
+-- >>> absDiffDMS (DMS (270,0,0)) (DMS (90,0,0))
+-- 180°
+--
+--
+-- >>> absDiffDMS (DMS (0,0,0)) (DMS (270,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (360,0,0)) (DMS (270,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (90,0,0)) (DMS (0,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (90,0,0)) (DMS (360,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (180,0,0)) (DMS (90,0,0))
+-- 90°
+--
+-- >>> absDiffDMS (DMS (270,0,0)) (DMS (180,0,0))
+-- 90°
+--
+--
+-- >>> absDiffDMS (DMS (359,0,0)) (DMS (0,0,0))
+-- 1°
+--
+-- >>> absDiffDMS (DMS (181,0,0)) (DMS (0,0,0))
+-- 179°
+--
+-- >>> absDiffDMS (DMS (95,27,59.63089)) (DMS (-95,28,0.3691116037646225))
+-- 169°3'1.6666666666765195e-2''
+--
+-- >>> absDiffDMS (DMS (-95,28,0.3691116037646225)) (DMS (95,27,59.63089))
+-- 169°3'1.6666666221681226e-2''
+absDiffDMS :: DiffDMS
+absDiffDMS y x =
+    let d = diffDMS y x
+    in if d > DMS (180, 0, 0) then diffDMS (DMS (360, 0, 0)) d else d
+
 -- | Some of the papers have test data that flip the reverse azimuth 180°. The
 -- sign of the numerator and denominator vary in implementations of Vincenty's
 -- inverse solution and the call to atan2 to get the reverse azimuth is
 -- sensitive to this.
 diffDMS180 :: DiffDMS
 diffDMS180 y x = diffDMS (rotate (DMS (180, 0, 0)) y) x
+
+absDiffDMS180 :: DiffDMS
+absDiffDMS180 y x = absDiffDMS (rotate (DMS (180, 0, 0)) y) x

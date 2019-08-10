@@ -7,7 +7,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..), diffDMS)
+import Flight.Units.DegMinSec (DMS(..), absDiffDMS)
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -108,8 +108,8 @@ dblInverseChecks
     -> [TestTree]
 dblInverseChecks tolerance azTolerance =
     T.dblInverseChecks
-        diffDMS
-        diffDMS
+        absDiffDMS
+        absDiffDMS
         tolerance
         azTolerance
         (repeat spanD)
