@@ -7,7 +7,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..), absDiffDMS)
+import Flight.Units.DegMinSec (DMS(..), absDiffDMS, absDiffDMS180)
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -44,17 +44,14 @@ unitsR =
     , bedfordUnitsR
     ]
 
-defaultAzTolerance :: AzTolerance
-defaultAzTolerance = DMS (0, 0, 0.001)
-
 geoSciAuAzTolerance :: AzTolerance
-geoSciAuAzTolerance = defaultAzTolerance
+geoSciAuAzTolerance = DMS (0, 7, 0.015)
 
 vincentyAzTolerance :: AzTolerance
-vincentyAzTolerance = defaultAzTolerance
+vincentyAzTolerance = DMS (1, 26, 0.017)
 
 bedfordAzTolerance :: AzTolerance
-bedfordAzTolerance = defaultAzTolerance
+bedfordAzTolerance = DMS (0, 12, 0.017)
 
 geoSciAuTolerance :: Fractional a => GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 47 m |]
@@ -113,6 +110,22 @@ dblInverseChecks tolerance azTolerance =
         (repeat azFwdD)
         (repeat azRevD)
 
+dblInverseChecksDiffAzRev180
+    :: GetTolerance Double
+    -> AzTolerance
+    -> [ISoln]
+    -> [IProb]
+    -> [TestTree]
+dblInverseChecksDiffAzRev180 tolerance azTolerance =
+    T.dblInverseChecks
+        absDiffDMS
+        absDiffDMS180
+        tolerance
+        azTolerance
+        (repeat spanD)
+        (repeat azFwdD)
+        (repeat azRevD)
+
 ratInverseChecks
     :: GetTolerance Rational
     -> AzTolerance
@@ -127,7 +140,7 @@ geoSciAuUnits =
     testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblInverseChecks
+            $ dblInverseChecksDiffAzRev180
                 geoSciAuTolerance
                 geoSciAuAzTolerance
                 G.inverseSolutions
@@ -187,7 +200,7 @@ vincentyUnits =
 
 vincentyUnitsR :: TestTree
 vincentyUnitsR =
-    testGroup "Vincenty's distances, from Rainsford 1955"
+    testGroup "Vincenty's distances, from Vincenty 1975 (Rainsford 1955)"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with rationals"
             $ ratInverseChecks
@@ -211,7 +224,7 @@ bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblInverseChecks
+            $ dblInverseChecksDiffAzRev180
                 bedfordTolerance
                 bedfordAzTolerance
                 B.inverseSolutions
