@@ -2,7 +2,7 @@ import Test.Tasty (TestTree, testGroup, defaultMain)
 
 import qualified Flat.Forbes as F
 import qualified Sphere.Forbes as S
-import qualified Ellipsoid.Forbes as E
+import qualified Ellipsoid.Vincenty.Forbes as V
 
 main :: IO ()
 main = defaultMain tests
@@ -10,7 +10,7 @@ main = defaultMain tests
 tests :: TestTree
 tests =
     testGroup "Earth tests"
-        [ E.units
+        [ F.units
         , S.units
-        , F.units
+        , V.units
         ]
