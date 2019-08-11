@@ -100,6 +100,19 @@ in    defs
                     , "test-suite-forbes"
                     ]
                 }
+            , forbes-r =
+                { dependencies =
+                    [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "ForbesRMain.hs"
+                , source-dirs =
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite-forbes-r"
+                    ]
+                }
             , greda =
                 { dependencies =
                     [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
