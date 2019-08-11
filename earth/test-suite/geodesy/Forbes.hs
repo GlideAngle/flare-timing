@@ -6,10 +6,12 @@
 module Forbes
     ( (.>=.)
     , (.~=.)
+    , ToLatLng
     , tasks
     , d1, d2, d3, d4, d5, d6, d7, d8
     , p1, p2, p3, p4, p5, p6, p7, p8
-    , toLL
+    , toLatLngD
+    , toLatLngR
     , mkDayUnits, mkPartDayUnits
     , tdRound
     ) where
@@ -17,7 +19,7 @@ module Forbes
 import Data.List (inits)
 import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit ((@?), testCase)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 
@@ -33,13 +35,33 @@ import Data.Ratio.Rounding (dpRound)
 (.~=.) :: (Show a, Show b) => a -> b -> String
 (.~=.) x y = show x ++ " ~= " ++ show y
 
-tdRound :: QTaskDistance Rational v -> QTaskDistance Rational w
+toTaskDistanceR
+    :: Real a
+    => TaskDistance (Quantity a u)
+    -> TaskDistance (Quantity Rational u)
+toTaskDistanceR (TaskDistance d) =
+    TaskDistance $ toRational' d
+
+tdRound
+    :: (Real a, Fractional a)
+    => QTaskDistance a v -> QTaskDistance a w
 tdRound (TaskDistance (MkQuantity d)) =
-    TaskDistance . MkQuantity . dpRound 3 $ d
+    TaskDistance . MkQuantity . fromRational . dpRound 3 $ toRational d
+
+type ToLatLng a = (Double, Double) -> LatLng a [u| rad |]
 
 -- | The input pair is in degrees while the output is in radians.
-toLL :: (Double, Double) -> LatLng Rational [u| rad |]
-toLL (lat, lng) =
+toLatLngD :: ToLatLng Double
+toLatLngD (lat, lng) =
+    LatLng (Lat lat'', Lng lng'')
+        where
+            lat' = (MkQuantity lat) :: Quantity Double [u| deg |]
+            lng' = (MkQuantity lng) :: Quantity Double [u| deg |]
+            lat'' = convert lat' :: Quantity Double [u| rad |]
+            lng'' = convert lng' :: Quantity Double [u| rad |]
+
+toLatLngR :: ToLatLng Rational
+toLatLngR (lat, lng) =
     LatLng (Lat lat'', Lng lng'')
         where
             lat' = (MkQuantity $ toRational lat) :: Quantity Rational [u| deg |]
@@ -48,11 +70,12 @@ toLL (lat, lng) =
             lng'' = convert lng' :: Quantity Rational [u| rad |]
 
 mkDayUnits
-    :: ([Zone Rational] -> PathDistance Rational)
+    :: (Real a)
+    => ([Zone a] -> PathDistance a)
     -> TestName
-    -> [Zone Rational]
-    -> Quantity Rational [u| km |]
-    -> [Quantity Rational [u| km |]]
+    -> [Zone a]
+    -> Quantity a [u| km |]
+    -> [Quantity a [u| km |]]
     -> TestTree
 mkDayUnits pp title pDay dDay' dsDay' = testGroup title
     [ testCase
@@ -70,23 +93,24 @@ mkDayUnits pp title pDay dDay' dsDay' = testGroup title
         ]
     ]
     where
-        dDay = tdRound . fromKms $ dDay'
-        dsDay = tdRound . fromKms <$> dsDay'
+        dDay = tdRound . fromKms $ toRational' dDay'
+        dsDay = tdRound . fromKms . toRational' <$> dsDay'
 
         ppDay :: QTaskDistance Rational [u| m |]
-        ppDay = tdRound . edgesSum $ pp pDay
+        ppDay = tdRound . toTaskDistanceR . edgesSum $ pp pDay
 
-        pDayInits :: [[Zone Rational]]
+        pDayInits :: [[Zone _]]
         pDayInits = drop 1 $ inits pDay
 
         ppDayInits :: [QTaskDistance Rational [u| m |]]
-        ppDayInits = tdRound . edgesSum . pp <$> pDayInits
+        ppDayInits = tdRound . toTaskDistanceR . edgesSum . pp <$> pDayInits
 
 mkPartDayUnits
-    :: ([Zone Rational] -> PathDistance Rational)
+    :: (Real a, Fractional a)
+    => ([Zone a] -> PathDistance a)
     -> TestName
-    -> [Zone Rational]
-    -> QTaskDistance Rational [u| m |]
+    -> [Zone a]
+    -> QTaskDistance a [u| m |]
     -> TestTree
 mkPartDayUnits pp title zs (TaskDistance d) = testGroup title
     [ testCase
@@ -98,20 +122,22 @@ mkPartDayUnits pp title zs (TaskDistance d) = testGroup title
         $ (tdR' == tdR) @? tdR' .~=. tdR
     ]
     where
-        dKm = convert d :: Quantity Rational [u| km |]
+        dKm = convert (toRational' d) :: Quantity Rational [u| km |]
         Flip r = dpRound 6 <$> Flip dKm
         tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
 
         td'@(TaskDistance d') = edgesSum $ pp zs
-        dKm' = convert d' :: Quantity Rational [u| km |]
+        dKm' = convert (toRational' d') :: Quantity Rational [u| km |]
         Flip r' = dpRound 6 <$> Flip dKm'
         tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
 
-tasks :: [[Zone Rational]]
-tasks = [d1, d2, d3, d4, d5, d6, d7, d8]
+tasks :: (Ord a, Num a) => ToLatLng a -> [[Zone a]]
+tasks toLL = ($ toLL) <$> [d1, d2, d3, d4, d5, d6, d7, d8]
 
-d1 :: [Zone Rational]
-d1 =
+d1
+    :: (Ord a, Num a)
+    => ToLatLng a -> [Zone a]
+d1 toLL =
     [ Cylinder (Radius $ MkQuantity 100) $ toLL (-33.36137, 147.93207)
     , Cylinder (Radius $ MkQuantity 10000) $ toLL (-33.36137, 147.93207)
     , Cylinder (Radius $ MkQuantity 400) $ toLL (-33.85373, 147.94195)
@@ -119,8 +145,10 @@ d1 =
     , Cylinder (Radius $ MkQuantity 400) $ toLL (-33.61965, 148.4099)
     ]
 
-d2 :: [Zone Rational]
-d2 =
+d2
+    :: (Ord a, Num a)
+    => ToLatLng a -> [Zone a]
+d2 toLL =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 5000) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 400) (toLL (-32.90223, 147.98492))
@@ -128,8 +156,10 @@ d2 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (-33.12592, 147.91043))
     ]
 
-d3 :: [Zone Rational]
-d3 =
+d3
+    :: (Ord a, Num a)
+    => ToLatLng a -> [Zone a]
+d3 toLL =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 25000) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 400) (toLL (-34.02107, 148.2233))
@@ -137,32 +167,40 @@ d3 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (-34.82197, 148.66543))
     ]
 
-d4 :: [Zone Rational]
-d4 =
+d4
+    :: (Ord a, Num a)
+    => ToLatLng a -> [Zone a]
+d4 toLL =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 25000) (toLL (-32.90223, 147.98492))
     , Cylinder (Radius $ MkQuantity 400) (toLL (-32.46363, 148.989))
     ]
 
-d5 :: [Zone Rational]
-d5 =
+d5
+    :: (Ord a, Num a)
+    => ToLatLng a -> [Zone a]
+d5 toLL =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 5000) (toLL (-32.56608, 148.22657))
     , Cylinder (Radius $ MkQuantity 400) (toLL (-32.0164, 149.43363))
     ]
 
-d6 :: [Zone Rational]
-d6 =
+d6
+    :: (Ord a, Num a)
+    => ToLatLng a -> [Zone a]
+d6 toLL =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 5000) (toLL (-32.19498, 147.76218))
     , Cylinder (Radius $ MkQuantity 400) (toLL (-31.69323, 148.29623))
     ]
 
-d7 :: [Zone Rational]
-d7 =
+d7
+    :: (Ord a, Num a)
+    => ToLatLng a -> [Zone a]
+d7 toLL =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 10000) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 5000) (toLL (-32.9536, 147.55457))
@@ -170,8 +208,10 @@ d7 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (-32.93585, 148.74947))
     ]
 
-d8 :: [Zone Rational]
-d8 =
+d8
+    :: (Ord a, Num a)
+    => ToLatLng a -> [Zone a]
+d8 toLL =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 10000) (toLL (-33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 5000) (toLL (-33.75343, 147.52865))
@@ -179,10 +219,10 @@ d8 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (-33.361, 147.9315))
     ]
 
-type MkPart
+type MkPart a
     = TestName
-    -> [Zone Rational]
-    -> QTaskDistance Rational [u| m |]
+    -> [Zone a]
+    -> QTaskDistance a [u| m |]
     -> TestTree
 
 pairs :: [a] -> ([a], [a], [a])
@@ -193,8 +233,10 @@ pairs xs = (s1, s2, s3)
         s3 = take 2 $ drop 2 xs
 
 
-p1 :: MkPart -> _ -> _ -> _ -> TestTree
-p1 mk t1 t2 t3 =
+p1
+    :: (Ord a, Fractional a)
+    => ToLatLng a -> MkPart a -> _ -> _ -> _ -> TestTree
+p1 toLL mk t1 t2 t3 =
     testGroup "Task 1 [...]"
     [ mk "Task 1 [x, x, _, _]" s1 (fromKms t1)
     , mk "Task 1 [_, x, x, _]" s2 (fromKms t2)
@@ -211,8 +253,10 @@ p1 mk t1 t2 t3 =
 
             (s1, s2, s3) = pairs xs
 
-p2 :: MkPart -> _ -> _ -> _ -> TestTree
-p2 mk t1 t2 t3 =
+p2
+    :: (Ord a, Fractional a)
+    => ToLatLng a -> MkPart a -> _ -> _ -> _ -> TestTree
+p2 toLL mk t1 t2 t3 =
     testGroup "Task 2 [...]"
     [ mk "Task 2 [x, x, _, _]" s1 (fromKms t1)
     , mk "Task 2 [_, x, x, _]" s2 (fromKms t2)
@@ -229,8 +273,10 @@ p2 mk t1 t2 t3 =
 
             (s1, s2, s3) = pairs xs
 
-p3 :: MkPart -> _ -> _ -> _ -> TestTree
-p3 mk t1 t2 t3 =
+p3
+    :: (Ord a, Fractional a)
+    => ToLatLng a -> MkPart a -> _ -> _ -> _ -> TestTree
+p3 toLL mk t1 t2 t3 =
     testGroup "Task 3 [...]"
     [ mk "Task 3 [x, x, _, _]" s1 (fromKms t1)
     , mk "Task 3 [_, x, x, _]" s2 (fromKms t2)
@@ -247,8 +293,10 @@ p3 mk t1 t2 t3 =
 
             (s1, s2, s3) = pairs xs
 
-p4 :: MkPart -> _ -> _ -> TestTree
-p4 mk t1 t2 =
+p4
+    :: (Ord a, Fractional a)
+    => ToLatLng a -> MkPart a -> _ -> _ -> TestTree
+p4 toLL mk t1 t2 =
     testGroup "Task 4 [...]"
     [ mk "Task 4 [x, x, _]" s1 (fromKms t1)
     , mk "Task 4 [_, x, x]" s2 (fromKms t2)
@@ -263,8 +311,10 @@ p4 mk t1 t2 =
 
             (s1, s2, _) = pairs xs
 
-p5 :: MkPart -> _ -> _ -> TestTree
-p5 mk t1 t2 =
+p5
+    :: (Ord a, Fractional a)
+    => ToLatLng a -> MkPart a -> _ -> _ -> TestTree
+p5 toLL mk t1 t2 =
     testGroup "Task 5 [...]"
     [ mk "Task 5 [x, x, _]" s1 (fromKms t1)
     , mk "Task 5 [_, x, x]" s2 (fromKms t2)
@@ -280,8 +330,10 @@ p5 mk t1 t2 =
             s1 = take 2 xs
             s2 = take 2 $ drop 1 xs
 
-p6 :: MkPart -> _ -> _ -> TestTree
-p6 mk t1 t2 =
+p6
+    :: (Ord a, Fractional a)
+    => ToLatLng a -> MkPart a -> _ -> _ -> TestTree
+p6 toLL mk t1 t2 =
     testGroup "Task 6 [...]"
     [ mk "Task 6 [x, x, _]" s1 (fromKms t1)
     , mk "Task 6 [_, x, x]" s2 (fromKms t2)
@@ -296,8 +348,10 @@ p6 mk t1 t2 =
 
             (s1, s2, _) = pairs xs
 
-p7 :: MkPart -> _ -> _ -> _ -> TestTree
-p7 mk t1 t2 t3 =
+p7
+    :: (Ord a, Fractional a)
+    => ToLatLng a -> MkPart a -> _ -> _ -> _ -> TestTree
+p7 toLL mk t1 t2 t3 =
     testGroup "Task 7 [...]"
     [ mk "Task 7 [x, x, _, _]" s1 (fromKms t1)
     , mk "Task 7 [_, x, x, _]" s2 (fromKms t2)
@@ -314,8 +368,10 @@ p7 mk t1 t2 t3 =
 
             (s1, s2, s3) = pairs xs
 
-p8 :: MkPart -> _ -> _ -> _ -> TestTree
-p8 mk t1 t2 t3 =
+p8
+    :: (Ord a, Fractional a)
+    => ToLatLng a -> MkPart a -> _ -> _ -> _ -> TestTree
+p8 toLL mk t1 t2 t3 =
     testGroup "Task 8 [...]"
     [ mk "Task 8 [x, x, _, _]" s1 (fromKms t1)
     , mk "Task 8 [_, x, x, _]" s2 (fromKms t2)

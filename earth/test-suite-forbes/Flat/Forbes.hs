@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+
 module Flat.Forbes (units) where
 
 import Prelude hiding (span)
@@ -9,28 +11,46 @@ import Flight.Units ()
 import Flight.Distance (QTaskDistance)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Forbes as F (mkDayUnits, mkPartDayUnits)
-import Forbes
-    ( d1, d2, d3, d4, d5, d6, d7, d8
+import qualified Forbes as F
+    ( mkDayUnits, mkPartDayUnits, toLatLngD
+    , d1, d2, d3, d4, d5, d6, d7, d8
     , p1, p2, p3, p4, p5, p6, p7, p8
     )
+import Flat.Span (spanD)
 
-import Flat.Span (spanR)
+d1, d2, d3, d4, d5, d6, d7, d8 :: [Zone Double]
+d1 = F.d1 F.toLatLngD
+d2 = F.d2 F.toLatLngD
+d3 = F.d3 F.toLatLngD
+d4 = F.d4 F.toLatLngD
+d5 = F.d5 F.toLatLngD
+d6 = F.d6 F.toLatLngD
+d7 = F.d7 F.toLatLngD
+d8 = F.d8 F.toLatLngD
+
+p1 = F.p1 F.toLatLngD
+p2 = F.p2 F.toLatLngD
+p3 = F.p3 F.toLatLngD
+p4 = F.p4 F.toLatLngD
+p5 = F.p5 F.toLatLngD
+p6 = F.p6 F.toLatLngD
+p7 = F.p7 F.toLatLngD
+p8 = F.p8 F.toLatLngD
 
 mkDay
     :: TestName
-    -> [Zone Rational]
-    -> Quantity Rational [u| km |]
-    -> [Quantity Rational [u| km |]]
+    -> [Zone Double]
+    -> Quantity Double [u| km |]
+    -> [Quantity Double [u| km |]]
     -> TestTree
-mkDay = F.mkDayUnits (distancePointToPoint spanR)
+mkDay = F.mkDayUnits (distancePointToPoint spanD)
 
 mkPart
     :: TestName
-    -> [Zone Rational]
-    -> QTaskDistance Rational [u| m |]
+    -> [Zone Double]
+    -> QTaskDistance Double [u| m |]
     -> TestTree
-mkPart = F.mkPartDayUnits (distancePointToPoint spanR)
+mkPart = F.mkPartDayUnits (distancePointToPoint spanD)
 
 units :: TestTree
 units =
