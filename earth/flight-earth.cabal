@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f3dc5687677d1b53695c6e91a204a2a4d8551ed6b5f450c6366d088f60a8acff
+-- hash: f38e2bf1cdb484b60a4d7eec344ae9adcd7a8308ee6560568241873697ed674b
 
 name:           flight-earth
 version:        0.1.0
@@ -270,6 +270,8 @@ test-suite forbes
       ForbesComments
       Sphere.Span
       Tolerance
+      Ellipsoid.AndoyerLambert.Forbes
+      Ellipsoid.ForsytheAndoyerLambert.Forbes
       Ellipsoid.Vincenty.Forbes
       Flat.Forbes
       Sphere.Forbes

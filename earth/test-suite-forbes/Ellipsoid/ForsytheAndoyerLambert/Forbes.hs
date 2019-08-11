@@ -1,4 +1,4 @@
-module Ellipsoid.Vincenty.Forbes (units) where
+module Ellipsoid.ForsytheAndoyerLambert.Forbes (units) where
 
 import Test.Tasty (TestTree, TestName, testGroup)
 import Data.UnitsOfMeasure (u)
@@ -14,7 +14,7 @@ import Forbes
     , p1, p2, p3, p4, p5, p6, p7, p8
     )
 import Flight.Earth.Ellipsoid (wgs84)
-import Ellipsoid.Vincenty.Span (spanR)
+import Ellipsoid.ForsytheAndoyerLambert.Span (spanR)
 
 mkDay
     :: TestName
