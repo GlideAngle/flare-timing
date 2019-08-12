@@ -22,13 +22,13 @@ units =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
                 (D.toDistanceClose $ spanD wgs84)
-                tolerancesD
+                tolerances
 
         g s  =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
                 (D.toDistanceClose $ spanR wgs84)
-                tolerancesR
+                tolerances
 
 pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
 pts =
@@ -90,16 +90,8 @@ distances =
     , [u| 10001965.72922 m |]
     ]
 
-tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
-tolerancesD =
-    -- Only change is to replace 50° tolerance with 1mm instead of 0.5mm.
-    take 9 tolerancesR
-    ++ [fromRational' [u| 1.0 mm |]]
-    ++ drop 10 tolerancesR
-
-tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
-tolerancesR =
-    fromRational' <$>
+tolerances :: (Real a, Fractional a) => [Quantity a [u| mm |]]
+tolerances =
     -- 5°, 10°
     [ [u| 0.51 mm |]
     , [u| 1.0 mm |]
@@ -144,7 +136,7 @@ distanceMeridian
     -> [Quantity a [u| mm |]]
     -> MkZone a a
     -> TestTree
-distanceMeridian s f tolerances g =
+distanceMeridian s f tolerances' g =
     testGroup s
     $ zipWith3
         (\tolerance r@(Radius r') (x, y) ->
@@ -153,6 +145,6 @@ distanceMeridian s f tolerances g =
                 r'
                 (showQ x ++ " " ++ showQ y)
                 (g r x, g r y))
-        tolerances
+        tolerances'
         distances
         pts
