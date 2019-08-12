@@ -1,14 +1,21 @@
 module Sphere.Meridian (units, unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure ((*:), u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units ()
+import Flight.Distance (TaskDistance(..))
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng.Rational (defEps)
 import Flight.Zone (QRadius, Radius(..))
-import Flight.Earth.Sphere (earthRadius)
 import Zone (MkZone, QLL, describedZones, showQ)
 import qualified Distance as D (DistanceClose, toDistanceClose)
 import Sphere.Span (spanD, spanR)
+import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Geodesy.Solution (GeodesySolutions(..))
+import Flight.Geodesy.Rational ()
 
 units :: TestTree
 units =
@@ -19,7 +26,7 @@ units =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
                 (D.toDistanceClose spanD)
-                tolerancesD
+                tolerances
 
 unitsR :: TestTree
 unitsR =
@@ -30,27 +37,28 @@ unitsR =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
                 (D.toDistanceClose spanR)
-                tolerancesR
+                tolerances
 
 pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
 pts =
-    [ ((z, z), (z, [u| 1 rad |]))
-    , ((z, z), (z, [u| -1 rad |]))
-    ]
+    meridianArc . convert
+    <$> [ x *: [u| 1 deg |] | x <- [5, 10 .. 90]]
     where
-        z = [u| 0 rad |]
+        meridianArc d =
+            (([u| 0 rad |], [u| 0 rad |]), (d, [u| 0 rad |]))
 
 distances :: (Real a, Fractional a) => [QRadius a [u| m |]]
 distances =
-    repeat earthRadius
+    Radius . fromRational' <$>
+    zipWith (*:) [1 .. 9] (repeat d)
+    where
+        x = LatLng (Lat [u| 0 rad |], Lng [u| 0 rad |])
+        y = LatLng (Lat $ convert [u| 5 deg |], Lng [u| 0 rad |])
+        TaskDistance d = arcLength @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps) x y
 
-tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
-tolerancesD =
-    repeat [u| 0 mm |]
 
-tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
-tolerancesR =
-    repeat [u| 0 mm |]
+tolerances :: (Real a, Fractional a) => [Quantity a [u| mm |]]
+tolerances = repeat [u| 0.19 mm |]
 
 distanceMeridian
     :: (Enum a, Real a, Fractional a)
@@ -59,7 +67,7 @@ distanceMeridian
     -> [Quantity a [u| mm |]]
     -> MkZone a a
     -> TestTree
-distanceMeridian s f tolerances g =
+distanceMeridian s f tolerances' g =
     testGroup s
     $ zipWith3
         (\tolerance r@(Radius r') (x, y) ->
@@ -68,6 +76,6 @@ distanceMeridian s f tolerances g =
                 r'
                 (showQ x ++ " " ++ showQ y)
                 (g r x, g r y))
-        tolerances
+        tolerances'
         distances
         pts
