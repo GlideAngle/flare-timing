@@ -30,6 +30,7 @@ distance Haversines = error "Haversines on the Ellipsoid"
 distance Vincenty = V.distance
 distance AndoyerLambert = A.distance E.AndoyerLambert
 distance ForsytheAndoyerLambert = A.distance E.ForsytheAndoyerLambert
+distance FsAndoyer = A.distance E.FsAndoyer
 
 inverse
     :: (Num a, Fractional a, RealFloat a)
@@ -47,6 +48,7 @@ inverse Haversines = error "Haversines on the Ellipsoid"
 inverse Vincenty = V.inverse
 inverse AndoyerLambert = A.inverse E.AndoyerLambert
 inverse ForsytheAndoyerLambert = A.inverse E.ForsytheAndoyerLambert
+inverse FsAndoyer = A.inverse E.FsAndoyer
 
 azimuthFwd
     :: RealFloat a
@@ -58,6 +60,7 @@ azimuthFwd Haversines = error "Haversines on the Ellipsoid"
 azimuthFwd Vincenty = V.azimuthFwd
 azimuthFwd AndoyerLambert = A.azimuthFwd E.AndoyerLambert
 azimuthFwd ForsytheAndoyerLambert = A.azimuthFwd E.ForsytheAndoyerLambert
+azimuthFwd FsAndoyer = A.azimuthFwd E.FsAndoyer
 
 azimuthRev
     :: RealFloat a
@@ -69,3 +72,4 @@ azimuthRev Haversines = error "Haversines on the Ellipsoid"
 azimuthRev Vincenty = V.azimuthRev
 azimuthRev AndoyerLambert = A.azimuthRev E.AndoyerLambert
 azimuthRev ForsytheAndoyerLambert = A.azimuthRev E.ForsytheAndoyerLambert
+azimuthRev FsAndoyer = A.azimuthRev E.FsAndoyer

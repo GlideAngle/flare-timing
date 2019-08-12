@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dcb5c8d156344a5195c8bc2665ba9372e67565b89f2faceea4a59807423f659e
+-- hash: ed295ce6f379b28de9a4bf9d4f9b1868bd4391de37789b66fef62c4a2cb17fee
 
 name:           flight-earth
 version:        0.1.0
@@ -264,6 +264,7 @@ test-suite forbes
       Distance
       Ellipsoid.AndoyerLambert.Span
       Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
       Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
@@ -272,6 +273,7 @@ test-suite forbes
       Tolerance
       Ellipsoid.AndoyerLambert.Forbes
       Ellipsoid.ForsytheAndoyerLambert.Forbes
+      Ellipsoid.FsAndoyer.Forbes
       Ellipsoid.Vincenty.Forbes
       Flat.Forbes
       Sphere.Forbes
@@ -314,6 +316,7 @@ test-suite forbes-r
       Distance
       Ellipsoid.AndoyerLambert.Span
       Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
       Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
@@ -364,6 +367,7 @@ test-suite geodesy
       Distance
       Ellipsoid.AndoyerLambert.Span
       Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
       Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
@@ -420,6 +424,7 @@ test-suite greda
       Distance
       Ellipsoid.AndoyerLambert.Span
       Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
       Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
@@ -466,6 +471,7 @@ test-suite meridian
       Distance
       Ellipsoid.AndoyerLambert.Span
       Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
       Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
@@ -513,6 +519,7 @@ test-suite published
       Distance
       Ellipsoid.AndoyerLambert.Span
       Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
       Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
@@ -575,6 +582,7 @@ test-suite published-r
       Distance
       Ellipsoid.AndoyerLambert.Span
       Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
       Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes
@@ -637,6 +645,7 @@ test-suite zones
       Distance
       Ellipsoid.AndoyerLambert.Span
       Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
       Ellipsoid.Vincenty.Span
       Flat.Span
       Forbes

@@ -23,6 +23,7 @@ data EarthMath
     | Vincenty
     | AndoyerLambert
     | ForsytheAndoyerLambert
+    | FsAndoyer
     deriving (Eq, Ord, Show)
 
 instance ToJSON EarthMath where
@@ -31,6 +32,7 @@ instance ToJSON EarthMath where
     toJSON em@Vincenty = toJSON . String . T.pack $ show em
     toJSON AndoyerLambert = toJSON $ String "Andoyer-Lambert"
     toJSON ForsytheAndoyerLambert = toJSON $ String "Forsythe-Andoyer-Lambert"
+    toJSON FsAndoyer = toJSON $ String "FS-Andoyer"
 
 instance FromJSON EarthMath where
     parseJSON o@(String _) = do
@@ -41,6 +43,7 @@ instance FromJSON EarthMath where
             "Vincenty" -> return Vincenty
             "Andoyer-Lambert" -> return AndoyerLambert
             "Forsythe-Andoyer-Lambert" -> return ForsytheAndoyerLambert
+            "FS-Andoyer" -> return FsAndoyer
             _ -> empty
 
     parseJSON _ = empty

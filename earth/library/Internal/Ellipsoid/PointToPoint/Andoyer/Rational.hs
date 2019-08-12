@@ -35,7 +35,20 @@ inverse
             (QTaskDistance Rational [u| m |])
             (Quantity Rational [u| rad |])
         )
-inverse
+inverse = inverseStuifbergen
+
+inverseStuifbergen
+    :: Andoyer
+    -> Ellipsoid Rational
+    -> Epsilon
+    -> GeodeticAccuracy Rational
+    -> InverseProblem (LatLng Rational [u| rad |])
+    -> GeodeticInverse
+        (InverseSolution
+            (QTaskDistance Rational [u| m |])
+            (Quantity Rational [u| rad |])
+        )
+inverseStuifbergen
     andoyer
     ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
     e@(Epsilon eps)
@@ -49,8 +62,9 @@ inverse
             { s =
                 TaskDistance . MkQuantity $
                     case andoyer of
-                         AndoyerLambert -> a * (d + f * d₁)
                          ForsytheAndoyerLambert -> a * (d + f * _Δd)
+                         AndoyerLambert -> a * (d + f * d₁)
+                         FsAndoyer -> error "FsAndoyer not expected."
 
             , α₁ = MkQuantity $ atan2' e i j
             , α₂ = Just . MkQuantity $ atan2' e i' j'

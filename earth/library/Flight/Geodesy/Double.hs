@@ -45,6 +45,8 @@ instance RealFloat a => GeodesySolutions Double a where
         A.azimuthFwd E.AndoyerLambert e
     azimuthFwd (ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         A.azimuthFwd E.ForsytheAndoyerLambert e
+    azimuthFwd (FsAndoyer, EarthAsEllipsoid e) =
+        A.azimuthFwd E.FsAndoyer e
     azimuthFwd _ =
         error "Forward azimuth unexpected combination of Earth math and model."
 
@@ -59,6 +61,8 @@ instance RealFloat a => GeodesySolutions Double a where
         A.azimuthRev E.AndoyerLambert e
     azimuthRev (ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         A.azimuthRev E.ForsytheAndoyerLambert e
+    azimuthRev (FsAndoyer, EarthAsEllipsoid e) =
+        A.azimuthRev E.FsAndoyer e
     azimuthRev _ =
         error "Reverse azimuth unexpected combination of Earth math and model."
 
@@ -73,6 +77,8 @@ instance RealFloat a => GeodesySolutions Double a where
         A.distance E.AndoyerLambert e
     arcLength (ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         A.distance E.ForsytheAndoyerLambert e
+    arcLength (FsAndoyer, EarthAsEllipsoid e) =
+        A.distance E.FsAndoyer e
     arcLength _ =
         error "Distance unexpected combination of Earth math and model."
 
@@ -96,6 +102,8 @@ instance RealFloat a => GeodesySolutions Double a where
         A.inverse E.AndoyerLambert e
     inverse (ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         A.inverse E.ForsytheAndoyerLambert e
+    inverse (FsAndoyer, EarthAsEllipsoid e) =
+        A.inverse E.FsAndoyer e
     inverse _ =
         error "Inverse unexpected combination of Earth math and model."
 
@@ -141,6 +149,8 @@ instance RealFloat a => GeoZones Double a where
         E.separatedZones e (A.azimuthFwd E.AndoyerLambert e) (arcLength x)
     separatedZones x@(ForsytheAndoyerLambert, EarthAsEllipsoid e) =
         E.separatedZones e (A.azimuthFwd E.ForsytheAndoyerLambert e) (arcLength x)
+    separatedZones x@(FsAndoyer, EarthAsEllipsoid e) =
+        E.separatedZones e (A.azimuthFwd E.FsAndoyer e) (arcLength x)
     separatedZones _ =
         error "Separated zones combination of Earth math and model."
 
@@ -165,6 +175,8 @@ instance RealFloat a => GeoZones Double a where
     circumSample (AndoyerLambert, _) =
         V.circumSample
     circumSample (ForsytheAndoyerLambert, _) =
+        V.circumSample
+    circumSample (FsAndoyer, _) =
         V.circumSample
 
     circumSample _ =

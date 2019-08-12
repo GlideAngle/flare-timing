@@ -33,7 +33,22 @@ inverse
             (QTaskDistance a [u| m |])
             (Quantity a [u| rad |])
         )
-inverse
+inverse a@FsAndoyer = inverseFs a
+inverse a = inverseStuifbergen a
+
+-- | The inverse solution of Andoyer-Lambert using the same formulae as FS.
+inverseFs
+    :: (Num a, Fractional a, RealFloat a)
+    => Andoyer
+    -> Ellipsoid a
+    -> GeodeticAccuracy a
+    -> InverseProblem (LatLng a [u| rad |])
+    -> GeodeticInverse
+        (InverseSolution
+            (QTaskDistance a [u| m |])
+            (Quantity a [u| rad |])
+        )
+inverseFs
     andoyer
     ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
     _
@@ -46,8 +61,8 @@ inverse
             { s =
                 TaskDistance . MkQuantity $
                     case andoyer of
-                         AndoyerLambert -> a * (d + f * d₁)
-                         ForsytheAndoyerLambert -> a * (d + f * (d₁ + d₂))
+                         FsAndoyer -> a * (d + f * d₁)
+                         _ -> error "FsAndoyer expected."
 
             , α₁ = MkQuantity $ atan2 i j
             , α₂ = Just . MkQuantity $ atan2 i' j'
@@ -93,7 +108,6 @@ inverse
         _H = if _1minuscosd == 0 then 0 else (d + _3sind) / _1minuscosd
         _G = if _1pluscosd == 0 then 0 else (d - _3sind) / _1pluscosd
         d₁ = -(f / 4) * (_H * _K + _G * _L)
-        d₂ = 0
 
 -- Intersection of Hyperbolae on the Earth
 -- by N. Stuifbergen, Dec 1980, Tech. Report #77
@@ -104,7 +118,7 @@ inverse
 -- an auxillary sphere of radius a, the ellipsoid major axis semi-diameter, and
 -- applying correction terms to find the distance correpsondingg to the
 -- ellipsoidal arc.
-_inversePaperVerbatim
+inverseStuifbergen
     :: (Num a, Fractional a, RealFloat a)
     => Andoyer
     -> Ellipsoid a
@@ -115,7 +129,7 @@ _inversePaperVerbatim
             (QTaskDistance a [u| m |])
             (Quantity a [u| rad |])
         )
-_inversePaperVerbatim
+inverseStuifbergen
     andoyer
     ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
     _
@@ -130,6 +144,7 @@ _inversePaperVerbatim
                     case andoyer of
                          AndoyerLambert -> a * (d + f * d₁)
                          ForsytheAndoyerLambert -> a * (d + f * (d₁ + d₂))
+                         FsAndoyer -> error "FsAndoyer not expected."
 
             , α₁ = MkQuantity $ atan2 i j
             , α₂ = Just . MkQuantity $ atan2 i' j'
@@ -260,7 +275,7 @@ distance'
     | yLng > maxBound = GeodeticInverseAbnormal LngOver
 
     | otherwise =
-        inverse a ellipsoid accuracy' prob
+            inverse a ellipsoid accuracy' prob
         where
             GeodeticAccuracy accuracy = defaultGeodeticAccuracy
             accuracy' = GeodeticAccuracy $ fromRational accuracy

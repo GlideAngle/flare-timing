@@ -70,6 +70,7 @@ import Flight.Zone (Radius(..), QRadius)
 data Andoyer
     = AndoyerLambert
     | ForsytheAndoyerLambert
+    | FsAndoyer
 
 data Ellipsoid a =
     Ellipsoid
