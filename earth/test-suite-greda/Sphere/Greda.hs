@@ -16,7 +16,7 @@ task3 = G.task3 toLatLngD
 
 units :: TestTree
 units =
-    testGroup "Greda 2011/2012 zones are separated"
+    testGroup "Greda 2018 zones are separated"
     [ HU.testCase "Task 1" $ sepD task1 @?= True
     , HU.testCase "Task 2" $ sepD task2 @?= True
     , HU.testCase "Task 3" $ sepD task3 @?= True
