@@ -149,6 +149,7 @@ in    defs
                 , source-dirs =
                     [ "test-suite/zone"
                     , "test-suite/geodesy"
+                    , "test-suite/meridian"
                     , "test-suite-meridian"
                     ]
                 }
@@ -162,6 +163,7 @@ in    defs
                 , source-dirs =
                     [ "test-suite/zone"
                     , "test-suite/geodesy"
+                    , "test-suite/meridian"
                     , "test-suite-meridian-r"
                     ]
                 }

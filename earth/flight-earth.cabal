@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 42fee8a08cb829e665ca1c941d5b383f246cb412a5d47d22122697eb189341a5
+-- hash: 3445d682bf00e2eb2a905efdcff5a97524912e2e3da8a0468b7fe0762cbbb957
 
 name:           flight-earth
 version:        0.1.0
@@ -554,6 +554,7 @@ test-suite meridian
   hs-source-dirs:
       test-suite/zone
       test-suite/geodesy
+      test-suite/meridian
       test-suite-meridian
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
@@ -604,6 +605,7 @@ test-suite meridian-r
   hs-source-dirs:
       test-suite/zone
       test-suite/geodesy
+      test-suite/meridian
       test-suite-meridian-r
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
