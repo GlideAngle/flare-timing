@@ -6,12 +6,9 @@
 module Forbes
     ( (.>=.)
     , (.~=.)
-    , ToLatLng
     , tasks
     , d1, d2, d3, d4, d5, d6, d7, d8
     , p1, p2, p3, p4, p5, p6, p7, p8
-    , toLatLngD
-    , toLatLngR
     , mkDayUnits, mkPartDayUnits
     , tdRound
     ) where
@@ -24,10 +21,10 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.Units ()
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..), PathDistance(..), fromKms)
 import Flight.Zone (Radius(..), Zone(..))
 import Data.Ratio.Rounding (dpRound)
+import ToLatLng (ToLatLng)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y
@@ -47,27 +44,6 @@ tdRound
     => QTaskDistance a v -> QTaskDistance a w
 tdRound (TaskDistance (MkQuantity d)) =
     TaskDistance . MkQuantity . fromRational . dpRound 3 $ toRational d
-
-type ToLatLng a = (Double, Double) -> LatLng a [u| rad |]
-
--- | The input pair is in degrees while the output is in radians.
-toLatLngD :: ToLatLng Double
-toLatLngD (lat, lng) =
-    LatLng (Lat lat'', Lng lng'')
-        where
-            lat' = (MkQuantity lat) :: Quantity Double [u| deg |]
-            lng' = (MkQuantity lng) :: Quantity Double [u| deg |]
-            lat'' = convert lat' :: Quantity Double [u| rad |]
-            lng'' = convert lng' :: Quantity Double [u| rad |]
-
-toLatLngR :: ToLatLng Rational
-toLatLngR (lat, lng) =
-    LatLng (Lat lat'', Lng lng'')
-        where
-            lat' = (MkQuantity $ toRational lat) :: Quantity Rational [u| deg |]
-            lng' = (MkQuantity $ toRational lng) :: Quantity Rational [u| deg |]
-            lat'' = convert lat' :: Quantity Rational [u| rad |]
-            lng'' = convert lng' :: Quantity Rational [u| rad |]
 
 mkDayUnits
     :: (Real a)

@@ -126,6 +126,19 @@ in    defs
                     , "test-suite-greda"
                     ]
                 }
+            , greda-r =
+                { dependencies =
+                    [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "GredaRMain.hs"
+                , source-dirs =
+                    [ "test-suite/zone"
+                    , "test-suite/geodesy"
+                    , "test-suite-greda-r"
+                    ]
+                }
             , meridian =
                 { dependencies =
                     [ "flight-earth", "tasty", "tasty-hunit", "tasty-compare" ]

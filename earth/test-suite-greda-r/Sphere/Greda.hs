@@ -5,16 +5,16 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 
 import Flight.Units ()
 import Flight.Zone (Zone(..))
-import ToLatLng (toLatLngD)
+import ToLatLng (toLatLngR)
 import qualified Greda as G (task1)
-import Sphere.Span (sepD)
+import Sphere.Span (sepR)
 
-task1 :: [Zone Double]
-task1 = G.task1 toLatLngD
+task1 :: [Zone Rational]
+task1 = G.task1 toLatLngR
 
 units :: TestTree
 units =
     testGroup "Greda 2011/2012"
     [ HU.testCase "Task 1 zones are separated" $
-        sepD task1 @?= True
+        sepR task1 @?= True
     ]

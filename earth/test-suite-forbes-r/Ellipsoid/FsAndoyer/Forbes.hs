@@ -11,31 +11,32 @@ import Flight.Distance (QTaskDistance)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import qualified Forbes as F
-    ( mkDayUnits, mkPartDayUnits, toLatLngR
+    ( mkDayUnits, mkPartDayUnits
     , d1, d2, d3, d4, d5, d6, d7, d8
     , p1, p2, p3, p4, p5, p6, p7, p8
     )
+import ToLatLng (toLatLngR)
 import Flight.Earth.Ellipsoid (wgs84)
 import Ellipsoid.FsAndoyer.Span (spanR)
 
 d1, d2, d3, d4, d5, d6, d7, d8 :: [Zone Rational]
-d1 = F.d1 F.toLatLngR
-d2 = F.d2 F.toLatLngR
-d3 = F.d3 F.toLatLngR
-d4 = F.d4 F.toLatLngR
-d5 = F.d5 F.toLatLngR
-d6 = F.d6 F.toLatLngR
-d7 = F.d7 F.toLatLngR
-d8 = F.d8 F.toLatLngR
+d1 = F.d1 toLatLngR
+d2 = F.d2 toLatLngR
+d3 = F.d3 toLatLngR
+d4 = F.d4 toLatLngR
+d5 = F.d5 toLatLngR
+d6 = F.d6 toLatLngR
+d7 = F.d7 toLatLngR
+d8 = F.d8 toLatLngR
 
-p1 = F.p1 F.toLatLngR
-p2 = F.p2 F.toLatLngR
-p3 = F.p3 F.toLatLngR
-p4 = F.p4 F.toLatLngR
-p5 = F.p5 F.toLatLngR
-p6 = F.p6 F.toLatLngR
-p7 = F.p7 F.toLatLngR
-p8 = F.p8 F.toLatLngR
+p1 = F.p1 toLatLngR
+p2 = F.p2 toLatLngR
+p3 = F.p3 toLatLngR
+p4 = F.p4 toLatLngR
+p5 = F.p5 toLatLngR
+p6 = F.p6 toLatLngR
+p7 = F.p7 toLatLngR
+p8 = F.p8 toLatLngR
 
 mkDay
     :: TestName

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ed295ce6f379b28de9a4bf9d4f9b1868bd4391de37789b66fef62c4a2cb17fee
+-- hash: 62f17442bc409a61369bca3c8e83aaecd21eb1406dd85f78c9eb82fc87e174d2
 
 name:           flight-earth
 version:        0.1.0
@@ -269,7 +269,9 @@ test-suite forbes
       Flat.Span
       Forbes
       ForbesComments
+      Greda
       Sphere.Span
+      ToLatLng
       Tolerance
       Ellipsoid.AndoyerLambert.Forbes
       Ellipsoid.ForsytheAndoyerLambert.Forbes
@@ -321,10 +323,13 @@ test-suite forbes-r
       Flat.Span
       Forbes
       ForbesComments
+      Greda
       Sphere.Span
+      ToLatLng
       Tolerance
       Ellipsoid.AndoyerLambert.Forbes
       Ellipsoid.ForsytheAndoyerLambert.Forbes
+      Ellipsoid.FsAndoyer.Forbes
       Ellipsoid.Vincenty.Forbes
       Flat.Forbes
       Sphere.Forbes
@@ -372,7 +377,9 @@ test-suite geodesy
       Flat.Span
       Forbes
       ForbesComments
+      Greda
       Sphere.Span
+      ToLatLng
       Tolerance
       Ellipsoid.Ellipsoid
       Flat.Distance
@@ -429,7 +436,9 @@ test-suite greda
       Flat.Span
       Forbes
       ForbesComments
+      Greda
       Sphere.Span
+      ToLatLng
       Tolerance
       Sphere.Greda
       Paths_flight_earth
@@ -437,6 +446,55 @@ test-suite greda
       test-suite/zone
       test-suite/geodesy
       test-suite-greda
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite greda-r
+  type: exitcode-stdio-1.0
+  main-is: GredaRMain.hs
+  other-modules:
+      Zone
+      Distance
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
+      Ellipsoid.Vincenty.Span
+      Flat.Span
+      Forbes
+      ForbesComments
+      Greda
+      Sphere.Span
+      ToLatLng
+      Tolerance
+      Sphere.Greda
+      Paths_flight_earth
+  hs-source-dirs:
+      test-suite/zone
+      test-suite/geodesy
+      test-suite-greda-r
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
@@ -476,7 +534,9 @@ test-suite meridian
       Flat.Span
       Forbes
       ForbesComments
+      Greda
       Sphere.Span
+      ToLatLng
       Tolerance
       Ellipsoid.Meridian
       Sphere.Meridian
@@ -524,7 +584,9 @@ test-suite published
       Flat.Span
       Forbes
       ForbesComments
+      Greda
       Sphere.Span
+      ToLatLng
       Tolerance
       Ellipsoid.AndoyerLambert.Published
       Ellipsoid.ForsytheAndoyerLambert.Published
@@ -587,7 +649,9 @@ test-suite published-r
       Flat.Span
       Forbes
       ForbesComments
+      Greda
       Sphere.Span
+      ToLatLng
       Tolerance
       Ellipsoid.AndoyerLambert.Published
       Ellipsoid.ForsytheAndoyerLambert.Published
@@ -650,7 +714,9 @@ test-suite zones
       Flat.Span
       Forbes
       ForbesComments
+      Greda
       Sphere.Span
+      ToLatLng
       Tolerance
       Ellipsoid.Coincident
       Ellipsoid.Ellipsoid

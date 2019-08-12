@@ -6,4 +6,4 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Earth tests (with doubles)" [units]
+tests = testGroup "Earth tests (with rationals)" [units]
