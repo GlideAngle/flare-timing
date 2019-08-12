@@ -22,7 +22,7 @@ import Flight.Zone.MkZones (unkindZones)
 import Flight.Zone (unlineZones)
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
-import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 import Flight.Geodesy.Solution (GeodesySolutions(..))
 import TaskLengthOptions (CmdOptions(..), mkOptions)
 
@@ -60,11 +60,12 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                     azimuthFwd @Double @Double
                         ( earthMath
                         , let e = EarthAsEllipsoid wgs84 in case earthMath of
-                              Pythagorus -> error "No Pythagorus"
+                              Pythagorus -> EarthAsFlat UTM
                               Haversines -> EarthAsSphere earthRadius
                               Vincenty -> e
                               AndoyerLambert -> e
                               ForsytheAndoyerLambert -> e
+                              FsAndoyer -> e
                         )
 
             let zss = unlineZones az . unkindZones . zones <$> tasks compInput

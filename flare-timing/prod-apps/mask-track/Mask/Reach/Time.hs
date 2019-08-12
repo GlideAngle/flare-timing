@@ -15,7 +15,7 @@ import qualified Data.Vector as V (fromList, maximum)
 
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
-import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 import Flight.Comp (Pilot(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp.Distance (GeoNigh(..))
@@ -64,11 +64,12 @@ maskReachTime
             compNighTime @Double @Double
                 ( earthMath
                 , let e = EarthAsEllipsoid wgs84 in case earthMath of
-                      Pythagorus -> error "No Pythagorus"
+                      Pythagorus -> EarthAsFlat UTM
                       Haversines -> EarthAsSphere earthRadius
                       Vincenty -> e
                       AndoyerLambert -> e
                       ForsytheAndoyerLambert -> e
+                      FsAndoyer -> e
                 )
                 lsWholeTask
                 zsTaskTicked

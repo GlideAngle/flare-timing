@@ -15,7 +15,7 @@ import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
-import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 import Flight.Mask (TaskZone, GeoTag(..), GeoSliver(..))
 import Flight.Comp
     ( FileType(CompInput)
@@ -102,11 +102,12 @@ go math compFile@(CompInputFile compPath) = do
                               fromZones @Double @Double
                                   ( earthMath
                                   , let e = EarthAsEllipsoid wgs84 in case earthMath of
-                                        Pythagorus -> error "No Pythagorus"
+                                        Pythagorus -> EarthAsFlat UTM
                                         Haversines -> EarthAsSphere earthRadius
                                         Vincenty -> e
                                         AndoyerLambert -> e
                                         ForsytheAndoyerLambert -> e
+                                        FsAndoyer -> e
                                   )
                                   zones
 
@@ -135,11 +136,12 @@ flownTag Floating earthMath zs TrackCross{zonesCrossSelected} =
             tagZones @Double @Double
                 ( earthMath
                 , let e = EarthAsEllipsoid wgs84 in case earthMath of
-                      Pythagorus -> error "No Pythagorus"
+                      Pythagorus -> EarthAsFlat UTM
                       Haversines -> EarthAsSphere earthRadius
                       Vincenty -> e
                       AndoyerLambert -> e
                       ForsytheAndoyerLambert -> e
+                      FsAndoyer -> e
                 )
                 zs
                 zonesCrossSelected

@@ -14,7 +14,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
-import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
@@ -349,11 +349,12 @@ flown' dTaskF flying Floating earthMath tags tasks iTask@(IxTask i) mf@MarkedFix
             let earth =
                     ( earthMath
                     , let e = EarthAsEllipsoid wgs84 in case earthMath of
-                          Pythagorus -> error "No Pythagorus"
+                          Pythagorus -> EarthAsFlat UTM
                           Haversines -> EarthAsSphere earthRadius
                           Vincenty -> e
                           AndoyerLambert -> e
                           ForsytheAndoyerLambert -> e
+                          FsAndoyer -> e
                     )
             in
                 TrackDistance

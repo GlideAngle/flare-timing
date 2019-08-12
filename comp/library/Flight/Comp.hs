@@ -12,7 +12,6 @@ Data for competitions, competitors and tasks.
 module Flight.Comp
     ( -- * Competition
       CompSettings(..)
-    , Projection(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
@@ -94,7 +93,7 @@ import Flight.Score
     , AwScaling(..)
     , PointPenalty(..)
     )
-import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.

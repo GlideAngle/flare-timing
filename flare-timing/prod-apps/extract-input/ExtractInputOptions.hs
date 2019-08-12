@@ -80,6 +80,8 @@ mkOptions programName =
                 &= help "Andoyer-Lambert method on an ellipsoid"
                 , ForsytheAndoyerLambert
                 &= help "Forsythe-Andoyer-Lambert method on an ellipsoid"
+                , FsAndoyer
+                &= help "The same formulation of Andoyer that FS uses"
                 ]
         &= groupname "Earth math"
 
@@ -104,3 +106,4 @@ mkEarthModel Haversines = EarthAsSphere earthRadius
 mkEarthModel Vincenty = EarthAsEllipsoid wgs84
 mkEarthModel AndoyerLambert = EarthAsEllipsoid wgs84
 mkEarthModel ForsytheAndoyerLambert = EarthAsEllipsoid wgs84
+mkEarthModel FsAndoyer = EarthAsEllipsoid wgs84

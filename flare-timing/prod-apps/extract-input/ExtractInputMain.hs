@@ -48,6 +48,7 @@ import Flight.Score (ScoreBackTime(..), PointPenalty)
 import Flight.Scribe (writeComp)
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
+import Flight.Geodesy (Projection(..))
 import Flight.Geodesy.Solution (GeoZones(..))
 import Flight.Mask (zoneToCylinder)
 import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
@@ -57,11 +58,12 @@ sepZs earthMath =
     separatedZones @Double @Double
         ( earthMath
         , let e = EarthAsEllipsoid wgs84 in case earthMath of
-              Pythagorus -> error "No Pythagorus"
+              Pythagorus -> EarthAsFlat UTM
               Haversines -> EarthAsSphere earthRadius
               Vincenty -> e
               AndoyerLambert -> e
               ForsytheAndoyerLambert -> e
+              FsAndoyer -> e
         )
 
 separated :: EarthMath -> Raw.RawZone -> Raw.RawZone -> Bool
