@@ -1,4 +1,4 @@
-module Ellipsoid.Meridian (units) where
+module Ellipsoid.Vincenty.Meridian (units) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((*:), u, convert, fromRational')
@@ -9,7 +9,7 @@ import Flight.Zone (QRadius, Radius(..))
 import Zone (MkZone, QLL, describedZones, showQ)
 import qualified Distance as D (DistanceClose, toDistanceClose)
 import Flight.Earth.Ellipsoid (wgs84)
-import Ellipsoid.Span (spanD, spanR)
+import Ellipsoid.Vincenty.Span (spanD, spanR)
 
 units :: TestTree
 units =
