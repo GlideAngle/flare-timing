@@ -1,4 +1,4 @@
-module Flat.Span (spanD, spanR, sepD, sepR, azFwdD, azRevD) where
+module Flat.Span (spanD, spanR, azFwdD, azRevD, sepD, sepR) where
 
 import Data.Ratio ((%))
 
@@ -20,14 +20,14 @@ spanD = arcLength @Double @Double (Pythagorus, EarthAsFlat UTM)
 spanR :: SpanLatLng Rational
 spanR = arcLength @Rational @Rational (Pythagorus, EarthAsFlat UTM, eps)
 
-sepD :: [Zone Double] -> Bool
-sepD = separatedZones @Double @Double (Pythagorus, EarthAsFlat UTM)
-
-sepR :: [Zone Rational] -> Bool
-sepR = separatedZones @Rational @Rational (Pythagorus, EarthAsFlat UTM, eps)
-
 azFwdD :: AzimuthFwd Double
 azFwdD = azimuthFwd @Double @Double (Pythagorus, EarthAsFlat UTM)
 
 azRevD :: AzimuthRev Double
 azRevD = azimuthRev @Double @Double (Pythagorus, EarthAsFlat UTM)
+
+sepD :: [Zone Double] -> Bool
+sepD = separatedZones @Double @Double (Pythagorus, EarthAsFlat UTM)
+
+sepR :: [Zone Rational] -> Bool
+sepR = separatedZones @Rational @Rational (Pythagorus, EarthAsFlat UTM, eps)

@@ -1,4 +1,4 @@
-module Sphere.Greda (unitsR) where
+module Flat.Greda (unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -7,7 +7,7 @@ import Flight.Units ()
 import Flight.Zone (Zone(..))
 import ToLatLng (toLatLngR)
 import qualified Greda as G (task1, task2, task3)
-import Sphere.Span (sepR)
+import Flat.Span (sepR)
 
 task1, task2, task3 :: [Zone Rational]
 task1 = G.task1 toLatLngR

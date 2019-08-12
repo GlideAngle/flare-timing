@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 62f17442bc409a61369bca3c8e83aaecd21eb1406dd85f78c9eb82fc87e174d2
+-- hash: 00763b5cb3ea8adfb6a230f154e41c3e11ecb11f8abab3c1fcb74ec909a5d9de
 
 name:           flight-earth
 version:        0.1.0
@@ -440,6 +440,11 @@ test-suite greda
       Sphere.Span
       ToLatLng
       Tolerance
+      Ellipsoid.AndoyerLambert.Greda
+      Ellipsoid.ForsytheAndoyerLambert.Greda
+      Ellipsoid.FsAndoyer.Greda
+      Ellipsoid.Vincenty.Greda
+      Flat.Greda
       Sphere.Greda
       Paths_flight_earth
   hs-source-dirs:
@@ -489,6 +494,11 @@ test-suite greda-r
       Sphere.Span
       ToLatLng
       Tolerance
+      Ellipsoid.AndoyerLambert.Greda
+      Ellipsoid.ForsytheAndoyerLambert.Greda
+      Ellipsoid.FsAndoyer.Greda
+      Ellipsoid.Vincenty.Greda
+      Flat.Greda
       Sphere.Greda
       Paths_flight_earth
   hs-source-dirs:

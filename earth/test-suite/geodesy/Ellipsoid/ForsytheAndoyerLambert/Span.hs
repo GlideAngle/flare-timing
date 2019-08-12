@@ -1,13 +1,14 @@
-module Ellipsoid.ForsytheAndoyerLambert.Span (spanD, spanR, azFwdD, azRevD) where
+module Ellipsoid.ForsytheAndoyerLambert.Span (spanD, spanR, azFwdD, azRevD, sepD, sepR) where
 
 import Data.Ratio ((%))
 
 import Flight.Distance (SpanLatLng)
 import Flight.LatLng (AzimuthFwd, AzimuthRev)
 import Flight.LatLng.Rational (Epsilon(..))
+import Flight.Zone (Zone(..))
 import Flight.Earth.Ellipsoid (Ellipsoid)
 import Flight.Geodesy (EarthModel(..), EarthMath(ForsytheAndoyerLambert))
-import Flight.Geodesy.Solution (GeodesySolutions(..))
+import Flight.Geodesy.Solution (GeodesySolutions(..), GeoZones(..))
 import Flight.Geodesy.Double ()
 import Flight.Geodesy.Rational ()
 
@@ -25,3 +26,9 @@ azFwdD e = azimuthFwd @Double @Double (ForsytheAndoyerLambert, EarthAsEllipsoid 
 
 azRevD :: Ellipsoid Double -> AzimuthRev Double
 azRevD e = azimuthRev @Double @Double (ForsytheAndoyerLambert, EarthAsEllipsoid e)
+
+sepD :: Ellipsoid Double -> [Zone Double] -> Bool
+sepD e = separatedZones @Double @Double (ForsytheAndoyerLambert, EarthAsEllipsoid e)
+
+sepR :: Ellipsoid Rational -> [Zone Rational] -> Bool
+sepR e = separatedZones @Rational @Rational (ForsytheAndoyerLambert, EarthAsEllipsoid e, eps)

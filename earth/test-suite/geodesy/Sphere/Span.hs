@@ -1,4 +1,4 @@
-module Sphere.Span (spanD, spanR, sepD, sepR, azFwdD, azRevD) where
+module Sphere.Span (spanD, spanR, azFwdD, azRevD, sepD, sepR) where
 
 import Flight.LatLng.Rational (defEps)
 import Flight.LatLng (AzimuthFwd, AzimuthRev)
@@ -16,14 +16,14 @@ spanD = arcLength @Double @Double (Haversines, EarthAsSphere earthRadius)
 spanR :: SpanLatLng Rational
 spanR = arcLength @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
 
-sepD :: [Zone Double] -> Bool
-sepD = separatedZones @Double @Double (Haversines, EarthAsSphere earthRadius)
-
-sepR :: [Zone Rational] -> Bool
-sepR = separatedZones @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
-
 azFwdD :: AzimuthFwd Double
 azFwdD = azimuthFwd @Double @Double (Haversines, EarthAsSphere earthRadius)
 
 azRevD :: AzimuthRev Double
 azRevD = azimuthRev @Double @Double (Haversines, EarthAsSphere earthRadius)
+
+sepD :: [Zone Double] -> Bool
+sepD = separatedZones @Double @Double (Haversines, EarthAsSphere earthRadius)
+
+sepR :: [Zone Rational] -> Bool
+sepR = separatedZones @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps)
