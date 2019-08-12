@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d414dca45f9d7b22190a899246f26bef31b58999e78e8941378f83dd1822c28
+-- hash: 42fee8a08cb829e665ca1c941d5b383f246cb412a5d47d22122697eb189341a5
 
 name:           flight-earth
 version:        0.1.0
@@ -555,6 +555,56 @@ test-suite meridian
       test-suite/zone
       test-suite/geodesy
       test-suite-meridian
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite meridian-r
+  type: exitcode-stdio-1.0
+  main-is: MeridianRMain.hs
+  other-modules:
+      Zone
+      Distance
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
+      Ellipsoid.Vincenty.Span
+      Flat.Span
+      Forbes
+      ForbesComments
+      Greda
+      Sphere.Span
+      ToLatLng
+      Tolerance
+      Ellipsoid.Vincenty.Meridian
+      Sphere.Meridian
+      Paths_flight_earth
+  hs-source-dirs:
+      test-suite/zone
+      test-suite/geodesy
+      test-suite-meridian-r
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:

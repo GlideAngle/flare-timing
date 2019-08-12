@@ -8,7 +8,7 @@ main = defaultMain tests
 
 tests :: TestTree
 tests =
-    testGroup "Earth tests (with doubles)"
-        [ testGroup "Haversines Math" [S.units]
-        , testGroup "Vincenty Math" [V.units]
+    testGroup "Earth tests (with rationals)"
+        [ testGroup "Haversines Math" [S.unitsR]
+        , testGroup "Vincenty Math" [V.unitsR]
         ]
