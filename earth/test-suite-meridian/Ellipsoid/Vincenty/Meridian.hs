@@ -1,4 +1,4 @@
-module Ellipsoid.Vincenty.Meridian (units) where
+module Ellipsoid.Vincenty.Meridian (units, unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((*:), u, convert, fromRational')
@@ -14,9 +14,7 @@ import Ellipsoid.Vincenty.Span (spanD, spanR)
 units :: TestTree
 units =
     testGroup "Meridian arc distance tests"
-    [ testGroup "With doubles" (uncurry f <$> describedZones)
-    , testGroup "With rationals" (uncurry g <$> describedZones)
-    ]
+    [testGroup "With doubles" (uncurry f <$> describedZones)]
     where
         f s  =
             distanceMeridian
@@ -24,7 +22,12 @@ units =
                 (D.toDistanceClose $ spanD wgs84)
                 tolerances
 
-        g s  =
+unitsR :: TestTree
+unitsR =
+    testGroup "Meridian arc distance tests"
+    [testGroup "With rationals" (uncurry f <$> describedZones)]
+    where
+        f s  =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
                 (D.toDistanceClose $ spanR wgs84)

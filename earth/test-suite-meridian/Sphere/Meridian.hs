@@ -1,4 +1,4 @@
-module Sphere.Meridian (units) where
+module Sphere.Meridian (units, unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u)
@@ -13,9 +13,7 @@ import Sphere.Span (spanD, spanR)
 units :: TestTree
 units =
     testGroup "Meridian arc distance tests"
-    [ testGroup "With doubles" (uncurry f <$> describedZones)
-    , testGroup "With rationals" (uncurry g <$> describedZones)
-    ]
+    [testGroup "With doubles" (uncurry f <$> describedZones)]
     where
         f s  =
             distanceMeridian
@@ -23,7 +21,12 @@ units =
                 (D.toDistanceClose spanD)
                 tolerancesD
 
-        g s  =
+unitsR :: TestTree
+unitsR =
+    testGroup "Meridian arc distance tests"
+    [testGroup "With rationals" (uncurry f <$> describedZones)]
+    where
+        f s  =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
                 (D.toDistanceClose spanR)
