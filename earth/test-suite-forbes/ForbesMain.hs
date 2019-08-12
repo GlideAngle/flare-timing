@@ -16,7 +16,7 @@ tests =
         [ testGroup "Pythagorus Math" [F.units]
         , testGroup "Haversines Math" [S.units]
         , testGroup "Vincenty Math" [V.units]
-        , testGroup "FS Ellipsoid Math" [FSA.units]
         , testGroup "Andoyer Math" [AL.units]
         , testGroup "Forsythe Math" [FAL.units]
+        , testGroup "FS Ellipsoid Math" [FSA.units]
         ]

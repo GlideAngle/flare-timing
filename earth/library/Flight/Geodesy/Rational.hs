@@ -43,6 +43,8 @@ instance (Real a, Fractional a) => GeodesySolutions Rational a where
         A.azimuthFwd E.AndoyerLambert e eps
     azimuthFwd (ForsytheAndoyerLambert, EarthAsEllipsoid e, eps) =
         A.azimuthFwd E.ForsytheAndoyerLambert e eps
+    azimuthFwd (FsAndoyer, EarthAsEllipsoid e, eps) =
+        A.azimuthFwd E.FsAndoyer e eps
     azimuthFwd _ =
         error "Forward azimuth unexpected combination of Earth math and model."
 
@@ -57,6 +59,8 @@ instance (Real a, Fractional a) => GeodesySolutions Rational a where
         A.azimuthRev E.AndoyerLambert e eps
     azimuthRev (ForsytheAndoyerLambert, EarthAsEllipsoid e, eps) =
         A.azimuthRev E.ForsytheAndoyerLambert e eps
+    azimuthRev (FsAndoyer, EarthAsEllipsoid e, eps) =
+        A.azimuthRev E.FsAndoyer e eps
     azimuthRev _ =
         error "Reverse azimuth unexpected combination of Earth math and model."
 
@@ -71,6 +75,8 @@ instance (Real a, Fractional a) => GeodesySolutions Rational a where
         A.distance E.AndoyerLambert e eps
     arcLength (ForsytheAndoyerLambert, EarthAsEllipsoid e, eps) =
         A.distance E.ForsytheAndoyerLambert e eps
+    arcLength (FsAndoyer, EarthAsEllipsoid e, eps) =
+        A.distance E.FsAndoyer e eps
     arcLength _ =
         error "Distance unexpected combination of Earth math and model."
 
@@ -94,6 +100,8 @@ instance (Real a, Fractional a) => GeodesySolutions Rational a where
         A.inverse E.AndoyerLambert e eps
     inverse (ForsytheAndoyerLambert, EarthAsEllipsoid e, eps) =
         A.inverse E.ForsytheAndoyerLambert e eps
+    inverse (FsAndoyer, EarthAsEllipsoid e, eps) =
+        A.inverse E.FsAndoyer e eps
     inverse _ =
         error "Inverse unexpected combination of Earth math and model."
 
@@ -152,6 +160,11 @@ instance (Real a, Fractional a) => GeoZones Rational a where
             e
             (A.azimuthFwd E.ForsytheAndoyerLambert e eps)
             (arcLength @_ @Rational x)
+    separatedZones x@(FsAndoyer, EarthAsEllipsoid e, eps) =
+        E.separatedZones
+            e
+            (A.azimuthFwd E.FsAndoyer e eps)
+            (arcLength @_ @Rational x)
     separatedZones _ =
         error "Separated zones combination of Earth math and model."
 
@@ -170,6 +183,8 @@ instance (Real a, Fractional a) => GeoZones Rational a where
         distancePointToPoint (A.distance E.AndoyerLambert e eps)
     pathDistance (ForsytheAndoyerLambert, EarthAsEllipsoid e, eps) =
         distancePointToPoint (A.distance E.ForsytheAndoyerLambert e eps)
+    pathDistance (FsAndoyer, EarthAsEllipsoid e, eps) =
+        distancePointToPoint (A.distance E.FsAndoyer e eps)
     pathDistance _ =
         error "Separated zones combination of Earth math and model."
 

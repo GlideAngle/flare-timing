@@ -31,7 +31,7 @@ distance Haversines = error "Haversines on the Ellipsoid"
 distance Vincenty = V.distance
 distance AndoyerLambert = A.distance E.AndoyerLambert
 distance ForsytheAndoyerLambert = A.distance E.ForsytheAndoyerLambert
-distance FsAndoyer = error "distance with FS Andoyer not implemented for rational."
+distance FsAndoyer = A.distance E.FsAndoyer
 
 inverse
     :: EarthMath
@@ -49,7 +49,7 @@ inverse Haversines = error "Haversines on the Ellipsoid"
 inverse Vincenty = V.inverse
 inverse AndoyerLambert = A.inverse E.AndoyerLambert
 inverse ForsytheAndoyerLambert = A.inverse E.ForsytheAndoyerLambert
-inverse FsAndoyer = error "inverse with FS Andoyer not implemented for rational."
+inverse FsAndoyer = A.inverse E.FsAndoyer
 
 azimuthFwd
     :: (Real a, Fractional a, Show a)
@@ -62,7 +62,7 @@ azimuthFwd Haversines = error "Haversines on the Ellipsoid"
 azimuthFwd Vincenty = V.azimuthFwd
 azimuthFwd AndoyerLambert = A.azimuthFwd E.AndoyerLambert
 azimuthFwd ForsytheAndoyerLambert = A.azimuthFwd E.ForsytheAndoyerLambert
-azimuthFwd FsAndoyer = error "Azimuth forward with FS Andoyer not implemented for rational."
+azimuthFwd FsAndoyer = A.azimuthFwd E.FsAndoyer
 
 azimuthRev
     :: (Real a, Fractional a, Show a)
@@ -75,4 +75,4 @@ azimuthRev Haversines = error "Haversines on the Ellipsoid"
 azimuthRev Vincenty = V.azimuthRev
 azimuthRev AndoyerLambert = A.azimuthRev E.AndoyerLambert
 azimuthRev ForsytheAndoyerLambert = A.azimuthRev E.ForsytheAndoyerLambert
-azimuthRev FsAndoyer = error "Azimuth reverse with FS Andoyer not implemented for rational."
+azimuthRev FsAndoyer = A.azimuthRev E.FsAndoyer

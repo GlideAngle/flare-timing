@@ -116,7 +116,7 @@ inverseFs
 -- Section 3.1 Forsythe-Andoyer-Lamber Formulae
 -- The Andoyer-Lambert method consists of calculating a spherical arc length on
 -- an auxillary sphere of radius a, the ellipsoid major axis semi-diameter, and
--- applying correction terms to find the distance correpsondingg to the
+-- applying correction terms to find the distance correpsonding to the
 -- ellipsoidal arc.
 inverseStuifbergen
     :: (Num a, Fractional a, RealFloat a)

@@ -5,6 +5,7 @@ import qualified Sphere.Forbes as S
 import qualified Ellipsoid.Vincenty.Forbes as V
 import qualified Ellipsoid.AndoyerLambert.Forbes as AL
 import qualified Ellipsoid.ForsytheAndoyerLambert.Forbes as FAL
+import qualified Ellipsoid.FsAndoyer.Forbes as FSA
 
 main :: IO ()
 main = defaultMain tests
@@ -17,4 +18,5 @@ tests =
         , testGroup "Vincenty Math" [V.unitsR]
         , testGroup "Andoyer Math" [AL.unitsR]
         , testGroup "Forsythe Math" [FAL.unitsR]
+        , testGroup "FS Ellipsoid Math" [FSA.units]
         ]
