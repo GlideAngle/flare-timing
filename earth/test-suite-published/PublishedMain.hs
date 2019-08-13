@@ -1,5 +1,3 @@
-module PublishedMain where
-
 import Test.Tasty (TestTree, testGroup, defaultMain)
 
 import qualified Flat.Published as F

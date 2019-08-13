@@ -56,7 +56,6 @@ distances =
         y = LatLng (Lat $ convert [u| 5 deg |], Lng [u| 0 rad |])
         TaskDistance d = arcLength @Rational @Rational (Haversines, EarthAsSphere earthRadius, defEps) x y
 
-
 tolerances :: (Real a, Fractional a) => [Quantity a [u| mm |]]
 tolerances = repeat [u| 0.19 mm |]
 
