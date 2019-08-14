@@ -1,4 +1,4 @@
-module Sphere.Meridian (units, unitsR) where
+module Meridian.Sphere (units, unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((*:), u, convert, fromRational')

@@ -1,4 +1,4 @@
-module Ellipsoid.Vincenty.Meridian (units, unitsR) where
+module Meridian.Ellipsoid.Vincenty (units, unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((*:), u, convert, fromRational')

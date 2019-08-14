@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3445d682bf00e2eb2a905efdcff5a97524912e2e3da8a0468b7fe0762cbbb957
+-- hash: 05348bbc15c86ece980e5c716e127548c35edb3a74bfc850c1313412811fda59
 
 name:           flight-earth
 version:        0.1.0
@@ -548,8 +548,8 @@ test-suite meridian
       Sphere.Span
       ToLatLng
       Tolerance
-      Ellipsoid.Vincenty.Meridian
-      Sphere.Meridian
+      Meridian.Ellipsoid.Vincenty
+      Meridian.Sphere
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone
@@ -599,8 +599,8 @@ test-suite meridian-r
       Sphere.Span
       ToLatLng
       Tolerance
-      Ellipsoid.Vincenty.Meridian
-      Sphere.Meridian
+      Meridian.Ellipsoid.Vincenty
+      Meridian.Sphere
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone

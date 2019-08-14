@@ -1,7 +1,7 @@
 import Test.Tasty (TestTree, testGroup, defaultMain)
 
-import qualified Sphere.Meridian as S
-import qualified Ellipsoid.Vincenty.Meridian as V
+import qualified Meridian.Sphere as S
+import qualified Meridian.Ellipsoid.Vincenty as V
 
 main :: IO ()
 main = defaultMain tests
