@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 05348bbc15c86ece980e5c716e127548c35edb3a74bfc850c1313412811fda59
+-- hash: 4968db17e4f38d33cb1b4b1f3634a75007d7421d0a730c5478bf5805caaea4c8
 
 name:           flight-earth
 version:        0.1.0
@@ -650,11 +650,11 @@ test-suite published
       Sphere.Span
       ToLatLng
       Tolerance
-      Ellipsoid.AndoyerLambert.Published
-      Ellipsoid.ForsytheAndoyerLambert.Published
-      Ellipsoid.Vincenty.Published
-      Flat.Published
-      Published.Bedford
+      Published.Bedford1978
+      Published.Ellipsoid.AndoyerLambert
+      Published.Ellipsoid.ForsytheAndoyerLambert
+      Published.Ellipsoid.Vincenty
+      Published.Flat
       Published.GeodeticSurvey
       Published.GeodeticSurvey.LatN00LngE000S40
       Published.GeodeticSurvey.LatN00LngW180S40
@@ -664,8 +664,8 @@ test-suite published
       Published.GeodeticSurvey.Meridian
       Published.GeodeticSurvey.Parallel
       Published.GeoscienceAustralia
-      Published.Vincenty
-      Sphere.Published
+      Published.Sphere
+      Published.Vincenty1975
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone
@@ -715,11 +715,11 @@ test-suite published-r
       Sphere.Span
       ToLatLng
       Tolerance
-      Ellipsoid.AndoyerLambert.Published
-      Ellipsoid.ForsytheAndoyerLambert.Published
-      Ellipsoid.Vincenty.Published
-      Flat.Published
-      Published.Bedford
+      Published.Bedford1978
+      Published.Ellipsoid.AndoyerLambert
+      Published.Ellipsoid.ForsytheAndoyerLambert
+      Published.Ellipsoid.Vincenty
+      Published.Flat
       Published.GeodeticSurvey
       Published.GeodeticSurvey.LatN00LngE000S40
       Published.GeodeticSurvey.LatN00LngW180S40
@@ -729,8 +729,8 @@ test-suite published-r
       Published.GeodeticSurvey.Meridian
       Published.GeodeticSurvey.Parallel
       Published.GeoscienceAustralia
-      Published.Vincenty
-      Sphere.Published
+      Published.Sphere
+      Published.Vincenty1975
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone

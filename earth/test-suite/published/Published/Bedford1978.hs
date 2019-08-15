@@ -3,7 +3,7 @@
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Published.Bedford
+module Published.Bedford1978
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     ) where

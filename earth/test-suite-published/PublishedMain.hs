@@ -1,10 +1,10 @@
 import Test.Tasty (TestTree, testGroup, defaultMain)
 
-import qualified Flat.Published as F
-import qualified Sphere.Published as S
-import qualified Ellipsoid.Vincenty.Published as V
-import qualified Ellipsoid.AndoyerLambert.Published as AL
-import qualified Ellipsoid.ForsytheAndoyerLambert.Published as FAL
+import qualified Published.Flat as F
+import qualified Published.Sphere as S
+import qualified Published.Ellipsoid.Vincenty as V
+import qualified Published.Ellipsoid.AndoyerLambert as AL
+import qualified Published.Ellipsoid.ForsytheAndoyerLambert as FAL
 
 main :: IO ()
 main = defaultMain tests

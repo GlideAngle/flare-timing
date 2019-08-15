@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Ellipsoid.Vincenty.Published (units, unitsR) where
+module Published.Ellipsoid.ForsytheAndoyerLambert (units, unitsR) where
 
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
@@ -16,12 +16,12 @@ import qualified Published.GeoscienceAustralia as G
 import qualified Published.GeodeticSurvey as N
     ( directProblems, directSolutions
     )
-import qualified Published.Vincenty as V
+import qualified Published.Vincenty1975 as V
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     , ellipsoids
     )
-import qualified Published.Bedford as B
+import qualified Published.Bedford1978 as B
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
@@ -31,7 +31,7 @@ import qualified Tolerance as T
     , dblInverseChecks, ratInverseChecks
     )
 import Flight.Geodesy (DProb, DSoln, IProb, ISoln)
-import Ellipsoid.Vincenty.Span (spanD, spanR, azFwdD, azRevD)
+import Ellipsoid.ForsytheAndoyerLambert.Span (spanD, spanR, azFwdD, azRevD)
 
 units :: TestTree
 units =
@@ -52,32 +52,32 @@ unitsR =
     ]
 
 geoSciAuAzTolerance :: AzTolerance
-geoSciAuAzTolerance = DMS (0, 0, 0.016664)
+geoSciAuAzTolerance = DMS (0, 3, 0.02)
 
 vincentyAzTolerance :: AzTolerance
-vincentyAzTolerance = DMS (0, 0, 0.016667)
+vincentyAzTolerance = DMS (1, 29, 0)
 
 bedfordAzTolerance :: AzTolerance
-bedfordAzTolerance = DMS (0, 0, 0.139737)
+bedfordAzTolerance = DMS (0, 6, 1.6)
 
 geoSciAuTolerance :: Fractional a => GetTolerance a
-geoSciAuTolerance = const . convert $ [u| 0.5 mm |]
+geoSciAuTolerance = const . convert $ [u| 42 m |]
 
 ngsTolerance :: Fractional a => GetTolerance a
-ngsTolerance = const . convert $ [u| 0.15 mm |]
+ngsTolerance = const . convert $ [u| 367 m |]
 
 vincentyTolerance :: Fractional a => GetTolerance a
-vincentyTolerance = const . convert $ [u| 0.8 mm |]
+vincentyTolerance = const . convert $ [u| 32.6 km |]
 
 bedfordTolerance
     :: (Real a, Fractional a)
     => Quantity a [u| m |]
     -> Quantity a [u| km |]
 bedfordTolerance d'
-    | d < [u| 100 km |] = convert [u| 37 mm |]
-    | d < [u| 500 km |] = convert [u| 37 mm |]
-    | d < [u| 1000 km |] = convert [u| 37 mm |]
-    | otherwise = convert [u| 37 mm |]
+    | d < [u| 100 km |] = convert [u| 264 m |]
+    | d < [u| 500 km |] = convert [u| 1.6 km |]
+    | d < [u| 1000 km |] = convert [u| 2.57 km |]
+    | otherwise = convert [u| 33 km |]
     where
         d = convert d'
 

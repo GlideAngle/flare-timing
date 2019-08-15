@@ -4,7 +4,7 @@
 -- of Nested Equations
 -- Survey Review XXII, 176
 -- T. Vincenty, April 1975.
-module Published.Vincenty
+module Published.Vincenty1975
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     , ellipsoids
