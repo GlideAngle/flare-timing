@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 152ecbcbe9579df033ceca9415f5ef281371bf8365c83a40223e3b696569bb22
+-- hash: efc0c52a643fa60a98a9ed81c6a06cf576eb76ebb2871abcc0e565b6164fda3c
 
 name:           flight-earth
 version:        0.1.0
@@ -103,6 +103,8 @@ test-suite cylinder
       Cylinder.Ellipsoid.Vincenty.Inner
       Cylinder.Ellipsoid.Vincenty.Outer
       Cylinder.Ellipsoid.Vincenty.Span
+      Cylinder.Inner
+      Cylinder.Outer
       Cylinder.Sphere.Inner
       Cylinder.Sphere.Outer
       Cylinder.Sphere.Span
@@ -150,6 +152,8 @@ test-suite cylinder-r
       Cylinder.Ellipsoid.Vincenty.Inner
       Cylinder.Ellipsoid.Vincenty.Outer
       Cylinder.Ellipsoid.Vincenty.Span
+      Cylinder.Inner
+      Cylinder.Outer
       Cylinder.Sphere.Inner
       Cylinder.Sphere.Outer
       Cylinder.Sphere.Span

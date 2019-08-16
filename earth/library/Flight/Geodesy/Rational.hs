@@ -25,6 +25,7 @@ import qualified Internal.Sphere.Separated as H
 import qualified Internal.Ellipsoid.Cylinder.Vincenty.Rational as V
 import qualified Internal.Ellipsoid.PointToPoint.Andoyer.Rational as A
 import qualified Internal.Ellipsoid.PointToPoint.Vincenty.Rational as V
+import qualified Internal.Flat.Cylinder.Rational as P
 import qualified Internal.Flat.PointToPoint.Rational as P
 import qualified Internal.Sphere.Cylinder.Rational as H
 import qualified Internal.Sphere.PointToPoint.Rational as H
@@ -178,14 +179,20 @@ instance (Real a, Fractional a) => GeoZones Rational a where
 
     circumSample :: Trig Rational a => Earth Rational -> CircumSample Rational
     circumSample (Pythagorus, EarthAsFlat _, _) =
-        error "Circumference Sample Pythagorus."
+        P.circumSample
     circumSample (Haversines, EarthAsSphere _, _) =
         H.circumSample
     circumSample (Vincenty, EarthAsEllipsoid _, _) =
         V.circumSample
+
+    -- NOTE: Andoyer's is a method for solving the inverse geodesy problem.  We
+    -- still use Vincenty for the direct problem's solution. Other alternatives
+    -- might be Sjoberg 2006 and Karney 2013.
     circumSample (AndoyerLambert, _, _) =
-        error "Circumference Sample Andoyer-Lambert."
+        V.circumSample
     circumSample (ForsytheAndoyerLambert, _, _) =
-        error "Circumference Sample Forsythe-Andoyer-Lambert."
+        V.circumSample
+    circumSample (FsAndoyer, _, _) =
+        V.circumSample
     circumSample _ =
         error "Circumference Sample unexpected combination of Earth math and model."

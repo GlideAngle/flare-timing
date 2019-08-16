@@ -178,6 +178,5 @@ instance RealFloat a => GeoZones Double a where
         V.circumSample
     circumSample (FsAndoyer, _) =
         V.circumSample
-
     circumSample _ =
         error "Circumference Sample unexpected combination of Earth math and model."
