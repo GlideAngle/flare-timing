@@ -1,64 +1,94 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Sphere.Cylinder.Inner (innerUnits, innerUnitsR) where
+module Cylinder.Sphere.Outer (outerUnits, outerUnitsR) where
 
 import Prelude hiding (span)
-import qualified Data.Number.FixedFunctions as F
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure
-    ((*:), (-:), u, convert, unQuantity, fromRational', toRational')
+    ((*:), (+:), u, convert, unQuantity, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..))
-import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (QBearing, Bearing(..), QRadius, Radius(..), Zone(..), ArcSweep(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
-import Sphere.Cylinder.Span
+import Cylinder.Sphere.Span
     ( ZonePointFilter
     , spanD, csD, spD
     , spanR, csR, spR
     , zpFilter
     )
 
-innerUnits :: TestTree
-innerUnits =
-    testGroup "When points meant to be on the boundary are inside a cylinder"
-        [ let f = zpFilter in innerCheck spanD csD spD bearingD t s f d p
-        | d <- cycle distances
-        | t <- Tolerance . unQuantity <$> cycle tolerancesD
-        | s <- cycle searchRanges
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
+outerUnits :: TestTree
+outerUnits =
+    testGroup "When points meant to be on the boundary are outside a cylinder"
+        [ outerCheck spanD csD spD b t s zpFilter d p
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsD
+        , b <- bearingD
+        , (d, t, s) <-
+            [ (d, t, s)
+            | d <- distances
+            | t <- Tolerance . unQuantity <$> tolerancesD
+            | s <- searchRanges
+            ]
         ]
 
-innerUnitsR :: TestTree
-innerUnitsR =
-    testGroup "When points meant to be on the boundary are inside a cylinder"
-        [ let f = zpFilter in innerCheck spanR csR spR bearingR t s f d p
-        | d <- cycle distances
-        | t <- Tolerance . unQuantity <$> cycle tolerancesR
-        | s <- cycle searchRanges
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
+outerUnitsR :: TestTree
+outerUnitsR =
+    testGroup "When points meant to be on the boundary are outside a cylinder"
+        [ outerCheck spanR csR spR b t s zpFilter d p
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsR
+        , b <- bearingR
+        , (d, t, s) <-
+            [ (d, t, s)
+            | d <- distances
+            | t <- Tolerance . unQuantity <$> tolerancesR
+            | s <- searchRanges
+            ]
         ]
 
-bearingD :: QBearing Double [u| rad |]
+bearingD :: [QBearing Double [u| rad |]]
 bearingD =
-    Bearing . MkQuantity $ pi
+    Bearing <$>
+    [ f $ x *: [u| 1 deg |]
+    | x <- [0, 45 .. 360]
+    ]
+    where
+        f :: Quantity Double [u| deg |] -> Quantity Double [u| rad |]
+        f = convert
 
-bearingR :: QBearing Rational [u| rad |]
+bearingR :: [QBearing Rational [u| rad |]]
 bearingR =
-    let (Epsilon e) = defEps in (Bearing . MkQuantity $ F.pi e)
+    Bearing . toRational' <$>
+    [ f $ x *: [u| 1 deg |]
+    | x <- [0, 120]
+    ]
+    where
+        f :: Quantity Double [u| deg |] -> Quantity Double [u| rad |]
+        f = convert
 
-pts :: (Enum a, Real a, Fractional a) => [QLL a]
-pts =
+ptsD :: (Enum a, Real a, Fractional a) => [QLL a]
+ptsD =
     f
     <$>
     [ ((x - 90) *: [u| 1 deg |], (y - 180) *: [u| 1 deg |])
     | x <- [0, 45 .. 180]
     , y <- [0, 90 .. 360]
+    ]
+    where
+        f (x, y) =
+            (convert x, convert y)
+
+ptsR :: (Enum a, Real a, Fractional a) => [QLL a]
+ptsR =
+    f
+    <$>
+    [ ((x - 90) *: [u| 1 deg |], (y - 180) *: [u| 1 deg |])
+    | x <- [0, 90 .. 180]
+    , y <- [0, 180 .. 360]
     ]
     where
         f (x, y) =
@@ -76,17 +106,12 @@ distances =
     ]
 
 tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
-tolerancesD = tolerancesR
+tolerancesD =
+    repeat $ fromRational' [u| 0.0000001 mm |]
 
 tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
 tolerancesR =
-    fromRational' <$>
-    [ [u| 1 mm |]
-    , [u| 1 mm |]
-    , [u| 10 mm |]
-    , [u| 100 mm |]
-    , convert [u| 100 m |]
-    ]
+    repeat $ fromRational' [u| 0 mm |]
 
 searchRanges :: (Real a, Fractional a) => [Quantity a [u| m |]]
 searchRanges =
@@ -99,7 +124,7 @@ searchRanges =
     , [u| 100 m |]
     ]
 
-innerCheck
+outerCheck
     ::
         ( Eq a, Show a, Real a, Fractional a
         , Show (QLat a [u| rad |])
@@ -115,19 +140,19 @@ innerCheck
     -> QRadius a [u| m |]
     -> LatLng a [u| rad |]
     -> TestTree
-innerCheck
+outerCheck
     span cs sampleParams br
     (Tolerance tolerance)
     sr@(MkQuantity searchRange)
     zpf r@(Radius radius) ll =
-    testGroup ("At " ++ showQ (lat, lng))
+    testGroup ("From origin " ++ showQ (lat, lng) ++ " bearing " ++ show br)
     [ HU.testCase
         msg
         $ zpf
             span
-            (<)
+            (>)
             ll
-            (convert radius -: convert tolerance')
+            (convert radius +: convert tolerance')
             (fst $ cs sp (ArcSweep br) Nothing Nothing cyl)
         @?= []
     ]
@@ -137,7 +162,7 @@ innerCheck
         msg =
             "No points > "
             ++ show tol
-            ++ " inside a "
+            ++ " outside a "
             ++ show r
             ++ " cylinder when searching within "
             ++ show sr'

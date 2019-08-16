@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Ellipsoid.Cylinder.Inner (innerUnits, innerUnitsR) where
+module Cylinder.Sphere.Inner (innerUnits, innerUnitsR) where
 
 import Prelude hiding (span)
 import qualified Data.Number.FixedFunctions as F
@@ -17,7 +17,7 @@ import Flight.Distance (SpanLatLng)
 import Flight.Zone (QBearing, Bearing(..), QRadius, Radius(..), Zone(..), ArcSweep(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
-import Ellipsoid.Cylinder.Span
+import Cylinder.Sphere.Span
     ( ZonePointFilter
     , spanD, csD, spD
     , spanR, csR, spR

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4968db17e4f38d33cb1b4b1f3634a75007d7421d0a730c5478bf5805caaea4c8
+-- hash: 152ecbcbe9579df033ceca9415f5ef281371bf8365c83a40223e3b696569bb22
 
 name:           flight-earth
 version:        0.1.0
@@ -99,14 +99,14 @@ test-suite cylinder
   main-is: CylinderMain.hs
   other-modules:
       Zone
-      Ellipsoid.Cylinder.Inner
-      Ellipsoid.Cylinder.Outer
-      Ellipsoid.Cylinder.Span
-      Ellipsoid.Ellipsoid
-      Sphere.Cylinder.Inner
-      Sphere.Cylinder.Outer
-      Sphere.Cylinder.Span
-      Sphere.Sphere
+      Cylinder.Ellipsoid.Vincenty
+      Cylinder.Ellipsoid.Vincenty.Inner
+      Cylinder.Ellipsoid.Vincenty.Outer
+      Cylinder.Ellipsoid.Vincenty.Span
+      Cylinder.Sphere.Inner
+      Cylinder.Sphere.Outer
+      Cylinder.Sphere.Span
+      Cylinder.Sphere.Sphere
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone
@@ -146,14 +146,14 @@ test-suite cylinder-r
   main-is: CylinderRMain.hs
   other-modules:
       Zone
-      Ellipsoid.Cylinder.Inner
-      Ellipsoid.Cylinder.Outer
-      Ellipsoid.Cylinder.Span
-      Ellipsoid.Ellipsoid
-      Sphere.Cylinder.Inner
-      Sphere.Cylinder.Outer
-      Sphere.Cylinder.Span
-      Sphere.Sphere
+      Cylinder.Ellipsoid.Vincenty
+      Cylinder.Ellipsoid.Vincenty.Inner
+      Cylinder.Ellipsoid.Vincenty.Outer
+      Cylinder.Ellipsoid.Vincenty.Span
+      Cylinder.Sphere.Inner
+      Cylinder.Sphere.Outer
+      Cylinder.Sphere.Span
+      Cylinder.Sphere.Sphere
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone

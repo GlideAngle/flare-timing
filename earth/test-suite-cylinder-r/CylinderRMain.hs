@@ -1,16 +1,14 @@
-module CylinderRMain where
-
 import Test.Tasty (TestTree, testGroup, defaultMain)
 
-import qualified Sphere.Sphere as S
-import qualified Ellipsoid.Ellipsoid as E
+import qualified Cylinder.Sphere.Sphere as S
+import qualified Cylinder.Ellipsoid.Vincenty as V
 
 main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
 tests =
-    testGroup "Cylinder tests with rational numbers"
-        [ E.testsR
-        , S.testsR
+    testGroup "Cylinder tests (with rationals)"
+        [ testGroup "Haversines Math" [S.outerUnitsR, S.innerUnitsR]
+        , testGroup "Vincenty Math" [V.outerUnitsR, V.innerUnitsR]
         ]
