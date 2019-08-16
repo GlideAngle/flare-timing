@@ -64,7 +64,7 @@ geoSciAuTolerance :: Fractional a => GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 42 m |]
 
 ngsTolerance :: Fractional a => GetTolerance a
-ngsTolerance = const . convert $ [u| 367 m |]
+ngsTolerance = const . convert $ [u| 370 m |]
 
 vincentyTolerance :: Fractional a => GetTolerance a
 vincentyTolerance = const . convert $ [u| 32.6 km |]
