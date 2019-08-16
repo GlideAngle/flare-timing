@@ -196,13 +196,15 @@ inverseStuifbergen
 
         d₁ = -(_X * d - 3 * _Y * sind) / 4
 
-        _A = 64 * d + 16 * d * d / tand
-        _B = - 2 * _D
-        _C = -(30 * d + 8 * d * d / tand + _E / 2)
-        _D = 48 * sind + 8 * d * d / sind
-        _E = 30 * sin2d
+        d₂ =
+            if sind == 0 || tand == 0 then 0 else
+            let _A = 64 * d + 16 * d * d / tand
+                _B = - 2 * _D
+                _C = -(30 * d + 8 * d * d / tand + _E / 2)
+                _D = 48 * sind + 8 * d * d / sind
+                _E = 30 * sin2d
 
-        d₂ = f * (_A * _X + _B * _Y + _C * _X * _X + _D * _X * _Y + _E * _Y * _Y) / 128
+            in f * (_A * _X + _B * _Y + _C * _X * _X + _D * _X * _Y + _E * _Y * _Y) / 128
 
 -- | Spherical distance using inverse Andoyer and floating point numbers.
 distance
