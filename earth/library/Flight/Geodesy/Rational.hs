@@ -174,20 +174,7 @@ instance (Real a, Fractional a) => GeoZones Rational a where
         => Earth Rational
         -> [Zone Rational]
         -> PathDistance Rational
-    pathDistance (Pythagorus, EarthAsFlat _, _) =
-        distancePointToPoint P.distance
-    pathDistance (Haversines, EarthAsSphere _, eps) =
-        distancePointToPoint (H.distance eps)
-    pathDistance (Vincenty, EarthAsEllipsoid e, eps) =
-        distancePointToPoint (V.distance e eps)
-    pathDistance (AndoyerLambert, EarthAsEllipsoid e, eps) =
-        distancePointToPoint (A.distance E.AndoyerLambert e eps)
-    pathDistance (ForsytheAndoyerLambert, EarthAsEllipsoid e, eps) =
-        distancePointToPoint (A.distance E.ForsytheAndoyerLambert e eps)
-    pathDistance (FsAndoyer, EarthAsEllipsoid e, eps) =
-        distancePointToPoint (A.distance E.FsAndoyer e eps)
-    pathDistance _ =
-        error "Separated zones combination of Earth math and model."
+    pathDistance x = distancePointToPoint $ arcLength @Rational @Rational x
 
     circumSample :: Trig Rational a => Earth Rational -> CircumSample Rational
     circumSample (Pythagorus, EarthAsFlat _, _) =
