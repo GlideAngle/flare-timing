@@ -26,6 +26,7 @@ import qualified Internal.Ellipsoid.Cylinder.Vincenty.Rational as V
 import qualified Internal.Ellipsoid.PointToPoint.Andoyer.Rational as A
 import qualified Internal.Ellipsoid.PointToPoint.Vincenty.Rational as V
 import qualified Internal.Flat.PointToPoint.Rational as P
+import qualified Internal.Sphere.Cylinder.Rational as H
 import qualified Internal.Sphere.PointToPoint.Rational as H
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..), GeoZones(..))
 
@@ -192,7 +193,7 @@ instance (Real a, Fractional a) => GeoZones Rational a where
     circumSample (Pythagorus, EarthAsFlat _, _) =
         error "Circumference Sample Pythagorus."
     circumSample (Haversines, EarthAsSphere _, _) =
-        error "Circumference Sample Haversines."
+        H.circumSample
     circumSample (Vincenty, EarthAsEllipsoid _, _) =
         V.circumSample
     circumSample (AndoyerLambert, _, _) =

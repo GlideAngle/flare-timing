@@ -9,6 +9,12 @@ main = defaultMain tests
 tests :: TestTree
 tests =
     testGroup "Cylinder tests (with rationals)"
-        [ testGroup "Haversines Math" [S.outerUnitsR, S.innerUnitsR]
-        , testGroup "Vincenty Math" [V.outerUnitsR, V.innerUnitsR]
+        [ testGroup "Haversines Math"
+            [ S.outerUnitsR
+            , S.innerUnitsR
+            ]
+        , testGroup "Vincenty Math"
+            [ V.outerUnitsR
+            , V.innerUnitsR
+            ]
         ]

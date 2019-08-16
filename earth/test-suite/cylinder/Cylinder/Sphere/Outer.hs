@@ -107,7 +107,7 @@ distances =
 
 tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
 tolerancesD =
-    repeat $ fromRational' [u| 0.0000001 mm |]
+    repeat $ fromRational' [u| 0.000001 mm |]
 
 tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
 tolerancesR =
