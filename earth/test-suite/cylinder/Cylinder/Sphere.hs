@@ -1,4 +1,4 @@
-module Cylinder.Sphere.Sphere
+module Cylinder.Sphere
     ( outerUnits
     , outerUnitsR
     , innerUnits

@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Cylinder.Sphere.Span
+module Cylinder.Flat.Span
     ( ZonePointFilter
     , spanD, sepD, csD, spD
     , spanR, sepR, csR, spR
@@ -20,11 +20,11 @@ import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Zone.Cylinder
     (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
-import Flight.Earth.Sphere (earthRadius)
-import Flight.Geodesy (EarthModel(..), EarthMath(..))
-import Flight.Geodesy.Solution (GeodesySolutions(..), GeoZones(..))
+import Flight.Geodesy (EarthModel(..), EarthMath(..), Projection(..))
+import Flight.Geodesy.Solution (GeoZones(..))
 import Flight.Geodesy.Double ()
 import Flight.Geodesy.Rational ()
+import Flat.Span (spanD, spanR, sepD, sepR)
 
 eps :: Epsilon
 eps = Epsilon $ 1 % 1000000000000000000
@@ -32,23 +32,11 @@ eps = Epsilon $ 1 % 1000000000000000000
 mm30 :: Fractional a => Tolerance a
 mm30 = Tolerance . fromRational $ 30 % 1000
 
-spanD :: SpanLatLng Double
-spanD = arcLength @Double @Double (Haversines, EarthAsSphere earthRadius)
-
-spanR :: SpanLatLng Rational
-spanR = arcLength @Rational @Rational (Haversines, EarthAsSphere earthRadius, eps)
-
-sepD :: [Zone Double] -> Bool
-sepD = separatedZones @Double @Double (Haversines, EarthAsSphere earthRadius)
-
-sepR :: [Zone Rational] -> Bool
-sepR = separatedZones @Rational @Rational (Haversines, EarthAsSphere earthRadius, eps)
-
 csD :: CircumSample Double
-csD = circumSample @Double @Double (Haversines, EarthAsSphere earthRadius)
+csD = circumSample @Double @Double (Pythagorus, EarthAsFlat UTM)
 
 csR :: CircumSample Rational
-csR = circumSample @Rational @Rational (Haversines, EarthAsSphere earthRadius, eps)
+csR = circumSample @Rational @Rational (Pythagorus, EarthAsFlat UTM, eps)
 
 spD :: SampleParams Double
 spD =

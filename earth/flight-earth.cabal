@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: efc0c52a643fa60a98a9ed81c6a06cf576eb76ebb2871abcc0e565b6164fda3c
+-- hash: 065f49d8e0854281f304a7789c579e61cd80afb585745f14b7bbb2959b309b98
 
 name:           flight-earth
 version:        0.1.0
@@ -99,19 +99,36 @@ test-suite cylinder
   main-is: CylinderMain.hs
   other-modules:
       Zone
+      Distance
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
+      Ellipsoid.Vincenty.Span
+      Flat.Span
+      Forbes
+      ForbesComments
+      Greda
+      Sphere.Span
+      ToLatLng
+      Tolerance
       Cylinder.Ellipsoid.Vincenty
       Cylinder.Ellipsoid.Vincenty.Inner
       Cylinder.Ellipsoid.Vincenty.Outer
       Cylinder.Ellipsoid.Vincenty.Span
+      Cylinder.Flat
+      Cylinder.Flat.Inner
+      Cylinder.Flat.Outer
+      Cylinder.Flat.Span
       Cylinder.Inner
       Cylinder.Outer
+      Cylinder.Sphere
       Cylinder.Sphere.Inner
       Cylinder.Sphere.Outer
       Cylinder.Sphere.Span
-      Cylinder.Sphere.Sphere
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone
+      test-suite/geodesy
       test-suite/cylinder
       test-suite-cylinder
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
@@ -148,19 +165,36 @@ test-suite cylinder-r
   main-is: CylinderRMain.hs
   other-modules:
       Zone
+      Distance
+      Ellipsoid.AndoyerLambert.Span
+      Ellipsoid.ForsytheAndoyerLambert.Span
+      Ellipsoid.FsAndoyer.Span
+      Ellipsoid.Vincenty.Span
+      Flat.Span
+      Forbes
+      ForbesComments
+      Greda
+      Sphere.Span
+      ToLatLng
+      Tolerance
       Cylinder.Ellipsoid.Vincenty
       Cylinder.Ellipsoid.Vincenty.Inner
       Cylinder.Ellipsoid.Vincenty.Outer
       Cylinder.Ellipsoid.Vincenty.Span
+      Cylinder.Flat
+      Cylinder.Flat.Inner
+      Cylinder.Flat.Outer
+      Cylinder.Flat.Span
       Cylinder.Inner
       Cylinder.Outer
+      Cylinder.Sphere
       Cylinder.Sphere.Inner
       Cylinder.Sphere.Outer
       Cylinder.Sphere.Span
-      Cylinder.Sphere.Sphere
       Paths_flight_earth
   hs-source-dirs:
       test-suite/zone
+      test-suite/geodesy
       test-suite/cylinder
       test-suite-cylinder-r
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses

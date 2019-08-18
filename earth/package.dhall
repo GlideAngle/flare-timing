@@ -224,6 +224,7 @@ in    defs
                     "CylinderMain.hs"
                 , source-dirs =
                     [ "test-suite/zone"
+                    , "test-suite/geodesy"
                     , "test-suite/cylinder"
                     , "test-suite-cylinder"
                     ]
@@ -244,6 +245,7 @@ in    defs
                     "CylinderRMain.hs"
                 , source-dirs =
                     [ "test-suite/zone"
+                    , "test-suite/geodesy"
                     , "test-suite/cylinder"
                     , "test-suite-cylinder-r"
                     ]
