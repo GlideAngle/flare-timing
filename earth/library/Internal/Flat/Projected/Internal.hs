@@ -75,9 +75,13 @@ zoneToProjectedEastNorth z = do
 -- >>> runIdentity . runExceptT $ checkLatLng (negate 80) 0
 -- Right ((-80°,0°),((441867.7848676922,1116915.0433355588),('C',31)))
 --
--- Check the latitude bands, C .. X. There are on bands I and O.
--- >>> partitionEithers $ runIdentity . runExceptT . checkLatZ <$> [-80,-72..80]
+-- Check the latitude bands, C .. X, each 8°. There are no bands I and O.
+-- >>> partitionEithers $ runIdentity . runExceptT . checkLatZ <$> [-80.0,-72.0 .. 80.0]
 -- ([],[(-80°,'C'),(-72°,'D'),(-64°,'E'),(-56°,'F'),(-48°,'G'),(-40°,'H'),(-32°,'J'),(-24°,'K'),(-16°,'L'),(-8°,'M'),(0°,'N'),(8°,'P'),(16°,'Q'),(24°,'R'),(32°,'S'),(40°,'T'),(48°,'U'),(56°,'V'),(64°,'W'),(72°,'X'),(80°,'X')])
+--
+-- Check the longitude bands, 1 .. 60, each 6°.
+-- >>> partitionEithers $ runIdentity . runExceptT . checkLngZ <$> [-180.0,-174.0 .. 180.0]
+-- ([],[(-180°,1),(-174°,2),(-168°,3),(-162°,4),(-156°,5),(-150°,6),(-144°,7),(-138°,8),(-132°,9),(-126°,10),(-120°,11),(-114°,12),(-108°,13),(-102°,14),(-96°,15),(-90°,16),(-84°,17),(-78°,18),(-72°,19),(-66°,20),(-60°,21),(-54°,22),(-48°,23),(-42°,24),(-36°,25),(-30°,26),(-24°,27),(-18°,28),(-12°,29),(-6°,30),(0°,31),(6°,32),(12°,33),(18°,34),(24°,35),(30°,36),(36°,37),(42°,38),(48°,39),(54°,40),(60°,41),(66°,42),(72°,43),(78°,44),(84°,45),(90°,46),(96°,47),(102°,48),(108°,49),(114°,50),(120°,51),(126°,52),(132°,53),(138°,54),(144°,55),(150°,56),(156°,57),(162°,58),(168°,59),(174°,60),(180°,1)])
 pythagorean :: HC.UTMRef -> HC.UTMRef -> DistanceAzimuth Double
 pythagorean x y =
     DistanceAzimuth
@@ -126,3 +130,4 @@ _LLtoDMS = _DMS . _LL
 --
 -- >>> checkLatLng lat lng = do ll <- HC.mkLatLng lat lng 0 HC.wgs84Datum; u <- HC.toUTMRef ll; return $ (_LLtoDMS ll, _EN u)
 -- >>> checkLatZ lat = do ll <- HC.mkLatLng lat 0 0 HC.wgs84Datum; u <- HC.toUTMRef ll; return $ (fst $ _LLtoDMS ll, HC.latZone u)
+-- >>> checkLngZ lng = do ll <- HC.mkLatLng 0 lng 0 HC.wgs84Datum; u <- HC.toUTMRef ll; return $ (snd $ _LLtoDMS ll, HC.lngZone u)
