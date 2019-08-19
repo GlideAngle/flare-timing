@@ -24,9 +24,10 @@ costEastNorth
     -> Zone a
     -> PathDistance b
 costEastNorth x@(Point _) y@(Point _) =
-    PathDistance { edgesSum = d'
-                 , vertices = center . realToFracZone <$> [x, y]
-                 }
+    PathDistance
+        { edgesSum = d'
+        , vertices = center . realToFracZone <$> [x, y]
+        }
     where
         d' =
             case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
@@ -44,9 +45,10 @@ costEastNorth x@(Point _) y@(Point _) =
                 _ -> tooFar
 
 costEastNorth x y =
-    PathDistance { edgesSum = tooFar
-                 , vertices = center . realToFracZone <$> [x, y]
-                 }
+    PathDistance
+        { edgesSum = tooFar
+        , vertices = center . realToFracZone <$> [x, y]
+        }
 
 azimuths
     :: (Real a, Eq b, Fractional b)
@@ -67,6 +69,4 @@ azimuths x@(Point _) y@(Point _) =
         f (MkQuantity q) = MkQuantity $ realToFrac q
 
 azimuths x y =
-    azimuths (f x) (f y)
-    where
-        f = Point . center
+    let f = Point . center in azimuths (f x) (f y)

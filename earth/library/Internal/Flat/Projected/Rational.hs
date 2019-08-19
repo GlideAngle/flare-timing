@@ -68,6 +68,4 @@ azimuths x@(Point _) y@(Point _) =
         f (MkQuantity q) = MkQuantity $ realToFrac q
 
 azimuths x y =
-    azimuths (f x) (f y)
-    where
-        f = Point . center
+    let f = Point . center in azimuths (f x) (f y)

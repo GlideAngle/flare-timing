@@ -36,13 +36,13 @@ tooFar = TaskDistance [u| 20000000 m |]
 
 zoneToProjectedEastNorth :: Real a => Zone a -> Either String HC.UTMRef
 zoneToProjectedEastNorth z = do
-    xLL <- runIdentity . runExceptT $ HC.mkLatLng xDegLat xDegLng 0 HC.wgs84Datum
+    xLL <- runIdentity . runExceptT $ HC.mkLatLng lat lng 0 HC.wgs84Datum
     runIdentity . runExceptT $ HC.toUTMRef xLL
     where
-        xRad = center . realToFracZone $ z
-
-        (LatLng (Lat (MkQuantity xDegLat), Lng (MkQuantity xDegLng))) =
-            radToDegLL radToDeg xRad
+        cRad = center . realToFracZone $ z
+        (LatLng (Lat qLat, Lng qLng)) = radToDegLL radToDeg cRad
+        MkQuantity lat = qLat
+        MkQuantity lng = normalize qLng
 
 -- |
 -- >>> HC.ellipsoid HC.wgs84Datum
@@ -50,6 +50,18 @@ zoneToProjectedEastNorth z = do
 --
 -- >>> runIdentity . runExceptT $ checkLatLng 0 0
 -- Right ((0°,0°),((166021.44317932962,0.0),('N',31)))
+--
+-- >>> runIdentity . runExceptT $ checkLatLng 0 180
+-- Right ((0°,180°),((166021.4431793306,0.0),('N',1)))
+--
+-- >>> runIdentity . runExceptT $ checkLatLng 0 (negate 180)
+-- Right ((0°,-180°),((166021.4431793306,0.0),('N',1)))
+--
+-- >>> runIdentity . runExceptT $ checkLatLng 0 181
+-- Left "Longitude (181.0) is invalid. Must be between -180.0 and 180.0 inclusive."
+--
+-- >>> runIdentity . runExceptT $ checkLatLng 0 (negate 181)
+-- Left "Longitude (-181.0) is invalid. Must be between -180.0 and 180.0 inclusive."
 --
 -- >>> runIdentity . runExceptT $ checkLatLng 45 0
 -- Right ((45°,0°),((263553.9738663146,4987329.504902129),('T',31)))
@@ -128,6 +140,23 @@ _LLtoDMS = _DMS . _LL
 -- >>> import qualified LatLng as HC
 -- >>> import Data.Either
 --
--- >>> checkLatLng lat lng = do ll <- HC.mkLatLng lat lng 0 HC.wgs84Datum; u <- HC.toUTMRef ll; return $ (_LLtoDMS ll, _EN u)
--- >>> checkLatZ lat = do ll <- HC.mkLatLng lat 0 0 HC.wgs84Datum; u <- HC.toUTMRef ll; return $ (fst $ _LLtoDMS ll, HC.latZone u)
--- >>> checkLngZ lng = do ll <- HC.mkLatLng 0 lng 0 HC.wgs84Datum; u <- HC.toUTMRef ll; return $ (snd $ _LLtoDMS ll, HC.lngZone u)
+-- >>> :{
+-- checkLatLng lat lng = do
+--     ll <- HC.mkLatLng lat lng 0 HC.wgs84Datum
+--     u <- HC.toUTMRef ll
+--     return $ (_LLtoDMS ll, _EN u)
+-- :}
+--
+-- >>> :{
+-- checkLatZ lat = do
+--     ll <- HC.mkLatLng lat 0 0 HC.wgs84Datum
+--     u <- HC.toUTMRef ll
+--     return $ (fst $ _LLtoDMS ll, HC.latZone u)
+-- :}
+--
+-- >>> :{
+-- checkLngZ lng = do
+--     ll <- HC.mkLatLng 0 lng 0 HC.wgs84Datum
+--     u <- HC.toUTMRef ll
+--     return $ (snd $ _LLtoDMS ll, HC.lngZone u)
+-- :}
