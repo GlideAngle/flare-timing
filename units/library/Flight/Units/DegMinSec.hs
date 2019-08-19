@@ -215,6 +215,24 @@ instance Angle DMS where
 
             (MkQuantity d) = toQuantity dms :: Quantity Double [u| deg |]
 
+    plusMinusPi dms =
+        fromQuantity n
+        where
+            n :: Quantity Double [u| deg |]
+            n =
+                MkQuantity $
+                    case (divMod' d 180.0 :: (Integer, Double)) of
+                        (a, 0.0) -> if even a then 0.0 else (fromIntegral $ signum a) * 180.0
+                        (a, b) -> if even a then b else b - 180.0
+
+            (MkQuantity d) = toQuantity dms :: Quantity Double [u| deg |]
+
+    plusMinusHalfPi d =
+        let x = plusMinusPi d in
+        if | toQuantity x < [u| -90 deg |] -> Nothing
+           | toQuantity x > [u|  90 deg |] -> Nothing
+           | otherwise -> Just x
+
     rotate rotation dms =
         normalize . fromQuantity $ d +: r
         where
@@ -229,6 +247,8 @@ instance Angle DMS where
 
 instance Angle DMS_ where
     normalize (DMS_ x) = let (DMS y) = normalize (DMS x) in DMS_ y
+    plusMinusPi (DMS_ x) = let (DMS y) = plusMinusPi (DMS x) in DMS_ y
+    plusMinusHalfPi (DMS_ x) = do DMS y <- plusMinusHalfPi (DMS x); return $ DMS_ y
     rotate (DMS_ r) (DMS_ x) = let (DMS y) = rotate (DMS r) (DMS x) in DMS_ y
     fromQuantity x = let DMS y = fromQ x in DMS_ y
     toQuantity (DMS_ x) = toQuantity (DMS x)

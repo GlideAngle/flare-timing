@@ -58,10 +58,10 @@ zoneToProjectedEastNorth z = do
 -- Right ((0°,-180°),((166021.4431793306,0.0),('N',1)))
 --
 -- >>> runIdentity . runExceptT $ checkLatLng 0 181
--- Left "Longitude (181.0) is invalid. Must be between -180.0 and 180.0 inclusive."
+-- Right ((0°,-179°),((277404.56033100287,0.0),('N',1)))
 --
 -- >>> runIdentity . runExceptT $ checkLatLng 0 (negate 181)
--- Left "Longitude (-181.0) is invalid. Must be between -180.0 and 180.0 inclusive."
+-- Right ((0°,179°),((722595.4396689972,0.0),('N',60)))
 --
 -- >>> runIdentity . runExceptT $ checkLatLng 45 0
 -- Right ((45°,0°),((263553.9738663146,4987329.504902129),('T',31)))
@@ -142,7 +142,9 @@ _LLtoDMS = _DMS . _LL
 --
 -- >>> :{
 -- checkLatLng lat lng = do
---     ll <- HC.mkLatLng lat lng 0 HC.wgs84Datum
+--     let qLng = MkQuantity lng :: Quantity _ [u| deg |]
+--     let MkQuantity nLng = plusMinusPi qLng
+--     ll <- HC.mkLatLng lat nLng 0 HC.wgs84Datum
 --     u <- HC.toUTMRef ll
 --     return $ (_LLtoDMS ll, _EN u)
 -- :}
@@ -156,7 +158,9 @@ _LLtoDMS = _DMS . _LL
 --
 -- >>> :{
 -- checkLngZ lng = do
---     ll <- HC.mkLatLng 0 lng 0 HC.wgs84Datum
+--     let qLng = MkQuantity lng :: Quantity _ [u| deg |]
+--     let MkQuantity nLng = plusMinusPi qLng
+--     ll <- HC.mkLatLng 0 nLng 0 HC.wgs84Datum
 --     u <- HC.toUTMRef ll
 --     return $ (snd $ _LLtoDMS ll, HC.lngZone u)
 -- :}
