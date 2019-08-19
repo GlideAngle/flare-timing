@@ -174,6 +174,9 @@ fromQ q' =
         (mm, ss) = divMod' (dFrac * 60.0) 1
 
 -- |
+-- >>> fromQuantity [u| 169.06666666622118 deg |] :: DMS
+-- 169°3'0.9999999732708602''
+--
 -- >>> normalize (DMS (0, 0, 0))
 -- 0°
 --
@@ -204,8 +207,32 @@ fromQ q' =
 -- >>> normalize ((toQuantity $ DMS (-190,56,1.603721102583222e-6)) :: Quantity Double [u| deg |])
 -- [u| 169.06666666622118 deg |]
 --
--- >>> fromQuantity [u| 169.06666666622118 deg |] :: DMS
--- 169°3'0.9999999732708602''
+-- >>> plusMinusPi (DMS (0, 0, 0))
+-- 0°
+--
+-- >>> plusMinusPi (DMS (90, 0, 0))
+-- 90°
+--
+-- >>> plusMinusPi (DMS (-90, 0, 0))
+-- -90°
+--
+-- >>> plusMinusPi (DMS (180, 0, 0))
+-- 180°
+--
+-- >>> plusMinusPi (DMS (-180, 0, 0))
+-- -180°
+--
+-- >>> plusMinusPi (DMS (181, 0, 0))
+-- -179°
+--
+-- >>> plusMinusPi (DMS (-181, 0, 0))
+-- 179°
+--
+-- >>> plusMinusHalfPi (DMS (91, 0, 0))
+-- Nothing
+--
+-- >>> plusMinusHalfPi (DMS (-91, 0, 0))
+-- Nothing
 instance Angle DMS where
     normalize dms =
         fromQuantity n
