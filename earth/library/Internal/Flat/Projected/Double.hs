@@ -32,15 +32,16 @@ costEastNorth x@(Point _) y@(Point _) =
         d' =
             case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
                 (Right xEN, Right yEN) ->
-                    TaskDistance dm
-                    where
-                        distAz :: DistanceAzimuth Double
-                        distAz = pythagorean xEN yEN
+                    either
+                        (const tooFar)
+                        (\dAz ->
+                            let MkQuantity d = dist dAz
 
-                        MkQuantity d = dist distAz
+                                dm :: Quantity _ [u| m |]
+                                dm = MkQuantity $ realToFrac d
 
-                        dm :: Quantity _ [u| m |]
-                        dm = MkQuantity $ realToFrac d
+                            in TaskDistance dm)
+                        (pythagorean xEN yEN)
 
                 _ -> tooFar
 
@@ -58,10 +59,10 @@ azimuths
 azimuths x@(Point _) y@(Point _) =
     case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
         (Right xEN, Right yEN) ->
-            Just (f . azFwd $ distAz, f . azRev $ distAz)
-            where
-                distAz :: DistanceAzimuth Double
-                distAz = pythagorean xEN yEN
+            either
+                (const Nothing)
+                (\dAz -> Just (f . azFwd $ dAz, f . azRev $ dAz))
+                (pythagorean xEN yEN)
 
         _ -> Nothing
 

@@ -12,17 +12,19 @@ import Data.Functor.Identity (runIdentity)
 import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import qualified UTMRef as HC (UTMRef(..), toUTMRef)
+import qualified UTMRef as HC (UTMRef(..), toUTMRef, toLatLng)
 import qualified LatLng as HC (LatLng(..), mkLatLng)
 import qualified Datum as HC (wgs84Datum)
 
 import Flight.Units ()
 import Flight.Units.Angle (Angle(..))
 import Flight.Units.DegMinSec (DMS(..))
-import Flight.LatLng (LatLng(..), Lat(..), Lng(..), radToDegLL)
-import Flight.LatLng.Double (radToDeg)
+import Flight.LatLng (LatLng(..), Lat(..), Lng(..), radToDegLL, degToRadLL)
+import Flight.LatLng.Double (radToDeg, degToRad)
 import Flight.Zone (Zone(..), center, realToFracZone)
 import Flight.Distance (QTaskDistance, TaskDistance(..))
+
+import qualified Internal.Sphere.PointToPoint.Double as H (distance, azimuthFwd, azimuthRev)
 
 data DistanceAzimuth a =
     DistanceAzimuth
@@ -30,6 +32,7 @@ data DistanceAzimuth a =
         , azFwd :: Quantity a [u| rad |]
         , azRev :: Quantity a [u| rad |]
         }
+    deriving Show
 
 tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
@@ -94,23 +97,65 @@ zoneToProjectedEastNorth z = do
 -- Check the longitude bands, 1 .. 60, each 6°.
 -- >>> partitionEithers $ runIdentity . runExceptT . checkLngZ <$> [-180.0,-174.0 .. 180.0]
 -- ([],[(-180°,1),(-174°,2),(-168°,3),(-162°,4),(-156°,5),(-150°,6),(-144°,7),(-138°,8),(-132°,9),(-126°,10),(-120°,11),(-114°,12),(-108°,13),(-102°,14),(-96°,15),(-90°,16),(-84°,17),(-78°,18),(-72°,19),(-66°,20),(-60°,21),(-54°,22),(-48°,23),(-42°,24),(-36°,25),(-30°,26),(-24°,27),(-18°,28),(-12°,29),(-6°,30),(0°,31),(6°,32),(12°,33),(18°,34),(24°,35),(30°,36),(36°,37),(42°,38),(48°,39),(54°,40),(60°,41),(66°,42),(72°,43),(78°,44),(84°,45),(90°,46),(96°,47),(102°,48),(108°,49),(114°,50),(120°,51),(126°,52),(132°,53),(138°,54),(144°,55),(150°,56),(156°,57),(162°,58),(168°,59),(174°,60),(180°,1)])
-pythagorean :: HC.UTMRef -> HC.UTMRef -> DistanceAzimuth Double
-pythagorean x y =
-    DistanceAzimuth
-        { dist = MkQuantity $ realToFrac d
-        , azFwd = theta
-        , azRev = rotate flip theta
+--
+-- >>> runIdentity . runExceptT $ pythag (0, 0) (0, 1)
+-- Right (DistanceAzimuth {dist = [u| 111383.11715167353 m |], azFwd = [u| 0.0 rad |], azRev = [u| 3.141592653589793 rad |]})
+--
+-- >>> runIdentity . runExceptT $ pythag (0, 0) (0, -1)
+-- Right (DistanceAzimuth {dist = [u| 111194.9266604789 m |], azFwd = [u| -1.5707963267948966 rad |], azRev = [u| 4.71238898038469 rad |]})
+--
+-- >>> runIdentity . runExceptT $ pythag (0, 0) (1, 0)
+-- Right (DistanceAzimuth {dist = [u| 110682.84933219335 m |], azFwd = [u| 1.5703389856181167 rad |], azRev = [u| 4.71193163920791 rad |]})
+--
+-- >>> runIdentity . runExceptT $ pythag (0, 0) (-1, 0)
+-- Right (DistanceAzimuth {dist = [u| 111194.92662668771 m |], azFwd = [u| -3.1415926535852594 rad |], azRev = [u| 3.1415926535943277 rad |]})
+pythagorean :: HC.UTMRef -> HC.UTMRef -> Either String (DistanceAzimuth Double)
+pythagorean
+    x@HC.UTMRef
+        { latZone = xLatZ
+        , lngZone = xLngZ
+        , easting = xE
+        , northing = xN
         }
+    y@HC.UTMRef
+        { latZone = yLatZ
+        , lngZone = yLngZ
+        , easting = yE
+        , northing = yN
+        }
+    | xLatZ == yLatZ && xLngZ == yLngZ =
+        Right $
+            DistanceAzimuth
+                { dist = MkQuantity $ realToFrac d
+                , azFwd = theta
+                , azRev = rotate flip theta
+                }
+    | otherwise =
+        either
+            Left
+            (\(x', y') ->
+                let TaskDistance td = H.distance x' y' in
+                case (H.azimuthFwd x' y', H.azimuthRev x' y') of
+                    (Just fwd, Just rev) ->
+                        Right $
+                            DistanceAzimuth
+                                { dist = td
+                                , azFwd = fwd
+                                , azRev = rev
+                                }
+
+                    _ -> Left "No azimuths")
+            (runIdentity . runExceptT $ do
+                HC.LatLng{latitude = xLat, longitude = xLng} <- HC.toLatLng x
+                HC.LatLng{latitude = yLat, longitude = yLng} <- HC.toLatLng y
+                let xDeg = LatLng (Lat $ MkQuantity xLat, Lng $ MkQuantity xLng)
+                let yDeg = LatLng (Lat $ MkQuantity yLat, Lng $ MkQuantity yLng)
+                return (degToRadLL degToRad xDeg, degToRadLL degToRad yDeg))
+
     where
         dN = yN - xN
         dE = yE - xE
         d = sqrt $ dN * dN + dE * dE
-
-        xN = HC.northing x
-        yN = HC.northing y
-
-        xE = HC.easting x
-        yE = HC.easting y
 
         theta :: Quantity _ [u| rad |]
         theta = normalize . MkQuantity $ atan2 dN dE
@@ -139,6 +184,7 @@ _LLtoDMS = _DMS . _LL
 -- >>> import qualified Datum as HC
 -- >>> import qualified LatLng as HC
 -- >>> import Data.Either
+-- >>> import Control.Monad.Except
 --
 -- >>> :{
 -- checkLatLng lat lng = do
@@ -163,4 +209,13 @@ _LLtoDMS = _DMS . _LL
 --     ll <- HC.mkLatLng 0 nLng 0 HC.wgs84Datum
 --     u <- HC.toUTMRef ll
 --     return $ (snd $ _LLtoDMS ll, HC.lngZone u)
+-- :}
+--
+-- >>> :{
+-- pythag (xLat, xLng) (yLat, yLng) = do
+--     x <- HC.mkLatLng xLat xLng 0 HC.wgs84Datum
+--     y <- HC.mkLatLng yLat yLng 0 HC.wgs84Datum
+--     xEN <- HC.toUTMRef x
+--     yEN <- HC.toUTMRef y
+--     liftEither $ pythagorean xEN yEN
 -- :}

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 065f49d8e0854281f304a7789c579e61cd80afb585745f14b7bbb2959b309b98
+-- hash: ba4667e5d447874c1eaa4d6125f29544f263a31b4bccec040a0e92a49b5fcd9b
 
 name:           flight-earth
 version:        0.1.0
@@ -291,6 +291,7 @@ test-suite doctest
     , scientific
     , siggy-chardust
     , text
+    , transformers
     , uom-plugin
   default-language: Haskell2010
 
