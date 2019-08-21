@@ -38,14 +38,15 @@ tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
 
 zoneToProjectedEastNorth :: Real a => Zone a -> Either String HC.UTMRef
-zoneToProjectedEastNorth z = do
-    xLL <- runIdentity . runExceptT $ HC.mkLatLng lat lng 0 HC.wgs84Datum
-    runIdentity . runExceptT $ HC.toUTMRef xLL
+zoneToProjectedEastNorth z =
+    runIdentity . runExceptT $ do
+        xLL <- HC.mkLatLng lat lng 0 HC.wgs84Datum
+        HC.toUTMRef xLL
     where
         cRad = center . realToFracZone $ z
         (LatLng (Lat qLat, Lng qLng)) = radToDegLL radToDeg cRad
         MkQuantity lat = qLat
-        MkQuantity lng = normalize qLng
+        MkQuantity lng = plusMinusPi qLng
 
 -- |
 -- >>> HC.ellipsoid HC.wgs84Datum

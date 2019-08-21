@@ -2,6 +2,7 @@
 
 module Cylinder.Outer
     ( pts
+    , ptsUTM
     , distances
     , searchRanges
     , outerCheck
@@ -28,6 +29,19 @@ pts =
     [ ((x - 90) *: [u| 1 deg |], (y - 180) *: [u| 1 deg |])
     | x <- [0, 45 .. 180]
     , y <- [0, 90 .. 360]
+    ]
+    where
+        f (x, y) =
+            (convert x, convert y)
+
+-- | UTM doesn't cover all latitudes, -80°S .. 84°N.
+ptsUTM :: (Enum a, Real a, Fractional a) => [QLL a]
+ptsUTM =
+    f
+    <$>
+    [ (x *: [u| 1 deg |], y *: [u| 1 deg |])
+    | x <- [-80.0, -72.0 .. 80.0]
+    , y <- [-180, -90 .. 180]
     ]
     where
         f (x, y) =

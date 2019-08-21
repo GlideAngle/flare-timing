@@ -7,6 +7,7 @@ import Data.UnitsOfMeasure (u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Zone (QBearing, Bearing(..))
@@ -16,26 +17,26 @@ import Cylinder.Flat.Span
     , spanR, csR, spR
     , zpFilter
     )
-import Cylinder.Inner (pts, distances, searchRanges, tolerances, innerCheck)
+import Cylinder.Inner (ptsUTM, distances, searchRanges, tolerances, innerCheck)
 
 innerUnits :: TestTree
 innerUnits =
     testGroup "When points meant to be on the boundary are inside a cylinder"
         [ let f = zpFilter in innerCheck spanD csD spD bearingD t s f d p
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng $ plusMinusPi y))) <$> ptsUTM
         | d <- cycle distances
         | t <- Tolerance . unQuantity <$> cycle tolerances
         | s <- cycle searchRanges
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
         ]
 
 innerUnitsR :: TestTree
 innerUnitsR =
     testGroup "When points meant to be on the boundary are inside a cylinder"
         [ let f = zpFilter in innerCheck spanR csR spR bearingR t s f d p
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng $ plusMinusPi y))) <$> ptsUTM
         | d <- cycle distances
         | t <- Tolerance . unQuantity <$> cycle tolerances
         | s <- cycle searchRanges
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
         ]
 
 bearingD :: QBearing Double [u| rad |]

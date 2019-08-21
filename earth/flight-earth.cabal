@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ba4667e5d447874c1eaa4d6125f29544f263a31b4bccec040a0e92a49b5fcd9b
+-- hash: eca8192026fffe6908d8f2b47441a58f43276cf47a8049450287280106fb6336
 
 name:           flight-earth
 version:        0.1.0
@@ -80,6 +80,7 @@ library
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-latlng
     , flight-units
@@ -139,6 +140,7 @@ test-suite cylinder
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -205,6 +207,7 @@ test-suite cylinder-r
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -280,6 +283,7 @@ test-suite doctest
     , detour-via-sci
     , detour-via-uom
     , doctest
+    , errors
     , fgl
     , flight-latlng
     , flight-units
@@ -331,6 +335,7 @@ test-suite forbes
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -385,6 +390,7 @@ test-suite forbes-r
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -441,6 +447,7 @@ test-suite geodesy
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -498,6 +505,7 @@ test-suite greda
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -552,6 +560,7 @@ test-suite greda-r
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -603,6 +612,7 @@ test-suite meridian
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -654,6 +664,7 @@ test-suite meridian-r
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -719,6 +730,7 @@ test-suite published
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -784,6 +796,7 @@ test-suite published-r
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng
@@ -840,6 +853,7 @@ test-suite zones
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , errors
     , fgl
     , flight-earth
     , flight-latlng

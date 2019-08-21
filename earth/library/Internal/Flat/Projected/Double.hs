@@ -5,6 +5,7 @@ module Internal.Flat.Projected.Double
     , azimuths
     ) where
 
+import Control.Error.Util (hush)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -12,44 +13,34 @@ import Flight.Zone (Zone(..), center, realToFracZone)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units ()
 import Internal.Flat.Projected.Internal
-    (DistanceAzimuth(..), pythagorean, zoneToProjectedEastNorth, tooFar)
+    (DistanceAzimuth(..), pythagorean, zoneToProjectedEastNorth)
 
 -- | The task distance returned is for the projected UTM plane with eastings
 -- and northings. If you need to calculate the distance in spherical
 -- coordinates, the latitude and longitude of each vertex of the path can be
 -- used to work that out.
 costEastNorth
-    :: (Real a, Eq b, Ord b, Fractional b)
+    :: (Real a, Eq a, Ord a, Fractional a)
     => Zone a
     -> Zone a
-    -> PathDistance b
-costEastNorth x@(Point _) y@(Point _) =
-    PathDistance
-        { edgesSum = d'
-        , vertices = center . realToFracZone <$> [x, y]
-        }
-    where
-        d' =
-            case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
-                (Right xEN, Right yEN) ->
-                    either
-                        (const tooFar)
-                        (\dAz ->
-                            let MkQuantity d = dist dAz
+    -> Maybe (PathDistance a)
+costEastNorth x@(Point _) y@(Point _) = do
+    xEN <- hush $ zoneToProjectedEastNorth x
+    yEN <- hush $ zoneToProjectedEastNorth y
+    dAz <- hush $ pythagorean xEN yEN
 
-                                dm :: Quantity _ [u| m |]
-                                dm = MkQuantity $ realToFrac d
+    let MkQuantity d = dist dAz
 
-                            in TaskDistance dm)
-                        (pythagorean xEN yEN)
+    let dm :: Quantity _ [u| m |]
+        dm = MkQuantity $ realToFrac d
 
-                _ -> tooFar
+    return $
+        PathDistance
+            { edgesSum = TaskDistance dm
+            , vertices = center . realToFracZone <$> [x, y]
+            }
 
-costEastNorth x y =
-    PathDistance
-        { edgesSum = tooFar
-        , vertices = center . realToFracZone <$> [x, y]
-        }
+costEastNorth _ _ = Nothing
 
 azimuths
     :: (Real a, Eq b, Fractional b)
