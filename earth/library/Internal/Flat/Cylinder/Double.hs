@@ -4,8 +4,8 @@ import Data.Functor.Identity (runIdentity)
 import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import qualified UTMRef as HCEN (UTMRef(..), toLatLng)
-import qualified LatLng as HCLL (LatLng(..))
+import qualified UTMRef as HC (UTMRef(..), toLatLng)
+import qualified LatLng as HC (LatLng(LatLng, latitude, longitude))
 
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -37,8 +37,8 @@ import Flight.Zone.Cylinder
 import Internal.Flat.Projected.Internal (zoneToProjectedEastNorth)
 import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 
-fromHcLatLng :: HCLL.LatLng -> LatLng Double [u| rad |]
-fromHcLatLng HCLL.LatLng{latitude, longitude} =
+fromHcLatLng :: HC.LatLng -> LatLng Double [u| rad |]
+fromHcLatLng HC.LatLng{latitude, longitude} =
     LatLng (Lat $ convert lat, Lng $ convert lng)
     where
         lat :: Quantity Double [u| deg |]
@@ -47,8 +47,8 @@ fromHcLatLng HCLL.LatLng{latitude, longitude} =
         lng :: Quantity Double [u| deg |]
         lng = MkQuantity longitude
 
-eastNorthToLatLng :: HCEN.UTMRef -> Either String HCLL.LatLng
-eastNorthToLatLng = runIdentity . runExceptT . HCEN.toLatLng
+eastNorthToLatLng :: HC.UTMRef -> Either String HC.LatLng
+eastNorthToLatLng = runIdentity . runExceptT . HC.toLatLng
 
 -- |
 --
@@ -88,29 +88,56 @@ circumEN
     => LatLng a [u| rad |]
     -> QRadius a [u| m |]
     -> TrueCourse a
-    -> Either String HCEN.UTMRef
+    -> Either String HC.UTMRef
 circumEN xLL r tc =
     translate r tc <$> zoneToProjectedEastNorth (Point xLL)
 
+-- |
+-- >>> runIdentity . runExceptT $ txE (0, 177) 0
+-- Right ((0°,177°),((500000.0,0.0),('N',60)))
+--
+-- >>> runIdentity . runExceptT $ txE (0, 177) 333360
+-- Right ((0°,179°59'0.6669304741664064''),((833360.0,0.0),('N',60)))
+--
+-- >>> runIdentity . runExceptT $ txE (0, 177) 333978
+-- Right ((0°,179°59'0.9997001661841978''),((833978.0,0.0),('N',60)))
+--
+-- >>> runIdentity . runExceptT $ txE (0, 177) 333979
+-- Left "Longitude (180.0000039771182) is invalid. Must be between -180.0 and 180.0 inclusive."
+--
+-- >>> runIdentity . runExceptT $ txN (0, 177) 0
+-- Right ((0°,177°),((500000.0,0.0),('N',60)))
+--
+-- >>> runIdentity . runExceptT $ txN (0, 177) (negate 1)
+-- Right ((0.000543'',177°),((500000.0,-1.0),('N',60)))
+--
+-- >>> runIdentity . runExceptT $ txN (0, 177) 5000000
+--Right ((45°9'0.20863097059310576'',177°),((500000.0,5000000.0),('N',60)))
+--
+-- >>> runIdentity . runExceptT $ txN (0, 177) (negate 5000000)
+-- Right ((-45°9'0.20863097059310576'',177°),((500000.0,-5000000.0),('N',60)))
+--
+-- >>> runIdentity . runExceptT $ txN (0, 177) 4982950.4002808
+-- Right ((44°59'0.9999999999518252'',177°),((500000.0,4982950.4002808),('N',60)))
 translate
     :: Real a
     => QRadius a [u| m |]
     -> TrueCourse a
-    -> HCEN.UTMRef
-    -> HCEN.UTMRef
+    -> HC.UTMRef
+    -> HC.UTMRef
 translate (Radius (MkQuantity rRadius)) (TrueCourse (MkQuantity rtc)) x =
-    HCEN.UTMRef
+    HC.UTMRef
         (xE + dE)
         (xN + dN)
-        (HCEN.latZone x)
-        (HCEN.lngZone x)
-        (HCEN.datum x)
+        (HC.latZone x)
+        (HC.lngZone x)
+        (HC.datum x)
     where
         xE :: Double
-        xE = HCEN.easting x
+        xE = HC.easting x
 
         xN :: Double
-        xN = HCEN.northing x
+        xN = HC.northing x
 
         rRadius' :: Double
         rRadius' = realToFrac rRadius
@@ -244,20 +271,12 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                 (realToFracZone <$> [Point ptCenter, Point y])
 
 -- $setup
--- >>> :set -XTemplateHaskell
--- >>> :set -XQuasiQuotes
--- >>> :set -XDataKinds
--- >>> :set -XFlexibleContexts
--- >>> :set -XFlexibleInstances
--- >>> :set -XMultiParamTypeClasses
--- >>> :set -XScopedTypeVariables
--- >>> :set -XTypeOperators
--- >>> :set -XTypeFamilies
--- >>> :set -XUndecidableInstances
--- >>> :set -fno-warn-partial-type-signatures
---
 -- >>> import Data.UnitsOfMeasure ((*:), u, convert)
+-- >>> import qualified UTMRef as HC
+-- >>> import qualified LatLng as HC
+-- >>> import qualified Datum as HC
 -- >>> import Flight.LatLng (radToDegLL, degToRadLL)
+-- >>> import Internal.Flat.Projected.Internal (_EN, _LLtoDMS)
 --
 -- >>> :{
 -- circumDeg
@@ -268,4 +287,31 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
 --    -> LatLng Double [u| deg |]
 -- circumDeg ll r tc =
 --     radToDegLL convert $ circum (degToRadLL convert ll) r (TrueCourse ((convert tc) :: Quantity _ [u| rad |]))
+-- :}
+--
+-- >>> :{
+-- tx (xLat, xLng) (dN, dE) = do
+--     x <- HC.mkLatLng xLat xLng 0 HC.wgs84Datum
+--     en@HC.UTMRef{easting = e, northing = n} <- HC.toUTMRef x
+--     let en' = en{HC.easting = e + dE, HC.northing = n + dN}
+--     y <- HC.toLatLng en'
+--     return $ (_LLtoDMS y, _EN en')
+-- :}
+--
+-- >>> :{
+-- txN (xLat, xLng) dN = do
+--     x <- HC.mkLatLng xLat xLng 0 HC.wgs84Datum
+--     en@HC.UTMRef{easting = e, northing = n} <- HC.toUTMRef x
+--     let en'@HC.UTMRef{easting = e', northing = n', latZone, lngZone} = en{HC.northing = n + dN}
+--     y <- HC.toLatLng en'
+--     return $ (_LLtoDMS y, ((e', n'), (latZone, lngZone)))
+-- :}
+--
+-- >>> :{
+-- txE (xLat, xLng) dE = do
+--     x <- HC.mkLatLng xLat xLng 0 HC.wgs84Datum
+--     en@HC.UTMRef{easting = e, northing = n} <- HC.toUTMRef x
+--     let en'@HC.UTMRef{easting = e', northing = n', latZone, lngZone} = en{HC.easting = e + dE}
+--     y <- HC.toLatLng en'
+--     return $ (_LLtoDMS y, ((e', n'), (latZone, lngZone)))
 -- :}

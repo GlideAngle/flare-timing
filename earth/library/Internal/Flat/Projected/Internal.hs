@@ -5,6 +5,8 @@ module Internal.Flat.Projected.Internal
     , pythagorean
     , zoneToProjectedEastNorth 
     , tooFar
+    , _EN
+    , _LLtoDMS
     ) where
 
 import Prelude hiding (flip)

@@ -18,6 +18,7 @@ arguments =
     , "library/Internal/Sphere/Cylinder/Double.hs"
     , "library/Internal/Sphere/PointToPoint/Double.hs"
     , "-fplugin=Data.UnitsOfMeasure.Plugin"
+    , "-fno-warn-partial-type-signatures"
     , "-XDataKinds"
     , "-XDeriveFunctor"
     , "-XDeriveGeneric"
