@@ -147,6 +147,12 @@ direct
 --
 -- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
 -- (-32.465049082605454°, 148.9890000000324°)
+--
+-- >>> circumDeg (LatLng (Lat [u| -135.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 90 deg |]
+-- (44.99999999886947°, 7.603632320668826e-12°)
+--
+-- >>> circumDeg (LatLng (Lat [u| 135.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 90 deg |]
+-- (-44.99999999886947°, 7.603632320668826e-12°)
 circum
     :: (Real a, Fractional a, RealFloat a)
     => LatLng a [u| rad |]
