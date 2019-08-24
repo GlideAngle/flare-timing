@@ -103,7 +103,7 @@ circumEN xLL r tc =
 -- Right ((0°,179°59'0.9997001661841978''),((833978.0,0.0),('N',60)))
 --
 -- >>> runIdentity . runExceptT $ txE (0, 177) 333979
--- Left "Longitude (180.0000039771182) is invalid. Must be between -180.0 and 180.0 inclusive."
+-- Right ((0°,180°0'2.386270926990619e-4''),((833979.0,0.0),('N',60)))
 --
 -- >>> runIdentity . runExceptT $ txN (0, 177) 0
 -- Right ((0°,177°),((500000.0,0.0),('N',60)))
@@ -120,17 +120,17 @@ circumEN xLL r tc =
 -- >>> runIdentity . runExceptT $ txN (0, 177) 4982950.4002808
 -- Right ((44°59'0.9999999999518252'',177°),((500000.0,4982950.4002808),('N',60)))
 --
--- >>> runIdentity . runExceptT $ txN (0, 84) 1
--- Right ((0.000542'',84°0'7.649987310287543e-9''),((166021.4431793306,1.0),('N',45)))
+-- >>> runIdentity . runExceptT $ txN (84, 0) 1
+-- Left "Latitude (84.00000894932786) is invalid. Converting from UTM, it must be between -80.0 and 84.0 inclusive."
 --
--- >>> runIdentity . runExceptT $ txN (0, 84) (negate 1)
--- Right ((0.000542'',84°0'7.649987310287543e-9''),((166021.4431793306,-1.0),('N',45)))
+-- >>> runIdentity . runExceptT $ txN (84, 0) (negate 1)
+-- Right ((83°59'0.9994635200826565'',0.000267''),((465005.34493874514,9329004.182975996),('X',31)))
 --
--- >>> runIdentity . runExceptT $ txN (0, -80) 1
--- Right ((0.000543'',-80°0'2.7284841053187847e-11''),((611280.650891311,1.0),('N',17)))
+-- >>> runIdentity . runExceptT $ txN (-80, 0) 1
+-- Right ((-79°59'0.9994635366513762'',0.000159''),((441867.7848676922,1116916.0433355588),('C',31)))
 --
--- >>> runIdentity . runExceptT $ txN (0, -80) (negate 1)
--- Right ((0.000543'',-80°0'2.7284841053187847e-11''),((611280.650891311,-1.0),('N',17)))
+-- >>> runIdentity . runExceptT $ txN (-80, 0) (negate 1)
+-- Left "Latitude (-80.00000895308122) is invalid. Converting from UTM, it must be between -80.0 and 84.0 inclusive."
 translate
     :: Real a
     => QRadius a [u| m |]
