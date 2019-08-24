@@ -1,12 +1,17 @@
 module Internal.Ellipsoid.Cylinder.Vincenty.Double
     ( circumSample
     , direct
+    , directUnchecked
     , cos2
     ) where
 
-import Data.UnitsOfMeasure (u)
+import Text.Printf (printf)
+import Data.Maybe (fromMaybe)
+import Data.UnitsOfMeasure (u, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units.DegMinSec (DMS(..))
+import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
@@ -18,6 +23,8 @@ import Flight.Zone
     , radius
     , realToFracZone
     , realToFracLatLng
+    , fromRationalLatLng
+    , toRationalLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
 import Internal.Ellipsoid.PointToPoint.Double (distance)
@@ -76,6 +83,8 @@ iterateVincenty
 
         σ' = s / b * _A + _Δσ
 
+-- | The solution to the direct geodesy problem with input latitude rejected
+-- outside the range -90° .. 90° and longitude normalized to -180° .. 180°.
 direct
     :: (Real a, Floating a, Fractional a, RealFloat a)
     => Ellipsoid a
@@ -89,19 +98,45 @@ direct
             (LatLng a [u| rad |])
             (TrueCourse a)
         )
-direct
+direct e a p@DirectProblem{x = x@(LatLng (Lat qLat, _))} =
+    fromMaybe (error (printf "Latitude of %s is outside -90° .. 90° range" $ show dmsLat)) $ do
+        let LatLng (Lat xLat, Lng xLng) = toRationalLatLng x
+        nLat <- plusMinusHalfPi xLat
+        let nLng = plusMinusPi xLng
+        let xNorm = fromRationalLatLng $ LatLng (Lat nLat, Lng nLng)
+        return $ directUnchecked e a p{x = xNorm}
+    where
+        dmsLat :: DMS
+        dmsLat = fromQuantity . fromRational' . toRational' $ qLat
+
+-- | The solution to the direct geodesy problem with input latitude unchecked
+-- and longitude not normalized.
+directUnchecked
+    :: (Real a, Floating a, Fractional a, RealFloat a)
+    => Ellipsoid a
+    -> GeodeticAccuracy a
+    -> DirectProblem
+        (LatLng a [u| rad |])
+        (TrueCourse a)
+        (QRadius a [u| m |])
+    -> GeodeticDirect
+        (DirectSolution
+            (LatLng a [u| rad |])
+            (TrueCourse a)
+        )
+directUnchecked
     ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
     accuracy
     DirectProblem
-        { x = (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
+        { x = LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1))
         , α₁ = TrueCourse (MkQuantity α1)
         , s = (Radius (MkQuantity s))
         } =
     GeodeticDirect $
-    DirectSolution
-        { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
-        , α₂ = Just . TrueCourse . MkQuantity $ sinα / (-j)
-        }
+        DirectSolution
+            { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
+            , α₂ = Just . TrueCourse . MkQuantity $ sinα / (-j)
+            }
     where
         MkQuantity b = polarRadius ellipsoid
         f = flattening ellipsoid
