@@ -98,16 +98,29 @@ direct
             (LatLng a [u| rad |])
             (TrueCourse a)
         )
-direct e a p@DirectProblem{x = x@(LatLng (Lat qLat, _))} =
-    fromMaybe (error (printf "Latitude of %s is outside -90° .. 90° range" $ show dmsLat)) $ do
+direct
+    e
+    a
+    p@DirectProblem
+        { x = x@(LatLng (Lat qLat, _))
+        , α₁ = TrueCourse qTC
+        } =
+    fromMaybe (error msg) $ do
         let LatLng (Lat xLat, Lng xLng) = toRationalLatLng x
+
         nLat <- plusMinusHalfPi xLat
         let nLng = plusMinusPi xLng
         let xNorm = fromRationalLatLng $ LatLng (Lat nLat, Lng nLng)
-        return $ directUnchecked e a p{x = xNorm}
+
+        let nTC = normalize $ toRational' qTC
+        let tcNorm = TrueCourse . fromRational' $ nTC
+
+        return $ directUnchecked e a p{x = xNorm, α₁ = tcNorm}
     where
         dmsLat :: DMS
         dmsLat = fromQuantity . fromRational' . toRational' $ qLat
+
+        msg = printf "Latitude of %s is outside -90° .. 90° range" $ show dmsLat
 
 -- | The solution to the direct geodesy problem with input latitude unchecked
 -- and longitude not normalized.
@@ -316,7 +329,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
         y = f x
         zp' = ZonePoint { sourceZone = realToFracZone zone'
                         , point = y
-                        , radial = Bearing tc
+                        , radial = Bearing $ normalize tc
                         , orbit = yr
                         } :: ZonePoint Double
 
