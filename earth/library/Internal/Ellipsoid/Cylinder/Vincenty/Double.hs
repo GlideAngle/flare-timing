@@ -327,11 +327,14 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
         circumR = circum ptCenter
 
         y = f x
-        zp' = ZonePoint { sourceZone = realToFracZone zone'
-                        , point = y
-                        , radial = Bearing $ normalize tc
-                        , orbit = yr
-                        } :: ZonePoint Double
+
+        zp' :: ZonePoint Double
+        zp' = ZonePoint
+                { sourceZone = realToFracZone zone'
+                , point = y
+                , radial = Bearing $ normalize tc
+                , orbit = yr
+                }
 
         (TaskDistance (MkQuantity d)) =
             edgesSum
