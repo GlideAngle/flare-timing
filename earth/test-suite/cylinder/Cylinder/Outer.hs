@@ -15,9 +15,11 @@ import Data.UnitsOfMeasure ((*:), (+:), u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Units.DegMinSec (DMS(..))
+import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..))
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (QBearing, QRadius, Radius(..), Zone(..), ArcSweep(..))
+import Flight.Zone (QBearing, Bearing(..), QRadius, Radius(..), Zone(..), ArcSweep(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
 import Cylinder.Sphere.Span (ZonePointFilter)
@@ -26,9 +28,9 @@ pts :: (Enum a, Real a, Fractional a) => [QLL a]
 pts =
     f
     <$>
-    [ ((x - 90) *: [u| 1 deg |], (y - 180) *: [u| 1 deg |])
-    | x <- [0, 45 .. 180]
-    , y <- [0, 90 .. 360]
+    [ (x *: [u| 1 deg |], y *: [u| 1 deg |])
+    | x <- [-90, -45 .. 90]
+    , y <- [-180, -90 .. 180]
     ]
     where
         f (x, y) =
@@ -86,11 +88,11 @@ outerCheck
     -> LatLng a [u| rad |]
     -> TestTree
 outerCheck
-    span cs sampleParams br
+    span cs sampleParams br@(Bearing b)
     (Tolerance tolerance)
     sr@(MkQuantity searchRange)
     zpf r@(Radius radius) ll =
-    testGroup ("From origin " ++ showQ (lat, lng) ++ " bearing " ++ show br)
+    testGroup ("From origin " ++ showQ (lat, lng) ++ " bearing " ++ show b')
     [ HU.testCase
         msg
         $ zpf
@@ -123,3 +125,6 @@ outerCheck
 
         sr' :: Quantity Double [u| m |]
         sr' = fromRational' . toRational' $ sr
+
+        b' :: DMS
+        b' = fromQuantity . fromRational' . toRational' $ b

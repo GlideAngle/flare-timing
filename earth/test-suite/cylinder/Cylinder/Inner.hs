@@ -4,8 +4,8 @@ module Cylinder.Inner
     ( pts
     , ptsUTM
     , distances
-    , searchRanges
     , tolerances
+    , searchRanges
     , innerCheck
     ) where
 
@@ -16,9 +16,11 @@ import Data.UnitsOfMeasure ((*:), (-:), u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Units.DegMinSec (DMS(..))
+import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..))
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (QBearing, QRadius, Radius(..), Zone(..), ArcSweep(..))
+import Flight.Zone (QBearing, Bearing(..), QRadius, Radius(..), Zone(..), ArcSweep(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
 import Cylinder.Sphere.Span (ZonePointFilter)
@@ -97,11 +99,11 @@ innerCheck
     -> LatLng a [u| rad |]
     -> TestTree
 innerCheck
-    span cs sampleParams br
+    span cs sampleParams br@(Bearing b)
     (Tolerance tolerance)
     sr@(MkQuantity searchRange)
     zpf r@(Radius radius) ll =
-    testGroup ("At " ++ showQ (lat, lng))
+    testGroup ("From origin " ++ showQ (lat, lng) ++ " bearing " ++ show b')
     [ HU.testCase
         msg
         $ zpf
@@ -134,3 +136,6 @@ innerCheck
 
         sr' :: Quantity Double [u| m |]
         sr' = fromRational' . toRational' $ sr
+
+        b' :: DMS
+        b' = fromQuantity . fromRational' . toRational' $ b
