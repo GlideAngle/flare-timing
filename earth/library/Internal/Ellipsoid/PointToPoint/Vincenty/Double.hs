@@ -7,14 +7,18 @@ module Internal.Ellipsoid.PointToPoint.Vincenty.Double
     , azimuthRev
     ) where
 
-import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert)
+import Text.Printf (printf)
+import Data.Maybe (fromMaybe)
+import Data.UnitsOfMeasure (u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units.DegMinSec (DMS(..))
+import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
 import Flight.Distance (QTaskDistance, TaskDistance(..), SpanLatLng)
-import Flight.Zone (Radius(..))
+import Flight.Zone (Radius(..), fromRationalLatLng, toRationalLatLng)
 import Flight.Earth.Ellipsoid
-    ( Ellipsoid(..), AbnormalLatLng(..), GeodeticInverse(..), GeodeticAccuracy(..)
+    ( Ellipsoid(..), GeodeticInverse(..), GeodeticAccuracy(..)
     , defaultGeodeticAccuracy, flattening, polarRadius
     )
 import Flight.Geodesy (InverseProblem(..), InverseSolution(..))
@@ -121,40 +125,84 @@ tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
 
 -- | Spherical distance using inverse Vincenty and floating point numbers.
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat $ convert [u| -45.0 deg |], Lng $ convert [u| 180.0 deg |]))
+--         (LatLng (Lat $ convert [u| -44.99999999886946 deg |], Lng $ convert [u| 180.00000000000762 deg |]))
+-- :}
+-- [u| 20000.0 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (fromDMS (DMS (-45, 0, 0), DMS (180, 0, 0)))
+--         (fromDMS (DMS (-44, 59, 59), DMS (180, 0, 0)))
+-- :}
+-- [u| 3.087e-2 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (fromDMS (DMS (-45, 0, 0), DMS (180, 0, 0)))
+--         (fromDMS (DMS (-44, 59, 59), DMS (180, 0, 1)))
+-- :}
+-- [u| 20000.0 km |]
+distance :: RealFloat a => Ellipsoid a -> SpanLatLng a
 distance
-    :: ( RealFloat a
-       , KnownUnit (Unpack u)
-       , u ~ [u| rad |]
-       )
-    => Ellipsoid a
-    -> SpanLatLng a
-distance e x y =
-    case distance' e (InverseProblem x y) of
-        GeodeticInverseAntipodal -> tooFar
-        GeodeticInverseAbnormal _ -> tooFar
-        GeodeticInverse InverseSolution{s} -> s
+    e
+    x@(LatLng (Lat qx, _))
+    y@(LatLng (Lat qy, _)) =
+    fromMaybe (error msg) $ do
+        let LatLng (Lat xLat, Lng xLng) = toRationalLatLng x
+        let LatLng (Lat yLat, Lng yLng) = toRationalLatLng y
+
+        xLat' <- plusMinusHalfPi xLat
+        yLat' <- plusMinusHalfPi yLat
+
+        let xLng' = plusMinusPi xLng
+        let yLng' = plusMinusPi yLng
+
+        let x' = fromRationalLatLng $ LatLng (Lat xLat', Lng xLng')
+        let y' = fromRationalLatLng $ LatLng (Lat yLat', Lng yLng')
+
+        return $
+            case distanceUnchecked e (InverseProblem x' y') of
+                GeodeticInverseAntipodal -> tooFar
+                GeodeticInverseAbnormal _ -> tooFar
+                GeodeticInverse InverseSolution{s} -> s
+    where
+        toDMS :: Quantity _ [u| rad |] -> DMS
+        toDMS = fromQuantity . fromRational' . toRational'
+
+        msg =
+            printf
+                "Latitude of %s or %s is outside -90° .. 90° range"
+                (show $ toDMS qx)
+                (show $ toDMS qy)
 
 azimuthFwd :: RealFloat a => Ellipsoid a -> AzimuthFwd a
 azimuthFwd e x y =
-    case distance' e (InverseProblem x y) of
+    case distanceUnchecked e (InverseProblem x y) of
         GeodeticInverseAntipodal -> Nothing
         GeodeticInverseAbnormal _ -> Nothing
         GeodeticInverse InverseSolution{α₁} -> Just α₁
 
 azimuthRev :: RealFloat a => Ellipsoid a -> AzimuthRev a
 azimuthRev e x y =
-    case distance' e (InverseProblem x y) of
+    case distanceUnchecked e (InverseProblem x y) of
         GeodeticInverseAntipodal -> Nothing
         GeodeticInverseAbnormal _ -> Nothing
         GeodeticInverse InverseSolution{α₂} -> α₂
 
-distance'
+distanceUnchecked
     :: RealFloat a
     => Ellipsoid a
     -> InverseProblem (LatLng a [u| rad |])
     -> GeodeticInverse
         (InverseSolution (QTaskDistance a [u| m |]) (Quantity a [u| rad |]))
-distance'
+distanceUnchecked
     ellipsoid
     prob@InverseProblem
         { x = x@(LatLng (xLat, xLng))
@@ -169,18 +217,23 @@ distance'
                 , α₂ = Just $ convert [u| 180 deg |]
                 }
 
-    | xLat < minBound = GeodeticInverseAbnormal LatUnder
-    | xLat > maxBound = GeodeticInverseAbnormal LatOver
-    | xLng < minBound = GeodeticInverseAbnormal LngUnder
-    | xLng > maxBound = GeodeticInverseAbnormal LngOver
+    | xLat < minBound = error "xlat under" -- GeodeticInverseAbnormal LatUnder
+    | xLat > maxBound = error "xlat over" -- GeodeticInverseAbnormal LatOver
+    | xLng < minBound = error "xlng under" -- GeodeticInverseAbnormal LngUnder
+    | xLng > maxBound = error "xlng over" -- GeodeticInverseAbnormal LngOver
 
-    | yLat < minBound = GeodeticInverseAbnormal LatUnder
-    | yLat > maxBound = GeodeticInverseAbnormal LatOver
-    | yLng < minBound = GeodeticInverseAbnormal LngUnder
-    | yLng > maxBound = GeodeticInverseAbnormal LngOver
+    | yLat < minBound = error "ylat under" -- GeodeticInverseAbnormal LatUnder
+    | yLat > maxBound = error "ylat over" -- GeodeticInverseAbnormal LatOver
+    | yLng < minBound = error "ylng under" -- GeodeticInverseAbnormal LngUnder
+    | yLng > maxBound = error "ylng over" -- GeodeticInverseAbnormal LngOver
 
     | otherwise =
         inverse ellipsoid accuracy' prob
         where
             GeodeticAccuracy accuracy = defaultGeodeticAccuracy
             accuracy' = GeodeticAccuracy $ fromRational accuracy
+
+-- $setup
+-- >>> import Flight.Earth.Ellipsoid
+-- >>> import Flight.LatLng
+-- >>> import Flight.Units.DegMinSec (DMS(..))
