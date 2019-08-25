@@ -27,7 +27,7 @@ outerUnits =
         , (d, t, s) <-
             [ (d, t, s)
             | d <- distances
-            | t <- Tolerance . unQuantity <$> tolerancesD
+            | t <- Tolerance . unQuantity <$> tolerances
             | s <- searchRanges
             ]
         ]
@@ -41,17 +41,13 @@ outerUnitsR =
         , (d, t, s) <-
             [ (d, t, s)
             | d <- distances
-            | t <- Tolerance . unQuantity <$> tolerancesR
+            | t <- Tolerance . unQuantity <$> tolerances
             | s <- searchRanges
             ]
         ]
 
-tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
-tolerancesD =
-    repeat $ fromRational' [u| 0.0000001 mm |]
-
-tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
-tolerancesR =
+tolerances :: (Real a, Fractional a) => [Quantity a [u| mm |]]
+tolerances =
     repeat $ fromRational' [u| 0 mm |]
 
 bearingD :: [QBearing Double [u| rad |]]
