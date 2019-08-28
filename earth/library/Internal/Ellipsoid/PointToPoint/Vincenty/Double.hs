@@ -153,8 +153,96 @@ tooFar = TaskDistance [u| 20000000 m |]
 -- >>> :{
 --     distance
 --         wgs84
---         (fromDMS (DMS (0, 0, 0), DMS (0, 0, 0)))
---         (LatLng (Lat $ convert [u| -2.3269392264881143e-19 deg |], Lng $ convert [u| 1.21702929880879e-10 deg |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 100.0 deg |]))
+-- :}
+-- [u| 11131.949079 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 10.0 deg |]))
+-- :}
+-- [u| 1113.194908 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 1.0 deg |]))
+-- :}
+-- [u| 111.319491 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.1 deg |]))
+-- :}
+-- [u| 11.131949 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.01 deg |]))
+-- :}
+-- [u| 1.113195 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.001 deg |]))
+-- :}
+-- [u| 0.111319 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.0001 deg |]))
+-- :}
+-- [u| 1.1132e-2 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.00001 deg |]))
+-- :}
+-- [u| 1.113e-3 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.000001 deg |]))
+-- :}
+-- [u| 1.11e-4 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.0000001 deg |]))
+-- :}
+-- [u| 1.1e-5 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.00000001 deg |]))
+-- :}
+-- [u| 1.0e-6 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
+--         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.000000001 deg |]))
 -- :}
 -- [u| 0.0 km |]
 distance :: RealFloat a => Ellipsoid a -> SpanLatLng a
