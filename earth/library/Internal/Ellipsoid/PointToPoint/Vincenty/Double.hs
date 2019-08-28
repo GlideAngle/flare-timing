@@ -132,7 +132,7 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat $ convert [u| -45.0 deg |], Lng $ convert [u| 180.0 deg |]))
 --         (LatLng (Lat $ convert [u| -44.99999999886946 deg |], Lng $ convert [u| 180.00000000000762 deg |]))
 -- :}
--- [u| 20000.0 km |]
+-- [u| 0.0 km |]
 --
 -- >>> :{
 --     distance
@@ -148,7 +148,15 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (fromDMS (DMS (-45, 0, 0), DMS (180, 0, 0)))
 --         (fromDMS (DMS (-44, 59, 59), DMS (180, 0, 1)))
 -- :}
--- [u| 20000.0 km |]
+-- [u| 3.785e-2 km |]
+--
+-- >>> :{
+--     distance
+--         wgs84
+--         (fromDMS (DMS (0, 0, 0), DMS (0, 0, 0)))
+--         (LatLng (Lat $ convert [u| -2.3269392264881143e-19 deg |], Lng $ convert [u| 1.21702929880879e-10 deg |]))
+-- :}
+-- [u| 0.0 km |]
 distance :: RealFloat a => Ellipsoid a -> SpanLatLng a
 distance
     e
