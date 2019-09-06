@@ -34,3 +34,4 @@ uom-plugin-*
 bazel-*
 *.orig
 *.swl
+.ionide/symbolCache.db
