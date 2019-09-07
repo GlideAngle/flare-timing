@@ -189,17 +189,53 @@ directUnchecked
         u² = cos²α * (a² - b²) / b²
 
 -- |
+-- TODO: Why is a point 286 m out is 0.254 km away.
 -- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 286.27334927563106 m |]) [u| 332.30076790172313 deg |]
 -- (-32.46133783488965°, 148.9890000000845°)
 --
+-- >>> :{
+--     V.distance
+--         wgs84
+--         (LatLng (Lat $ convert [u| -32.46363 deg |], Lng $ convert [u| 148.989 deg |]))
+--         (LatLng (Lat $ convert [u| -32.46133783488965 deg |], Lng $ convert [u| 148.9890000000845 deg |]))
+-- :}
+-- [u| 0.25419 km |]
+--
+-- TODO: Why is a point 177 m out is 0.157 km away.
 -- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
 -- (-32.465049082605454°, 148.9890000000324°)
 --
+-- >>> :{
+--     V.distance
+--         wgs84
+--         (LatLng (Lat $ convert [u| -32.46363 deg |], Lng $ convert [u| 148.989 deg |]))
+--         (LatLng (Lat $ convert [u| -32.465049082605454 deg |], Lng $ convert [u| 148.9890000000324 deg |]))
+-- :}
+-- [u| 0.157369 km |]
+--
+-- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (-45°, 0°).
 -- >>> circumDeg (LatLng (Lat [u| -45.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 90 deg |]
 -- (-44.99999999886946°, 7.603632320668826e-12°)
 --
+-- >>> :{
+--     V.distance
+--         wgs84
+--         (LatLng (Lat $ convert [u| -45.0 deg |], Lng $ convert [u| 0.0 deg |]))
+--         (LatLng (Lat $ convert [u| -44.99999999886946 deg |], Lng $ convert [u| 7.603632320668826e-12 deg |]))
+-- :}
+-- [u| 0.0 km |]
+--
+-- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (+45°, 0°).
 -- >>> circumDeg (LatLng (Lat [u| 45.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 90 deg |]
 -- (44.99999999886946°, 7.603632320668826e-12°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         (LatLng (Lat $ convert [u| 45.0 deg |], Lng $ convert [u| 0.0 deg |]))
+--         (LatLng (Lat $ convert [u| 44.99999999886946 deg |], Lng $ convert [u| 7.603632320668826e-12 deg |]))
+-- :}
+-- [u| 0.0 km |]
 circum
     :: (Real a, Fractional a, RealFloat a)
     => LatLng a [u| rad |]
@@ -354,6 +390,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
 --
 -- >>> import Data.UnitsOfMeasure ((*:), u, convert)
 -- >>> import Flight.LatLng (radToDegLL, degToRadLL)
+-- >>> import Internal.Ellipsoid.PointToPoint.Vincenty.Double as V
 --
 -- >>> :{
 -- circumDeg
