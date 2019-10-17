@@ -199,6 +199,8 @@ directUnchecked
 --         (LatLng (Lat $ convert [u| -32.46363 deg |], Lng $ convert [u| 148.989 deg |]))
 --         (LatLng (Lat $ convert [u| -32.46133783488965 deg |], Lng $ convert [u| 148.9890000000845 deg |]))
 -- :}
+-- [u| 0.254189500595 km |]
+--
 -- [u| 0.25419 km |]
 --
 -- TODO: Why is a point 177 m out is 0.157 km away.
@@ -211,6 +213,8 @@ directUnchecked
 --         (LatLng (Lat $ convert [u| -32.46363 deg |], Lng $ convert [u| 148.989 deg |]))
 --         (LatLng (Lat $ convert [u| -32.465049082605454 deg |], Lng $ convert [u| 148.9890000000324 deg |]))
 -- :}
+-- [u| 0.157369119533 km |]
+-- 
 -- [u| 0.157369 km |]
 --
 -- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (-45°, 0°).
@@ -223,6 +227,8 @@ directUnchecked
 --         (LatLng (Lat $ convert [u| -45.0 deg |], Lng $ convert [u| 0.0 deg |]))
 --         (LatLng (Lat $ convert [u| -44.99999999886946 deg |], Lng $ convert [u| 7.603632320668826e-12 deg |]))
 -- :}
+-- [u| 1.2564e-7 km |]
+-- 
 -- [u| 0.0 km |]
 --
 -- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (+45°, 0°).
@@ -235,7 +241,28 @@ directUnchecked
 --         (LatLng (Lat $ convert [u| 45.0 deg |], Lng $ convert [u| 0.0 deg |]))
 --         (LatLng (Lat $ convert [u| 44.99999999886946 deg |], Lng $ convert [u| 7.603632320668826e-12 deg |]))
 -- :}
+-- [u| 1.2564e-7 km |]
+--
 -- [u| 0.0 km |]
+--
+-- >>> circumDeg (LatLng (Lat [u| 0.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 0 deg |]
+-- (3.629662729528601e-4°, 0.0°)
+--
+-- >>> circumDeg (LatLng (Lat [u| 0.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 90 deg |]
+-- (2.2150663706180143e-20°, 7.60643335827154e-12°)
+--
+-- >>> circumDeg (LatLng (Lat [u| 0.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| -90 deg |]
+-- (-6.645199111854043e-20°, 7.60643335827154e-12°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         (LatLng (Lat $ convert [u| 0.0 deg |], Lng $ convert [u| 0.0 deg |]))
+--         (LatLng (Lat $ convert [u| -5.817348158845349e-20 deg |], Lng $ convert [u| 7.60643335827154e-12 deg |]))
+-- :}
+-- [u| 8.44e-10 km |]
+-- 
+-- [u| 1.0 km |]
 circum
     :: (Real a, Fractional a, RealFloat a)
     => LatLng a [u| rad |]
@@ -297,19 +324,27 @@ circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing
         mkLinePt _ (Bearing b) rLine = circumR rLine $ TrueCourse b
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
-        ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+        ys = unzip $ getClose' 9 (MkQuantity 0) 0.05 (circumR r) <$> xs
 
 getClose
     :: Zone Double
-    -> LatLng Double [u| rad |] -- ^ The center point.
-    -> Double -- ^ The limit radius.
+    -- The center point.
+    -> LatLng Double [u| rad |]
+    -- The limit radius, the radius we're trying for.
+    -> Double
     -> Tolerance Double
-    -> Int -- ^ How many tries.
-    -> QRadius Double [u| m |] -- ^ How far from the center.
-    -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
-    -> TrueCourse Double -- ^ The true course for this radial.
+    -- How many tries.
+    -> Int
+    -- An offset to the radius.
+    -> Quantity Double [u| m |]
+    -- A scaling.
+    -> Double
+    -- A function returning a point from the origin on this radial
+    -> (TrueCourse Double -> LatLng Double [u| rad |])
+    -- The true course for this radial.
+    -> TrueCourse Double
     -> (ZonePoint Double, TrueCourse Double)
-getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
+getClose zone' ptCenter limitRadius spTolerance trys (MkQuantity offset) scaling f x@(TrueCourse tc)
     | trys <= 0 = (zp', x)
     | unTolerance spTolerance <= 0 = (zp', x)
     | limitRadius <= unTolerance spTolerance = (zp', x)
@@ -319,32 +354,18 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                  (zp', x)
 
              GT ->
-                 let offset' =
-                         offset - (d - limitRadius) * 105 / 100
-
-                     f' =
-                         circumR (Radius (MkQuantity $ limitRadius + offset'))
-
-                 in
-                     getClose
-                         zone'
-                         ptCenter
-                         limitRadius
-                         spTolerance
-                         (trys - 1)
-                         (Radius (MkQuantity offset'))
-                         f'
-                         x
-
-             LT ->
-                 if d > (limitRadius - unTolerance spTolerance)
+                 if d < (limitRadius + unTolerance spTolerance)
                  then (zp', x)
                  else
-                     let offset' =
-                             offset + (limitRadius - d) * 94 / 100
+                     -- NOTE: We aimed for (limitRadius + offset) but ended up
+                     -- with an actual radius d larger than the limit radius.
+                     let scaling' = scaling / 10
+                         aimRadius = (limitRadius + offset) * (1 - scaling)
+                         aimRadius' = Radius $ MkQuantity aimRadius
+                         offset' = aimRadius - limitRadius
 
                          f' =
-                             circumR (Radius (MkQuantity $ limitRadius + offset'))
+                             circumR aimRadius'
 
                      in
                          getClose
@@ -353,7 +374,34 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                              limitRadius
                              spTolerance
                              (trys - 1)
-                             (Radius (MkQuantity offset'))
+                             (MkQuantity offset')
+                             scaling'
+                             f'
+                             x
+
+             LT ->
+                 if d > (limitRadius - unTolerance spTolerance)
+                 then (zp', x)
+                 else
+                     -- NOTE: We aimed for (limitRadius + offset) but ended up
+                     -- with an actual radius d smaller than the limit radius.
+                     let scaling' = scaling / 10
+                         aimRadius = (limitRadius + offset) * (1 + scaling)
+                         aimRadius' = Radius $ MkQuantity aimRadius
+                         offset' = aimRadius - limitRadius
+
+                         f' =
+                             circumR aimRadius'
+
+                     in
+                         getClose
+                             zone'
+                             ptCenter
+                             limitRadius
+                             spTolerance
+                             (trys - 1)
+                             (MkQuantity offset')
+                             scaling'
                              f'
                              x
     where
@@ -366,14 +414,18 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                 { sourceZone = realToFracZone zone'
                 , point = y
                 , radial = Bearing $ normalize tc
-                , orbit = yr
+                , orbit = Radius foundRadius
                 } :: ZonePoint Double
 
-        (TaskDistance (MkQuantity d)) =
+        pts = [Point ptCenter, Point y]
+
+        (TaskDistance signedFoundRadius) =
             edgesSum
             $ distancePointToPoint
                 (distance Vincenty wgs84)
-                (realToFracZone <$> [Point ptCenter, Point y])
+                (realToFracZone <$> pts)
+
+        foundRadius@(MkQuantity d) = signedFoundRadius
 
 -- $setup
 -- >>> :set -XTemplateHaskell

@@ -132,6 +132,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat $ convert [u| -45.0 deg |], Lng $ convert [u| 180.0 deg |]))
 --         (LatLng (Lat $ convert [u| -44.99999999886946 deg |], Lng $ convert [u| 180.00000000000762 deg |]))
 -- :}
+-- [u| 1.2564e-7 km |]
+-- 
 -- [u| 0.0 km |]
 --
 -- >>> :{
@@ -140,6 +142,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (fromDMS (DMS (-45, 0, 0), DMS (180, 0, 0)))
 --         (fromDMS (DMS (-44, 59, 59), DMS (180, 0, 0)))
 -- :}
+-- [u| 3.0869937417e-2 km |]
+-- 
 -- [u| 3.087e-2 km |]
 --
 -- >>> :{
@@ -148,6 +152,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (fromDMS (DMS (-45, 0, 0), DMS (180, 0, 0)))
 --         (fromDMS (DMS (-44, 59, 59), DMS (180, 0, 1)))
 -- :}
+-- [u| 3.7850343635e-2 km |]
+-- 
 -- [u| 3.785e-2 km |]
 --
 -- >>> :{
@@ -156,6 +162,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 100.0 deg |]))
 -- :}
+-- [u| 11131.94907932264 km |]
+-- 
 -- [u| 11131.949079 km |]
 --
 -- >>> :{
@@ -164,6 +172,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 10.0 deg |]))
 -- :}
+-- [u| 1113.194907932264 km |]
+-- 
 -- [u| 1113.194908 km |]
 --
 -- >>> :{
@@ -172,6 +182,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 1.0 deg |]))
 -- :}
+-- [u| 111.319490793226 km |]
+-- 
 -- [u| 111.319491 km |]
 --
 -- >>> :{
@@ -180,6 +192,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.1 deg |]))
 -- :}
+-- [u| 11.131949077921 km |]
+-- 
 -- [u| 11.131949 km |]
 --
 -- >>> :{
@@ -188,6 +202,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.01 deg |]))
 -- :}
+-- [u| 1.113194907792 km |]
+-- 
 -- [u| 1.113195 km |]
 --
 -- >>> :{
@@ -196,6 +212,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.001 deg |]))
 -- :}
+-- [u| 0.111319486598 km |]
+-- 
 -- [u| 0.111319 km |]
 --
 -- >>> :{
@@ -204,6 +222,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.0001 deg |]))
 -- :}
+-- [u| 1.113194866e-2 km |]
+-- 
 -- [u| 1.1132e-2 km |]
 --
 -- >>> :{
@@ -212,6 +232,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.00001 deg |]))
 -- :}
+-- [u| 1.113194866e-3 km |]
+-- 
 -- [u| 1.113e-3 km |]
 --
 -- >>> :{
@@ -220,6 +242,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.000001 deg |]))
 -- :}
+-- [u| 1.11318239e-4 km |]
+-- 
 -- [u| 1.11e-4 km |]
 --
 -- >>> :{
@@ -228,6 +252,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.0000001 deg |]))
 -- :}
+-- [u| 1.1131824e-5 km |]
+-- 
 -- [u| 1.1e-5 km |]
 --
 -- >>> :{
@@ -236,6 +262,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.00000001 deg |]))
 -- :}
+-- [u| 1.109463e-6 km |]
+-- 
 -- [u| 1.0e-6 km |]
 --
 -- >>> :{
@@ -244,6 +272,8 @@ tooFar = TaskDistance [u| 20000000 m |]
 --         (LatLng (Lat [u| 0.0 rad |], Lng [u| 0.0 rad |]))
 --         (LatLng (Lat [u| 0.0 rad |], Lng $ convert [u| 0.000000001 deg |]))
 -- :}
+-- [u| 1.10946e-7 km |]
+-- 
 -- [u| 0.0 km |]
 distance :: RealFloat a => Ellipsoid a -> SpanLatLng a
 distance

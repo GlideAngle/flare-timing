@@ -55,7 +55,7 @@ showDistance d =
     show dbl
     where
         km = convert d :: Quantity Rational [u| km |]
-        Flip rounded = dpRound 6 <$> Flip km
+        Flip rounded = dpRound 12 <$> Flip km
         dbl = fromRational' rounded :: Quantity Double [u| km |]
 
 unTaskDistanceAsKm
