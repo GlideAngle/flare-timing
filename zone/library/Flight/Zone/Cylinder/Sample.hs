@@ -60,15 +60,13 @@ newtype Tolerance a = Tolerance { unTolerance :: a } deriving (Eq, Ord, Show)
 data ZonePoint a
     = ZonePoint
         { sourceZone :: Zone a
-        -- ^ This is the zone that generated the point.
+        -- ^ The zone for which the point is on the edge.
         , point :: LatLng a [u| rad |]
         -- ^ A point on the edge of this zone.
         , radial :: QBearing a [u| rad |]
-        -- ^ A point on the edge of this zone with this bearing from
-        -- the origin.
+        -- ^ The point's bearing from the origin.
         , orbit :: QRadius a [u| m |]
-        -- ^ A point on the edge of this zone at this distance from the
-        -- origin.
+        -- ^ The point's distance from the origin.
         }
     deriving Eq
 
