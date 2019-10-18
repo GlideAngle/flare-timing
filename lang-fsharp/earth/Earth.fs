@@ -1,25 +1,23 @@
 ﻿module Earth
 
+open System
 open Units
-type Location = { Latitude : float<deg>; Longitude : float<deg> }
 
-let GreatCircleDistance<[<Measure>] 'u> (R : float<'u>) (p1 : Location) (p2 : Location) =
-    let degToRad (x : float<deg>) = System.Math.PI * x / 180.0<deg/rad>
+type LatLng = { Lat : float<deg>; Lng : float<deg> }
 
+let distance<[<Measure>] 'u> (R : float<'u>) (p1 : LatLng) (p2 : LatLng) : float<'u> =
     let sq x = x * x
     // take the sin of the half and square the result
-    let sinSqHf (a : float<rad>) = (System.Math.Sin >> sq) (a / 2.0<rad>)
-    let cos (a : float<deg>) = System.Math.Cos (degToRad a / 1.0<rad>)
+    let sinSqHf (a : float<rad>) = (Math.Sin >> sq) (a / 2.0<rad>)
+    let cos (a : float<deg>) = Math.Cos (degToRad a / 1.0<rad>)
 
-    let dLat = (p2.Latitude - p1.Latitude) |> degToRad
-    let dLon = (p2.Longitude - p1.Longitude) |> degToRad
+    let dLat = (p2.Lat - p1.Lat) |> degToRad
+    let dLon = (p2.Lng - p1.Lng) |> degToRad
 
-    let a = sinSqHf dLat + cos p1.Latitude * cos p2.Latitude * sinSqHf dLon
-    let c = 2.0 * System.Math.Atan2(System.Math.Sqrt(a), System.Math.Sqrt(1.0-a))
+    let a = sinSqHf dLat + cos p1.Lat * cos p2.Lat * sinSqHf dLon
+    let c = 2.0 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1.0 - a))
 
     R * c
-
-let GreatCircleDistanceOnEarth = GreatCircleDistance 6371.0<km>
 
 let xs =
     [|
@@ -31,8 +29,8 @@ let xs =
 for x in xs do
     match x with
     | [| xLat; xLng; yLat; yLng |] ->
-        let p1 = { Latitude = xLat * 1.0<deg>; Longitude = xLng * 1.0<deg> }
-        let p2 = { Latitude = yLat * 1.0<deg>; Longitude = yLng * 1.0<deg> }
-        let d = GreatCircleDistanceOnEarth p1 p2
+        let p1 = { Lat = xLat * 1.0<deg>; Lng = xLng * 1.0<deg> }
+        let p2 = { Lat = yLat * 1.0<deg>; Lng = yLng * 1.0<deg> }
+        let d = distance 6371.0<km> p1 p2
         printfn "%A" d
     | _ -> printfn "Bad input, expecting array of arrays, each inner array four elements."
