@@ -59,5 +59,5 @@ module DegMinSecTests =
 
     [<Fact>]
     let ``can convert dms to deg`` () =
-        Assert.Equal(toDeg <| DMS (0, 0, 0.0), 1.0)
+        Assert.Equal(toDeg <| DMS (0, 0, 0.0), 0.0)
         Assert.Equal(toDeg <| DMS (289, 30, 0.0), 289.5)
