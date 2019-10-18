@@ -38,3 +38,4 @@ bazel-*
 **/.vs/**
 **/bin/**
 **/obj/**
+lang-fsharp/packages

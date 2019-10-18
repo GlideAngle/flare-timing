@@ -3,6 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{0D26B82F-3938-403A-83D1-CC4F0F5AF210}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+	EndProjectSection
+EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "units", "units\units.fsproj", "{25F8EBE9-1964-4CCA-AD43-E958190827E7}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "earth", "earth\earth.fsproj", "{10682690-096C-45C4-8146-C930F42CDF9D}"
