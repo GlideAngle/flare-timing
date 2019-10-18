@@ -192,11 +192,17 @@ taskTrack excludeWaypoints tdm ss zsTask =
         ssLines = trackLines excludeWaypoints zsSpeedSection
         stopLines = trackLines excludeWaypoints zsStop
 
+-- TODO: Propagate Maybe result from costEastNorth.
+costEN :: (Real a, Fractional a) => Zone a -> Zone a -> PathDistance a
+costEN z0 z1 =
+    maybe (error "Can't get east north cost.") id
+    $ costEastNorth z0 z1
+
 -- NOTE: The projected distance is worked out from easting and northing, in the
 -- projected plane but he distance for each leg is measured on the sphere.
 goByProj :: Bool -> [Zone Double] -> Maybe ProjectedTrackLine
 goByProj excludeWaypoints zs = do
-    dEE <- fromZs $ distanceEdgeSphere costEastNorth zs
+    dEE <- fromZs $ distanceEdgeSphere costEN zs
 
     let projected = toTrackLine spanF excludeWaypoints dEE
     let ps = toPoint <$> waypoints projected
@@ -207,7 +213,7 @@ goByProj excludeWaypoints zs = do
             zipWith
                 (\ a b ->
                     edgesSum
-                    <$> distanceEdgeSphere costEastNorth [a, b])
+                    <$> distanceEdgeSphere costEN [a, b])
                 ps
                 (tail ps)
 
