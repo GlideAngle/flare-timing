@@ -2,8 +2,7 @@
 
 open System
 open Units
-
-type LatLng = { Lat : float<deg>; Lng : float<deg> }
+open LatLng
 
 let distance<[<Measure>] 'u> (R : float<'u>) (p1 : LatLng) (p2 : LatLng) : float<'u> =
     let sq x = x * x

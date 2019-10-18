@@ -12,6 +12,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "units", "units\units.fsproj
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "earth", "earth\earth.fsproj", "{10682690-096C-45C4-8146-C930F42CDF9D}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "latlng", "latlng\latlng.fsproj", "{4467D22C-200E-4A2E-A5D9-1C3D542D5793}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,5 +51,17 @@ Global
 		{10682690-096C-45C4-8146-C930F42CDF9D}.Release|x64.Build.0 = Release|Any CPU
 		{10682690-096C-45C4-8146-C930F42CDF9D}.Release|x86.ActiveCfg = Release|Any CPU
 		{10682690-096C-45C4-8146-C930F42CDF9D}.Release|x86.Build.0 = Release|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Debug|x64.Build.0 = Debug|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Debug|x86.Build.0 = Debug|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Release|x64.ActiveCfg = Release|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Release|x64.Build.0 = Release|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Release|x86.ActiveCfg = Release|Any CPU
+		{4467D22C-200E-4A2E-A5D9-1C3D542D5793}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
