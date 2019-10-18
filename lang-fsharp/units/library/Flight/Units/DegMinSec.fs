@@ -57,7 +57,8 @@ let toDeg ((DMS (deg, min, s)) as dms) : float =
 module DegMinSecTests =
     open Xunit
 
-    [<Fact>]
-    let ``can convert dms to deg`` () =
-        Assert.Equal(toDeg <| DMS (0, 0, 0.0), 0.0)
-        Assert.Equal(toDeg <| DMS (289, 30, 0.0), 289.5)
+    [<Theory>]
+    [<InlineData(0, 0, 0.0, 0.0)>]
+    [<InlineData(289, 30, 0.0, 289.5)>]
+    let ``can convert dms to deg`` deg min sec deg' =
+        Assert.Equal(toDeg <| DMS (deg, min, sec), deg')
