@@ -1,6 +1,6 @@
-[submodule "reflex-platform"]
-	path = lang-haskell/reflex-platform
-	url = https://github.com/BlockScope/reflex-platform.git
-[submodule "hcoord"]
+[submodule "lang-haskell/hcoord"]
 	path = lang-haskell/hcoord
 	url = https://github.com/blockscope/hcoord
+[submodule "lang-haskell/reflex-platform"]
+	path = lang-haskell/reflex-platform
+	url = https://github.com/BlockScope/reflex-platform.git
