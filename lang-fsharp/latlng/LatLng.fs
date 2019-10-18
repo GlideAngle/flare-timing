@@ -1,4 +1,4 @@
 ﻿module Flight.LatLng
-open Flight.Units
+open Flight.Units.Angle
 
 type LatLng = { Lat : float<deg>; Lng : float<deg> }

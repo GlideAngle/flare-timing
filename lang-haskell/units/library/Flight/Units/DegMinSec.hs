@@ -26,9 +26,9 @@ import Data.UnitsOfMeasure.Convert (Convertible)
 
 import Flight.Units.Angle (Angle(..))
 
-type DiffDMS = DMS -> DMS -> DMS
-
 newtype DMS = DMS (Int, Int, Double) deriving Eq
+
+type DiffDMS = DMS -> DMS -> DMS
 
 instance Show DMS where
     show = showDMS

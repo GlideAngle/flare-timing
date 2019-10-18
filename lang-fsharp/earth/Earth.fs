@@ -2,6 +2,7 @@
 
 open System
 open Flight.Units
+open Flight.Units.Angle
 open Flight.LatLng
 
 let distance<[<Measure>] 'u> (R : float<'u>) (p1 : LatLng) (p2 : LatLng) : float<'u> =
