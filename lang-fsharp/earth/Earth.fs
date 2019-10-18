@@ -1,8 +1,8 @@
-﻿module Earth
+﻿module Flight.Earth
 
 open System
-open Units
-open LatLng
+open Flight.Units
+open Flight.LatLng
 
 let distance<[<Measure>] 'u> (R : float<'u>) (p1 : LatLng) (p2 : LatLng) : float<'u> =
     let sq x = x * x
