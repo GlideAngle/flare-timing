@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 64de35dc8671d1d5997c09c0fa0b620eb664db9b9f1080bb57d9ae010e2c07bc
+-- hash: ac3dea0df12626cc4c08bf20754a47f80538e0d4253a5595b2c781b5a18aa6c8
 
 name:           flight-units
 version:        0.1.0
@@ -70,7 +70,8 @@ test-suite doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.10.1.0 && <5
+      QuickCheck
+    , base >=4.10.1.0 && <5
     , bifunctors
     , detour-via-sci
     , doctest

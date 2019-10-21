@@ -115,6 +115,16 @@ showDMS_ dms@(DMS (deg, min, sec)) =
 --
 -- >>> toDeg $ DMS (289, 30, 0)
 -- 289.5
+--
+-- prop> \d -> (toDeg $ DMS (d, 0, 0.0)) == fromIntegral d
+-- prop> \m -> (toDeg $ DMS (0, m, 0.0)) == (fromIntegral m) / 60.0
+-- prop> \s -> (toDeg $ DMS (0, 0, s)) == s / 3600.0
+--
+-- prop> \d m -> (toDeg $ DMS (d, m, 0.0)) == sign_ (fromIntegral d, fromIntegral m, 0.0) * ((fromIntegral $ abs d) + (fromIntegral $ abs m) / 60.0)
+-- prop> \d s -> (toDeg $ DMS (d, 0, s)) == sign_ (fromIntegral d, 0.0, s) * ((fromIntegral $ abs d) + abs s / 3600.0)
+-- prop> \m s -> (toDeg $ DMS (0, m, s)) == sign_ (0.0, fromIntegral m, s) * ((fromIntegral $ abs m) / 60.0 + abs s / 3600.0)
+--
+-- prop> \d m s -> (toDeg $ DMS (d, m, s)) == sign_ (fromIntegral d, fromIntegral m, s) * ((fromIntegral $ abs d) + (fromIntegral $ abs m) / 60.0 + abs s / 3600.0)
 toDeg :: DMS -> Double
 toDeg dms@(DMS (deg, min, s)) =
     signDMS dms * (abs d + abs m / 60 + abs s / 3600)
@@ -122,16 +132,20 @@ toDeg dms@(DMS (deg, min, s)) =
         d = fromIntegral deg
         m = fromIntegral min
 
+sign_ :: (Double, Double, Double) -> Double
+sign_ (d, m, s) =
+    if elem (-1) $ signum <$> [d, m, s] then -1 else 1
+
 signSymbolDMS :: DMS -> String
 signSymbolDMS dms =
     if signDMS dms < 0 then "-" else ""
 
 signDMS :: DMS -> Double
 signDMS (DMS (deg, min, s)) =
-    if elem (-1) $ signum <$> [d, m, s] then -1 else 1
+    sign_ (d, m, s)
     where
         d = fromIntegral deg
-        m = fromIntegral min 
+        m = fromIntegral min
 
 toQDeg :: DMS -> Quantity Double [u| deg |]
 toQDeg =
@@ -540,3 +554,6 @@ diffDMS180 y x = diffDMS (rotate (DMS (180, 0, 0)) y) x
 
 absDiffDMS180 :: DiffDMS
 absDiffDMS180 y x = absDiffDMS (rotate (DMS (180, 0, 0)) y) x
+
+-- $ setup
+-- >>> import Test.QuickCheck
