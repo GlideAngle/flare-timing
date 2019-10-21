@@ -1,9 +1,21 @@
 ﻿module Flight.Units.DegMinSec
 
 open System
+open Flight.Units.Angle
 
 type DMS =
     | DMS of deg : int * min : int * sec : float
+
+    /// 0 <= a <= 2π
+    static member Normalize (x : DMS) = x
+    /// -π <= a <= +π
+    static member PlusMinusPi (x : DMS) = x
+    /// -π/2 <= a <= +π/2
+    static member PlusMinusHalfPi (x : DMS) = Some x
+    static member Rotate (rotation : DMS) (x : DMS) = x
+    static member ToQuantity (x : DMS) = 1.0<rad>
+    static member FromQuantity (_ : float<rad>) = DMS (0, 0, 0.0)
+
     member x.Sign : int =
         match x with
         | DMS (deg, min, s) ->
@@ -51,14 +63,18 @@ type DMS =
 
 and DiffDMS = DMS -> DMS -> DMS
 
-let toDeg ((DMS (deg, min, s)) as dms) : float =
-    float dms.Sign * (float (abs deg) + float (abs min) / 60.0 + abs s / 3600.0)
-
 module DegMinSecTests =
     open Xunit
+    open Swensen.Unquote
+
+    let ToQuantity x =
+        match x with
+        | DMS (deg, min, s) as dms ->
+            float dms.Sign * (float (abs deg) + float (abs min) / 60.0 + abs s / 3600.0) * 1.0<deg>
+            |> degToRad
 
     [<Theory>]
     [<InlineData(0, 0, 0.0, 0.0)>]
     [<InlineData(289, 30, 0.0, 289.5)>]
-    let ``can convert dms to deg`` deg min sec deg' =
-        Assert.Equal(toDeg <| DMS (deg, min, sec), deg')
+    let ``convert dms to deg`` deg min sec deg' =
+        test <@ DMS (deg, min, sec) |> ToQuantity |> radToDeg = deg' @>
