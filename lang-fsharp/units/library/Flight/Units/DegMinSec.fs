@@ -1,20 +1,27 @@
 ﻿module Flight.Units.DegMinSec
 
 open System
+open FSharp.Data.UnitSystems.SI.UnitSymbols
 open Flight.Units.Angle
 open Flight.Units.Convert
 
-let sign' (d : float) : int = sign d |> function | 0 -> 1 | s -> s
+type DmsTuple = int<deg> * int<min> * float<s>
+
+let sign' (x : float) : int = sign x |> function | 0 -> 1 | y -> y
 
 /// If any of degree, minute or second are negative then -1 otherwise +1.
-let signDMS (d : int, m : int, s : float) : int =
-    if List.map sign [float d; float m; s] |> List.contains (-1) then -1 else 1
+let signDMS (d : int<deg>, m : int<min>, s : float<s>) : int =
+    if List.map sign [float d; float m; float s] |> List.contains (-1) then -1 else 1
 
-let toDeg ((d : int, m : int, s : float) as dms) : float<deg> =
-    float (signDMS dms) * (abs (float d) + abs (float m) / 60.0 + (abs s) / 3600.0)
-    |> (*) 1.0<deg>
+let toDeg ((d : int<deg>, m : int<min>, s : float<s>) as dms) : float<deg> =
+    let deg = float (abs d) * 1.0<deg>
+    let min = float (abs m) * 1.0<min>
+    let sec = abs s
+    float (signDMS dms) * (deg + convertMinToDeg min + convertSecToDeg sec)
 
-let fromDeg (d : float) =
+let toRad : DmsTuple -> float<rad> = toDeg >> convertDegToRad
+
+let fromDeg (d : float) : int * int * float =
     let dAbs = abs d
     let dd = int dAbs
     let dFrac = dAbs - float dd
@@ -36,10 +43,10 @@ type DMS =
 
     static member Rotate (rotation : DMS) (x : DMS) = x
 
-    static member ToRad (x : DMS) = 1.0<rad>
+    static member ToRad (DMS (d, m, s)) = toRad (d * 1<deg>, m * 1<min>, s * 1.0<s>) 
     static member FromRad (_ : float<rad>) = DMS (0, 0, 0.0)
 
-    static member ToDeg (x : DMS) = 1.0<deg>
+    static member ToDeg (DMS (d, m, s)) = toDeg (d * 1<deg>, m * 1<min>, s * 1.0<s>)
     static member FromDeg (d : float<deg>) = fromDeg (float d) |> DMS
 
     member x.Sign : int =
@@ -93,20 +100,13 @@ module DegMinSecTests =
     open Xunit
     open Swensen.Unquote
     open Hedgehog
-    open FSharp.Data.UnitSystems.SI.UnitSymbols
-
-    let ToQuantity x =
-        match x with
-        | DMS (deg, min, s) as dms ->
-            float dms.Sign * (float (abs deg) + float (abs min) / 60.0 + abs s / 3600.0) * 1.0<deg>
-            |> convertDegToRad
 
     [<Theory>]
     [<InlineData(0, 0, 0.0, 0.0)>]
     [<InlineData(1.0, 0, 0.0, 1.0)>]
     [<InlineData(289, 30, 0.0, 289.5)>]
     let ``convert dms to deg`` deg min sec deg' =
-        test <@ DMS (deg, min, sec) |> ToQuantity |> convertRadToDeg = deg' @>
+        test <@ DMS (deg, min, sec) |> DMS.ToDeg = deg' * 1.0<deg> @>
 
     [<Theory>]
     [<InlineData(0, 0, 0.0, 0.0)>]
@@ -122,26 +122,26 @@ module DegMinSecTests =
     [<Fact>]
     let ``deg via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
-            return (toDeg (d, 0, 0.0)) = float d * 1.0<deg>
+            return (toDeg (d * 1<deg>, 0<min>, 0.0<s>)) = float d * 1.0<deg>
         }
 
     [<Fact>]
     let ``min via DMS`` () = Property.check <| property {
             let! m = Gen.int <| Range.constantBounded ()
-            return (toDeg (0, m, 0.0)) = convertMinToDeg (float m * 1.0<min>)
+            return (toDeg (0<deg>, m * 1<min>, 0.0<s>)) = convertMinToDeg (float m * 1.0<min>)
         }
 
     [<Fact>]
     let ``sec via DMS`` () = Property.check <| property {
             let! sec = Gen.double <| Range.constantBounded ()
-            return (toDeg (0, 0, sec)) = convertSecToDeg (sec * 1.0<s>)
+            return (toDeg (0<deg>, 0<min>, sec * 1.0<s>)) = convertSecToDeg (sec * 1.0<s>)
         }
 
     [<Fact>]
     let ``deg min via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
             let! m = Gen.int <| Range.constantBounded ()
-            let dms = (d, m, 0.0)
+            let dms = (d * 1<deg>, m * 1<min>, 0.0<s>)
             let plusMinus = float (signDMS dms)
             let deg = float (abs d) * 1.0<deg>
             let min = float (abs m) * 1.0<min>
@@ -152,18 +152,18 @@ module DegMinSecTests =
     let ``deg sec via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
-            let dms = (d, 0, s)
+            let dms = (d * 1<deg>, 0<min>, s * 1.0<s>)
             let plusMinus = float (signDMS dms)
             let deg = float (abs d) * 1.0<deg>
             let sec = abs s * 1.0<s>
-            return (toDeg (d, 0, s)) = plusMinus * (deg + convertSecToDeg sec)
+            return (toDeg dms) = plusMinus * (deg + convertSecToDeg sec)
         }
 
     [<Fact>]
     let ``min sec via DMS`` () = Property.check <| property {
             let! m = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
-            let dms = (0, m, s)
+            let dms = (0<deg>, m * 1<min>, s * 1.0<s>)
             let plusMinus = float (signDMS dms)
             let sec = abs s * 1.0<s>
             let min = float (abs m) * 1.0<min>
@@ -175,7 +175,7 @@ module DegMinSecTests =
             let! d = Gen.int <| Range.constantBounded ()
             let! m = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
-            let dms = (d, m, s)
+            let dms = (d * 1<deg>, m * 1<min>, s * 1.0<s>)
             let deg = float (abs d) * 1.0<deg>
             let min = float (abs m) * 1.0<min>
             let sec = abs s * 1.0<s>
