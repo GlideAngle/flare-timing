@@ -3,11 +3,14 @@
 open System
 open Flight.Units.Angle
 
-let sign' d = sign d |> function | 0 -> 1 | s -> s
+let sign' (d : float) : int = sign d |> function | 0 -> 1 | s -> s
 
-let toDeg (d : int, m : int, s : float) : float =
-    let n = sign' (float d) * sign' (float m) * sign' s
-    float n * (abs (float d) + abs (float m) / 60.0 + (abs s) / 3600.0)
+/// If any of degree, minute or second are negative then -1 otherwise +1.
+let signDMS (d : int, m : int, s : float) : int =
+    if List.map sign [float d; float m; s] |> List.contains (-1) then -1 else 1
+
+let toDeg ((d : int, m : int, s : float) as dms) : float =
+    float (signDMS dms) * (abs (float d) + abs (float m) / 60.0 + (abs s) / 3600.0)
 
 let fromDeg (d : float) =
     let dAbs = abs d
@@ -135,21 +138,27 @@ module DegMinSecTests =
     let ``deg min via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
             let! m = Gen.int <| Range.constantBounded ()
-            return (toDeg (d, m, 0.0)) = float d + (float m) / 60.0
+            let dms = (d, m, 0.0)
+            let plusMinus = float (signDMS dms)
+            return (toDeg dms) = plusMinus * ((float (abs d)) + ((float (abs m)) / 60.0))
         }
 
     [<Fact>]
     let ``deg sec via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
-            return (toDeg (d, 0, s)) = float d + s / 3600.0
+            let dms = (d, 0, s)
+            let plusMinus = float (signDMS dms)
+            return (toDeg (d, 0, s)) = plusMinus * ((float (abs d)) + ((abs s) / 3600.0))
         }
 
     [<Fact>]
     let ``min sec via DMS`` () = Property.check <| property {
             let! m = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
-            return (toDeg (0, m, s)) = (float m) / 60.0 + s / 3600.0
+            let dms = (0, m, s)
+            let plusMinus = float (signDMS dms)
+            return (toDeg dms) = plusMinus * (float (abs m) / 60.0 + (abs s) / 3600.0)
         }
 
     [<Fact>]
@@ -157,5 +166,7 @@ module DegMinSecTests =
             let! d = Gen.int <| Range.constantBounded ()
             let! m = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
-            return (toDeg (d, m, s)) = float d + (float m) / 60.0 + s / 3600.0
+            let dms = (d, m, s)
+            let plusMinus = float (signDMS dms)
+            return (toDeg dms) = plusMinus * (float (abs d) + (float (abs m)) / 60.0 + (abs s) / 3600.0)
         }
