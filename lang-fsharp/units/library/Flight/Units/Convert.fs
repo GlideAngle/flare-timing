@@ -8,6 +8,8 @@ open Flight.Units.Angle
 let convertMinToSec (min : float<min>) : float<s> = min * 60.0<s/min>
 let convertDegToSec (deg : float<deg>) : float<s> = deg * 3600.0<s/deg>
 
+let convertDegToMin (deg : float<deg>) : float<min> = deg * 60.0<min/deg>
+
 let convertMinToDeg (min : float<min>) : float<deg> = min / 60.0<min/deg>
 let convertSecToDeg (s : float<s>) : float<deg> = s / 3600.0<s/deg>
 

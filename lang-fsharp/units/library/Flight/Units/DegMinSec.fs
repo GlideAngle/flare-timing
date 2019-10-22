@@ -21,17 +21,19 @@ let toDeg ((d : int<deg>, m : int<min>, s : float<s>) as dms) : float<deg> =
 
 let toRad : DmsTuple -> float<rad> = toDeg >> convertDegToRad
 
-let fromDeg (d : float) : int * int * float =
-    let dAbs = abs d
-    let dd = int dAbs
-    let dFrac = dAbs - float dd
-    let minsFrac = dFrac * 60.0
-    let mins = int (floor minsFrac)
-    let secs = (minsFrac - float mins) * 60.0
-    (sign' d * dd, int mins, secs)
+let fromDeg (d : float<deg>) : DmsTuple =
+    let dAbs : float<deg> = abs d
+    let dd : int<deg> = int dAbs * 1<deg>
+    let dFrac : float<deg> = dAbs - float dd * 1.0<deg>
+    let minsFrac : float<min> = convertDegToMin dFrac
+    let mins : float<min> = floor (float minsFrac) * 1.0<min>
+    let secs : float<s> = convertMinToSec (minsFrac - mins)
+    (sign' (float d) * dd, int mins * 1<min>, secs)
+
+let fromRad : float<rad> -> DmsTuple = convertRadToDeg >> fromDeg
 
 type DMS =
-    | DMS of deg : int * min : int * sec : float
+    | DMS of DmsTuple
 
     /// 0 <= a <= 2π
     static member Normalize (x : DMS) = x |> DMS.ToDeg |> (%) 360.0<deg> |> DMS.FromDeg
@@ -43,43 +45,42 @@ type DMS =
 
     static member Rotate (rotation : DMS) (x : DMS) = x
 
-    static member ToRad (DMS (d, m, s)) = toRad (d * 1<deg>, m * 1<min>, s * 1.0<s>) 
-    static member FromRad (_ : float<rad>) = DMS (0, 0, 0.0)
+    static member ToRad (DMS dms) = toRad dms
+    static member FromRad (r : float<rad>) = fromRad r |> DMS
 
-    static member ToDeg (DMS (d, m, s)) = toDeg (d * 1<deg>, m * 1<min>, s * 1.0<s>)
-    static member FromDeg (d : float<deg>) = fromDeg (float d) |> DMS
+    static member ToDeg (DMS dms) = toDeg dms
+    static member FromDeg (d : float<deg>) = fromDeg d |> DMS
 
     member x.Sign : int =
         match x with
-        | DMS (deg, min, s) ->
-            if List.map sign [float deg; float min; s] |> List.contains (-1) then -1 else 1
+        | DMS dms -> signDMS dms
 
     override x.ToString() =
         let signSymbolDMS (dms : DMS) : String =
             if x.Sign < 0 then "-" else ""
 
-        let secToShow (sec : float) : String =
-            let isec = Math.Floor sec
-            if isec = sec
+        let secToShow (sec : float<s>) : String =
+            let isec = Math.Floor (float sec)
+            if isec = float sec
                 then sprintf "%A" (abs (int isec))
                 else sprintf "%A" (abs sec)
 
-        let secToShow' (sec : float) : String =
-            let isec = Math.Floor sec
-            if isec = sec
-                then sprintf "%A" (Math.Abs (int isec))
-                else sprintf "%.6f" (Math.Abs sec)
+        let secToShow' (sec : float<s>) : String =
+            let isec = Math.Floor (float sec)
+            if isec = float sec
+                then sprintf "%A" (abs (int isec))
+                else sprintf "%.6f" (abs sec)
 
         match x with
-        | DMS (deg, 0, 0.0) -> string deg + "°"
-        | DMS (0, 0, sec) -> secToShow' sec + "''"
-        | DMS (deg, min, 0.0) as dms ->
+        | DMS (deg, 0<min>, 0.0<s>) -> string deg + "°"
+        | DMS (0<deg>, 0<min>, sec) -> secToShow' sec + "''"
+        | DMS (deg, min, 0.0<s>) as dms ->
             signSymbolDMS dms
             + string (abs deg)
             + "°"
             + string (abs min)
             + "'"
-        | DMS (0, min, sec) as dms ->
+        | DMS (0<deg>, min, sec) as dms ->
             signSymbolDMS dms
             + string (abs min)
             + "'"
