@@ -32,11 +32,19 @@ let fromDeg (d : float<deg>) : DmsTuple =
 
 let fromRad : float<rad> -> DmsTuple = convertRadToDeg >> fromDeg
 
+let normalize dms : DmsTuple =
+    let degPlusMinus = toDeg dms
+    let deg = abs degPlusMinus
+    let n = truncate (float deg / 360.0)
+    let d = deg - float n * 360.0<deg>
+    if degPlusMinus < 0.0<deg> then -d + 360.0<deg> else d
+    |> fromDeg
+
 type DMS =
     | DMS of DmsTuple
 
     /// 0 <= a <= 2π
-    static member Normalize (x : DMS) = x |> DMS.ToDeg |> (%) 360.0<deg> |> DMS.FromDeg
+    static member Normalize (DMS dms) = normalize dms |> DMS
 
     /// -π <= a <= +π
     static member PlusMinusPi (x : DMS) = x
@@ -129,6 +137,25 @@ module DegMinSecTests =
     [<InlineData(169.06666666622118, "169°3'59.99999839625161''")>]
     [<InlineData(-169.06666666622118, "-169°3'59.99999839625161''")>]
     let ``show from deg to dms`` deg s = test <@ DMS.FromDeg deg |> string = s @>
+
+    [<Theory>]
+    [<InlineData(0.0, "0°")>]
+    [<InlineData(180.0, "180°")>]
+    [<InlineData(1.0, "1°")>]
+    [<InlineData(-180.0, "180°")>]
+    [<InlineData(-1.0, "359°")>]
+    [<InlineData(190.93333333377882, "190°56'1.6037483874242753E-06''")>]
+    let ``show normalize deg`` deg s = test <@ DMS.FromDeg deg |> DMS.Normalize |> string = s @>
+
+    [<Theory>]
+    [<InlineData(0, 0, 0.0, "0°")>]
+    [<InlineData(180, 0, 0.0, "180°")>]
+    [<InlineData(1, 0, 0.0, "1°")>]
+    [<InlineData(-180, 0, 0.0, "180°")>]
+    [<InlineData(-1, 0, 0.0, "359°")>]
+    [<InlineData(190, 56, 1.6037483874242753e-6, "190°56'1.6037483874242753E-06''")>]
+    let ``show normalize dms`` deg min sec s =
+        test <@ DMS (deg, min, sec) |> DMS.Normalize |> string = s @>
 
     [<Fact>]
     let ``deg via DMS`` () = Property.check <| property {

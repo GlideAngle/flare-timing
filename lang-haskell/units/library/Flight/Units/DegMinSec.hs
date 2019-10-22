@@ -188,8 +188,23 @@ fromQ q' =
         (mm, mFrac) = divMod' (dFrac * 60.0) 1
 
 -- |
--- >>> fromQuantity [u| 169.06666666622118 deg |] :: DMS
+-- >>> normalize (fromQuantity [u| 169.06666666622118 deg |] :: DMS)
 -- 169°3'59.99999839625161''
+--
+-- >>> normalize (fromQuantity [u| 0.0 deg |] :: DMS)
+-- 0°
+--
+-- >>> normalize (fromQuantity [u| 180.0 deg |] :: DMS)
+-- 180°
+--
+-- >>> normalize (fromQuantity [u| 1.0 deg |] :: DMS)
+-- 1°
+--
+-- >>> normalize (fromQuantity [u| -180.0 deg |] :: DMS)
+-- 180°
+--
+-- >>> normalize (fromQuantity [u| -1.0 deg |] :: DMS)
+-- 359°
 --
 -- >>> normalize (DMS (0, 0, 0))
 -- 0°
