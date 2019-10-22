@@ -114,46 +114,46 @@ module DegMinSecTests =
     let ``from deg to (d, m, s)`` deg d m s = test <@ fromDeg deg = (d, m, s) @>
 
     [<Fact>]
-    let ``deg via DMS`` () = property {
+    let ``deg via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
             return (toDeg (d, 0, 0.0)) = float d
         }
 
     [<Fact>]
-    let ``min via DMS`` () = property {
+    let ``min via DMS`` () = Property.check <| property {
             let! m = Gen.int <| Range.constantBounded ()
             return (toDeg (0, m, 0.0)) = (float m) / 60.0
         }
 
     [<Fact>]
-    let ``sec via DMS`` () = property {
+    let ``sec via DMS`` () = Property.check <| property {
             let! s = Gen.double <| Range.constantBounded ()
             return (toDeg (0, 0, s)) = s / 3600.0
         }
 
     [<Fact>]
-    let ``deg min via DMS`` () = property {
+    let ``deg min via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
             let! m = Gen.int <| Range.constantBounded ()
             return (toDeg (d, m, 0.0)) = float d + (float m) / 60.0
         }
 
     [<Fact>]
-    let ``deg sec via DMS`` () = property {
+    let ``deg sec via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
             return (toDeg (d, 0, s)) = float d + s / 3600.0
         }
 
     [<Fact>]
-    let ``min sec via DMS`` () = property {
+    let ``min sec via DMS`` () = Property.check <| property {
             let! m = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
             return (toDeg (0, m, s)) = (float m) / 60.0 + s / 3600.0
         }
 
     [<Fact>]
-    let ``deg min sec via DMS`` () = property {
+    let ``deg min sec via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
             let! m = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
