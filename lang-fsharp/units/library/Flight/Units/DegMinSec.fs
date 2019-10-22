@@ -62,13 +62,15 @@ type DMS =
         let secToShow (sec : float<s>) : String =
             let isec = Math.Floor (float sec)
             if isec = float sec
-                then sprintf "%A" (abs (int isec))
-                else sprintf "%A" (abs sec)
+                // NOTE: Use String.Format instead of sprintf because it can do
+                // roundtrip formatting of floating point.
+                then String.Format("{0:R}", abs (int isec))
+                else String.Format("{0:R}", abs sec)
 
         let secToShow' (sec : float<s>) : String =
             let isec = Math.Floor (float sec)
             if isec = float sec
-                then sprintf "%A" (abs (int isec))
+                then String.Format("{0:R}", abs (int isec))
                 else sprintf "%.6f" (abs sec)
 
         match x with
@@ -119,6 +121,14 @@ module DegMinSecTests =
     [<InlineData(1.0, 1, 0, 0.0)>]
     [<InlineData(289.5, 289, 30, 0.0)>]
     let ``from deg to (d, m, s)`` deg d m s = test <@ fromDeg deg = (d, m, s) @>
+
+    [<Theory>]
+    [<InlineData(0.0, "0°")>]
+    [<InlineData(1.0, "1°")>]
+    [<InlineData(-1.0, "-1°")>]
+    [<InlineData(169.06666666622118, "169°3'59.99999839625161''")>]
+    [<InlineData(-169.06666666622118, "-169°3'59.99999839625161''")>]
+    let ``show from deg to dms`` deg s = test <@ DMS.FromDeg deg |> string = s @>
 
     [<Fact>]
     let ``deg via DMS`` () = Property.check <| property {
