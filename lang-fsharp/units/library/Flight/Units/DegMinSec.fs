@@ -139,6 +139,14 @@ module DegMinSecTests =
 
     [<Theory>]
     [<InlineData(0.0, "0°")>]
+    [<InlineData(1.0, "1°")>]
+    [<InlineData(-1.0, "359°")>]
+    [<InlineData(180.0, "180°")>]
+    [<InlineData(-180.0, "180°")>]
+    [<InlineData(-190.0, "170°")>]
+    [<InlineData(-170.0, "190°")>]
+    [<InlineData(-190.93544548, "169.06455452°")>]
+    [<InlineData(-169.06455452, "190.93544548°")>]
     let ``show normalize deg`` deg s = test <@ Deg (deg * 1.0<deg>) |> Deg.Normalize |> string = s @>
 
     [<Theory>]

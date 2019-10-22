@@ -46,6 +46,9 @@ class Angle a where
 -- >>> normalize [u| 1.0 deg |]
 -- [u| 1.0 deg |]
 --
+-- >>> normalize [u| -1.0 deg |]
+-- [u| 359.0 deg |]
+--
 -- >>> normalize [u| 180.0 deg |]
 -- [u| 180.0 deg |]
 --
