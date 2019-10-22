@@ -2,6 +2,7 @@
 
 open System
 open Flight.Units.Angle
+open Flight.Units.Convert
 
 let sign' (d : float) : int = sign d |> function | 0 -> 1 | s -> s
 
@@ -9,8 +10,9 @@ let sign' (d : float) : int = sign d |> function | 0 -> 1 | s -> s
 let signDMS (d : int, m : int, s : float) : int =
     if List.map sign [float d; float m; s] |> List.contains (-1) then -1 else 1
 
-let toDeg ((d : int, m : int, s : float) as dms) : float =
+let toDeg ((d : int, m : int, s : float) as dms) : float<deg> =
     float (signDMS dms) * (abs (float d) + abs (float m) / 60.0 + (abs s) / 3600.0)
+    |> (*) 1.0<deg>
 
 let fromDeg (d : float) =
     let dAbs = abs d
@@ -91,19 +93,20 @@ module DegMinSecTests =
     open Xunit
     open Swensen.Unquote
     open Hedgehog
+    open FSharp.Data.UnitSystems.SI.UnitSymbols
 
     let ToQuantity x =
         match x with
         | DMS (deg, min, s) as dms ->
             float dms.Sign * (float (abs deg) + float (abs min) / 60.0 + abs s / 3600.0) * 1.0<deg>
-            |> degToRad
+            |> convertDegToRad
 
     [<Theory>]
     [<InlineData(0, 0, 0.0, 0.0)>]
     [<InlineData(1.0, 0, 0.0, 1.0)>]
     [<InlineData(289, 30, 0.0, 289.5)>]
     let ``convert dms to deg`` deg min sec deg' =
-        test <@ DMS (deg, min, sec) |> ToQuantity |> radToDeg = deg' @>
+        test <@ DMS (deg, min, sec) |> ToQuantity |> convertRadToDeg = deg' @>
 
     [<Theory>]
     [<InlineData(0, 0, 0.0, 0.0)>]
@@ -119,19 +122,19 @@ module DegMinSecTests =
     [<Fact>]
     let ``deg via DMS`` () = Property.check <| property {
             let! d = Gen.int <| Range.constantBounded ()
-            return (toDeg (d, 0, 0.0)) = float d
+            return (toDeg (d, 0, 0.0)) = float d * 1.0<deg>
         }
 
     [<Fact>]
     let ``min via DMS`` () = Property.check <| property {
             let! m = Gen.int <| Range.constantBounded ()
-            return (toDeg (0, m, 0.0)) = (float m) / 60.0
+            return (toDeg (0, m, 0.0)) = convertMinToDeg (float m * 1.0<min>)
         }
 
     [<Fact>]
     let ``sec via DMS`` () = Property.check <| property {
-            let! s = Gen.double <| Range.constantBounded ()
-            return (toDeg (0, 0, s)) = s / 3600.0
+            let! sec = Gen.double <| Range.constantBounded ()
+            return (toDeg (0, 0, sec)) = convertSecToDeg (sec * 1.0<s>)
         }
 
     [<Fact>]
@@ -140,7 +143,9 @@ module DegMinSecTests =
             let! m = Gen.int <| Range.constantBounded ()
             let dms = (d, m, 0.0)
             let plusMinus = float (signDMS dms)
-            return (toDeg dms) = plusMinus * ((float (abs d)) + ((float (abs m)) / 60.0))
+            let deg = float (abs d) * 1.0<deg>
+            let min = float (abs m) * 1.0<min>
+            return (toDeg dms) = plusMinus * (deg + convertMinToDeg min)
         }
 
     [<Fact>]
@@ -149,7 +154,9 @@ module DegMinSecTests =
             let! s = Gen.double <| Range.constantBounded ()
             let dms = (d, 0, s)
             let plusMinus = float (signDMS dms)
-            return (toDeg (d, 0, s)) = plusMinus * ((float (abs d)) + ((abs s) / 3600.0))
+            let deg = float (abs d) * 1.0<deg>
+            let sec = abs s * 1.0<s>
+            return (toDeg (d, 0, s)) = plusMinus * (deg + convertSecToDeg sec)
         }
 
     [<Fact>]
@@ -158,7 +165,9 @@ module DegMinSecTests =
             let! s = Gen.double <| Range.constantBounded ()
             let dms = (0, m, s)
             let plusMinus = float (signDMS dms)
-            return (toDeg dms) = plusMinus * (float (abs m) / 60.0 + (abs s) / 3600.0)
+            let sec = abs s * 1.0<s>
+            let min = float (abs m) * 1.0<min>
+            return (toDeg dms) = plusMinus * (convertMinToDeg min + convertSecToDeg sec)
         }
 
     [<Fact>]
@@ -167,6 +176,9 @@ module DegMinSecTests =
             let! m = Gen.int <| Range.constantBounded ()
             let! s = Gen.double <| Range.constantBounded ()
             let dms = (d, m, s)
+            let deg = float (abs d) * 1.0<deg>
+            let min = float (abs m) * 1.0<min>
+            let sec = abs s * 1.0<s>
             let plusMinus = float (signDMS dms)
-            return (toDeg dms) = plusMinus * (float (abs d) + (float (abs m)) / 60.0 + (abs s) / 3600.0)
+            return (toDeg dms) = plusMinus * (deg + convertMinToDeg min + convertSecToDeg sec)
         }
