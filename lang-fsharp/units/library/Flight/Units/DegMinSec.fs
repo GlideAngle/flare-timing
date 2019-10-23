@@ -40,11 +40,32 @@ let normalizeDeg (degPlusMinus : float<deg>) : float<deg> =
 
 let normalizeDms : DmsTuple -> DmsTuple = toDeg >> normalizeDeg >> fromDeg
 
+let plusMinusPiDeg (degPlusMinus : float<deg>) : float<deg> =
+    let isEven x = x % 2 = 0
+    let deg = abs degPlusMinus
+    let n = truncate (float deg / 180.0)
+    let d = deg - float n * 180.0<deg>
+    let m = float (sign degPlusMinus)
+    match (n, d) with
+    | (a, 0.0<deg>) ->
+        if isEven (int a) then 0.0<deg> else m * 180.0<deg>
+    | (a, b) ->
+        (m * b) +
+            if isEven (int a) then 0.0<deg>
+            elif degPlusMinus >= 0.0<deg> then -180.0<deg>
+            else 180.0<deg>
+
+let plusMinusPiDms : DmsTuple -> DmsTuple = toDeg >> plusMinusPiDeg >> fromDeg
+
 type Deg =
     | Deg of float<deg>
 
     /// 0 <= a <= 2π
     static member Normalize (Deg d) : Deg = normalizeDeg d |> Deg
+
+    /// -π <= a <= +π
+    static member PlusMinusPi (Deg d) : Deg = plusMinusPiDeg d |> Deg
+
     override x.ToString() = let (Deg y) = x in String.Format("{0:R}°", y)
 
 type DMS =
@@ -54,7 +75,7 @@ type DMS =
     static member Normalize (DMS dms) : DMS = normalizeDms dms |> DMS
 
     /// -π <= a <= +π
-    static member PlusMinusPi (x : DMS) : DMS = x
+    static member PlusMinusPi (DMS dms) : DMS = plusMinusPiDms dms |> DMS
     /// -π/2 <= a <= +π/2
     static member PlusMinusHalfPi (x : DMS) : DMS option = Some x
 
@@ -148,6 +169,16 @@ module DegMinSecTests =
     [<InlineData(-190.93544548, "169.06455452°")>]
     [<InlineData(-169.06455452, "190.93544548°")>]
     let ``show normalize deg`` deg s = test <@ Deg (deg * 1.0<deg>) |> Deg.Normalize |> string = s @>
+
+    [<Theory>]
+    [<InlineData(0.0, "0°")>]
+    [<InlineData(90.0, "90°")>]
+    [<InlineData(-90.0, "-90°")>]
+    [<InlineData(180.0, "180°")>]
+    [<InlineData(-180.0, "-180°")>]
+    [<InlineData(181.0, "-179°")>]
+    [<InlineData(-181.0, "179°")>]
+    let ``show (-π, +π) deg`` deg s = test <@ Deg (deg * 1.0<deg>) |> Deg.PlusMinusPi |> string = s @>
 
     [<Theory>]
     [<InlineData(0.0, "0°")>]
