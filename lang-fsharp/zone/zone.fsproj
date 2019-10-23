@@ -4,14 +4,10 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="library/Flight/EarthDistanceSample.fs" />
-    <Compile Include="library/Flight/Earth/Sphere.fs" />
-    <Compile Include="library/Internal/Sphere.fs" />
+    <Compile Include="library/Flight/Zone/Radius.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\units\units.fsproj" />
-    <ProjectReference Include="..\latlng\latlng.fsproj" />
-    <ProjectReference Include="..\zone\zone.fsproj" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

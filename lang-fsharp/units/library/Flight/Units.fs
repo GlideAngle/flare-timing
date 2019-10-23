@@ -2,7 +2,11 @@
 
 open System
 
-// NOTE: The SI unit symbols s and m are already defined for us.
+// NOTE: The SI unit symbols s and m are already defined for us in
+// FSharp.Data.UnitSystems.SI
+
+[<Measure>]
+type m = FSharp.Data.UnitSystems.SI.UnitSymbols.m
 
 [<Measure>] type km
 [<Measure>] type mm
