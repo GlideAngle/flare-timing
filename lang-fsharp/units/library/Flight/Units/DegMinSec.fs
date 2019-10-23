@@ -41,6 +41,7 @@ let normalizeDeg (degPlusMinus : float<deg>) : float<deg> =
     elif degPlusMinus > 0.0<deg> then d
     else -d + 360.0<deg>
 
+let normalizeRad : float<rad> -> float<rad> = convertRadToDeg >> normalizeDeg >> convertDegToRad 
 let normalizeDms : DmsTuple -> DmsTuple = toDeg >> normalizeDeg >> fromDeg
 
 let plusMinusPiDeg (degPlusMinus : float<deg>) : float<deg> =
@@ -61,13 +62,37 @@ let plusMinusPiDeg (degPlusMinus : float<deg>) : float<deg> =
 let plusMinusHalfPiDeg : float<deg> -> float<deg> option =
     plusMinusPiDeg >> fun x -> if x < -90.0<deg> || x > 90.0<deg> then None else Some x
 
+let plusMinusPiRad : float<rad> -> float<rad> = convertRadToDeg >> plusMinusPiDeg >> convertDegToRad 
+let plusMinusHalfPiRad : float<rad> -> float<rad> option = convertRadToDeg >> plusMinusHalfPiDeg >> Option.map convertDegToRad 
+
 let plusMinusPiDms : DmsTuple -> DmsTuple = toDeg >> plusMinusPiDeg >> fromDeg
 let plusMinusHalfPiDms : DmsTuple -> DmsTuple option = toDeg >> plusMinusHalfPiDeg >> Option.map fromDeg
 
 let rotateDeg (rotation : float<deg>) (deg : float<deg>) : float<deg> = deg + rotation |> normalizeDeg
+let rotateRad (rotation : float<rad>) (r : float<rad>) : float<rad> = r + rotation |> normalizeRad
 
 let rotateDms (rotation : DmsTuple) (deg : DmsTuple) : DmsTuple =
     rotateDeg (toDeg rotation) (toDeg deg) |> fromDeg
+
+type Rad =
+    | Rad of float<rad>
+
+    /// 0 <= a <= 2π
+    static member Normalize (Rad r) : Rad = normalizeRad r |> Rad 
+
+    /// -π <= a <= +π
+    static member PlusMinusPi (Rad r) : Rad = plusMinusPiRad r |> Rad
+    /// -π/2 <= a <= +π/2
+    static member PlusMinusHalfPi (Rad r) : Rad option = plusMinusHalfPiRad r |> Option.map Rad 
+    static member Rotate (Rad rotation) (Rad r) : Rad = rotateRad rotation r |> Rad
+
+    static member ToRad (Rad r) : float<rad> = r
+    static member FromRad (r : float<rad>) : Rad = Rad r
+
+    static member ToDeg (Rad r) : float<deg> = convertRadToDeg r
+    static member FromDeg (d : float<deg>) : Rad = convertDegToRad d |> Rad
+
+    override x.ToString() = let (Rad y) = x in String.Format("{0:R} rad", y)
 
 type Deg =
     | Deg of float<deg>
