@@ -21,3 +21,14 @@ type DirectSolution<'a, 'α> = {y : 'a; ``α₂`` : 'α option}
 /// <param name="α₁">The azimuth at the departure point.</param>
 /// <param name="α₂">The azimuth at the arrival point.</param>
 type InverseSolution<'s, 'α> = {s : 's; ``α₁`` : 'α; ``α₂`` : 'α option}
+
+type IGeodesyProblems =
+    abstract member Direct<'a, 'α, 's>
+        : InverseProblem<'a>
+        -> InverseSolution<'s, 'α>
+        -> Option<DirectProblem<'a, 'α, 's> * DirectSolution<'a, 'α>>
+
+    abstract member Inverse<'a, 'α, 's>
+        : DirectProblem<'a, 'α, 's>
+        -> DirectSolution<'a, 'α>
+        -> Option<InverseProblem<'a> * InverseSolution<'s, 'α>>
