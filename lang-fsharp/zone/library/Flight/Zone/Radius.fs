@@ -1,6 +1,5 @@
 ﻿namespace Flight.Zone
 
-open System
 open Flight.Units
 open Flight.Units.Angle
 

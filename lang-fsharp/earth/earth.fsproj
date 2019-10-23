@@ -9,10 +9,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="library/Flight/Earth/Sphere.fs" />
-    <Compile Include="library/Internal/Sphere.fs" />
     <Compile Include="library/Flight/Earth/Ellipsoid.fs" />
-    <Compile Include="library/Flight/Geodesy/Problem.fs" />
-    <Compile Include="library/Flight/Geodesy/Solution.fs" />
+    <Compile Include="library/Flight/Geodesy.fs" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
