@@ -55,7 +55,11 @@ let plusMinusPiDeg (degPlusMinus : float<deg>) : float<deg> =
             elif degPlusMinus >= 0.0<deg> then -180.0<deg>
             else 180.0<deg>
 
+let plusMinusHalfPiDeg : float<deg> -> float<deg> option =
+    plusMinusPiDeg >> fun x -> if x < -90.0<deg> || x > 90.0<deg> then None else Some x
+
 let plusMinusPiDms : DmsTuple -> DmsTuple = toDeg >> plusMinusPiDeg >> fromDeg
+let plusMinusHalfPiDms : DmsTuple -> DmsTuple option = toDeg >> plusMinusHalfPiDeg >> Option.map fromDeg
 
 type Deg =
     | Deg of float<deg>
@@ -65,6 +69,8 @@ type Deg =
 
     /// -π <= a <= +π
     static member PlusMinusPi (Deg d) : Deg = plusMinusPiDeg d |> Deg
+    /// -π/2 <= a <= +π/2
+    static member PlusMinusHalfPi (Deg d) : Deg option = plusMinusHalfPiDeg d |> Option.map Deg
 
     override x.ToString() = let (Deg y) = x in String.Format("{0:R}°", y)
 
@@ -77,7 +83,7 @@ type DMS =
     /// -π <= a <= +π
     static member PlusMinusPi (DMS dms) : DMS = plusMinusPiDms dms |> DMS
     /// -π/2 <= a <= +π/2
-    static member PlusMinusHalfPi (x : DMS) : DMS option = Some x
+    static member PlusMinusHalfPi (DMS d) : DMS option = plusMinusHalfPiDms d |> Option.map DMS
 
     static member Rotate (rotation : DMS) (x : DMS) : DMS = x
 
@@ -179,6 +185,14 @@ module DegMinSecTests =
     [<InlineData(181.0, "-179°")>]
     [<InlineData(-181.0, "179°")>]
     let ``show (-π, +π) deg`` deg s = test <@ Deg (deg * 1.0<deg>) |> Deg.PlusMinusPi |> string = s @>
+
+    [<Theory>]
+    [<InlineData(0.0, "Some(0°)")>]
+    [<InlineData(90.0, "Some(90°)")>]
+    [<InlineData(-90.0, "Some(-90°)")>]
+    [<InlineData(91.0, "")>]
+    [<InlineData(-91.0, "")>]
+    let ``show (-π/2, +π/2) deg`` deg s = test <@ Deg (deg * 1.0<deg>) |> Deg.PlusMinusHalfPi |> string = s @>
 
     [<Theory>]
     [<InlineData(0.0, "0°")>]

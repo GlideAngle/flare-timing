@@ -88,6 +88,15 @@ class Angle a where
 -- >>> plusMinusPi [u| -181.0 deg |]
 -- [u| 179.0 deg |]
 --
+-- >>> plusMinusHalfPi [u| 0.0 deg |]
+-- Just [u| 0.0 deg |]
+--
+-- >>> plusMinusHalfPi [u| 90.0 deg |]
+-- Just [u| 90.0 deg |]
+--
+-- >>> plusMinusHalfPi [u| -90.0 deg |]
+-- Just [u| -90.0 deg |]
+--
 -- >>> plusMinusHalfPi [u| 91.0 deg |]
 -- Nothing
 --
