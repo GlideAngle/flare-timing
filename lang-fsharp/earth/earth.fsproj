@@ -4,8 +4,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="library/Flight/EarthDistanceSample.fs" />
     <Compile Include="library/Flight/Earth/Sphere.fs" />
+    <Compile Include="library/Flight/Geodesy/Problem.fs" />
     <Compile Include="library/Internal/Sphere.fs" />
   </ItemGroup>
   <ItemGroup>
