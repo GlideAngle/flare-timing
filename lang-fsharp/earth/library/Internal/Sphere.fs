@@ -26,3 +26,13 @@ let distance (x : LatLng) (y : LatLng) : TaskDistance =
     let (Radius rEarth) = earthRadius
     let radDist : float<1> = 2.0 * asin (sqrt (float (aOfHaversine x y)))
     radDist * rEarth |> TaskDistance
+
+module SphereTests =
+    open Xunit
+    open Hedgehog
+
+    [<Fact>]
+    let ``haversines is not negative`` () = Property.check <| property {
+            let! x = Gen.double <| Range.constantBounded ()
+            return haversine (x * 1.0<rad>) >= 0.0<rad>
+        }
