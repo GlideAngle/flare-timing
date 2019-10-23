@@ -57,36 +57,39 @@ module Solution =
         abstract member ArcLength : EarthMath * EarthModel -> SpanLatLng
 
         abstract member Inverse
-            : InverseProblem<LatLng>
+            : EarthMath * EarthModel
+            -> InverseProblem<LatLng>
             -> GeodeticInverse<InverseSolution<TaskDistance, float<rad>>>
 
         abstract member Direct
-            : DirectProblem<LatLng, TrueCourse, Radius>
+            : EarthMath * EarthModel
+            -> DirectProblem<LatLng, TrueCourse, Radius>
             -> GeodeticDirect<DirectSolution<LatLng, TrueCourse>>
 
-let azimuthFwd : EarthMath * EarthModel -> AzimuthFwd = function
-    | (Haversines, EarthAsSphere r) -> H.azimuthFwd
+let azimuthFwd : EarthMath * EarthModel -> AzimuthFwd =
+    function
+    | (Haversines, EarthAsSphere _) -> H.azimuthFwd
 
-let azimuthRev : EarthMath * EarthModel -> AzimuthRev = function
-    | (Haversines, EarthAsSphere r) -> H.azimuthRev
+let azimuthRev : EarthMath * EarthModel -> AzimuthRev =
+    function
+    | (Haversines, EarthAsSphere _) -> H.azimuthRev
 
-let arcLength : EarthMath * EarthModel -> SpanLatLng = function
-    | (Haversines, EarthAsSphere r) -> H.distance
+let arcLength : EarthMath * EarthModel -> SpanLatLng =
+    function
+    | (Haversines, EarthAsSphere _) -> H.distance
+
+let inverse : EarthMath * EarthModel -> InverseProblem<LatLng> -> GeodeticInverse<InverseSolution<TaskDistance,float<rad>>> = 
+    function
+    | (Haversines, EarthAsSphere _) -> failwith "Not Implemented"
+
+let direct : EarthMath * EarthModel -> DirectProblem<LatLng, TrueCourse, Radius> -> GeodeticDirect<DirectSolution<LatLng, TrueCourse>> = 
+    function
+    | (Haversines, EarthAsSphere _) -> failwith "Not Implemented"
 
 type GeodesySolutions () =
     interface IGeodesySolutions with
-        member x.AzimuthFwd (math : EarthMath, model : EarthModel) : AzimuthRev = 
-            azimuthFwd (math, model)
-
-        member x.AzimuthRev (math : EarthMath, model : EarthModel) : AzimuthRev = 
-            azimuthRev (math, model)
-
-        member x.ArcLength (math : EarthMath, model : EarthModel) : SpanLatLng = 
-            arcLength (math, model)
-
-        member x.Direct(_ : DirectProblem<LatLng,TrueCourse,Radius>): GeodeticDirect<DirectSolution<LatLng,TrueCourse>> = 
-            failwith "Not Implemented"
-
-        member x.Inverse(_ : InverseProblem<LatLng>): GeodeticInverse<InverseSolution<TaskDistance,float<rad>>> = 
-            failwith "Not Implemented"
-
+        member x.AzimuthFwd (math, model) = azimuthFwd (math, model)
+        member x.AzimuthRev (math, model) = azimuthRev (math, model)
+        member x.ArcLength (math, model) = arcLength (math, model)
+        member x.Direct (math, model) prob = direct (math, model) prob
+        member x.Inverse (math, model) prob = inverse (math, model) prob
