@@ -1,20 +1,24 @@
 ﻿module rec Flight.Geodesy
 
-open Flight.Units.Angle
-open Flight.LatLng
 open Flight.Zone
 open Flight.Earth.Ellipsoid
 open Flight.Geodesy.Math
 open Flight.Geodesy.Problem
-open Flight.Geodesy.Solution
-module H = Flight.Earth.Sphere.Internal
 
 module Math =
-    open Flight.Zone
+    open Flight.Units.Angle
+    open Flight.Units.DegMinSec
 
-    type EarthMath = Haversines
-    type EarthModel = EarthAsSphere of Radius
+    type EarthMath
+        = Haversines
+        | Vincenty
 
+    type EarthModel
+        = EarthAsSphere of Radius
+        | EarthAsEllipsoid of Ellipsoid
+
+    let normalizeLng (lng : float<rad>) : float<rad> =
+        Rad lng |> Rad.PlusMinusPi |> Rad.ToRad
 
 module Problem =
     /// <summary>The inputs for the direct or forward problem in geodesy.</summary>
@@ -49,47 +53,3 @@ module Problem =
             : DirectProblem<'a, 'α, 's>
             -> DirectSolution<'a, 'α>
             -> Option<InverseProblem<'a> * InverseSolution<'s, 'α>>
-
-module Solution =
-    type IGeodesySolutions =
-        abstract member AzimuthFwd : EarthMath * EarthModel -> AzimuthFwd
-        abstract member AzimuthRev : EarthMath * EarthModel -> AzimuthRev
-        abstract member ArcLength : EarthMath * EarthModel -> SpanLatLng
-
-        abstract member Inverse
-            : EarthMath * EarthModel
-            -> InverseProblem<LatLng>
-            -> GeodeticInverse<InverseSolution<TaskDistance, float<rad>>>
-
-        abstract member Direct
-            : EarthMath * EarthModel
-            -> DirectProblem<LatLng, TrueCourse, Radius>
-            -> GeodeticDirect<DirectSolution<LatLng, TrueCourse>>
-
-let azimuthFwd : EarthMath * EarthModel -> AzimuthFwd =
-    function
-    | (Haversines, EarthAsSphere _) -> H.azimuthFwd
-
-let azimuthRev : EarthMath * EarthModel -> AzimuthRev =
-    function
-    | (Haversines, EarthAsSphere _) -> H.azimuthRev
-
-let arcLength : EarthMath * EarthModel -> SpanLatLng =
-    function
-    | (Haversines, EarthAsSphere _) -> H.distance
-
-let inverse : EarthMath * EarthModel -> InverseProblem<LatLng> -> GeodeticInverse<InverseSolution<TaskDistance,float<rad>>> = 
-    function
-    | (Haversines, EarthAsSphere _) -> failwith "Not Implemented"
-
-let direct : EarthMath * EarthModel -> DirectProblem<LatLng, TrueCourse, Radius> -> GeodeticDirect<DirectSolution<LatLng, TrueCourse>> = 
-    function
-    | (Haversines, EarthAsSphere _) -> failwith "Not Implemented"
-
-type GeodesySolutions () =
-    interface IGeodesySolutions with
-        member x.AzimuthFwd (math, model) = azimuthFwd (math, model)
-        member x.AzimuthRev (math, model) = azimuthRev (math, model)
-        member x.ArcLength (math, model) = arcLength (math, model)
-        member x.Direct (math, model) prob = direct (math, model) prob
-        member x.Inverse (math, model) prob = inverse (math, model) prob

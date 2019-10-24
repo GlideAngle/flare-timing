@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
@@ -11,6 +11,8 @@
     <Compile Include="library/Flight/Earth/Sphere.fs" />
     <Compile Include="library/Flight/Earth/Ellipsoid.fs" />
     <Compile Include="library/Flight/Geodesy.fs" />
+    <Compile Include="library/Flight/Vincenty.fs" />
+    <Compile Include="library/Flight/GeodesySolution.fs" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

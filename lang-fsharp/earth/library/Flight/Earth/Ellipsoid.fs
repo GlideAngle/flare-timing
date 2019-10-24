@@ -2,6 +2,8 @@
 
 open Flight.Units
 open Flight.Zone
+open Flight.LatLng
+open Flight.Units.DegMinSec
 
 type Andoyer
     = AndoyerLambert
@@ -10,7 +12,16 @@ type Andoyer
 
 /// <param name="equatorialR">Equatorial radius or semi-major axis of the ellipsoid.</param>
 /// <param name="recipF">Reciprocal of the flattening of the ellipsoid or 1/ƒ.</param>
-type Ellipsoid = {equatorialR : Radius; recipF : float}
+type Ellipsoid =
+    {equatorialR : Radius; recipF : float}
+    member e.Flattening
+        with get () =
+            1.0 / e.recipF
+
+    /// The polar radius or semi-minor axis of the ellipsoid.
+    member e.PolarRadius
+        with get () =
+            let (Radius r) = e.equatorialR in Radius <| r * (1.0 - e.Flattening)
 
 type AbnormalLatLng
     = LatUnder
@@ -92,3 +103,6 @@ let clarke =
 // Paul Delorme, Bedford Institute of Oceanography, Dartmouth, Nova Scotia,
 // Canada, 11978.
 let bedfordClarke = {clarke with recipF = 294.9786986}
+
+type GeodeticAccuracy = GeodeticAccuracy of double
+let defaultGeodeticAccuracy = GeodeticAccuracy 0.000_000_000_001
