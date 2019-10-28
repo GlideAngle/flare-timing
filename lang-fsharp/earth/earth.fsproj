@@ -11,6 +11,7 @@
     <Compile Include="library/Flight/Earth/Sphere.fs" />
     <Compile Include="library/Flight/Earth/Ellipsoid.fs" />
     <Compile Include="library/Flight/Geodesy.fs" />
+    <Compile Include="library/Flight/Haversine.fs" />
     <Compile Include="library/Flight/Vincenty.fs" />
     <Compile Include="library/Flight/GeodesySolution.fs" />
   </ItemGroup>

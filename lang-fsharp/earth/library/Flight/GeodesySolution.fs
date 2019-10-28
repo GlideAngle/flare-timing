@@ -6,8 +6,9 @@ open Flight.Zone
 open Flight.Earth.Ellipsoid
 open Flight.Geodesy.Math
 open Flight.Geodesy.Problem
-module H = Flight.Earth.Sphere.Internal
-module V = Flight.Vincenty
+module H = Earth.Sphere
+module H = Haversine
+module V = Vincenty
 
 type IGeodesySolutions =
     abstract member AzimuthFwd : EarthMath * EarthModel -> AzimuthFwd
@@ -44,7 +45,7 @@ let arcLength : EarthMath * EarthModel -> SpanLatLng =
 
 let inverse : EarthMath * EarthModel -> InverseProblem<LatLng> -> GeodeticInverse<InverseSolution<TaskDistance,float<rad>>> = 
     function
-    | (Haversines, EarthAsSphere _) -> failwith "Not Implemented"
+    | (Haversines, EarthAsSphere _) -> H.inverse >> GeodeticInverse.GeodeticInverse
     | (Vincenty, EarthAsEllipsoid e) -> V.inverse e defaultGeodeticAccuracy
     | _ -> failwith "Inverse solution, unexpected combination of Earth math and model."
 
