@@ -228,3 +228,20 @@ module VincentyTests =
             | (Some xLL', Some yLL') ->
                 return distance wgs84 xLL' yLL' >= TaskDistance (0.0<m>)
         }
+
+    [<Theory>]
+    [<InlineData(55, 45,  0.0, 0, 0, 0.0, -33, 26, 0.0, 108, 13, 0.0, 14110526.170)>]
+    let ``distances from Vincenty's 1975 paper``
+        xLatDeg xLatMin xLatSec
+        xLngDeg xLngMin xLngSec
+        yLatDeg yLatMin yLatSec
+        yLngDeg yLngMin yLngSec
+        d =
+
+        let xLat = DMS (xLatDeg, xLatMin, xLatSec) |> DMS.ToRad
+        let xLng = DMS (xLngDeg, xLngMin, xLngSec) |> DMS.ToRad
+        let yLat = DMS (yLatDeg, yLatMin, yLatSec) |> DMS.ToRad
+        let yLng = DMS (yLngDeg, yLngMin, yLngSec) |> DMS.ToRad
+        let d' = d * 1.0<m>
+
+        test <@ let (TaskDistance d'') = distance bessel {Lat = xLat; Lng = xLng} {Lat = yLat; Lng = yLng} in abs (d'' - d') < 0.001<m> @>
