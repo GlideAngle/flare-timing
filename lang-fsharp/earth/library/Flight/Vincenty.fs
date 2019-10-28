@@ -3,6 +3,7 @@
 open System
 open Flight.Units
 open Flight.Units.Angle
+open Flight.Units.Convert
 open Flight.Zone
 open Flight.LatLng
 open Flight.Units.DegMinSec
@@ -180,9 +181,31 @@ module VincentyTests =
     [<InlineData(0.0, Double.MaxValue, 0.0, 0.0)>]
     [<InlineData(0.0, 0.0, Double.MinValue, 0.0)>]
     [<InlineData(0.0, 0.0, 0.0, Double.MaxValue)>]
-    let ``distance is not negative`` xLat xLng yLat yLng =
+    let ``distance is not negative given latlng pairs in radians`` xLat xLng yLat yLng =
         let xLL = mkLatLng (xLat * 1.0<rad>) (xLng * 1.0<rad>)
         let yLL = mkLatLng (yLat * 1.0<rad>) (yLng * 1.0<rad>)
+        match (xLL, yLL) with
+        | (None, _) | (_, None) ->
+            test <@ true @>
+
+        | (Some xLL', Some yLL') ->
+            test <@ distance wgs84 xLL' yLL' >= TaskDistance (0.0<m>) @>
+
+    [<Theory>]
+    [<InlineData(0.0, 0.0, 0.0, 0.0)>]
+    [<InlineData(90.0, 0.0, -90.0, 0.0)>]
+    [<InlineData(-90.0, 0.0, 90.0, 0.0)>]
+    [<InlineData(0.0, 180.0, 0.0, 0.0)>]
+    [<InlineData(0.0, -180.0, 0.0, 0.0)>]
+    [<InlineData(0.0, 0.0, 0.0, 180.0)>]
+    [<InlineData(0.0, 0.0, 0.0, -180.0)>]
+    [<InlineData(0.0, 180.0, 0.0, 180.0)>]
+    [<InlineData(0.0, 180.0, 0.0, -180.0)>]
+    [<InlineData(0.0, -180.0, 0.0, 180.0)>]
+    [<InlineData(0.0, -180.0, 0.0, -180.0)>]
+    let ``distance is not negative given latlng pairs in degrees`` xLat xLng yLat yLng =
+        let xLL = mkLatLng (convertDegToRad <| xLat * 1.0<deg>) (convertDegToRad <| xLng * 1.0<deg>)
+        let yLL = mkLatLng (convertDegToRad <| yLat * 1.0<deg>) (convertDegToRad <| yLng * 1.0<deg>)
         match (xLL, yLL) with
         | (None, _) | (_, None) ->
             test <@ true @>
