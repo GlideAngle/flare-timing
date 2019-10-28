@@ -128,6 +128,7 @@ type DMS =
 
     static member Rotate (DMS rotation) (DMS d) : DMS = rotateDms rotation d |> DMS
 
+    static member FromTuple (d : int, m : int, s : float) : DMS = DMS (d * 1<deg>, m * 1<min>, s * 1.0<s>)
     static member ToRad (DMS dms) : float<rad> = toRad dms
     static member FromRad (r : float<rad>) : DMS = fromRad r |> DMS
 

@@ -171,6 +171,7 @@ let azimuthRev e x y =
     | GeodeticInverse x -> x.``α₂``
 
 module VincentyTests =
+    open FSharp.Reflection
     open Xunit
     open Swensen.Unquote
     open Hedgehog
@@ -229,19 +230,18 @@ module VincentyTests =
                 return distance wgs84 xLL' yLL' >= TaskDistance (0.0<m>)
         }
 
-    [<Theory>]
-    [<InlineData(55, 45,  0.0, 0, 0, 0.0, -33, 26, 0.0, 108, 13, 0.0, 14110526.170)>]
-    let ``distances from Vincenty's 1975 paper``
-        xLatDeg xLatMin xLatSec
-        xLngDeg xLngMin xLngSec
-        yLatDeg yLatMin yLatSec
-        yLngDeg yLngMin yLngSec
-        d =
+    // SEE: https://stackoverflow.com/a/50905110/1503186
+    type VincentyData () =
+        static member Data =
+            [
+                ( {Lat = DMS.FromTuple (55, 45, 0.0) |> DMS.ToRad; Lng = DMS.FromTuple (0, 0, 0.0) |> DMS.ToRad}
+                , {Lat = DMS.FromTuple (-33, 26, 0.0) |> DMS.ToRad; Lng = DMS.FromTuple (108, 13, 0.0) |> DMS.ToRad}
+                , 14110526.170<m>
+                , bessel
+                )
+            ]
+            |> Seq.map FSharpValue.GetTupleFields
 
-        let xLat = DMS (xLatDeg, xLatMin, xLatSec) |> DMS.ToRad
-        let xLng = DMS (xLngDeg, xLngMin, xLngSec) |> DMS.ToRad
-        let yLat = DMS (yLatDeg, yLatMin, yLatSec) |> DMS.ToRad
-        let yLng = DMS (yLngDeg, yLngMin, yLngSec) |> DMS.ToRad
-        let d' = d * 1.0<m>
-
-        test <@ let (TaskDistance d'') = distance bessel {Lat = xLat; Lng = xLng} {Lat = yLat; Lng = yLng} in abs (d'' - d') < 0.001<m> @>
+    [<Theory; MemberData("Data", MemberType = typeof<VincentyData>)>]
+    let ``distances from Vincenty's 1975 paper`` (x, y, d, e) =
+        test <@ let (TaskDistance d') = distance e x y in abs (d' - d) < 0.001<m> @>
