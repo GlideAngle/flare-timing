@@ -46,7 +46,28 @@ let azimuthRev x y =
     azimuthFwd y x
     |> Option.map (fun az -> let (Rad x) = Rad.Rotate (Math.PI * 1.0<rad> |> Rad) (Rad az) in x)
 
-let rec inverse
+let direct 
+    (prob : DirectProblem<LatLng, TrueCourse, Radius>)
+    : DirectSolution<LatLng, TrueCourse> =
+    let ``_Φ₁`` = float prob.x.Lat
+    let ``_L₁`` = float prob.x.Lng
+    let ``α₁`` = let (TrueCourse x) = prob.``α₁`` in float x
+    let (Radius earthR) = earthRadius
+    let (Radius d) = prob.s
+    let dR = d / earthR
+
+    // SEE: https://www.movable-type.co.uk/scripts/latlong.html
+    let ``_Φ₂`` = asin (sin ``_Φ₁`` * cos(dR) + cos ``_Φ₁`` * sin (dR) * cos ``α₁``)
+    let ``_L₂`` = ``_L₁`` + atan2 (sin ``α₁`` * sin (dR) * cos ``_Φ₁``) (cos (dR) - sin ``_Φ₁`` * sin ``_Φ₂``)
+    let y = {Lat = ``_Φ₂`` * 1.0<rad>; Lng = ``_L₂`` * 1.0<rad>}
+
+    { y = y
+    ; ``α₂`` =
+        azimuthFwd y prob.x
+        |> Option.map (Rad.FromRad >> Rad.Rotate (Rad <| Math.PI * 1.0<rad>) >> Rad.Normalize >> Rad.ToRad >> TrueCourse)
+    }
+
+let inverse
     ({ x = {Lat = ``_Φ₁``; Lng = ``_L₁``} as x; y = {Lat = ``_Φ₂``; Lng = ``_L₂``} as y} : InverseProblem<LatLng>)
     : InverseSolution<TaskDistance,float<rad>> =
     { s = distance x y
@@ -54,7 +75,7 @@ let rec inverse
     ; ``α₂`` = azimuthRev x y
     }
 
-module SphereTests =
+module HaversineTests =
     open Xunit
     open Hedgehog
 

@@ -51,7 +51,7 @@ let inverse : EarthMath * EarthModel -> InverseProblem<LatLng> -> GeodeticInvers
 
 let direct : EarthMath * EarthModel -> DirectProblem<LatLng, TrueCourse, Radius> -> GeodeticDirect<DirectSolution<LatLng, TrueCourse>> = 
     function
-    | (Haversines, EarthAsSphere _) -> failwith "Not Implemented"
+    | (Haversines, EarthAsSphere _) -> H.direct >> GeodeticDirect.GeodeticDirect
     | (Vincenty, EarthAsEllipsoid e) -> failwith "Not Implemented"
     | _ -> failwith "Direct solution, unexpected combination of Earth math and model."
 
