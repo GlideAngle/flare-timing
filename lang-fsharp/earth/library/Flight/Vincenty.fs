@@ -168,3 +168,40 @@ let azimuthRev e x y =
     | GeodeticInverseAntipodal -> None
     | GeodeticInverseAbnormal _ -> None
     | GeodeticInverse x -> x.``α₂``
+
+module VincentyTests =
+    open Xunit
+    open Swensen.Unquote
+    open Hedgehog
+
+    [<Theory>]
+    [<InlineData(0.0, 0.0, 0.0, 0.0)>]
+    [<InlineData(Double.MinValue, 0.0, 0.0, 0.0)>]
+    [<InlineData(0.0, Double.MaxValue, 0.0, 0.0)>]
+    [<InlineData(0.0, 0.0, Double.MinValue, 0.0)>]
+    [<InlineData(0.0, 0.0, 0.0, Double.MaxValue)>]
+    let ``distance is not negative`` xLat xLng yLat yLng =
+        let xLL = mkLatLng (xLat * 1.0<rad>) (xLng * 1.0<rad>)
+        let yLL = mkLatLng (yLat * 1.0<rad>) (yLng * 1.0<rad>)
+        match (xLL, yLL) with
+        | (None, _) | (_, None) ->
+            test <@ true @>
+
+        | (Some xLL', Some yLL') ->
+            test <@ distance wgs84 xLL' yLL' >= TaskDistance (0.0<m>) @>
+
+    [<Fact>]
+    let ``distance is not negative forall latlng pairs`` () = Property.check <| property {
+            let! xLat = Gen.double <| Range.constantBounded ()
+            let! xLng = Gen.double <| Range.constantBounded ()
+            let! yLat = Gen.double <| Range.constantBounded ()
+            let! yLng = Gen.double <| Range.constantBounded ()
+            let xLL = mkLatLng (xLat * 1.0<rad>) (xLng * 1.0<rad>)
+            let yLL = mkLatLng (yLat * 1.0<rad>) (yLng * 1.0<rad>)
+            match (xLL, yLL) with
+            | (None, _) | (_, None) ->
+                return true
+
+            | (Some xLL', Some yLL') ->
+                return distance wgs84 xLL' yLL' >= TaskDistance (0.0<m>)
+        }

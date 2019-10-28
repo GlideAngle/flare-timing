@@ -45,6 +45,7 @@ let normalizeRad : float<rad> -> float<rad> = convertRadToDeg >> normalizeDeg >>
 let normalizeDms : DmsTuple -> DmsTuple = toDeg >> normalizeDeg >> fromDeg
 
 let plusMinusPiDeg (degPlusMinus : float<deg>) : float<deg> =
+    if Double.IsNaN (float degPlusMinus) then degPlusMinus else
     let isEven x = x % 2 = 0
     let deg = abs degPlusMinus
     let n = truncate (float deg / 180.0)
@@ -81,7 +82,7 @@ type Rad =
     static member Normalize (Rad r) : Rad = normalizeRad r |> Rad 
 
     /// -π <= a <= +π
-    static member PlusMinusPi (Rad r) : Rad = plusMinusPiRad r |> Rad
+    static member PlusMinusPi (Rad r) : Rad = normalizeRad r |> plusMinusPiRad |> Rad
     /// -π/2 <= a <= +π/2
     static member PlusMinusHalfPi (Rad r) : Rad option = plusMinusHalfPiRad r |> Option.map Rad 
     static member Rotate (Rad rotation) (Rad r) : Rad = rotateRad rotation r |> Rad
