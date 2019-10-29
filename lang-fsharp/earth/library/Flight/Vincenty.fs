@@ -132,7 +132,6 @@ and distanceUnchecked ellipsoid prob : GeodeticInverse<InverseSolution<TaskDista
     else inverse ellipsoid defaultGeodeticAccuracy prob
 
 let distance e (x : LatLng) (y : LatLng) =
-    // fromMaybe (error msg) $ do
     let {Lat = qx} = x
     let {Lat = qy} = y
     let {Lat = xLat; Lng = xLng} = x
