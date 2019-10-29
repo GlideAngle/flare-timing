@@ -294,7 +294,7 @@ module VincentyTests =
         test <@ let (TaskDistance d') = distance e x y in abs (d' - d) < t @>
 
     [<Theory; MemberData("AzimuthFwdData", MemberType = typeof<VincentyData>)>]
-    let ``forward erazimuth from Vincenty's 1975 paper`` (e, x, y, az, t) =
+    let ``forward azimuth from Vincenty's 1975 paper`` (e, x, y, az, t) =
         test <@ azimuthFwd e x y |> function | None -> true | Some az' -> abs (az' - az) < t @>
 
     [<Theory; MemberData("AzimuthRevData", MemberType = typeof<VincentyData>)>]
