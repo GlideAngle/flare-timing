@@ -157,13 +157,13 @@ let distance e (x : LatLng) (y : LatLng) =
         | GeodeticInverseAbnormal _ -> tooFar
         | GeodeticInverse x -> x.s
 
-let azimuthFwd e x y =
+let azimuthFwd (e : Ellipsoid) (x : LatLng) (y : LatLng) : float<rad> option =
     match distanceUnchecked e {x = x; y = y} with
     | GeodeticInverseAntipodal -> None
     | GeodeticInverseAbnormal _ -> None
     | GeodeticInverse x -> Some x.``α₁``
 
-let azimuthRev e x y =
+let azimuthRev (e : Ellipsoid) (x : LatLng) (y : LatLng) : float<rad> option =
     match distanceUnchecked e {x = x; y = y} with
     | GeodeticInverseAntipodal -> None
     | GeodeticInverseAbnormal _ -> None
@@ -171,6 +171,7 @@ let azimuthRev e x y =
 
 module VincentyTests =
     open FSharp.Reflection
+    open FSharp.Data.UnitSystems.SI.UnitSymbols
     open Xunit
     open Swensen.Unquote
     open Hedgehog
@@ -231,37 +232,54 @@ module VincentyTests =
 
     // SEE: https://stackoverflow.com/a/50905110/1503186
     type VincentyData () =
-        static member Data =
-            let xys =
-                    [ ((( 55, 45,  0.0), (  0,  0,  0.0)), ((-33, 26,  0.0), (108, 13,  0.0)))
-                    ; ((( 37, 19, 54.95367), (  0,  0,  0.0)), (( 26,  7, 42.83946), ( 41, 28, 35.50729)))
-                    ; ((( 35, 16, 11.24862), (  0,  0,  0.0)), (( 67, 22, 14.77638), (137, 47, 28.31435)))
-                    ; (((  1,  0,  0.0), (  0,  0,  0.0)), (( 0, -59, 53.83076), (179, 17, 48.02997)))
-                    ; (((  1,  0,  0.0), (  0,  0,  0.0)), ((  1,  1, 15.18952), (179, 46, 17.84244)))
-                    ]
-                    |> List.map (fun ((xLat, xLng), (yLat, yLng)) ->
-                        (
-                            { Lat = DMS.FromTuple xLat |> DMS.ToRad
-                            ; Lng = DMS.FromTuple xLng |> DMS.ToRad
-                            }
-                        ,
-                            { Lat = DMS.FromTuple yLat |> DMS.ToRad
-                            ; Lng = DMS.FromTuple yLng |> DMS.ToRad
-                            }
-                        ))
+        static let xys =
+                [ ((( 55, 45,  0.0), (  0,  0,  0.0)), ((-33, 26,  0.0), (108, 13,  0.0)))
+                ; ((( 37, 19, 54.95367), (  0,  0,  0.0)), (( 26,  7, 42.83946), ( 41, 28, 35.50729)))
+                ; ((( 35, 16, 11.24862), (  0,  0,  0.0)), (( 67, 22, 14.77638), (137, 47, 28.31435)))
+                ; (((  1,  0,  0.0), (  0,  0,  0.0)), (( 0, -59, 53.83076), (179, 17, 48.02997)))
+                ; (((  1,  0,  0.0), (  0,  0,  0.0)), ((  1,  1, 15.18952), (179, 46, 17.84244)))
+                ]
+                |> List.map (fun ((xLat, xLng), (yLat, yLng)) ->
+                    (
+                        { Lat = DMS.FromTuple xLat |> DMS.ToRad
+                        ; Lng = DMS.FromTuple xLng |> DMS.ToRad
+                        }
+                    ,
+                        { Lat = DMS.FromTuple yLat |> DMS.ToRad
+                        ; Lng = DMS.FromTuple yLng |> DMS.ToRad
+                        }
+                    ))
 
-            let es = bessel :: List.replicate 4 hayford
-            let ds =
-                    [ 14110526.170<m>
-                    ; 4085966.703<m>
-                    ; 8084823.839<m>
-                    ; 19960000.000<m>
-                    ; 19780006.5584<m>
-                    ]
+        static let es = bessel :: List.replicate 4 hayford
+        static let ds =
+                [ 14110526.170<m>
+                ; 4085966.703<m>
+                ; 8084823.839<m>
+                ; 19960000.000<m>
+                ; 19780006.5584<m>
+                ]
 
-            List.map3 (fun (x, y) d e -> (x, y, d, e, 0.001<m>)) xys ds es
+        static let fwdAzimuths : float<rad> list =
+                [ ( 96, 36,  8.79960)
+                ; ( 95, 27, 59.63089)
+                ; ( 15, 44, 23.74850)
+                ; ( 89,  0,  0.0)
+                ; (  4, 59, 59.99995)
+                ]
+                |> List.map (DMS.FromTuple >> DMS.ToRad)
+
+        static member DistanceData : seq<obj[]>=
+            List.map3 (fun e (x, y) d -> (e, x, y, d, 0.001<m>)) es xys ds
             |> Seq.map FSharpValue.GetTupleFields
 
-    [<Theory; MemberData("Data", MemberType = typeof<VincentyData>)>]
-    let ``distances from Vincenty's 1975 paper`` (x, y, d, e, t) =
+        static member AzimuthFwdData : seq<obj[]>=
+            List.map3 (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 0.016667<s>) |> DMS.ToRad)) es xys fwdAzimuths
+            |> Seq.map FSharpValue.GetTupleFields
+
+    [<Theory; MemberData("DistanceData", MemberType = typeof<VincentyData>)>]
+    let ``distances from Vincenty's 1975 paper`` (e, x, y, d, t) =
         test <@ let (TaskDistance d') = distance e x y in abs (d' - d) < t @>
+
+    [<Theory; MemberData("AzimuthFwdData", MemberType = typeof<VincentyData>)>]
+    let ``azimuth from Vincenty's 1975 paper`` (e, x, y, az, t) =
+        test <@ azimuthFwd e x y |> function | None -> true | Some az' -> abs (az' - az) < t @>
