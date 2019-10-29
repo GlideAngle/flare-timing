@@ -233,72 +233,34 @@ module VincentyTests =
     // SEE: https://stackoverflow.com/a/50905110/1503186
     type VincentyData () =
         static member Data =
-            [
-                (
-                    { Lat = DMS.FromTuple ( 55, 45,  0.0) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (  0,  0,  0.0) |> DMS.ToRad
-                    }
-                ,
-                    { Lat = DMS.FromTuple (-33, 26,  0.0) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (108, 13,  0.0) |> DMS.ToRad
-                    }
-                , 14110526.170<m>
-                , bessel
-                , 0.001<m>
-                )
-            ;
-                (
-                    { Lat = DMS.FromTuple ( 37, 19, 54.95367) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (  0,  0,  0.0) |> DMS.ToRad
-                    }
-                ,
-                    { Lat = DMS.FromTuple ( 26,  7, 42.83946) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple ( 41, 28, 35.50729) |> DMS.ToRad
-                    }
-                , 4085966.703<m>
-                , hayford
-                , 0.001<m>
-                )
-            ;
-                (
-                    { Lat = DMS.FromTuple ( 35, 16, 11.24862) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (  0,  0,  0.0) |> DMS.ToRad
-                    }
-                ,
-                    { Lat = DMS.FromTuple ( 67, 22, 14.77638) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (137, 47, 28.31435) |> DMS.ToRad
-                    }
-                , 8084823.839<m>
-                , hayford
-                , 0.001<m>
-                )
-            ;
-                (
-                    { Lat = DMS.FromTuple (  1,  0,  0.0) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (  0,  0,  0.0) |> DMS.ToRad
-                    }
-                ,
-                    { Lat = DMS.FromTuple ( 0, -59, 53.83076) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (179, 17, 48.02997) |> DMS.ToRad
-                    }
-                , 19960000.000<m>
-                , hayford
-                , 0.001<m>
-                )
-            ;
-                (
-                    { Lat = DMS.FromTuple (  1,  0,  0.0) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (  0,  0,  0.0) |> DMS.ToRad
-                    }
-                ,
-                    { Lat = DMS.FromTuple (  1,  1, 15.18952) |> DMS.ToRad
-                    ; Lng = DMS.FromTuple (179, 46, 17.84244) |> DMS.ToRad
-                    }
-                , 19780006.5584<m>
-                , hayford
-                , 0.001<m>
-                )
-            ]
+            let xys =
+                    [ ((( 55, 45,  0.0), (  0,  0,  0.0)), ((-33, 26,  0.0), (108, 13,  0.0)))
+                    ; ((( 37, 19, 54.95367), (  0,  0,  0.0)), (( 26,  7, 42.83946), ( 41, 28, 35.50729)))
+                    ; ((( 35, 16, 11.24862), (  0,  0,  0.0)), (( 67, 22, 14.77638), (137, 47, 28.31435)))
+                    ; (((  1,  0,  0.0), (  0,  0,  0.0)), (( 0, -59, 53.83076), (179, 17, 48.02997)))
+                    ; (((  1,  0,  0.0), (  0,  0,  0.0)), ((  1,  1, 15.18952), (179, 46, 17.84244)))
+                    ]
+                    |> List.map (fun ((xLat, xLng), (yLat, yLng)) ->
+                        (
+                            { Lat = DMS.FromTuple xLat |> DMS.ToRad
+                            ; Lng = DMS.FromTuple xLng |> DMS.ToRad
+                            }
+                        ,
+                            { Lat = DMS.FromTuple yLat |> DMS.ToRad
+                            ; Lng = DMS.FromTuple yLng |> DMS.ToRad
+                            }
+                        ))
+
+            let es = bessel :: List.replicate 4 hayford
+            let ds =
+                    [ 14110526.170<m>
+                    ; 4085966.703<m>
+                    ; 8084823.839<m>
+                    ; 19960000.000<m>
+                    ; 19780006.5584<m>
+                    ]
+
+            List.map3 (fun (x, y) d e -> (x, y, d, e, 0.001<m>)) xys ds es
             |> Seq.map FSharpValue.GetTupleFields
 
     [<Theory; MemberData("Data", MemberType = typeof<VincentyData>)>]
