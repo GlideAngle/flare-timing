@@ -268,6 +268,15 @@ module VincentyTests =
                 ]
                 |> List.map (DMS.FromTuple >> DMS.ToRad)
 
+        static let revAzimuths : float<rad> list =
+                [ (137, 52, 22.01454)
+                ; (118,  5, 58.96161)
+                ; (144, 55, 39.92147)
+                ; ( 91,  0,  6.11733)
+                ; (174, 59, 59.88481)
+                ]
+                |> List.map (DMS.FromTuple >> DMS.ToRad)
+
         static member DistanceData : seq<obj[]>=
             List.map3 (fun e (x, y) d -> (e, x, y, d, 0.001<m>)) es xys ds
             |> Seq.map FSharpValue.GetTupleFields
@@ -276,10 +285,18 @@ module VincentyTests =
             List.map3 (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 0.016667<s>) |> DMS.ToRad)) es xys fwdAzimuths
             |> Seq.map FSharpValue.GetTupleFields
 
+        static member AzimuthRevData : seq<obj[]>=
+            List.map3 (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 0.016667<s>) |> DMS.ToRad)) es xys revAzimuths
+            |> Seq.map FSharpValue.GetTupleFields
+
     [<Theory; MemberData("DistanceData", MemberType = typeof<VincentyData>)>]
     let ``distances from Vincenty's 1975 paper`` (e, x, y, d, t) =
         test <@ let (TaskDistance d') = distance e x y in abs (d' - d) < t @>
 
     [<Theory; MemberData("AzimuthFwdData", MemberType = typeof<VincentyData>)>]
-    let ``azimuth from Vincenty's 1975 paper`` (e, x, y, az, t) =
+    let ``forward erazimuth from Vincenty's 1975 paper`` (e, x, y, az, t) =
         test <@ azimuthFwd e x y |> function | None -> true | Some az' -> abs (az' - az) < t @>
+
+    [<Theory; MemberData("AzimuthRevData", MemberType = typeof<VincentyData>)>]
+    let ``reverse azimuth from Vincenty's 1975 paper`` (e, x, y, az, t) =
+        test <@ azimuthRev e x y |> function | None -> true | Some az' -> abs (az' - az) < t @>
