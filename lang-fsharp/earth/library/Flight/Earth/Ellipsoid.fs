@@ -2,8 +2,6 @@
 
 open Flight.Units
 open Flight.Zone
-open Flight.LatLng
-open Flight.Units.DegMinSec
 
 type Andoyer
     = AndoyerLambert
@@ -22,6 +20,10 @@ type Ellipsoid =
     member e.PolarRadius
         with get () =
             let (Radius r) = e.equatorialR in Radius <| r * (1.0 - e.Flattening)
+
+    override e.ToString() =
+        let (Radius r) = e.equatorialR
+        System.String.Format("R={0:R}, 1/ƒ={1:R}", r, e.recipF)
 
 type AbnormalLatLng
     = LatUnder
@@ -101,8 +103,16 @@ let clarke =
 
 // The ellipsoid used in Evaluation Direct and Inverse Geodetic Algorithms, by
 // Paul Delorme, Bedford Institute of Oceanography, Dartmouth, Nova Scotia,
-// Canada, 11978.
+// Canada, 1978.
 let bedfordClarke = {clarke with recipF = 294.9786986}
 
 type GeodeticAccuracy = GeodeticAccuracy of double
 let defaultGeodeticAccuracy = GeodeticAccuracy 0.000_000_000_001
+
+module EllipsoidTests =
+    open Xunit
+    open Swensen.Unquote
+
+    [<Fact>]
+    let ``ellipsoid Bedford Clarke prints`` () =
+        test <@ bedfordClarke |> string = "R=6378206.4, 1/ƒ=294.9786986" @>
