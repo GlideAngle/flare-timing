@@ -41,7 +41,7 @@ let normalizeDeg (degPlusMinus : float<deg>) : float<deg> =
     elif degPlusMinus > 0.0<deg> then d
     else -d + 360.0<deg>
 
-let normalizeRad : float<rad> -> float<rad> = convertRadToDeg >> normalizeDeg >> convertDegToRad 
+let normalizeRad : float<rad> -> float<rad> = convertRadToDeg >> normalizeDeg >> convertDegToRad
 let normalizeDms : DmsTuple -> DmsTuple = toDeg >> normalizeDeg >> fromDeg
 
 let plusMinusPiDeg (degPlusMinus : float<deg>) : float<deg> =
@@ -63,7 +63,7 @@ let plusMinusPiDeg (degPlusMinus : float<deg>) : float<deg> =
 let plusMinusHalfPiDeg : float<deg> -> float<deg> option =
     plusMinusPiDeg >> fun x -> if x < -90.0<deg> || x > 90.0<deg> then None else Some x
 
-let plusMinusPiRad : float<rad> -> float<rad> = convertRadToDeg >> plusMinusPiDeg >> convertDegToRad 
+let plusMinusPiRad : float<rad> -> float<rad> = convertRadToDeg >> plusMinusPiDeg >> convertDegToRad
 let plusMinusHalfPiRad : float<rad> -> float<rad> option = convertRadToDeg >> plusMinusHalfPiDeg >> Option.map convertDegToRad 
 
 let plusMinusPiDms : DmsTuple -> DmsTuple = toDeg >> plusMinusPiDeg >> fromDeg

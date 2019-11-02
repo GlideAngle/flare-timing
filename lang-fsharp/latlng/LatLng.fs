@@ -10,6 +10,10 @@ type LatLng =
     override x.ToString() =
         let f = DMS.FromRad >> string
         sprintf "(%s, %s)" (f x.Lat) (f x.Lng)
+    static member FromDMS(lat : DMS, lng : DMS) : LatLng =
+        { Lat = DMS.ToRad lat
+        ; Lng = DMS.ToRad lng
+        }
 
 type TaskDistance = TaskDistance of float<m>
 
