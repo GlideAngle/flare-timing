@@ -5,7 +5,12 @@ open Flight.Units
 open Flight.Units.Angle
 open Flight.Units.DegMinSec
 
-type LatLng = {Lat : float<rad>; Lng : float<rad>}
+type LatLng =
+    {Lat : float<rad>; Lng : float<rad>}
+    override x.ToString() =
+        let f = DMS.FromRad >> string
+        sprintf "(%s, %s)" (f x.Lat) (f x.Lng)
+
 type TaskDistance = TaskDistance of float<m>
 
 /// A function for measuring the distance between two points given as latitude
