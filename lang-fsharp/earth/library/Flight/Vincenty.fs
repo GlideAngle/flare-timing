@@ -483,6 +483,64 @@ module VincentyTests =
 
                     (x, y))
 
+        // The pairs of pairs of angles being the ACIC points for the direct
+        // solution.
+        static let ysACIC : (DMS * DMS) list =
+                [ ((10, 43, 39.078), (-18,  0,  0.000))
+                ; ((40, 43, 28.790), (-18,  0,  0.000))
+                ; ((70, 43, 16.379), (-18,  0,  0.000))
+
+                ; ((10, 30, 50.479), (-17, 28, 48.777))
+                ; ((40, 30, 37.757), (-17, 19, 43.280))
+                ; ((70, 30, 12.925), (-16, 28, 22.844))
+
+                ; (( 9, 59, 57.087), (-17, 15, 57.926))
+                ; ((39, 59, 46.211), (-17,  3, 27.942))
+                ; ((69, 59, 15.149), (-15, 53, 37.449))
+
+                ; (( 9, 38,  8.260), (-17, 21, 54.407))
+                ; ((39, 31, 54.913), (-18, 43,  1.027))
+                ; ((70, 42, 35.533), (-18, 22, 43.683))
+
+                ; ((14, 21, 52.456), (-18,  0,  0.000))
+                ; ((44, 20, 47.740), (-18,  0,  0.000))
+                ; ((74, 19, 35.289), (-18,  0,  0.000))
+
+                ; ((13,  4, 12.564), (-14, 51, 13.283))
+                ; ((43,  0,  0.556), (-13, 48, 49.111))
+                ; ((72, 47, 48.242), ( -7, 36, 58.487))
+
+                ; (( 9, 58, 15.192), (-13, 35, 48.467))
+                ; ((39, 51, 44.295), (-12, 21, 14.090))
+                ; ((69, 33, 22.562), ( -5, 32,  1.822))
+
+                ; ((17, 16, 24.286), (-18,  0,  0.000))
+                ; ((47, 14, 32.867), (-18,  0,  0.000))
+                ; ((77, 12, 35.253), (-18,  0,  0.000))
+
+                ; ((15,  5, 43.367), (-12, 42, 50.044))
+                ; ((44, 54, 28.506), (-10, 47, 43.884))
+                ; ((74, 17,  5.184), (  1,  6, 51.561))
+
+                ; (( 9, 55,  9.138), (-10, 39, 43.554))
+                ; ((39, 37,  6.613), ( -8, 36, 43.277))
+                ; ((68, 47, 25.009), (  2, 17, 23.583))
+
+                ; ((53, 32,  0.497), (-18,  0,  0.000))
+                ; ((83, 20,  1.540), (-18,  0,  0.000))
+                ; ((66, 45, 22.460), (162,  0,  0.000))
+
+                ; ((37, 18, 49.295), ( 19, 34,  7.117))
+                ; ((57,  6,  0.851), ( 45,  8, 40.841))
+                ; ((58, 13,  5.486), ( 95,  2, 29.439))
+
+                ; (( 7, 14,  5.521), ( 25, 48, 13.908))
+                ; ((27, 49, 42.130), ( 32, 54, 13.184))
+                ; ((43,  7, 36.475), ( 52,  1,  0.626))
+                ]
+                |> List.map (fun (yLat, yLng) ->
+                    (DMS.FromTuple yLat, DMS.FromTuple yLng))
+
         static let es = List.replicate 39 bedfordClarke
 
         // The expected distances for the inverse solution from ACIC
@@ -593,6 +651,15 @@ module VincentyTests =
             List.map3 (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 30.0<s>) |> DMS.ToRad)) es xys fwdAzimuths
             |> Seq.map FSharpValue.GetTupleFields
 
+        static member DirectDistanceData : seq<obj[]>=
+            let eds = List.zip es ds
+            let xys' = List.zip xys ysACIC
+            List.map3
+                (fun (e, d) ((x, _), y) azFwd ->
+                    (e, x, d, azFwd, y, 1.0<m>))
+                eds xys' fwdAzimuths
+            |> Seq.map FSharpValue.GetTupleFields
+
         static member DirectAzimuthRevData : seq<obj[]>=
             let eds = List.zip es ds
             let azs = List.zip fwdAzimuths revAzimuths
@@ -619,6 +686,22 @@ module VincentyTests =
             |> Option.map (fun az' -> abs (az' - azRad))
 
         test <@ f e x y |> function | None -> true | Some d -> d < t @>
+
+    [<Theory; MemberData("DirectDistanceData", MemberType = typeof<Bedford1978>)>]
+    let ``direct solution distance from Bedford's 1978 paper`` (e, x, d, az, y, t) =
+        let f e x az y : float<m> option =
+            let azRad = DMS.ToRad az
+            let x' = LatLng.FromDMS x
+            let y' = LatLng.FromDMS y
+
+            (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azRad; s = Radius d})
+            |> (function
+                | GeodeticDirect soln ->
+                    let (TaskDistance d') = distance e y' soln.y
+                    Some <| abs d'
+                | _ -> None)
+
+        test <@ f e x az y |> function | None -> true | Some d -> d < t @>
 
     [<Theory; MemberData("DirectAzimuthRevData", MemberType = typeof<Bedford1978>)>]
     let ``direct solution reverse azimuth from Bedford's 1978 paper`` (e, x, d, az, azBack, t) =
