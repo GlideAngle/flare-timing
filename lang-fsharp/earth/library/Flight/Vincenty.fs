@@ -10,8 +10,125 @@ open Flight.Units.DegMinSec
 open Flight.Earth.Ellipsoid
 open Flight.Geodesy
 open Flight.Geodesy.Problem
+open Flight.Earth.Math
 
 let tooFar = TaskDistance 20000000.0<m>
+
+let auxLat (f : float) : float -> float = atan << (fun x -> (1.0 - f) * x) << tan
+
+let rec iterateVincenty
+    accuracy
+    _A
+    _B
+    s
+    b
+    σ1
+    σ =
+    let (GeodeticAccuracy tolerance) = accuracy
+    let (cos2σm, ``cos²2σm``) = cos2 cos σ1 σ
+    let sinσ = sin σ
+    let cosσ = cos σ
+    let ``sin²σ`` = sinσ * sinσ
+
+    let _Δσ =
+            _B * sinσ *
+                (cos2σm + _B / 4.0 *
+                    (cosσ * (-1.0 + 2.0 * ``cos²2σm``)
+                    - _B / 6.0
+                    * cos2σm
+                    * (-3.0 + 4.0 * ``sin²σ``)
+                    * (-3.0 + 4.0 * ``cos²2σm``)
+                    )
+                )
+
+    let σ' = s / b * _A + _Δσ
+    if abs (σ - σ') < tolerance
+        then σ
+        else
+            iterateVincenty accuracy _A _B s b σ1 σ'
+
+// The solution to the direct geodesy problem with input latitude rejected
+// outside the range -90° .. 90° and longitude normalized to -180° .. 180°.
+let rec direct
+    (e : Ellipsoid)
+    (a : GeodeticAccuracy)
+    ({x = {Lat = xLat; Lng = xLng}; ``α₁`` = TrueCourse qTC} as p : DirectProblem<LatLng, TrueCourse, Radius>)
+    : GeodeticDirect<DirectSolution<LatLng, TrueCourse>> =
+
+    match Rad.PlusMinusHalfPi (Rad xLat) with
+    | None ->
+        failwith
+        <| sprintf
+                "Latitude of %s is outside -90° .. 90° range"
+                (string <| DMS.FromRad xLat)
+
+    | Some (Rad nLat) ->
+        let (Rad nLng) = Rad.PlusMinusPi (Rad xLng)
+        let xNorm = {Lat = nLat; Lng = nLng}
+
+        let (Rad nTC) = Rad.Normalize (Rad qTC)
+        let tcNorm = TrueCourse nTC
+
+        directUnchecked e a {p with x = xNorm; ``α₁`` = tcNorm}
+
+// The solution to the direct geodesy problem with input latitude unchecked and
+// longitude not normalized.
+and directUnchecked
+    (ellipsoid : Ellipsoid)
+    (accuracy : GeodeticAccuracy)
+    (prob : DirectProblem<LatLng, TrueCourse, Radius>)
+    : GeodeticDirect<DirectSolution<LatLng,TrueCourse>> =
+    let
+        { x = {Lat = _Φ1; Lng = _L1}
+        ; ``α₁`` = TrueCourse α1
+        ; s = Radius s
+        } = prob
+
+    let (Radius a) = ellipsoid.equatorialR
+    let (Radius b) = ellipsoid.PolarRadius
+    let f = ellipsoid.Flattening
+
+    // Initial setup
+    let _U1 = auxLat f (float _Φ1)
+    let σ1 = atan2 (tan _U1) (cos (float α1))
+    let sinα = cos _U1 * sin (float α1)
+    let ``sin²α`` = sinα * sinα
+    let ``cos²α`` = 1.0 - ``sin²α``
+
+    let ``a²`` = a * a
+    let ``b²`` = b * b
+    let ``u²`` = ``cos²α`` * (``a²`` - ``b²``) / ``b²``
+
+    let _A = 1.0 + ``u²`` / 16384.0 * (4096.0 + ``u²`` * (-768.0 + ``u²`` * (320.0 - 175.0 * ``u²``)))
+    let _B = ``u²`` / 1024.0 * (256.0 + ``u²`` * (-128.0 + ``u²`` * (74.0 - 47.0 * ``u²``)))
+
+    // Solution
+    let σ = iterateVincenty accuracy _A _B s b σ1 (s / (b * _A))
+    let sinσ = sin σ
+    let cosσ = cos σ
+    let cosα1 = cos (float α1)
+    let sinU1 = sin _U1
+    let cosU1 = cos _U1
+    let v = sinU1 * cosσ + cosU1 * sinσ * cosα1
+    let j = sinU1 * sinσ - cosU1 * cosσ * cosα1
+    let w = (1.0 - f) * sqrt (``sin²α`` + j * j)
+    let _Φ2 = atan2 v w * 1.0<rad>
+    let λ = atan2 (sinσ * sin (float α1)) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
+    let _C = f / 16.0 * ``cos²α`` * (4.0 - 3.0 * ``cos²α``)
+
+    let (cos2σm, ``cos²2σm``) = cos2 cos σ1 σ
+    let y = cos (2.0 * cos2σm + _C * cosσ * (-1.0 + 2.0 * ``cos²2σm``))
+    let x = σ + _C * sinσ * y
+    let _L = λ * (1.0 - _C) * f * sinα * x
+
+    let _L2 = _L * 1.0<rad> + _L1
+
+    GeodeticDirect
+        { y = {Lat = _Φ2; Lng = _L2}
+        ; ``α₂`` =
+            (sinα / (-j)) * 1.0<rad>
+            |> (Rad.FromRad >> Rad.Normalize >> Rad.ToRad >> TrueCourse >> Some)
+        }
 
 let rec inverse
     (ellipsoid : Ellipsoid)
@@ -23,9 +140,8 @@ let rec inverse
     let (Radius b) = ellipsoid.PolarRadius
     let f = ellipsoid.Flattening
 
-    let auxLat = atan << (fun x -> (1.0 - f) * x) << tan
-    let ``_U₁`` = auxLat (float ``_Φ₁``)
-    let ``_U₂`` = auxLat (float ``_Φ₂``)
+    let ``_U₁`` = auxLat f (float ``_Φ₁``)
+    let ``_U₂`` = auxLat f (float ``_Φ₂``)
     let ``_L`` =
         match ``_L₂`` - ``_L₁`` with
         | ``_L'`` | ``_L'`` when abs (float ``_L'``) <= Math.PI -> ``_L'``
@@ -469,26 +585,31 @@ module VincentyTests =
                 ]
                 |> List.map DMS.FromTuple
 
-        static member DistanceData : seq<obj[]>=
+        static member IndirectDistanceData : seq<obj[]>=
             List.map3 (fun e (x, y) d -> (e, x, y, d, 0.037<m>)) es xys ds
             |> Seq.map FSharpValue.GetTupleFields
 
-        static member AzimuthFwdData : seq<obj[]>=
+        static member IndirectAzimuthFwdData : seq<obj[]>=
             List.map3 (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 30.0<s>) |> DMS.ToRad)) es xys fwdAzimuths
             |> Seq.map FSharpValue.GetTupleFields
 
-        static member AzimuthRevData : seq<obj[]>=
-            List.map3 (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 0.016667<s>) |> DMS.ToRad)) es xys revAzimuths
+        static member DirectAzimuthRevData : seq<obj[]>=
+            let eds = List.zip es ds
+            let azs = List.zip fwdAzimuths revAzimuths
+            List.map3
+                (fun (e, d) (x, _) (azFwd, azRev) ->
+                    (e, x, d, azFwd, azRev, DMS (0<deg>, 0<min>, 1.0<s>)))
+                eds xys azs
             |> Seq.map FSharpValue.GetTupleFields
 
-    [<Theory; MemberData("DistanceData", MemberType = typeof<Bedford1978>)>]
-    let ``distances from Bedford's 1978 paper`` (e, x, y, d, t) =
+    [<Theory; MemberData("IndirectDistanceData", MemberType = typeof<Bedford1978>)>]
+    let ``indirect solution distance from Bedford's 1978 paper`` (e, x, y, d, t) =
         let x' = LatLng.FromDMS x
         let y' = LatLng.FromDMS y
         test <@ let (TaskDistance d') = distance e x' y' in abs (d' - d) < t @>
 
-    [<Theory; MemberData("AzimuthFwdData", MemberType = typeof<Bedford1978>)>]
-    let ``forward azimuth from Bedford's 1978 paper`` (e, x, y, az, t) =
+    [<Theory; MemberData("IndirectAzimuthFwdData", MemberType = typeof<Bedford1978>)>]
+    let ``indirect solution forward azimuth from Bedford's 1978 paper`` (e, x, y, az, t) =
         let f e x y =
             let azRad = DMS.ToRad az
             let x' = LatLng.FromDMS x
@@ -499,19 +620,18 @@ module VincentyTests =
 
         test <@ f e x y |> function | None -> true | Some d -> d < t @>
 
-(* WARNING: This test is not setup properly. The test data azimuths are
-computed reverse azimuths for the solution to the direct problem, not the
-inverse problem.
-
-    [<Theory; MemberData("AzimuthRevData", MemberType = typeof<Bedford1978>)>]
-    let ``reverse azimuth from Bedford's 1978 paper`` (e, x, y, az, t) =
-        let f e x y =
+    [<Theory; MemberData("DirectAzimuthRevData", MemberType = typeof<Bedford1978>)>]
+    let ``direct solution reverse azimuth from Bedford's 1978 paper`` (e, x, d, az, azBack, t) =
+        let f e x az azBack =
             let azRad = DMS.ToRad az
+            let azBackRad = DMS.ToRad azBack
             let x' = LatLng.FromDMS x
-            let y' = LatLng.FromDMS y
 
-            azimuthRev e x' y'
-            |> Option.map (fun az' -> abs (az' - azRad))
+            (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azRad; s = Radius d})
+            |> (function
+                | GeodeticDirect soln -> soln.``α₂`` |> Option.map (fun (TrueCourse az') -> abs (az' - azBackRad))
+                | _ -> None)
 
-        test <@ f e x y |> function | None -> true | Some d -> d < t @>
-        *)
+        let t' = DMS.ToRad t
+
+        test <@ f e x az azBack |> function | None -> true | Some d -> d < t' @>
