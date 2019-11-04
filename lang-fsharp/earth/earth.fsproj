@@ -15,6 +15,8 @@
     <Compile Include="library/Flight/Haversine.fs" />
     <Compile Include="library/Flight/Vincenty.fs" />
     <Compile Include="library/Flight/GeodesySolution.fs" />
+    <Compile Include="library/Flight/TestVincenty.fs" />
+    <Compile Include="library/Flight/TestBedford.fs" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
