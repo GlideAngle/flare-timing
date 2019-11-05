@@ -114,6 +114,15 @@ type Vincenty1975 () =
             ]
             |> List.map DMS.FromTuple
 
+    // From the paper, Vincenty's errors were mm of -0.4, -0.4, -0.7, -0.2 and -0.8.
+    static let directErrors : float<m> list =
+            [ 0.000419<m>
+            ; 0.000388<m>
+            ; 0.000708<m>
+            ; 0.000203<m>
+            ; 0.000385<m>
+            ]
+
     static member IndirectDistanceData : seq<obj[]>=
         List.map3 (fun e (x, y) d -> (e, x, y, d, 0.001<m>)) es xys ds
         |> Seq.map FSharpValue.GetTupleFields
@@ -126,7 +135,8 @@ type Vincenty1975 () =
 
     static member DirectDistanceData : seq<obj[]>=
         let eds = List.zip es ds
-        List.map3 (fun (e, d) (x, y) azFwd -> (e, x, d, azFwd, y, 1.0<m>)) eds xys fwdAzimuths
+        let zts = List.zip fwdAzimuths directErrors
+        List.map3 (fun (e, d) (x, y) (azFwd, t) -> (e, x, d, azFwd, y, t)) eds xys zts
         |> Seq.map FSharpValue.GetTupleFields
 
     static member DirectAzimuthRevData : seq<obj[]>=
@@ -155,19 +165,19 @@ let ``indirect solution forward azimuth from Vincenty's 1975 paper`` (e, x, y, a
 
 [<Theory; MemberData("DirectDistanceData", MemberType = typeof<Vincenty1975>)>]
 let ``direct solution distance from Vicenty's 1975 paper`` (e, x, d, az, y, t) =
-    let f e x az : (DMS * DMS) option =
+    let f e x az y : float<m> option =
         let azRad = DMS.ToRad az
         let x' = LatLng.FromDMS x
+        let y' = LatLng.FromDMS y
 
         (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azRad; s = Radius d})
         |> (function
             | GeodeticDirect soln ->
-                //let (TaskDistance d') = distance e y' soln.y
-                //Some <| abs d'
-                Some <| soln.y.ToDMS()
+                let (TaskDistance d') = distance e y' soln.y
+                Some <| abs d'
             | _ -> None)
 
-    test <@ f e x az = y @>
+    test <@ f e x az y < Some t @>
 
 (*
 [<Theory; MemberData("DirectAzimuthRevData", MemberType = typeof<Vincenty1975>)>]
