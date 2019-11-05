@@ -166,7 +166,7 @@ let ``indirect solution forward azimuth from Vincenty's 1975 paper`` (e, x, y, a
         azimuthFwd e x' y'
         |> Option.map (fun az' -> abs (az' - azRad))
 
-    test <@ f e x y |> function | None -> true | Some d -> d < t @>
+    test <@ f e x y < Some t @>
 
 [<Theory; MemberData("DirectDistanceData", MemberType = typeof<Vincenty1975>)>]
 let ``direct solution distance from Vicenty's 1975 paper`` (e, x, d, az, y, t) =

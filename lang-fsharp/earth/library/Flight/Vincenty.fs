@@ -224,37 +224,37 @@ let rec inverse
         let σ = atan2 sinσ cosσ
 
         let sinα = ``cosU₁cosU₂`` * sinλ / sinσ
-        let ``cos²α`` = 1.0 - sinα * sinα
-        let _C = f / 16.0 * ``cos²α`` * (4.0 + f * (4.0 - 3.0 * ``cos²α``))
+        let ``cos²α`` = 1. - sinα * sinα
+        let _C = f / 16. * ``cos²α`` * (4. + f * (4. - 3. * ``cos²α``))
         let ``u²`` = let ``b²`` = b * b in ``cos²α`` * (a * a - ``b²``) / ``b²``
 
         // NOTE: Start and end points on the equator, _C = 0.
-        let cos2σm = if ``cos²α`` = 0.0 then 0.0 else cosσ - 2.0 * ``sinU₁sinU₂`` / ``cos²α``
+        let cos2σm = if ``cos²α`` = 0. then 0. else cosσ - 2. * ``sinU₁sinU₂`` / ``cos²α``
         let ``cos²2σm`` = cos2σm * cos2σm
 
-        let _A = 1.0 + ``u²`` / 16384.0 * (4096.0 + ``u²`` * (-768.0 + ``u²`` * (320.0 - 175.0 * ``u²``)))
-        let _B = ``u²`` / 1024.0 * (256.0 + ``u²`` * (-128.0 + ``u²`` * (74.0 - 47.0 * ``u²``)))
+        let _A = 1. + ``u²`` / 16384. * (4096. + ``u²`` * (-768. + ``u²`` * (320. - 175. * ``u²``)))
+        let _B = ``u²`` / 1024. * (256. + ``u²`` * (-128. + ``u²`` * (74. - 47. * ``u²``)))
 
         let y =
-            cosσ * (-1.0 + 2.0 * ``cos²2σm``)
-            - _B / 6.0 * cos2σm * (-3.0 + 4.0 * ``sin²σ``) * (-3.0 + 4.0 * ``cos²2σm``)
+            cosσ * (-1. + 2. * ``cos²2σm``)
+            - _B / 6. * cos2σm * (-3. + 4. * ``sin²σ``) * (-3. + 4. * ``cos²2σm``)
 
-        let _Δσ = _B * sinσ * (cos2σm + _B / 4.0 * y)
+        let _Δσ = _B * sinσ * (cos2σm + _B / 4. * y)
 
-        let x = cos2σm + _C * cosσ * (-1.0 + 2.0 * ``cos²2σm``)
-        let λ' = float _L + (1.0 - _C) * f * sinα * (σ + _C * sinσ * x)
+        let x = cos2σm + _C * cosσ * (-1. + 2. * ``cos²2σm``)
+        let λ' = float _L + (1. - _C) * f * sinα * (σ + _C * sinσ * x)
 
         let (GeodeticAccuracy tolerance) = accuracy
 
         if abs (float λ) > Math.PI then GeodeticInverseAntipodal
-        elif abs ((float λ) - λ') >= tolerance then loop (λ' * 1.0<rad>)
+        elif abs ((float λ) - λ') >= tolerance then loop (λ' * 1.<rad>)
         else
             { s = TaskDistance <| b * _A * (σ - _Δσ)
             ; ``α₁`` =
-                atan2 i j * 1.0<rad>
+                atan2 i j * 1.<rad>
                 |> (Rad.FromRad >> Rad.Normalize >> Rad.ToRad)
             ; ``α₂`` =
-                atan2 i' j' * 1.0<rad>
+                atan2 i' j' * 1.<rad>
                 |> (Rad.FromRad >> Rad.Normalize >> Rad.ToRad >> Some)
             }
             |> GeodeticInverse
@@ -272,9 +272,9 @@ and distanceUnchecked ellipsoid prob : GeodeticInverse<InverseSolution<TaskDista
 
     if prob.x = prob.y then
         GeodeticInverse <|
-            { s = TaskDistance 0.0<m>
-            ; ``α₁`` = 0.0<rad>
-            ; ``α₂`` = Some <| Math.PI * 1.0<rad>
+            { s = TaskDistance 0.<m>
+            ; ``α₁`` = 0.<rad>
+            ; ``α₂`` = Some <| Math.PI * 1.<rad>
             }
 
     elif xLat < minBound then failwith "xlat under" // GeodeticInverseAbnormal LatUnder
