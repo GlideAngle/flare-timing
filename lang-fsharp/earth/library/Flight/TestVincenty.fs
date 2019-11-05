@@ -115,13 +115,17 @@ type Vincenty1975 () =
             |> List.map DMS.FromTuple
 
     // From the paper, Vincenty's errors were mm of -0.4, -0.4, -0.7, -0.2 and -0.8.
-    static let directErrors : float<m> list =
+    static let directDistanceErrors : float<m> list =
             [ 0.000419<m>
             ; 0.000388<m>
             ; 0.000708<m>
             ; 0.000203<m>
             ; 0.000385<m>
             ]
+
+    // From the paper, Vincenty's errors were s of -1.2, +0.5, +3.0, -0.3 and -0.3.
+    static let directAzimuthRevErrors : DMS list =
+            List.replicate 5 (DMS.FromTuple (0, 0, 0.0001))
 
     static member IndirectDistanceData : seq<obj[]>=
         List.map3 (fun e (x, y) d -> (e, x, y, d, 0.001<m>)) es xys ds
@@ -135,14 +139,15 @@ type Vincenty1975 () =
 
     static member DirectDistanceData : seq<obj[]>=
         let eds = List.zip es ds
-        let zts = List.zip fwdAzimuths directErrors
+        let zts = List.zip fwdAzimuths directDistanceErrors
         List.map3 (fun (e, d) (x, y) (azFwd, t) -> (e, x, d, azFwd, y, t)) eds xys zts
         |> Seq.map FSharpValue.GetTupleFields
 
     static member DirectAzimuthRevData : seq<obj[]>=
-        List.map3
-            (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 0.016667<s>) |> DMS.ToRad))
-            es xys revAzimuths
+        let eds = List.zip es ds
+        let xrs = List.zip (List.map fst xys) directAzimuthRevErrors
+        let zzs = List.zip fwdAzimuths revAzimuths
+        List.map3 (fun (e, d) (x, t) (azFwd, azRev) -> (e, x, d, azFwd, azRev, t)) eds xrs zzs
         |> Seq.map FSharpValue.GetTupleFields
 
 [<Theory; MemberData("IndirectDistanceData", MemberType = typeof<Vincenty1975>)>]
@@ -179,8 +184,20 @@ let ``direct solution distance from Vicenty's 1975 paper`` (e, x, d, az, y, t) =
 
     test <@ f e x az y < Some t @>
 
-(*
 [<Theory; MemberData("DirectAzimuthRevData", MemberType = typeof<Vincenty1975>)>]
-let ``direct solution reverse azimuth from Vincenty's 1975 paper`` (e, x, y, az, t) =
-    test <@ azimuthRev e x y |> function | None -> true | Some az' -> abs (az' - az) < t @>
-*)
+let ``direct solution reverse azimuth from Vincenty's 1975 paper`` (e, x, d, azFwd, azRev, t) =
+    let f e x azFwd azRev =
+        let azFwdRad = DMS.ToRad azFwd
+        let azRevRad = DMS.ToRad azRev
+        let x' = LatLng.FromDMS x
+
+        (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azFwdRad; s = Radius d})
+        |> (function
+            | GeodeticDirect soln ->
+                soln.``α₂``
+                |> Option.map (fun (TrueCourse az') -> abs (az' - azRevRad))
+            | _ -> None)
+
+    let t' = Some << DMS.ToRad <| t
+
+    test <@ f e x azFwd azRev < t' @>
