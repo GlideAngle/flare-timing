@@ -14,6 +14,9 @@ type LatLng =
         { Lat = DMS.ToRad lat
         ; Lng = DMS.ToRad lng
         }
+    member x.ToDMS() : DMS * DMS =
+        let f = DMS.FromRad
+        (f x.Lat, f x.Lng)
 
 type TaskDistance = TaskDistance of float<m>
 

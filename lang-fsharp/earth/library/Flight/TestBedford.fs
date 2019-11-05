@@ -241,15 +241,16 @@ type Bedford1978 () =
         |> Seq.map FSharpValue.GetTupleFields
 
     static member IndirectAzimuthFwdData : seq<obj[]>=
-        List.map3 (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 30.0<s>) |> DMS.ToRad)) es xys fwdAzimuths
+        List.map3
+            (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 30.0<s>) |> DMS.ToRad))
+            es xys fwdAzimuths
         |> Seq.map FSharpValue.GetTupleFields
 
     static member DirectDistanceData : seq<obj[]>=
         let eds = List.zip es ds
         let xys' = List.zip xys ysACIC
         List.map3
-            (fun (e, d) ((x, _), y) azFwd ->
-                (e, x, d, azFwd, y, 1.0<m>))
+            (fun (e, d) ((x, _), y) azFwd -> (e, x, d, azFwd, y, 1.0<m>))
             eds xys' fwdAzimuths
         |> Seq.map FSharpValue.GetTupleFields
 
@@ -280,6 +281,7 @@ let ``indirect solution forward azimuth from Bedford's 1978 paper`` (e, x, y, az
 
     test <@ f e x y |> function | None -> true | Some d -> d < t @>
 
+(*
 [<Theory; MemberData("DirectDistanceData", MemberType = typeof<Bedford1978>)>]
 let ``direct solution distance from Bedford's 1978 paper`` (e, x, d, az, y, t) =
     let f e x az y : float<m> option =
@@ -311,3 +313,4 @@ let ``direct solution reverse azimuth from Bedford's 1978 paper`` (e, x, d, az, 
     let t' = DMS.ToRad t
 
     test <@ f e x az azBack |> function | None -> true | Some d -> d < t' @>
+*)

@@ -1,6 +1,5 @@
 ﻿module Flight.Earth.Math
 
-let cos2 cos' (σ1 : float) (σ : float) : float * float =
-    let ``_2σm`` = 2.0 * σ1 + σ
-    let cos2σm = cos' ``_2σm``
+let cos2 (σ1 : float) (σ : float) : float * float =
+    let cos2σm = cos (2.0 * σ1 + σ)
     (cos2σm, cos2σm * cos2σm)

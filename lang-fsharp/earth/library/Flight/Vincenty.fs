@@ -16,7 +16,7 @@ let tooFar = TaskDistance 20000000.0<m>
 
 let auxLat (f : float) : float -> float = atan << (fun x -> (1.0 - f) * x) << tan
 
-let rec iterateVincenty
+let rec iterateAngularDistance
     accuracy
     _A
     _B
@@ -25,27 +25,25 @@ let rec iterateVincenty
     σ1
     σ =
     let (GeodeticAccuracy tolerance) = accuracy
-    let (cos2σm, ``cos²2σm``) = cos2 cos σ1 σ
+    let (cos2σm, ``cos²2σm``) = cos2 σ1 σ
     let sinσ = sin σ
     let cosσ = cos σ
     let ``sin²σ`` = sinσ * sinσ
 
     let _Δσ =
             _B * sinσ *
-                (cos2σm + _B / 4.0 *
-                    (cosσ * (-1.0 + 2.0 * ``cos²2σm``)
-                    - _B / 6.0
-                    * cos2σm
-                    * (-3.0 + 4.0 * ``sin²σ``)
-                    * (-3.0 + 4.0 * ``cos²2σm``)
-                    )
-                )
+                (cos2σm + _B / 4. *
+                    (cosσ * (-1. + 2. * ``cos²2σm``)
+                        - _B / 6.
+                            * cos2σm
+                            * (-3. + 4. * ``sin²σ``)
+                            * (-3. + 4. * ``cos²2σm``)))
 
-    let σ' = s / b * _A + _Δσ
+    let σ' = s / (b * _A) + _Δσ
     if abs (σ - σ') < tolerance
         then σ
         else
-            iterateVincenty accuracy _A _B s b σ1 σ'
+            iterateAngularDistance accuracy _A _B s b σ1 σ'
 
 // The solution to the direct geodesy problem with input latitude rejected
 // outside the range -90° .. 90° and longitude normalized to -180° .. 180°.
@@ -73,13 +71,27 @@ let rec direct
 
 // The solution to the direct geodesy problem with input latitude unchecked and
 // longitude not normalized.
+//
+// Symbol reference from Vincenty's paper.
+// a, b   = major and minor semiaxes of the ellipsoid
+// f      = flattening (a - b) / a
+// Φ      = geodetic latitude, positive north of the equator
+// L      = difference in longitude, positive east
+// s      = length of the geodesic
+// α₁, α₂ = azimuths o the geodesic, clockwise rom the north: α₂ in the direction P₁ P₂ produced
+// α      = azimuth of the geodesic at the equator
+// U      = reduced latitude, defined by tan U = (1 - f) tan Φ1
+// λ      = difference in longitude on an auxillary sphere
+// σ      = angular distance P₁ P₂, on the sphere
+// σ1     = angular distance on the sphere from the equator to P₁
+// σm     = angular distance on the sphere rom the equator to the midpoint of the line
 and directUnchecked
     (ellipsoid : Ellipsoid)
     (accuracy : GeodeticAccuracy)
     (prob : DirectProblem<LatLng, TrueCourse, Radius>)
     : GeodeticDirect<DirectSolution<LatLng,TrueCourse>> =
     let
-        { x = {Lat = _Φ1; Lng = _L1}
+        { x = {Lat = Φ1; Lng = λ1}
         ; ``α₁`` = TrueCourse α1
         ; s = Radius s
         } = prob
@@ -89,44 +101,69 @@ and directUnchecked
     let f = ellipsoid.Flattening
 
     // Initial setup
-    let _U1 = auxLat f (float _Φ1)
-    let σ1 = atan2 (tan _U1) (cos (float α1))
-    let sinα = cos _U1 * sin (float α1)
+    let _U1 = auxLat f (float Φ1)
+    let cosU1 = cos _U1
+    let sinU1 = sin _U1
+
+    // NOTE: In some transcriptions of Vincenty's formula to code the following
+    // are sometimes seen for calculating U1, cosU1 and sinU1.
+    // let tanU1 = (1. - f) * tan (float Φ1)
+    // let cosU1 = 1. / sqrt (1. + tanU1 * tanU1)
+    // let sinU1 = tanU1 * cosU1
+    //
+    // SEE: https://www.purplemath.com/modules/idents.htm
+    // secx = 1 / cosx
+    // tan²x + 1 = sec²x
+    // tanx = sinx / cosx
+
+    let cosα1 = cos (float α1)
+    let sinα1 = sin (float α1)
+    let σ1 = atan2 (tan _U1) cosα1
+
+    let sinα = cosU1 * sinα1
     let ``sin²α`` = sinα * sinα
-    let ``cos²α`` = 1.0 - ``sin²α``
+    let ``cos²α`` = 1. - ``sin²α``
 
-    let ``a²`` = a * a
-    let ``b²`` = b * b
-    let ``u²`` = ``cos²α`` * (``a²`` - ``b²``) / ``b²``
+    let ``u²`` =
+        let ``a²`` = a * a
+        let ``b²`` = b * b
+        ``cos²α`` * (``a²`` - ``b²``) / ``b²``
 
-    let _A = 1.0 + ``u²`` / 16384.0 * (4096.0 + ``u²`` * (-768.0 + ``u²`` * (320.0 - 175.0 * ``u²``)))
-    let _B = ``u²`` / 1024.0 * (256.0 + ``u²`` * (-128.0 + ``u²`` * (74.0 - 47.0 * ``u²``)))
+    let _A = 1.0 + ``u²`` / 16384. * (4096. + ``u²`` * (-768. + ``u²`` * (320. - 175. * ``u²``)))
+    let _B = ``u²`` / 1024. * (256. + ``u²`` * (-128. + ``u²`` * (74. - 47. * ``u²``)))
 
     // Solution
-    let σ = iterateVincenty accuracy _A _B s b σ1 (s / (b * _A))
+    let σ = iterateAngularDistance accuracy _A _B s b σ1 (s / (b * _A))
+
     let sinσ = sin σ
     let cosσ = cos σ
-    let cosα1 = cos (float α1)
-    let sinU1 = sin _U1
-    let cosU1 = cos _U1
+
     let v = sinU1 * cosσ + cosU1 * sinσ * cosα1
-    let j = sinU1 * sinσ - cosU1 * cosσ * cosα1
-    let w = (1.0 - f) * sqrt (``sin²α`` + j * j)
-    let _Φ2 = atan2 v w * 1.0<rad>
-    let λ = atan2 (sinσ * sin (float α1)) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
-    let _C = f / 16.0 * ``cos²α`` * (4.0 - 3.0 * ``cos²α``)
 
-    let (cos2σm, ``cos²2σm``) = cos2 cos σ1 σ
-    let y = cos (2.0 * cos2σm + _C * cosσ * (-1.0 + 2.0 * ``cos²2σm``))
-    let x = σ + _C * sinσ * y
-    let _L = λ * (1.0 - _C) * f * sinα * x
+    let (j, j') =
+        let sinU1sinσ = sinU1 * sinσ
+        let cosU1cosσcosα1 = cosU1 * cosσ * cosα1
+        (   sinU1sinσ  - cosU1cosσcosα1
+        , -(sinU1sinσ) + cosU1cosσcosα1
+        )
 
-    let _L2 = _L * 1.0<rad> + _L1
+    let w = (1. - f) * sqrt (``sin²α`` + j * j)
+    let Φ2 = atan2 v w * 1.<rad>
+    let λ = atan2 (sinσ * sinα1) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
+    let _C = f / 16. * ``cos²α`` * (4. + f * (4. - 3. * ``cos²α``))
+
+    let _L =
+        let (cos2σm, ``cos²2σm``) = cos2 σ1 σ
+        let y = cos2σm + _C * cosσ * (-1. + 2. * ``cos²2σm``)
+        let x = σ + _C * sinσ * y
+        λ - (1. - _C) * f * sinα * x
+
+    let _L2 = _L * 1.<rad> + λ1
 
     GeodeticDirect
-        { y = {Lat = _Φ2; Lng = _L2}
+        { y = {Lat = Φ2; Lng = _L2}
         ; ``α₂`` =
-            (sinα / (-j)) * 1.0<rad>
+            atan2 sinα j' * 1.<rad>
             |> (Rad.FromRad >> Rad.Normalize >> Rad.ToRad >> TrueCourse >> Some)
         }
 
