@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a797f82289d724c46ba8c0687661194c72bf6963c33547d6fda33ee362fb85c0
+-- hash: c3c5ce3fded3aeccc7b53ef6b7f343e7d74291f18bda0dc908d31b659f336d23
 
 name:           build-flare-timing
 version:        0.1.0
@@ -46,7 +46,7 @@ executable build-flare-timing
       app-cmd
       library
   default-extensions: PackageImports
-  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       ansi-terminal
     , base

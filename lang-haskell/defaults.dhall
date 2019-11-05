@@ -15,7 +15,14 @@
 , extra-source-files =
     [ "package.dhall", "changelog.md", "README.md" ]
 , ghc-options =
-    [ "-Wall", "-Werror" ]
+    [ "-Wall"
+    , "-Werror"
+    , "-Wincomplete-uni-patterns"
+    , "-Wcompat"
+    , "-Widentities"
+    , "-Wredundant-constraints"
+    , "-fhide-source-paths"
+    ]
 , default-extensions =
     [ "PackageImports" ]
 , dependencies =

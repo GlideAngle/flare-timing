@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a13112832e062a32e257a0b0e04d60b9e8a2e0c3e38c51921265b56ce4b1ec5b
+-- hash: bcc6224c17fccb75622704466020a9d2feeb330eba4be90d1cdbc1bec8b54cad
 
 name:           siggy-chardust
 version:        1.0.0
@@ -38,7 +38,7 @@ library
   hs-source-dirs:
       library
   default-extensions: PackageImports
-  ghc-options: -Wall -Werror
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths
   build-depends:
       base >=4.10.1.0 && <5
   default-language: Haskell2010
@@ -53,7 +53,7 @@ test-suite digits
       library
       test-suite-digits
   default-extensions: PackageImports
-  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base >=4.10.1.0 && <5
     , smallcheck
@@ -73,7 +73,7 @@ test-suite doctest
       library
       test-suite-doctest
   default-extensions: PackageImports
-  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
     , doctest

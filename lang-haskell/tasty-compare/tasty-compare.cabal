@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c44edb39195bae1b8e0d7824ce6d2f7b5f96fd3b84e345df788bacf7dea8f96a
+-- hash: bdee93c3da3f727a9cbe64b5cdc8fd8b038bf40749482777a100cbb8925eed40
 
 name:           tasty-compare
 version:        0.1.0
@@ -38,7 +38,7 @@ library
   hs-source-dirs:
       library
   default-extensions: PackageImports
-  ghc-options: -Wall -Werror
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths
   build-depends:
       base >=4.10.1.0 && <5
     , call-stack
