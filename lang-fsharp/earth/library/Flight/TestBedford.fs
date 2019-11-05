@@ -236,6 +236,9 @@ type Bedford1978 () =
             ]
             |> List.map DMS.FromTuple
 
+    static let directDistanceErrors : float<m> list =
+            List.replicate 39 0.6<m>
+
     static member IndirectDistanceData : seq<obj[]>=
         List.map3 (fun e (x, y) d -> (e, x, y, d, 0.037<m>)) es xys ds
         |> Seq.map FSharpValue.GetTupleFields
@@ -249,9 +252,8 @@ type Bedford1978 () =
     static member DirectDistanceData : seq<obj[]>=
         let eds = List.zip es ds
         let xys' = List.zip xys ysACIC
-        List.map3
-            (fun (e, d) ((x, _), y) azFwd -> (e, x, d, azFwd, y, 1.0<m>))
-            eds xys' fwdAzimuths
+        let zts = List.zip fwdAzimuths directDistanceErrors
+        List.map3 (fun (e, d) ((x, _), y) (azFwd, t) -> (e, x, d, azFwd, y, t)) eds xys' zts
         |> Seq.map FSharpValue.GetTupleFields
 
     static member DirectAzimuthRevData : seq<obj[]>=
@@ -280,6 +282,22 @@ let ``indirect solution forward azimuth from Bedford's 1978 paper`` (e, x, y, az
         |> Option.map (fun az' -> abs (az' - azRad))
 
     test <@ f e x y |> function | None -> true | Some d -> d < t @>
+
+[<Theory; MemberData("DirectDistanceData", MemberType = typeof<Bedford1978>)>]
+let ``direct solution distance from Bedford's 1978 paper`` (e, x, d, az, y, t) =
+    let f e x az y : float<m> option =
+        let azRad = DMS.ToRad az
+        let x' = LatLng.FromDMS x
+        let y' = LatLng.FromDMS y
+
+        (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azRad; s = Radius d})
+        |> (function
+            | GeodeticDirect soln ->
+                let (TaskDistance d') = distance e y' soln.y
+                Some <| abs d'
+            | _ -> None)
+
+    test <@ f e x az y < Some t @>
 
 (*
 [<Theory; MemberData("DirectDistanceData", MemberType = typeof<Bedford1978>)>]
