@@ -239,6 +239,10 @@ type Bedford1978 () =
     static let directDistanceErrors : float<m> list =
             List.replicate 39 0.6<m>
 
+    // From the paper, errors were given for distance but not azimuth.
+    static let directAzimuthRevErrors : DMS list =
+            List.replicate 39 (DMS.FromTuple (0, 0, 0.0001))
+
     static member IndirectDistanceData : seq<obj[]>=
         List.map3 (fun e (x, y) d -> (e, x, y, d, 0.037<m>)) es xys ds
         |> Seq.map FSharpValue.GetTupleFields
@@ -258,12 +262,11 @@ type Bedford1978 () =
 
     static member DirectAzimuthRevData : seq<obj[]>=
         let eds = List.zip es ds
-        let azs = List.zip fwdAzimuths revAzimuths
-        List.map3
-            (fun (e, d) (x, _) (azFwd, azRev) ->
-                (e, x, d, azFwd, azRev, DMS (0<deg>, 0<min>, 1.0<s>)))
-            eds xys azs
+        let xrs = List.zip (List.map fst xys) directAzimuthRevErrors
+        let zzs = List.zip fwdAzimuths revAzimuths
+        List.map3 (fun (e, d) (x, t) (azFwd, azRev) -> (e, x, d, azFwd, azRev, t)) eds xrs zzs
         |> Seq.map FSharpValue.GetTupleFields
+        // |> Seq.take 1
 
 [<Theory; MemberData("IndirectDistanceData", MemberType = typeof<Bedford1978>)>]
 let ``indirect solution distance from Bedford's 1978 paper`` (e, x, y, d, t) =
@@ -300,35 +303,26 @@ let ``direct solution distance from Bedford's 1978 paper`` (e, x, d, az, y, t) =
     test <@ f e x az y < Some t @>
 
 (*
-[<Theory; MemberData("DirectDistanceData", MemberType = typeof<Bedford1978>)>]
-let ``direct solution distance from Bedford's 1978 paper`` (e, x, d, az, y, t) =
-    let f e x az y : float<m> option =
-        let azRad = DMS.ToRad az
-        let x' = LatLng.FromDMS x
-        let y' = LatLng.FromDMS y
-
-        (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azRad; s = Radius d})
-        |> (function
-            | GeodeticDirect soln ->
-                let (TaskDistance d') = distance e y' soln.y
-                Some <| abs d'
-            | _ -> None)
-
-    test <@ f e x az y |> function | None -> true | Some d -> d < t @>
+TODO: Find out why the direct solution disagrees with the Bedford results. The
+reverse azimuth of the direction solution is flipped 180°.
 
 [<Theory; MemberData("DirectAzimuthRevData", MemberType = typeof<Bedford1978>)>]
-let ``direct solution reverse azimuth from Bedford's 1978 paper`` (e, x, d, az, azBack, t) =
-    let f e x az azBack =
-        let azRad = DMS.ToRad az
-        let azBackRad = DMS.ToRad azBack
+let ``direct solution reverse azimuth from Bedford's 1978 paper`` (e, x, d, azFwd, azRev, t) =
+    let f e x azFwd azRev =
+        let azFwdRad = DMS.ToRad azFwd
+        let azRevRad = DMS.ToRad azRev
         let x' = LatLng.FromDMS x
 
-        (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azRad; s = Radius d})
+        (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azFwdRad; s = Radius d})
         |> (function
-            | GeodeticDirect soln -> soln.``α₂`` |> Option.map (fun (TrueCourse az') -> abs (az' - azBackRad))
+            | GeodeticDirect soln ->
+                soln.``α₂``
+                // |> Option.map (fun (TrueCourse az') -> abs (az' - azRevRad))
+                |> Option.map (fun (TrueCourse az') -> DMS.FromRad az')
             | _ -> None)
 
-    let t' = DMS.ToRad t
+    let t' = Some << DMS.ToRad <| t
 
-    test <@ f e x az azBack |> function | None -> true | Some d -> d < t' @>
+    // test <@ f e x azFwd azRev < Some t' @>
+    test <@ f e x azFwd azRev = Some azRev @>
 *)
