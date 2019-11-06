@@ -89,13 +89,12 @@ type Vincenty1975 () =
     static let es = bessel :: List.replicate 4 hayford
 
     static let ds : float<m> list =
-            [ 14110526.170<m>
-            ;  4085966.703<m>
-            ; 19960000.000<m>
         [ 14110526.170<m>
         ;  4085966.703<m>
+        ;  8084823.839<m>
         ; 19960000.000<m>
         ; 19780006.5584<m>
+        ]
 
     static let fwdAzimuths : DMS list =
         [ ( 96, 36,  8.79960)
