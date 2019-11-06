@@ -236,8 +236,61 @@ type Bedford1978 () =
             ]
             |> List.map DMS.FromTuple
 
-    static let directDistanceErrors : float<m> list =
-            List.replicate 39 0.6<m>
+    // From the paper, these are the differences to the ACIC point.
+    static let directDistanceErrorsACIC : float<m> list =
+            // NOTE: Difference values from the paper in comments, if different.
+            [ 0.01200<m>
+            ; 0.00700<m>
+            ; 0.00400<m>
+
+            ; 0.53800<m> // .017
+            ; 0.01200<m>
+            ; 0.01530<m> // .015
+
+            ; 0.01410<m> // .014
+            ; 0.00800<m>
+            ; 0.00842<m> // .008
+
+            ; 0.04100<m>
+            ; 0.06000<m>
+            ; 0.00947<m> // .009
+
+            ; 0.01120<m> // .011
+            ; 0.00281<m> // .002
+            ; 0.00300<m>
+
+            ; 0.00722<m> // .007
+            ; 0.01460<m> // .012
+            ; 0.01000<m>
+
+            ; 0.00500<m>
+            ; 0.00522<m> // .005
+            ; 0.00417<m> // .004
+
+            ; 0.01500<m>
+            ; 0.01000<m>
+            ; 0.00522<m> // .005
+
+            ; 0.01920<m> // .019
+            ; 0.00732<m> // .007
+            ; 0.00761<m> // .007
+
+            ; 0.01510<m> // .015
+            ; 0.01500<m>
+            ; 0.00706<m> // .007
+
+            ; 0.00500<m>
+            ; 0.01000<m>
+            ; 0.01510<m> // .015
+
+            ; 0.01200<m>
+            ; 0.01030<m> // .010
+            ; 0.00705<m> // .007
+
+            ; 0.00830<m> // .008
+            ; 0.01400<m>
+            ; 0.01000<m>
+            ]
 
     // From the paper, errors were given for distance but not azimuth.
     static let directAzimuthRevErrors : DMS list =
@@ -256,7 +309,7 @@ type Bedford1978 () =
     static member DirectDistanceData : seq<obj[]>=
         let eds = List.zip es ds
         let xys' = List.zip xys ysACIC
-        let zts = List.zip fwdAzimuths directDistanceErrors
+        let zts = List.zip fwdAzimuths directDistanceErrorsACIC
         List.map3 (fun (e, d) ((x, _), y) (azFwd, t) -> (e, x, d, azFwd, y, t)) eds xys' zts
         |> Seq.map FSharpValue.GetTupleFields
 
