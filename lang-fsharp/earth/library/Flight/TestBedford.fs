@@ -17,7 +17,7 @@ open Flight.Vincenty
 type Bedford1978 () =
     // The pairs of pairs of angles being the input points for the inverse
     // problem.
-    static let xys : ((DMS * DMS) * (DMS * DMS)) list =
+    static let xysInverse : ((DMS * DMS) * (DMS * DMS)) list =
             [ (((10,  0,  0.0), (-18,  0,  0.0)), ((10, 43, 39.078), (-18,  0,  0.000)))
             ; (((40,  0,  0.0), (-18,  0,  0.0)), ((40, 43, 28.790), (-18,  0,  0.000)))
             ; (((70,  0,  0.0), (-18,  0,  0.0)), ((70, 43, 16.379), (-18,  0,  0.000)))
@@ -297,29 +297,28 @@ type Bedford1978 () =
             List.replicate 39 (DMS.FromTuple (0, 0, 0.0001))
 
     static member IndirectDistanceData : seq<obj[]>=
-        List.map3 (fun e (x, y) d -> (e, x, y, d, 0.037<m>)) es xys ds
+        List.map3 (fun e (x, y) d -> (e, x, y, d, 0.037<m>)) es xysInverse ds
         |> Seq.map FSharpValue.GetTupleFields
 
     static member IndirectAzimuthFwdData : seq<obj[]>=
         List.map3
             (fun e (x, y) az -> (e, x, y, az, DMS (0<deg>, 0<min>, 30.0<s>) |> DMS.ToRad))
-            es xys fwdAzimuths
+            es xysInverse fwdAzimuths
         |> Seq.map FSharpValue.GetTupleFields
 
     static member DirectDistanceData : seq<obj[]>=
         let eds = List.zip es ds
-        let xys' = List.zip xys ysACIC
+        let xys' = List.zip xysInverse ysACIC
         let zts = List.zip fwdAzimuths directDistanceErrorsACIC
         List.map3 (fun (e, d) ((x, _), y) (azFwd, t) -> (e, x, d, azFwd, y, t)) eds xys' zts
         |> Seq.map FSharpValue.GetTupleFields
 
     static member DirectAzimuthRevData : seq<obj[]>=
         let eds = List.zip es ds
-        let xrs = List.zip (List.map fst xys) directAzimuthRevErrors
+        let xrs = List.zip (List.map fst xysInverse) directAzimuthRevErrors
         let zzs = List.zip fwdAzimuths revAzimuths
         List.map3 (fun (e, d) (x, t) (azFwd, azRev) -> (e, x, d, azFwd, azRev, t)) eds xrs zzs
         |> Seq.map FSharpValue.GetTupleFields
-        // |> Seq.take 1
 
 [<Theory; MemberData("IndirectDistanceData", MemberType = typeof<Bedford1978>)>]
 let ``indirect solution distance from Bedford's 1978 paper`` (e, x, y, d, t) =
