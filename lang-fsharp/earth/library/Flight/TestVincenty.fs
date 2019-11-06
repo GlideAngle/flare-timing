@@ -74,54 +74,55 @@ let ``distance is not negative forall latlng pairs`` () = Property.check <| prop
 type Vincenty1975 () =
     // From the table in Vincenty's paper showing the results of solutions.
     static let xys : ((DMS * DMS) * (DMS * DMS)) list =
-            [ ((( 55, 45,  0.00000), (  0,  0,  0.0)), ((-33, 26,  0.00000), (108, 13,  0.00000)))
-            ; ((( 37, 19, 54.95367), (  0,  0,  0.0)), (( 26,  7, 42.83946), ( 41, 28, 35.50729)))
-            ; ((( 35, 16, 11.24862), (  0,  0,  0.0)), (( 67, 22, 14.77638), (137, 47, 28.31435)))
-            ; (((  1,  0,  0.00000), (  0,  0,  0.0)), (( 0, -59, 53.83076), (179, 17, 48.02997)))
-            ; (((  1,  0,  0.00000), (  0,  0,  0.0)), ((  1,  1, 15.18952), (179, 46, 17.84244)))
-            ]
-            |> List.map (fun ((xLat, xLng), (yLat, yLng)) ->
-                let x = (DMS.FromTuple xLat, DMS.FromTuple xLng)
-                let y = (DMS.FromTuple yLat, DMS.FromTuple yLng)
+        [ ((( 55, 45,  0.00000), (  0,  0,  0.0)), ((-33, 26,  0.00000), (108, 13,  0.00000)))
+        ; ((( 37, 19, 54.95367), (  0,  0,  0.0)), (( 26,  7, 42.83946), ( 41, 28, 35.50729)))
+        ; ((( 35, 16, 11.24862), (  0,  0,  0.0)), (( 67, 22, 14.77638), (137, 47, 28.31435)))
+        ; (((  1,  0,  0.00000), (  0,  0,  0.0)), (( 0, -59, 53.83076), (179, 17, 48.02997)))
+        ; (((  1,  0,  0.00000), (  0,  0,  0.0)), ((  1,  1, 15.18952), (179, 46, 17.84244)))
+        ]
+        |> List.map (fun ((xLat, xLng), (yLat, yLng)) ->
+            let x = (DMS.FromTuple xLat, DMS.FromTuple xLng)
+            let y = (DMS.FromTuple yLat, DMS.FromTuple yLng)
 
-                (x, y))
+            (x, y))
 
     static let es = bessel :: List.replicate 4 hayford
 
     static let ds : float<m> list =
             [ 14110526.170<m>
             ;  4085966.703<m>
-            ;  8084823.839<m>
             ; 19960000.000<m>
-            ; 19780006.5584<m>
-            ]
+        [ 14110526.170<m>
+        ;  4085966.703<m>
+        ; 19960000.000<m>
+        ; 19780006.5584<m>
 
     static let fwdAzimuths : DMS list =
-            [ ( 96, 36,  8.79960)
-            ; ( 95, 27, 59.63089)
-            ; ( 15, 44, 23.74850)
-            ; ( 89,  0,  0.00000)
-            ; (  4, 59, 59.99995)
-            ]
-            |> List.map DMS.FromTuple
+        [ ( 96, 36,  8.79960)
+        ; ( 95, 27, 59.63089)
+        ; ( 15, 44, 23.74850)
+        ; ( 89,  0,  0.00000)
+        ; (  4, 59, 59.99995)
+        ]
+        |> List.map DMS.FromTuple
 
     static let revAzimuths : DMS list =
-            [ (137, 52, 22.01454)
-            ; (118,  5, 58.96161)
-            ; (144, 55, 39.92147)
-            ; ( 91,  0,  6.11733)
-            ; (174, 59, 59.88481)
-            ]
-            |> List.map DMS.FromTuple
+        [ (137, 52, 22.01454)
+        ; (118,  5, 58.96161)
+        ; (144, 55, 39.92147)
+        ; ( 91,  0,  6.11733)
+        ; (174, 59, 59.88481)
+        ]
+        |> List.map DMS.FromTuple
 
     // From the paper, Vincenty's errors were mm of -0.4, -0.4, -0.7, -0.2 and -0.8.
     static let directDistanceErrors : float<m> list =
-            [ 0.000419<m>
-            ; 0.000388<m>
-            ; 0.000708<m>
-            ; 0.000203<m>
-            ; 0.000385<m>
-            ]
+        [ 0.000419<m>
+        ; 0.000388<m>
+        ; 0.000708<m>
+        ; 0.000203<m>
+        ; 0.000385<m>
+        ]
 
     // From the paper, Vincenty's errors were s of -1.2, +0.5, +3.0, -0.3 and -0.3.
     static let directAzimuthRevErrors : DMS list =
