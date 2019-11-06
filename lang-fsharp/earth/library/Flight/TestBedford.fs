@@ -146,8 +146,8 @@ type Bedford1978 () =
     static let es = List.replicate 39 bedfordClarke
 
     // The expected distances for the inverse solution from ACIC
-    // aeronautical charts.
-    static let ds : float<m> list =
+    // aeronautical charts and the distances for the direct problems.
+    static let dsACIC : float<m> list =
         List.replicate 3 80466.478<m>
         @
         [ 80466.477<m>
@@ -306,7 +306,7 @@ type Bedford1978 () =
         List.replicate 39 (DMS.FromTuple (0, 0, 0.0001))
 
     static member IndirectDistanceData : seq<obj[]>=
-        List.map3 (fun e (x, y) d -> (e, x, y, d, 0.037<m>)) es xysInverse ds
+        List.map3 (fun e (x, y) d -> (e, x, y, d, 0.037<m>)) es xysInverse dsACIC
         |> Seq.map FSharpValue.GetTupleFields
 
     static member IndirectAzimuthFwdData : seq<obj[]>=
@@ -316,14 +316,14 @@ type Bedford1978 () =
         |> Seq.map FSharpValue.GetTupleFields
 
     static member DirectDistanceData : seq<obj[]>=
-        let eds = List.zip es ds
+        let eds = List.zip es dsACIC
         let xys' = List.zip xs ysACIC
         let zts = List.zip fwdAzimuths directDistanceErrorsACIC
         List.map3 (fun (e, d) (x, y) (azFwd, t) -> (e, x, d, azFwd, y, t)) eds xys' zts
         |> Seq.map FSharpValue.GetTupleFields
 
     static member DirectAzimuthRevData : seq<obj[]>=
-        let eds = List.zip es ds
+        let eds = List.zip es dsACIC
         let xrs = List.zip xs directAzimuthRevErrors
         let zzs = List.zip fwdAzimuths revAzimuths
         List.map3 (fun (e, d) (x, t) (azFwd, azRev) -> (e, x, d, azFwd, azRev, t)) eds xrs zzs
