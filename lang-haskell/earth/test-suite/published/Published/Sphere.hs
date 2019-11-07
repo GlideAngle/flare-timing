@@ -53,7 +53,7 @@ geoSciAuAzTolerance :: AzTolerance
 geoSciAuAzTolerance = DMS (0, 7, 0.015)
 
 vincentyAzTolerance :: AzTolerance
-vincentyAzTolerance = DMS (1, 26, 0.017)
+vincentyAzTolerance = DMS (1, 26, 53.0)
 
 bedfordAzTolerance :: AzTolerance
 bedfordAzTolerance = DMS (0, 12, 0.017)
