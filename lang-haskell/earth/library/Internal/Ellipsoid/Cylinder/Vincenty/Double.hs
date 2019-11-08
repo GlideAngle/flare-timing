@@ -191,7 +191,7 @@ directUnchecked
 -- |
 -- TODO: Why is a point 286 m out is 0.254 km away.
 -- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 286.27334927563106 m |]) [u| 332.30076790172313 deg |]
--- (-32.46133783488965°, 148.9890000000845°)
+-- (-32.46134434768862°, 148.98900000008402°)
 --
 -- >>> :{
 --     V.distance
@@ -205,7 +205,7 @@ directUnchecked
 --
 -- TODO: Why is a point 177 m out is 0.157 km away.
 -- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
--- (-32.465049082605454°, 148.9890000000324°)
+-- (-32.465045050546465°, 148.98900000003223°)
 --
 -- >>> :{
 --     V.distance
@@ -219,7 +219,7 @@ directUnchecked
 --
 -- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (-45°, 0°).
 -- >>> circumDeg (LatLng (Lat [u| -45.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 90 deg |]
--- (-44.99999999886946°, 7.603632320668826e-12°)
+-- (-44.99999999887325°, 7.578165563654428e-12°)
 --
 -- >>> :{
 --     V.distance
@@ -233,7 +233,7 @@ directUnchecked
 --
 -- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (+45°, 0°).
 -- >>> circumDeg (LatLng (Lat [u| 45.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 90 deg |]
--- (44.99999999886946°, 7.603632320668826e-12°)
+-- (44.99999999887325°, 7.578165563654428e-12°)
 --
 -- >>> :{
 --     V.distance
@@ -246,7 +246,7 @@ directUnchecked
 -- [u| 0.0 km |]
 --
 -- >>> circumDeg (LatLng (Lat [u| 0.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 0 deg |]
--- (3.629662729528601e-4°, 0.0°)
+-- (3.6174778910453333e-4°, 0.0°)
 --
 -- >>> circumDeg (LatLng (Lat [u| 0.0 deg |], Lng [u| 0.0 deg |])) (Radius [u| 40.0 m |]) [u| 90 deg |]
 -- (2.2150663706180143e-20°, 7.60643335827154e-12°)
