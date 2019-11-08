@@ -163,11 +163,14 @@ inverseStuifbergen
                 _L' | abs _L' <= pi -> _L'
                 _ -> normalizeLng _L₂ - normalizeLng _L₁
 
+        sinΦ₁ = sin _Φ₁; sinΦ₂ = sin _Φ₂
+        cosΦ₁ = cos _Φ₁; cosΦ₂ = cos _Φ₂
+
+        sinΦ₁sinΦ₂ = sinΦ₁ * sinΦ₂
+        cosΦ₁cosΦ₂ = cosΦ₁ * cosΦ₂
+
         sinU₁ = sin _U₁; sinU₂ = sin _U₂
         cosU₁ = cos _U₁; cosU₂ = cos _U₂
-
-        sinU₁sinU₂ = sinU₁ * sinU₂
-        cosU₁cosU₂ = cosU₁ * cosU₂
 
         sinλ = sin λ
         cosλ = cos λ
@@ -178,7 +181,7 @@ inverseStuifbergen
         i = cosU₂ * sinλ
         j = cosU₁ * sinU₂ - sinU₁ * cosU₂ * cosλ
 
-        cosd = sinU₁sinU₂ + cosU₁cosU₂ * cosλ
+        cosd = sinΦ₁sinΦ₂ + cosΦ₁cosΦ₂ * cosλ
         d = acos cosd
         sind = sin d
         sin2d = sin $ 2 * d
@@ -187,12 +190,12 @@ inverseStuifbergen
         _P =
             case 1 + cosd of
                 0 -> 0
-                denom -> let ss = sinU₁ + sinU₂ in ss * ss / denom
+                denom -> let ss = sinΦ₁ + sinΦ₂ in ss * ss / denom
 
         _Q =
             case 1 - cosd of
                 0 -> 0
-                denom -> let ss = sinU₁ - sinU₂ in ss * ss / denom
+                denom -> let ss = sinΦ₁ - sinΦ₂ in ss * ss / denom
 
         _X = _P + _Q
         _Y = _P - _Q
