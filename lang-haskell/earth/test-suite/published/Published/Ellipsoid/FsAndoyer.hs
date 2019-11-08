@@ -52,27 +52,27 @@ unitsR =
     ]
 
 geoSciAuAzTolerance :: AzTolerance
-geoSciAuAzTolerance = DMS (0, 3, 0.02)
+geoSciAuAzTolerance = DMS (0, 3, 29.4)
 
 vincentyAzTolerance :: AzTolerance
 vincentyAzTolerance = DMS (1, 29, 0)
 
 bedfordAzTolerance :: AzTolerance
-bedfordAzTolerance = DMS (0, 6, 1.6)
+bedfordAzTolerance = DMS (0, 6, 14.4)
 
 geoSciAuTolerance :: Fractional a => GetTolerance a
-geoSciAuTolerance = const . convert $ [u| 42 m |]
+geoSciAuTolerance = const . convert $ [u| 49.8 mm |]
 
 ngsTolerance :: Fractional a => GetTolerance a
-ngsTolerance = const . convert $ [u| 369 m |]
+ngsTolerance = const . convert $ [u| 1.19 m |]
 
 vincentyTolerance :: Fractional a => GetTolerance a
-vincentyTolerance = const . convert $ [u| 32.6 km |]
+vincentyTolerance = const . convert $ [u| 81.6 m |]
 
 vincentyIndirectDistanceTolerances :: Fractional a => [TestTolerance a]
 vincentyIndirectDistanceTolerances =
     TestToleranceAmount . convert <$>
-        [ [u| 54.20  m |]
+        [ [u| 54.20 m |]
         , [u|  1.27 m |]
         , [u| 10.90 m |]
         , [u|  1.16 m |]
