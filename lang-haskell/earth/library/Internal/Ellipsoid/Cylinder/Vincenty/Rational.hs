@@ -49,7 +49,7 @@ import qualified Flight.Earth.Math as F (atan2')
 import Flight.Earth.Math (cos2)
 import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
 
-iterateVincenty
+iterateAngularDistance
     :: Epsilon
     -> GeodeticAccuracy Rational
     -> Rational
@@ -59,7 +59,7 @@ iterateVincenty
     -> Rational
     -> Rational
     -> Rational
-iterateVincenty
+iterateAngularDistance
     epsilon@(Epsilon eps)
     accuracy@(GeodeticAccuracy tolerance)
     _A
@@ -69,8 +69,8 @@ iterateVincenty
     σ1
     σ =
     if abs (σ - σ') < tolerance
-       then σ 
-       else iterateVincenty epsilon accuracy _A _B s b σ1 σ'
+       then σ
+       else iterateAngularDistance epsilon accuracy _A _B s b σ1 σ'
     where
         (cos2σm, cos²2σm) = cos2 cos' σ1 σ
         sinσ = sin' σ
@@ -88,7 +88,7 @@ iterateVincenty
                     )
                 )
 
-        σ' = s / b * _A + _Δσ
+        σ' = s / (b * _A) + _Δσ
 
         sin' = F.sin eps
         cos' = F.cos eps
@@ -119,7 +119,7 @@ direct'
     GeodeticDirect $
     DirectSolution
         { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
-        , α₂ = Just . TrueCourse . MkQuantity $ sinα / (-j)
+        , α₂ = Just . TrueCourse . MkQuantity $ atan2' sinα (-j)
         }
     where
         MkQuantity b = polarRadius ellipsoid
@@ -135,7 +135,7 @@ direct'
         _B = u² / 1024 * (256 + u² * (-128 + u² * (74 - 47 * u²)))
 
         -- Solution
-        σ = iterateVincenty epsilon accuracy _A _B s b σ1 (s / (b * _A))
+        σ = iterateAngularDistance epsilon accuracy _A _B s b σ1 (s / (b * _A))
         sinσ = sin' σ
         cosσ = cos' σ
         cosα1 = cos' α1

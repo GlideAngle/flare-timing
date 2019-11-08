@@ -49,10 +49,10 @@ import Flight.Geodesy (EarthMath(..), DirectProblem(..), DirectSolution(..))
 import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 import Flight.Earth.Math (cos2)
 
-iterateVincenty
+iterateAngularDistance
     :: (Floating a, Ord a)
     => GeodeticAccuracy a -> a -> a -> a -> a -> a -> a -> a
-iterateVincenty
+iterateAngularDistance
     accuracy@(GeodeticAccuracy tolerance)
     _A
     _B
@@ -63,7 +63,7 @@ iterateVincenty
     if abs (σ - σ') < tolerance
         then σ
         else
-            iterateVincenty accuracy _A _B s b σ1 σ'
+            iterateAngularDistance accuracy _A _B s b σ1 σ'
     where
         (cos2σm, cos²2σm) = cos2 cos σ1 σ
         sinσ = sin σ
@@ -81,7 +81,7 @@ iterateVincenty
                     )
                 )
 
-        σ' = s / b * _A + _Δσ
+        σ' = s / (b * _A) + _Δσ
 
 -- | The solution to the direct geodesy problem with input latitude rejected
 -- outside the range -90° .. 90° and longitude normalized to -180° .. 180°.
@@ -148,7 +148,7 @@ directUnchecked
     GeodeticDirect $
         DirectSolution
             { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
-            , α₂ = Just . TrueCourse . MkQuantity $ sinα / (-j)
+            , α₂ = Just . TrueCourse . MkQuantity $ atan2 sinα (-j)
             }
     where
         MkQuantity b = polarRadius ellipsoid
@@ -164,7 +164,7 @@ directUnchecked
         _B = u² / 1024 * (256 + u² * (-128 + u² * (74 - 47 * u²)))
 
         -- Solution
-        σ = iterateVincenty accuracy _A _B s b σ1 (s / (b * _A))
+        σ = iterateAngularDistance accuracy _A _B s b σ1 (s / (b * _A))
         sinσ = sin σ
         cosσ = cos σ
         cosα1 = cos α1
