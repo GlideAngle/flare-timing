@@ -69,6 +69,17 @@ ngsTolerance = const . convert $ [u| 369 m |]
 vincentyTolerance :: Fractional a => GetTolerance a
 vincentyTolerance = const . convert $ [u| 32.6 km |]
 
+vincentyIndirectDistanceTolerances :: Fractional a => [TestTolerance a]
+vincentyIndirectDistanceTolerances =
+    -- WARNING: These distances are way off.
+    TestToleranceAmount . convert <$>
+        [ [u|  8.45 km |]
+        , [u|  3.00 km |]
+        , [u| 16.0  km |]
+        , [u|  1.15 km |]
+        , [u| 0.832 km |]
+        ]
+
 bedfordTolerance
     :: (Real a, Fractional a)
     => Quantity a [u| m |]
@@ -249,7 +260,7 @@ vincentyUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecks
-                (repeat $ TestToleranceLookup vincentyTolerance)
+                vincentyIndirectDistanceTolerances
                 vincentyAzTolerance
                 V.ellipsoids
                 V.inverseSolutions
