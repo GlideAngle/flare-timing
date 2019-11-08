@@ -8,7 +8,8 @@ module Flat.Distance
 import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure (u, zero)
+import Test.Tasty.HUnit.Compare as HU
+import Data.UnitsOfMeasure ((+:), (-:), u, zero, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -78,15 +79,28 @@ emptyDistance = testGroup "Point-to-point distance"
         edgesSum (distancePointToPoint spanR []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
+
 toDistance :: String -> [[Zone Rational]] -> TestTree
 toDistance title xs =
-    testGroup title (f <$> xs)
+    testGroup title
+        [ testGroup title (f <$> xs)
+        , testGroup title (g <$> xs)
+        ]
     where
         Radius eR = earthRadius
+        εPlus = [u| 0.5 mm |]
+        εMinus = [u| 0.5 mm |]
+        plusR = TaskDistance (eR +: convert εPlus)
+        minusR = TaskDistance (eR -: convert εMinus)
+
         f x =
-            HU.testCase (mconcat [ "distance ", show x, " = earth radius" ]) $
+            HU.testCase (mconcat [ "distance ", show x, " <= earth radius + ε " ++ show plusR]) $
                 edgesSum (distancePointToPoint spanR x)
-                    @?= TaskDistance eR
+                    @?<= TaskDistance (eR +: convert εPlus)
+        g x =
+            HU.testCase (mconcat [ "distance ", show x, " >= earth radius - ε " ++ show minusR]) $
+                edgesSum (distancePointToPoint spanR x)
+                    @?>= TaskDistance (eR -: convert εMinus)
 
 ptsDistance :: [[Pt]]
 ptsDistance =

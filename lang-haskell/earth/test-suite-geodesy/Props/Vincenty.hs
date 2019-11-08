@@ -19,7 +19,7 @@ import Flight.Zone (Zone(..), center)
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Earth.Ellipsoid (wgs84)
 import Props.Zone (ZonesTest(..))
-import Ellipsoid.Span (spanD, spanR)
+import Ellipsoid.Vincenty.Span (spanD, spanR)
 
 newtype VincentyTest a =
     VincentyTest (LatLng a [u| rad |], LatLng a [u| rad |])

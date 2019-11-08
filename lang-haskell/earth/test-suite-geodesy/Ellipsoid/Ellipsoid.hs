@@ -19,11 +19,11 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.singleTest
         "Vincenty distances, are not negative"
         $ QC.QC
-        $ QC.withMaxSuccess 10
+        $ QC.withMaxSuccess 6
         $ QC.property distanceVincenty
     , QC.singleTest
         "Zone distances, point-to-point, are not negative"
         $ QC.QC
-        $ QC.withMaxSuccess 10
+        $ QC.withMaxSuccess 2
         $ QC.property distancePoint
     ]
