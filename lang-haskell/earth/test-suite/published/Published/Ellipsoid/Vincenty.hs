@@ -70,8 +70,8 @@ vincentyTolerance :: Fractional a => GetTolerance a
 vincentyTolerance = const . convert $ [u| 0.8 mm |]
 
 -- From the paper, Vincenty's errors were mm of -0.4, -0.4, -0.7, -0.2 and -0.8.
-vincentyInverseDistanceTolerances :: Fractional a => [TestTolerance a]
-vincentyInverseDistanceTolerances =
+vincentyIndirectDistanceTolerances :: Fractional a => [TestTolerance a]
+vincentyIndirectDistanceTolerances =
     TestToleranceAmount . convert <$>
         [ [u| 0.404 mm |]
         , [u| 0.387 mm |]
@@ -376,7 +376,7 @@ vincentyUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecks
-                vincentyInverseDistanceTolerances
+                vincentyIndirectDistanceTolerances
                 vincentyAzTolerance
                 V.ellipsoids
                 V.inverseSolutions
