@@ -58,7 +58,7 @@ vincentyAzTolerance :: AzTolerance
 vincentyAzTolerance = DMS (0, 0, 0.016667)
 
 bedfordAzTolerance :: AzTolerance
-bedfordAzTolerance = DMS (0, 0, 0.139737)
+bedfordAzTolerance = DMS (0, 0, 0.549)
 
 geoSciAuTolerance :: Fractional a => GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 0.5 mm |]
@@ -92,14 +92,130 @@ bedfordTolerance d'
     where
         d = convert d'
 
+-- From the paper, these are the differences to the ACIC distance.
+bedfordInverseDistanceErrorsACIC :: Fractional a => [TestTolerance a]
+bedfordInverseDistanceErrorsACIC =
+    -- NOTE: The values from the paper are in the comments.
+    TestToleranceAmount . convert <$>
+        [ [u| 0.01170 m |] -- .022
+        , [u| 0.00696 m |] -- .003
+        , [u| 0.00362 m |] -- .001
+
+        , [u| 0.00559 m |] -- .012
+        , [u| 0.01130 m |] -- .014
+        , [u| 0.00728 m |] -- .011
+
+        , [u| 0.01290 m |] -- .008
+        , [u| 0.00094 m |] -- .001
+        , [u| 0.00311 m |] -- .008
+
+        , [u| 0.01270 m |] -- .020
+        , [u| 0.03670 m |] -- .038
+        , [u| 0.00944 m |] -- .006
+
+        , [u| 0.01120 m |] -- .013
+        , [u| 0.00218 m |] -- .002
+        , [u| 0.00281 m |] -- .004
+
+        , [u| 0.00539 m |] -- .004
+        , [u| 0.00495 m |] -- .004
+        , [u| 0.00428 m |] -- .005
+
+        , [u| 0.00309 m |] -- .002
+        , [u| 0.00156 m |] -- .005
+        , [u| 0.00134 m |] -- .001
+
+        , [u| 0.01470 m |] -- .016
+        , [u| 0.00975 m |] -- .010
+        , [u| 0.00521 m |] -- .006
+
+        , [u| 0.00087 m |] -- .002
+        , [u| 0.00358 m |] -- .001
+        , [u| 0.00266 m |] -- .003
+
+        , [u| 0.01470 m |] -- .014
+        , [u| 0.00650 m |] -- .007
+        , [u| 0.00657 m |] -- .007
+
+        , [u| 0.00386 m |] -- .005
+        , [u| 0.00931 m |] -- .011
+        , [u| 0.01510 m |] -- .015
+
+        , [u| 0.00332 m |] -- .004
+        , [u| 0.00801 m |] -- .008
+        , [u| 0.00325 m |] -- .003
+
+        , [u| 0.00603 m |] -- .005
+        , [u| 0.00430 m |] -- .004
+        , [u| 0.00627 m |] -- .007
+        ]
+
+-- From the paper, these are the differences to the ACIC point.
+bedfordDirectDistanceErrorsACIC :: Fractional a => [TestTolerance a]
+bedfordDirectDistanceErrorsACIC =
+    -- NOTE: The values from the paper are in the comments.
+    TestToleranceAmount . convert <$>
+        [ [u| 0.01170 m |] -- .012
+        , [u| 0.00696 m |] -- .007
+        , [u| 0.00362 m |] -- .004
+
+        , [u| 0.00559 m |] -- .017
+        , [u| 0.01130 m |] -- .012
+        , [u| 0.00728 m |] -- .015
+
+        , [u| 0.01290 m |] -- .014
+        , [u| 0.00094 m |] -- .008
+        , [u| 0.00311 m |] -- .008
+
+        , [u| 0.01270 m |] -- .041
+        , [u| 0.03670 m |] -- .060
+        , [u| 0.00944 m |] -- .009
+
+        , [u| 0.01120 m |] -- .011
+        , [u| 0.00218 m |] -- .002
+        , [u| 0.00281 m |] -- .003
+
+        , [u| 0.00539 m |] -- .007
+        , [u| 0.00495 m |] -- .012
+        , [u| 0.00428 m |] -- .010
+
+        , [u| 0.00309 m |] -- .005
+        , [u| 0.00156 m |] -- .005
+        , [u| 0.00134 m |] -- .004
+
+        , [u| 0.01470 m |] -- .015
+        , [u| 0.00975 m |] -- .010
+        , [u| 0.00521 m |] -- .005
+
+        , [u| 0.00087 m |] -- .019
+        , [u| 0.00358 m |] -- .007
+        , [u| 0.00266 m |] -- .007
+
+        , [u| 0.01470 m |] -- .015
+        , [u| 0.00650 m |] -- .015
+        , [u| 0.00657 m |] -- .007
+
+        , [u| 0.00386 m |] -- .005
+        , [u| 0.00931 m |] -- .010
+        , [u| 0.01510 m |] -- .015
+
+        , [u| 0.00332 m |] -- .012
+        , [u| 0.00801 m |] -- .010
+        , [u| 0.00325 m |] -- .007
+
+        , [u| 0.00603 m |] -- .008
+        , [u| 0.00430 m |] -- .014
+        , [u| 0.00627 m |] -- .010
+        ]
+
 dblDirectChecks
-    :: GetTolerance Double
+    :: [TestTolerance Double]
     -> [Ellipsoid Double]
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
-dblDirectChecks tolerance ellipsoid =
-    T.dblDirectChecks tolerance (spanD <$> ellipsoid)
+dblDirectChecks distTolerances ellipsoid =
+    T.dblDirectChecks distTolerances (spanD <$> ellipsoid)
 
 ratDirectChecks
     :: GetTolerance Rational
@@ -170,7 +286,7 @@ geoSciAuUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                geoSciAuTolerance
+                (repeat $ TestToleranceLookup geoSciAuTolerance)
                 (repeat wgs84)
                 G.directSolutions
                 G.directProblems
@@ -220,7 +336,7 @@ ngsUnits =
     [ testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                ngsTolerance
+                (repeat $ TestToleranceLookup ngsTolerance)
                 (repeat nad83)
                 N.directSolutions
                 N.directProblems
@@ -270,7 +386,7 @@ vincentyUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                vincentyTolerance
+                (repeat $ TestToleranceLookup vincentyTolerance)
                 V.ellipsoids
                 V.directSolutions
                 V.directProblems
@@ -306,7 +422,7 @@ bedfordUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecksDiffAzRev180
-                (repeat $ TestToleranceLookup bedfordTolerance)
+                bedfordInverseDistanceErrorsACIC
                 bedfordAzTolerance
                 (repeat bedfordClarke)
                 B.inverseSolutions
@@ -316,7 +432,7 @@ bedfordUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                bedfordTolerance
+                bedfordDirectDistanceErrorsACIC
                 (repeat bedfordClarke)
                 B.directSolutions
                 B.directProblems

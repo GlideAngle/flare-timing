@@ -82,12 +82,12 @@ bedfordTolerance d'
         d = convert d'
 
 dblDirectChecks
-    :: GetTolerance Double
+    :: [TestTolerance Double]
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
-dblDirectChecks tolerance =
-    T.dblDirectChecks tolerance (repeat spanD)
+dblDirectChecks distTolerances =
+    T.dblDirectChecks distTolerances (repeat spanD)
 
 ratDirectChecks
     :: GetTolerance Rational
@@ -153,7 +153,7 @@ geoSciAuUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                geoSciAuTolerance
+                (repeat $ TestToleranceLookup geoSciAuTolerance)
                 G.directSolutions
                 G.directProblems
         ]
@@ -195,7 +195,7 @@ vincentyUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                vincentyTolerance
+                (repeat $ TestToleranceLookup vincentyTolerance)
                 V.directSolutions
                 V.directProblems
         ]
@@ -237,7 +237,7 @@ bedfordUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                bedfordTolerance
+                (repeat $ TestToleranceLookup bedfordTolerance)
                 B.directSolutions
                 B.directProblems
         ]

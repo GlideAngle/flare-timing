@@ -15,7 +15,6 @@ module Tolerance
 
 import Prelude hiding (span)
 import Data.Bifunctor
-import Data.List (zipWith5)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit as HU (testCase)
 import Test.Tasty.HUnit.Compare ((@?<=))
@@ -214,15 +213,21 @@ expectedR :: Real a => Quantity a [u| m |] -> QTaskDistance Rational [u| m |]
 expectedR d = TaskDistance $ toRational' d
 
 dblDirectChecks
-    :: GetTolerance Double
+    :: [TestTolerance Double]
     -> [SpanLatLng Double]
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
-dblDirectChecks getTolerance =
-    zipWith3 f
+dblDirectChecks distTolerances spans solns probs =
+    [ f t span soln prob
+    | t <- distTolerances
+    | span <- spans
+    | soln <- solns
+    | prob <- probs
+    ]
     where
         f
+            distTolerance
             span
             D.DirectSolution{D.y = y}
             D.DirectProblem{D.x = x, D.α₁ = α₁, D.s = sExpected} =
@@ -230,9 +235,12 @@ dblDirectChecks getTolerance =
             $ diff (sFoundD span x y) sExpected
             @?<= TaskDistance tolerance
             where
+                tolerance :: Quantity Double [u| m |]
                 tolerance =
-                    convert . getTolerance
-                    $ (\(TaskDistance q) -> q) sExpected
+                    convert $
+                    case distTolerance of
+                    TestToleranceAmount t -> t
+                    TestToleranceLookup g -> g $ (\(TaskDistance q) -> q) sExpected
 
 ratDirectChecks
     :: GetTolerance Rational
