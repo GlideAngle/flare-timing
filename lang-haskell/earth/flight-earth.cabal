@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eca8192026fffe6908d8f2b47441a58f43276cf47a8049450287280106fb6336
+-- hash: 9918612e1f6908682039dcbae6f3379a3ad25865444aff5eb990b2a0b8414d46
 
 name:           flight-earth
 version:        0.1.0
@@ -703,6 +703,7 @@ test-suite published
       Published.Bedford1978
       Published.Ellipsoid.AndoyerLambert
       Published.Ellipsoid.ForsytheAndoyerLambert
+      Published.Ellipsoid.FsAndoyer
       Published.Ellipsoid.Vincenty
       Published.Flat
       Published.GeodeticSurvey
@@ -769,6 +770,7 @@ test-suite published-r
       Published.Bedford1978
       Published.Ellipsoid.AndoyerLambert
       Published.Ellipsoid.ForsytheAndoyerLambert
+      Published.Ellipsoid.FsAndoyer
       Published.Ellipsoid.Vincenty
       Published.Flat
       Published.GeodeticSurvey

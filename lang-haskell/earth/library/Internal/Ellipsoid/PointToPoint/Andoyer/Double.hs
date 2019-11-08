@@ -61,7 +61,7 @@ inverseFs
             { s =
                 TaskDistance . MkQuantity $
                     case andoyer of
-                         FsAndoyer -> a * (d + f * d₁)
+                         FsAndoyer -> a * (d + d₁)
                          _ -> error "FsAndoyer expected."
 
             , α₁ = MkQuantity $ atan2 i j
@@ -78,11 +78,14 @@ inverseFs
                 _L' | abs _L' <= pi -> _L'
                 _ -> normalizeLng _L₂ - normalizeLng _L₁
 
+        sinΦ₁ = sin _Φ₁; sinΦ₂ = sin _Φ₂
+        cosΦ₁ = cos _Φ₁; cosΦ₂ = cos _Φ₂
+
+        sinΦ₁sinΦ₂ = sinΦ₁ * sinΦ₂
+        cosΦ₁cosΦ₂ = cosΦ₁ * cosΦ₂
+
         sinU₁ = sin _U₁; sinU₂ = sin _U₂
         cosU₁ = cos _U₁; cosU₂ = cos _U₂
-
-        sinU₁sinU₂ = sinU₁ * sinU₂
-        cosU₁cosU₂ = cosU₁ * cosU₂
 
         sinλ = sin λ
         cosλ = cos λ
@@ -93,13 +96,13 @@ inverseFs
         i = cosU₂ * sinλ
         j = cosU₁ * sinU₂ - sinU₁ * cosU₂ * cosλ
 
-        cosd = sinU₁sinU₂ + cosU₁cosU₂ * cosλ
+        cosd = sinΦ₁sinΦ₂ + cosΦ₁cosΦ₂ * cosλ
         d = acos cosd
         sind = sin d
 
         -- NOTE: This is the same Andoyer correction as used in FS.
-        _K = let x = sinU₁ - sinU₂ in x * x
-        _L = let x = sinU₁ + sinU₂ in x * x
+        _K = let x = sinΦ₁ - sinΦ₂ in x * x
+        _L = let x = sinΦ₁ + sinΦ₂ in x * x
         _3sind = 3 * sind
 
         _1minuscosd = 1 - cosd
