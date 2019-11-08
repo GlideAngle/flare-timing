@@ -132,7 +132,7 @@ unitsR =
 
     , p6 mkPart
         [u| 130.286739 km |]
-        [u| 75.113085 km |]
+        [u| 75.179469 km |]
 
     , mkDay "Task 7" d7
         [u| 183.555326 km |]
