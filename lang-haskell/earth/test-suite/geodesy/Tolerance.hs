@@ -1,7 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Tolerance
-    ( GetTolerance
+    ( TestTolerance(..)
+    , GetTolerance
     , AzTolerance
     , diff
     , showTolerance
@@ -33,6 +34,10 @@ import Flight.Geodesy (DProb, DSoln, IProb, ISoln)
 
 type GetTolerance a = Quantity a [u| m |] -> Quantity a [u| km |]
 type AzTolerance = DMS
+
+data TestTolerance a
+    = TestToleranceAmount (Quantity a [u| km |])
+    | TestToleranceLookup (Quantity a [u| m |] -> Quantity a [u| km |])
 
 showTolerance :: (Real a, Fractional a) => Quantity a [u| m |] -> String
 showTolerance d
@@ -254,7 +259,7 @@ ratDirectChecks getTolerance =
 dblInverseChecks
     :: DiffDMS -- ^ Difference in forward azimuth
     -> DiffDMS -- ^ Difference in reverse azimuth
-    -> GetTolerance Double
+    -> [TestTolerance Double]
     -> AzTolerance
     -> [SpanLatLng Double]
     -> [AzimuthFwd Double]
@@ -265,16 +270,25 @@ dblInverseChecks
 dblInverseChecks
     diffAzFwd
     diffAzRev
-    getTolerance
+    distTolerances
     azTolerance
     spans
     azFwds
     azRevs
     solns
     probs =
-        concat $ zipWith5 f spans azFwds azRevs solns probs
+        concat
+        [ f t span azFwd azRev soln prob
+        | t <- distTolerances
+        | span <- spans
+        | azFwd <- azFwds
+        | azRev <- azRevs
+        | soln <- solns
+        | prob <- probs
+        ]
     where
         f
+            distTolerance
             span
             azFwd
             azRev
@@ -301,7 +315,13 @@ dblInverseChecks
                 @?<= Just azTolerance
             ]
             where
-                tolerance = convert . getTolerance $ (\(TaskDistance q) -> q) s
+                tolerance :: Quantity Double [u| m |]
+                tolerance =
+                    convert $
+                    case distTolerance of
+                    TestToleranceAmount t -> t
+                    TestToleranceLookup g -> g $ (\(TaskDistance q) -> q) s
+
                 s' = sFoundD span x y
                 α₁' = fromQuantity <$> azFwdFoundD azFwd x y
                 α₂' = fromQuantity <$> azRevFoundD azRev x y

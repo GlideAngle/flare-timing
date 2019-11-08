@@ -20,7 +20,7 @@ import qualified Published.Bedford1978 as B
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
-import Tolerance (GetTolerance, AzTolerance)
+import Tolerance (TestTolerance(..), GetTolerance, AzTolerance)
 import qualified Tolerance as T
     ( dblDirectChecks, ratDirectChecks
     , dblInverseChecks, ratInverseChecks
@@ -98,32 +98,32 @@ ratDirectChecks tolerance =
     T.ratDirectChecks tolerance (repeat spanR)
 
 dblInverseChecks
-    :: GetTolerance Double
+    :: [TestTolerance Double]
     -> AzTolerance
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecks tolerance azTolerance =
+dblInverseChecks distTolerances azTolerance =
     T.dblInverseChecks
         absDiffDMS
         absDiffDMS
-        tolerance
+        distTolerances
         azTolerance
         (repeat spanD)
         (repeat azFwdD)
         (repeat azRevD)
 
 dblInverseChecksDiffAzRev180
-    :: GetTolerance Double
+    :: [TestTolerance Double]
     -> AzTolerance
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecksDiffAzRev180 tolerance azTolerance =
+dblInverseChecksDiffAzRev180 distTolerances azTolerance =
     T.dblInverseChecks
         absDiffDMS
         absDiffDMS180
-        tolerance
+        distTolerances
         azTolerance
         (repeat spanD)
         (repeat azFwdD)
@@ -144,7 +144,7 @@ geoSciAuUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecksDiffAzRev180
-                geoSciAuTolerance
+                (repeat $ TestToleranceLookup geoSciAuTolerance)
                 geoSciAuAzTolerance
                 G.inverseSolutions
                 G.inverseProblems
@@ -186,7 +186,7 @@ vincentyUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecks
-                vincentyTolerance
+                (repeat $ TestToleranceLookup vincentyTolerance)
                 vincentyAzTolerance
                 V.inverseSolutions
                 V.inverseProblems
@@ -228,7 +228,7 @@ bedfordUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecksDiffAzRev180
-                bedfordTolerance
+                (repeat $ TestToleranceLookup bedfordTolerance)
                 bedfordAzTolerance
                 B.inverseSolutions
                 B.inverseProblems

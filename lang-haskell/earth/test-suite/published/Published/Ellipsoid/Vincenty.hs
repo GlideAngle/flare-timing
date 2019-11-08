@@ -25,7 +25,7 @@ import qualified Published.Bedford1978 as B
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
-import Tolerance (GetTolerance, AzTolerance)
+import Tolerance (TestTolerance(..), GetTolerance, AzTolerance)
 import qualified Tolerance as T
     ( dblDirectChecks, ratDirectChecks
     , dblInverseChecks, ratInverseChecks
@@ -69,6 +69,17 @@ ngsTolerance = const . convert $ [u| 0.15 mm |]
 vincentyTolerance :: Fractional a => GetTolerance a
 vincentyTolerance = const . convert $ [u| 0.8 mm |]
 
+-- From the paper, Vincenty's errors were mm of -0.4, -0.4, -0.7, -0.2 and -0.8.
+vincentyInverseDistanceTolerances :: Fractional a => [TestTolerance a]
+vincentyInverseDistanceTolerances =
+    TestToleranceAmount . convert <$>
+        [ [u| 0.404 mm |]
+        , [u| 0.387 mm |]
+        , [u| 0.703 mm |]
+        , [u| 0.197 mm |]
+        , [u| 0.787 mm |]
+        ]
+
 bedfordTolerance
     :: (Real a, Fractional a)
     => Quantity a [u| m |]
@@ -100,34 +111,34 @@ ratDirectChecks tolerance ellipsoid =
     T.ratDirectChecks tolerance (spanR <$> ellipsoid)
 
 dblInverseChecks
-    :: GetTolerance Double
+    :: [TestTolerance Double]
     -> AzTolerance
     -> [Ellipsoid Double]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecks tolerance azTolerance ellipsoid =
+dblInverseChecks distTolerances azTolerance ellipsoid =
     T.dblInverseChecks
         absDiffDMS
         absDiffDMS
-        tolerance
+        distTolerances
         azTolerance
         (spanD <$> ellipsoid)
         (azFwdD <$> ellipsoid)
         (azRevD <$> ellipsoid)
 
 dblInverseChecksDiffAzRev180
-    :: GetTolerance Double
+    :: [TestTolerance Double]
     -> AzTolerance
     -> [Ellipsoid Double]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecksDiffAzRev180 tolerance azTolerance ellipsoid =
+dblInverseChecksDiffAzRev180 distTolerances azTolerance ellipsoid =
     T.dblInverseChecks
         absDiffDMS
         absDiffDMS180
-        tolerance
+        distTolerances
         azTolerance
         (spanD <$> ellipsoid)
         (azFwdD <$> ellipsoid)
@@ -149,7 +160,7 @@ geoSciAuUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecksDiffAzRev180
-                geoSciAuTolerance
+                (repeat $ TestToleranceLookup geoSciAuTolerance)
                 geoSciAuAzTolerance
                 (repeat wgs84)
                 G.inverseSolutions
@@ -249,7 +260,7 @@ vincentyUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecks
-                vincentyTolerance
+                vincentyInverseDistanceTolerances
                 vincentyAzTolerance
                 V.ellipsoids
                 V.inverseSolutions
@@ -295,7 +306,7 @@ bedfordUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecksDiffAzRev180
-                bedfordTolerance
+                (repeat $ TestToleranceLookup bedfordTolerance)
                 bedfordAzTolerance
                 (repeat bedfordClarke)
                 B.inverseSolutions
