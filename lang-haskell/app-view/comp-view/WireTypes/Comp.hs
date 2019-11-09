@@ -31,6 +31,7 @@ module WireTypes.Comp
     , showMinimumDistance
     , showNominalTime
     , showScoreBackTime
+    , showEarthMath
     ) where
 
 import Text.Printf (printf)
@@ -174,6 +175,14 @@ instance FromJSON EarthMath where
             _ -> empty
 
     parseJSON _ = empty
+
+showEarthMath :: EarthMath -> T.Text
+showEarthMath Pythagorus = "Pythagorus"
+showEarthMath Haversines = "Haversines"
+showEarthMath Vincenty = "Vincenty"
+showEarthMath AndoyerLambert = "Andoyer-Lambert"
+showEarthMath ForsytheAndoyerLambert = "Forsythe-Andoyer-Lambert"
+showEarthMath FsAndoyer = "FS-Andoyer"
 
 data Ellipsoid =
     Ellipsoid

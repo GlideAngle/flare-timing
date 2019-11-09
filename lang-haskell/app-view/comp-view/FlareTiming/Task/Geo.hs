@@ -11,36 +11,39 @@ import WireTypes.Route
     , taskLength, taskLegs, showTaskDistance
     )
 import FlareTiming.Events (IxTask(..))
+import WireTypes.Comp (Comp(..), EarthMath(..), showEarthMath)
 
 tableGeo
     :: MonadWidget t m
     => IxTask
+    -> Dynamic t Comp
     -> m ()
-tableGeo ix = do
+tableGeo ix c = do
     elClass "div" "tile is-parent" $ do
         elClass "article" "tile is-child box" $ do
             elClass "p" "title" $ text "Geo distance comparison"
             elClass "div" "content" $
-                tableCmp ix
+                tableCmp ix c
 
 rowOptimal
     :: MonadWidget t m
     => T.Text
-    -> T.Text
+    -> EarthMath
     -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
     -> m ()
-rowOptimal earth algo lnTask = do
+rowOptimal earth eMath lnTask = do
     ln <- (fmap . fmap) taskLength lnTask
     let d = ffor ln (maybe "" $ \TaskLength{..} ->
                 showTaskDistance taskRoute)
 
     legs <- (fmap . fmap) ((maybe "" $ T.pack . show . length . (\TaskLegs{legs} -> legs)) . taskLegs) lnTask
+    let em = showEarthMath eMath
 
     el "tr" $ do
         el "td" $ text earth
-        el "td" $ text algo
+        el "td" $ text em
         el "td" $ text earth
-        el "td" $ text algo
+        el "td" $ text em
         elClass "td" "td-geo-distance" $ dynText d
         elClass "td" "td-geo-legs" $ dynText legs
 
@@ -48,33 +51,33 @@ rowSpherical :: MonadWidget t m => IxTask -> m ()
 rowSpherical ix = do
     pb <- getPostBuild
     let x = holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
-    rowOptimal "Sphere" "Haversines" x
+    rowOptimal "Sphere" Haversines x
 
 rowSphericalNorm :: MonadWidget t m => IxTask -> m ()
 rowSphericalNorm ix = do
     pb <- getPostBuild
     ln <- holdDyn Nothing =<< getTaskLengthNormSphere ix pb
-    rowNorm "Sphere" "Haversines" ln
+    rowNorm "Sphere" Haversines ln
 
-rowEllipsoid :: MonadWidget t m => IxTask -> m ()
-rowEllipsoid ix = do
+rowEllipsoid :: MonadWidget t m => IxTask -> EarthMath -> m ()
+rowEllipsoid ix eMath = do
     pb <- getPostBuild
     let x = holdDyn emptyRoute =<< getTaskLengthEllipsoidEdge ix pb
-    rowOptimal "Ellipsoid" "Vincenty" x
+    rowOptimal "Ellipsoid" eMath x
 
-rowEllipsoidNorm :: MonadWidget t m => IxTask -> m ()
-rowEllipsoidNorm ix = do
+rowEllipsoidNorm :: MonadWidget t m => IxTask -> EarthMath -> m ()
+rowEllipsoidNorm ix eMath = do
     pb <- getPostBuild
     ln <- holdDyn Nothing =<< getTaskLengthNormEllipse ix pb
-    rowNorm "Ellipsoid" "Vincenty" ln
+    rowNorm "Ellipsoid" eMath ln
 
 rowTrackLine
     :: MonadWidget t m
     => T.Text
-    -> T.Text
+    -> EarthMath
     -> Dynamic t (Maybe TrackLine)
     -> m ()
-rowTrackLine earthOut algoOut ln = do
+rowTrackLine earthOut eMath ln = do
     let d = ffor ln (maybe "" $ \TrackLine{distance = x} -> showTaskDistance x)
 
     let legs =
@@ -82,17 +85,17 @@ rowTrackLine earthOut algoOut ln = do
 
     el "tr" $ do
         el "td" $ text earthOut
-        el "td" $ text algoOut
+        el "td" . text $ showEarthMath eMath
         elClass "td" "td-geo-distance" $ dynText d
         elClass "td" "td-geo-legs" $ dynText legs
 
 rowNorm
     :: MonadWidget t m
     => T.Text
-    -> T.Text
+    -> EarthMath
     -> Dynamic t (Maybe TrackLine)
     -> m ()
-rowNorm earthOut algoOut ln = do
+rowNorm earthOut eMath ln = do
     let d = ffor ln (maybe "" $ \TrackLine{distance = x} -> showTaskDistance x)
 
     let legs =
@@ -101,7 +104,7 @@ rowNorm earthOut algoOut ln = do
     elClass "tr" "norm" $ do
         elAttr "td" ("colspan" =: "2") $ text "✓"
         el "td" $ text earthOut
-        el "td" $ text algoOut
+        el "td" . text $ showEarthMath eMath
         elClass "td" "td-geo-distance" $ dynText d
         elClass "td" "td-geo-legs" $ dynText legs
 
@@ -112,16 +115,17 @@ rowProjectedSphere
 rowProjectedSphere ix = do
     pb <- getPostBuild
     ln <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
-    rowTrackLine "Sphere" "Haversines" ln
+    rowTrackLine "Sphere" Haversines ln
 
 rowProjectedEllipsoid
     :: MonadWidget t m
     => IxTask
+    -> EarthMath
     -> m ()
-rowProjectedEllipsoid ix = do
+rowProjectedEllipsoid ix eMath = do
     pb <- getPostBuild
     ln <- holdDyn Nothing =<< getTaskLengthProjectedEdgeEllipsoid ix pb
-    rowTrackLine "Ellipsoid" "Vincenty" ln
+    rowTrackLine "Ellipsoid" eMath ln
 
 rowProjectedPlanar
     :: MonadWidget t m
@@ -146,8 +150,9 @@ rowProjectedPlanar ix = do
 tableCmp
     :: MonadWidget t m
     => IxTask
+    -> Dynamic t Comp
     -> m ()
-tableCmp ix = do
+tableCmp ix c = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -163,16 +168,16 @@ tableCmp ix = do
                     elClass "th" "th-geo-distance" $ text "Distance"
                     elClass "th" "th-geo-legs" $ text "Legs"
 
-            _ <- el "tbody" $ do
-                rowProjectedPlanar ix
-                rowProjectedSphere ix
-                rowProjectedEllipsoid ix
+            dyn_ $ ffor c (\Comp{earthMath} -> el "tbody" $ do
+                    rowProjectedPlanar ix
+                    rowProjectedSphere ix
+                    rowProjectedEllipsoid ix earthMath
 
-                rowSpherical ix
-                rowEllipsoid ix
+                    rowSpherical ix
+                    rowEllipsoid ix earthMath
 
-                rowSphericalNorm ix
-                rowEllipsoidNorm ix
+                    rowSphericalNorm ix
+                    rowEllipsoidNorm ix earthMath)
 
             let tr = el "tr" . elAttr "td" ("colspan" =: "6")
             _ <- el "tfoot" $ do

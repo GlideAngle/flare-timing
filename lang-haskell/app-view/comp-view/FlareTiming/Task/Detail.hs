@@ -205,6 +205,9 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
             case (earth, earthMath) of
                 (EarthAsSphere{}, Haversines) -> s
                 (EarthAsEllipsoid{}, Vincenty) -> e
+                (EarthAsEllipsoid{}, AndoyerLambert) -> e
+                (EarthAsEllipsoid{}, ForsytheAndoyerLambert) -> e
+                (EarthAsEllipsoid{}, FsAndoyer) -> e
                 _ -> s)
 
     planarRoute <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
@@ -318,7 +321,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                         reachStats bonusStats
                                         reach bonusReach
                                         ft dfNt sEx
-                                BasisTabGeo -> tableGeo ix)
+                                BasisTabGeo -> tableGeo ix comp)
 
                             <$> tabBasis
 
