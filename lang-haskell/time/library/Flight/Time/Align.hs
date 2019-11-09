@@ -253,6 +253,7 @@ group
                                       Vincenty -> e
                                       AndoyerLambert -> e
                                       ForsytheAndoyerLambert -> e
+                                      FsAndoyer -> e
                                 )
                                 task
                                 scoredMarkedFixes

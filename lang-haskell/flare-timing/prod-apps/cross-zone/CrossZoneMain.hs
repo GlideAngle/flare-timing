@@ -209,6 +209,8 @@ flownTask Comp{earth, earthMath} math =
             madeZones @Double @Double e
         (e@(ForsytheAndoyerLambert, EarthAsEllipsoid{}), Floating) ->
             madeZones @Double @Double e
+        (e@(FsAndoyer, EarthAsEllipsoid{}), Floating) ->
+            madeZones @Double @Double e
         -- TODO: Implement rational instances of GeoTag typeclass.
         -- No instance for (Flight.Mask.Tag.GeoTag Rational Rational)
         -- arising from a use of ‘madeZones’
