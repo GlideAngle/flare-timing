@@ -824,6 +824,31 @@ getTaskRouteLengths = do
 
         _ -> throwError errTaskLengths
 
+ellipsoidRouteLength :: TaskTrack -> Maybe (QTaskDistance Double [u| m |])
+ellipsoidRouteLength
+    TaskTrack
+        { ellipsoidEdgeToEdge =
+            OptimalRoute{taskRoute = Just TrackLine{distance = d}}} = Just d
+ellipsoidRouteLength
+    TaskTrack
+        { ellipsoidEdgeToEdge =
+            OptimalRoute{taskRoute = Nothing}} = Nothing
+
+flatRouteLength :: TaskTrack -> Maybe (QTaskDistance Double [u| m |])
+flatRouteLength
+    TaskTrack
+        { projection =
+            OptimalRoute
+                { taskRoute =
+                    Just
+                        ProjectedTrackLine
+                            {spherical =
+                                TrackLine
+                                    {distance = d}}}} = Just d
+flatRouteLength
+    TaskTrack
+        { projection = OptimalRoute{taskRoute = Nothing} } = Nothing
+
 getRouteLength
     :: EarthModel Double
     -> EarthMath
@@ -837,31 +862,12 @@ getRouteLength (EarthAsSphere _) Haversines
                     Just
                         TrackLine
                             {distance = d}}} = Just d
-getRouteLength (EarthAsSphere _) _ _ = Nothing
-getRouteLength _ Haversines _ = Nothing
-getRouteLength (EarthAsEllipsoid _) Vincenty
-    TaskTrack
-        { ellipsoidEdgeToEdge =
-            OptimalRoute
-                { taskRoute =
-                    Just
-                        TrackLine
-                            {distance = d}}} = Just d
-getRouteLength (EarthAsEllipsoid _) _ _ = Nothing
-getRouteLength _ Vincenty _ = Nothing
-getRouteLength _ AndoyerLambert _ = Nothing -- TODO: Implement AndoyerLambert algorithm for the ellipsoid
-getRouteLength _ ForsytheAndoyerLambert _ = Nothing -- TODO: Implement AndoyerLambert algorithm for the ellipsoid
-getRouteLength (EarthAsFlat _) Pythagorus
-    TaskTrack
-        { projection =
-            OptimalRoute
-                { taskRoute =
-                    Just
-                        ProjectedTrackLine
-                            {spherical =
-                                TrackLine
-                                    {distance = d}}}} = Just d
-getRouteLength (EarthAsFlat _) _ _ = Nothing
+getRouteLength (EarthAsEllipsoid _) Vincenty track = ellipsoidRouteLength track
+getRouteLength (EarthAsEllipsoid _) AndoyerLambert track = ellipsoidRouteLength track
+getRouteLength (EarthAsEllipsoid _) ForsytheAndoyerLambert track = ellipsoidRouteLength track
+getRouteLength (EarthAsEllipsoid _) FsAndoyer track = ellipsoidRouteLength track
+getRouteLength (EarthAsFlat _) Pythagorus track = flatRouteLength track
+getRouteLength _ _ _ = Nothing
 
 getTaskPilotAbs :: Int -> AppT k IO [Pilot]
 getTaskPilotAbs ii = do

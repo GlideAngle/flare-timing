@@ -156,7 +156,9 @@ data EarthMath
     = Pythagorus
     | Haversines
     | Vincenty
-    | Andoyer
+    | AndoyerLambert
+    | ForsytheAndoyerLambert
+    | FsAndoyer
     deriving (Eq, Ord, Show)
 
 instance FromJSON EarthMath where
@@ -166,7 +168,9 @@ instance FromJSON EarthMath where
             "Pythagorus" -> return Pythagorus
             "Haversines" -> return Haversines
             "Vincenty" -> return Vincenty
-            "Andoyer" -> return Andoyer
+            "Andoyer-Lambert" -> return AndoyerLambert
+            "Forsythe-Andoyer-Lambert" -> return ForsytheAndoyerLambert
+            "FS-Andoyer" -> return FsAndoyer
             _ -> empty
 
     parseJSON _ = empty
