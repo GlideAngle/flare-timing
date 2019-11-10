@@ -111,7 +111,7 @@ direct'
     ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
     accuracy
     DirectProblem
-        { x = (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
+        { x = LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity λ1))
         , α₁= TrueCourse (MkQuantity α1)
         , s = Radius (MkQuantity s)
         } =
@@ -119,7 +119,7 @@ direct'
     GeodeticDirect $
     DirectSolution
         { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
-        , α₂ = Just . TrueCourse . MkQuantity $ atan2' sinα (-j)
+        , α₂ = Just . TrueCourse . MkQuantity $ atan2' sinα j'
         }
     where
         MkQuantity b = polarRadius ellipsoid
@@ -127,33 +127,54 @@ direct'
 
         -- Initial setup
         _U1 = atan' $ (1 - f) * tan' _Φ1
+        cosU1 = cos' _U1
+        sinU1 = sin' _U1
+
+        cosα1 = cos' α1
+        sinα1 = sin' α1
         σ1 = atan2' (tan' _U1) (cos' α1)
+
         sinα = cos' _U1 * sin' α1
         sin²α = sinα * sinα
-        cos²α = 1 - sin²α 
+        cos²α = 1 - sin²α
+
+        u² =
+            let a² = a * a
+                b² = b * b
+            in cos²α * (a² - b²) / b²
+
         _A = 1 + u² / 16384 * (4096 + u² * (-768 + u² * (320 - 175 * u²)))
         _B = u² / 1024 * (256 + u² * (-128 + u² * (74 - 47 * u²)))
 
         -- Solution
         σ = iterateAngularDistance epsilon accuracy _A _B s b σ1 (s / (b * _A))
+
         sinσ = sin' σ
         cosσ = cos' σ
-        cosα1 = cos' α1
-        sinU1 = sin' _U1
-        cosU1 = cos' _U1
+
         v = sinU1 * cosσ + cosU1 * sinσ * cosα1
-        j = sinU1 * sinσ - cosU1 * cosσ * cosα1
+
+        (j, j') =
+            let sinU1sinσ = sinU1 * sinσ
+                cosU1cosσcosα1 = cosU1 * cosσ * cosα1
+            in
+                (   sinU1sinσ  - cosU1cosσcosα1
+                , -(sinU1sinσ) + cosU1cosσcosα1
+                )
+
+
         w = (1 - f) * sqrt' (sin²α + j * j)
         _Φ2 = atan2' v w
-        λ = atan2' (sinσ * sin' α1) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
-        _C = f / 16 * cos²α * (4 - 3 * cos²α)
+        λ = atan2' (sinσ * sinα1) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
+        _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
 
-        (cos2σm, cos²2σm) = cos2 cos' σ1 σ
-        x = σ + _C * sinσ * y
-        y = cos' (2 * cos2σm + _C * cosσ * (-1 + 2 * cos²2σm))
-        _L = λ * (1 - _C) * f * sinα * x
+        _L =
+            let (cos2σm, cos²2σm) = cos2 cos' σ1 σ
+                y = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
+                x = σ + _C * sinσ * y
+            in λ * (1 - _C) * f * sinα * x
 
-        _L2 = _L + _L1
+        _L2 = _L + λ1
 
         sin' = F.sin eps
         cos' = F.cos eps
@@ -161,10 +182,6 @@ direct'
         atan' = F.atan eps
         sqrt' = F.sqrt eps
         atan2' = F.atan2' epsilon
-
-        a² = a * a
-        b² = b * b
-        u² = cos²α * (a² - b²) / b² 
 
 direct
     :: Ellipsoid Rational
