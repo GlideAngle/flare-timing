@@ -375,11 +375,11 @@ flown' dTaskF flying Floating earthMath tags tasks iTask@(IxTask i) mf@MarkedFix
                     }
 
         startGates' =
-            case tasks ^? element (fromIntegral i - 1) of
+            case tasks ^? element (i - 1) of
                 Nothing -> []
                 Just Task{..} -> startGates
 
         speedSection' =
-            case tasks ^? element (fromIntegral i - 1) of
+            case tasks ^? element (i - 1) of
                 Nothing -> Nothing
                 Just Task{..} -> speedSection

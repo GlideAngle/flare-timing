@@ -213,27 +213,27 @@ arrivals xs =
 reachFraction :: LinearPoints -> LinearPoints -> LinearFraction
 reachFraction (LinearPoints maxPts) (LinearPoints pts)
     | maxPts == 0 = LinearFraction 0
-    | otherwise = LinearFraction . toRational $ pts / maxPts
+    | otherwise = LinearFraction $ pts / maxPts
 
 effortFraction :: DifficultyPoints -> DifficultyPoints -> DifficultyFraction
 effortFraction (DifficultyPoints maxPts) (DifficultyPoints pts)
     | maxPts == 0 = DifficultyFraction 0
-    | otherwise = DifficultyFraction . toRational $ pts / maxPts
+    | otherwise = DifficultyFraction $ pts / maxPts
 
 distanceFraction :: DistancePoints -> DistancePoints -> DistanceFraction
 distanceFraction (DistancePoints maxPts) (DistancePoints pts)
     | maxPts == 0 = DistanceFraction 0
-    | otherwise = DistanceFraction . toRational $ pts / maxPts
+    | otherwise = DistanceFraction $ pts / maxPts
 
 arrivalFraction :: ArrivalPoints -> ArrivalPoints -> ArrivalFraction
 arrivalFraction (ArrivalPoints maxPts) (ArrivalPoints pts)
     | maxPts == 0 = ArrivalFraction 0
-    | otherwise = ArrivalFraction . toRational $ pts / maxPts
+    | otherwise = ArrivalFraction $ pts / maxPts
 
 leadingFraction :: LeadingPoints -> LeadingPoints -> LeadingFraction
 leadingFraction (LeadingPoints maxPts) (LeadingPoints pts)
     | maxPts == 0 = LeadingFraction 0
-    | otherwise = LeadingFraction . toRational $ pts / maxPts
+    | otherwise = LeadingFraction $ pts / maxPts
 
 maxLinearPoints :: [LinearPoints] -> Maybe LinearPoints
 maxLinearPoints [] = Nothing
