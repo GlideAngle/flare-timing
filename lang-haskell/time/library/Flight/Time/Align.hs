@@ -27,7 +27,7 @@ import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
     , allHeaders, commentOnFixRange
     )
-import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(UTM))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Comp
@@ -248,7 +248,7 @@ group
                             groupByLeg @Double @Double
                                 ( earthMath
                                 , let e = EarthAsEllipsoid wgs84 in case earthMath of
-                                      Pythagorus -> error "No Pythagorus"
+                                      Pythagorus -> EarthAsFlat UTM
                                       Haversines -> EarthAsSphere earthRadius
                                       Vincenty -> e
                                       AndoyerLambert -> e
@@ -339,11 +339,12 @@ allLegDistances Floating earthMath ticked times task@Task{speedSection, zoneTime
             dashDistancesToGoal @Double @Double
                 ( earthMath
                 , let e = EarthAsEllipsoid wgs84 in case earthMath of
-                      Pythagorus -> error "No Pythagorus"
+                      Pythagorus -> EarthAsFlat UTM
                       Haversines -> EarthAsSphere earthRadius
                       Vincenty -> e
                       AndoyerLambert -> e
                       ForsytheAndoyerLambert -> e
+                      FsAndoyer -> e
                 )
                 ticked
                 task
@@ -365,11 +366,12 @@ allLegDistances Rational earthMath ticked times task@Task{speedSection, zoneTime
             dashDistancesToGoal
                 ( earthMath
                 , let e = EarthAsEllipsoid wgs84 in case earthMath of
-                      Pythagorus -> error "No Pythagorus"
+                      Pythagorus -> EarthAsFlat UTM
                       Haversines -> EarthAsSphere earthRadius
                       Vincenty -> e
                       AndoyerLambert -> e
                       ForsytheAndoyerLambert -> e
+                      FsAndoyer -> e
                 , defEps
                 )
                 ticked

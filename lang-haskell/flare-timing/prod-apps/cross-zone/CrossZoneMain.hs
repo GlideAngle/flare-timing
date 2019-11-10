@@ -201,6 +201,8 @@ flown c math tasks (IxTask i) fs =
 flownTask :: Comp -> Math -> FnTask k MadeZones
 flownTask Comp{earth, earthMath} math =
     case ((earthMath, earth), math) of
+        (e@(Pythagorus, EarthAsFlat{}), Floating) ->
+            madeZones @Double @Double e
         (e@(Haversines, EarthAsSphere{}), Floating) ->
             madeZones @Double @Double e
         (e@(Vincenty, EarthAsEllipsoid{}), Floating) ->
