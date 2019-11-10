@@ -203,42 +203,42 @@ writeFraming (PegFrameFile path) stopTask = do
     BS.writeFile path yaml
 
 readMaskingArrival
-    :: (MonadThrow m, MonadIO m)
+    :: MonadIO m
     => MaskArrivalFile
     -> m MaskingArrival
 readMaskingArrival (MaskArrivalFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
 readMaskingEffort
-    :: (MonadThrow m, MonadIO m)
+    :: MonadIO m
     => MaskEffortFile
     -> m MaskingEffort
 readMaskingEffort (MaskEffortFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
 readMaskingLead
-    :: (MonadThrow m, MonadIO m)
+    :: MonadIO m
     => MaskLeadFile
     -> m MaskingLead
 readMaskingLead (MaskLeadFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
 readMaskingReach
-    :: (MonadThrow m, MonadIO m)
+    :: MonadIO m
     => MaskReachFile
     -> m MaskingReach
 readMaskingReach (MaskReachFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
 readMaskingSpeed
-    :: (MonadThrow m, MonadIO m)
+    :: MonadIO m
     => MaskSpeedFile
     -> m MaskingSpeed
 readMaskingSpeed (MaskSpeedFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
 readBonusReach
-    :: (MonadThrow m, MonadIO m)
+    :: MonadIO m
     => BonusReachFile
     -> m MaskingReach
 readBonusReach (BonusReachFile path) =
