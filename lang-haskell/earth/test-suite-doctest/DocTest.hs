@@ -17,6 +17,7 @@ arguments =
     , "library/Internal/Flat/PointToPoint/Double.hs"
     , "library/Internal/Sphere/Cylinder/Double.hs"
     , "library/Internal/Sphere/PointToPoint/Double.hs"
+    , "library/Internal/CylinderOutline/Double.hs"
     , "-fplugin=Data.UnitsOfMeasure.Plugin"
     , "-fno-warn-partial-type-signatures"
     , "-XDataKinds"
