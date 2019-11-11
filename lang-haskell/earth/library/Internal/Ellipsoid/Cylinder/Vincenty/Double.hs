@@ -57,8 +57,7 @@ iterateAngularDistance
     σ =
     if abs (σ - σ') < tolerance
         then σ
-        else
-            iterateAngularDistance accuracy _A _B s b σ1 σ'
+        else iterateAngularDistance accuracy _A _B s b σ1 σ'
     where
         (cos2σm, cos²2σm) = cos2 cos σ1 σ
         sinσ = sin σ
@@ -327,7 +326,6 @@ circum
 
         φ2 = asin $ sin φ1 * cos δ + cos φ1 * sin δ * cos θ
         λ2 = λ1 + atan2 (sin θ * sin δ * cos φ1) (cos δ - sin φ1 * sin φ2)
-
 
 -- | Generates a pair of lists, the lat/lng of each generated point and its
 -- distance from the center. It will generate 'samples' number of such points

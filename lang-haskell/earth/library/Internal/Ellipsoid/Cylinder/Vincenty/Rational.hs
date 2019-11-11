@@ -34,6 +34,7 @@ import Flight.Zone.Cylinder
     , fromRationalZonePoint
     , sampleAngles
     )
+import Flight.Earth.Sphere (earthRadius)
 import Flight.Earth.Ellipsoid
     (Ellipsoid(..), GeodeticDirect(..), GeodeticAccuracy(..)
     , defaultGeodeticAccuracy, wgs84, flattening, polarRadius
@@ -45,6 +46,18 @@ import Flight.Earth.Math (cos2)
 import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
 import qualified Internal.Ellipsoid.PointToPoint.Rational as E (distance)
 import Internal.CylinderOutline.Rational (getClose)
+
+toRationalDirectSolution
+    :: DirectSolution (LatLng Double [u| rad |]) (TrueCourse Double)
+    -> DirectSolution (LatLng Rational [u| rad |]) (TrueCourse Rational)
+toRationalDirectSolution DirectSolution{y, α₂} =
+    DirectSolution
+        { y = toRationalLatLng y
+        , α₂ = toRationalTrueCourse <$> α₂
+        }
+    where
+        toRationalTrueCourse (TrueCourse x) =
+            TrueCourse $ toRational' x
 
 iterateAngularDistance
     :: Epsilon
@@ -90,7 +103,87 @@ iterateAngularDistance
         sin' = F.sin eps
         cos' = F.cos eps
 
-direct'
+direct
+    :: Ellipsoid Rational
+    -> Epsilon
+    -> GeodeticAccuracy Rational
+    -> DirectProblem
+        (LatLng Rational [u| rad |])
+        (TrueCourse Rational)
+        (QRadius Rational [u| m |])
+    -> GeodeticDirect
+        (DirectSolution
+            (LatLng Rational [u| rad |])
+            (TrueCourse Rational)
+        )
+direct
+    ellipsoid e accuracy
+    prob@DirectProblem
+        { x = x@(LatLng (xLat, xLng))
+        , α₁ = (TrueCourse b)
+        , s = r
+        }
+
+    -- NOTE: If we have an initial point at the poles then defer to the
+    -- solution using doubles.
+    | xLat == minBound = v'
+    | xLat == maxBound = v'
+
+    -- NOTE: If we have an initial point out of bounds defer to the
+    -- solution using doubles.
+    | xLat < minBound = v'
+    | xLat > maxBound = v'
+
+    | xLng <= minBound = v'
+    | xLng >= maxBound = v'
+
+    | xLng < (Lng $ convert [u| -179 deg |]) = v'
+    | xLng > (Lng $ convert [u| 179 deg |]) = v'
+
+    -- NOTE: If we have an azimuth of due east or west then defer to the
+    -- solution using doubles.
+    | b' > [u| 89 deg |] && b' < [u| 91 deg |] = v'
+    | b' > [u| 269 deg |] && b' < [u| 271 deg |]  = v'
+
+    | otherwise =
+        case directUnchecked e ellipsoid accuracy prob of
+            v@(GeodeticDirect _) -> v
+            _ -> v'
+    where
+        GeodeticAccuracy accuracy' = accuracy
+        accuracy'' = GeodeticAccuracy $ fromRational accuracy'
+
+        b' :: Quantity Double [u| deg |]
+        b' = convert . fromRational' $ b
+
+        prob'
+            :: DirectProblem
+                (LatLng Double [u| rad |])
+                (TrueCourse Double)
+                (QRadius Double [u| m |])
+        prob' =
+            DirectProblem
+                { x = fromRationalLatLng x
+                , α₁ = TrueCourse . fromRational' $ b
+                , s = fromRationalRadius r
+                }
+
+        v'
+            :: GeodeticDirect
+                (DirectSolution
+                    (LatLng Rational [u| rad |])
+                    (TrueCourse Rational)
+                )
+        v' =
+            case Dbl.direct wgs84 accuracy'' prob' of
+                GeodeticDirectAbnormal ab -> GeodeticDirectAbnormal ab
+                GeodeticDirectEquatorial -> GeodeticDirectEquatorial
+                GeodeticDirectAntipodal -> GeodeticDirectAntipodal
+                GeodeticDirect soln ->
+                    GeodeticDirect $ toRationalDirectSolution soln
+
+
+directUnchecked
     :: Epsilon
     -> Ellipsoid Rational
     -> GeodeticAccuracy Rational
@@ -103,7 +196,7 @@ direct'
             (LatLng Rational [u| rad |])
             (TrueCourse Rational)
         )
-direct'
+directUnchecked
     epsilon@(Epsilon eps)
     ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
     accuracy
@@ -114,10 +207,10 @@ direct'
         } =
     if (cosU1 * cosσ - sinU1 * sinσ * cosα1) == 0 then GeodeticDirectEquatorial else
     GeodeticDirect $
-    DirectSolution
-        { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
-        , α₂ = Just . TrueCourse . MkQuantity $ atan2' sinα j'
-        }
+        DirectSolution
+            { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
+            , α₂ = Just . TrueCourse . MkQuantity $ atan2' sinα j'
+            }
     where
         MkQuantity b = polarRadius ellipsoid
         f = flattening ellipsoid
@@ -180,104 +273,96 @@ direct'
         sqrt' = F.sqrt eps
         atan2' = F.atan2' epsilon
 
-direct
-    :: Ellipsoid Rational
-    -> Epsilon
-    -> GeodeticAccuracy Rational
-    -> DirectProblem
-        (LatLng Rational [u| rad |])
-        (TrueCourse Rational)
-        (QRadius Rational [u| m |])
-    -> GeodeticDirect
-        (DirectSolution
-            (LatLng Rational [u| rad |])
-            (TrueCourse Rational)
-        )
-direct
-    ellipsoid e accuracy
-    prob@DirectProblem
-        { x = x@(LatLng (xLat, xLng))
-        , α₁ = (TrueCourse b)
-        , s = r
-        }
-
-    -- NOTE: If we have an initial point at the poles then defer to the
-    -- solution using doubles.
-    | xLat == minBound = v'
-    | xLat == maxBound = v'
-
-    -- NOTE: If we have an initial point out of bounds defer to the
-    -- solution using doubles.
-    | xLat < minBound = v'
-    | xLat > maxBound = v'
-
-    | xLng <= minBound = v'
-    | xLng >= maxBound = v'
-
-    | xLng < (Lng $ convert [u| -179 deg |]) = v'
-    | xLng > (Lng $ convert [u| 179 deg |]) = v'
-
-    -- NOTE: If we have an azimuth of due east or west then defer to the
-    -- solution using doubles.
-    | b' > [u| 89 deg |] && b' < [u| 91 deg |] = v'
-    | b' > [u| 269 deg |] && b' < [u| 271 deg |]  = v'
-
-    | otherwise =
-        case direct' e ellipsoid accuracy prob of
-            v@(GeodeticDirect _) -> v
-            _ -> v'
-    where
-        GeodeticAccuracy accuracy' = accuracy
-        accuracy'' = GeodeticAccuracy $ fromRational accuracy'
-
-        b' :: Quantity Double [u| deg |]
-        b' = convert . fromRational' $ b
-
-        prob'
-            :: DirectProblem
-                (LatLng Double [u| rad |])
-                (TrueCourse Double)
-                (QRadius Double [u| m |])
-        prob' =
-            DirectProblem
-                { x = fromRationalLatLng x
-                , α₁ = TrueCourse . fromRational' $ b
-                , s = fromRationalRadius r
-                }
-
-        v'
-            :: GeodeticDirect
-                (DirectSolution
-                    (LatLng Rational [u| rad |])
-                    (TrueCourse Rational)
-                )
-        v' =
-            case Dbl.direct wgs84 accuracy'' prob' of
-                GeodeticDirectAbnormal ab -> GeodeticDirectAbnormal ab
-                GeodeticDirectEquatorial -> GeodeticDirectEquatorial
-                GeodeticDirectAntipodal -> GeodeticDirectAntipodal
-                GeodeticDirect soln ->
-                    GeodeticDirect $ toRationalDirectSolution soln
-
-toRationalDirectSolution
-    :: DirectSolution (LatLng Double [u| rad |]) (TrueCourse Double)
-    -> DirectSolution (LatLng Rational [u| rad |]) (TrueCourse Rational)
-toRationalDirectSolution DirectSolution{y, α₂} =
-    DirectSolution
-        { y = toRationalLatLng y
-        , α₂ = toRationalTrueCourse <$> α₂
-        }
-    where
-        toRationalTrueCourse (TrueCourse x) =
-            TrueCourse $ toRational' x
-
-circum
+-- |
+-- TODO: Why is a point 286 m out is 0.254 km away when using Vincenty direct
+-- instead of Haversines direct solution.
+-- The Bodangora airstrip is at (-32.46363°, 148.989°) in NSW, Australia,
+-- >>> circumDeg degBodangora (Radius [u| 286.27334927563106 m |]) [u| 332.30076790172313 deg |]
+-- (-32.46135051401°, 148.9875816788°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         radBodangora
+--         (LatLng (Lat $ convert [u| -32.46135051411138 deg |], Lng $ convert [u| 148.98758167886174 deg |]))
+-- :}
+-- [u| 0.285797530532 km |]
+--
+-- TODO: Why is a point 177 m out is 0.157 km away.
+-- >>> circumDeg degBodangora (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
+-- (-32.46504123334°, 148.98987812585°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         radBodangora
+--         (LatLng (Lat $ convert [u| -32.46504123330422 deg |], Lng $ convert [u| 148.9898781257936 deg |]))
+-- :}
+-- [u| 0.176938752465 km |]
+--
+-- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (-45°, 0°).
+-- >>> circumDeg deg45SZ (Radius [u| 40.0 m |]) [u| 90 deg |]
+-- (-44.99999999881°, 5.0873314e-4°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         rad45SZ
+--         (LatLng (Lat $ convert [u| -44.99999999887073 deg |], Lng $ convert [u| 5.087331248034837e-4 deg |]))
+-- :}
+-- [u| 4.0111996609e-2 km |]
+--
+-- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (+45°, 0°).
+-- >>> circumDeg deg45NZ (Radius [u| 40.0 m |]) [u| 90 deg |]
+-- (44.99999999881°, 5.0873314e-4°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         rad45NZ
+--         (LatLng (Lat $ convert [u| 44.99999999887073 deg |], Lng $ convert [u| 5.087331248034837e-4 deg |]))
+-- :}
+-- [u| 4.0111996609e-2 km |]
+--
+-- >>> circumDeg degZZ (Radius [u| 40.0 m |]) [u| 0 deg |]
+-- (3.5972864e-4°, 0.0°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         radZZ
+--         (LatLng (Lat $ convert [u| 3.5972864236749223e-4 deg |], Lng $ convert [u| 0.0 deg |]))
+-- :}
+-- [u| 3.9776734122e-2 km |]
+--
+-- >>> circumDeg degZZ (Radius [u| 40.0 m |]) [u| 90 deg |]
+-- (0.0°, 3.5972864e-4°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         radZZ
+--         (LatLng (Lat $ convert [u| 2.2027026521703902e-20 deg |], Lng $ convert [u| 3.5972864236749223e-4 deg |]))
+-- :}
+-- [u| 4.0044807783e-2 km |]
+--
+-- >>> circumDeg degZZ (Radius [u| 40.0 m |]) [u| -90 deg |]
+-- (0.0°, -3.5972864e-4°)
+--
+-- >>> :{
+--     V.distance
+--         wgs84
+--         radZZ
+--         (LatLng (Lat $ convert [u| 2.2027026521703902e-20 deg |], Lng $ convert [u| -3.5972864236749223e-4 deg |]))
+-- :}
+-- [u| 4.0044807783e-2 km |]
+__circum
     :: Epsilon
     -> LatLng Rational [u| rad |]
     -> QRadius Rational [u| m |]
-    -> TrueCourse Rational 
+    -> TrueCourse Rational
     -> LatLng Rational [u| rad |]
-circum e x r tc =
+__circum e x r tc =
     case direct wgs84 e defaultGeodeticAccuracy prob of
         GeodeticDirectAbnormal _ -> error "Geodetic direct abnormal"
         GeodeticDirectEquatorial -> error "Geodetic direct equatorial"
@@ -290,6 +375,35 @@ circum e x r tc =
                 , α₁ = tc
                 , s = r
                 }
+
+-- TODO: Find out why I'm getting reasonable hits using Haversines but not for
+-- Vincenty for the direct solution.
+circum
+    :: Epsilon
+    -> LatLng Rational [u| rad |]
+    -> QRadius Rational [u| m |]
+    -> TrueCourse Rational
+    -> LatLng Rational [u| rad |]
+circum
+    epsilon@(Epsilon eps)
+    (LatLng (Lat (MkQuantity lat), Lng (MkQuantity lng)))
+    (Radius (MkQuantity r))
+    (TrueCourse (MkQuantity tc)) =
+    LatLng (Lat (MkQuantity φ2), Lng (MkQuantity λ2))
+    where
+        φ1 = realToFrac lat
+        λ1 = realToFrac lng
+        θ = realToFrac tc
+
+        δ = let Radius (MkQuantity bigR) = earthRadius in realToFrac r / bigR
+
+        φ2 = asin' $ sin' φ1 * cos' δ + cos' φ1 * sin' δ * cos' θ
+        λ2 = λ1 + atan2' (sin' θ * sin' δ * cos' φ1) (cos' δ - sin' φ1 * sin' φ2)
+
+        asin' = F.asin eps
+        sin' = F.sin eps
+        cos' = F.cos eps
+        atan2' = F.atan2' epsilon
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
@@ -339,3 +453,42 @@ circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing
         ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
         ys = (fromRationalZonePoint <$> fst ys', snd ys')
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XQuasiQuotes
+-- >>> :set -XDataKinds
+-- >>> :set -XFlexibleContexts
+-- >>> :set -XFlexibleInstances
+-- >>> :set -XMultiParamTypeClasses
+-- >>> :set -XScopedTypeVariables
+-- >>> :set -XTypeOperators
+-- >>> :set -XTypeFamilies
+-- >>> :set -XUndecidableInstances
+-- >>> :set -fno-warn-partial-type-signatures
+--
+-- >>> import Data.UnitsOfMeasure ((*:), u, convert)
+-- >>> import Flight.LatLng (radToDegLL, degToRadLL)
+-- >>> import Internal.Ellipsoid.PointToPoint.Vincenty.Double as V
+--
+-- >>> :{
+-- circumDeg
+--    :: a ~ Rational
+--    => LatLng a [u| deg |]
+--    -> QRadius a [u| m |]
+--    -> (Quantity a [u| deg |])
+--    -> LatLng Rational [u| deg |]
+-- circumDeg ll r tc =
+--     radToDegLL convert $ circum defEps (degToRadLL convert ll) r (TrueCourse ((convert tc) :: Quantity _ [u| rad |]))
+-- :}
+--
+-- >>> degBodangora :: LatLng _ [u| deg |] = LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])
+-- >>> radBodangora :: LatLng _ [u| rad |] = LatLng (Lat $ convert [u| -32.46363 deg |], Lng $ convert [u| 148.989 deg |])
+--
+-- >>> deg45NZ :: LatLng _ [u| deg |] = (LatLng (Lat [u| 45.0 deg |], Lng [u| 0.0 deg |]))
+-- >>> deg45SZ :: LatLng _ [u| deg |] = (LatLng (Lat [u| -45.0 deg |], Lng [u| 0.0 deg |]))
+-- >>> degZZ :: LatLng _ [u| deg |] = (LatLng (Lat [u| 0.0 deg |], Lng [u| 0.0 deg |]))
+--
+-- >>> rad45NZ :: LatLng _ [u| rad |] = (LatLng (Lat $ convert [u| 45.0 deg |], Lng $ convert [u| 0.0 deg |]))
+-- >>> rad45SZ :: LatLng _ [u| rad |] = (LatLng (Lat $ convert [u| -45.0 deg |], Lng $ convert [u| 0.0 deg |]))
+-- >>> radZZ :: LatLng _ [u| rad |] = (LatLng (Lat $ convert [u| 0.0 deg |], Lng $ convert [u| 0.0 deg |]))

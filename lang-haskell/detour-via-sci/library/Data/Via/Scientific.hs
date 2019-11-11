@@ -21,7 +21,7 @@ module Data.Via.Scientific
     (
     -- * Usage
     -- $use
-    
+
     -- * Decimal Places
       DecimalPlaces(..)
     , ViaSci(..)
