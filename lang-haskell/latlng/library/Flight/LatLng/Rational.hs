@@ -7,7 +7,10 @@
     ) where
 
 import Data.Ratio ((%))
+import Data.Text.Lazy (unpack)
 import qualified Data.Number.FixedFunctions as F
+import qualified Formatting as Fmt ((%), format)
+import qualified Formatting.ShortFormatters as Fmt (sf)
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Show (showUnit, showQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -17,8 +20,8 @@ import Data.Ratio.Rounding (dpRound)
 showAngle :: KnownUnit (Unpack u) => Quantity Rational u -> String
 showAngle q@(MkQuantity x) =
     case showUnit q of
-        "rad" -> show (fromRational (dpRound 11 x) :: Double) ++ " rad"
-        "deg" -> show (fromRational (dpRound 11 x) :: Double) ++ "°"
+        "rad" -> unpack $ Fmt.format (Fmt.sf Fmt.% "rad") (fromRational (dpRound 11 x) :: Double)
+        "deg" -> unpack $ Fmt.format (Fmt.sf Fmt.% "°"  ) (fromRational (dpRound 11 x) :: Double)
         _ -> showQuantity q
 
 newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
