@@ -62,24 +62,10 @@ pFloat = (toRational :: Double -> Rational) <$> float_
 pNat :: ParsecT String String Identity Integer
 pNat = decimal_
 
-float_
-    ::
-        ( m ~ ParsecT String String Identity
-        , MonadParsec e s m
-        , Token s ~ Char
-        , RealFloat a
-        )
-    => m a
+float_ :: (m ~ ParsecT String String Identity, RealFloat a) => m a
 float_ = lexeme L.float
 
-decimal_
-    ::
-        ( m ~ ParsecT String String Identity
-        , MonadParsec e s m
-        , Token s ~ Char
-        , Integral a
-        )
-    => m a
+decimal_ :: (m ~ ParsecT String String Identity, Integral a) => m a
 decimal_ = lexeme L.decimal
 
 pNats :: Parsec String String [Integer]
