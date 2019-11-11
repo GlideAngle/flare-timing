@@ -6,6 +6,7 @@ arguments :: [String]
 arguments =
     [ "-isrc"
     , "library/Flight/Track/Range.hs"
+    , "-XLambdaCase"
     ]
 
 main :: IO ()

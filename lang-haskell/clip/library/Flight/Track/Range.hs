@@ -24,17 +24,19 @@ asRanges [] = []
 asRanges [x, y] = [(x, y)]
 asRanges zs =
     chop
-        (\xs@(x0 : _) ->
-            let xys = zip xs $ x0 : xs in
-            case findIndex (\(x, y) -> y + 1 < x) xys of
-                Nothing ->
-                    ( (x0, let (xN : _) = reverse xs in xN)
-                    , []
-                    )
-                Just i ->
-                    ((x0, let (xN : _) = reverse (take i xs) in xN)
-                    , drop i xs
-                    ))
+        (\case
+            [] -> let z = fromIntegral (0 :: Int) in ((z, z), [])
+            xs@(x0 : _) ->
+                let xys = zip xs $ x0 : xs in
+                case findIndex (\(x, y) -> y + 1 < x) xys of
+                    Nothing ->
+                        case reverse xs of
+                            [] -> ((x0, x0), [])
+                            (xN : _) -> ((x0, xN), [])
+                    Just i ->
+                        case reverse (take i xs) of
+                            [] -> ((x0, x0), drop i xs)
+                            (xN : _) -> ((x0, xN), drop i xs))
         zs
 
 -- | Splits the list every time there's a decrement.
@@ -57,11 +59,13 @@ asRollovers [] = []
 asRollovers [x, y] = if x <= y then [[x, y]] else [[x],[y]]
 asRollovers zs =
     chop
-        (\xs@(x0 : _) ->
-            let xys = zip (x0 : xs) xs in
-            case findIndex (\(x, y) -> x > y) xys of
-                Nothing -> (xs, [])
-                Just i -> (take i xs, drop i xs))
+        (\case
+            [] -> ([], [])
+            xs@(x0 : _) ->
+                let xys = zip (x0 : xs) xs in
+                case findIndex (\(x, y) -> x > y) xys of
+                    Nothing -> (xs, [])
+                    Just i -> (take i xs, drop i xs))
         zs
 
 -- | Splits the list every time there's a decrement.
@@ -74,16 +78,18 @@ asRollovers zs =
 -- [[2,1]]
 -- >>> asRolloversBy (\a b -> compare a (b + 1)) [3,1]
 -- [[3],[1]]
-asRolloversBy :: Ord a => (a -> a -> Ordering) -> [a] -> [[a]]
+asRolloversBy :: (a -> a -> Ordering) -> [a] -> [[a]]
 asRolloversBy _ [] = []
 asRolloversBy p [x, y] = if x `p` y /= GT then [[x, y]] else [[x],[y]]
 asRolloversBy p zs =
     chop
-        (\xs@(x0 : _) ->
-            let xys = zip (x0 : xs) xs in
-            case findIndex (\(x, y) -> x `p` y == GT) xys of
-                Nothing -> (xs, [])
-                Just i -> (take i xs, drop i xs))
+        (\case
+            [] -> ([], [])
+            xs@(x0 : _) ->
+                let xys = zip (x0 : xs) xs in
+                case findIndex (\(x, y) -> x `p` y == GT) xys of
+                    Nothing -> (xs, [])
+                    Just i -> (take i xs, drop i xs))
         zs
 -- |
 -- prop> \xs -> length (deleteSort xs) <= length xs
