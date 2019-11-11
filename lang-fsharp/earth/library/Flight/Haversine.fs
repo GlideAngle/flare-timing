@@ -46,7 +46,7 @@ let azimuthRev x y =
     azimuthFwd y x
     |> Option.map (fun az -> let (Rad x) = Rad.Rotate (Math.PI * 1.0<rad> |> Rad) (Rad az) in x)
 
-let direct 
+let direct
     (prob : DirectProblem<LatLng, TrueCourse, Radius>)
     : DirectSolution<LatLng, TrueCourse> =
     let ``_Φ₁`` = float prob.x.Lat
@@ -74,13 +74,3 @@ let inverse
     ; ``α₁`` = azimuthFwd' x y
     ; ``α₂`` = azimuthRev x y
     }
-
-module HaversineTests =
-    open Xunit
-    open Hedgehog
-
-    [<Fact>]
-    let ``haversines is not negative`` () = Property.check <| property {
-            let! x = Gen.double <| Range.constantBounded ()
-            return haversine (x * 1.0<rad>) >= 0.0<rad>
-        }

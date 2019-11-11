@@ -123,6 +123,42 @@ type Vincenty1975 () =
         ; 0.000385<m>
         ]
 
+    static let degBodangora : Deg * Deg =
+        (Deg.FromDeg -32.46363<deg>, Deg.FromDeg 148.989<deg>)
+
+    static let deg45NZ : Deg * Deg =
+        (Deg.FromDeg  45.0<deg>, Deg.FromDeg 0.0<deg>)
+
+    static let deg45SZ : Deg * Deg =
+        (Deg.FromDeg -45.0<deg>, Deg.FromDeg 0.0<deg>)
+
+    static let degZZ : Deg * Deg =
+        (Deg.FromDeg   0.0<deg>, Deg.FromDeg 0.0<deg>)
+
+    static let xCircum : ((Deg * Deg) * float<m> * Deg) list =
+        [ (degBodangora, 286.27334927563106<m>, Deg.FromDeg 332.30076790172313<deg>)
+        ; (degBodangora, 177.23328234645362<m>, Deg.FromDeg 152.30076790172313<deg>)
+
+        ; (deg45SZ, 40.0<m>, Deg.FromDeg 90.0<deg>)
+        ; (deg45NZ, 40.0<m>, Deg.FromDeg 90.0<deg>)
+
+        ; (degZZ, 40.0<m>, Deg.FromDeg  0.0<deg>)
+        ; (degZZ, 40.0<m>, Deg.FromDeg  90.0<deg>)
+        ; (degZZ, 40.0<m>, Deg.FromDeg -90.0<deg>)
+        ]
+
+    static let yCircum : (string * string) list =
+        [ ("-32.46134434768863°" ,     "148.98758463278529°")
+        ; ("-32.465045050546465°",     "148.9898762968548°")
+
+        ; ("-44.99999999887325°",        "0.0005073126901685598°")
+        ; ( "44.99999999887325°",        "0.0005073126901685598°")
+
+        ; (  "0.0003617477891045334°",   "0°")
+        ; (  "2.2150663706180146E-20°",  "0.00035932611364780865°")
+        ; ( "-6.645199111854043E-20°",  "-0.00035932611364780865°")
+        ]
+
     // From the paper, Vincenty's errors were s of -1.2, +0.5, +3.0, -0.3 and -0.3.
     static let directAzimuthRevErrors : DMS list =
             List.replicate 5 (DMS.FromTuple (0, 0, 0.0001))
@@ -148,6 +184,13 @@ type Vincenty1975 () =
         let xrs = List.zip (List.map fst xys) directAzimuthRevErrors
         let zzs = List.zip fwdAzimuths revAzimuths
         List.map3 (fun (e, d) (x, t) (azFwd, azRev) -> (e, x, d, azFwd, azRev, t)) eds xrs zzs
+        |> Seq.map FSharpValue.GetTupleFields
+
+    static member CircumData : seq<obj[]>=
+        List.map2
+            (fun (x, d, az) y -> (wgs84, x, d, az, y))
+            xCircum
+            yCircum
         |> Seq.map FSharpValue.GetTupleFields
 
 [<Theory; MemberData("IndirectDistanceData", MemberType = typeof<Vincenty1975>)>]
@@ -201,3 +244,17 @@ let ``direct solution reverse azimuth from Vincenty's 1975 paper`` (e, x, d, azF
     let t' = Some << DMS.ToRad <| t
 
     test <@ f e x azFwd azRev < t' @>
+
+[<Theory; MemberData("CircumData", MemberType = typeof<Vincenty1975>)>]
+let ``direct solution distance for circumference`` (e, x, d, az, y) =
+    let f e x az d : string * string =
+        let (xLat, xLng) = x
+        let x' = {Lat = Deg.ToRad xLat; Lng = Deg.ToRad xLng}
+        let azRad = Deg.ToRad az
+
+        (direct e defaultGeodeticAccuracy {x = x'; ``α₁`` = TrueCourse azRad; s = Radius d})
+        |> (function
+            | GeodeticDirect soln -> (Deg.FromRad soln.y.Lat |> string, Deg.FromRad soln.y.Lng |> string)
+            | _ -> y)
+
+    test <@ f wgs84 x az d = y @>

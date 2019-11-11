@@ -15,6 +15,7 @@
     <Compile Include="library/Flight/Haversine.fs" />
     <Compile Include="library/Flight/Vincenty.fs" />
     <Compile Include="library/Flight/GeodesySolution.fs" />
+    <Compile Include="library/Flight/TestHaversine.fs" />
     <Compile Include="library/Flight/TestVincenty.fs" />
     <Compile Include="library/Flight/TestBedford.fs" />
   </ItemGroup>
