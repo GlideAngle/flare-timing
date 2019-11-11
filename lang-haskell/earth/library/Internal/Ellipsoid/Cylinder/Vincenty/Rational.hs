@@ -278,54 +278,54 @@ directUnchecked
 -- instead of Haversines direct solution.
 -- The Bodangora airstrip is at (-32.46363°, 148.989°) in NSW, Australia,
 -- >>> circumDeg degBodangora (Radius [u| 286.27334927563106 m |]) [u| 332.30076790172313 deg |]
--- (-32.46135051401°, 148.9875816788°)
+-- (-32.46135051401109°, 148.98758167880425°)
 --
 -- >>> :{
 --     V.distance
 --         wgs84
 --         radBodangora
---         (LatLng (Lat $ convert [u| -32.46135051411138 deg |], Lng $ convert [u| 148.98758167886174 deg |]))
+--         (LatLng (Lat $ convert [u| -32.46135051401109 deg |], Lng $ convert [u| 148.98758167880425 deg |]))
 -- :}
--- [u| 0.285797530532 km |]
+-- [u| 0.285797542891 km |]
 --
 -- TODO: Why is a point 177 m out is 0.157 km away.
 -- >>> circumDeg degBodangora (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
--- (-32.46504123334°, 148.98987812585°)
+-- (-32.46504123333739°, 148.98987812584505°)
 --
 -- >>> :{
 --     V.distance
 --         wgs84
 --         radBodangora
---         (LatLng (Lat $ convert [u| -32.46504123330422 deg |], Lng $ convert [u| 148.9898781257936 deg |]))
+--         (LatLng (Lat $ convert [u| -32.46504123333739 deg |], Lng $ convert [u| 148.98987812584505 deg |]))
 -- :}
--- [u| 0.176938752465 km |]
+-- [u| 0.176938757974 km |]
 --
 -- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (-45°, 0°).
 -- >>> circumDeg deg45SZ (Radius [u| 40.0 m |]) [u| 90 deg |]
--- (-44.99999999881°, 5.0873314e-4°)
+-- (-44.99999999880563°, 5.087331428877727e-4°)
 --
 -- >>> :{
 --     V.distance
 --         wgs84
 --         rad45SZ
---         (LatLng (Lat $ convert [u| -44.99999999887073 deg |], Lng $ convert [u| 5.087331248034837e-4 deg |]))
+--         (LatLng (Lat $ convert [u| -44.99999999880563 deg |], Lng $ convert [u| 5.087331428877727e-4 deg |]))
 -- :}
--- [u| 4.0111996609e-2 km |]
+-- [u| 4.0111998034e-2 km |]
 --
 -- TODO: Why is a point 40 m out is 0 km away when bearing 90° from (+45°, 0°).
 -- >>> circumDeg deg45NZ (Radius [u| 40.0 m |]) [u| 90 deg |]
--- (44.99999999881°, 5.0873314e-4°)
+-- (44.99999999880563°, 5.087331428877727e-4°)
 --
 -- >>> :{
 --     V.distance
 --         wgs84
 --         rad45NZ
---         (LatLng (Lat $ convert [u| 44.99999999887073 deg |], Lng $ convert [u| 5.087331248034837e-4 deg |]))
+--         (LatLng (Lat $ convert [u| 44.99999999880563 deg |], Lng $ convert [u| 5.087331428877727e-4 deg |]))
 -- :}
--- [u| 4.0111996609e-2 km |]
+-- [u| 4.0111998034e-2 km |]
 --
 -- >>> circumDeg degZZ (Radius [u| 40.0 m |]) [u| 0 deg |]
--- (3.5972864e-4°, 0.0°)
+-- (3.5972864236749223e-4°, 0.0°)
 --
 -- >>> :{
 --     V.distance
@@ -336,18 +336,18 @@ directUnchecked
 -- [u| 3.9776734122e-2 km |]
 --
 -- >>> circumDeg degZZ (Radius [u| 40.0 m |]) [u| 90 deg |]
--- (0.0°, 3.5972864e-4°)
+-- (0.0°, 3.5972864236749223e-4°)
 --
 -- >>> :{
 --     V.distance
 --         wgs84
 --         radZZ
---         (LatLng (Lat $ convert [u| 2.2027026521703902e-20 deg |], Lng $ convert [u| 3.5972864236749223e-4 deg |]))
+--         (LatLng (Lat $ convert [u| 0.0 deg |], Lng $ convert [u| 3.5972864236749223e-4 deg |]))
 -- :}
 -- [u| 4.0044807783e-2 km |]
 --
 -- >>> circumDeg degZZ (Radius [u| 40.0 m |]) [u| -90 deg |]
--- (0.0°, -3.5972864e-4°)
+-- (0.0°, -3.5972864236749223e-4°)
 --
 -- >>> :{
 --     V.distance
