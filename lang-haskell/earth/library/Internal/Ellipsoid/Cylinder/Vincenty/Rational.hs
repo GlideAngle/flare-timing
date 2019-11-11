@@ -19,17 +19,12 @@ import Flight.Zone
     , center
     , radius
     , fromRationalRadius
-    , toRationalZone
     , fromRationalLatLng
     , toRationalLatLng
     )
-import Flight.Zone.Path (distancePointToPoint)
-import Internal.Ellipsoid.PointToPoint.Rational (distance)
-import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
     , ZonePoint(..)
-    , Tolerance(..)
     , SampleParams(..)
     , CircumSample
     , orbit
@@ -48,6 +43,8 @@ import Flight.Geodesy (EarthMath(..), DirectProblem(..), DirectSolution(..))
 import qualified Flight.Earth.Math as F (atan2')
 import Flight.Earth.Math (cos2)
 import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
+import qualified Internal.Ellipsoid.PointToPoint.Rational as E (distance)
+import Internal.CylinderOutline.Rational (getClose)
 
 iterateAngularDistance
     :: Epsilon
@@ -331,7 +328,9 @@ circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing
         ptCenter = center zone'
         circumR = circum defEps ptCenter
 
-        getClose' = getClose defEps zone' ptCenter limitRadius' spTolerance
+        getClose' =
+            let d = E.distance Vincenty wgs84 defEps
+            in getClose defEps d circum zone' ptCenter limitRadius' spTolerance
 
         mkLinePt :: PointOnRadial
         mkLinePt _ (Bearing b) rLine = circumR rLine $ TrueCourse b
@@ -340,78 +339,3 @@ circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing
         ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
         ys = (fromRationalZonePoint <$> fst ys', snd ys')
-
-getClose
-    :: Epsilon
-    -> Zone Rational
-    -> LatLng Rational [u| rad |] -- ^ The center point.
-    -> Rational -- ^ The limit radius.
-    -> Tolerance Rational
-    -> Int -- ^ How many tries.
-    -> QRadius Rational [u| m |] -- ^ How far from the center.
-    -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
-    -> TrueCourse Rational -- ^ The true course for this radial.
-    -> (ZonePoint Rational, TrueCourse Rational)
-getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
-    | trys <= 0 = (zp', x)
-    | unTolerance spTolerance <= 0 = (zp', x)
-    | limitRadius <= unTolerance spTolerance = (zp', x)
-    | otherwise =
-        case d `compare` limitRadius of
-             EQ ->
-                 (zp', x)
-
-             GT ->
-                 let offset' =
-                         offset - (d - limitRadius) * 105 / 100
-
-                     f' =
-                         circumR (Radius (MkQuantity $ limitRadius + offset'))
-
-                 in
-                     getClose
-                         epsilon
-                         zone'
-                         ptCenter
-                         limitRadius
-                         spTolerance
-                         (trys - 1)
-                         (Radius (MkQuantity offset'))
-                         f'
-                         x
-
-             LT ->
-                 if d > toRational (limitRadius - unTolerance spTolerance)
-                 then (zp', x)
-                 else
-                     let offset' =
-                             offset + (limitRadius - d) * 94 / 100
-
-                         f' =
-                             circumR (Radius (MkQuantity $ limitRadius + offset'))
-                     in
-                         getClose
-                             epsilon
-                             zone'
-                             ptCenter
-                             limitRadius
-                             spTolerance
-                             (trys - 1)
-                             (Radius (MkQuantity offset'))
-                             f'
-                             x
-    where
-        circumR = circum epsilon ptCenter
-
-        y = f x
-        zp' = ZonePoint { sourceZone = toRationalZone zone'
-                        , point = y
-                        , radial = Bearing tc
-                        , orbit = yr
-                        } :: ZonePoint Rational
-
-        (TaskDistance (MkQuantity d)) =
-            edgesSum
-            $ distancePointToPoint
-                (distance Vincenty wgs84 defEps)
-                [Point ptCenter, Point y]
