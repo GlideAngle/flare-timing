@@ -123,7 +123,7 @@ instance RealFloat a => GeodesySolutions Double a where
     direct (Pythagorus, EarthAsFlat _) =
         error "Direct Pythagorus."
     direct (Haversines, EarthAsSphere _) =
-        error "Direct Haversines."
+        const H.direct
     direct (Vincenty, EarthAsEllipsoid e) =
         V.direct e
     direct (AndoyerLambert, EarthAsEllipsoid _) =

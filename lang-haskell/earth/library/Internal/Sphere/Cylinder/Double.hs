@@ -1,4 +1,4 @@
-module Internal.Sphere.Cylinder.Double (circumSample) where
+module Internal.Sphere.Cylinder.Double (circumSample, direct) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -13,6 +13,7 @@ import Flight.Zone
     , center
     , radius
     , realToFracZone
+    , realToFracLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
 import Internal.Sphere.PointToPoint.Double (distance)
@@ -29,8 +30,55 @@ import Flight.Zone.Cylinder
     , sourceZone
     , sampleAngles
     )
+import Flight.Earth.Ellipsoid (GeodeticDirect(..))
+import Flight.Geodesy (DirectProblem(..), DirectSolution(..))
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
+
+direct'
+    :: RealFloat a
+    => DirectProblem
+        (LatLng a [u| rad |])
+        (TrueCourse a)
+        (QRadius a [u| m |])
+    -> DirectSolution
+        (LatLng a [u| rad |])
+        (TrueCourse a)
+direct'
+    DirectProblem
+        { x = LatLng (Lat (MkQuantity lat), Lng (MkQuantity lng))
+        , α₁ = TrueCourse (MkQuantity tc)
+        , s = Radius (MkQuantity r)
+        } =
+    DirectSolution
+        { y = LatLng (Lat (MkQuantity φ2), Lng (MkQuantity λ2))
+        -- TODO: Give the reverse azimuth with Haversines for the direct
+        -- geodesy solution.
+        , α₂ = Nothing
+        }
+    where
+        φ1 = realToFrac lat
+        λ1 = realToFrac lng
+        θ = realToFrac tc
+
+        δ = let Radius (MkQuantity bigR) = earthRadius in realToFrac r / bigR
+
+        φ2 = asin $ sin φ1 * cos δ + cos φ1 * sin δ * cos θ
+        λ2 = λ1 + atan2 (sin θ * sin δ * cos φ1) (cos δ - sin φ1 * sin φ2)
+
+direct
+    :: RealFloat a
+    => DirectProblem
+        (LatLng a [u| rad |])
+        (TrueCourse a)
+        (QRadius a [u| m |])
+    -> GeodeticDirect
+        (DirectSolution
+            (LatLng a [u| rad |])
+            (TrueCourse a)
+        )
+direct prob = GeodeticDirect $ direct' prob
+
 
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
@@ -45,25 +93,15 @@ import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 -- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
 -- (-32.46504123330422°, 148.9898781257936°)
 circum
-    :: Real a
+    :: RealFloat a
     => LatLng a [u| rad |]
     -> QRadius a [u| m |]
     -> TrueCourse a
     -> LatLng Double [u| rad |]
-circum
-    (LatLng (Lat (MkQuantity lat), Lng (MkQuantity lng)))
-    (Radius (MkQuantity r))
-    (TrueCourse (MkQuantity tc)) =
-    LatLng (Lat (MkQuantity φ2), Lng (MkQuantity λ2))
-    where
-        φ1 = realToFrac lat
-        λ1 = realToFrac lng
-        θ = realToFrac tc
-
-        δ = let Radius (MkQuantity bigR) = earthRadius in realToFrac r / bigR
-
-        φ2 = asin $ sin φ1 * cos δ + cos φ1 * sin δ * cos θ
-        λ2 = λ1 + atan2 (sin θ * sin δ * cos φ1) (cos δ - sin φ1 * sin φ2)
+circum x s tc =
+    let prob = DirectProblem {x = x, α₁ = tc, s = s}
+        DirectSolution{y} = direct' prob
+    in realToFracLatLng y
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
@@ -198,7 +236,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
 --
 -- >>> :{
 -- circumDeg
---    :: RealFrac a
+--    :: RealFloat a
 --    => LatLng a [u| deg |]
 --    -> QRadius a [u| m |]
 --    -> (Quantity a [u| deg |])
