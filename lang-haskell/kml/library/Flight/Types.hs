@@ -15,6 +15,7 @@
     ) where
 
 import Prelude hiding (min)
+import Data.Semigroup
 import Text.Printf (printf)
 import Data.Time.Clock (UTCTime(..), addUTCTime, diffUTCTime)
 import Data.List (findIndex, findIndices, sort, nub)
@@ -166,22 +167,25 @@ showHmsForSecs (Seconds sec) =
         (hr', min) = sec `divMod` 3600
         (min', sec') = min `divMod` 60
 
-instance Monoid MarkedFixes where
-    mempty = MarkedFixes (UTCTime (toEnum 0) 0) []
-    mappend
+instance Semigroup MarkedFixes where
+    (<>)
         mfx@MarkedFixes{mark0 = mx, fixes = xs}
         mfy@MarkedFixes{mark0 = my, fixes = ys}
           | mx == my = mfx{fixes = sort . nub $ xs ++ ys}
           | xs == [] = mfy
           | ys == [] = mfx
           | otherwise =
-              let diff = my `diffUTCTime` mx
+              let diff' = my `diffUTCTime` mx
                   xs' =
                       (\x@Fix{fixMark = Seconds secs} ->
-                          x{fixMark = Seconds $ secs + round diff})
+                          x{fixMark = Seconds $ secs + round diff'})
                       <$> xs
 
               in mfy{fixes = sort . nub $ xs' ++ ys}
+
+instance Semigroup MarkedFixes => Monoid MarkedFixes where
+    mempty = MarkedFixes (UTCTime (toEnum 0) 0) []
+    mappend = (<>)
 
 betweenFixMark :: FixMark a => Seconds -> Seconds -> a -> Bool
 betweenFixMark s0 s1 x =
