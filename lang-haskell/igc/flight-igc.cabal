@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 197966ea036f9982d384bc5f51bae1f3e1589645878722453ba42d17891fe8ab
+-- hash: 3529143ad2b937ce82ffeee727b5d673e8c302b9b312758b01b44594cc5b90bc
 
 name:           flight-igc
 version:        2.0.0
@@ -71,7 +71,8 @@ test-suite doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.10.1.0 && <5
+      QuickCheck
+    , base >=4.10.1.0 && <5
     , bytestring
     , doctest
     , flight-clip

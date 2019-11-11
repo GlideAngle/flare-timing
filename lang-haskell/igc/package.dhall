@@ -31,7 +31,7 @@ in    defs
             ./../default-tests.dhall
           ⫽ { doctest =
                 { dependencies =
-                    defs.dependencies # [ "doctest" ]
+                    defs.dependencies # [ "doctest", "QuickCheck" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
