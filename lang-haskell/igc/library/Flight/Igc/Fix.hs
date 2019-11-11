@@ -120,8 +120,7 @@ _bumpOver add ns xs =
 -- >>> _bumpOverBy (\a b -> a `compare` (b + 2)) (+) [0,10..] [7,9,2,3,1]
 -- [7,9,12,13,11]
 _bumpOverBy
-    :: Ord a
-    => (a -> a -> Ordering)
+    :: (a -> a -> Ordering)
     -> (a -> b -> a)
     -> [b]
     -> [a]
