@@ -3,6 +3,7 @@ module Internal.Sphere.Cylinder.Double (circumSample, direct) where
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
@@ -155,7 +156,7 @@ getClose
     -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
     -> TrueCourse Double -- ^ The true course for this radial.
     -> (ZonePoint Double, TrueCourse Double)
-getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
+getClose zone' ptCenter limitRadius spTolerance trys (Radius (MkQuantity offset)) f x@(TrueCourse tc)
     | trys <= 0 = (zp', x)
     | unTolerance spTolerance <= 0 = (zp', x)
     | limitRadius <= unTolerance spTolerance = (zp', x)
@@ -206,17 +207,22 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
         circumR = circum ptCenter
 
         y = f x
-        zp' = ZonePoint { sourceZone = realToFracZone zone'
-                        , point = y
-                        , radial = Bearing tc
-                        , orbit = yr
-                        } :: ZonePoint Double
 
-        (TaskDistance (MkQuantity d)) =
+        zp' :: ZonePoint Double
+        zp' = ZonePoint
+                { sourceZone = realToFracZone zone'
+                , point = y
+                , radial = Bearing $ normalize tc
+                , orbit = Radius yr
+                } :: ZonePoint Double
+
+        pts = [Point ptCenter, Point y]
+
+        (TaskDistance yr@(MkQuantity d)) =
             edgesSum
             $ distancePointToPoint
                 distance
-                (realToFracZone <$> [Point ptCenter, Point y])
+                (realToFracZone <$> pts)
 
 -- $setup
 -- >>> :set -XTemplateHaskell
