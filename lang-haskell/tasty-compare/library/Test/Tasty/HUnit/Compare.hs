@@ -12,7 +12,7 @@ import Data.CallStack
 import Test.Tasty.HUnit
 
 assertCompare
-  :: (Eq a, Ord a, Show a, HasCallStack)
+  :: (Show a, HasCallStack)
   => String -- ^ The message prefix
   -> (a -> a -> Bool) -- ^ The comparison
   -> String -- ^ A symbol for the comparison
@@ -29,56 +29,56 @@ assertCompare preface compare cmpSymbol key actual =
 infix 1 @<?, @?<, @<=?, @?<=, @>?, @?>, @>=?, @?>=
 
 (@<?)
-    :: (HasCallStack, Eq a, Ord a, Show a)
+    :: (HasCallStack, Ord a, Show a)
     => a -- ^ The key value
     -> a -- ^ The actual value
     -> Assertion
 key @<? actual = assertCompare "" (>) ">" key actual
 
 (@?<)
-    :: (HasCallStack, Eq a, Ord a, Show a)
+    :: (HasCallStack, Ord a, Show a)
     => a -- ^ The actual value
     -> a -- ^ The key value
     -> Assertion
 actual @?< key = assertCompare "" (<) "<" key actual
 
 (@<=?)
-    :: (HasCallStack, Eq a, Ord a, Show a)
+    :: (HasCallStack, Ord a, Show a)
     => a -- ^ The key value
     -> a -- ^ The actual value
     -> Assertion
 key @<=? actual = assertCompare "" (>=) ">=" key actual
 
 (@?<=)
-    :: (HasCallStack, Eq a, Ord a, Show a)
+    :: (HasCallStack, Ord a, Show a)
     => a -- ^ The actual value
     -> a -- ^ The key value
     -> Assertion
 actual @?<= key = assertCompare "" (<=) "<=" key actual
 
 (@>?)
-    :: (HasCallStack, Eq a, Ord a, Show a)
+    :: (HasCallStack, Ord a, Show a)
     => a -- ^ The key value
     -> a -- ^ The actual value
     -> Assertion
 key @>? actual = assertCompare "" (<=) "<=" key actual
 
 (@?>)
-    :: (HasCallStack, Eq a, Ord a, Show a)
+    :: (HasCallStack, Ord a, Show a)
     => a -- ^ The actual value
     -> a -- ^ The key value
     -> Assertion
 actual @?> key = assertCompare "" (>) ">" key actual
 
 (@>=?)
-    :: (HasCallStack, Eq a, Ord a, Show a)
+    :: (HasCallStack, Ord a, Show a)
     => a -- ^ The key value
     -> a -- ^ The actual value
     -> Assertion
 key @>=? actual = assertCompare "" (<) "<" key actual
 
 (@?>=)
-    :: (HasCallStack, Eq a, Ord a, Show a)
+    :: (HasCallStack, Ord a, Show a)
     => a -- ^ The actual value
     -> a -- ^ The key value
     -> Assertion
