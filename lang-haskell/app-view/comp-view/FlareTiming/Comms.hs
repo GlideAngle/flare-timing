@@ -69,12 +69,12 @@ import WireTypes.ValidityWorking
 import FlareTiming.Events (IxTask(..))
 
 -- NOTE: Possible alternatives for mapUri ...
--- mapUri s = "http://localhost:3000" <> s
 -- mapUri s = "http://1976-never-land.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://1989-lift-lines.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2012-forbes.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2018-forbes.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2018-dalmatian.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2019-dalmatian.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2016-quest.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "/json" <> s <> ".json"
 mapUri :: T.Text -> T.Text
