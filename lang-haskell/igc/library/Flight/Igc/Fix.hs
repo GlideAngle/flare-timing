@@ -141,6 +141,7 @@ mark
     -> [IgcRecord]
     -> b
 mark _ Ignore _ = mempty
+mark _ G{} _ = mempty
 mark _ B{} _ = mempty
 mark f HFDTEDATE{ymd = YMD{year = yy, month = mm, day = dd}} xs =
     f Nothing ts
@@ -159,6 +160,7 @@ mark f (HFDTE YMD{year = yy, month = mm, day = dd}) xs =
 -- prop> isFix x == (extract x /= Nothing)
 extract :: IgcRecord -> Maybe IgcFix
 extract Ignore = Nothing
+extract G{} = Nothing
 extract HFDTEDATE{} = Nothing
 extract HFDTE{} = Nothing
 extract B{hms, pos} = Just (hms, pos)

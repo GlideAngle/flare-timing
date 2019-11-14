@@ -142,6 +142,8 @@ data IgcRecord
     | HFDTEDATE {ymd :: YMD, nth :: Nth}
     -- | The older date header record
     | HFDTE YMD
+    -- | A digital signature
+    | G
     -- | Any other record type is ignored
     | Ignore
     deriving (Eq, Ord)
@@ -158,7 +160,8 @@ instance Show IgcRecord where
     show (HFDTEDATE {ymd, nth = Nth n}) =
         concat [show ymd, ", ", n]
     show (HFDTE ymd) = show ymd
-    show Ignore = ""
+    show G = "G"
+    show Ignore = "?"
 
 instance Arbitrary Hour where
     arbitrary = Hour <$> arbitrary
@@ -317,6 +320,7 @@ isMark :: IgcRecord -> Bool
 isMark B{} = False
 isMark HFDTEDATE{} = True
 isMark HFDTE{} = True
+isMark G{} = False
 isMark Ignore = False
 
 -- | Is the record a __@B@__ record?
@@ -324,6 +328,7 @@ isFix :: IgcRecord -> Bool
 isFix B{} = True
 isFix HFDTEDATE{} = False
 isFix HFDTE{} = False
+isFix G{} = False
 isFix Ignore = False
 
 {--

@@ -22,16 +22,15 @@ igcFile = do
     where
         p1 = manyTill anySingle (lookAhead (string "HFDTEDATE:")) *> headerLine dateHFDTEDATE
         p2 = manyTill anySingle (lookAhead (string "HFDTE")) *> headerLine dateHFDTE
-        headerLine date = do
-            line' <- date
-            _ <- eol
-            return line'
+        headerLine date = date <* eol
 
 line :: ParsecT Void String Identity IgcRecord
-line = do
-    line' <- fix <|> ignore
-    _ <- eol
-    return line'
+line =
+    fix <* eol
+    -- WARNING: The security record in the IGC file is not always followed by
+    -- an end of line before the end of file.
+    <|> security <* (eol <|> (const "" <$> eof))
+    <|> ignore <* eol
 
 -- |
 -- >>> parseTest timeHHMMSS "0200223"
@@ -138,8 +137,14 @@ fix = do
     lat' <- lat
     lng' <- lng
     (altBaro', altGps') <- alt
-    _ <- many (noneOf ("\n" :: String))
+    _ <- many (noneOf ("\r\n" :: String))
     return $ B hms' (lat', lng',  altBaro',  altGps')
+
+security :: ParsecT Void String Identity IgcRecord
+security = do
+    _ <- char 'G'
+    _ <- many (noneOf ("\r\n" :: String))
+    return G
 
 -- |
 -- >>> parseTest dateHFDTEDATE "HFDTEDATE:030118,01"
@@ -174,7 +179,7 @@ dateHFDTE = do
 
 ignore :: ParsecT Void String Identity IgcRecord
 ignore = do
-    _ <- many (noneOf ("\n" :: String))
+    _ <- many (noneOf ("\r\n" :: String))
     return Ignore
 
 -- |
@@ -189,6 +194,7 @@ ignore = do
 --
 -- >>> parse igcHFDTE
 -- Right 2018-01-03
+-- G
 -- 04:05:47 33° 21.383' S 147° 56.040' E 248m (Just 227m)
 -- 04:05:48 33° 21.388' S 147° 56.036' E 249m (Just 227m)
 -- ... plus 3530 other B records
@@ -205,6 +211,7 @@ ignore = do
 --
 -- >>> parse igcHFDTEDATE
 -- Right 2018-01-03, 01
+-- G
 -- 03:13:00 33° 21.380' S 147° 55.984' E 283m (Just 237m)
 -- 03:13:01 33° 21.385' S 147° 55.977' E 290m (Just 241m)
 -- ... plus 13175 other B records
@@ -218,6 +225,7 @@ ignore = do
 --
 -- >>> parse igcScott
 -- Right 2017-04-08
+-- G
 -- 02:37:56 27° 09.269' S 151° 14.965' E 0m (Just 1004m)
 -- 02:37:58 27° 09.274' S 151° 14.971' E 0m (Just 1010m)
 -- ... plus 9733 other B records
@@ -225,9 +233,18 @@ ignore = do
 --
 -- >>> parse igcGordon
 -- Right 2018-01-02
+-- G
 -- 00:44:29 33° 21.373' S 147° 56.064' E 285m (Just 0m)
 -- 00:44:30 33° 21.369' S 147° 56.061' E 285m (Just 0m)
 -- ... plus 30026 other B records
+-- <BLANKLINE>
+--
+-- >>> parse igcPetros
+-- Right 2019-07-11
+-- G
+-- 12:04:03 43° 47.488' N 016° 29.815' E 0m (Just 1192m)
+-- 12:04:20 43° 47.489' N 016° 29.815' E 0m (Just 1195m)
+-- ... plus 1738 other B records
 -- <BLANKLINE>
 parse
    :: String -- ^ A string to parse
@@ -260,6 +277,8 @@ parseFromFile fname =
 --
 -- >>> fileScott = "./test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc"
 -- >>> fileGordon = "./test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc"
+-- >>> filePetros = "./test-suite-doctest/Petros_Miskos.20190711-175327.43547.18.igc"
 --
 -- >>> igcScott = $(embedStr (System.IO.readFile fileScott))
 -- >>> igcGordon = $(embedStr (System.IO.readFile fileGordon))
+-- >>> igcPetros = $(embedStr (System.IO.readFile filePetros))
