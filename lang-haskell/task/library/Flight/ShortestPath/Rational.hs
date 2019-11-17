@@ -129,10 +129,10 @@ instance (Real a, Fractional a) => GeoPath Rational a where
             -- point to point tagging one intervening zone as this is used in interpolating
             -- the exact tagging point and time between fixes.
             distance _ span distancePointToPoint cs builder cut tolerance xs@[Point _, _, Point _] =
-                distanceUnchecked (Samples 5) 20 span distancePointToPoint cs builder cut tolerance xs
+                distanceUnchecked (Samples 11) 20 span distancePointToPoint cs builder cut tolerance xs
 
             -- NOTE: Allow duplicates as some tasks are set that way but otherwise zones
             -- must be separated.
             distance e span distancePointToPoint cs builder cut tolerance xs
                 | not . (separatedZones e) . dedup $ xs = (ZxNotSeparated, [])
-                | otherwise = distanceUnchecked (Samples 5) 6 span distancePointToPoint cs builder cut tolerance xs
+                | otherwise = distanceUnchecked (Samples 11) 6 span distancePointToPoint cs builder cut tolerance xs
