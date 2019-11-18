@@ -2,6 +2,12 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Earth, Through and Through
+## app-view-0.22
+
+* Use the Earth model and Earth math throughout the scoring.
+* Avoid skipping some B records (position fixes) when parsing `*.igc` files.
+
 # Validity Compared
 ## app-view-0.21
 
