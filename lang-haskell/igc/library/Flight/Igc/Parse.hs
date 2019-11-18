@@ -16,7 +16,7 @@ import Flight.Igc.Record
 igcFile :: ParsecT Void String Identity [IgcRecord]
 igcFile = do
     hfdte <- try p1 <|> try p2
-    lines' <- manyTill anySingle (char 'B') *> many line
+    lines' <- lookAhead (manyTill anySingle (char 'B')) *> many line
     _ <- eof
     return $ hfdte : lines'
     where
@@ -212,9 +212,9 @@ ignore = do
 -- >>> parse igcHFDTEDATE
 -- Right 2018-01-03, 01
 -- G
+-- 03:12:59 33° 21.375' S 147° 55.988' E 277m (Just 235m)
 -- 03:13:00 33° 21.380' S 147° 55.984' E 283m (Just 237m)
--- 03:13:01 33° 21.385' S 147° 55.977' E 290m (Just 241m)
--- ... plus 13175 other B records
+-- ... plus 13182 other B records
 -- <BLANKLINE>
 --
 -- >>> line 1 igcScott
@@ -236,15 +236,15 @@ ignore = do
 -- G
 -- 00:44:29 33° 21.373' S 147° 56.064' E 285m (Just 0m)
 -- 00:44:30 33° 21.369' S 147° 56.061' E 285m (Just 0m)
--- ... plus 30026 other B records
+-- ... plus 30033 other B records
 -- <BLANKLINE>
 --
 -- >>> parse igcPetros
 -- Right 2019-07-11
 -- G
+-- 12:04:01 43° 47.488' N 016° 29.815' E 0m (Just 1192m)
 -- 12:04:03 43° 47.488' N 016° 29.815' E 0m (Just 1192m)
--- 12:04:20 43° 47.489' N 016° 29.815' E 0m (Just 1195m)
--- ... plus 1738 other B records
+-- ... plus 1757 other B records
 -- <BLANKLINE>
 parse
    :: String -- ^ A string to parse

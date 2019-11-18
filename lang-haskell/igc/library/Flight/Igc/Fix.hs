@@ -205,7 +205,7 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
 -- False
 --
 -- >>> let xs = markTimes markSasha fixesSasha in (head xs, head $ reverse xs)
--- (2018-01-03 03:13:00 UTC,2018-01-03 06:57:50 UTC)
+-- (2018-01-03 03:12:59 UTC,2018-01-03 06:57:50 UTC)
 --
 -- >>> let xs = markTimes markBrad fixesBrad in (head xs, head $ reverse xs)
 -- (2018-01-03 04:05:47 UTC,2018-01-03 06:13:55 UTC)
@@ -241,7 +241,7 @@ markTimes = mark unStampTime
 -- False
 --
 -- >>> let xs = markTicks markSasha fixesSasha in (head xs, head $ reverse xs)
--- (00:00:00,03:44:50)
+-- (00:00:00,03:44:51)
 --
 -- >>> let xs = markTicks markBrad fixesBrad in (head xs, head $ reverse xs)
 -- (00:00:00,02:08:08)
