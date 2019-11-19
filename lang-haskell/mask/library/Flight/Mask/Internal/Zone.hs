@@ -126,10 +126,10 @@ rowToPoint
     TrackZone $ Point (degPairToRadLL (lat, lng))
 
 zoneToCylinder :: (Eq a, Ord a, Fractional a) => RawZone -> Zone a
-zoneToCylinder RawZone{lat = RawLat lat, lng = RawLng lng, radius, give} =
+zoneToCylinder RawZone{lat = RawLat lat, lng = RawLng lng, radius, giveOut} =
     Cylinder (Radius r') (degPairToRadLL(lat, lng))
     where
-        Radius r = fromMaybe radius give
+        Radius r = fromMaybe radius giveOut
         r' = fromRational' . toRational' $ r
 
 zonesToTaskZones

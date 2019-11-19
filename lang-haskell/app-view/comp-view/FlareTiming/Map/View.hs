@@ -276,12 +276,13 @@ tpMarker (TurnpointName tpName) latLng = do
 tpCircle
     :: Color
     -> (Double, Double)
-    -> (Radius, Maybe Radius)
-    -> IO (L.Circle, Maybe L.Circle)
-tpCircle (Color color) latLng (Radius rx, g) = do
+    -> (Radius, (Maybe Radius, Maybe Radius))
+    -> IO (L.Circle, (Maybe L.Circle, Maybe L.Circle))
+tpCircle (Color color) latLng (Radius rx, (y, z)) = do
     xCyl <- L.circle latLng rx color False True
-    yCyl <- sequence $ (\(Radius ry) -> L.circle latLng ry color True False) <$> g
-    return (xCyl, yCyl)
+    yCyl <- sequence $ (\(Radius ry) -> L.circle latLng ry color True False) <$> y
+    zCyl <- sequence $ (\(Radius rz) -> L.circle latLng rz color True False) <$> z
+    return (xCyl, (yCyl, zCyl))
 
 tpLine
     :: Color
@@ -525,12 +526,14 @@ map
                         tpCircle
                         csCircle
                         ptsCircle
-                        ((\x -> (radius x, give x)) <$> xsCircle)
+                        ((\x -> (radius x, (giveIn x, giveOut x))) <$> xsCircle)
 
             _ <- sequence $ ((flip L.circleAddToMap) lmap . fst) <$> tpCircles
 
-            let giveCircles = catMaybes $ snd <$> tpCircles
-            _ <- sequence $ (flip L.circleAddToMap) lmap <$> giveCircles
+            let giveInCircles = catMaybes $ fst . snd <$> tpCircles
+            let giveOutCircles = catMaybes $ snd . snd <$> tpCircles
+            _ <- sequence $ (flip L.circleAddToMap) lmap <$> giveInCircles
+            _ <- sequence $ (flip L.circleAddToMap) lmap <$> giveOutCircles
 
             tpLines <-
                 sequence $
@@ -538,7 +541,7 @@ map
                         tpLine
                         csLine
                         ptsLine
-                        ((\x -> (radius x, give x)) . snd <$> xsLine)
+                        ((\x -> (radius x, giveIn x)) . snd <$> xsLine)
                         (fst <$> xsLine)
 
             _ <- sequence $ ((flip L.semicircleAddToMap) lmap . fst) <$> tpLines

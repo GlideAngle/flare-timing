@@ -24,7 +24,8 @@ data RawZone =
         , lat :: RawLat
         , lng :: RawLng
         , radius :: Radius
-        , give :: Maybe Radius
+        , giveIn :: Maybe Radius
+        , giveOut :: Maybe Radius
         , alt :: Maybe Alt
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)

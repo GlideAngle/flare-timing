@@ -22,7 +22,7 @@ import Flight.Fsdb
     , parseTaskFolders
     , parseTracks
     )
-import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Geodesy (EarthMath(..))
 import Flight.Comp
     ( FileType(Fsdb)
     , TrimFsdbFile(..)
@@ -41,36 +41,12 @@ import Flight.Comp
     , ensureExt
     )
 import qualified Flight.Comp as C (Comp(earth, earthMath))
-import Flight.Zone (Zone(..), Radius(..), center)
-import qualified Flight.Zone.Raw as Raw (RawZone(..), Give(..), zoneGive)
+import Flight.Zone (Radius(..))
+import qualified Flight.Zone.Raw as Raw (Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Score (ScoreBackTime(..), PointPenalty)
 import Flight.Scribe (writeComp)
-import Flight.Earth.Ellipsoid (wgs84)
-import Flight.Earth.Sphere (earthRadius)
-import Flight.Geodesy (Projection(..))
-import Flight.Geodesy.Solution (GeoZones(..))
-import Flight.Mask (zoneToCylinder)
 import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
-
-sepZs :: EarthMath -> [Zone Double] -> Bool
-sepZs earthMath =
-    separatedZones @Double @Double
-        ( earthMath
-        , let e = EarthAsEllipsoid wgs84 in case earthMath of
-              Pythagorus -> EarthAsFlat UTM
-              Haversines -> EarthAsSphere earthRadius
-              Vincenty -> e
-              AndoyerLambert -> e
-              ForsytheAndoyerLambert -> e
-              FsAndoyer -> e
-        )
-
-separated :: EarthMath -> Raw.RawZone -> Raw.RawZone -> Bool
-separated em x y =
-    let x' = zoneToCylinder x
-        y' = zoneToCylinder y
-    in sepZs em [x', y'] && sepZs em [Point $ center x', y']
 
 main :: IO ()
 main = do
@@ -221,7 +197,7 @@ fsdbSettings earthMath zg fsdbXml = do
 
     let ts' =
             [ t
-                { zones = z{raw = Raw.zoneGive (separated earthMath) zg rz}
+                { zones = z{raw = Raw.zoneGive (const $ const True) zg rz}
                 , penals = pn
                 }
             | t@Task{zones = z@Zones{raw = rz}} <- ts

@@ -487,11 +487,17 @@ cmp a b =
         ("radius", "center") -> GT
         ("radius", _) -> LT
 
-        ("give", "zoneName") -> GT
-        ("give", "lat") -> GT
-        ("give", "lng") -> GT
-        ("give", "radius") -> GT
-        ("give", _) -> LT
+        ("giveIn", "zoneName") -> GT
+        ("giveIn", "lat") -> GT
+        ("giveIn", "lng") -> GT
+        ("giveIn", "radius") -> GT
+        ("giveIn", _) -> LT
+
+        ("giveOut", "zoneName") -> GT
+        ("giveOut", "lat") -> GT
+        ("giveOut", "lng") -> GT
+        ("giveOut", "radius") -> GT
+        ("giveOut", _) -> LT
 
         ("alt", _) -> GT
 
