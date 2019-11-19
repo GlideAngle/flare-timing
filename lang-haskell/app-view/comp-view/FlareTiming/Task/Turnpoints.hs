@@ -197,8 +197,8 @@ tableTurnRadii x taskLegs = do
                     el "th" $ text "#"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
-                    elClass "th" "th-tp-give" $ text "Give In §"
-                    elClass "th" "th-tp-give" $ text "Give Out §"
+                    elClass "th" "th-tp-give" $ text "Inside §"
+                    elClass "th" "th-tp-give" $ text "Outside §"
 
             _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (rowTurnRadius len ss)
