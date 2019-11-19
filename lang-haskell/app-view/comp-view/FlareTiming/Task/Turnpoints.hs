@@ -46,16 +46,16 @@ tableTask utcOffset x taskLegs = do
     gs <- sample . current $ getStartGates <$> x
 
     elClass "div" "tile is-ancestor" $ do
-        elClass "div" "tile is-vertical is-9" $
+        elClass "div" "tile is-vertical is-8" $
             elClass "div" "tile" $
                 elClass "div" "tile is-parent is-vertical" $ do
                     elClass "article" "tile is-child box" $ do
                         elClass "p" "title" $ text "Turnpoints"
                         elClass "div" "content" $ do
-                            tableTurnpoints tz x taskLegs
+                            tableTurnpoints x taskLegs
                             return ()
 
-        elClass "div" "tile is-vertical is-3" $
+        elClass "div" "tile is-vertical is-4" $
             elClass "div" "tile" $
                 elClass "div" "tile is-parent is-vertical" $ do
                     if null gs
@@ -104,17 +104,15 @@ tableWindows tz x = do
 
 tableTurnpoints
     :: MonadWidget t m
-    => TimeZone
-    -> Dynamic t Task
+    => Dynamic t Task
     -> Dynamic t (Maybe TaskLegs)
     -> m ()
-tableTurnpoints tz x taskLegs = do
+tableTurnpoints x taskLegs = do
     let zs = getAllRawZones <$> x
     let ess = getEssShape <$> x
     let goal = getGoalShape <$> x
     let open = getOpenShape <$> x
     let ss = getSpeedSection <$> x
-    let oc = (\case [t] -> repeat t; ts -> ts) . getOpenClose <$> x
 
     len <- sample . current $ fromIntegral . length <$> zs
 
@@ -126,7 +124,7 @@ tableTurnpoints tz x taskLegs = do
             in (pl, ps, pf))
 
     let dd = ffor3 legs' legsSum' flipSum' $ zipWith3 (,,)
-    let ys = ffor3 oc dd zs $ zipWith3 (,,)
+    let ys = ffor2 dd zs $ zip
 
     _ <- elClass "table" "table" $ do
             el "thead" $ do
@@ -139,14 +137,12 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-give" $ text "Give Out §"
                     elClass "th" "th-tp-lat" $ text "Latitude"
                     elClass "th" "th-tp-lng" $ text "Longitude"
-                    elClass "th" "th-tp-open" $ text "Open"
-                    elClass "th" "th-tp-close" $ text "Close"
                     elClass "th" "th-tp-altitude" $ text "Altitude"
 
             _ <- el "tbody" $ do
-                simpleList (fmap (zip [1..]) ys) (rowTurnpoint tz len ss)
+                simpleList (fmap (zip [1..]) ys) (rowTurnpoint len ss)
 
-            let tr = el "tr" . elAttr "td" ("colspan" =: "11")
+            let tr = el "tr" . elAttr "td" ("colspan" =: "9")
             el "tfoot" $ do
                 dyn_ . ffor2 goal open $ (\g o ->
                     case (g, o) of
@@ -229,21 +225,19 @@ rowWindow tz len ss iz = do
 
 rowTurnpoint
     :: MonadWidget t m
-    => TimeZone
-    -> Integer
+    => Integer
     -> Dynamic t SpeedSection
-    -> Dynamic t (Integer, (OpenClose, (TaskDistance, TaskDistance, TaskDistance), RawZone))
+    -> Dynamic t (Integer, ((TaskDistance, TaskDistance, TaskDistance), RawZone))
     -> m ()
-rowTurnpoint tz len ss iz = do
+rowTurnpoint len ss iz = do
     let i = fst <$> iz
     let rowTextColor = zipDynWith rowColor ss i
     rowIntro <- sample . current $ zipDynWith (rowText len) ss i
     let x = snd <$> iz
-    let oc = (\(a, _, _) -> a) <$> x
-    let l = (\(_, (b1, _, _), _) -> b1) <$> x
-    let legSum = (\(_, (_, b2, _), _) -> b2) <$> x
-    let flipSum = (\(_, (_, _, b3), _) -> b3) <$> x
-    let z = (\(_, _, c) -> c) <$> x
+    let l = (\((b1, _, _), _) -> b1) <$> x
+    let legSum = (\((_, b2, _), _) -> b2) <$> x
+    let flipSum = (\((_, _, b3), _) -> b3) <$> x
+    let z = snd <$> x
 
     _ <- dyn $ ffor2 i l (\ix leg ->
         case (ix, leg) of
@@ -264,8 +258,6 @@ rowTurnpoint tz len ss iz = do
         elClass "td" "td-tp-give" . dynText $ TP.getGiveOut <$> z
         elClass "td" "td-tp-lat" . dynText $ TP.getLat <$> z
         elClass "td" "td-tp-lng" . dynText $ TP.getLng <$> z
-        elClass "td" "td-tp-open" . dynText $ showOpen tz <$> oc
-        elClass "td" "td-tp-close" . dynText $ showClose tz <$> oc
         elClass "td" "td-tp-altitude" . dynText $ TP.getAlt <$> z
 
     elDynClass "tr" rowTextColor $ do
