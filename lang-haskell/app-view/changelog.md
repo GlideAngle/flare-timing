@@ -7,6 +7,9 @@ of this changelog.
 
 * Use the Earth model and Earth math throughout the scoring.
 * Avoid skipping some B records (position fixes) when parsing `*.igc` files.
+* Show the effective inside and outside border of turnpoints with tolerance
+  applied.
+* Allow a crossing if one fix passes the time check but the other does not.
 
 # Validity Compared
 ## app-view-0.21
