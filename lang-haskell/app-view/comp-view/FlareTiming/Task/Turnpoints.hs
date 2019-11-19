@@ -177,9 +177,6 @@ tableTurnRadii
     -> m ()
 tableTurnRadii x taskLegs = do
     let zs = getAllRawZones <$> x
-    let ess = getEssShape <$> x
-    let goal = getGoalShape <$> x
-    let open = getOpenShape <$> x
     let ss = getSpeedSection <$> x
 
     len <- sample . current $ fromIntegral . length <$> zs
@@ -220,9 +217,6 @@ tableTurnLaunch
     -> m ()
 tableTurnLaunch x taskLegs = do
     let zs = getAllRawZones <$> x
-    let ess = getEssShape <$> x
-    let goal = getGoalShape <$> x
-    let open = getOpenShape <$> x
     let ss = getSpeedSection <$> x
 
     len <- sample . current $ fromIntegral . length <$> zs
@@ -260,9 +254,6 @@ tableTurnGoal
     -> m ()
 tableTurnGoal x taskLegs = do
     let zs = getAllRawZones <$> x
-    let ess = getEssShape <$> x
-    let goal = getGoalShape <$> x
-    let open = getOpenShape <$> x
     let ss = getSpeedSection <$> x
 
     len <- sample . current $ fromIntegral . length <$> zs
@@ -366,11 +357,7 @@ rowTurnPoint len ss iz = do
     let i = fst <$> iz
     let rowTextColor = zipDynWith rowColor ss i
     rowIntro <- sample . current $ zipDynWith (rowText len) ss i
-    let x = snd <$> iz
-    let l = (\((b1, _, _), _) -> b1) <$> x
-    let legSum = (\((_, b2, _), _) -> b2) <$> x
-    let flipSum = (\((_, _, b3), _) -> b3) <$> x
-    let z = snd <$> x
+    let z = snd . snd <$> iz
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
@@ -391,8 +378,6 @@ rowTurnRadius len ss iz = do
     rowIntro <- sample . current $ zipDynWith (rowText len) ss i
     let x = snd <$> iz
     let l = (\((b1, _, _), _) -> b1) <$> x
-    let legSum = (\((_, b2, _), _) -> b2) <$> x
-    let flipSum = (\((_, _, b3), _) -> b3) <$> x
     let z = snd <$> x
 
     _ <- dyn $ ffor2 i l (\ix leg ->
@@ -423,9 +408,7 @@ rowTurnLaunch len ss iz = do
     let rowTextColor = zipDynWith rowColor ss i
     rowIntro <- sample . current $ zipDynWith (rowText len) ss i
     let x = snd <$> iz
-    let l = (\((b1, _, _), _) -> b1) <$> x
     let legSum = (\((_, b2, _), _) -> b2) <$> x
-    let flipSum = (\((_, _, b3), _) -> b3) <$> x
     let z = snd <$> x
 
     elDynClass "tr" rowTextColor $ do
@@ -444,8 +427,6 @@ rowTurnGoal len ss iz = do
     let rowTextColor = zipDynWith rowColor ss i
     rowIntro <- sample . current $ zipDynWith (rowText len) ss i
     let x = snd <$> iz
-    let l = (\((b1, _, _), _) -> b1) <$> x
-    let legSum = (\((_, b2, _), _) -> b2) <$> x
     let flipSum = (\((_, _, b3), _) -> b3) <$> x
     let z = snd <$> x
 
