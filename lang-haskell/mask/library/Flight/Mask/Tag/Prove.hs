@@ -23,7 +23,9 @@ import Flight.Mask.Internal.Zone
 
 type TimePass = UTCTime -> Bool
 
--- | Prove from the fixes and mark that the crossing exits.
+-- | Prove from the fixes and mark that the crossing exits. We don't know the
+-- interpolated crossing point and time yet so we'll accept a crossing where
+-- one of the fixes passes the time check.
 prove
     :: TimePass
     -> UTCTime
@@ -38,7 +40,7 @@ prove pass mark0 fixes i@(ZoneIdx i') j@(ZoneIdx j') bs = do
     let f = fixFromFix mark0
     let fs@[Fix{time = ti}, Fix{time = tj}] = [f i fixM, f j fixN]
     let zc = ZoneCross{crossingPair = fs, inZone = bs}
-    if pass ti && pass tj then return zc else Nothing
+    if pass ti || pass tj then return zc else Nothing
 
 proveCrossing :: TimePass -> UTCTime -> [Kml.Fix] -> Crossing -> Maybe ZoneCross
 proveCrossing pass mark0 fixes (Right (ZoneExit m n)) =
