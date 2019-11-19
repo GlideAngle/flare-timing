@@ -46,25 +46,61 @@ tableTask utcOffset x taskLegs = do
     gs <- sample . current $ getStartGates <$> x
 
     elClass "div" "tile is-ancestor" $ do
-        elClass "div" "tile is-parent" $ do
-            elClass "article" "tile is-child box" $ do
-                elClass "p" "title" $ text "Turnpoints"
-                elClass "div" "content" $ do
-                    tableTurnpoints tz x taskLegs
-                    return ()
-
-        elClass "div" "tile is-parent is-3" $ do
-            if null gs
-                then
-                    elClass "article" "tile is-child notification is-warning" $ do
-                        elClass "p" "title" $ text "Start Gates"
-                        el "p" $ text "There are no start gates."
-                else
+        elClass "div" "tile is-vertical is-9" $
+            elClass "div" "tile" $
+                elClass "div" "tile is-parent is-vertical" $ do
                     elClass "article" "tile is-child box" $ do
-                        elClass "p" "title" $ text "Start Gates"
+                        elClass "p" "title" $ text "Turnpoints"
                         elClass "div" "content" $ do
-                            tableStartGates tz gs
+                            tableTurnpoints tz x taskLegs
                             return ()
+
+        elClass "div" "tile is-vertical is-3" $
+            elClass "div" "tile" $
+                elClass "div" "tile is-parent is-vertical" $ do
+                    if null gs
+                        then
+                            elClass "article" "tile is-child notification is-warning" $ do
+                                elClass "p" "title" $ text "Start Gates"
+                                el "p" $ text "There are no start gates."
+                        else
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "Start Gates"
+                                elClass "div" "content" $ do
+                                    tableStartGates tz gs
+                                    return ()
+
+                    elClass "article" "tile is-child box" $ do
+                        elClass "p" "title" $ text "Time Windows"
+                        elClass "div" "content" $ do
+                            tableWindows tz x
+                            return ()
+
+tableWindows
+    :: MonadWidget t m
+    => TimeZone
+    -> Dynamic t Task
+    -> m ()
+tableWindows tz x = do
+    let zs = getAllRawZones <$> x
+    let ss = getSpeedSection <$> x
+    let oc = (\case [t] -> repeat t; ts -> ts) . getOpenClose <$> x
+
+    len <- sample . current $ fromIntegral . length <$> zs
+    let ys = ffor2 oc zs $ zip
+
+    _ <- elClass "table" "table" $ do
+            el "thead" $ do
+                el "tr" $ do
+                    el "th" $ text "#"
+                    elClass "th" "th-tp-name" $ text "Name"
+                    elClass "th" "th-tp-open" $ text "Open"
+                    elClass "th" "th-tp-close" $ text "Close"
+
+            el "tbody" $ do
+                simpleList (fmap (zip [1..]) ys) (rowWindow tz len ss)
+
+    return ()
 
 tableTurnpoints
     :: MonadWidget t m
@@ -108,7 +144,7 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-altitude" $ text "Altitude"
 
             _ <- el "tbody" $ do
-                simpleList (fmap (zip [1..]) ys) (row tz len ss)
+                simpleList (fmap (zip [1..]) ys) (rowTurnpoint tz len ss)
 
             let tr = el "tr" . elAttr "td" ("colspan" =: "11")
             el "tfoot" $ do
@@ -170,14 +206,35 @@ rowStartGate tz sg ix = do
         el "td" $ text ix
         el "td" . text $ showStartGate tz sg
 
-row
+rowWindow
+    :: MonadWidget t m
+    => TimeZone
+    -> Integer
+    -> Dynamic t SpeedSection
+    -> Dynamic t (Integer, (OpenClose, RawZone))
+    -> m ()
+rowWindow tz len ss iz = do
+    let i = fst <$> iz
+    let rowTextColor = zipDynWith rowColor ss i
+    rowIntro <- sample . current $ zipDynWith (rowText len) ss i
+    let x = snd <$> iz
+    let oc = fst <$> x
+    let z = snd <$> x
+
+    elDynClass "tr" rowTextColor $ do
+        el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
+        elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
+        elClass "td" "td-tp-open" . dynText $ showOpen tz <$> oc
+        elClass "td" "td-tp-close" . dynText $ showClose tz <$> oc
+
+rowTurnpoint
     :: MonadWidget t m
     => TimeZone
     -> Integer
     -> Dynamic t SpeedSection
     -> Dynamic t (Integer, (OpenClose, (TaskDistance, TaskDistance, TaskDistance), RawZone))
     -> m ()
-row tz len ss iz = do
+rowTurnpoint tz len ss iz = do
     let i = fst <$> iz
     let rowTextColor = zipDynWith rowColor ss i
     rowIntro <- sample . current $ zipDynWith (rowText len) ss i
