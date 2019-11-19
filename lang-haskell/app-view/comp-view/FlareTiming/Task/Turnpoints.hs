@@ -46,16 +46,22 @@ tableTask utcOffset x taskLegs = do
     gs <- sample . current $ getStartGates <$> x
 
     elClass "div" "tile is-ancestor" $ do
-        elClass "div" "tile is-vertical is-8" $
+        elClass "div" "tile is-vertical is-7" $
             elClass "div" "tile" $
                 elClass "div" "tile is-parent is-vertical" $ do
                     elClass "article" "tile is-child box" $ do
-                        elClass "p" "title" $ text "Turnpoints"
+                        elClass "p" "title" $ text "Turn Points"
                         elClass "div" "content" $ do
-                            tableTurnpoints x taskLegs
+                            tableTurnPoints x taskLegs
                             return ()
 
-        elClass "div" "tile is-vertical is-4" $
+                    elClass "article" "tile is-child box" $ do
+                        elClass "p" "title" $ text "Turn Radii"
+                        elClass "div" "content" $ do
+                            tableTurnRadii x taskLegs
+                            return ()
+
+        elClass "div" "tile is-vertical is-5" $
             elClass "div" "tile" $
                 elClass "div" "tile is-parent is-vertical" $ do
                     if null gs
@@ -74,6 +80,18 @@ tableTask utcOffset x taskLegs = do
                         elClass "p" "title" $ text "Time Windows"
                         elClass "div" "content" $ do
                             tableWindows tz x
+                            return ()
+
+                    elClass "article" "tile is-child box" $ do
+                        elClass "p" "title" $ text "From Launch"
+                        elClass "div" "content" $ do
+                            tableTurnLaunch x taskLegs
+                            return ()
+
+                    elClass "article" "tile is-child box" $ do
+                        elClass "p" "title" $ text "To Goal"
+                        elClass "div" "content" $ do
+                            tableTurnGoal x taskLegs
                             return ()
 
 tableWindows
@@ -102,12 +120,12 @@ tableWindows tz x = do
 
     return ()
 
-tableTurnpoints
+tableTurnPoints
     :: MonadWidget t m
     => Dynamic t Task
     -> Dynamic t (Maybe TaskLegs)
     -> m ()
-tableTurnpoints x taskLegs = do
+tableTurnPoints x taskLegs = do
     let zs = getAllRawZones <$> x
     let ess = getEssShape <$> x
     let goal = getGoalShape <$> x
@@ -130,19 +148,15 @@ tableTurnpoints x taskLegs = do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "#"
-                    elClass "th" "th-tp-distance-task" $ text "Distance"
                     elClass "th" "th-tp-name" $ text "Name"
-                    elClass "th" "th-tp-radius" $ text "Radius"
-                    elClass "th" "th-tp-give" $ text "Give In §"
-                    elClass "th" "th-tp-give" $ text "Give Out §"
                     elClass "th" "th-tp-lat" $ text "Latitude"
                     elClass "th" "th-tp-lng" $ text "Longitude"
                     elClass "th" "th-tp-altitude" $ text "Altitude"
 
             _ <- el "tbody" $ do
-                simpleList (fmap (zip [1..]) ys) (rowTurnpoint len ss)
+                simpleList (fmap (zip [1..]) ys) (rowTurnPoint len ss)
 
-            let tr = el "tr" . elAttr "td" ("colspan" =: "9")
+            let tr = el "tr" . elAttr "td" ("colspan" =: "5")
             el "tfoot" $ do
                 dyn_ . ffor2 goal open $ (\g o ->
                     case (g, o) of
@@ -153,10 +167,129 @@ tableTurnpoints x taskLegs = do
                         (Nothing, Just _) -> tr . dynText $ openFootnote <$> open
                         (Just _, Just _) -> return ()
                         (Nothing, Nothing) -> return ())
+
+    return ()
+
+tableTurnRadii
+    :: MonadWidget t m
+    => Dynamic t Task
+    -> Dynamic t (Maybe TaskLegs)
+    -> m ()
+tableTurnRadii x taskLegs = do
+    let zs = getAllRawZones <$> x
+    let ess = getEssShape <$> x
+    let goal = getGoalShape <$> x
+    let open = getOpenShape <$> x
+    let ss = getSpeedSection <$> x
+
+    len <- sample . current $ fromIntegral . length <$> zs
+
+    (legs', legsSum', flipSum') <- sample . current $ ffor ss (\ss' ->
+            let pad = case ss' of Just _ -> speedPad ss'; _ -> openPad
+                pl = (maybe unknownLegs (pad . legs)) <$> taskLegs
+                ps = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
+                pf = (maybe unknownLegs ((<> [zero]) . flipSum)) <$> taskLegs
+            in (pl, ps, pf))
+
+    let dd = ffor3 legs' legsSum' flipSum' $ zipWith3 (,,)
+    let ys = ffor2 dd zs $ zip
+
+    _ <- elClass "table" "table" $ do
+            el "thead" $ do
+                el "tr" $ do
+                    el "th" $ text "#"
+                    elClass "th" "th-tp-name" $ text "Name"
+                    elClass "th" "th-tp-radius" $ text "Radius"
+                    elClass "th" "th-tp-give" $ text "Give In §"
+                    elClass "th" "th-tp-give" $ text "Give Out §"
+
+            _ <- el "tbody" $ do
+                simpleList (fmap (zip [1..]) ys) (rowTurnRadius len ss)
+
+            let tr = el "tr" . elAttr "td" ("colspan" =: "5")
+            el "tfoot" $ do
                 tr $ text " § Give in the radius once the tolerance has been applied"
-                tr $ text " ↑  The distance from the turnpoint back to launch"
-                tr $ text " ↓  The distance from the turnpoint forward to goal"
                 tr $ text " ↕ The leg distance between turnpoints"
+
+    return ()
+
+tableTurnLaunch
+    :: MonadWidget t m
+    => Dynamic t Task
+    -> Dynamic t (Maybe TaskLegs)
+    -> m ()
+tableTurnLaunch x taskLegs = do
+    let zs = getAllRawZones <$> x
+    let ess = getEssShape <$> x
+    let goal = getGoalShape <$> x
+    let open = getOpenShape <$> x
+    let ss = getSpeedSection <$> x
+
+    len <- sample . current $ fromIntegral . length <$> zs
+
+    (legs', legsSum', flipSum') <- sample . current $ ffor ss (\ss' ->
+            let pad = case ss' of Just _ -> speedPad ss'; _ -> openPad
+                pl = (maybe unknownLegs (pad . legs)) <$> taskLegs
+                ps = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
+                pf = (maybe unknownLegs ((<> [zero]) . flipSum)) <$> taskLegs
+            in (pl, ps, pf))
+
+    let dd = ffor3 legs' legsSum' flipSum' $ zipWith3 (,,)
+    let ys = ffor2 dd zs $ zip
+
+    _ <- elClass "table" "table" $ do
+            el "thead" $ do
+                el "tr" $ do
+                    el "th" $ text "#"
+                    elClass "th" "th-tp-name" $ text "Name"
+                    elClass "th" "th-tp-distance-task" $ text "Launch"
+
+            _ <- el "tbody" $ do
+                simpleList (fmap (zip [1..]) ys) (rowTurnLaunch len ss)
+
+            let tr = el "tr" . elAttr "td" ("colspan" =: "3")
+            el "tfoot" $ do
+                tr $ text " ↑  The distance from the turnpoint back to launch"
+
+    return ()
+
+tableTurnGoal
+    :: MonadWidget t m
+    => Dynamic t Task
+    -> Dynamic t (Maybe TaskLegs)
+    -> m ()
+tableTurnGoal x taskLegs = do
+    let zs = getAllRawZones <$> x
+    let ess = getEssShape <$> x
+    let goal = getGoalShape <$> x
+    let open = getOpenShape <$> x
+    let ss = getSpeedSection <$> x
+
+    len <- sample . current $ fromIntegral . length <$> zs
+
+    (legs', legsSum', flipSum') <- sample . current $ ffor ss (\ss' ->
+            let pad = case ss' of Just _ -> speedPad ss'; _ -> openPad
+                pl = (maybe unknownLegs (pad . legs)) <$> taskLegs
+                ps = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
+                pf = (maybe unknownLegs ((<> [zero]) . flipSum)) <$> taskLegs
+            in (pl, ps, pf))
+
+    let dd = ffor3 legs' legsSum' flipSum' $ zipWith3 (,,)
+    let ys = ffor2 dd zs $ zip
+
+    _ <- elClass "table" "table" $ do
+            el "thead" $ do
+                el "tr" $ do
+                    el "th" $ text "#"
+                    elClass "th" "th-tp-name" $ text "Name"
+                    elClass "th" "th-tp-distance-task" $ text "Goal"
+
+            _ <- el "tbody" $ do
+                simpleList (fmap (zip [1..]) ys) (rowTurnGoal len ss)
+
+            let tr = el "tr" . elAttr "td" ("colspan" =: "3")
+            el "tfoot" $ do
+                tr $ text " ↓  The distance from the turnpoint forward to goal"
 
     return ()
 
@@ -223,13 +356,36 @@ rowWindow tz len ss iz = do
         elClass "td" "td-tp-open" . dynText $ showOpen tz <$> oc
         elClass "td" "td-tp-close" . dynText $ showClose tz <$> oc
 
-rowTurnpoint
+rowTurnPoint
     :: MonadWidget t m
     => Integer
     -> Dynamic t SpeedSection
     -> Dynamic t (Integer, ((TaskDistance, TaskDistance, TaskDistance), RawZone))
     -> m ()
-rowTurnpoint len ss iz = do
+rowTurnPoint len ss iz = do
+    let i = fst <$> iz
+    let rowTextColor = zipDynWith rowColor ss i
+    rowIntro <- sample . current $ zipDynWith (rowText len) ss i
+    let x = snd <$> iz
+    let l = (\((b1, _, _), _) -> b1) <$> x
+    let legSum = (\((_, b2, _), _) -> b2) <$> x
+    let flipSum = (\((_, _, b3), _) -> b3) <$> x
+    let z = snd <$> x
+
+    elDynClass "tr" rowTextColor $ do
+        el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
+        elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
+        elClass "td" "td-tp-lat" . dynText $ TP.getLat <$> z
+        elClass "td" "td-tp-lng" . dynText $ TP.getLng <$> z
+        elClass "td" "td-tp-altitude" . dynText $ TP.getAlt <$> z
+
+rowTurnRadius
+    :: MonadWidget t m
+    => Integer
+    -> Dynamic t SpeedSection
+    -> Dynamic t (Integer, ((TaskDistance, TaskDistance, TaskDistance), RawZone))
+    -> m ()
+rowTurnRadius len ss iz = do
     let i = fst <$> iz
     let rowTextColor = zipDynWith rowColor ss i
     rowIntro <- sample . current $ zipDynWith (rowText len) ss i
@@ -247,23 +403,56 @@ rowTurnpoint len ss iz = do
                 elClass "tr" "tr-tp-distance-leg" $ do
                     el "td" $ text ""
                     elClass "td" "td-tp-distance-leg" . text $ showTaskDistance leg'
-                    elAttr "td" ("colspan" =: "10") $ text "")
+                    elAttr "td" ("colspan" =: "5") $ text "")
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
-        elClass "td" "td-tp-distance-task" . dynText $ showTaskDistance <$> legSum
         elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
         elClass "td" "td-tp-give" . dynText $ TP.getGiveIn <$> z
         elClass "td" "td-tp-give" . dynText $ TP.getGiveOut <$> z
-        elClass "td" "td-tp-lat" . dynText $ TP.getLat <$> z
-        elClass "td" "td-tp-lng" . dynText $ TP.getLng <$> z
-        elClass "td" "td-tp-altitude" . dynText $ TP.getAlt <$> z
+
+rowTurnLaunch
+    :: MonadWidget t m
+    => Integer
+    -> Dynamic t SpeedSection
+    -> Dynamic t (Integer, ((TaskDistance, TaskDistance, TaskDistance), RawZone))
+    -> m ()
+rowTurnLaunch len ss iz = do
+    let i = fst <$> iz
+    let rowTextColor = zipDynWith rowColor ss i
+    rowIntro <- sample . current $ zipDynWith (rowText len) ss i
+    let x = snd <$> iz
+    let l = (\((b1, _, _), _) -> b1) <$> x
+    let legSum = (\((_, b2, _), _) -> b2) <$> x
+    let flipSum = (\((_, _, b3), _) -> b3) <$> x
+    let z = snd <$> x
 
     elDynClass "tr" rowTextColor $ do
-        el "td" $ text ""
+        el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
+        elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
+        elClass "td" "td-tp-distance-task" . dynText $ showTaskDistance <$> legSum
+
+rowTurnGoal
+    :: MonadWidget t m
+    => Integer
+    -> Dynamic t SpeedSection
+    -> Dynamic t (Integer, ((TaskDistance, TaskDistance, TaskDistance), RawZone))
+    -> m ()
+rowTurnGoal len ss iz = do
+    let i = fst <$> iz
+    let rowTextColor = zipDynWith rowColor ss i
+    rowIntro <- sample . current $ zipDynWith (rowText len) ss i
+    let x = snd <$> iz
+    let l = (\((b1, _, _), _) -> b1) <$> x
+    let legSum = (\((_, b2, _), _) -> b2) <$> x
+    let flipSum = (\((_, _, b3), _) -> b3) <$> x
+    let z = snd <$> x
+
+    elDynClass "tr" rowTextColor $ do
+        el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
+        elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
         elClass "td" "td-tp-distance-flip" . dynText $ showTaskDistance <$> flipSum
-        elAttr "td" ("colspan" =: "10") $ text ""
 
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""
