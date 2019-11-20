@@ -9,6 +9,7 @@ import Control.Monad (join)
 
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
+import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..), TrackFlyingSection(..))
@@ -223,16 +224,17 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
     tagZones
         :: Trig Double a
         => Earth Double
+        -> SampleParams Double
         -> [TaskZone Double]
         -> [Maybe ZoneCross]
         -> [Maybe ZoneTag]
-    tagZones e zs cs =
+    tagZones e sp zs cs =
         [ join $ g z <$> c
         | z <- zs
         | c <- cs
         ]
         where
-            tag = crossingTag @Double @Double e
+            tag = crossingTag @Double @Double e sp
 
             g z c@ZoneCross{crossingPair, inZone} =
                 case (crossingPair, inZone) of

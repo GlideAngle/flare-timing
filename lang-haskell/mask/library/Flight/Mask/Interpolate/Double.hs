@@ -34,22 +34,18 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
     interpolate
         :: Trig Double a
         => Earth Double
+        -> SampleParams Double
         -> TaskZone Double
         -> LatLng Double [u| rad |]
         -> LatLng Double [u| rad |]
         -> Zs ([LatLng Double [u| rad |]])
-    interpolate e (TaskZone z) x y =
+    interpolate e sp (TaskZone z) x y =
         vertices <$> ee
         where
             Sliver{..} = sliver @Double @Double e
             zs' = [Point x, z, Point y]
             ac = angleCut @Double @Double e
             dEE = shortestPath @Double @Double e
-            sp =
-                SampleParams
-                    (Samples 11)
-                    (Tolerance . fromRational $ 1 % 10000)
-
             ee = dEE cseg cs ac sp zs'
 
     fractionate
@@ -70,6 +66,7 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
     crossingTag
         :: Trig Double a
         => Earth Double
+        -> SampleParams Double
         -> TaskZone Double
         -> (Cg.Fix, Cg.Fix)
         -> (Bool, Bool)
@@ -77,6 +74,7 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
 
     crossingTag
         e
+        sp
         z
         ( m@Cg.Fix{fix, time = t0, alt = RawAlt a0}
         , n@Cg.Fix{time = t1, alt = RawAlt a1}
@@ -84,7 +82,7 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
         inZones
 
         | inZones == (True, False) || inZones == (False, True) = do
-            let pts = interpolate @Double @Double e z (fixToRadLL m) (fixToRadLL n)
+            let pts = interpolate @Double @Double e sp z (fixToRadLL m) (fixToRadLL n)
             (LatLng (Lat xLat, Lng xLng), frac) <- fractionate @Double @Double e pts
             let a0' :: Quantity _ [u| m |] = MkQuantity (fromRational a0)
             let a1' :: Quantity _ [u| m |] = MkQuantity (fromRational a1)

@@ -17,6 +17,7 @@ import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 import Flight.Mask (TaskZone, GeoTag(..), GeoSliver(..))
+import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(..)
@@ -38,6 +39,9 @@ import Flight.Track.Tag
 import Flight.Scribe (readComp, readCrossing, writeTagging)
 import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
+
+sp :: SampleParams Double
+sp = SampleParams (Samples 11) (Tolerance 0.0001)
 
 main :: IO ()
 main = do
@@ -143,6 +147,7 @@ flownTag Floating earthMath zs TrackCross{zonesCrossSelected} =
                       ForsytheAndoyerLambert -> e
                       FsAndoyer -> e
                 )
+                sp
                 zs
                 zonesCrossSelected
         }

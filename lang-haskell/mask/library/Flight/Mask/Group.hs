@@ -4,6 +4,7 @@ import Prelude hiding (span)
 import Data.Time.Clock (UTCTime)
 import Data.These
 
+import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Kml (MarkedFixes(..))
 import Flight.Track.Time (LegIdx(..))
@@ -99,6 +100,7 @@ class GeoTag g a => GeoLeg g a where
     groupByLeg
         :: (FlyClipping UTCTime MarkedFixes, Trig g a)
         => Earth g
+        -> SampleParams g
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> [(Maybe GroupLeg, MarkedFixes)]

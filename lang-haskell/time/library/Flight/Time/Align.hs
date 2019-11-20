@@ -259,6 +259,7 @@ group
                                       ForsytheAndoyerLambert -> e
                                       FsAndoyer -> e
                                 )
+                                sp
                                 task
                                 scoredMarkedFixes
                         Rational -> error "Grouping for rational math is not yet implemented."

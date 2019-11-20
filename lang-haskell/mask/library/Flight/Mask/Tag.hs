@@ -10,6 +10,7 @@ module Flight.Mask.Tag
     , selectZoneCross
     ) where
 
+import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Clip (FlyingSection)
 import Flight.Kml (MarkedFixes(..))
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..))
@@ -55,6 +56,7 @@ class GeoTagInterpolate g a => GeoTag g a where
     tagZones
         :: Trig g a
         => Earth g
+        -> SampleParams g
         -> [TaskZone g]
         -> [Maybe ZoneCross]
         -> [Maybe ZoneTag]

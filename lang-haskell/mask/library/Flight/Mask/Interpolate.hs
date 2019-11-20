@@ -10,6 +10,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.LatLng (LatLng(..))
+import Flight.Zone.Cylinder (SampleParams(..))
 import qualified Flight.Track.Cross as Cg (Fix(..))
 import Flight.Track.Cross (InterpolatedFix(..))
 import Flight.Task (Zs(..))
@@ -22,6 +23,7 @@ class GeoSliver g a => GeoTagInterpolate g a where
     interpolate
         :: Trig g a
         => Earth g
+        -> SampleParams g
         -> TaskZone g
         -> LatLng g [u| rad |]
         -> LatLng g [u| rad |]
@@ -37,6 +39,7 @@ class GeoSliver g a => GeoTagInterpolate g a where
     crossingTag
         :: Trig g a
         => Earth g
+        -> SampleParams g
         -> TaskZone g
         -> (Cg.Fix, Cg.Fix)
         -> (Bool, Bool)
