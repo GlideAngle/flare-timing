@@ -33,7 +33,7 @@ import Stats (DashPathInputs(..))
 import Flight.Span.Math (Math(..))
 
 sp :: SampleParams Double
-sp = SampleParams (Samples 11) (Tolerance 0.03)
+sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 
 maskReachTime
     :: Math

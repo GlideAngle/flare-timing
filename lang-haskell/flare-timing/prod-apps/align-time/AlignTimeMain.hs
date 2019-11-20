@@ -36,7 +36,7 @@ import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)
 
 sp :: SampleParams Double
-sp = SampleParams (Samples 3) (Tolerance 0.03)
+sp = SampleParams (replicate 6 $ Samples 3) (Tolerance 0.03)
 
 main :: IO ()
 main = do

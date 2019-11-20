@@ -4,7 +4,6 @@
 module Flight.Mask.Interpolate.Double () where
 
 import Prelude hiding (span)
-import Data.Ratio ((%))
 import Data.Time.Clock (NominalDiffTime, addUTCTime, diffUTCTime)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -14,7 +13,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawAlt(..))
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Zone.Cylinder (Samples(..), Tolerance(..), SampleParams(..))
+import Flight.Zone.Cylinder (SampleParams(..))
 import qualified Flight.Track.Cross as Cg (Fix(..))
 import Flight.Track.Cross (InterpolatedFix(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))

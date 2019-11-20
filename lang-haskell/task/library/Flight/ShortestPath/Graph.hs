@@ -71,18 +71,17 @@ loop
     -> CircumSample a
     -> SampleParams a
     -> AngleCut a
-    -> Int
     -> Maybe (PathCost a)
     -> Maybe [ZonePoint a]
     -> [Zone a]
     -> (Maybe (PathCost a), [ZonePoint a])
-loop _ _ _ _ 0 d zs _ =
+loop _ _ SampleParams{spSamples = []} _ d zs _ =
     case zs of
       Nothing -> (Nothing, [])
       Just zs' -> (d, zs')
 
-loop builder cs sp cut@AngleCut{sweep, nextSweep} n _ zs xs =
-    loop builder cs sp (nextSweep cut) (n - 1) dist (Just zs') xs
+loop builder cs sp cut@AngleCut{sweep, nextSweep} _ zs xs =
+    loop builder cs sp' (nextSweep cut) dist (Just zs') xs
     where
         gr :: Gr (ZonePoint _) (PathCost _)
         gr = builder cs sp sweep zs xs
@@ -97,6 +96,8 @@ loop builder cs sp cut@AngleCut{sweep, nextSweep} n _ zs xs =
 
         ps :: Path
         ps = getLPathNodes endNode spt
+
+        sp' = sp{spSamples = drop 1 $ spSamples sp}
 
         zs' :: [ZonePoint _]
         zs' =

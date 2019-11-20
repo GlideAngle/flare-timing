@@ -109,18 +109,29 @@ translate
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Rational
-circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
+circumSample SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
     | bearing < 0 || bearing > 2 * F.pi eps = fail "Arc sweep must be in the range 0..2π radians."
     | otherwise =
-        case (zoneM, zoneN) of
-            (Nothing, _) -> ys
-            (Just _, Point{}) -> ys
-            (Just _, Vector{}) -> ys
-            (Just _, Cylinder{}) -> ys
-            (Just _, Conical{}) -> ys
-            (Just _, Line{}) -> onLine defEps mkLinePt θ ys
-            (Just _, Circle{}) -> ys
-            (Just _, SemiCircle{}) -> ys
+        case spSamples of
+            [] -> fail "Empty list of sample numbers."
+            sp0 : _ ->
+                let (θ, xs) = sampleAngles (F.pi eps) sp0 arcSweep arc0 zoneM zoneN
+
+                    ys' :: ([ZonePoint Rational], [TrueCourse Rational])
+                    ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+
+                    ys = (fromRationalZonePoint <$> fst ys', snd ys')
+
+                in
+                    case (zoneM, zoneN) of
+                        (Nothing, _) -> ys
+                        (Just _, Point{}) -> ys
+                        (Just _, Vector{}) -> ys
+                        (Just _, Cylinder{}) -> ys
+                        (Just _, Conical{}) -> ys
+                        (Just _, Line{}) -> onLine defEps mkLinePt θ ys
+                        (Just _, Circle{}) -> ys
+                        (Just _, SemiCircle{}) -> ys
     where
         (Epsilon eps) = defEps
 
@@ -129,8 +140,6 @@ circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing
             case arc0 of
               Nothing -> zoneN
               Just ZonePoint{..} -> sourceZone
-
-        (θ, xs) = sampleAngles (F.pi eps) sp arcSweep arc0 zoneM zoneN
 
         (Radius (MkQuantity limitRadius)) = radius zone'
         limitRadius' = toRational limitRadius
@@ -143,11 +152,6 @@ circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing
 
         mkLinePt :: PointOnRadial
         mkLinePt _ (Bearing b) rLine = circumR rLine $ TrueCourse b
-
-        ys' :: ([ZonePoint Rational], [TrueCourse Rational])
-        ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
-
-        ys = (fromRationalZonePoint <$> fst ys', snd ys')
 
 getClose :: Epsilon
          -> Zone Rational

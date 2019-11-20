@@ -30,7 +30,7 @@ import Flight.Scribe (readTrimFsdb, writeNormRoute)
 import FsRouteOptions (description)
 
 sp :: SampleParams Double
-sp = SampleParams (Samples 11) (Tolerance 0.03)
+sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 
 main :: IO ()
 main = do

@@ -57,13 +57,13 @@ sample circumSample sp b arc0 zM zN@SemiCircle{} = fst $ circumSample sp b arc0 
 sampleAngles
     :: (Fractional a, Real a)
     => a -- ^ The angle Pi.
-    -> SampleParams b -- ^ How many samples to take.
+    -> Samples -- ^ How many samples to take.
     -> ArcSweep a u -- ^ How far to sweep the arc of samples.
     -> Maybe (ZonePoint a) -- ^ The best point from the previous sample iteration.
     -> Maybe c -- ^ The previous zone.
     -> Zone a -- ^ The zone we're generating angles for.
     -> (Maybe (Quantity a [u| rad |]), [TrueCourse a])
-sampleAngles pi' SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN =
+sampleAngles pi' samples (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN =
     (fmap . fmap) (TrueCourse . MkQuantity) $
     case (zoneM, zoneN) of
         (Nothing, _) -> (Nothing, cs)
@@ -88,7 +88,7 @@ sampleAngles pi' SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0
         (Just _, Circle _ _) -> (Nothing, cs)
         (Just _, SemiCircle _ _ _) -> (Nothing, cs)
     where
-        nNum = unSamples spSamples
+        nNum = unSamples samples
         half = nNum `div` 2
         step = bearing / (fromIntegral nNum)
         mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) arc0

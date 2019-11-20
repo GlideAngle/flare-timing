@@ -41,7 +41,7 @@ import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
 sp :: SampleParams Double
-sp = SampleParams (Samples 11) (Tolerance 0.0001)
+sp = SampleParams (replicate 20 $ Samples 11) (Tolerance 0.0001)
 
 main :: IO ()
 main = do

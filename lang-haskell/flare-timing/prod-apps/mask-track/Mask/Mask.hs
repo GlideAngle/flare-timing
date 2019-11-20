@@ -80,7 +80,7 @@ import MaskSpeed (maskSpeed)
 import MaskPilots (maskPilots)
 
 sp :: SampleParams Double
-sp = SampleParams (Samples 11) (Tolerance 0.03)
+sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 
 writeMask
     :: Math

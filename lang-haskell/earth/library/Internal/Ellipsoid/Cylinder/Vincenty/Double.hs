@@ -335,23 +335,30 @@ circum
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Double
-circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
+circumSample SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
     | bearing < 0 || bearing > 2 * pi = fail "Arc sweep must be in the range 0..2π radians."
     | otherwise =
-        case (zoneM, zoneN) of
-            (Nothing, _) -> ys
-            (Just _, Point{}) -> ys
-            (Just _, Vector{}) -> ys
-            (Just _, Cylinder{}) -> ys
-            (Just _, Conical{}) -> ys
-            (Just _, Line{}) -> onLine mkLinePt θ ys
-            (Just _, Circle{}) -> ys
-            (Just _, SemiCircle{}) -> ys
+        case spSamples of
+            [] -> fail "Empty list of sample numbers."
+            sp0 : _ ->
+                let (θ, xs) = sampleAngles pi sp0 arcSweep arc0 zoneM zoneN
+
+                    ys :: ([ZonePoint Double], [TrueCourse Double])
+                    ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+
+                in
+                    case (zoneM, zoneN) of
+                        (Nothing, _) -> ys
+                        (Just _, Point{}) -> ys
+                        (Just _, Vector{}) -> ys
+                        (Just _, Cylinder{}) -> ys
+                        (Just _, Conical{}) -> ys
+                        (Just _, Line{}) -> onLine mkLinePt θ ys
+                        (Just _, Circle{}) -> ys
+                        (Just _, SemiCircle{}) -> ys
     where
         zone' :: Zone Double
         zone' = maybe zoneN sourceZone arc0
-
-        (θ, xs) = sampleAngles pi sp arcSweep arc0 zoneM zoneN
 
         r :: QRadius Double [u| m |]
         r@(Radius (MkQuantity limitRadius)) = radius zone'
@@ -365,9 +372,6 @@ circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing
 
         mkLinePt :: PointOnRadial
         mkLinePt _ (Bearing b) rLine = circumR rLine $ TrueCourse b
-
-        ys :: ([ZonePoint Double], [TrueCourse Double])
-        ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
 -- $setup
 -- >>> :set -XTemplateHaskell
