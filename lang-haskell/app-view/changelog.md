@@ -6,6 +6,8 @@ of this changelog.
 ## app-view-0.23
 
 * Show the task number before the task name in the breadcrumb.
+* Don't show all the turnpoint names in the task detail if they will
+  overflow the header.
 
 # Earth, Through and Through
 ## app-view-0.22
