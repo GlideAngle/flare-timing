@@ -13,6 +13,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList, maximum)
 
+import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
@@ -30,6 +31,9 @@ import Flight.Score
     )
 import Stats (DashPathInputs(..))
 import Flight.Span.Math (Math(..))
+
+sp :: SampleParams Double
+sp = SampleParams (Samples 11) (Tolerance 0.03)
 
 maskReachTime
     :: Math
@@ -71,6 +75,7 @@ maskReachTime
                       ForsytheAndoyerLambert -> e
                       FsAndoyer -> e
                 )
+                sp
                 lsWholeTask
                 zsTaskTicked
                 dsNighRows

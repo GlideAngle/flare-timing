@@ -254,6 +254,7 @@ in    defs
                     , "flight-kml"
                     , "flight-lookup"
                     , "flight-mask"
+                    , "flight-zone"
                     ]
               , ghc-options =
                   [ "-rtsopts"

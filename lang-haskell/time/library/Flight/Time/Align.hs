@@ -23,6 +23,7 @@ import Flight.Clip (FlyingSection, FlyCut(..))
 import Flight.LatLng.Rational (defEps)
 import qualified Flight.Span.Rational as Rat (fromR)
 #endif
+import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
     , allHeaders, commentOnFixRange
@@ -104,6 +105,7 @@ writeTime selectTasks selectPilots compFile f = do
 checkAll
     :: Math
     -> EarthMath
+    -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
     -> Tagging
@@ -117,10 +119,10 @@ checkAll
                  (Pilot, Pilot -> [TimeRow])
              ]
          ]
-checkAll math earthMath ssOnly scoredLookup tagging =
+checkAll math earthMath sp ssOnly scoredLookup tagging =
     checkTracks
         (\CompSettings{tasks} ->
-            group math earthMath ssOnly scoredLookup tagging tasks)
+            group math earthMath sp ssOnly scoredLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -190,6 +192,7 @@ mkTimeRow lead start legIdx fixIdx (Just Fix{..}) (Just d) =
 group
     :: Math
     -> EarthMath
+    -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
     -> Tagging
@@ -197,6 +200,7 @@ group
 group
     math
     earthMath
+    sp
     ssOnly
     (ScoredLookup lookupScored)
     tags@Tagging{timing}
@@ -277,7 +281,7 @@ group
 
                 zs' :: [TimeRow]
                 zs' =
-                    let f = legDistances math earthMath ssOnly in
+                    let f = legDistances math earthMath sp ssOnly in
                     concat
                     [
                         case leg of
@@ -324,6 +328,7 @@ retick rs@RaceSections{prolog, race} (LegIdx start) (LegIdx leg) =
 allLegDistances
     :: Math
     -> EarthMath
+    -> SampleParams Double
     -> Ticked
     -> TrackTime
     -> Task k
@@ -331,7 +336,7 @@ allLegDistances
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
 
-allLegDistances Floating earthMath ticked times task@Task{speedSection, zoneTimes} leg xs =
+allLegDistances Floating earthMath sp ticked times task@Task{speedSection, zoneTimes} leg xs =
     mkTimeRows lead start leg xs'
     where
         xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
@@ -346,6 +351,7 @@ allLegDistances Floating earthMath ticked times task@Task{speedSection, zoneTime
                       ForsytheAndoyerLambert -> e
                       FsAndoyer -> e
                 )
+                sp
                 ticked
                 task
                 xs
@@ -357,7 +363,7 @@ allLegDistances Floating earthMath ticked times task@Task{speedSection, zoneTime
             =<< openClose speedSection zoneTimes
 
 #if __EARTH_RAT__
-allLegDistances Rational earthMath ticked times task@Task{speedSection, zoneTimes} leg xs =
+allLegDistances Rational earthMath sp ticked times task@Task{speedSection, zoneTimes} leg xs =
     mkTimeRows lead start leg xs'
     where
         xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
@@ -374,6 +380,7 @@ allLegDistances Rational earthMath ticked times task@Task{speedSection, zoneTime
                       FsAndoyer -> e
                 , defEps
                 )
+                sp
                 ticked
                 task
                 xs
@@ -384,12 +391,13 @@ allLegDistances Rational earthMath ticked times task@Task{speedSection, zoneTime
             (\OpenClose{open} -> firstStart speedSection open ts)
             =<< openClose speedSection zoneTimes
 #else
-allLegDistances Rational _ _ _ _ _ _ = error "Leg distances for rational math is not yet implemented."
+allLegDistances Rational _ _ _ _ _ _ _ = error "Leg distances for rational math is not yet implemented."
 #endif
 
 legDistances
     :: Math
     -> EarthMath
+    -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> Ticked
     -> TrackTime
@@ -397,13 +405,13 @@ legDistances
     -> LegIdx
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
-legDistances math earthMath False ticked times task leg xs=
-    allLegDistances math earthMath ticked times task leg xs
+legDistances math earthMath sp False ticked times task leg xs=
+    allLegDistances math earthMath sp ticked times task leg xs
 
-legDistances math earthMath True ticked times task@Task{speedSection} leg xs =
+legDistances math earthMath sp True ticked times task@Task{speedSection} leg xs =
     if excludeLeg
        then []
-       else allLegDistances math earthMath ticked times task leg xs
+       else allLegDistances math earthMath sp ticked times task leg xs
     where
         LegIdx leg' = leg
 

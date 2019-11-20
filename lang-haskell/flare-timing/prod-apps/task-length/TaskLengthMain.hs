@@ -20,11 +20,15 @@ import Flight.TaskTrack.Double (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
 import Flight.Zone.MkZones (unkindZones)
 import Flight.Zone (unlineZones)
+import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 import Flight.Geodesy.Solution (GeodesySolutions(..))
 import TaskLengthOptions (CmdOptions(..), mkOptions)
+
+sp :: SampleParams Double
+sp = SampleParams (Samples 11) (Tolerance 0.03)
 
 main :: IO ()
 main = do
@@ -73,4 +77,4 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 
             writeRoute
                 (compToTaskLength compFile)
-                (taskTracks noTaskWaypoints includeTask measure ixs zss)
+                (taskTracks sp noTaskWaypoints includeTask measure ixs zss)

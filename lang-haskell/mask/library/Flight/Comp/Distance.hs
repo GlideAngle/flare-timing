@@ -24,6 +24,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (QTaskDistance, TaskDistance(..), toKm, unTaskDistanceAsKm)
 import Flight.Comp (Pilot, MadeGoal(..), LandedOut(..))
+import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Route (TrackLine(..))
 import Flight.Score (BestTime(..), MinimumDistance(..))
 import Flight.Track.Time (LeadTick(..))
@@ -40,6 +41,7 @@ class GeoDash g a => GeoNigh g a where
     compNighTime
         :: Trig g a
         => Earth g
+        -> SampleParams g
         -> [Maybe (QTaskDistance g [u| m |])]
         -> [Map Pilot (DashPathInputs k)]
         -> [[Maybe (Pilot, Time.TimeRow)]]
@@ -48,6 +50,7 @@ class GeoDash g a => GeoNigh g a where
     timeNighTrackLine
         :: Trig g a
         => Earth g
+        -> SampleParams g
         -> Maybe (QTaskDistance Double [u| m |])
         -> Map Pilot (DashPathInputs k)
         -> (Pilot, Time.TimeRow)
@@ -56,6 +59,7 @@ class GeoDash g a => GeoNigh g a where
     pathToGo
         :: Trig g a
         => Earth g
+        -> SampleParams g
         -> DashPathInputs k
         -> Time.TimeRow
         -> Quantity g [u| m |]

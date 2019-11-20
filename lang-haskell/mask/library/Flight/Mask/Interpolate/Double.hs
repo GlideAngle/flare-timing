@@ -14,7 +14,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawAlt(..))
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Zone.Cylinder (Tolerance(..))
+import Flight.Zone.Cylinder (Samples(..), Tolerance(..), SampleParams(..))
 import qualified Flight.Track.Cross as Cg (Fix(..))
 import Flight.Track.Cross (InterpolatedFix(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
@@ -43,10 +43,14 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
         where
             Sliver{..} = sliver @Double @Double e
             zs' = [Point x, z, Point y]
-            tolerance = Tolerance . fromRational $ 1 % 10000
             ac = angleCut @Double @Double e
             dEE = shortestPath @Double @Double e
-            ee = dEE cseg cs ac tolerance zs'
+            sp =
+                SampleParams
+                    (Samples 11)
+                    (Tolerance . fromRational $ 1 % 10000)
+
+            ee = dEE cseg cs ac sp zs'
 
     fractionate
         :: Trig Double a

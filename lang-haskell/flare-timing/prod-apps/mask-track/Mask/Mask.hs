@@ -12,6 +12,7 @@ import Control.Monad.Except (MonadIO)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
@@ -77,6 +78,9 @@ import Mask.Reach.Time (maskReachTime)
 import Mask.Reach.Tick (maskReachTick)
 import MaskSpeed (maskSpeed)
 import MaskPilots (maskPilots)
+
+sp :: SampleParams Double
+sp = SampleParams (Samples 11) (Tolerance 0.03)
 
 writeMask
     :: Math
@@ -361,6 +365,7 @@ flown' dTaskF flying Floating earthMath tags tasks iTask@(IxTask i) mf@MarkedFix
                     { togo =
                         togoAtLanding @Double @Double
                             earth
+                            sp
                             ticked
                             task
                             xs
@@ -368,6 +373,7 @@ flown' dTaskF flying Floating earthMath tags tasks iTask@(IxTask i) mf@MarkedFix
                     , made =
                         madeAtLanding @Double @Double
                             earth
+                            sp
                             dTaskF
                             ticked
                             task

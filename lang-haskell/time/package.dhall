@@ -25,6 +25,7 @@ in    defs
             , "time"
             , "uom-plugin"
             , "flight-clip"
+            , "flight-zone"
             , "flight-earth"
             , "flight-comp"
             , "flight-kml"

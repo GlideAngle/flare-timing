@@ -10,13 +10,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Control.Arrow (first)
 
 import Flight.Zone (Zone(..), center)
-import Flight.Zone.Cylinder
-    ( Tolerance(..)
-    , Samples(..)
-    , SampleParams(..)
-    , ZonePoint(..)
-    , CircumSample
-    )
+import Flight.Zone.Cylinder (SampleParams(..), ZonePoint(..), CircumSample)
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Geodesy.Solution (Trig, GeoZones(..), GeodesySolutions(..))
@@ -35,12 +29,12 @@ instance RealFloat a => GeoPath Double a where
         -> CostSegment Double
         -> CircumSample Double
         -> AngleCut Double
-        -> Tolerance Double
+        -> SampleParams Double
         -> [Zone Double]
         -> Zs (PathDistance Double)
     shortestPath _ _ _ _ _ [] = Z0
     shortestPath _ _ _ _ _ [_] = Z1
-    shortestPath e cseg cs angleCut tolerance xs =
+    shortestPath e cseg cs angleCut sp xs =
         case xs of
             [] -> Z0
             [_] -> Z1
@@ -75,10 +69,9 @@ instance RealFloat a => GeoPath Double a where
                     cs
                     builder
                     angleCut
-                    tolerance
                     xs
 
-            distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance xs =
+            distanceUnchecked n span distancePointToPoint cs builder cut xs =
                 first Zs $
                 case dist of
                     Nothing -> (PathCost pointwise, edgesSum')
@@ -91,7 +84,6 @@ instance RealFloat a => GeoPath Double a where
                         edgesSum $ distancePointToPoint span xs
 
                     edgesSum' = center <$> xs
-                    sp = SampleParams{spSamples = samples, spTolerance = tolerance}
 
                     f = loop builder cs sp cut n Nothing Nothing
                     g = unpad span distancePointToPoint
@@ -122,17 +114,17 @@ instance RealFloat a => GeoPath Double a where
                                     _ -> pass1
                             _ -> pass1
 
-            distance _ _ _ _ _ _ _ [] = (Z0, [])
-            distance _ _ _ _ _ _ _ [_] = (Z1, [])
+            distance _ _ _ _ _ _ [] = (Z0, [])
+            distance _ _ _ _ _ _ [_] = (Z1, [])
 
             -- NOTE: Drop the separation requirement when working out the distance from
             -- point to point tagging one intervening zone as this is used in interpolating
             -- the exact tagging point and time between fixes.
-            distance _ span distancePointToPoint cs builder cut tolerance xs@[Point _, _, Point _] =
-                distanceUnchecked (Samples 11) 20 span distancePointToPoint cs builder cut tolerance xs
+            distance _ span distancePointToPoint cs builder cut xs@[Point _, _, Point _] =
+                distanceUnchecked 20 span distancePointToPoint cs builder cut xs
 
             -- NOTE: Allow duplicates as some tasks are set that way but otherwise zones
             -- must be separated.
-            distance e span distancePointToPoint cs builder cut tolerance xs
+            distance e span distancePointToPoint cs builder cut xs
                 | not . (separatedZones e) . dedup $ xs = (ZxNotSeparated, [])
-                | otherwise = distanceUnchecked (Samples 11) 6 span distancePointToPoint cs builder cut tolerance xs
+                | otherwise = distanceUnchecked 6 span distancePointToPoint cs builder cut xs

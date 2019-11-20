@@ -3,7 +3,7 @@
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Formatting ((%), fprint)
+import qualified Formatting as Fmt ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
@@ -13,6 +13,7 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
+import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
@@ -34,6 +35,9 @@ import Flight.Lookup.Stop (stopFlying)
 import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)
 
+sp :: SampleParams Double
+sp = SampleParams (Samples 11) (Tolerance 0.03)
+
 main :: IO ()
 main = do
     name <- getProgName
@@ -52,7 +56,7 @@ drive o = do
     if null files then putStrLn "Couldn't find input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
-    fprint ("Aligning times completed in " % timeSpecs % "\n") start end
+    Fmt.fprint ("Aligning times completed in " Fmt.% timeSpecs Fmt.% "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
@@ -89,4 +93,5 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                         (IxTask <$> task)
                         (pilotNamed cs $ PilotName <$> pilot)
                         (CompInputFile compPath)
-            in (f . checkAll math earthMath speedSectionOnly scoredLookup) t
+
+            in (f . checkAll math earthMath sp speedSectionOnly scoredLookup) t

@@ -11,6 +11,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
 import Flight.LatLng.Raw (RawLatLng(..), RawLat(..), RawLng(..))
+import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
@@ -27,6 +28,9 @@ import Flight.Route
 import Flight.TaskTrack.Double
 import Flight.Scribe (readTrimFsdb, writeNormRoute)
 import FsRouteOptions (description)
+
+sp :: SampleParams Double
+sp = SampleParams (Samples 11) (Tolerance 0.03)
 
 main :: IO ()
 main = do
@@ -65,7 +69,7 @@ fsdbRoutes (FsdbXml contents) = do
 normRoutes :: FsdbXml -> ExceptT String IO [GeoLines]
 normRoutes fsdbXml = do
     rs <- fsdbRoutes fsdbXml
-    let rs' = fmap (geoTrack False) rs
+    let rs' = fmap (geoTrack sp False) rs
     return rs'
 
 convertLatLng :: LatLng Rational [u| deg |] -> RawLatLng

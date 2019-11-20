@@ -1,7 +1,7 @@
 module Flight.ShortestPath (GeoPath(..), OptimalPath) where
 
 import Flight.Zone (Zone(..))
-import Flight.Zone.Cylinder (Tolerance(..), CircumSample)
+import Flight.Zone.Cylinder (SampleParams, CircumSample)
 import Flight.Units ()
 import Flight.Distance (PathDistance(..))
 import Flight.Geodesy.Solution (Trig, GeoZones(..), GeodesySolutions(..))
@@ -16,6 +16,6 @@ class GeoZones g a => GeoPath g a where
         -> CostSegment g
         -> CircumSample g
         -> AngleCut g
-        -> Tolerance g
+        -> SampleParams g
         -> [Zone g]
         -> Zs (PathDistance g)

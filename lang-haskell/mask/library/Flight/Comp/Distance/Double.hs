@@ -11,6 +11,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp (Pilot)
+import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Route (TrackLine(..), toTrackLine)
 import Flight.Track.Distance (TrackDistance(..), Nigh)
 import qualified Flight.Track.Time as Time (TimeRow(..))
@@ -32,12 +33,13 @@ instance GeoDash Double a => GeoNigh Double a where
     compNighTime
         :: Trig Double a
         => Earth Double
+        -> SampleParams Double
         -> [Maybe (QTaskDistance Double [u| m |])]
         -> [Map Pilot (DashPathInputs k)]
         -> [[Maybe (Pilot, Time.TimeRow)]]
         -> [[(Pilot, TrackDistance Nigh)]]
-    compNighTime e lsTask zsTaskTicked rows =
-            [ timeNighTrackLine @Double @Double e td zs <$> xs
+    compNighTime e sp lsTask zsTaskTicked rows =
+            [ timeNighTrackLine @Double @Double e sp td zs <$> xs
             | td <- lsTask
             | zs <- zsTaskTicked
             | xs <- (catMaybes <$> rows)
@@ -46,12 +48,13 @@ instance GeoDash Double a => GeoNigh Double a where
     timeNighTrackLine
         :: Trig Double a
         => Earth Double
+        -> SampleParams Double
         -> Maybe (QTaskDistance Double [u| m |])
         -> Map Pilot (DashPathInputs k)
         -> (Pilot, Time.TimeRow)
         -> (Pilot, TrackDistance Nigh)
 
-    timeNighTrackLine _ Nothing _ (p, Time.TimeRow{togo = d}) =
+    timeNighTrackLine _ _ Nothing _ (p, Time.TimeRow{togo = d}) =
         (p,) TrackDistance
             { togo = Just . distanceOnlyLine . fromKm $ d
             , made = Nothing
@@ -59,6 +62,7 @@ instance GeoDash Double a => GeoNigh Double a where
 
     timeNighTrackLine
         e
+        sp
         (Just (TaskDistance td))
         zsTaskTicked
         (p, row@Time.TimeRow{togo = d}) =
@@ -72,17 +76,18 @@ instance GeoDash Double a => GeoNigh Double a where
             line =
                 case Map.lookup p zsTaskTicked of
                     Nothing -> distanceOnlyLine togo'
-                    Just dpi -> pathToGo @Double @Double e dpi row togo'
+                    Just dpi -> pathToGo @Double @Double e sp dpi row togo'
 
     pathToGo
         :: Trig Double a
         => Earth Double
+        -> SampleParams Double
         -> DashPathInputs k
         -> Time.TimeRow
         -> Quantity Double [u| m |]
         -> TrackLine
 
-    pathToGo e DashPathInputs{..} x@Time.TimeRow{time} d =
+    pathToGo e sp DashPathInputs{..} x@Time.TimeRow{time} d =
         case dashTask of
             Nothing -> distanceOnlyLine d
             Just dashTask' ->
@@ -95,6 +100,7 @@ instance GeoDash Double a => GeoNigh Double a where
                     path =
                         dashPathToGoalTimeRows @Double @Double
                             e
+                            sp
                             dashTicked
                             dashTask'
                             FlyCut{cut = Just (time, time), uncut = [x]}

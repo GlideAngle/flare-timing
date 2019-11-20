@@ -18,6 +18,7 @@ import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center, toCylinder)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
+import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Geodesy (EarthMath(..))
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Earth.Flat (zoneToProjectedEastNorth)
@@ -31,8 +32,7 @@ import Flight.Route
     , TaskTrack(..)
     )
 import Flight.TaskTrack.Internal
-    ( mm30
-    , roundEastNorth
+    ( roundEastNorth
     , fromUTMRefEastNorth
     , fromUTMRefZone
     , legDistances
@@ -52,44 +52,46 @@ import Flight.Route.Optimal (emptyOptimal)
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 
-trackLines :: Bool -> [Zone Rational] -> GeoLines
-trackLines excludeWaypoints zs =
+trackLines :: SampleParams Rational -> Bool -> [Zone Rational] -> GeoLines
+trackLines sp excludeWaypoints zs =
     GeoLines
         { point = goByPoint excludeWaypoints zs
         , sphere =
             fromZs
             $ toTrackLine spanS excludeWaypoints
-            <$> distanceEdgeSphere (costSegment spanS) zs
+            <$> distanceEdgeSphere sp (costSegment spanS) zs
         , ellipse =
             fromZs
             $ toTrackLine spanE excludeWaypoints
-            <$> distanceEdgeEllipsoid (costSegment spanE) zs
-        , projected = goByProj excludeWaypoints zs
+            <$> distanceEdgeEllipsoid sp (costSegment spanE) zs
+        , projected = goByProj sp excludeWaypoints zs
         }
 
-geoTrack :: Bool -> [RawLatLng] -> GeoLines
-geoTrack excludeWaypoints xs =
-    let zs = toPoint <$> xs in trackLines excludeWaypoints zs
+geoTrack :: SampleParams Rational -> Bool -> [RawLatLng] -> GeoLines
+geoTrack sp excludeWaypoints xs =
+    let zs = toPoint <$> xs in trackLines sp excludeWaypoints zs
 
 taskTracks
-    :: Bool
+    :: SampleParams Rational
+    -> Bool
     -> (Int -> Bool) -- ^ Process the nth task?
     -> TaskDistanceMeasure
     -> [SpeedSection] -- ^ Speed section of each task.
     -> [[RawZone]] -- ^ Zones of each task.
     -> [Maybe TaskTrack]
-taskTracks excludeWaypoints b tdm =
+taskTracks sp excludeWaypoints b tdm =
     zipWith3
-        (\ i ss zs -> if b i then Just $ taskTrack excludeWaypoints tdm ss zs else Nothing)
+        (\ i ss zs -> if b i then Just $ taskTrack sp excludeWaypoints tdm ss zs else Nothing)
         [1 .. ]
 
 taskTrack
-    :: Bool
+    :: SampleParams Rational
+    -> Bool
     -> TaskDistanceMeasure
     -> SpeedSection
     -> [RawZone] -- ^ A single task is a sequence of control zones.
     -> TaskTrack
-taskTrack excludeWaypoints tdm ss zsRaw =
+taskTrack sp excludeWaypoints tdm ss zsRaw =
     case tdm of
         TaskDistanceByAllMethods ->
             TaskTrack
@@ -198,15 +200,15 @@ taskTrack excludeWaypoints tdm ss zsRaw =
         zsStop :: [Zone Rational]
         zsStop = sliceZones ((\(_, end) -> (1, end)) <$> ss) zsTask
 
-        taskLines = trackLines excludeWaypoints zsTask
-        ssLines = trackLines excludeWaypoints zsSpeedSection
-        stopLines = trackLines excludeWaypoints zsStop
+        taskLines = trackLines sp excludeWaypoints zsTask
+        ssLines = trackLines sp excludeWaypoints zsSpeedSection
+        stopLines = trackLines sp excludeWaypoints zsStop
 
 -- NOTE: The projected distance is worked out from easting and northing, in the
 -- projected plane but he distance for each leg is measured on the sphere.
-goByProj :: Bool -> [Zone Rational] -> Maybe ProjectedTrackLine
-goByProj excludeWaypoints zs = do
-    dEE <- fromZs $ distanceEdgeSphere costEastNorth zs
+goByProj :: SampleParams Rational -> Bool -> [Zone Rational] -> Maybe ProjectedTrackLine
+goByProj sp excludeWaypoints zs = do
+    dEE <- fromZs $ distanceEdgeSphere sp costEastNorth zs
 
     let projected = toTrackLine spanF excludeWaypoints dEE
     let ps = toPoint <$> waypoints projected
@@ -217,7 +219,7 @@ goByProj excludeWaypoints zs = do
             zipWith
                 (\ a b ->
                     edgesSum
-                    <$> distanceEdgeSphere costEastNorth [a, b])
+                    <$> distanceEdgeSphere sp costEastNorth [a, b])
                 ps
                 (tail ps)
 
@@ -281,21 +283,23 @@ goByPoint excludeWaypoints zs =
                 (Point <$> edgesSum' :: [Zone Rational])
 
 distanceEdgeSphere
-    :: CostSegment Rational
+    :: SampleParams Rational
+    -> CostSegment Rational
     -> [Zone Rational]
     -> Zs (PathDistance Rational)
-distanceEdgeSphere segCost =
-    shortestPath @Rational @Rational e segCost cs cut mm30
+distanceEdgeSphere sp segCost =
+    shortestPath @Rational @Rational e segCost cs cut sp
     where
         e = (Haversines, EarthAsSphere earthRadius, defEps)
         cs = circumSample @Rational @Rational e
 
 distanceEdgeEllipsoid
-    :: CostSegment Rational
+    :: SampleParams Rational
+    -> CostSegment Rational
     -> [Zone Rational]
     -> Zs (PathDistance Rational)
-distanceEdgeEllipsoid segCost =
-    shortestPath @Rational @Rational e segCost cs cut mm30
+distanceEdgeEllipsoid sp segCost =
+    shortestPath @Rational @Rational e segCost cs cut sp
     where
         e = (Vincenty, EarthAsEllipsoid wgs84, defEps)
         cs = circumSample @_ @Rational e
