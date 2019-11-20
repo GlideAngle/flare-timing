@@ -54,7 +54,7 @@ instance Fractional a => Fractional (TrueCourse a) where
     recip (TrueCourse (MkQuantity x)) =
         TrueCourse (MkQuantity $ recip x)
 
-newtype Samples = Samples { unSamples :: Integer } deriving (Eq, Ord, Show)
+newtype Samples = Samples { unSamples :: Int } deriving (Eq, Ord, Show)
 newtype Tolerance a = Tolerance { unTolerance :: a } deriving (Eq, Ord, Show)
 
 data ZonePoint a

@@ -90,12 +90,12 @@ sampleAngles pi' SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0
     where
         nNum = unSamples spSamples
         half = nNum `div` 2
-        step = bearing / (fromInteger nNum)
+        step = bearing / (fromIntegral nNum)
         mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) arc0
 
         cs =
-                let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
-                    rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
+                let lhs = [mid - (fromIntegral n) * step | n <- [1 .. half]]
+                    rhs = [mid + (fromIntegral n) * step | n <- [1 .. half]]
                 -- NOTE: The reverse of the LHS is not needed for correct
                 -- operation but it helps when tracing.
                 in reverse lhs ++ (mid : rhs)
