@@ -108,7 +108,7 @@ taskTileZones utcOffset sb t len = do
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
             elDynClass "div" boxClass $ do
-                elClass "p" "level title is-3" $ do
+                elAttr "p" ("class" =: "level title is-3" <> "style" =: "overflow: hidden") $ do
                     elClass "span" "level-item level-left" $ do
                         dynText title
 
