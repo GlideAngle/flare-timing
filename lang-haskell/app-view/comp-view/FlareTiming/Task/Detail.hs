@@ -221,7 +221,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     let wg = (fmap . fmap) weight alloc
 
     taskTileZones utc sb task ln
-    es <- crumbTask task comp
+    es <- crumbTask ix task comp
     tabTask <- tabsTask
     let taskTable = tableTask utc task legs
 

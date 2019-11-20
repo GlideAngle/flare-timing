@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Jump the Gun
+## app-view-0.23
+
+* Show the task number before the task name in the breadcrumb.
+
 # Earth, Through and Through
 ## app-view-0.22
 

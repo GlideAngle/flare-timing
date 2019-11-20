@@ -29,12 +29,13 @@ crumbComp c = do
 
 crumbTask
     :: MonadWidget t m
-    => Dynamic t Task
+    => IxTask
+    -> Dynamic t Task
     -> Dynamic t Comp
     -> m (Event t IxTask)
-crumbTask t c = do
+crumbTask (IxTask ix) t c = do
     let c' = fmap (T.pack . (\Comp{..} -> compName)) c
-    let t' = fmap (T.pack . (\Task{..} -> taskName)) t
+    let t' = fmap (T.pack . (\Task{..} -> "#" ++ show ix ++ " " ++ taskName)) t
 
     elClass "nav" "breadcrumb" $ do
         el "ul" $ mdo
