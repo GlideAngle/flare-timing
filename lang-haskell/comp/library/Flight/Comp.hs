@@ -44,7 +44,8 @@ module Flight.Comp
     , OpenClose(..)
     , EarlyStart(..)
     , nullEarlyStart
-    , timecheck
+    , earlyTimecheck
+    , earliestTimecheck
     -- * Pilot and their track logs.
     , PilotId(..)
     , PilotName(..)
@@ -225,20 +226,18 @@ unpackOpenClose = \case
 
 type TimePass = UTCTime -> Bool
 
--- TODO: Read jump_the_gun_max from the *.fsdb. Its default is 300s.
-timecheck :: Discipline -> Maybe OpenClose -> TimePass
-timecheck hgOrPg oc' =
+earlyTimecheck :: EarlyStart -> Maybe OpenClose -> TimePass
+earlyTimecheck EarlyStart{earliest} = earliestTimecheck earliest
+
+earliestTimecheck :: JumpTheGunLimit (Quantity Double [u| s |]) -> Maybe OpenClose -> TimePass
+earliestTimecheck (JumpTheGunLimit (MkQuantity limit)) oc' =
     maybe
         (const True)
         (\oc ->
             \t ->
                 let notLate = t <= close oc
-
-                    earliestStart =
-                        case hgOrPg of
-                            Paragliding -> open oc
-                            HangGliding -> (negate 300) `addUTCTime` (open oc)
-
+                    limit' = negate $ fromIntegral (round limit :: Int)
+                    earliestStart = limit' `addUTCTime` (open oc)
                     notEarly = earliestStart <= t
 
                 in notEarly && notLate)

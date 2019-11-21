@@ -26,12 +26,13 @@ import Flight.Comp
     , IxTask(..)
     , Task(..)
     , Comp(..)
+    , EarlyStart(..)
     , unpackOpenClose
     , compToCross
     , findCompInput
     , ensureExt
     , pilotNamed
-    , timecheck
+    , earliestTimecheck
     )
 import Flight.Units ()
 import Flight.Track.Cross
@@ -201,10 +202,13 @@ flown c math tasks (IxTask i) fs =
             flownTask c math task fs
 
 flownTask :: Comp -> Math -> FnTask k MadeZones
-flownTask Comp{discipline, earth, earthMath} math task@Task{zoneTimes} =
+flownTask
+    Comp{earth, earthMath}
+    math
+    task@Task{zoneTimes, earlyStart = EarlyStart{earliest}} =
     f tc task
     where
-        tc = timecheck discipline <$> unpackOpenClose zoneTimes
+        tc = earliestTimecheck earliest <$> unpackOpenClose zoneTimes
 
         f = case ((earthMath, earth), math) of
                 (e@(Pythagorus, EarthAsFlat{}), Floating) ->

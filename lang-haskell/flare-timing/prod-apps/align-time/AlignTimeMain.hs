@@ -29,7 +29,6 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     , pilotNamed
-    , timecheck
     )
 import Flight.Scribe (readComp, readTagging, readFraming)
 import Flight.Lookup.Stop (stopFlying)
@@ -91,13 +90,11 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing) -> putStrLn "Couldn't read the scored frame."
-        (Just cs@CompSettings{comp = Comp{discipline, earthMath}}, Just t, Just _) ->
+        (Just cs@CompSettings{comp = Comp{earthMath}}, Just t, Just _) ->
             let f =
                     writeTime
                         (IxTask <$> task)
                         (pilotNamed cs $ PilotName <$> pilot)
                         (CompInputFile compPath)
 
-                tc = timecheck discipline
-
-            in (f . checkAll math earthMath sp tc speedSectionOnly scoredLookup) t
+            in (f . checkAll math earthMath sp speedSectionOnly scoredLookup) t

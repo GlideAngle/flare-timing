@@ -47,9 +47,10 @@ import Flight.Comp
     , alignTimePath
     , openClose
     , unpackOpenClose
+    , earlyTimecheck
     )
 import Flight.Mask
-    ( GeoDash(..), FnIxTask, RaceSections(..), GroupLeg(..), Ticked, ZoneTimePass
+    ( GeoDash(..), FnIxTask, RaceSections(..), GroupLeg(..), Ticked
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (Fix(..), ZoneTag(..), asIfFix)
@@ -106,7 +107,6 @@ checkAll
     :: Math
     -> EarthMath
     -> SampleParams Double
-    -> ZoneTimePass
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
     -> Tagging
@@ -120,10 +120,10 @@ checkAll
                  (Pilot, Pilot -> [TimeRow])
              ]
          ]
-checkAll math earthMath sp timechecks ssOnly scoredLookup tagging =
+checkAll math earthMath sp ssOnly scoredLookup tagging =
     checkTracks
         (\CompSettings{tasks} ->
-            group math earthMath sp timechecks ssOnly scoredLookup tagging tasks)
+            group math earthMath sp ssOnly scoredLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -194,7 +194,6 @@ group
     :: Math
     -> EarthMath
     -> SampleParams Double
-    -> ZoneTimePass
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
     -> Tagging
@@ -203,7 +202,6 @@ group
     math
     earthMath
     sp
-    timecheck
     ssOnly
     (ScoredLookup lookupScored)
     tags@Tagging{timing}
@@ -213,7 +211,7 @@ group
         (_, Nothing) -> []
         (Nothing, _) -> []
         (Just Task{speedSection = Nothing}, _) -> []
-        (Just task@Task{speedSection = ss@(Just (start, end)), zoneTimes}, Just times) ->
+        (Just task@Task{speedSection = ss@(Just (start, end)), zoneTimes, earlyStart}, Just times) ->
             maybe
                 zs
                 ( maybe zs (\z -> zs ++ [z])
@@ -263,7 +261,7 @@ group
                                       FsAndoyer -> e
                                 )
                                 sp
-                                (timecheck <$> unpackOpenClose zoneTimes)
+                                (earlyTimecheck earlyStart <$> unpackOpenClose zoneTimes)
                                 task
                                 scoredMarkedFixes
                         Rational -> error "Grouping for rational math is not yet implemented."
