@@ -50,15 +50,15 @@ tableTask utcOffset x taskLegs = do
             elClass "div" "tile" $
                 elClass "div" "tile is-parent is-vertical" $ do
                     elClass "article" "tile is-child box" $ do
-                        elClass "p" "title" $ text "Turn Points"
+                        elClass "p" "title notification is-primary" $ text "Turn Radii"
                         elClass "div" "content" $ do
-                            tableTurnPoints x taskLegs
+                            tableTurnRadii x taskLegs
                             return ()
 
                     elClass "article" "tile is-child box" $ do
-                        elClass "p" "title" $ text "Turn Radii"
+                        elClass "p" "title" $ text "Turn Points"
                         elClass "div" "content" $ do
-                            tableTurnRadii x taskLegs
+                            tableTurnPoints x taskLegs
                             return ()
 
         elClass "div" "tile is-vertical is-5" $
@@ -77,12 +77,6 @@ tableTask utcOffset x taskLegs = do
                                     return ()
 
                     elClass "article" "tile is-child box" $ do
-                        elClass "p" "title" $ text "Time Windows"
-                        elClass "div" "content" $ do
-                            tableWindows tz x
-                            return ()
-
-                    elClass "article" "tile is-child box" $ do
                         elClass "p" "title" $ text "From Launch"
                         elClass "div" "content" $ do
                             tableTurnLaunch x taskLegs
@@ -92,6 +86,12 @@ tableTask utcOffset x taskLegs = do
                         elClass "p" "title" $ text "To Goal"
                         elClass "div" "content" $ do
                             tableTurnGoal x taskLegs
+                            return ()
+
+                    elClass "article" "tile is-child box" $ do
+                        elClass "p" "title" $ text "Time Windows"
+                        elClass "div" "content" $ do
+                            tableWindows tz x
                             return ()
 
 tableWindows
