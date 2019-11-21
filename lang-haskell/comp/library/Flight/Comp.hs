@@ -24,7 +24,6 @@ module Flight.Comp
     , IxTask(..)
     , Zones(..)
     , StartGate(..)
-    , OpenClose(..)
     , FirstLead(..)
     , FirstStart(..)
     , LastStart(..)
@@ -41,6 +40,10 @@ module Flight.Comp
     , openClose
     , unpackOpenClose
     , speedSectionToLeg
+    -- * EarlyStart
+    , OpenClose(..)
+    , EarlyStart(..)
+    , nullEarlyStart
     , timecheck
     -- * Pilot and their track logs.
     , PilotId(..)
@@ -96,6 +99,8 @@ import Flight.Score
     , LwScaling(..)
     , AwScaling(..)
     , PointPenalty(..)
+    , SecondsPerPoint(..)
+    , JumpTheGunLimit(..)
     )
 import Flight.Geodesy (EarthMath(..), EarthModel(..))
 
@@ -185,6 +190,20 @@ data OpenClose =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+data EarlyStart =
+    EarlyStart
+        { earliest :: JumpTheGunLimit (Quantity Double [u| s |])
+        , earlyPenalty :: SecondsPerPoint (Quantity Double [u| s |])
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+nullEarlyStart :: EarlyStart
+nullEarlyStart =
+    EarlyStart
+        (JumpTheGunLimit [u| 0 s |])
+        (SecondsPerPoint [u| 0 s |])
 
 -- | If all the zone open and close times are the same then we may only be
 -- given a singleton list. This function retrieves the open close time
@@ -328,6 +347,7 @@ data Task k =
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
         , taskTweak :: Maybe Tweak
+        , earlyStart :: EarlyStart
         , penals :: [(Pilot, [PointPenalty], String)]
         }
     deriving (Eq, Ord, Show, Generic)
@@ -474,25 +494,36 @@ cmp a b =
         ("speedSection", "startGates") -> LT
         ("speedSection", "stopped") -> LT
         ("speedSection", "taskTweak") -> LT
+        ("speedSection", "earlyStart") -> LT
         ("speedSection", "penals") -> LT
         ("speedSection", "absent") -> LT
         ("speedSection", _) -> GT
 
         ("zoneTimes", "startGates") -> LT
+        ("zoneTimes", "stopped") -> LT
+        ("zoneTimes", "taskTweak") -> LT
+        ("zoneTimes", "earlyStart") -> LT
+        ("zoneTimes", "penals") -> LT
         ("zoneTimes", "absent") -> LT
         ("zoneTimes", _) -> GT
 
         ("startGates", "absent") -> LT
         ("startGates", "taskTweak") -> LT
+        ("startGates", "earlyStart") -> LT
         ("startGates", "penals") -> LT
         ("startGates", _) -> GT
 
         ("stopped", "taskTweak") -> LT
+        ("stopped", "earlyStart") -> LT
         ("stopped", "penals") -> LT
         ("stopped", _) -> GT
 
+        ("taskTweak", "earlyStart") -> LT
         ("taskTweak", "penals") -> LT
         ("taskTweak", _) -> GT
+
+        ("earlyStart", "penals") -> LT
+        ("earlyStart", _) -> GT
 
         ("penals", _) -> GT
 

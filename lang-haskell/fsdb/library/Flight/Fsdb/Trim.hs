@@ -145,6 +145,9 @@ fsScoreFormula =
                     , "nom_goal"
                     , "score_back_time"
 
+                    , "jump_the_gun_factor"
+                    , "jump_the_gun_max"
+
                     , "use_leading_points"
                     , "double_leading_weight"
                     , "use_arrival_position_points"

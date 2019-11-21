@@ -40,7 +40,45 @@ instance (q ~ Quantity Double [u| s |]) => FromJSON (JumpedTheGun q) where
 newtype SecondsPerPoint a = SecondsPerPoint a
     deriving (Eq, Ord, Show, Read)
 
+instance
+    (q ~ Quantity Double [u| s |])
+    => DefaultDecimalPlaces (SecondsPerPoint q) where
+    defdp _ = DecimalPlaces 0
+
+instance
+    (q ~ Quantity Double [u| s |])
+    => Newtype (SecondsPerPoint q) q where
+    pack = SecondsPerPoint
+    unpack (SecondsPerPoint a) = a
+
+instance (q ~ Quantity Double [u| s |]) => ToJSON (SecondsPerPoint q) where
+    toJSON x = toJSON $ ViaQ x
+
+instance (q ~ Quantity Double [u| s |]) => FromJSON (SecondsPerPoint q) where
+    parseJSON o = do
+        ViaQ x <- parseJSON o
+        return x
+
 -- | A jump of this many seconds incurs the maximum penalty, the score for
 -- minimum distance.
 newtype JumpTheGunLimit a = JumpTheGunLimit a
     deriving (Eq, Ord, Show, Read)
+
+instance
+    (q ~ Quantity Double [u| s |])
+    => DefaultDecimalPlaces (JumpTheGunLimit q) where
+    defdp _ = DecimalPlaces 0
+
+instance
+    (q ~ Quantity Double [u| s |])
+    => Newtype (JumpTheGunLimit q) q where
+    pack = JumpTheGunLimit
+    unpack (JumpTheGunLimit a) = a
+
+instance (q ~ Quantity Double [u| s |]) => ToJSON (JumpTheGunLimit q) where
+    toJSON x = toJSON $ ViaQ x
+
+instance (q ~ Quantity Double [u| s |]) => FromJSON (JumpTheGunLimit q) where
+    parseJSON o = do
+        ViaQ x <- parseJSON o
+        return x

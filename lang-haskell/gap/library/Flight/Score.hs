@@ -133,7 +133,6 @@ module Flight.Score
     -- * Tallying points
     , LaunchToSssPoints(..)
     , MinimumDistancePoints(..)
-    , SecondsPerPoint(..)
     , JumpedTheGun(..)
     , Hg
     , Pg
@@ -186,6 +185,9 @@ module Flight.Score
     , PilotsPresent(..)
     , PilotsFlying(..)
     , PilotsLanded(..)
+    -- * Early start
+    , SecondsPerPoint(..)
+    , JumpTheGunLimit(..)
     ) where
 
 import Flight.Gap.Leading.Area
@@ -201,6 +203,7 @@ import Flight.Gap.Fraction.Distance
 import Flight.Gap.Fraction.Arrival
 import Flight.Gap.Fraction.Leading
 import Flight.Gap.Fraction.Goal
+import Flight.Gap.Time.Early
 import Flight.Gap.Time.Nominal
 import Flight.Gap.Time.Best
 import Flight.Gap.Time.Velocity

@@ -17,7 +17,8 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
-    , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr, xpAlt
+    , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpFilterCont
+    , xpElem, xpAttr, xpAlt
     , xpPair, xpTriple, xp5Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
     , xpPrim, xpAttrImplied, xpTextAttr
     )
@@ -45,6 +46,7 @@ import Text.XML.HXT.Core
     , containing
     , orElse
     , hasAttr
+    , isAttr
     , neg
     )
 
@@ -63,8 +65,12 @@ import Flight.Comp
     ( PilotId(..), Pilot(..)
     , PilotGroup(..), DfNoTrack(..), DfNoTrackPilot(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..), Tweak(..)
+    , EarlyStart(..), nullEarlyStart
     )
-import Flight.Score (ScoreBackTime(..), PointPenalty(..), ReachToggle(..))
+import Flight.Score
+    ( ScoreBackTime(..), PointPenalty(..), ReachToggle(..)
+    , SecondsPerPoint(..), JumpTheGunLimit(..)
+    )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity)
@@ -126,6 +132,28 @@ xpPointPenalty =
         (xpAttr "penalty" xpPrim)
         (xpAttr "penalty_points" xpPrim)
         (xpTextAttr "penalty_reason")
+
+xpEarlyStart :: PU EarlyStart
+xpEarlyStart =
+    xpElem "FsScoreFormula"
+    $ xpFilterCont isAttr
+    $ xpFilterAttr
+        ( hasName "jump_the_gun_max"
+        <+> hasName "jump_the_gun_factor"
+        )
+    $ xpWrap
+        ( \(limit, rate) ->
+            EarlyStart
+                (JumpTheGunLimit . MkQuantity $ fromIntegral limit)
+                (SecondsPerPoint . MkQuantity $ fromIntegral rate)
+        , \EarlyStart
+            { earliest = JumpTheGunLimit (MkQuantity limit)
+            , earlyPenalty = SecondsPerPoint (MkQuantity rate)
+            } -> (round limit, round rate)
+        )
+    $ xpPair
+        (xpAttr "jump_the_gun_max" xpInt)
+        (xpAttr "jump_the_gun_factor" xpInt)
 
 xpDecelerator :: PU Decelerator
 xpDecelerator =
@@ -527,9 +555,10 @@ getTask discipline compTweak sb =
     &&& getStartGates
     &&& getTaskState
     &&& getTaskTweak
+    &&& getEarlyStart
     >>> arr mkTask
     where
-        mkTask (name, (zs, (section, (ts, (gates, (taskState, tw)))))) =
+        mkTask (name, (zs, (section, (ts, (gates, (taskState, (tw, es))))))) =
             Task
                 { taskName = name
                 , zones = zs
@@ -555,6 +584,7 @@ getTask discipline compTweak sb =
                             TaskStateCancel _ -> Nothing)
                         taskState
                 , taskTweak = if tw == compTweak then compTweak else tw
+                , earlyStart = fromMaybe nullEarlyStart es
                 , penals = []
                 }
             where
@@ -569,6 +599,12 @@ getTask discipline compTweak sb =
             >>> arr (unpickleDoc xpHeading)
             )
             `orElse` constA Nothing
+
+        getEarlyStart =
+            if discipline == Paragliding then constA Nothing else
+            getChildren
+            >>> hasName "FsScoreFormula"
+            >>> arr (unpickleDoc xpEarlyStart)
 
         getDecelerator =
             if discipline == HangGliding then constA Nothing else
