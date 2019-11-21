@@ -2,6 +2,8 @@ module Flight.Mask.Tag
     ( GeoTag(..)
     , FnTask
     , FnIxTask
+    , TimePass
+    , ZoneTimePass
     , SelectedCrossings(..)
     , NomineeCrossings(..)
     , ExcludedCrossings(..)
@@ -10,11 +12,13 @@ module Flight.Mask.Tag
     , selectZoneCross
     ) where
 
+import Data.Time.Clock (UTCTime)
+
 import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Clip (FlyingSection)
 import Flight.Kml (MarkedFixes(..))
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..))
-import Flight.Comp (IxTask(..), Task(..))
+import Flight.Comp (IxTask(..), Task(..), OpenClose)
 import Flight.Units ()
 import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
@@ -28,6 +32,9 @@ import Flight.Mask.Internal.Zone
 import Flight.Mask.Interpolate (GeoTagInterpolate(..))
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 
+type TimePass = UTCTime -> Bool
+type ZoneTimePass = Maybe OpenClose -> TimePass
+
 -- | A masking produces a value from a task and tracklog fixes.
 type FnTask k a = Task k -> MarkedFixes -> a
 type FnIxTask k a = [Task k] -> IxTask -> MarkedFixes -> a
@@ -40,7 +47,13 @@ class GeoTagInterpolate g a => GeoTag g a where
 
     -- | The zones that are made without regard to the stopped time of stopped
     -- tasks.
-    madeZones :: Trig g a => Earth g -> Task k -> MarkedFixes -> MadeZones
+    madeZones
+        :: Trig g a
+        => Earth g
+        -> [TimePass]
+        -> Task k
+        -> MarkedFixes
+        -> MadeZones
 
     -- | Finds the crossings in the flying section. All of these crossings may
     -- not be included in the scored section of the flight and will be clipped
@@ -48,6 +61,7 @@ class GeoTagInterpolate g a => GeoTag g a where
     flyingCrossings
         :: Trig g a
         => Earth g
+        -> [TimePass]
         -> Task k
         -> MarkedFixes
         -> FlyingSection Int -- ^ The fix indices of the flying section

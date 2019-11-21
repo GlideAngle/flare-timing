@@ -20,8 +20,7 @@ import Flight.Mask.Internal.Zone
     , Crossing
     , fixFromFix
     )
-
-type TimePass = UTCTime -> Bool
+import Flight.Mask.Tag (TimePass)
 
 -- | Prove from the fixes and mark that the crossing exits. We don't know the
 -- interpolated crossing point and time yet so we'll accept a crossing where

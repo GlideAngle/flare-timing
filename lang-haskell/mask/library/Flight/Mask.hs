@@ -24,6 +24,8 @@ module Flight.Mask
     , module Rat
     , FnTask
     , FnIxTask
+    , TimePass
+    , ZoneTimePass
     , TaskZone
     , Ticked
     , RaceSections(..)

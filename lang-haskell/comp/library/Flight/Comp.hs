@@ -38,6 +38,7 @@ module Flight.Comp
     , TaskRouteDistance(..)
     , showTask
     , openClose
+    , unpackOpenClose
     , speedSectionToLeg
     -- * Pilot and their track logs.
     , PilotId(..)
@@ -191,6 +192,14 @@ openClose _ [] = Nothing
 openClose Nothing (x : _) = Just x
 openClose _ [x] = Just x
 openClose (Just (_, e)) xs = listToMaybe . take 1 . drop (e - 1) $ xs
+
+-- | If all the zone open and close times are the same then we may only be
+-- given a singleton list. This function expands that list.
+unpackOpenClose :: [OpenClose] -> [Maybe OpenClose]
+unpackOpenClose = \case
+    [] -> repeat Nothing
+    [oc] -> Just <$> repeat oc
+    ocs -> Just <$> ocs
 
 pilotNamed :: CompSettings k -> [PilotName] -> [Pilot]
 pilotNamed CompSettings{pilots} [] = sort . nub . join $

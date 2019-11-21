@@ -26,6 +26,8 @@ import Flight.Comp
     , IxTask(..)
     , Task(..)
     , Comp(..)
+    , OpenClose(..)
+    , unpackOpenClose
     , compToCross
     , findCompInput
     , ensureExt
@@ -47,6 +49,7 @@ import Flight.Mask
     , SelectedCrossings(..)
     , NomineeCrossings(..)
     , ExcludedCrossings(..)
+    , TimePass
     , unSelectedCrossings
     , unNomineeCrossings
     , checkTracks
@@ -56,6 +59,9 @@ import Flight.Mask
 import Flight.Scribe (readComp, writeCrossing)
 import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
+
+timecheck :: Maybe OpenClose -> TimePass
+timecheck oc' = maybe (const True) (\oc -> \t -> open oc <= t && t <= close oc) oc'
 
 main :: IO ()
 main = do
@@ -199,21 +205,25 @@ flown c math tasks (IxTask i) fs =
             flownTask c math task fs
 
 flownTask :: Comp -> Math -> FnTask k MadeZones
-flownTask Comp{earth, earthMath} math =
-    case ((earthMath, earth), math) of
-        (e@(Pythagorus, EarthAsFlat{}), Floating) ->
-            madeZones @Double @Double e
-        (e@(Haversines, EarthAsSphere{}), Floating) ->
-            madeZones @Double @Double e
-        (e@(Vincenty, EarthAsEllipsoid{}), Floating) ->
-            madeZones @Double @Double e
-        (e@(AndoyerLambert, EarthAsEllipsoid{}), Floating) ->
-            madeZones @Double @Double e
-        (e@(ForsytheAndoyerLambert, EarthAsEllipsoid{}), Floating) ->
-            madeZones @Double @Double e
-        (e@(FsAndoyer, EarthAsEllipsoid{}), Floating) ->
-            madeZones @Double @Double e
-        -- TODO: Implement rational instances of GeoTag typeclass.
-        -- No instance for (Flight.Mask.Tag.GeoTag Rational Rational)
-        -- arising from a use of ‘madeZones’
-        _ -> error "Combination of Earth model and math not yet implemented."
+flownTask Comp{earth, earthMath} math task@Task{zoneTimes} =
+    f tc task
+    where
+        tc = timecheck <$> unpackOpenClose zoneTimes
+
+        f = case ((earthMath, earth), math) of
+                (e@(Pythagorus, EarthAsFlat{}), Floating) ->
+                    madeZones @Double @Double e
+                (e@(Haversines, EarthAsSphere{}), Floating) ->
+                    madeZones @Double @Double e
+                (e@(Vincenty, EarthAsEllipsoid{}), Floating) ->
+                    madeZones @Double @Double e
+                (e@(AndoyerLambert, EarthAsEllipsoid{}), Floating) ->
+                    madeZones @Double @Double e
+                (e@(ForsytheAndoyerLambert, EarthAsEllipsoid{}), Floating) ->
+                    madeZones @Double @Double e
+                (e@(FsAndoyer, EarthAsEllipsoid{}), Floating) ->
+                    madeZones @Double @Double e
+                -- TODO: Implement rational instances of GeoTag typeclass.
+                -- No instance for (Flight.Mask.Tag.GeoTag Rational Rational)
+                -- arising from a use of ‘madeZones’
+                _ -> error "Combination of Earth model and math not yet implemented."

@@ -14,7 +14,7 @@ import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..), TrackFlyingSection(..))
 import Flight.Track.Time (ZoneIdx(..))
-import Flight.Comp (Task(..), OpenClose(..))
+import Flight.Comp (Task(..))
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..), GeoZones(..))
 
 import Flight.Span.Sliver (GeoSliver(..))
@@ -83,8 +83,14 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                          Left (ZoneEntry _ _) : _ -> True
                          _ -> False
 
-    madeZones :: Trig Double a => Earth Double -> Task k -> MarkedFixes -> MadeZones
-    madeZones e task mf@MarkedFixes{mark0, fixes} =
+    madeZones
+        :: Trig Double a
+        => Earth Double
+        -> [TimePass]
+        -> Task k
+        -> MarkedFixes
+        -> MadeZones
+    madeZones e tps task mf@MarkedFixes{mark0, fixes} =
         MadeZones
             { flying = flying'
             , selectedCrossings = selected
@@ -114,18 +120,20 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             flyingTimes = timeRange mark0 flyingSeconds
 
             (selected, nominees, excluded) =
-                flyingCrossings @Double @Double e task mf (flyingFixes flying')
+                flyingCrossings @Double @Double e tps task mf (flyingFixes flying')
 
     flyingCrossings
         :: Trig Double a
         => Earth Double
+        -> [TimePass]
         -> Task k
         -> MarkedFixes
         -> FlyingSection Int -- ^ The fix indices of the flying section
         -> (SelectedCrossings, NomineeCrossings, ExcludedCrossings)
     flyingCrossings
         e
-        task@Task{zones, zoneTimes}
+        timechecks
+        task@Task{zones}
         MarkedFixes{mark0, fixes}
         indices =
         (selected, nominees, excluded)
@@ -154,26 +162,10 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                     (\(ii, _) -> (fmap . fmap) (reindex ii) xss)
                     (first ZoneIdx <$> indices)
 
-            tps :: [TimePass]
-            tps =
-                case zoneTimes of
-                    [] -> repeat $ const True
-                    [oc] -> repeat $ \t -> open oc <= t && t <= close oc
-                    ocs@(oc : _) ->
-                        zipWith
-                            (\oc0 oc1 -> \t ->
-                                if | t < open oc0 -> False
-                                   | t < open oc1 -> False
-                                   | t > close oc0 -> False
-                                   | t > close oc1 -> False
-                                   | otherwise -> True)
-                            (oc : ocs)
-                            ocs
-
             css = f (const True) <$> xss'
             nss =
-                [ f tp xs
-                | tp <- tps
+                [ f timecheck xs
+                | timecheck <- timechecks
                 | xs <- xss'
                 ]
 
@@ -189,10 +181,10 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             selected =
                 SelectedCrossings
                 [
-                    let prover = proveCrossing tp mark0 fixes
+                    let prover = proveCrossing timecheck mark0 fixes
                     in selectZoneCross prover selector ys
 
-                | tp <- tps
+                | timecheck <- timechecks
                 | selector <- selectors
                 | ys <- yss'
                 ]

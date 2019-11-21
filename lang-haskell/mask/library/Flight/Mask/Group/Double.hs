@@ -27,7 +27,7 @@ import Flight.Mask.Internal.Zone
     ( MadeZones(..)
     , SelectedCrossings(..)
     )
-import Flight.Mask.Tag (GeoTag(..))
+import Flight.Mask.Tag (GeoTag(..), TimePass)
 import Flight.Mask.Tag.Double ()
 import Flight.Mask.Group (GroupLeg(..), GeoLeg(..))
 
@@ -36,10 +36,11 @@ instance GeoTag Double a => GeoLeg Double a where
         :: (FlyClipping UTCTime MarkedFixes, Trig Double a)
         => Earth Double
         -> SampleParams Double
+        -> [TimePass]
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> [(Maybe GroupLeg, MarkedFixes)]
-    groupByLeg e sp task@Task{zones} flyCut =
+    groupByLeg e sp timechecks task@Task{zones} flyCut =
         [
             let g =
                     case (nthR, zerothL) of
@@ -114,7 +115,7 @@ instance GeoTag Double a => GeoLeg Double a where
                 tagZs (fromZs zones)
                 . unSelectedCrossings
                 . selectedCrossings
-                $ madeZs task mf
+                $ madeZs timechecks task mf
 
             ts :: [Maybe UTCTime]
             ts =

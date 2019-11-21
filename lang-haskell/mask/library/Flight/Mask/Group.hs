@@ -13,7 +13,7 @@ import Flight.Units ()
 import Flight.Mask.Internal.Race ()
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 
-import Flight.Mask.Tag (GeoTag(..))
+import Flight.Mask.Tag (GeoTag(..), TimePass)
 
 data GroupLeg =
     GroupLeg
@@ -101,6 +101,7 @@ class GeoTag g a => GeoLeg g a where
         :: (FlyClipping UTCTime MarkedFixes, Trig g a)
         => Earth g
         -> SampleParams g
+        -> [TimePass]
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> [(Maybe GroupLeg, MarkedFixes)]

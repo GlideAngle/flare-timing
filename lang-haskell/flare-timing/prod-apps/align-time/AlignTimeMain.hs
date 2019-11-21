@@ -23,6 +23,7 @@ import Flight.Comp
     , IxTask(..)
     , CompSettings(..)
     , Comp(..)
+    , OpenClose(..)
     , compToCross
     , crossToTag
     , tagToPeg
@@ -34,12 +35,16 @@ import Flight.Scribe (readComp, readTagging, readFraming)
 import Flight.Lookup.Stop (stopFlying)
 import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)
+import Flight.Mask (TimePass)
 
 sp :: SampleParams Double
 sp =
     SampleParams
         (Samples <$> replicate 6 3)
         (Tolerance 0.03)
+
+timecheck :: Maybe OpenClose -> TimePass
+timecheck oc' = maybe (const True) (\oc -> \t -> open oc <= t && t <= close oc) oc'
 
 main :: IO ()
 main = do
@@ -97,4 +102,4 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                         (pilotNamed cs $ PilotName <$> pilot)
                         (CompInputFile compPath)
 
-            in (f . checkAll math earthMath sp speedSectionOnly scoredLookup) t
+            in (f . checkAll math earthMath sp timecheck speedSectionOnly scoredLookup) t
