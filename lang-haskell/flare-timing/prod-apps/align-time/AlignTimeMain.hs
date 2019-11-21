@@ -23,28 +23,24 @@ import Flight.Comp
     , IxTask(..)
     , CompSettings(..)
     , Comp(..)
-    , OpenClose(..)
     , compToCross
     , crossToTag
     , tagToPeg
     , findCompInput
     , ensureExt
     , pilotNamed
+    , timecheck
     )
 import Flight.Scribe (readComp, readTagging, readFraming)
 import Flight.Lookup.Stop (stopFlying)
 import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)
-import Flight.Mask (TimePass)
 
 sp :: SampleParams Double
 sp =
     SampleParams
         (Samples <$> replicate 6 3)
         (Tolerance 0.03)
-
-timecheck :: Maybe OpenClose -> TimePass
-timecheck oc' = maybe (const True) (\oc -> \t -> open oc <= t && t <= close oc) oc'
 
 main :: IO ()
 main = do
@@ -95,11 +91,13 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing) -> putStrLn "Couldn't read the scored frame."
-        (Just cs@CompSettings{comp = Comp{earthMath}}, Just t, Just _) ->
+        (Just cs@CompSettings{comp = Comp{discipline, earthMath}}, Just t, Just _) ->
             let f =
                     writeTime
                         (IxTask <$> task)
                         (pilotNamed cs $ PilotName <$> pilot)
                         (CompInputFile compPath)
 
-            in (f . checkAll math earthMath sp timecheck speedSectionOnly scoredLookup) t
+                tc = timecheck discipline
+
+            in (f . checkAll math earthMath sp tc speedSectionOnly scoredLookup) t

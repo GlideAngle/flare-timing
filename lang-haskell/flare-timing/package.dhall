@@ -248,7 +248,6 @@ in    defs
               { dependencies =
                     deps
                   # [ "lens"
-                    , "time"
                     , "siggy-chardust"
                     , "safe-exceptions"
                     , "flight-kml"

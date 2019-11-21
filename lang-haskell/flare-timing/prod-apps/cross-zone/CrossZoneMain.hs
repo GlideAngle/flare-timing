@@ -26,12 +26,12 @@ import Flight.Comp
     , IxTask(..)
     , Task(..)
     , Comp(..)
-    , OpenClose(..)
     , unpackOpenClose
     , compToCross
     , findCompInput
     , ensureExt
     , pilotNamed
+    , timecheck
     )
 import Flight.Units ()
 import Flight.Track.Cross
@@ -49,7 +49,6 @@ import Flight.Mask
     , SelectedCrossings(..)
     , NomineeCrossings(..)
     , ExcludedCrossings(..)
-    , TimePass
     , unSelectedCrossings
     , unNomineeCrossings
     , checkTracks
@@ -59,9 +58,6 @@ import Flight.Mask
 import Flight.Scribe (readComp, writeCrossing)
 import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
-
-timecheck :: Maybe OpenClose -> TimePass
-timecheck oc' = maybe (const True) (\oc -> \t -> open oc <= t && t <= close oc) oc'
 
 main :: IO ()
 main = do
@@ -205,10 +201,10 @@ flown c math tasks (IxTask i) fs =
             flownTask c math task fs
 
 flownTask :: Comp -> Math -> FnTask k MadeZones
-flownTask Comp{earth, earthMath} math task@Task{zoneTimes} =
+flownTask Comp{discipline, earth, earthMath} math task@Task{zoneTimes} =
     f tc task
     where
-        tc = timecheck <$> unpackOpenClose zoneTimes
+        tc = timecheck discipline <$> unpackOpenClose zoneTimes
 
         f = case ((earthMath, earth), math) of
                 (e@(Pythagorus, EarthAsFlat{}), Floating) ->

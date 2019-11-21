@@ -1,8 +1,4 @@
-module Flight.Mask.Tag.Prove
-    ( TimePass
-    , prove
-    , proveCrossing
-    ) where
+module Flight.Mask.Tag.Prove (prove, proveCrossing) where
 
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime)
@@ -10,6 +6,7 @@ import Control.Lens ((^?), element)
 
 import Flight.Units ()
 import qualified Flight.Kml as Kml (Fix)
+import Flight.Comp (TimePass)
 import Flight.Track.Cross (Fix(..), ZoneCross(..))
 import Flight.Track.Time (ZoneIdx(..))
 
@@ -20,7 +17,6 @@ import Flight.Mask.Internal.Zone
     , Crossing
     , fixFromFix
     )
-import Flight.Mask.Tag (TimePass)
 
 -- | Prove from the fixes and mark that the crossing exits. We don't know the
 -- interpolated crossing point and time yet so we'll accept a crossing where

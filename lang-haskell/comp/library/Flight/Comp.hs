@@ -36,10 +36,12 @@ module Flight.Comp
     , StartEndDownMark
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
+    , TimePass
     , showTask
     , openClose
     , unpackOpenClose
     , speedSectionToLeg
+    , timecheck
     -- * Pilot and their track logs.
     , PilotId(..)
     , PilotName(..)
@@ -64,6 +66,7 @@ module Flight.Comp
 import Data.Ratio ((%))
 import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
+import Data.Time.Clock (addUTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Maybe (listToMaybe)
@@ -200,6 +203,27 @@ unpackOpenClose = \case
     [] -> repeat Nothing
     [oc] -> Just <$> repeat oc
     ocs -> Just <$> ocs
+
+type TimePass = UTCTime -> Bool
+
+-- TODO: Read jump_the_gun_max from the *.fsdb. Its default is 300s.
+timecheck :: Discipline -> Maybe OpenClose -> TimePass
+timecheck hgOrPg oc' =
+    maybe
+        (const True)
+        (\oc ->
+            \t ->
+                let notLate = t <= close oc
+
+                    earliestStart =
+                        case hgOrPg of
+                            Paragliding -> open oc
+                            HangGliding -> (negate 300) `addUTCTime` (open oc)
+
+                    notEarly = earliestStart <= t
+
+                in notEarly && notLate)
+        oc'
 
 pilotNamed :: CompSettings k -> [PilotName] -> [Pilot]
 pilotNamed CompSettings{pilots} [] = sort . nub . join $

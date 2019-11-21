@@ -2,7 +2,6 @@ module Flight.Mask.Tag
     ( GeoTag(..)
     , FnTask
     , FnIxTask
-    , TimePass
     , ZoneTimePass
     , SelectedCrossings(..)
     , NomineeCrossings(..)
@@ -12,13 +11,11 @@ module Flight.Mask.Tag
     , selectZoneCross
     ) where
 
-import Data.Time.Clock (UTCTime)
-
 import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Clip (FlyingSection)
 import Flight.Kml (MarkedFixes(..))
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..))
-import Flight.Comp (IxTask(..), Task(..), OpenClose)
+import Flight.Comp (IxTask(..), Task(..), OpenClose, TimePass)
 import Flight.Units ()
 import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
@@ -32,7 +29,6 @@ import Flight.Mask.Internal.Zone
 import Flight.Mask.Interpolate (GeoTagInterpolate(..))
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 
-type TimePass = UTCTime -> Bool
 type ZoneTimePass = Maybe OpenClose -> TimePass
 
 -- | A masking produces a value from a task and tracklog fixes.

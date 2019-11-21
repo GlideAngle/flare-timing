@@ -14,7 +14,7 @@ import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..), TrackFlyingSection(..))
 import Flight.Track.Time (ZoneIdx(..))
-import Flight.Comp (Task(..))
+import Flight.Comp (Task(..), TimePass)
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..), GeoZones(..))
 
 import Flight.Span.Sliver (GeoSliver(..))
@@ -44,7 +44,7 @@ import Flight.Mask.Internal.Cross
     )
 import Flight.Mask.Interpolate (GeoTagInterpolate(..))
 import Flight.Mask.Tag (FnTask, selectZoneCross)
-import Flight.Mask.Tag.Prove (TimePass, prove, proveCrossing)
+import Flight.Mask.Tag.Prove (prove, proveCrossing)
 import Flight.Mask.Tag.OrdLists (trimOrdLists)
 import Flight.Mask.Tag.Motion (flyingSection, secondsRange, timeRange)
 

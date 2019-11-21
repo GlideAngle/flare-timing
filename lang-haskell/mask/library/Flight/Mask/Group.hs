@@ -8,12 +8,12 @@ import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Kml (MarkedFixes(..))
 import Flight.Track.Time (LegIdx(..))
-import Flight.Comp (Task(..))
+import Flight.Comp (Task(..), TimePass)
 import Flight.Units ()
 import Flight.Mask.Internal.Race ()
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 
-import Flight.Mask.Tag (GeoTag(..), TimePass)
+import Flight.Mask.Tag (GeoTag(..))
 
 data GroupLeg =
     GroupLeg
