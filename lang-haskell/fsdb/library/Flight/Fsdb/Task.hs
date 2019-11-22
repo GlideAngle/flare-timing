@@ -18,7 +18,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
     , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpFilterCont
-    , xpElem, xpAttr, xpAlt
+    , xpElem, xpAttr, xpAlt, xpDefault
     , xpPair, xpTriple, xp5Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
     , xpPrim, xpAttrImplied, xpTextAttr
     )
@@ -152,8 +152,8 @@ xpEarlyStart =
             } -> (round limit, round rate)
         )
     $ xpPair
-        (xpAttr "jump_the_gun_max" xpInt)
-        (xpAttr "jump_the_gun_factor" xpInt)
+        (xpDefault 300 $ xpAttr "jump_the_gun_max" xpInt)
+        (xpDefault 2 $ xpAttr "jump_the_gun_factor" xpInt)
 
 xpDecelerator :: PU Decelerator
 xpDecelerator =
