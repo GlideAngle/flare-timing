@@ -8,6 +8,7 @@ of this changelog.
 * Show the task number before the task name in the breadcrumb.
 * Don't show all the turnpoint names in the task detail if they will
   overflow the header.
+* Add a ruler to the map.
 
 # Earth, Through and Through
 ## app-view-0.22

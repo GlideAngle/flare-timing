@@ -35,6 +35,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , tileLayerAddToMap
     , marker
     , markerPopup
+    , rulerAddToMap
     , mapInvalidateSize
     , circle
     , circleAddToMap
@@ -430,7 +431,7 @@ map
     (zoomOrPan, evZoom, activePilot)
         <- taskZoneButtons task pilots $ () <$ pilotFlyingTrack
 
-    (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
+    (eCanvas, _) <- elAttr' "div" ("id" =: "map" <> "style" =: "height: 680px;width: 100%") $ return ()
 
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
@@ -484,6 +485,7 @@ map
         (lmap', bounds', layers') <- liftIO $ do
             lmap <- L.map (_element_raw eCanvas)
             L.mapSetView lmap (zoneToLL $ head xs) 11
+            L.rulerAddToMap lmap
 
             mapLayer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/

@@ -2533,10 +2533,27 @@ leaflet-defaulticon-compatibility@^0.1.1:
   resolved "https://registry.yarnpkg.com/leaflet-defaulticon-compatibility/-/leaflet-defaulticon-compatibility-0.1.1.tgz#ab72257b3da66fb48dab69a10c3824012a15a20a"
   integrity sha512-vDBFdlUAwjSEGep9ih8kfJilf6yN8V9zTbF5NC/1ZwLeGko3RUQepspPnGCRMFV51dY3Lb3hziboicrFz+rxQA==
 
+leaflet-draw@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/leaflet-draw/-/leaflet-draw-0.3.2.tgz#717ee8fed4c2a9679c12162e1f922d2da503d109"
+  integrity sha1-cX7o/tTCqWecEhYuH5ItLaUD0Qk=
+
+leaflet-draw@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/leaflet-draw/-/leaflet-draw-1.0.4.tgz#45be92f378ed253e7202fdeda1fcc71885198d46"
+  integrity sha512-rsQ6saQO5ST5Aj6XRFylr5zvarWgzWnrg46zQ1MEOEIHsppdC/8hnN8qMoFvACsPvTioAuysya/TVtog15tyAQ==
+
 leaflet-semicircle@2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/leaflet-semicircle/-/leaflet-semicircle-2.0.3.tgz#e801567d2dd3511c33dcf1827de7d1db3f73c905"
   integrity sha512-cuUC6BrgUiepier5YYV5TW7cUw2AsO3pyCNViOocu+u6fmYW0Qd8S4AeUyLYqCnf+TDeCmkVMrpO2yxwj9c4uQ==
+
+leaflet.measurecontrol@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/leaflet.measurecontrol/-/leaflet.measurecontrol-1.1.0.tgz#d061459b0a8fe6b497cecf3f21f470ebaf9e73d6"
+  integrity sha1-0GFFmwqP5rSXzs8/IfRw66+ec9Y=
+  dependencies:
+    leaflet-draw "^0.3.2"
 
 leaflet@1.4.0:
   version "1.4.0"

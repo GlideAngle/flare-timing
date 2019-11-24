@@ -8,7 +8,9 @@
     "font-awesome": "^4.7.0",
     "leaflet": "1.4.0",
     "leaflet-defaulticon-compatibility": "^0.1.1",
-    "leaflet-semicircle": "2.0.3"
+    "leaflet-draw": "^1.0.4",
+    "leaflet-semicircle": "2.0.3",
+    "leaflet.measurecontrol": "^1.1.0"
   },
   "devDependencies": {
     "css-loader": "^2.1.0",
