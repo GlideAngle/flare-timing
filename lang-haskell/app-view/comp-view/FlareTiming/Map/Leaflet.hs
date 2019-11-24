@@ -13,7 +13,6 @@ module FlareTiming.Map.Leaflet
     , mapInvalidateSize
     , tileLayer
     , tileLayerAddToMap
-    , rulerAddToMap
     , marker
     , markerAddToMap
     , markerPopup
@@ -62,7 +61,7 @@ instance ToJSVal LayerGroup where
     toJSVal = return . unLayerGroup
 
 foreign import javascript unsafe
-    "L['map']($1)"
+    "L['map']($1, {measureControl: true})"
     map_ :: JSVal -> IO JSVal
 
 foreign import javascript unsafe
@@ -106,10 +105,6 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "$1.addOverlay($2, $3)"
     addBaseLayer_ :: JSVal -> JSVal -> JSString -> IO ()
-
-foreign import javascript unsafe
-    "L.Control.measureControl().addTo($1);"
-    ruler_ :: JSVal -> IO ()
 
 foreign import javascript unsafe
     "$1.expand()"
@@ -247,9 +242,6 @@ addOverlay layers (PilotName pilotName, pilotLine) = do
         (unLayers layers)
         (unLayerGroup pilotLine)
         (toJSString pilotName)
-
-rulerAddToMap :: Map -> IO ()
-rulerAddToMap lmap = ruler_ (unMap lmap)
 
 layersExpand :: Layers -> IO ()
 layersExpand layers = layersExpand_ $ unLayers layers

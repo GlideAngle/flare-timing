@@ -35,7 +35,6 @@ import qualified FlareTiming.Map.Leaflet as L
     , tileLayerAddToMap
     , marker
     , markerPopup
-    , rulerAddToMap
     , mapInvalidateSize
     , circle
     , circleAddToMap
@@ -485,7 +484,6 @@ map
         (lmap', bounds', layers') <- liftIO $ do
             lmap <- L.map (_element_raw eCanvas)
             L.mapSetView lmap (zoneToLL $ head xs) 11
-            L.rulerAddToMap lmap
 
             mapLayer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/
