@@ -5,7 +5,10 @@
   "license": "ISC",
   "dependencies": {
     "bulma": "^0.7.4",
-    "font-awesome": "^4.7.0"
+    "font-awesome": "^4.7.0",
+    "leaflet": "1.4.0",
+    "leaflet-defaulticon-compatibility": "^0.1.1",
+    "leaflet-semicircle": "2.0.3"
   },
   "devDependencies": {
     "css-loader": "^2.1.0",

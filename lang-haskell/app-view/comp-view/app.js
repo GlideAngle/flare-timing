@@ -1,4 +1,7 @@
 'use strict';
 
-require('./app.html');
-require('./site.sass');
+import './app.html'
+import './site.sass'
+import L from 'leaflet'
+import 'leaflet-defaulticon-compatibility'
+import 'leaflet-semicircle'
