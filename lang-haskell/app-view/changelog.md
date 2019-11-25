@@ -11,6 +11,8 @@ of this changelog.
 * Add a ruler to the map.
 * Use zones enlarged by give, the fractional and absolute tolerance added to
   a zone's radius to give some relief to pilots with vario inaccuracy.
+* Show mean and standard deviation in difference of task points compared to the
+  expected points from FS.
 
 # Earth, Through and Through
 ## app-view-0.22
