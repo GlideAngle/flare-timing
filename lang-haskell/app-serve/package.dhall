@@ -22,6 +22,7 @@ in    defs
                   [ "aeson"
                   , "bytestring"
                   , "cmdargs"
+                  , "containers"
                   , "directory"
                   , "filepath"
                   , "filemanip"

@@ -6,6 +6,7 @@ import Text.Printf (printf)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Maybe (isNothing, catMaybes)
 import Data.List ((\\), nub, sort, sortOn, find, zip4)
+import qualified Data.Map.Strict as Map
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
@@ -63,7 +64,7 @@ import Flight.Score
     , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     , DistanceValidity(..), LaunchValidity(..), TimeValidity(..)
     , TaskValidity(..), StopValidity(..)
-    , ReachStats(..)
+    , ReachStats(..), TaskPoints(..)
     )
 import Flight.Scribe
     ( readComp, readNormEffort, readNormRoute, readNormScore
@@ -139,6 +140,19 @@ import Flight.Distance (QTaskDistance)
 import ServeOptions (description)
 import ServeTrack (RawLatLngTrack(..), tagToTrack)
 import ServeValidity (nullValidityWorking)
+
+mean' :: [Double] -> Double
+mean' xs = sum xs / (fromIntegral $ length xs)
+
+stdDev' :: [Double] -> Double
+stdDev' = sqrt . variance'
+
+variance' :: [Double] -> Double
+variance' xs =
+    (sum $ zipWith (*) ys ys) / (fromIntegral $ length xs)
+    where
+        xMean = mean' xs
+        ys = ((-) xMean) <$> xs
 
 data Config k
     = Config
@@ -287,6 +301,9 @@ type GapPointApi k =
 
     :<|> "task-length" :> "task-lengths"
         :> Get '[JSON] [QTaskDistance Double [u| m |]]
+
+    :<|> "stats" :> "point-diff"
+        :> Get '[JSON] [Maybe (Double, Double)]
 
     :<|> "gap-point" :> "pilots-status"
         :> Get '[JSON] [(Pilot, [PilotTaskStatus])]
@@ -574,6 +591,7 @@ serverGapPointApi cfg =
         :<|> getTaskRouteProjectedEllipsoidEdge
         :<|> getTaskRouteProjectedPlanarEdge
         :<|> getTaskRouteLengths
+        :<|> getTaskPointsDiffStats
         :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
@@ -823,6 +841,35 @@ getTaskRouteLengths = do
                else return $ catMaybes ds
 
         _ -> throwError errTaskLengths
+
+getTaskPointsDiffStats :: AppT k IO [Maybe (Double, Double)]
+getTaskPointsDiffStats = do
+    ps <- fmap (\Pointing{score} -> (fmap . fmap . fmap) (\Breakdown{total} -> total) score) <$> asks pointing
+    exs <- fmap (\Norm.NormPointing{score} -> (fmap . fmap . fmap) (\Norm.NormBreakdown{total} -> total) score) <$> asks normScore
+    case (ps, exs) of
+        (Just ps', Just exs') -> do
+            let taskDiffs =
+                    [
+                        let exsMap = Map.fromList exsTask in
+                        [(Map.lookup pilot exsMap, p') | (pilot, p') <- psTask]
+
+                    | psTask <- ps'
+                    | exsTask <- exs'
+                    ]
+
+            return $ (uncurry stats . unzip) <$> taskDiffs
+
+        (Nothing, _) -> throwError errTaskPoints
+        (_, Nothing) -> throwError errNormPoints
+    where
+        stats :: [Maybe TaskPoints] -> [TaskPoints] -> Maybe (Double, Double)
+        stats es ps =
+            let es' :: Maybe [TaskPoints]
+                es' = sequence es
+             in do
+                    es'' <- es'
+                    let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''
+                    return (mean' $ fromRational <$> xs, stdDev' $ fromRational <$> xs)
 
 ellipsoidRouteLength :: TaskTrack -> Maybe (QTaskDistance Double [u| m |])
 ellipsoidRouteLength
@@ -1206,6 +1253,13 @@ errTaskLengths :: ServantErr
 errTaskLengths =
     err400 {errBody = LBS.pack "I need the lengths of each task" }
 
+errTaskPoints :: ServantErr
+errTaskPoints =
+    err400 {errBody = LBS.pack "I need the points of each task" }
+
+errNormPoints :: ServantErr
+errNormPoints =
+    err400 {errBody = LBS.pack "I need the expected points of each task" }
 
 errTaskStep :: String -> Int -> ServantErr
 errTaskStep step ii =

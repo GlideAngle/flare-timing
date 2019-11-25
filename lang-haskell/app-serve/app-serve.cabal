@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9465500196598e434343572a4222f242aac8387fcf5b3788643d32d989817329
+-- hash: 1a1059868be3ba8fc2b6205af6a996c3db90ee382d707d2496915c57b1ccad59
 
 name:           app-serve
 version:        0.1.0
@@ -46,6 +46,7 @@ executable comp-serve
     , base >=4.10.1.0 && <5
     , bytestring
     , cmdargs
+    , containers
     , directory
     , filemanip
     , filepath
