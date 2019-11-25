@@ -11,6 +11,7 @@ import Flight.Units ()
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Distance (PathDistance(..), QTaskDistance, TaskDistance(..))
 import Flight.Zone.Cylinder (SampleParams(..))
+import Flight.Zone.Raw (Give)
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
@@ -35,13 +36,14 @@ instance GeoSliver Double a => GeoDash Double a where
     dashDistancesToGoal
         :: (Trig Double a, FlyClipping UTCTime MarkedFixes)
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> Ticked
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
         -- ^ Nothing indicates no such task or a task with no zones.
-    dashDistancesToGoal e sp ticked task@Task{zones} flyCut =
+    dashDistancesToGoal e give sp ticked task@Task{zones} flyCut =
         -- NOTE: A ghci session using inits & tails.
         -- inits [1 .. 4]
         -- [[],[1],[1,2],[1,2,3],[1,2,3,4]]
@@ -58,33 +60,35 @@ instance GeoSliver Double a => GeoDash Double a where
         $ lfg sp ticked task mark0
         <$> drop 1 (inits ixs)
         where
-            lfg = lastFixToGoal @Double @Double e
+            lfg = lastFixToGoal @Double @Double e give
             ixs = index fixes
             FlyCut{uncut = MarkedFixes{mark0, fixes}} = clipToCut flyCut
 
     dashDistanceToGoal
         :: (Trig Double a, FlyClipping UTCTime MarkedFixes)
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> Ticked
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> Maybe (QTaskDistance Double [u| m |])
-    dashDistanceToGoal e sp ticked task flyCut =
+    dashDistanceToGoal e give sp ticked task flyCut =
         T.fromZs
         $ edgesSum
-        <$> dashPathToGoalMarkedFixes @Double @Double e sp ticked task flyCut
+        <$> dashPathToGoalMarkedFixes @Double @Double e give sp ticked task flyCut
 
     dashPathToGoalTimeRows
         :: (Trig Double a, FlyClipping UTCTime [TimeRow])
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> Ticked
         -> Task k
         -> FlyCut UTCTime [TimeRow]
         -> Zs (PathDistance Double)
         -- ^ Nothing indicates no such task or a task with no zones.
-    dashPathToGoalTimeRows e sp ticked Task{speedSection, zones} flyCut =
+    dashPathToGoalTimeRows e give sp ticked Task{speedSection, zones} flyCut =
 
         if null (raw zones) then Z0 else
         dashPathToGoalR optZs sepZs ticked rowToPoint speedSection zs ixs
@@ -93,7 +97,7 @@ instance GeoSliver Double a => GeoDash Double a where
             ac = angleCut @Double @Double e
             optZs = shortestPath @Double @Double e cseg cs ac sp
             sepZs = separatedZones @Double @Double e
-            fromZs = fromZones @Double @Double e
+            fromZs = fromZones @Double @Double e give
             zs = fromZs zones
             ixs = revindex fixes
             FlyCut{uncut = fixes} = clipToCut flyCut
@@ -101,13 +105,14 @@ instance GeoSliver Double a => GeoDash Double a where
     dashPathToGoalMarkedFixes
         :: (Trig Double a, FlyClipping UTCTime MarkedFixes)
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> Ticked
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> Zs (PathDistance Double)
         -- ^ Nothing indicates no such task or a task with no zones.
-    dashPathToGoalMarkedFixes e sp ticked Task{speedSection, zones} flyCut =
+    dashPathToGoalMarkedFixes e give sp ticked Task{speedSection, zones} flyCut =
 
         if null (raw zones) then Z0 else
         dashPathToGoalR optZs sepZs ticked fixToPoint speedSection zs ixs
@@ -116,7 +121,7 @@ instance GeoSliver Double a => GeoDash Double a where
             ac = angleCut @Double @Double e
             optZs = shortestPath @Double @Double e cseg cs ac sp
             sepZs = separatedZones @Double @Double e
-            fromZs = fromZones @Double @Double e
+            fromZs = fromZones @Double @Double e give
             zs = fromZs zones
             ixs = revindex fixes
             FlyCut{uncut = MarkedFixes{fixes}} = clipToCut flyCut
@@ -124,13 +129,14 @@ instance GeoSliver Double a => GeoDash Double a where
     lastFixToGoal
         :: Trig Double a
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> Ticked -- ^ The zones ticked
         -> Task k
         -> UTCTime
         -> [(ZoneIdx, Kml.Fix)]
         -> (Maybe Fix, Maybe (QTaskDistance Double [u| m |]))
-    lastFixToGoal e sp ticked Task{speedSection, zones} mark0 ixs =
+    lastFixToGoal e give sp ticked Task{speedSection, zones} mark0 ixs =
         case iys of
             [] -> (Nothing, Nothing)
             ((i, y) : _) -> (Just $ fixFromFix mark0 i y, d)
@@ -139,7 +145,7 @@ instance GeoSliver Double a => GeoDash Double a where
             ac = angleCut @Double @Double e
             optZs = shortestPath @Double @Double e cseg cs ac sp
             sepZs = separatedZones @Double @Double e
-            fromZs = fromZones @Double @Double e
+            fromZs = fromZones @Double @Double e give
             zs = fromZs zones
             iys = reverse ixs
             d = dashToGoalR optZs sepZs ticked fixToPoint speedSection zs iys
@@ -147,13 +153,14 @@ instance GeoSliver Double a => GeoDash Double a where
     dashDistanceFlown
         :: (Trig Double a, FlyClipping UTCTime MarkedFixes)
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> QTaskDistance Double [u| m |]
         -> Ticked
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> Maybe (QTaskDistance Double [u| m |])
-    dashDistanceFlown e sp (TaskDistance dTask) ticked Task{speedSection, zones} flyCut =
+    dashDistanceFlown e give sp (TaskDistance dTask) ticked Task{speedSection, zones} flyCut =
         if null zs then Nothing else do
             TaskDistance dPilot
                 <- dashToGoalR optZs sepZs ticked fixToPoint speedSection zs ixs
@@ -164,7 +171,7 @@ instance GeoSliver Double a => GeoDash Double a where
             ac = angleCut @Double @Double e
             optZs = shortestPath @Double @Double e cseg cs ac sp
             sepZs = separatedZones @Double @Double e
-            fromZs = fromZones @Double @Double e
+            fromZs = fromZones @Double @Double e give
             zs = fromZs zones
             ixs = reverse . index $ fixes
             FlyCut{uncut = MarkedFixes{fixes}} = clipToCut flyCut
@@ -172,22 +179,24 @@ instance GeoSliver Double a => GeoDash Double a where
     togoAtLanding
         :: Trig Double a
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> Ticked
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> Maybe (QTaskDistance Double [u| m |])
-    togoAtLanding e sp ticked task xs =
-        dashDistanceToGoal @Double @Double e sp ticked task xs
+    togoAtLanding e give sp ticked task xs =
+        dashDistanceToGoal @Double @Double e give sp ticked task xs
 
     madeAtLanding
         :: Trig Double a
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> QTaskDistance Double [u| m |]
         -> Ticked
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> Maybe (QTaskDistance Double [u| m |])
-    madeAtLanding e sp dTaskF ticked task xs =
-        dashDistanceFlown @Double @Double e sp dTaskF ticked task xs
+    madeAtLanding e give sp dTaskF ticked task xs =
+        dashDistanceFlown @Double @Double e give sp dTaskF ticked task xs

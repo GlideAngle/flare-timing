@@ -89,7 +89,7 @@ go math compFile@(CompInputFile compPath) = do
         (_, Nothing) ->
             putStrLn "Couldn't read the crossings."
 
-        (Just CompSettings{tasks, comp = Comp{earthMath}}, Just Crossing{crossing, flying}) -> do
+        (Just CompSettings{tasks, comp = Comp{earthMath, give}}, Just Crossing{crossing, flying}) -> do
             let pss :: [[PilotTrackTag]] =
                     [
                         (\case
@@ -113,6 +113,7 @@ go math compFile@(CompInputFile compPath) = do
                                         ForsytheAndoyerLambert -> e
                                         FsAndoyer -> e
                                   )
+                                  give
                                   zones
 
                     | cg <- crossing

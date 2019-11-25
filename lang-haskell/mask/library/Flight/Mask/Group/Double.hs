@@ -11,6 +11,7 @@ import qualified Data.Map as Map
 import Control.Monad (join)
 
 import Flight.Zone.Cylinder (SampleParams(..))
+import Flight.Zone.Raw (Give)
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Units ()
 import Flight.Kml (MarkedFixes(..), fixToUtc)
@@ -35,12 +36,13 @@ instance GeoTag Double a => GeoLeg Double a where
     groupByLeg
         :: (FlyClipping UTCTime MarkedFixes, Trig Double a)
         => Earth Double
+        -> Maybe Give
         -> SampleParams Double
         -> [TimePass]
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> [(Maybe GroupLeg, MarkedFixes)]
-    groupByLeg e sp timechecks task@Task{zones} flyCut =
+    groupByLeg e give sp timechecks task@Task{zones} flyCut =
         [
             let g =
                     case (nthR, zerothL) of
@@ -105,8 +107,8 @@ instance GeoTag Double a => GeoLeg Double a where
         ]
         where
             tagZs = tagZones @Double @Double e sp
-            madeZs = madeZones @Double @Double e
-            fromZs = fromZones @Double @Double e
+            madeZs = madeZones @Double @Double e give
+            fromZs = fromZones @Double @Double e give
 
             FlyCut{uncut = mf@MarkedFixes{mark0, fixes}} = clipToCut flyCut
 

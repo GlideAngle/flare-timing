@@ -10,6 +10,7 @@ import Control.Monad (join)
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
 import Flight.Zone.Cylinder (SampleParams(..))
+import Flight.Zone.Raw (Give)
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..), TrackFlyingSection(..))
@@ -53,9 +54,9 @@ import Flight.Span.Double ()
 import Flight.Mask.Interpolate.Double ()
 
 instance GeoTagInterpolate Double a => GeoTag Double a where
-    started :: Trig Double a => Earth Double -> FnTask k Bool
-    started e Task{speedSection, zones} MarkedFixes{fixes} =
-        let fromZs = fromZones @Double @Double e
+    started :: Trig Double a => Earth Double -> Maybe Give -> FnTask k Bool
+    started e give Task{speedSection, zones} MarkedFixes{fixes} =
+        let fromZs = fromZones @Double @Double e give
             sepZs = separatedZones @Double @Double e
         in
             case slice speedSection (fromZs zones) of
@@ -68,9 +69,9 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                          Right (ZoneExit _ _) : _ -> True
                          _ -> False
 
-    madeGoal :: Trig Double a => Earth Double -> FnTask k Bool
-    madeGoal e Task{zones} MarkedFixes{fixes} =
-        let zs = fromZones @Double @Double e zones
+    madeGoal :: Trig Double a => Earth Double -> Maybe Give -> FnTask k Bool
+    madeGoal e give Task{zones} MarkedFixes{fixes} =
+        let zs = fromZones @Double @Double e give zones
             sepZs = separatedZones @Double @Double e
         in
             case reverse zs of
@@ -86,11 +87,12 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
     madeZones
         :: Trig Double a
         => Earth Double
+        -> Maybe Give
         -> [TimePass]
         -> Task k
         -> MarkedFixes
         -> MadeZones
-    madeZones e tps task mf@MarkedFixes{mark0, fixes} =
+    madeZones e give tps task mf@MarkedFixes{mark0, fixes} =
         MadeZones
             { flying = flying'
             , selectedCrossings = selected
@@ -120,11 +122,12 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             flyingTimes = timeRange mark0 flyingSeconds
 
             (selected, nominees, excluded) =
-                flyingCrossings @Double @Double e tps task mf (flyingFixes flying')
+                flyingCrossings @Double @Double e give tps task mf (flyingFixes flying')
 
     flyingCrossings
         :: Trig Double a
         => Earth Double
+        -> Maybe Give
         -> [TimePass]
         -> Task k
         -> MarkedFixes
@@ -132,6 +135,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         -> (SelectedCrossings, NomineeCrossings, ExcludedCrossings)
     flyingCrossings
         e
+        give
         timechecks
         task@Task{zones}
         MarkedFixes{mark0, fixes}
@@ -139,7 +143,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         (selected, nominees, excluded)
         where
             sepZs = separatedZones @Double @Double e
-            fromZs = fromZones @Double @Double e
+            fromZs = fromZones @Double @Double e give
 
             keptFixes :: [Kml.Fix]
             keptFixes =

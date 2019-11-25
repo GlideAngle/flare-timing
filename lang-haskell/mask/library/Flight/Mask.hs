@@ -36,7 +36,6 @@ module Flight.Mask
     , FlyClipSection(..)
     , GroupLeg(..)
     , checkTracks
-    , zoneToCylinder
     , zonesToTaskZones
     , slice
     , section
@@ -62,8 +61,7 @@ import Flight.Span.Double as Dbl
 import Flight.Span.Rational as Rat
 
 import Flight.Mask.Tracks
-import Flight.Mask.Internal.Zone
-    (TaskZone, zoneToCylinder, zonesToTaskZones, slice, fixFromFix)
+import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones, slice, fixFromFix)
 import Flight.Mask.Internal.Race
     ( FlyClipSection(..)
     , Ticked

@@ -203,10 +203,10 @@ flown c math tasks (IxTask i) fs =
 
 flownTask :: Comp -> Math -> FnTask k MadeZones
 flownTask
-    Comp{earth, earthMath}
+    Comp{earth, earthMath, give}
     math
     task@Task{zoneTimes, earlyStart = EarlyStart{earliest}} =
-    f tc task
+    f give tc task
     where
         tc = earliestTimecheck earliest <$> unpackOpenClose zoneTimes
 

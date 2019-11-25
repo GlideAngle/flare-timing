@@ -12,6 +12,7 @@ module Flight.Mask.Tag
     ) where
 
 import Flight.Zone.Cylinder (SampleParams(..))
+import Flight.Zone.Raw (Give)
 import Flight.Clip (FlyingSection)
 import Flight.Kml (MarkedFixes(..))
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..))
@@ -38,14 +39,15 @@ type FnIxTask k a = [Task k] -> IxTask -> MarkedFixes -> a
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 
 class GeoTagInterpolate g a => GeoTag g a where
-    started :: Trig g a => Earth g -> FnTask k Bool
-    madeGoal :: Trig g a => Earth g -> FnTask k Bool
+    started :: Trig g a => Earth g -> Maybe Give -> FnTask k Bool
+    madeGoal :: Trig g a => Earth g -> Maybe Give -> FnTask k Bool
 
     -- | The zones that are made without regard to the stopped time of stopped
     -- tasks.
     madeZones
         :: Trig g a
         => Earth g
+        -> Maybe Give
         -> [TimePass]
         -> Task k
         -> MarkedFixes
@@ -57,6 +59,7 @@ class GeoTagInterpolate g a => GeoTag g a where
     flyingCrossings
         :: Trig g a
         => Earth g
+        -> Maybe Give
         -> [TimePass]
         -> Task k
         -> MarkedFixes

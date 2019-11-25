@@ -90,11 +90,11 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing) -> putStrLn "Couldn't read the scored frame."
-        (Just cs@CompSettings{comp = Comp{earthMath}}, Just t, Just _) ->
+        (Just cs@CompSettings{comp = Comp{earthMath, give}}, Just t, Just _) ->
             let f =
                     writeTime
                         (IxTask <$> task)
                         (pilotNamed cs $ PilotName <$> pilot)
                         (CompInputFile compPath)
 
-            in (f . checkAll math earthMath sp speedSectionOnly scoredLookup) t
+            in (f . checkAll math earthMath give sp speedSectionOnly scoredLookup) t

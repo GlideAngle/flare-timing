@@ -6,6 +6,7 @@ module Flight.Zone.Zone
     , toCylinder, rawToLatLng, unlineZones
     ) where
 
+import Data.Maybe (fromMaybe)
 import Data.Foldable (asum)
 import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
@@ -316,7 +317,7 @@ rawToRadius (Radius r) =
 toCylinder :: (Eq a, Ord a, Num a, Fractional a) => Raw.RawZone -> Zone a
 toCylinder Raw.RawZone{Raw.radius = r, ..} =
     Cylinder
-        (rawToRadius r)
+        (fromMaybe (rawToRadius r) (rawToRadius <$> giveOut))
         (rawToLatLng lat lng)
 
 -- | Make sure all Line and SemiCircle zones have their normals fixed.

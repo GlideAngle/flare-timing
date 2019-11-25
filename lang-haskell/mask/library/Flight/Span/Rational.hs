@@ -9,6 +9,7 @@ import qualified Data.Number.FixedFunctions as F
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Zone (Bearing(..), ArcSweep(..))
 import Flight.Zone.MkZones (Zones)
+import Flight.Zone.Raw (Give)
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 import Flight.Geodesy.Rational ()
 import Flight.Task (AngleCut(..))
@@ -29,5 +30,5 @@ instance (Real a, Fractional a, GeoPath Rational a) => GeoSliver Rational a wher
                     x{sweep = ArcSweep . Bearing $ b /: 2}
             }
 
-    fromZones :: Trig Rational a => Earth Rational -> Zones -> [TaskZone Rational]
-    fromZones x = zonesToTaskZones $ azimuthFwd @Rational @Rational x
+    fromZones :: Trig Rational a => Earth Rational -> Maybe Give -> Zones -> [TaskZone Rational]
+    fromZones e g = zonesToTaskZones g $ azimuthFwd @Rational @Rational e

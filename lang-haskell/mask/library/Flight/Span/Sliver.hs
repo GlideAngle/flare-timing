@@ -3,6 +3,7 @@ module Flight.Span.Sliver (Sliver(..), GeoSliver(..)) where
 import Flight.LatLng (AzimuthFwd)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone.MkZones (Zones)
+import Flight.Zone.Raw (Give)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Cylinder (CircumSample)
 import Flight.Task (CostSegment, DistancePointToPoint, AngleCut(..))
@@ -23,7 +24,7 @@ data Sliver a =
 
 class (Real a, Fractional a, Trig g a, GeoPath g a) => GeoSliver g a where
     angleCut :: Trig g a => Earth g -> AngleCut g
-    fromZones :: Trig g a => Earth g -> Zones -> [TaskZone g]
+    fromZones :: Trig g a => Earth g -> Maybe Give -> Zones -> [TaskZone g]
 
     sliver :: (Real g, Trig g a) => Earth g -> Sliver g
     sliver x =

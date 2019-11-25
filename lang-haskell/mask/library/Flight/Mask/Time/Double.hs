@@ -12,6 +12,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Zone.SpeedSection (SpeedSection)
+import Flight.Zone.Raw (Give)
 import Flight.Kml (Fix, Seconds(..), FixMark(..), MarkedFixes(..))
 import Flight.Comp (Task(..), OpenClose(..), StartGate(..))
 import Flight.Score (PilotTime(..))
@@ -33,17 +34,18 @@ instance GeoTag Double a => GeoTime Double a where
     timeFlown
         :: Trig Double a
         => Earth Double
+        -> Maybe Give
         -> Task k
         -> MarkedFixes
         -> Maybe (PilotTime (Quantity Double [u| h |]))
-    timeFlown e task@Task{speedSection, zones, zoneTimes, startGates} xs =
+    timeFlown e give task@Task{speedSection, zones, zoneTimes, startGates} xs =
         if null zs || not atGoal then Nothing else
         flownDuration sepZs speedSection fs zs zoneTimes startGates xs
         where
             sepZs = separatedZones @Double @Double e
-            fromZs = fromZones @Double @Double e
+            fromZs = fromZones @Double @Double e give
             zs = fromZs zones
-            atGoal = madeGoal @Double @Double e task xs
+            atGoal = madeGoal @Double @Double e give task xs
 
             fs =
                 (\x ->

@@ -9,7 +9,8 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Comp
     ( FileType(CompInput)
-    , CompSettings(tasks)
+    , CompSettings(..)
+    , Comp(..)
     , Task(zones, speedSection)
     , CompInputFile(..)
     , compToTaskLength
@@ -57,12 +58,12 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     settings <- readComp compFile
     f settings
     where
-        f compInput = do
-            let ixs = speedSection <$> tasks compInput
+        f cs@CompSettings{comp = Comp{earthMath = eMath, give}}= do
+            let ixs = speedSection <$> tasks cs
 
             let az =
                     azimuthFwd @Double @Double
-                        ( earthMath
+                        ( eMath
                         , let e = EarthAsEllipsoid wgs84 in case earthMath of
                               Pythagorus -> EarthAsFlat UTM
                               Haversines -> EarthAsSphere earthRadius
@@ -72,7 +73,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                               FsAndoyer -> e
                         )
 
-            let zss = unlineZones az . unkindZones . zones <$> tasks compInput
+            let zss = unlineZones az . unkindZones give . zones <$> tasks cs
             let includeTask = if null task then const True else flip elem task
 
             writeRoute

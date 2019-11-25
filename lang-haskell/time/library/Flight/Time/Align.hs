@@ -24,6 +24,7 @@ import Flight.LatLng.Rational (defEps)
 import qualified Flight.Span.Rational as Rat (fromR)
 #endif
 import Flight.Zone.Cylinder (SampleParams(..))
+import Flight.Zone.Raw (Give)
 import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
     , allHeaders, commentOnFixRange
@@ -106,6 +107,7 @@ writeTime selectTasks selectPilots compFile f = do
 checkAll
     :: Math
     -> EarthMath
+    -> Maybe Give
     -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
@@ -120,10 +122,10 @@ checkAll
                  (Pilot, Pilot -> [TimeRow])
              ]
          ]
-checkAll math earthMath sp ssOnly scoredLookup tagging =
+checkAll math earthMath give sp ssOnly scoredLookup tagging =
     checkTracks
         (\CompSettings{tasks} ->
-            group math earthMath sp ssOnly scoredLookup tagging tasks)
+            group math earthMath give sp ssOnly scoredLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -193,6 +195,7 @@ mkTimeRow lead start legIdx fixIdx (Just Fix{..}) (Just d) =
 group
     :: Math
     -> EarthMath
+    -> Maybe Give
     -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
@@ -201,6 +204,7 @@ group
 group
     math
     earthMath
+    give
     sp
     ssOnly
     (ScoredLookup lookupScored)
@@ -260,6 +264,7 @@ group
                                       ForsytheAndoyerLambert -> e
                                       FsAndoyer -> e
                                 )
+                                give
                                 sp
                                 (earlyTimecheck earlyStart <$> unpackOpenClose zoneTimes)
                                 task
@@ -284,7 +289,7 @@ group
 
                 zs' :: [TimeRow]
                 zs' =
-                    let f = legDistances math earthMath sp ssOnly in
+                    let f = legDistances math earthMath give sp ssOnly in
                     concat
                     [
                         case leg of
@@ -331,6 +336,7 @@ retick rs@RaceSections{prolog, race} (LegIdx start) (LegIdx leg) =
 allLegDistances
     :: Math
     -> EarthMath
+    -> Maybe Give
     -> SampleParams Double
     -> Ticked
     -> TrackTime
@@ -339,7 +345,7 @@ allLegDistances
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
 
-allLegDistances Floating earthMath sp ticked times task@Task{speedSection, zoneTimes} leg xs =
+allLegDistances Floating earthMath give sp ticked times task@Task{speedSection, zoneTimes} leg xs =
     mkTimeRows lead start leg xs'
     where
         xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
@@ -354,6 +360,7 @@ allLegDistances Floating earthMath sp ticked times task@Task{speedSection, zoneT
                       ForsytheAndoyerLambert -> e
                       FsAndoyer -> e
                 )
+                give
                 sp
                 ticked
                 task
@@ -366,7 +373,7 @@ allLegDistances Floating earthMath sp ticked times task@Task{speedSection, zoneT
             =<< openClose speedSection zoneTimes
 
 #if __EARTH_RAT__
-allLegDistances Rational earthMath sp ticked times task@Task{speedSection, zoneTimes} leg xs =
+allLegDistances Rational earthMath give sp ticked times task@Task{speedSection, zoneTimes} leg xs =
     mkTimeRows lead start leg xs'
     where
         xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
@@ -383,6 +390,7 @@ allLegDistances Rational earthMath sp ticked times task@Task{speedSection, zoneT
                       FsAndoyer -> e
                 , defEps
                 )
+                give
                 sp
                 ticked
                 task
@@ -394,12 +402,13 @@ allLegDistances Rational earthMath sp ticked times task@Task{speedSection, zoneT
             (\OpenClose{open} -> firstStart speedSection open ts)
             =<< openClose speedSection zoneTimes
 #else
-allLegDistances Rational _ _ _ _ _ _ _ = error "Leg distances for rational math is not yet implemented."
+allLegDistances Rational _ _ _ _ _ _ _ _ = error "Leg distances for rational math is not yet implemented."
 #endif
 
 legDistances
     :: Math
     -> EarthMath
+    -> Maybe Give
     -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> Ticked
@@ -408,13 +417,13 @@ legDistances
     -> LegIdx
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
-legDistances math earthMath sp False ticked times task leg xs=
-    allLegDistances math earthMath sp ticked times task leg xs
+legDistances math earthMath give sp False ticked times task leg xs=
+    allLegDistances math earthMath give sp ticked times task leg xs
 
-legDistances math earthMath sp True ticked times task@Task{speedSection} leg xs =
+legDistances math earthMath give sp True ticked times task@Task{speedSection} leg xs =
     if excludeLeg
        then []
-       else allLegDistances math earthMath sp ticked times task leg xs
+       else allLegDistances math earthMath give sp ticked times task leg xs
     where
         LegIdx leg' = leg
 

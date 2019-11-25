@@ -10,6 +10,7 @@ import Data.UnitsOfMeasure (u)
 import Flight.Units ()
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Zone.Cylinder (SampleParams(..))
+import Flight.Zone.Raw (Give)
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
@@ -33,6 +34,7 @@ class GeoSliver g a => GeoDash g a where
     dashDistancesToGoal
         :: (Trig g a, FlyClipping UTCTime MarkedFixes)
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> Ticked
         -> Task k
@@ -43,6 +45,7 @@ class GeoSliver g a => GeoDash g a where
     dashDistanceToGoal
         :: (Trig g a, FlyClipping UTCTime MarkedFixes)
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> Ticked
         -> Task k
@@ -52,6 +55,7 @@ class GeoSliver g a => GeoDash g a where
     dashPathToGoalTimeRows
         :: (Trig g a, FlyClipping UTCTime [TimeRow])
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> Ticked
         -> Task k
@@ -62,6 +66,7 @@ class GeoSliver g a => GeoDash g a where
     dashPathToGoalMarkedFixes
         :: (Trig g a, FlyClipping UTCTime MarkedFixes)
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> Ticked
         -> Task k
@@ -74,6 +79,7 @@ class GeoSliver g a => GeoDash g a where
     lastFixToGoal
         :: Trig g a
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> Ticked -- ^ The zones ticked
         -> Task k
@@ -84,6 +90,7 @@ class GeoSliver g a => GeoDash g a where
     dashDistanceFlown
         :: (Trig g a, FlyClipping UTCTime MarkedFixes)
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> QTaskDistance g [u| m |]
         -> Ticked
@@ -94,6 +101,7 @@ class GeoSliver g a => GeoDash g a where
     togoAtLanding
         :: Trig g a
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> Ticked
         -> Task k
@@ -103,6 +111,7 @@ class GeoSliver g a => GeoDash g a where
     madeAtLanding
         :: Trig g a
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> QTaskDistance g [u| m |]
         -> Ticked

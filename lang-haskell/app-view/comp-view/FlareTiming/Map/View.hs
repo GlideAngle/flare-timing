@@ -483,7 +483,7 @@ map
 
         (lmap', bounds', layers') <- liftIO $ do
             lmap <- L.map (_element_raw eCanvas)
-            L.mapSetView lmap (zoneToLL $ head xs) 11
+            L.mapSetView lmap (zoneToLL $ head xs) 25
 
             mapLayer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/

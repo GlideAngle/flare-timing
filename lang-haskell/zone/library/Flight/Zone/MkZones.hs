@@ -16,7 +16,7 @@ import Data.Aeson
     ( ToJSON(..), FromJSON(..), Options(..)
     , defaultOptions, genericToJSON, genericParseJSON
     )
-import Data.UnitsOfMeasure (u, convert, fromRational')
+import Data.UnitsOfMeasure ((*:), (+:), u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
@@ -32,6 +32,8 @@ import Flight.Zone.Internal.ZoneKind
 import Flight.Zone.TaskZones
     (TaskZones(..), ToZoneKind, raceZoneKinds, openZoneKinds)
 import Flight.Zone.SpeedSection (SpeedSection)
+import Flight.Zone.Radius (Radius(..))
+import Flight.Zone.Raw.Zone (Give(..))
 
 data Discipline
     = HangGliding
@@ -269,24 +271,34 @@ mkZones discipline goalLine decel _ speed@(Just _) alts zs =
         es = replicate esLen tk
         g = raceZoneKinds ps ts ek es gk
 
-unkindZones :: Zones -> [Z.Zone Double]
-unkindZones Zones{raceKind = Just (TzEssIsGoal ps ts g)} =
-    (unkind <$> (ps ++ ts)) ++ [unkind g]
-unkindZones Zones{raceKind = Just (TzEssIsNotGoal ps rs e es g)} =
-    (unkind <$> (ps ++ rs)) ++ [unkind e] ++ (unkind <$> es) ++ [unkind g]
-unkindZones Zones{openKind = Just (TzOpenDistance ps ts o)} =
-    (unkind <$> (ps ++ ts)) ++ [unkind o]
-unkindZones Zones{raw} = Z.toCylinder <$> raw
+unkindZones :: Maybe Give -> Zones -> [Z.Zone Double]
+unkindZones give Zones{raceKind = Just (TzEssIsGoal ps ts g)} =
+    (unkind give <$> (ps ++ ts)) ++ [unkind give g]
+unkindZones give Zones{raceKind = Just (TzEssIsNotGoal ps rs e es g)} =
+    (unkind give <$> (ps ++ rs)) ++ [unkind give e] ++ (unkind give <$> es) ++ [unkind give g]
+unkindZones give Zones{openKind = Just (TzOpenDistance ps ts o)} =
+    (unkind give <$> (ps ++ ts)) ++ [unkind give o]
+unkindZones _ Zones{raw} = Z.toCylinder <$> raw
 
-unkind :: ZoneKind g Double -> Z.Zone Double
-unkind (Point x) = Z.Point x
-unkind (Vector _ _ x) = Z.Point x
-unkind (Star r x) = Z.Cylinder r x
-unkind (Cylinder r x) = Z.Cylinder r x
-unkind (CutCone _ r x _) = Z.Cylinder r x
-unkind (CutSemiCone _ r x _) = Z.Cylinder r x
-unkind (CutCylinder _ r x _) = Z.Cylinder r x
-unkind (CutSemiCylinder _ r x _) = Z.Cylinder r x
-unkind (Line r x) = Z.Line Nothing r x
-unkind (Circle r x) = Z.Cylinder r x
-unkind (SemiCircle r x) = Z.Cylinder r x
+unkind :: Maybe Give -> ZoneKind g Double -> Z.Zone Double
+unkind _ (Point x) = Z.Point x
+unkind _ (Vector _ _ x) = Z.Point x
+unkind g (Star r x) = Z.Cylinder (enlarge g r) x
+unkind g (Cylinder r x) = Z.Cylinder (enlarge g r) x
+unkind g (CutCone _ r x _) = Z.Cylinder (enlarge g r) x
+unkind g (CutSemiCone _ r x _) = Z.Cylinder (enlarge g r) x
+unkind g (CutCylinder _ r x _) = Z.Cylinder (enlarge g r) x
+unkind g (CutSemiCylinder _ r x _) = Z.Cylinder (enlarge g r) x
+unkind g (Line r x) = Z.Line Nothing (enlarge g r) x
+unkind g (Circle r x) = Z.Cylinder (enlarge g r) x
+unkind g (SemiCircle r x) = Z.Cylinder (enlarge g r) x
+
+enlarge :: Maybe Give -> Radius _ -> Radius _
+enlarge Nothing r = r
+enlarge (Just Give{giveFraction = gf, giveDistance = Nothing}) (Radius r) =
+    let fMax = ([u| 1.0 |] +: (MkQuantity gf)) *: r
+    in Radius fMax
+enlarge (Just Give{giveFraction = gf, giveDistance = Just (Radius dg)}) (Radius r) =
+    let fMax = ([u| 1.0 |] +: (MkQuantity gf)) *: r
+        dMax = r +: dg
+    in Radius $ max fMax dMax

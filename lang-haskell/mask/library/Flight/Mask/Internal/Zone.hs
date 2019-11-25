@@ -14,13 +14,11 @@ module Flight.Mask.Internal.Zone
     , fixToPoint
     , rowToPoint
     , fixFromFix
-    , zoneToCylinder
     , zonesToTaskZones
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
-import Data.Maybe (fromMaybe)
-import Data.UnitsOfMeasure (Quantity, u, fromRational', toRational')
+import Data.UnitsOfMeasure (Quantity, u)
 
 import Flight.Units.Angle (Angle(..))
 import qualified Flight.Kml as Kml
@@ -34,9 +32,9 @@ import qualified Flight.Kml as Kml
     )
 import Flight.LatLng (AzimuthFwd, LatLng(..), degPairToRadLL)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawAlt(..))
-import Flight.Zone (Radius(..), Zone(..), realToFracZone, unlineZones)
+import Flight.Zone (Zone(..), realToFracZone, unlineZones)
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
-import Flight.Zone.Raw (RawZone(..))
+import Flight.Zone.Raw (Give)
 import Flight.Zone.MkZones (Zones(..), unkindZones)
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
 import Flight.Track.Cross (Fix(..), ZoneCross(..), TrackFlyingSection(..))
@@ -125,24 +123,18 @@ rowToPoint
     TimeRow{lat = RawLat lat, lng = RawLng lng} =
     TrackZone $ Point (degPairToRadLL (lat, lng))
 
-zoneToCylinder :: (Eq a, Ord a, Fractional a) => RawZone -> Zone a
-zoneToCylinder RawZone{lat = RawLat lat, lng = RawLng lng, radius, giveOut} =
-    Cylinder (Radius r') (degPairToRadLL(lat, lng))
-    where
-        Radius r = fromMaybe radius giveOut
-        r' = fromRational' . toRational' $ r
-
 zonesToTaskZones
     :: (Ord a, Fractional a, Angle (Quantity a [u| rad |]))
-    => AzimuthFwd a
+    => Maybe Give
+    -> AzimuthFwd a
     -> Zones
     -> [TaskZone a]
 
-zonesToTaskZones az zs@Zones{raceKind = Just _} =
-    TaskZone <$> unlineZones az (realToFracZone <$> unkindZones zs)
+zonesToTaskZones give az zs@Zones{raceKind = Just _} =
+    TaskZone <$> unlineZones az (realToFracZone <$> unkindZones give zs)
 
-zonesToTaskZones az zs@Zones{openKind = Just _} =
-    TaskZone <$> unlineZones az (realToFracZone <$> unkindZones zs)
+zonesToTaskZones give az zs@Zones{openKind = Just _} =
+    TaskZone <$> unlineZones az (realToFracZone <$> unkindZones give zs)
 
-zonesToTaskZones _ Zones{raw} =
-    TaskZone . zoneToCylinder <$> raw
+zonesToTaskZones give _ zs =
+    TaskZone <$> (realToFracZone <$> unkindZones give zs)

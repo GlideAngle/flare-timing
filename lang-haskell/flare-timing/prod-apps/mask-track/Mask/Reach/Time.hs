@@ -14,6 +14,7 @@ import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList, maximum)
 
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
+import Flight.Zone.Raw (Give)
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
@@ -38,6 +39,7 @@ sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 maskReachTime
     :: Math
     -> EarthMath
+    -> Maybe Give
     -> MinimumDistance (Quantity Double [u| km |])
     -> [[(Pilot, TrackReach)]]
     -> [Maybe (QTaskDistance Double [u| m |])]
@@ -46,10 +48,11 @@ maskReachTime
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[Pilot]]
     -> MaskingReach
-maskReachTime Rational _ _ _ _ _ _ _ _ = error "Reach time not yet implemented for rational numbers."
+maskReachTime Rational _ _ _ _ _ _ _ _ _ = error "Reach time not yet implemented for rational numbers."
 maskReachTime
     Floating
     earthMath
+    give
     (MinimumDistance dMin)
     dfNtNigh
     lsWholeTask
@@ -75,6 +78,7 @@ maskReachTime
                       ForsytheAndoyerLambert -> e
                       FsAndoyer -> e
                 )
+                give
                 sp
                 lsWholeTask
                 zsTaskTicked

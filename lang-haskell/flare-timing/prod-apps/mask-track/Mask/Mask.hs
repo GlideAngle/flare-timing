@@ -13,6 +13,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
+import Flight.Zone.Raw (Give)
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
@@ -104,7 +105,7 @@ writeMask
 writeMask
     math
     CompSettings
-        { comp = Comp{earthMath}
+        { comp = Comp{earthMath, give}
         , nominal = Cmp.Nominal{free}
         , tasks
         , pilotGroups
@@ -242,6 +243,7 @@ writeMask
                 (maskReachTime
                     math
                     earthMath
+                    give
                     free
                     dfNtReach
                     lsWholeTask
@@ -279,20 +281,22 @@ check
     -> [IxTask]
     -> [Pilot]
     -> m [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)]]
-check math lengths flying tags = checkTracks $ \CompSettings{tasks, comp = Comp{earthMath}} ->
-    flown math earthMath lengths flying tags tasks
+check math lengths flying tags =
+    checkTracks $ \CompSettings{tasks, comp = Comp{earthMath, give}} ->
+        flown math earthMath give lengths flying tags tasks
 
 flown
     :: Math
     -> EarthMath
+    -> Maybe Give
     -> RoutesLookupTaskDistance
     -> ScoredLookup
     -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
-flown math earthMath (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask fixes =
+flown math earthMath give (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask fixes =
     maybe
         (const nullStats)
-        (\d -> flown' d flying math earthMath tags tasks iTask fixes)
+        (\d -> flown' d flying math earthMath give tags tasks iTask fixes)
         taskLength
     where
         taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
@@ -302,10 +306,11 @@ flown'
     -> ScoredLookup
     -> Math
     -> EarthMath
+    -> Maybe Give
     -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
-flown' _ _ Rational _ _ _ _ _ _ = error "Nigh for rationals not yet implemented."
-flown' dTaskF flying Floating earthMath tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
+flown' _ _ Rational _ _ _ _ _ _ _ = error "Nigh for rationals not yet implemented."
+flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of
         Nothing -> nullStats
 
@@ -365,6 +370,7 @@ flown' dTaskF flying Floating earthMath tags tasks iTask@(IxTask i) mf@MarkedFix
                     { togo =
                         togoAtLanding @Double @Double
                             earth
+                            give
                             sp
                             ticked
                             task
@@ -373,6 +379,7 @@ flown' dTaskF flying Floating earthMath tags tasks iTask@(IxTask i) mf@MarkedFix
                     , made =
                         madeAtLanding @Double @Double
                             earth
+                            give
                             sp
                             dTaskF
                             ticked

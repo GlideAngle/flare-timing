@@ -5,6 +5,7 @@ import Data.Time.Clock (UTCTime)
 import Data.These
 
 import Flight.Zone.Cylinder (SampleParams(..))
+import Flight.Zone.Raw (Give)
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Kml (MarkedFixes(..))
 import Flight.Track.Time (LegIdx(..))
@@ -100,6 +101,7 @@ class GeoTag g a => GeoLeg g a where
     groupByLeg
         :: (FlyClipping UTCTime MarkedFixes, Trig g a)
         => Earth g
+        -> Maybe Give
         -> SampleParams g
         -> [TimePass]
         -> Task k

@@ -7,6 +7,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone (Bearing(..), ArcSweep(..))
 import Flight.Zone.MkZones (Zones)
+import Flight.Zone.Raw (Give)
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 import Flight.Geodesy.Double ()
 import Flight.Task (AngleCut(..))
@@ -25,5 +26,5 @@ instance (RealFloat a, GeoPath Double a) => GeoSliver Double a where
                     x{sweep = ArcSweep . Bearing $ b /: 2}
             }
 
-    fromZones :: Trig Double a => Earth Double -> Zones -> [TaskZone Double]
-    fromZones x = zonesToTaskZones $ azimuthFwd @Double @Double x
+    fromZones :: Trig Double a => Earth Double -> Maybe Give -> Zones -> [TaskZone Double]
+    fromZones e g = zonesToTaskZones g $ azimuthFwd @Double @Double e
