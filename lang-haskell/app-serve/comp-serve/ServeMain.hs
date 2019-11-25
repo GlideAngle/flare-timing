@@ -29,6 +29,8 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
 import Control.Monad.Except (ExceptT(..), MonadError)
 import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
+import qualified Statistics.Sample as Stats (meanVariance)
+import qualified Data.Vector as V (fromList)
 
 import System.FilePath (takeFileName)
 
@@ -140,19 +142,6 @@ import Flight.Distance (QTaskDistance)
 import ServeOptions (description)
 import ServeTrack (RawLatLngTrack(..), tagToTrack)
 import ServeValidity (nullValidityWorking)
-
-mean' :: [Double] -> Double
-mean' xs = sum xs / (fromIntegral $ length xs)
-
-stdDev' :: [Double] -> Double
-stdDev' = sqrt . variance'
-
-variance' :: [Double] -> Double
-variance' xs =
-    (sum $ zipWith (*) ys ys) / (fromIntegral $ length xs)
-    where
-        xMean = mean' xs
-        ys = ((-) xMean) <$> xs
 
 data Config k
     = Config
@@ -869,7 +858,8 @@ getTaskPointsDiffStats = do
              in do
                     es'' <- es'
                     let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''
-                    return (mean' $ fromRational <$> xs, stdDev' $ fromRational <$> xs)
+                    let (mean, variance) = Stats.meanVariance . V.fromList $ fromRational <$> xs
+                    return (mean, sqrt variance)
 
 ellipsoidRouteLength :: TaskTrack -> Maybe (QTaskDistance Double [u| m |])
 ellipsoidRouteLength

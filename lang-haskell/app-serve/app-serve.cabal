@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1a1059868be3ba8fc2b6205af6a996c3db90ee382d707d2496915c57b1ccad59
+-- hash: b1f84e4a55302a1dca9eef7ce128ec531970b0af1f0aa8714ede0e8c6e33316f
 
 name:           app-serve
 version:        0.1.0
@@ -66,9 +66,11 @@ executable comp-serve
     , servant
     , servant-server
     , siggy-chardust
+    , statistics
     , time
     , transformers
     , uom-plugin
+    , vector
     , wai
     , wai-cors
     , wai-extra
