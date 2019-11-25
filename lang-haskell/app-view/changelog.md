@@ -6,9 +6,11 @@ of this changelog.
 ## app-view-0.23
 
 * Show the task number before the task name in the breadcrumb.
-* Don't show all the turnpoint names in the task detail if they will
-  overflow the header.
+* Don't show all the turnpoint names in the task detail if they will overflow
+  the header.
 * Add a ruler to the map.
+* Use zones enlarged by give, the fractional and absolute tolerance added to
+  a zone's radius to give some relief to pilots with vario inaccuracy.
 
 # Earth, Through and Through
 ## app-view-0.22
