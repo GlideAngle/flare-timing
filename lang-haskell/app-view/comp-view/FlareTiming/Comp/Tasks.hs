@@ -3,6 +3,7 @@ module FlareTiming.Comp.Tasks (taskList) where
 import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (pack, intercalate)
+import Text.Printf (printf)
 
 import FlareTiming.Events (IxTask(..))
 import WireTypes.Comp (Task(..), getRaceRawZones)
@@ -17,10 +18,11 @@ listToIxTask =
 taskList
     :: MonadWidget t m
     => Dynamic t [TaskDistance]
+    -> Dynamic t [Maybe (Double, Double)]
     -> Dynamic t [Task]
     -> m (Event t IxTask)
-taskList ds' xs = do
-    ev <- dyn $ ffor ds' (\ds -> do
+taskList ds' stats' xs = do
+    ev <- dyn $ ffor2 ds' stats' (\ds stats -> do
             if null ds
                 then
                     elClass "article" "notification is-warning" $
@@ -29,7 +31,7 @@ taskList ds' xs = do
                     return ()
 
             let ixs = zip (IxTask <$> [1..]) <$> xs
-            ys <- elClass "ol" "ol-tasks" $ simpleList ixs (liTask ds)
+            ys <- elClass "ol" "ol-tasks" $ simpleList ixs (liTask ds stats)
             return $ switchDyn (listToIxTask <$> ys))
 
     switchHold never ev
@@ -37,9 +39,10 @@ taskList ds' xs = do
 liTask
     :: MonadWidget t m
     => [TaskDistance]
+    -> [Maybe (Double, Double)]
     -> Dynamic t (IxTask, Task)
     -> m (Event t ())
-liTask ds x' = do
+liTask ds stats x' = do
     (ix, x@Task{taskName}) <- sample . current $ x'
     case ix of
         IxTaskNone -> return never
@@ -50,6 +53,10 @@ liTask ds x' = do
                         dTask : _ -> showTaskDistance dTask
                         _ -> ""
 
+            let s = case drop (i - 1) stats of
+                        Just (m, sd) : _ -> printf "Δ = %+.1f ± %.1f" m sd
+                        _ -> ""
+
             (e, _) <-
                     el' "li" $ do
                         el "a" . text
@@ -57,5 +64,6 @@ liTask ds x' = do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag is-white" $ text (T.pack taskName)
                             elClass "span" "tag is-white" $ text d
+                            elClass "span" "tag is-white" $ text (T.pack s)
 
             return $ domEvent Click e

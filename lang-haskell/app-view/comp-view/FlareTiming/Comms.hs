@@ -3,6 +3,7 @@ module FlareTiming.Comms
     , getComps
     , getNominals
     , getTasks
+    , getStatsPointDiff
     , getTaskLengths
     , getPilots
     , getPilotsStatus
@@ -145,6 +146,9 @@ getTasks = get "/comp-input/tasks"
 
 getTaskLengths :: Get t m [TaskDistance]
 getTaskLengths = get "/task-length/task-lengths"
+
+getStatsPointDiff :: Get t m [Maybe (Double, Double)]
+getStatsPointDiff = get "/stats/point-diff"
 
 getComps :: Get t m Comp
 getComps = get "/comp-input/comps"

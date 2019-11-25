@@ -18,20 +18,21 @@ compDetail
     => Dynamic t [TaskDistance]
     -> Dynamic t [Comp]
     -> Dynamic t [Nominal]
+    -> Dynamic t [Maybe (Double, Double)]
     -> Dynamic t [Task]
     -> m (Event t IxTask)
-compDetail ls cs ns ts = do
+compDetail ls cs ns stats ts = do
     compHeader cs ns
     _ <- simpleList cs crumbComp
     tab <- tabsComp
 
-    e <- widgetHold (taskList ls ts) $
+    e <- widgetHold (taskList ls stats ts) $
             (\case
                 CompTabSettings -> do
                     _ <- simpleList cs tableComp
                     return never
 
-                CompTabTask -> taskList ls ts
+                CompTabTask -> taskList ls stats ts
 
                 CompTabPilot -> do
                     tablePilot ts
