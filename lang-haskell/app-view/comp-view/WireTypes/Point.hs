@@ -38,6 +38,7 @@ module WireTypes.Point
     , showTaskTimePoints
     , showTaskLeadingPoints
     , showTaskPoints
+    , showTaskPointsDiffStats
     , showRounded
     , showTaskPointsDiff
     , showLinearPoints
@@ -79,6 +80,7 @@ import qualified Data.Text as T (Text, pack, unpack)
 import WireTypes.Speed (PilotTime)
 import WireTypes.Lead (LeadingArea, LeadingCoefficient)
 import WireTypes.Fraction (Fractions)
+import qualified FlareTiming.Statistics as Stats
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
@@ -271,6 +273,19 @@ showTaskLeadingPoints task (LeadingPoints p) =
 showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
 showTaskPoints task (TaskPoints p) =
     showMaxRounded p (\(TaskPoints x) -> x) task
+
+showTaskPointsDiffStats :: [Maybe TaskPoints] -> [TaskPoints] -> T.Text
+showTaskPointsDiffStats es ps =
+    let es' :: Maybe [TaskPoints]
+        es' = sequence es
+    in
+        T.pack $
+            maybe
+                ("Points")
+                (\es'' ->
+                    let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''
+                    in printf "Points (Δ = %.1f ± %.1f)" (Stats.mean xs) (Stats.stdDev xs))
+                es'
 
 showLinearPoints :: LinearPoints -> T.Text
 showLinearPoints (LinearPoints p) = T.pack $ printf "%.1f" p

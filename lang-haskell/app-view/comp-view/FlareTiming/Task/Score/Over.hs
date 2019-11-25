@@ -24,6 +24,7 @@ import WireTypes.Point
     , showTaskTimePoints
     , showTaskPoints
     , showTaskPointsDiff
+    , showTaskPointsDiffStats
     , showRounded
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
@@ -106,6 +107,16 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                                 (Paragliding, _) -> (thc, tdc))
                         vw')
 
+    let yDiff = ffor2 sEx sDfs (\sEx' sDfs' ->
+                    let exs = Map.fromList sEx'
+                    in
+                        [ let ex = Map.lookup pilot exs
+                          in ((\Norm.NormBreakdown{total = p} -> p) <$> ex, p')
+                        | (pilot, Breakdown{total = p'}) <- sDfs'
+                        ])
+
+    let pointStats = ffor yDiff (uncurry showTaskPointsDiffStats . unzip)
+
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
@@ -114,7 +125,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance Flown"
-                elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
+                elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ dynText pointStats
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
