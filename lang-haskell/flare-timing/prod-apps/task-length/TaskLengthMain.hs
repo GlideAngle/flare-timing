@@ -58,7 +58,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     settings <- readComp compFile
     f settings
     where
-        f cs@CompSettings{comp = Comp{earthMath = eMath, give}}= do
+        f cs@CompSettings{comp = Comp{earthMath = eMath}}= do
             let ixs = speedSection <$> tasks cs
 
             let az =
@@ -73,7 +73,9 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                               FsAndoyer -> e
                         )
 
-            let zss = unlineZones az . unkindZones give . zones <$> tasks cs
+            -- TODO: Find out if the give that enlarges zones is allowed to shorten
+            -- the task length.
+            let zss = unlineZones az . unkindZones Nothing. zones <$> tasks cs
             let includeTask = if null task then const True else flip elem task
 
             writeRoute
