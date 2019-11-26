@@ -51,12 +51,12 @@ getRoute =
     where
         getWaypoints =
             getChildren
-            >>> hasName "FsTaskShortestRoute"
+            >>> hasName "FsTaskShortestPath"
             >>> (listA getTps >>> arr catMaybes)
             where
                 getTps =
                     getChildren
-                    >>> hasName "FsTurnpoint"
+                    >>> hasName "FsPathVertex"
                     >>> arr (unpickleDoc xpWaypoint)
 
 

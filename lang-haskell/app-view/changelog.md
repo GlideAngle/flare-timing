@@ -14,6 +14,8 @@ of this changelog.
   a zone's radius to give some relief to pilots with vario inaccuracy.
 * Show the mean and standard deviation in the difference of task points
   compared to the expected points from FS.
+* FS renamed `FsTaskShortestRoute/FsTurnpoint` to
+  `FsTaskShortestPath/FsPathVertex`. Updated the `*.fsdb` parsing accordingly.
 
 # Earth, Through and Through
 ## app-view-0.22
