@@ -223,11 +223,42 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     taskTileZones utc sb task ln
     es <- crumbTask ix task comp
     tabTask <- tabsTask
-    let taskTable = tableTask utc task legs
 
-    _ <- widgetHold taskTable $
+    let taskTabScoreContent = do
+            tabScore <- tabsScore
+            let tableScoreHold =
+                    elAttr "div" ("id" =: "score-overview") $
+                        tableScoreOver utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+            _ <- widgetHold tableScoreHold $
+                    (\case
+                        ScoreTabOver ->
+                            tableScoreHold
+                        ScoreTabSplit ->
+                            elAttr "div" ("id" =: "score-points") $
+                                tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                        ScoreTabReach ->
+                            elAttr "div" ("id" =: "score-reach") $
+                                tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                        ScoreTabEffort ->
+                            elAttr "div" ("id" =: "score-effort") $
+                                tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN
+                        ScoreTabSpeed ->
+                            elAttr "div" ("id" =: "score-speed") $
+                                tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                        ScoreTabTime ->
+                            elAttr "div" ("id" =: "score-time") $
+                                tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                        ScoreTabArrive ->
+                            elAttr "div" ("id" =: "score-arrival") $
+                                tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
+
+                    <$> tabScore
+
+            return ()
+
+    _ <- widgetHold taskTabScoreContent $
             (\case
-                TaskTabTask -> taskTable
+                TaskTabTask -> tableTask utc task legs
 
                 TaskTabMap -> mdo
                     p <- viewMap utc ix task sphericalRoutes ellipsoidRoutes planarRoute normRoute pt
@@ -258,37 +289,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                     return ()
 
-                TaskTabScore -> do
-                    tabScore <- tabsScore
-                    let tableScoreHold =
-                            elAttr "div" ("id" =: "score-overview") $
-                                tableScoreOver utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
-                    _ <- widgetHold tableScoreHold $
-                            (\case
-                                ScoreTabOver ->
-                                    tableScoreHold
-                                ScoreTabSplit ->
-                                    elAttr "div" ("id" =: "score-points") $
-                                        tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
-                                ScoreTabReach ->
-                                    elAttr "div" ("id" =: "score-reach") $
-                                        tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
-                                ScoreTabEffort ->
-                                    elAttr "div" ("id" =: "score-effort") $
-                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN
-                                ScoreTabSpeed ->
-                                    elAttr "div" ("id" =: "score-speed") $
-                                        tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
-                                ScoreTabTime ->
-                                    elAttr "div" ("id" =: "score-time") $
-                                        tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
-                                ScoreTabArrive ->
-                                    elAttr "div" ("id" =: "score-arrival") $
-                                        tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
-
-                            <$> tabScore
-
-                    return ()
+                TaskTabScore -> taskTabScoreContent
 
                 TaskTabPlot -> do
                     tabPlot <- tabsPlot

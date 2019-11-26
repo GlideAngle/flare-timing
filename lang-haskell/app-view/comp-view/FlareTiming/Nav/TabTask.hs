@@ -28,7 +28,7 @@ tabsTask =
             let ePlot = (const TaskTabPlot) <$> domEvent Click plot
             let eBasis = (const TaskTabBasis) <$> domEvent Click basis
 
-            taskClass <- holdDyn "is-active" . leftmost $
+            taskClass <- holdDyn "" . leftmost $
                             [ "is-active" <$ eTask
                             , "" <$ eMap
                             , "" <$ eScore
@@ -44,7 +44,7 @@ tabsTask =
                             , "" <$ eBasis
                             ]
 
-            scoreClass <- holdDyn "" . leftmost $
+            scoreClass <- holdDyn "is-active" . leftmost $
                             [ "" <$ eTask
                             , "" <$ eMap
                             , "is-active" <$ eScore
