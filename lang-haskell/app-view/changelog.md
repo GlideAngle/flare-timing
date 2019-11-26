@@ -35,6 +35,18 @@ of this changelog.
 * Show the extra distance from glide above goal in the score distance table.
 * Compare reach and effort with linear and difficulty from FS in the score
   distance table, in the tables beside the reach and effort plots.
+```
+.
+└── points
+    ├── distance_points
+    │   ├── linear_distance_points
+    │   └── difficulty_distance_points
+    ├── time_points
+    ├── arrival_points
+    ├── leading_points
+    ├── departure_points
+    └── penalty_points
+```
 * Handle glitches in the ordering `*.igc` file B record times. Time is meant to
   only increment during the day as fixes are logged. Discard times going
   backward less than an hour and roll over the day when the time goes backwards
