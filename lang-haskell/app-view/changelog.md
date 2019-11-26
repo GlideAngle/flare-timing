@@ -6,6 +6,7 @@ of this changelog.
 ## app-view-0.23
 
 * Show the task number before the task name in the breadcrumb.
+* Allow early tagging if within the jump-the-gun window.
 * Don't show all the turnpoint names in the task detail if they will overflow
   the header.
 * Add a ruler to the map.
