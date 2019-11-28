@@ -31,7 +31,7 @@ import Flight.Fsdb.Internal.XmlPickle ()
 
 xpWaypoint :: PU (LatLng Rational [u| deg |])
 xpWaypoint =
-    xpElem "FsTurnpoint"
+    xpElem "FsPathVertex"
     $ xpFilterAttr (hasName "lat" <+> hasName "lon")
     $ xpWrap
         ( \(RawLat lat, RawLng lng) ->
