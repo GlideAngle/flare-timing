@@ -129,7 +129,7 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
                         zones
                         [1..])
 
-    whereTo <- elClass "div" "field is-grouped" $ do
+    whereTo <- elClass "div" "buttons" $ do
                 elClass "div" "buttons has-addons" $ do
                     eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
 
