@@ -1,5 +1,6 @@
 module FlareTiming.Breadcrumb (crumbComp, crumbTask) where
 
+import Data.Function ((&))
 import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
@@ -33,9 +34,10 @@ crumbTask
     -> Dynamic t Task
     -> Dynamic t Comp
     -> m (Event t IxTask)
-crumbTask (IxTask ix) t c = do
+crumbTask ixTask t c = do
+    let i = ixTask & \case (IxTask ix) -> show ix; IxTaskNone -> "?"
     let c' = fmap (T.pack . (\Comp{..} -> compName)) c
-    let t' = fmap (T.pack . (\Task{..} -> "#" ++ show ix ++ " " ++ taskName)) t
+    let t' = fmap (T.pack . (\Task{..} -> "#" ++ i ++ " " ++ taskName)) t
 
     elClass "nav" "breadcrumb" $ do
         el "ul" $ mdo
