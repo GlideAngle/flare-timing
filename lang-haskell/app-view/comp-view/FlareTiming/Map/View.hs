@@ -129,7 +129,7 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = mdo
                         zones
                         [1..])
 
-    (zp', downloadTrack') <- elClass "div" "field is-grouped" $ do
+    (zp', downloadTrack') <- elClass "div" "field is-grouped" $ mdo
         zp <- elClass "p" "control" $ do
                 elClass "div" "buttons has-addons" $ do
                     rec (zoom, _) <-
@@ -147,12 +147,6 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = mdo
                         let zpClass = ffor zoomOrPan zoomOrPanIcon
 
                     return zoomOrPan
-
-        dd <- elClass "p" "control" $ do
-            elClass "span" "select" $
-                dropdown 0 ps' def
-
-        let isSelected = ffor (value dd) (/= 0)
 
         rec (download, _)
                     <- elClass "p" "control" $ do
@@ -174,6 +168,12 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = mdo
                 False -> "class" =: "button is-link" <> "disabled" =: ""
                 True -> "class" =: "button is-link")
                                 ]
+
+        dd <- elClass "p" "control" $ do
+            elClass "span" "select" $
+                dropdown 0 ps' def
+
+        let isSelected = ffor (value dd) (/= 0)
 
         let p = ffor2 (value dd) ps pilotAtIdx
         let downloadTrack = fforMaybe (tagPromptlyDyn p $ eDownload) id
