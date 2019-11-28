@@ -291,8 +291,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let xB = snd <$> x
-    (yRank, yScore, yDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p'}) ->
+    let y = ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p'}) ->
                 case Map.lookup pilot' sEx' of
                     Nothing -> ("", "", "")
                     Just
@@ -300,6 +299,10 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                             { place = nth
                             , total = p@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))
+
+    let yRank = ffor y $ \(yr, _, _) -> yr
+    let yScore = ffor y $ \(_, ys, _) -> ys
+    let yDiff = ffor y $ \(_, _, yd) -> yd
 
     let xReach = reach <$> xB
     let points = breakdown . snd <$> x
@@ -322,7 +325,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                 pd)
 
     elDynClass "tr" (fst <$> classPilot) $ do
-        elClass "td" "td-norm td-placing" . text $ yRank
+        elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
@@ -348,8 +351,8 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-total-points" . dynText
             $ zipDynWith showTaskPoints tp (total <$> xB)
 
-        elClass "td" "td-norm td-total-points" . text $ yScore
-        elClass "td" "td-norm td-total-points" . text $ yDiff
+        elClass "td" "td-norm td-total-points" $ dynText yScore
+        elClass "td" "td-norm td-total-points" $ dynText yDiff
 
 dnfRows
     :: MonadWidget t m
