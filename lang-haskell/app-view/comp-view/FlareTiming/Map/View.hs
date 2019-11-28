@@ -129,8 +129,18 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
                         zones
                         [1..])
 
+    whereTo <- elClass "div" "field is-grouped" $ do
+                elClass "div" "buttons has-addons" $ do
+                    eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
+
+                    (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
+                    let allZones = zones <$ domEvent Click extents
+
+                    zs <- holdDyn zones . leftmost $ allZones : eachZone
+                    return zs
+
     elClass "div" "field is-grouped" $ do
-        x <- elClass "p" "control" $ do
+        zp <- elClass "p" "control" $ do
                 elClass "div" "buttons has-addons" $ do
                     rec (zoom, _) <-
                             elClass' "a" "button" $ do
@@ -143,15 +153,10 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
                             (\case True -> Pan; False -> Zoom)
                             (toggle True $ domEvent Click zoom)
 
-                        let zpText = ffor zoomOrPan $ T.pack . (++ " to ...") . show
+                        let zpText = ffor zoomOrPan $ T.pack . show
                         let zpClass = ffor zoomOrPan zoomOrPanIcon
 
-                    (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
-                    let allZones = zones <$ domEvent Click extents
-
-                    eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
-                    zs <- holdDyn zones . leftmost $ allZones : eachZone
-                    return $ (zoomOrPan, zs)
+                    return zoomOrPan
 
         dd <- elClass "p" "control" $ do
             elClass "span" "select" $
@@ -181,9 +186,9 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
                                 ]
 
         let p = ffor2 (value dd) ps pilotAtIdx
-        let y = fforMaybe (tagPromptlyDyn p $ eDownload) id
+        let downloadTrack = fforMaybe (tagPromptlyDyn p $ eDownload) id
 
-        return (fst x, snd x, y)
+        return (zp, whereTo, downloadTrack)
 
 showLatLng :: (Double, Double) -> String
 showLatLng (lat, lng) =
