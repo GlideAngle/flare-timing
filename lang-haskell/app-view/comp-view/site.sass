@@ -52,6 +52,14 @@ $time-invert: $primary-invert;
 $leading-invert: $primary-invert;
 $arrival-invert: $primary-invert;
 
+$total: #00d1b2cc;
+
+.is-diff
+    @extend .is-black;
+    color: white;
+    background-color: $valid;
+    border-color: $valid;
+
 body, input, button, select, textarea
     font-family: 'B612 Mono', monospace;
 
@@ -71,6 +79,16 @@ th.th-speed
     border-bottom-color: $time;
     background-color: $time;
     @extend .has-text-right;
+
+.table td.is-primary
+    background-color: $total;
+    border-color: $total;
+    color: #fff;
+
+.table td.is-black
+    background-color: $valid;
+    border-color: $valid;
+    color: #fff;
 
 #task-working,
 #launch-working,
@@ -123,7 +141,7 @@ th.th-speed
     @extend .is-danger;
 
 .th-norm, .td-norm, tr.norm td
-    @extend .is-black;
+    @extend .is-diff;
 
 .th-norm.chunking
     @extend .has-text-left;
@@ -644,7 +662,7 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-points .th-norm.th-total-points,
 #score-reach .th-norm.th-distance-points,
 #score-effort .th-norm.th-distance-points
-    @extend .is-black;
+    @extend .is-diff;
 
 #score-points .td-norm.td-distance-points,
 #score-points .td-norm.td-time-points,
@@ -654,7 +672,7 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-points .td-norm.td-total-points,
 #score-reach .td-norm.td-distance-points,
 #score-effort .td-norm.td-distance-points
-    @extend .is-black;
+    @extend .is-diff;
 
 #hg-plot-valid-launch path.origin,
 #hg-plot-valid-reach path.origin,
