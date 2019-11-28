@@ -109,7 +109,7 @@ taskZoneButtons
     -> Dynamic t [Pilot]
     -> Event t ()
     -> m (Dynamic t ZoomOrPan, Dynamic t [RawZone], Event t Pilot)
-taskZoneButtons t@Task{speedSection} ps eDownloaded = do
+taskZoneButtons t@Task{speedSection} ps eDownloaded = mdo
     let ps' = pilotToSelectMap <$> ps
     let zones = getAllRawZones t
     let btn = "button"
@@ -129,17 +129,7 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
                         zones
                         [1..])
 
-    whereTo <- elClass "div" "buttons" $ do
-                elClass "div" "buttons has-addons" $ do
-                    eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
-
-                    (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
-                    let allZones = zones <$ domEvent Click extents
-
-                    zs <- holdDyn zones . leftmost $ allZones : eachZone
-                    return zs
-
-    elClass "div" "field is-grouped" $ do
+    (zp', downloadTrack') <- elClass "div" "field is-grouped" $ do
         zp <- elClass "p" "control" $ do
                 elClass "div" "buttons has-addons" $ do
                     rec (zoom, _) <-
@@ -188,7 +178,19 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
         let p = ffor2 (value dd) ps pilotAtIdx
         let downloadTrack = fforMaybe (tagPromptlyDyn p $ eDownload) id
 
-        return (zp, whereTo, downloadTrack)
+        return (zp, downloadTrack)
+
+    whereTo <- elClass "div" "buttons" $ do
+                elClass "div" "buttons has-addons" $ do
+                    eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
+
+                    (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
+                    let allZones = zones <$ domEvent Click extents
+
+                    holdDyn zones . leftmost $ allZones : eachZone
+
+    return (zp', whereTo, downloadTrack')
+
 
 showLatLng :: (Double, Double) -> String
 showLatLng (lat, lng) =
