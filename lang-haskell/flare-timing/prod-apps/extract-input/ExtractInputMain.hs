@@ -24,7 +24,7 @@ import Flight.Fsdb
     )
 import Flight.Geodesy (EarthMath(..))
 import Flight.Comp
-    ( FileType(Fsdb)
+    ( FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , CompSettings(..)
@@ -53,7 +53,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
 
-    let lf = LenientFile {coerceFile = ensureExt Fsdb}
+    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
