@@ -53,6 +53,7 @@ trimComp (FsdbXml contents) = do
                 , fsParticipant
                 , fsCustomAttributes
                 , fsFlightData
+                , fsResultPenalty
                 , fsResult
                 , fsTaskScoreParams
                 ])
@@ -191,6 +192,23 @@ fsFlightData =
                 . localPart)
             (isElem >>> hasName "FsFlightData")
 
+-- <FsResultPenalty
+--     penalty="0"
+--     penalty_points="0"
+--     penalty_reason="" />
+fsResultPenalty :: ArrowXml a => a XmlTree XmlTree
+fsResultPenalty =
+    processTopDown
+        $ when
+            (processAttrl . filterA . hasNameWith $
+                ( `elem`
+                    [ "penalty"
+                    , "penalty_points"
+                    , "penalty_reason"
+                    ])
+                . localPart)
+            (isElem >>> hasName "FsResultPenalty")
+
 -- <FsResult
 --     rank="40"
 --     points="121"
@@ -246,6 +264,9 @@ fsResult =
                     , "started_ss"
                     , "finished_ss"
                     , "ss_time"
+
+                    , "penalty_points_auto"
+                    , "penalty_reason_auto"
                     ])
                 . localPart)
             (isElem >>> hasName "FsResult")
