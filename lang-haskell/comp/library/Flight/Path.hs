@@ -424,7 +424,7 @@ findCleanFsdb' :: FilePath -> IO [CleanFsdbFile]
 findCleanFsdb' dir = fmap CleanFsdbFile <$> findFiles Fsdb dir
 
 findTrimFsdb' :: FilePath -> IO [TrimFsdbFile]
-findTrimFsdb' dir = fmap TrimFsdbFile <$> findFiles Fsdb dir
+findTrimFsdb' dir = fmap TrimFsdbFile <$> findFiles TrimFsdb dir
 
 findCompInput' :: FilePath -> IO [CompInputFile]
 findCompInput' dir = fmap CompInputFile <$> findFiles CompInput dir
