@@ -146,35 +146,38 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' = do
                             _ ->
                                 elClass "article" "tile is-child box" $ do
                                     elClass "p" "title" $ text "Penal"
-                                    elClass "p" "subtitle" $ text "auto point adjustments"
-                                    elClass "div" "content" $ do
-                                        _ <- elClass "table" "table is-striped is-narrow" $ do
-                                                el "thead" $ do
-                                                    el "tr" $ do
-                                                        el "th" $ text "Id"
-                                                        el "th" $ text "Name"
-                                                        elClass "th" "th-penalty" $ text "Fraction"
-                                                        elClass "th" "th-penalty" $ text "Point"
-                                                        elClass "th" "th-penalty-reason" $ text "Reason"
+                                    el "p" . text
+                                        $ "These pilots were penalized or rewarded with a negative penalty."
 
-                                                el "tbody" $ simpleList penalAuto rowPenal
-                                        return ()
+                                    if null penalAuto'' then return () else do
+                                        elClass "p" "subtitle" $ text "auto point adjustments"
+                                        elClass "div" "content" $ do
+                                            _ <- elClass "table" "table is-striped is-narrow" $ do
+                                                    el "thead" $ do
+                                                        el "tr" $ do
+                                                            el "th" $ text "Id"
+                                                            el "th" $ text "Name"
+                                                            elClass "th" "th-penalty" $ text "Fraction"
+                                                            elClass "th" "th-penalty" $ text "Point"
+                                                            elClass "th" "th-penalty-reason" $ text "Reason"
 
-                                    elClass "p" "subtitle" $ text "manual point adjustments"
-                                    elClass "div" "content" $ do
-                                        _ <- elClass "table" "table is-striped is-narrow" $ do
-                                                el "thead" $ do
-                                                    el "tr" $ do
-                                                        el "th" $ text "Id"
-                                                        el "th" $ text "Name"
-                                                        elClass "th" "th-penalty" $ text "Fraction"
-                                                        elClass "th" "th-penalty" $ text "Point"
-                                                        elClass "th" "th-penalty-reason" $ text "Reason"
+                                                    el "tbody" $ simpleList penalAuto rowPenal
+                                            return ()
 
-                                                el "tbody" $ simpleList penal rowPenal
+                                    if null penal'' then return () else do
+                                        elClass "p" "subtitle" $ text "manual point adjustments"
+                                        elClass "div" "content" $ do
+                                            _ <- elClass "table" "table is-striped is-narrow" $ do
+                                                    el "thead" $ do
+                                                        el "tr" $ do
+                                                            el "th" $ text "Id"
+                                                            el "th" $ text "Name"
+                                                            elClass "th" "th-penalty" $ text "Fraction"
+                                                            elClass "th" "th-penalty" $ text "Point"
+                                                            elClass "th" "th-penalty-reason" $ text "Reason"
 
-                                        el "p" . text
-                                            $ "These pilots were penalized or rewarded with a negative penalty."
+                                                    el "tbody" $ simpleList penal rowPenal
+                                            return ()
                         )
 
     return ()
