@@ -18,6 +18,7 @@ import Flight.Fsdb
     , parseScoreBack
     , parseTasks
     , parseTaskPilotGroups
+    , parseTaskPilotPenaltiesAuto
     , parseTaskPilotPenalties
     , parseTaskFolders
     , parseTracks
@@ -162,6 +163,13 @@ fsdbTaskPilotGroups (FsdbXml contents) = do
     ts <- lift $ parseTaskPilotGroups contents
     ExceptT $ return ts
 
+fsdbTaskPilotPenaltiesAuto
+    :: FsdbXml
+    -> ExceptT String IO [[(Pilot, [PointPenalty], String)]]
+fsdbTaskPilotPenaltiesAuto (FsdbXml contents) = do
+    ts <- lift $ parseTaskPilotPenaltiesAuto contents
+    ExceptT $ return ts
+
 fsdbTaskPilotPenalties
     :: FsdbXml
     -> ExceptT String IO [[(Pilot, [PointPenalty], String)]]
@@ -191,6 +199,7 @@ fsdbSettings earthMath zg fsdbXml = do
     sb <- fsdbScoreBack fsdbXml
     ts <- fsdbTasks hgOrPg tw sb fsdbXml
     pgs <- fsdbTaskPilotGroups fsdbXml
+    pnsAuto <- fsdbTaskPilotPenaltiesAuto fsdbXml
     pns <- fsdbTaskPilotPenalties fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml
@@ -198,9 +207,10 @@ fsdbSettings earthMath zg fsdbXml = do
     let ts' =
             [ t
                 { zones = z{raw = Raw.zoneGive (const $ const True) zg rz}
-                , penals = pn
+                , penals = pnAuto ++ pn
                 }
             | t@Task{zones = z@Zones{raw = rz}} <- ts
+            | pnAuto <- pnsAuto
             | pn <- pns
             ]
 

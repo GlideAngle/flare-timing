@@ -4,6 +4,7 @@
 module Flight.Fsdb.Task
     ( parseTasks
     , parseTaskPilotGroups
+    , parseTaskPilotPenaltiesAuto
     , parseTaskPilotPenalties
     , getDidFly
     , getDidFlyNoTracklog
@@ -89,6 +90,33 @@ instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
 
 instance (u ~ Quantity Double [u| km |]) => XmlPickler (TaskDistance u) where
     xpickle = xpNewtypeQuantity
+
+xpPointPenaltyAuto :: PU ([PointPenalty], String)
+xpPointPenaltyAuto =
+    xpElem "FsResult"
+    $ xpFilterAttr
+        ( hasName "penalty_points_auto"
+        <+> hasName "penalty_reason_auto"
+        )
+    $ xpWrap
+        ( \case
+            (0.0, s) -> ([], s)
+            (pts, s) -> ([PenaltyPoints pts], s)
+        , \(xs, s) ->
+            let pp =
+                    find
+                        (\case PenaltyFraction _ -> False; PenaltyPoints _ -> True)
+                        xs
+
+            in
+                case pp of
+                    Nothing -> (0.0, s)
+                    (Just (PenaltyPoints y)) -> (y, s)
+                    (Just (PenaltyFraction _)) -> (0.0, s)
+        )
+    $ xpPair
+        (xpAttr "penalty_points_auto" xpPrim)
+        (xpTextAttr "penalty_reason_auto")
 
 xpPointPenalty :: PU ([PointPenalty], String)
 xpPointPenalty =
@@ -674,6 +702,50 @@ getTask discipline compTweak sb =
             >>> hasName "FsScoreFormula"
             >>> arr (unpickleDoc $ xpTweak discipline)
 
+getTaskPilotPenaltiesAuto
+    :: ArrowXml a
+    => [Pilot]
+    -> a XmlTree [(Pilot, [PointPenalty], String)]
+getTaskPilotPenaltiesAuto pilots =
+    getChildren
+    >>> deep (hasName "FsTask")
+    >>> getPenalty
+    where
+        kps = keyPilots pilots
+
+        -- <FsParticipant id="28">
+        --    <FsResultPenalty penalty="0" penalty_points="-253" penalty_reason="" />
+        getPenalty =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getDidIncur
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getDidIncur =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `containing`
+                        (( getChildren
+                        >>> hasName "FsResult"
+                        >>> hasAttr "penalty_points_auto"
+                        >>> hasAttr "penalty_reason_auto")
+                        `notContaining`
+                        ( hasAttrValue "penalty_points_auto" (== "0")
+                        ))
+                    >>> getAttrValue "id"
+                    &&& getResultPenaltyAuto
+                    >>> arr (\(pid, x) ->
+                        let (ps, s) = fromMaybe ([], "") x in
+                        (unKeyPilot (keyMap kps) . PilotId $ pid, ps, s))
+
+                getResultPenaltyAuto =
+                    getChildren
+                    >>> hasName "FsResult"
+                    >>> arr (unpickleDoc xpPointPenaltyAuto)
+
 getTaskPilotPenalties
     :: ArrowXml a
     => [Pilot]
@@ -742,6 +814,15 @@ parseTaskPilotGroups contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot
     xs <- runX $ doc >>> getTaskPilotGroup ps
+    return $ Right xs
+
+parseTaskPilotPenaltiesAuto
+    :: String
+    -> IO (Either String [[(Pilot, [PointPenalty], String)]])
+parseTaskPilotPenaltiesAuto contents = do
+    let doc = readString [ withValidate no, withWarnings no ] contents
+    ps <- runX $ doc >>> getCompPilot
+    xs <- runX $ doc >>> getTaskPilotPenaltiesAuto ps
     return $ Right xs
 
 parseTaskPilotPenalties
