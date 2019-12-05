@@ -1179,6 +1179,8 @@ tallyDf
     Breakdown
         { place = TaskPlacing 0
         , total = applyPointPenalties penalties total
+        , jump = join $ fst <$> jumpGates
+        , penaltiesJump = []
         , penalties = penalties
         , penaltyReason = penaltyReason
         , breakdown = x
@@ -1186,7 +1188,7 @@ tallyDf
             Just
             $ zeroVelocity
                 { ss = ss'
-                , gs = gs
+                , gs = snd <$> jumpGates
                 , es = es'
                 , ssDistance = dS
                 , ssElapsed = ssT
@@ -1204,7 +1206,7 @@ tallyDf
         , stoppedAlt = alt
         }
     where
-        gs = snd <$> do
+        jumpGates = do
                 ss'' <- ss'
                 gs' <- nonEmpty startGates
                 return $ startGateTaken gs' ss''
@@ -1250,6 +1252,8 @@ tallyDfNoTrack
     Breakdown
         { place = TaskPlacing 0
         , total = applyPointPenalties penalties total
+        , jump = Nothing
+        , penaltiesJump = []
         , penalties = penalties
         , penaltyReason = penaltyReason
         , breakdown = x

@@ -41,6 +41,7 @@ import Flight.Score
     , PointPenalty
     , LeadingArea(..), LeadingCoef(..)
     , ReachToggle(..)
+    , JumpedTheGun(..)
     )
 import Flight.Track.Distance (Land)
 import Flight.Comp (StartGate)
@@ -95,6 +96,8 @@ data Breakdown =
         , total :: TaskPoints
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.
+        , jump :: Maybe (JumpedTheGun (Quantity Double [u| s |]))
+        , penaltiesJump :: [PointPenalty]
         , penalties :: [PointPenalty]
         , penaltyReason :: String
         , breakdown :: Points
@@ -272,38 +275,57 @@ cmpPointing a b =
         ("total", "place") -> GT
         ("total", _) -> LT
 
+        ("jump", "place") -> GT
+        ("jump", "total") -> GT
+        ("jump", _) -> LT
+
+        ("penaltiesJump", "place") -> GT
+        ("penaltiesJump", "total") -> GT
+        ("penaltiesJump", "jump") -> GT
+        ("penaltiesJump", _) -> LT
+
         ("penalties", "place") -> GT
         ("penalties", "total") -> GT
+        ("penalties", "jump") -> GT
+        ("penalties", "penaltiesJump") -> GT
         ("penalties", _) -> LT
 
         ("penaltyReason", "place") -> GT
         ("penaltyReason", "total") -> GT
+        ("penaltyReason", "jump") -> GT
+        ("penaltyReason", "penaltiesJump") -> GT
         ("penaltyReason", "penalties") -> GT
         ("penaltyReason", _) -> LT
 
         ("breakdown", "place") -> GT
         ("breakdown", "total") -> GT
+        ("breakdown", "jump") -> GT
+        ("breakdown", "penaltiesJump") -> GT
         ("breakdown", "penalties") -> GT
         ("breakdown", "penaltyReason") -> GT
         ("breakdown", _) -> LT
 
         ("velocity", "place") -> GT
         ("velocity", "total") -> GT
+        ("velocity", "jump") -> GT
+        ("velocity", "penaltiesJump") -> GT
         ("velocity", "penalties") -> GT
         ("velocity", "penaltyReason") -> GT
         ("velocity", "breakdown") -> GT
         ("velocity", _) -> LT
 
-        ("reachDistance", "place") -> GT
-        ("reachDistance", "total") -> GT
-        ("reachDistance", "penalties") -> GT
-        ("reachDistance", "penaltyReason") -> GT
-        ("reachDistance", "breakdown") -> GT
-        ("reachDistance", "velocity") -> GT
-        ("reachDistance", _) -> LT
+        ("reach", "place") -> GT
+        ("reach", "total") -> GT
+        ("reach", "jump") -> GT
+        ("reach", "penaltiesJump") -> GT
+        ("reach", "penalties") -> GT
+        ("reach", "penaltyReason") -> GT
+        ("reach", "breakdown") -> GT
+        ("reach", "velocity") -> GT
+        ("reach", _) -> LT
 
-        ("landedDistance", "stoppedAlt") -> LT
-        ("landedDistance", _) -> GT
+        ("landedMade", "stoppedAlt") -> LT
+        ("landedMade", _) -> GT
 
         ("stoppedAlt", _) -> GT
 
