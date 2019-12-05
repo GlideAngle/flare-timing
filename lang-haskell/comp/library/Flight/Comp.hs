@@ -347,6 +347,7 @@ data Task k =
         , stopped :: Maybe TaskStop
         , taskTweak :: Maybe Tweak
         , earlyStart :: EarlyStart
+        , penalsAuto :: [(Pilot, [PointPenalty], String)]
         , penals :: [(Pilot, [PointPenalty], String)]
         }
     deriving (Eq, Ord, Show, Generic)
@@ -494,6 +495,7 @@ cmp a b =
         ("speedSection", "stopped") -> LT
         ("speedSection", "taskTweak") -> LT
         ("speedSection", "earlyStart") -> LT
+        ("speedSection", "penalsAuto") -> LT
         ("speedSection", "penals") -> LT
         ("speedSection", "absent") -> LT
         ("speedSection", _) -> GT
@@ -502,6 +504,7 @@ cmp a b =
         ("zoneTimes", "stopped") -> LT
         ("zoneTimes", "taskTweak") -> LT
         ("zoneTimes", "earlyStart") -> LT
+        ("zoneTimes", "penalsAuto") -> LT
         ("zoneTimes", "penals") -> LT
         ("zoneTimes", "absent") -> LT
         ("zoneTimes", _) -> GT
@@ -509,20 +512,27 @@ cmp a b =
         ("startGates", "absent") -> LT
         ("startGates", "taskTweak") -> LT
         ("startGates", "earlyStart") -> LT
+        ("startGates", "penalsAuto") -> LT
         ("startGates", "penals") -> LT
         ("startGates", _) -> GT
 
         ("stopped", "taskTweak") -> LT
         ("stopped", "earlyStart") -> LT
+        ("stopped", "penalsAuto") -> LT
         ("stopped", "penals") -> LT
         ("stopped", _) -> GT
 
         ("taskTweak", "earlyStart") -> LT
+        ("taskTweak", "penalsAuto") -> LT
         ("taskTweak", "penals") -> LT
         ("taskTweak", _) -> GT
 
+        ("earlyStart", "penalsAuto") -> LT
         ("earlyStart", "penals") -> LT
         ("earlyStart", _) -> GT
+
+        ("penalsAuto", "penals") -> LT
+        ("penalsAuto", _) -> GT
 
         ("penals", _) -> GT
 

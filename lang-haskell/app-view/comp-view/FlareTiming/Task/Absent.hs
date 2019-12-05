@@ -19,12 +19,14 @@ tableAbsent
     -> Dynamic t Dnf
     -> Dynamic t DfNoTrack
     -> Dynamic t Penal
+    -> Dynamic t Penal
     -> m ()
-tableAbsent utc ix ln nyp' dnf' dfNt' penal' = do
+tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' = do
     pb <- getPostBuild
     let nyp = unNyp <$> nyp'
     let dnf = unDnf <$> dnf'
     let dfNt = unDfNoTrack <$> dfNt'
+    let penalAuto = unPenal <$> penalAuto'
     let penal = unPenal <$> penal'
     abs <- holdDyn [] =<< getTaskPilotAbs ix pb
 
@@ -134,17 +136,31 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penal' = do
                                             $ "These pilots get awarded at least minimum distance."
                         )
 
-                    dyn_ $ ffor penal (\penal'' ->
-                        if null penal''
-                            then
+                    dyn_ $ ffor2 penalAuto penal (\penalAuto'' penal'' ->
+                        case (penalAuto'', penal'') of
+                            ([], []) ->
                                 elClass "article" "tile is-child notification is-warning" $ do
                                     elClass "p" "title" $ text "Penal"
                                     elClass "p" "subtitle" $ text "point adjustments"
                                     el "p" $ text "There are no penalties"
-                            else
+                            _ ->
                                 elClass "article" "tile is-child box" $ do
                                     elClass "p" "title" $ text "Penal"
-                                    elClass "p" "subtitle" $ text "point adjustments"
+                                    elClass "p" "subtitle" $ text "auto point adjustments"
+                                    elClass "div" "content" $ do
+                                        _ <- elClass "table" "table is-striped is-narrow" $ do
+                                                el "thead" $ do
+                                                    el "tr" $ do
+                                                        el "th" $ text "Id"
+                                                        el "th" $ text "Name"
+                                                        elClass "th" "th-penalty" $ text "Fraction"
+                                                        elClass "th" "th-penalty" $ text "Point"
+                                                        elClass "th" "th-penalty-reason" $ text "Reason"
+
+                                                el "tbody" $ simpleList penalAuto rowPenal
+                                        return ()
+
+                                    elClass "p" "subtitle" $ text "manual point adjustments"
                                     elClass "div" "content" $ do
                                         _ <- elClass "table" "table is-striped is-narrow" $ do
                                                 el "thead" $ do

@@ -613,6 +613,7 @@ getTask discipline compTweak sb =
                         taskState
                 , taskTweak = if tw == compTweak then compTweak else tw
                 , earlyStart = fromMaybe nullEarlyStart es
+                , penalsAuto = []
                 , penals = []
                 }
             where

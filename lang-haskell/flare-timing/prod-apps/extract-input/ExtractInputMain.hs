@@ -207,7 +207,8 @@ fsdbSettings earthMath zg fsdbXml = do
     let ts' =
             [ t
                 { zones = z{raw = Raw.zoneGive (const $ const True) zg rz}
-                , penals = pnAuto ++ pn
+                , penalsAuto = pnAuto
+                , penals = pn
                 }
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             | pnAuto <- pnsAuto

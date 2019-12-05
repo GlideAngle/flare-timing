@@ -177,6 +177,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     let hgOrPg = discipline <$> comp
     let free' = free <$> nom
     let sgs = startGates <$> task
+    let penalAuto = Penal . Comp.penalsAuto <$> task
     let penal = Penal . Comp.penals <$> task
     let tweak = Comp.taskTweak <$> task
     pb <- getPostBuild
@@ -310,7 +311,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                 TaskTabBasis -> do
                     tabBasis <- tabsBasis
-                    let basisAbsent = tableAbsent utc ix ln nyp dnf dfNt penal
+                    let basisAbsent = tableAbsent utc ix ln nyp dnf dfNt penalAuto penal
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
