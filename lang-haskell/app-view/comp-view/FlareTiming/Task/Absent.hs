@@ -146,8 +146,6 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' = do
                             _ ->
                                 elClass "article" "tile is-child box" $ do
                                     elClass "p" "title" $ text "Penal"
-                                    el "p" . text
-                                        $ "These pilots were penalized or rewarded with a negative penalty."
 
                                     if null penalAuto'' then return () else do
                                         elClass "p" "subtitle" $ text "auto point adjustments"
@@ -178,6 +176,9 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' = do
 
                                                     el "tbody" $ simpleList penal rowPenal
                                             return ()
+
+                                    el "p" . text
+                                        $ "These pilots were penalized or rewarded with a negative penalty."
                         )
 
     return ()
