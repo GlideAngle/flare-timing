@@ -188,6 +188,7 @@ module Flight.Score
     -- * Early start
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
+    , jumpTheGunPenalty
     ) where
 
 import Flight.Gap.Leading.Area

@@ -17,6 +17,7 @@ module Flight.Gap.Points
     , taskPoints
     , applyPointPenalties
     , availablePoints
+    , jumpTheGunPenalty
     ) where
 
 import Data.Ratio ((%))
@@ -177,6 +178,14 @@ tallyPoints (Just NoGoalPg) =
         , leading = LeadingPoints l
         } ->
         TaskPoints $ linear + diff + l
+
+jumpTheGunPenalty
+    :: SecondsPerPoint (Quantity Double [u| s |])
+    -> JumpedTheGun (Quantity Double [u| s |])
+    -> PointPenalty
+jumpTheGunPenalty (SecondsPerPoint secs) (JumpedTheGun jump) =
+    let (MkQuantity penalty) = jump /: secs in
+    PenaltyPoints penalty
 
 jumpTheGun
     :: SecondsPerPoint (Quantity Double [u| s |])

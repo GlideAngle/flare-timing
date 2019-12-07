@@ -6,7 +6,7 @@ import Prelude hiding (max)
 import qualified Prelude as Stats (max)
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (maybeToList, fromMaybe, catMaybes)
 import Data.Function ((&))
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -60,6 +60,7 @@ import Flight.Comp
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
     , IxTask(..)
+    , EarlyStart(..)
     , compToTaskLength
     , compToCross
     , crossToTag
@@ -139,6 +140,7 @@ import Flight.Score
     , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
     , availablePoints, applyPointPenalties
     , toIxChunk
+    , jumpTheGunPenalty
     )
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import GapPointOptions (description)
@@ -780,7 +782,7 @@ points'
                       $ Map.intersectionWith (,) dsF dsL
               in
                   rankByTotal . sortScores
-                  $ fmap (tallyDf gates)
+                  $ fmap (tallyDf startGates earlyStart)
                   A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs
             | diffs <- difficultyDistancePointsDf
             | linears <- nighDistancePointsDfE
@@ -807,7 +809,7 @@ points'
             | ssEs <- elapsedTime ssSpeed
             | gsEs <- elapsedTime gsSpeed
             | gs <- tags
-            | gates <- startGates <$> tasks
+            | Task{startGates, earlyStart} <- tasks
             | penals <- penals <$> tasks
             ]
 
@@ -1125,6 +1127,7 @@ startEnd RaceSections{race} =
 
 tallyDf
     :: [StartGate]
+    -> EarlyStart
     ->
         ( Maybe (QAlt Double [u| m |])
         ,
@@ -1152,6 +1155,7 @@ tallyDf
     -> Breakdown
 tallyDf
     startGates
+    EarlyStart{earlyPenalty}
     ( alt
     ,
         ( g
@@ -1179,8 +1183,8 @@ tallyDf
     Breakdown
         { place = TaskPlacing 0
         , total = applyPointPenalties penalties total
-        , jump = join $ fst <$> jumpGates
-        , penaltiesJump = []
+        , jump = jump
+        , penaltiesJump = penaltiesJump
         , penalties = penalties
         , penaltyReason = penaltyReason
         , breakdown = x
@@ -1210,6 +1214,9 @@ tallyDf
                 ss'' <- ss'
                 gs' <- nonEmpty startGates
                 return $ startGateTaken gs' ss''
+
+        jump = join $ fst <$> jumpGates
+        penaltiesJump = maybeToList $ jumpTheGunPenalty earlyPenalty <$> jump
 
         total = TaskPoints $ r + dp + l + a + tp
         ss' = getTagTime unStart
