@@ -1182,7 +1182,7 @@ tallyDf
     ) =
     Breakdown
         { place = TaskPlacing 0
-        , total = applyPointPenalties penalties total
+        , total = applyPointPenalties (penaltiesJump ++ penalties) total
         , jump = jump
         , penaltiesJump = penaltiesJump
         , penalties = penalties
