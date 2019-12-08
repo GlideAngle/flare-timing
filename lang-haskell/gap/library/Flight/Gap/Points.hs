@@ -214,9 +214,9 @@ applyPointPenalties xs ps =
 
 applyPointPenalty :: TaskPoints -> PointPenalty -> TaskPoints
 applyPointPenalty (TaskPoints p) (PenaltyPoints n) =
-    TaskPoints $ p - (toRational n)
+    TaskPoints . max 0 $ p - (toRational n)
 applyPointPenalty (TaskPoints p) (PenaltyFraction n) =
-    TaskPoints $ p - p * (toRational n)
+    TaskPoints . max 0 $ p - p * (toRational n)
 
 availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePoints (TaskValidity tv) Weights{..} =
