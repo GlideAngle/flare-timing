@@ -311,7 +311,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                 TaskTabBasis -> do
                     tabBasis <- tabsBasis
-                    let basisAbsent = tableAbsent utc ix ln nyp dnf dfNt penalAuto penal
+                    let basisAbsent = tableAbsent utc ix ln nyp dnf dfNt penalAuto penal sDf
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent

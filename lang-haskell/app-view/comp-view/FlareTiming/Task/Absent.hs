@@ -1,13 +1,15 @@
 module FlareTiming.Task.Absent (tableAbsent) where
 
+import Data.Maybe (isJust)
 import Prelude hiding (abs)
 import Reflex.Dom
 
 import WireTypes.Route (TaskLength(..))
-import WireTypes.Pilot (Nyp(..), Dnf(..), DfNoTrack(..), Penal(..))
+import WireTypes.Pilot (Pilot(..), Nyp(..), Dnf(..), DfNoTrack(..), Penal(..))
+import WireTypes.Point (Breakdown(..))
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTaskPilotAbs)
-import FlareTiming.Pilot (rowPilot, rowDfNt, rowPenal)
+import FlareTiming.Pilot (rowPilot, rowDfNt, rowPenalJump, rowPenalAuto, rowPenal)
 import WireTypes.Comp (UtcOffset(..))
 
 tableAbsent
@@ -20,8 +22,9 @@ tableAbsent
     -> Dynamic t DfNoTrack
     -> Dynamic t Penal
     -> Dynamic t Penal
+    -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' = do
+tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
     pb <- getPostBuild
     let nyp = unNyp <$> nyp'
     let dnf = unDnf <$> dnf'
@@ -136,9 +139,17 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' = do
                                             $ "These pilots get awarded at least minimum distance."
                         )
 
-                    dyn_ $ ffor2 penalAuto penal (\penalAuto'' penal'' ->
-                        case (penalAuto'', penal'') of
-                            ([], []) ->
+                    let jumpers = ffor sDf (\sDf' ->
+                                (\(p, Breakdown{jump, penaltiesJump}) ->
+                                    (p, penaltiesJump, jump))
+                                <$> filter
+                                        (\(_, Breakdown{jump, penaltiesJump}) ->
+                                            isJust jump || not (null penaltiesJump))
+                                        sDf')
+
+                    dyn_ $ ffor3 penalAuto penal jumpers (\penalAuto'' penal'' jumpers' ->
+                        case (jumpers', penalAuto'', penal'') of
+                            ([], [], []) ->
                                 elClass "article" "tile is-child notification is-warning" $ do
                                     elClass "p" "title" $ text "Penal"
                                     elClass "p" "subtitle" $ text "point adjustments"
@@ -146,6 +157,20 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' = do
                             _ ->
                                 elClass "article" "tile is-child box" $ do
                                     elClass "p" "title" $ text "Penal"
+
+                                    if null jumpers' then return () else do
+                                        elClass "p" "subtitle" $ text "jump the gun adjustments"
+                                        elClass "div" "content" $ do
+                                            _ <- elClass "table" "table is-striped is-narrow" $ do
+                                                    el "thead" $ do
+                                                        el "tr" $ do
+                                                            el "th" $ text "Id"
+                                                            el "th" $ text "Name"
+                                                            elClass "th" "th-penalty" $ text "Point"
+                                                            elClass "th" "th-penalty" $ text "Early"
+
+                                                    el "tbody" $ simpleList jumpers rowPenalJump
+                                            return ()
 
                                     if null penalAuto'' then return () else do
                                         elClass "p" "subtitle" $ text "auto point adjustments"
@@ -155,11 +180,10 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' = do
                                                         el "tr" $ do
                                                             el "th" $ text "Id"
                                                             el "th" $ text "Name"
-                                                            elClass "th" "th-penalty" $ text "Fraction"
-                                                            elClass "th" "th-penalty" $ text "Point"
-                                                            elClass "th" "th-penalty-reason" $ text "Reason"
+                                                            elClass "th" "th-norm th-penalty" $ text "✓ Point"
+                                                            elClass "th" "th-norm th-penalty-reason" $ text "Reason"
 
-                                                    el "tbody" $ simpleList penalAuto rowPenal
+                                                    el "tbody" $ simpleList penalAuto rowPenalAuto
                                             return ()
 
                                     if null penal'' then return () else do

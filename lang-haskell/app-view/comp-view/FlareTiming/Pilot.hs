@@ -5,6 +5,8 @@ module FlareTiming.Pilot
     , rowPilot
     , rowDfNt
     , rowDfNtReach
+    , rowPenalJump
+    , rowPenalAuto
     , rowPenal
     ) where
 
@@ -20,7 +22,9 @@ import WireTypes.Pilot
     ( Pilot(..), PilotId(..), PilotName(..)
     , AwardedDistance(..), AwardedVelocity(..), DfNoTrackPilot(..)
     )
-import WireTypes.Point (PointPenalty(..), ReachToggle(..))
+import WireTypes.Point
+    (PointPenalty(..), ReachToggle(..), JumpedTheGun(..)
+    , showPilotJumpedTheGun)
 import WireTypes.Comp (UtcOffset(..))
 import FlareTiming.Time (showT, timeZone)
 
@@ -75,6 +79,52 @@ rowDfNtReach ln' i pd = do
             el "td" . text . T.pack $ show i
             el "td" . text $ showPilotName p
             elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> (extra <$> d))
+
+rowPenalJump
+    :: MonadWidget t m
+    => Dynamic t (Pilot, [PointPenalty], Maybe JumpedTheGun)
+    -> m ()
+rowPenalJump ppp = do
+    let tdPoint = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
+    dyn_ $ ffor ppp (\(pilot, ps, jump) -> el "tr" $ do
+        let pp =
+                find
+                    (\case PenaltyFraction _ -> False; PenaltyPoints _ -> True)
+                    ps
+
+        el "td" . text . showPilotId $ pilot
+        el "td" . text . showPilotName $ pilot
+        case pp of
+            Nothing -> do
+                el "td" $ text ""
+            Just (PenaltyFraction _) -> do
+                el "td" $ text ""
+            Just (PenaltyPoints y) -> do
+                tdPoint y
+        elClass "td" "td-penalty" . text $ showPilotJumpedTheGun jump)
+
+rowPenalAuto
+    :: MonadWidget t m
+    => Dynamic t (Pilot, [PointPenalty], String)
+    -> m ()
+rowPenalAuto ppp = do
+    let td = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
+    dyn_ $ ffor ppp (\(pilot, ps, reason) -> el "tr" $ do
+        let pp =
+                find
+                    (\case PenaltyFraction _ -> False; PenaltyPoints _ -> True)
+                    ps
+
+        el "td" . text . showPilotId $ pilot
+        el "td" . text . showPilotName $ pilot
+        case pp of
+            Nothing -> do
+                el "td" $ text ""
+            Just (PenaltyFraction _) -> do
+                el "td" $ text ""
+            Just (PenaltyPoints y) -> do
+                td y
+        el "td" . text $ T.pack reason)
 
 rowPenal
     :: MonadWidget t m

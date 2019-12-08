@@ -8,6 +8,7 @@ module WireTypes.Point
     , Allocation(..)
     , GoalRatio(..)
     , PilotDistance(..)
+    , JumpedTheGun(..)
     , Alt(..)
     , PilotVelocity(..)
     , DistancePoints(..)
@@ -30,6 +31,7 @@ module WireTypes.Point
     , showPilotDistance
     , showPilotDistanceDiff
     , showPilotAlt
+    , showPilotJumpedTheGun
     -- * Showing Points
     , showTaskDistancePoints
     , showTaskLinearPoints
@@ -124,8 +126,19 @@ newtype TimePoints = TimePoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
+newtype JumpedTheGun = JumpedTheGun Double
+    deriving (Eq, Ord, Show, Generic)
+
 newtype Alt = Alt Double
     deriving (Eq, Ord, Show, Generic)
+
+instance FromJSON JumpedTheGun where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            's' : ' ' : xs -> return . JumpedTheGun . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
 
 instance FromJSON Alt where
     parseJSON x@(String _) = do
@@ -184,6 +197,10 @@ showPilotDistanceDiff dp (PilotDistance expected) (PilotDistance actual)
         f = printf "%+.*f" dp
 
         g = T.pack . f
+
+showPilotJumpedTheGun :: Maybe JumpedTheGun -> T.Text
+showPilotJumpedTheGun Nothing = ""
+showPilotJumpedTheGun (Just (JumpedTheGun a)) = T.pack . printf "%.0f s" $ a
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
@@ -454,6 +471,8 @@ data Breakdown =
     Breakdown
         { place :: TaskPlacing
         , total :: TaskPoints
+        , jump :: Maybe JumpedTheGun
+        , penaltiesJump :: [PointPenalty]
         , penalties :: [PointPenalty]
         , penaltyReason :: String
         , breakdown :: Points
