@@ -64,7 +64,9 @@ module Flight.Score
     , timeWeight
     -- * Fractional allotment of arrival points
     , ArrivalFraction(..)
-    , arrivalFraction
+    , ArrivalTime(..)
+    , arrivalRankFraction
+    , arrivalTimeFraction
     -- * Fractional allotment of time points
     , BestTime(..)
     , PilotTime(..)
@@ -204,6 +206,7 @@ import Flight.Gap.Fraction.Distance
 import Flight.Gap.Fraction.Arrival
 import Flight.Gap.Fraction.Leading
 import Flight.Gap.Fraction.Goal
+import Flight.Gap.Time.Arrival
 import Flight.Gap.Time.Early
 import Flight.Gap.Time.Nominal
 import Flight.Gap.Time.Best

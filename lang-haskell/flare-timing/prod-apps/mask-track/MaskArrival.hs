@@ -8,7 +8,7 @@ import Control.Monad (join)
 import Flight.Comp (Pilot(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Mask (MaskingArrival(..))
-import Flight.Score (PilotsAtEss(..), ArrivalPlacing(..), arrivalFraction)
+import Flight.Score (PilotsAtEss(..), ArrivalPlacing(..), arrivalRankFraction)
 import Stats (TimeStats(..), FlightStats(..))
 
 arrivals :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
@@ -27,7 +27,7 @@ arrivals xs =
         f position =
             TrackArrival
                 { rank = position
-                , frac = arrivalFraction pilots position
+                , frac = arrivalRankFraction pilots position
                 }
 
 maskArrival :: [[(Pilot, TrackArrival)]] -> MaskingArrival

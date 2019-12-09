@@ -1,7 +1,8 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 module Flight.Gap.Allot
     ( ArrivalFraction(..)
-    , arrivalFraction
+    , arrivalRankFraction
+    , arrivalTimeFraction
     , PilotTime(..)
     , bestTime'
     , SpeedFraction(..)
@@ -16,6 +17,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.Gap.Pilots (PilotsAtEss(..))
 import Flight.Gap.Place.Arrival (ArrivalPlacing(..))
+import Flight.Gap.Time.Arrival (ArrivalTime(..))
 import Flight.Gap.Time.Best (BestTime(..))
 import Flight.Gap.Time.Pilot (PilotTime(..))
 import Flight.Gap.Fraction.Arrival (ArrivalFraction(..))
@@ -59,9 +61,9 @@ import Flight.Gap.Equation (powerFraction)
 -- ArrivalFraction (43873 % 102400)
 -- >>> fromRational $ 43873 % 102400
 -- 0.428447265625
-arrivalFraction :: PilotsAtEss -> ArrivalPlacing -> ArrivalFraction
+arrivalRankFraction :: PilotsAtEss -> ArrivalPlacing -> ArrivalFraction
 
-arrivalFraction (PilotsAtEss n) (ArrivalPlacing rank)
+arrivalRankFraction (PilotsAtEss n) (ArrivalPlacing rank)
     | n <= 0 =
         ArrivalFraction 0
     | rank <= 0 =
@@ -77,7 +79,7 @@ arrivalFraction (PilotsAtEss n) (ArrivalPlacing rank)
         where
             ac = 1 - ((rank - 1) % n)
 
-arrivalFraction (PilotsAtEss n) (ArrivalPlacingEqual rankEqual count)
+arrivalRankFraction (PilotsAtEss n) (ArrivalPlacingEqual rankEqual count)
     | n <= 0 =
         ArrivalFraction 0
     | rankEqual <= 0 =
@@ -94,6 +96,21 @@ arrivalFraction (PilotsAtEss n) (ArrivalPlacingEqual rankEqual count)
             m = fromIntegral count
             rank = (sum $ take m (repeat rankEqual) ++ take m [0..]) % count
             ac = (1 % 1) - ((rank - 1 % 1) * (1 % n))
+
+arrivalTimeFraction
+    :: PilotsAtEss
+    -> ArrivalTime (Quantity Double [u| h |])
+    -> ArrivalTime (Quantity Double [u| h |])
+    -> ArrivalFraction
+
+arrivalTimeFraction
+    (PilotsAtEss n)
+    (ArrivalTime (MkQuantity tMin))
+    (ArrivalTime (MkQuantity t))
+    | n <= 0 =
+        ArrivalFraction 0
+    | otherwise =
+        ArrivalFraction . toRational $ powerFraction tMin t
 
 bestTime'
     :: [PilotTime (Quantity Double [u| h |])]
