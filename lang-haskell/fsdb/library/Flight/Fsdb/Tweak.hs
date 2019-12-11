@@ -7,7 +7,7 @@ import Control.Arrow ((***))
 import Control.Monad (join)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
-    , unpickleDoc', xpWrap, xpElem, xpAttr, xpOption, xpFilterAttr, xpTriple
+    , unpickleDoc', xpWrap, xpElem, xpAttr, xpOption, xpFilterAttr, xp4Tuple
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -30,7 +30,7 @@ import Text.XML.HXT.Core
 
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Comp (Tweak(..))
-import Flight.Score (LwScaling(..), AwScaling(..))
+import Flight.Score (LwScaling(..))
 import Flight.Track.Lead (lwScalingDefault)
 import Flight.Fsdb.Internal.XmlPickle (xpBool)
 
@@ -41,9 +41,10 @@ xpTweak discipline =
         (hasName "use_leading_points"
         <+> hasName "double_leading_weight"
         <+> hasName "use_arrival_position_points"
+        <+> hasName "use_arrival_time_points"
         )
     $ xpWrap
-        ( \(lp, dlw, ap) ->
+        ( \(lp, dlw, ar, at) ->
             let ls =
                     case (lp, dlw) of
                         (Just False, _) -> Just $ LwScaling 0
@@ -51,21 +52,16 @@ xpTweak discipline =
                         (Just True, Just True) -> Nothing
                         (Just True, Nothing) -> Nothing
                         (Nothing, _) -> Nothing
-                as =
-                    if discipline == Paragliding then Nothing else
-                    case ap of
-                        Just False -> Just $ AwScaling 0
-                        Just True -> Nothing
-                        Nothing -> Nothing
 
                 ls' = if Just (lwScalingDefault discipline) == ls then Nothing else ls
 
             in
                 Tweak
                     { leadingWeightScaling = ls'
-                    , arrivalWeightScaling = as
+                    , arrivalRank = ar && discipline /= Paragliding
+                    , arrivalTime = at && discipline /= Paragliding
                     }
-        , \Tweak{leadingWeightScaling = ls, arrivalWeightScaling = as} ->
+        , \Tweak{leadingWeightScaling = ls, arrivalRank = ar, arrivalTime = at} ->
             let (lp, lw) =
                     -- SEE: https://stackoverflow.com/questions/9722689/haskell-how-to-map-a-tuple
                     join (***) Just $
@@ -74,19 +70,14 @@ xpTweak discipline =
                         Just (LwScaling 1) -> (True, False)
                         Just (LwScaling _) -> (True, True)
                         Nothing -> (True, True)
-                ap =
-                    Just $
-                    case as of
-                        Just (AwScaling 0) -> False
-                        Just (AwScaling _) -> True
-                        Nothing -> True
 
-            in (lp, lw, ap)
+            in (lp, lw, ar, at)
         )
-    $ xpTriple
+    $ xp4Tuple
         (xpOption $ xpAttr "use_leading_points" xpBool)
         (xpOption $ xpAttr "double_leading_weight" xpBool)
-        (xpOption $ xpAttr "use_arrival_position_points" xpBool)
+        (xpAttr "use_arrival_position_points" xpBool)
+        (xpAttr "use_arrival_time_points" xpBool)
 
 getCompTweak
     :: ArrowXml a
@@ -97,7 +88,7 @@ getCompTweak discipline =
     >>> deep (hasName "FsCompetition")
     /> hasName "FsScoreFormula"
     >>> arr (unpickleDoc' $ xpTweak discipline))
-    `orElse` (constA . Right $ Tweak Nothing Nothing)
+    `orElse` (constA . Right $ Tweak Nothing (discipline == HangGliding) False)
 
 parseTweak :: Discipline -> String -> IO (Either String [Tweak])
 parseTweak discipline contents = do

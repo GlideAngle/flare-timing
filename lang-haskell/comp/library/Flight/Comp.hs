@@ -98,7 +98,6 @@ import Flight.Score
     , PilotName(..)
     , Pilot(..)
     , LwScaling(..)
-    , AwScaling(..)
     , PointPenalty(..)
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
@@ -312,7 +311,8 @@ data Nominal =
 data Tweak =
     Tweak
         { leadingWeightScaling :: Maybe LwScaling
-        , arrivalWeightScaling :: Maybe AwScaling
+        , arrivalRank :: Bool
+        , arrivalTime :: Bool
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

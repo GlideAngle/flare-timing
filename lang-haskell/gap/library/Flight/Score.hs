@@ -51,7 +51,6 @@ module Flight.Score
     , Lw(..)
     , LwScaling(..)
     , Aw(..)
-    , AwScaling(..)
     , Rw(..)
     , Ew(..)
     , Weights(..)
@@ -203,7 +202,6 @@ import Flight.Gap.Fraction.Launch
 import Flight.Gap.Fraction.Linear
 import Flight.Gap.Fraction.Difficulty
 import Flight.Gap.Fraction.Distance
-import Flight.Gap.Fraction.Arrival
 import Flight.Gap.Fraction.Leading
 import Flight.Gap.Fraction.Goal
 import Flight.Gap.Time.Arrival

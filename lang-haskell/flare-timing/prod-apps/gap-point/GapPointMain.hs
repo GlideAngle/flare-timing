@@ -482,12 +482,17 @@ points'
 
         aws =
             [
+                arrivalWeight $
                 maybe
-                    (if discipline == HangGliding
-                        then arrivalWeight (AwHg dw)
-                        else arrivalWeight AwPg)
-                    (\k -> arrivalWeight (AwScaled k dw))
-                    (join $ arrivalWeightScaling <$> tw)
+                    (if discipline == Paragliding
+                        then AwPg
+                        else (AwHgRank dw))
+                    (\Tweak{arrivalRank = byRank, arrivalTime = byTime} ->
+                        if | discipline == Paragliding -> AwPg
+                           | byTime -> (AwHgTime dw)
+                           | byRank -> (AwHgRank dw)
+                           | otherwise -> (AwHgRank dw))
+                   tw
 
             | dw <- dws
             | tw <- taskTweak <$> tasks
