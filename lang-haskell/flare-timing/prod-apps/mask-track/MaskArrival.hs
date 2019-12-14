@@ -1,5 +1,5 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-module MaskArrival (maskArrival, arrivals) where
+module MaskArrival (maskArrival, arrivalsByRank) where
 
 import Data.Maybe (catMaybes)
 import Data.List (sortOn)
@@ -11,8 +11,8 @@ import Flight.Track.Mask (MaskingArrival(..))
 import Flight.Score (PilotsAtEss(..), ArrivalPlacing(..), arrivalRankFraction)
 import Stats (TimeStats(..), FlightStats(..))
 
-arrivals :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
-arrivals xs =
+arrivalsByRank :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
+arrivalsByRank xs =
     sortOn (rank . snd) $ (fmap . fmap) f ys
     where
         ys :: [(Pilot, ArrivalPlacing)]
