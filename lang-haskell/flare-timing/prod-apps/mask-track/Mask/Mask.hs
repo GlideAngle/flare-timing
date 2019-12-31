@@ -72,7 +72,7 @@ import Flight.Scribe
 import qualified Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
-import MaskArrival (maskArrival, arrivalsByRank)
+import MaskArrival (maskArrival, arrivalsByTime)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (maskLead, raceTimes)
 import Mask.Reach.Time (maskReachTime)
@@ -137,7 +137,7 @@ writeMask
             let psLandingOut = (fmap . fmap) fst dsLand
 
             -- Arrivals (as).
-            let as :: [[(Pilot, TrackArrival)]] = arrivalsByRank <$> yss
+            let as :: [[(Pilot, TrackArrival)]] = arrivalsByTime <$> yss
             let psArriving = (fmap . fmap) fst as
 
             let pilots =

@@ -22,7 +22,7 @@ import Flight.Gap.Time.Best (BestTime(..))
 import Flight.Gap.Time.Pilot (PilotTime(..))
 import Flight.Gap.Fraction.Arrival (ArrivalFraction(..))
 import Flight.Gap.Fraction.Speed (SpeedFraction(..))
-import Flight.Gap.Equation (powerFraction)
+import Flight.Gap.Equation (powerFraction, arrivalTimePowerFraction)
 
 -- | Given the placing and the number of pilots making the end of the speed
 -- section, work out the arrival fraction.
@@ -110,7 +110,7 @@ arrivalTimeFraction
     | n <= 0 =
         ArrivalFraction 0
     | otherwise =
-        ArrivalFraction . toRational $ powerFraction tMin t
+        ArrivalFraction . toRational $ arrivalTimePowerFraction tMin t
 
 bestTime'
     :: [PilotTime (Quantity Double [u| h |])]
