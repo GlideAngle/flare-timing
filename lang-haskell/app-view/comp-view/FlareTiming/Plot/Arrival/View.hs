@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Arrival.View (arrivalPlot) where
+module FlareTiming.Plot.Arrival.View (arrivalPositionPlot, arrivalTimePlot) where
 
 import Reflex.Dom
 import Reflex.Time (delay)
@@ -7,7 +7,8 @@ import Data.List (partition)
 import qualified Data.Map.Strict as Map
 
 import Control.Monad.IO.Class (liftIO)
-import qualified FlareTiming.Plot.Arrival.Plot as P (hgPlot)
+import qualified FlareTiming.Plot.Arrival.PlotPosition as P (hgPlotPosition)
+import qualified FlareTiming.Plot.Arrival.PlotTime as P (hgPlotTime)
 
 import WireTypes.Fraction
     (Fractions(..), ArrivalFraction(..), showArrivalFrac, showArrivalFracDiff)
@@ -33,23 +34,51 @@ xy TrackArrival{rank = ArrivalPlacing x, frac = ArrivalFraction y} =
 xy TrackArrival{rank = ArrivalPlacingEqual x _, frac = ArrivalFraction y} =
     [fromIntegral x, y]
 
-arrivalPlot
+arrivalPositionPlot
     :: MonadWidget t m
     => Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-arrivalPlot sEx av = do
+arrivalPositionPlot sEx av = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
-                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival") <> ("style" =: "height: 460px;width: 640px")) $ return ()
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival-position") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
                                 let (soloPlaces, equalPlaces) = placings . snd . unzip $ av'
-                                _ <- P.hgPlot (_element_raw elPlot) soloPlaces equalPlaces
+                                _ <- P.hgPlotPosition (_element_raw elPlot) soloPlaces equalPlaces
+                                return ())
+                            ]
+
+                        av' <- sample . current $ av
+
+                    return ()
+
+        elClass "div" "tile is-child" $ tablePilot sEx av
+
+    return ()
+
+arrivalTimePlot
+    :: MonadWidget t m
+    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackArrival)]
+    -> m ()
+arrivalTimePlot sEx av = do
+    pb <- delay 1 =<< getPostBuild
+
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile" $
+            elClass "div" "tile is-parent" $
+                elClass "div" "tile is-child" $ do
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival-time") <> ("style" =: "height: 460px;width: 640px")) $ return ()
+                    rec performEvent_ $ leftmost
+                            [ ffor pb (\_ -> liftIO $ do
+                                let (soloPlaces, equalPlaces) = placings . snd . unzip $ av'
+                                _ <- P.hgPlotTime (_element_raw elPlot) soloPlaces equalPlaces
                                 return ())
                             ]
 

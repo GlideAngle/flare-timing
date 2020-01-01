@@ -6,8 +6,9 @@ import qualified Data.Text as T (Text)
 
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Arrival (TrackArrival(..))
-import WireTypes.Comp (Discipline(..), Tweak(..), AwScaling(..))
-import qualified FlareTiming.Plot.Arrival.View as V (arrivalPlot)
+import WireTypes.Comp (Discipline(..), Tweak(..))
+import qualified FlareTiming.Plot.Arrival.View as V
+    (arrivalPositionPlot, arrivalTimePlot)
 import WireTypes.Pilot (Pilot(..))
 
 noPg :: T.Text
@@ -61,12 +62,16 @@ arrivalPlot hgOrPg tweak sEx av = do
                                         elClass "article" "notification is-warning" $
                                             el "p" $ text "No points will be awarded for arrival order."
 
-                                elClass "article" "tile is-child" $ do
-                                    _ <- dyn $ ffor tweak (\case
-                                        Just Tweak{arrivalWeightScaling = Just (AwScaling 0)} -> notice
-                                        _ -> return ())
-
-                                    V.arrivalPlot sEx (fromMaybe [] <$> av)
+                                _ <- elClass "article" "tile is-child" $
+                                    dyn $ ffor tweak (\case
+                                        Just Tweak{arrivalRank = False, arrivalTime = False} ->
+                                            notice
+                                        Just Tweak{arrivalTime = True, arrivalRank = False} ->
+                                            V.arrivalTimePlot sEx (fromMaybe [] <$> av)
+                                        Just Tweak{arrivalTime = False, arrivalRank = True} ->
+                                            V.arrivalPositionPlot sEx (fromMaybe [] <$> av)
+                                        _ ->
+                                            V.arrivalPositionPlot sEx (fromMaybe [] <$> av))
 
                                 return ())
 

@@ -321,7 +321,8 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                     , Just
                         Tweak
                             { leadingWeightScaling = lwScaling
-                            , arrivalWeightScaling = awScaling
+                            , arrivalRank
+                            , arrivalTime
                             }
                     , Just alloc
                     , Just TaskLength{taskRoute = td}
@@ -342,6 +343,13 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                             , leading = LeadingPoints lp
                             , time = TimePoints tp
                             } = points alloc
+
+                    let awScaling =
+                            Just . AwScaling $
+                            if | hgOrPg == Paragliding -> 0
+                               | arrivalRank -> 1.0
+                               | arrivalTime -> 1.0
+                               | otherwise -> 0.0
 
                     let pg = gr' * fromIntegral pf'
                     let lwS = show lwScaling

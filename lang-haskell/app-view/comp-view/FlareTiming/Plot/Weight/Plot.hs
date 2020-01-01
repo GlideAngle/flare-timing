@@ -10,7 +10,7 @@ import GHCJS.DOM.Types (Element(..), toElement, toJSVal)
 import Data.Maybe (fromMaybe)
 import FlareTiming.Plot.Foreign (Plot(..))
 
-import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..), AwScaling(..))
+import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..))
 import WireTypes.Point
     ( GoalRatio(..)
     , DistanceWeight(..)
@@ -105,8 +105,14 @@ hgWeightPlot
 
     let Tweak
             { leadingWeightScaling = Just (LwScaling lw)
-            , arrivalWeightScaling = Just (AwScaling aw)
+            , arrivalRank
+            , arrivalTime
             } = scaling HangGliding tw
+
+    let aw :: Double =
+            if | arrivalRank -> 1.0
+               | arrivalTime -> 1.0
+               | otherwise -> 0.0
 
     lw' <- toJSVal lw
     aw' <- toJSVal aw
@@ -195,29 +201,32 @@ scaling :: Discipline -> Maybe Tweak -> Tweak
 scaling HangGliding Nothing =
     Tweak
         { leadingWeightScaling = Just (LwScaling 1)
-        , arrivalWeightScaling = Just (AwScaling 1)
+        , arrivalRank = False
+        , arrivalTime = False
         }
 scaling Paragliding Nothing =
     Tweak
         { leadingWeightScaling = Just (LwScaling 2)
-        , arrivalWeightScaling = Just (AwScaling 0)
+        , arrivalRank = False
+        , arrivalTime = False
         }
 scaling
     HangGliding
-    (Just Tweak{leadingWeightScaling = lw, arrivalWeightScaling = aw}) =
+    (Just Tweak{leadingWeightScaling = lw, arrivalRank, arrivalTime}) =
     Tweak
         { leadingWeightScaling = Just lw'
-        , arrivalWeightScaling = Just aw'
+        , arrivalRank
+        , arrivalTime
         }
     where
         lw' = fromMaybe (LwScaling 1) lw
-        aw' = fromMaybe (AwScaling 1) aw
 scaling
     Paragliding
-    (Just Tweak{leadingWeightScaling = lw}) =
+    (Just Tweak{leadingWeightScaling = lw, arrivalRank, arrivalTime}) =
     Tweak
         { leadingWeightScaling = Just lw'
-        , arrivalWeightScaling = Just (AwScaling 0)
+        , arrivalRank
+        , arrivalTime
         }
     where
         lw' = fromMaybe (LwScaling 2) lw

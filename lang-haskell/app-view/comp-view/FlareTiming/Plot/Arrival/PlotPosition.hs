@@ -1,7 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Arrival.Plot (hgPlot) where
+module FlareTiming.Plot.Arrival.PlotPosition (hgPlotPosition) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
@@ -12,7 +12,7 @@ import FlareTiming.Plot.Foreign (Plot(..))
 
 foreign import javascript unsafe
     "functionPlot(\
-    \{ target: '#hg-plot-arrival'\
+    \{ target: '#hg-plot-arrival-position'\
     \, title: 'Arrival Position Point Distribution'\
     \, width: 640\
     \, height: 460\
@@ -47,13 +47,13 @@ foreign import javascript unsafe
     \})"
     plotPosition_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
-hgPlot
+hgPlotPosition
     :: IsElement e
     => e
     -> [[Double]]
     -> [[Double]]
     -> IO Plot
-hgPlot e xs ys = do
+hgPlotPosition e xs ys = do
     let n :: Integer = fromIntegral $ length xs + length ys
 
     n' <- toJSVal (fromIntegral n :: Double)

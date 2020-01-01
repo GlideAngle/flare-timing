@@ -289,7 +289,8 @@ instance Show AwScaling where
 data Tweak =
     Tweak
         { leadingWeightScaling :: Maybe LwScaling
-        , arrivalWeightScaling :: Maybe AwScaling
+        , arrivalRank :: Bool
+        , arrivalTime :: Bool
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
