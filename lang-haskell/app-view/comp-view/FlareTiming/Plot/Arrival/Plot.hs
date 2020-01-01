@@ -13,7 +13,7 @@ import FlareTiming.Plot.Foreign (Plot(..))
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-arrival'\
-    \, title: 'Arrival Point Distribution'\
+    \, title: 'Arrival Position Point Distribution'\
     \, width: 640\
     \, height: 460\
     \, disableZoom: true\
@@ -45,7 +45,7 @@ foreign import javascript unsafe
     \  , text: 'minimum possible fraction'\
     \  }]\
     \})"
-    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plotPosition_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 hgPlot
     :: IsElement e
@@ -58,7 +58,7 @@ hgPlot e xs ys = do
 
     n' <- toJSVal (fromIntegral n :: Double)
     let xy :: [[Double]] =
-            [ [x', fn n x']
+            [ [x', fnPosition n x']
             | x <- [1 .. 10 * n]
             , let x' = 0.1 * fromIntegral x
             ]
@@ -67,10 +67,10 @@ hgPlot e xs ys = do
     xs' <- toJSValListOf xs
     ys' <- toJSValListOf $ nub ys
 
-    Plot <$> plot_ (unElement . toElement $ e) n' xy' xs' ys'
+    Plot <$> plotPosition_ (unElement . toElement $ e) n' xy' xs' ys'
 
-fn :: Integer -> Double -> Double
-fn n x = 0.2 + 0.037 * y + 0.13 * y**2 + 0.633 * y**3
+fnPosition :: Integer -> Double -> Double
+fnPosition n x = 0.2 + 0.037 * y + 0.13 * y**2 + 0.633 * y**3
     where
         y :: Double
         y = 1.0 - (x - 1.0) / (fromIntegral n)
