@@ -1,17 +1,17 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 module MaskArrival (maskArrival, arrivalsByRank, arrivalsByTime) where
 
+import Data.Time.Clock (UTCTime)
 import Data.Maybe (catMaybes)
 import Data.List (sortOn)
 import Control.Monad (join)
-import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp (Pilot(..))
 import Flight.Track.Arrival (TrackArrival(..))
+import Flight.Track.Speed (pilotArrivalLag)
 import Flight.Track.Mask (MaskingArrival(..))
 import Flight.Score
-    ( PilotsAtEss(..), ArrivalPlacing(..), PilotTime(..), ArrivalTime(..)
+    ( PilotsAtEss(..), ArrivalPlacing(..), ArrivalLag(..)
     , arrivalRankFraction, arrivalTimeFraction
     )
 import Stats (TimeStats(..), FlightStats(..))
@@ -37,15 +37,15 @@ arrivalsByRank xs =
 
 arrivalsByTime :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
 arrivalsByTime xs =
-    sortOn (rank . snd) $ (fmap . fmap) (f $ ArrivalTime minT) ys
+    sortOn (rank . snd) $ (fmap . fmap) f ys'
     where
-        ys :: [(Pilot, (ArrivalPlacing, Quantity Double [u| h |]))]
+        ys :: [(Pilot, (ArrivalPlacing, UTCTime))]
         ys =
             catMaybes
             $ (\(p, FlightStats{..}) -> do
                 pos <- join $ positionAtEss <$> statTimeRank
-                PilotTime gsT <- gsTime <$> statTimeRank
-                return (p, (pos, gsT)))
+                esT <- esMark <$> statTimeRank
+                return (p, (pos, esT)))
             <$> xs
 
         pilots :: PilotsAtEss
@@ -53,10 +53,16 @@ arrivalsByTime xs =
 
         minT = minimum $ snd . snd <$> ys
 
-        f t0 (pEss, tm) =
+        ys' =
+            (\(p, (n, t)) ->
+                let lag = ArrivalLag $ pilotArrivalLag minT t
+                in (p, (n, lag)))
+            <$> ys
+
+        f (pEss, tm) =
             TrackArrival
                 { rank = pEss
-                , frac = arrivalTimeFraction pilots t0 (ArrivalTime tm)
+                , frac = arrivalTimeFraction pilots tm
                 }
 
 maskArrival :: [[(Pilot, TrackArrival)]] -> MaskingArrival

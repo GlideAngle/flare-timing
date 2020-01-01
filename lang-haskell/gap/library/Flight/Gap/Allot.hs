@@ -17,7 +17,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.Gap.Pilots (PilotsAtEss(..))
 import Flight.Gap.Place.Arrival (ArrivalPlacing(..))
-import Flight.Gap.Time.Arrival (ArrivalTime(..))
+import Flight.Gap.Time.Arrival (ArrivalLag(..))
 import Flight.Gap.Time.Best (BestTime(..))
 import Flight.Gap.Time.Pilot (PilotTime(..))
 import Flight.Gap.Fraction.Arrival (ArrivalFraction(..))
@@ -99,18 +99,12 @@ arrivalRankFraction (PilotsAtEss n) (ArrivalPlacingEqual rankEqual count)
 
 arrivalTimeFraction
     :: PilotsAtEss
-    -> ArrivalTime (Quantity Double [u| h |])
-    -> ArrivalTime (Quantity Double [u| h |])
+    -> ArrivalLag (Quantity Double [u| h |])
     -> ArrivalFraction
 
-arrivalTimeFraction
-    (PilotsAtEss n)
-    (ArrivalTime (MkQuantity tMin))
-    (ArrivalTime (MkQuantity t))
-    | n <= 0 =
-        ArrivalFraction 0
-    | otherwise =
-        ArrivalFraction . toRational $ arrivalTimePowerFraction tMin t
+arrivalTimeFraction (PilotsAtEss n) lag
+    | n <= 0 = ArrivalFraction 0
+    | otherwise = arrivalTimePowerFraction lag
 
 bestTime'
     :: [PilotTime (Quantity Double [u| h |])]

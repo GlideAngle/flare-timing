@@ -64,6 +64,7 @@ module Flight.Score
     -- * Fractional allotment of arrival points
     , ArrivalFraction(..)
     , ArrivalTime(..)
+    , ArrivalLag(..)
     , arrivalRankFraction
     , arrivalTimeFraction
     -- * Fractional allotment of time points

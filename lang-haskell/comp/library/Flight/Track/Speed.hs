@@ -10,6 +10,7 @@ The speed of a pilot's track.
 module Flight.Track.Speed
     ( TrackSpeed(..)
     , pilotTime
+    , pilotArrivalLag
     , pilotEssTime
     , startGateTaken
     ) where
@@ -51,6 +52,9 @@ secs start end = fromRational' . MkQuantity . toRational $ diffUTCTime end start
 
 hrs :: UTCTime -> UTCTime -> Quantity Double [u| h |]
 hrs start end = convert $ secs start end
+
+pilotArrivalLag :: UTCTime -> UTCTime -> Quantity Double [u| h |]
+pilotArrivalLag = hrs
 
 -- | The time the pilot ticked the end of the speed section.
 pilotEssTime

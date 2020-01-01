@@ -26,6 +26,7 @@ import Flight.Comp
     , Pilot(..)
     , PilotGroup(..)
     , Task(..)
+    , Tweak(..)
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
@@ -72,7 +73,7 @@ import Flight.Scribe
 import qualified Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
-import MaskArrival (maskArrival, arrivalsByTime)
+import MaskArrival (maskArrival, arrivalsByTime, arrivalsByRank)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (maskLead, raceTimes)
 import Mask.Reach.Time (maskReachTime)
@@ -137,7 +138,20 @@ writeMask
             let psLandingOut = (fmap . fmap) fst dsLand
 
             -- Arrivals (as).
-            let as :: [[(Pilot, TrackArrival)]] = arrivalsByTime <$> yss
+            let as :: [[(Pilot, TrackArrival)]] =
+                    [
+                        let aRank = maybe True arrivalRank tweak
+                            aTime = maybe False arrivalTime tweak
+                        in
+                            case (aRank, aTime) of
+                                (True, _) -> arrivalsByRank ys
+                                (False, True) -> arrivalsByTime ys
+                                (False, False) -> arrivalsByRank ys
+
+                    | Task{taskTweak = tweak} <- tasks
+                    | ys <- yss
+                    ]
+
             let psArriving = (fmap . fmap) fst as
 
             let pilots =

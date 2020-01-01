@@ -3,6 +3,12 @@ module Flight.Gap.Equation
     , arrivalTimePowerFraction
     ) where
 
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+
+import Flight.Gap.Time.Arrival (ArrivalLag(..))
+import Flight.Gap.Fraction.Arrival (ArrivalFraction(..))
+
 -- |
 -- prop> powerFraction 0 x == 0
 -- prop> powerFraction x 0 == 0
@@ -22,8 +28,8 @@ powerFraction c x =
         -- commented one is the formula from the published GAP doc.
         -- frac = (numerator ** 2 / denominator) ** (1/3)
 
-arrivalTimePowerFraction :: Double -> Double -> Double
-arrivalTimePowerFraction 0 _ = 0
-arrivalTimePowerFraction _ 0 = 0
-arrivalTimePowerFraction c x =
-    max 0 $ (1 + (2.0/3.0) * (c - x)) ** 3
+arrivalTimePowerFraction
+    :: ArrivalLag (Quantity Double [u| h |])
+    -> ArrivalFraction
+arrivalTimePowerFraction (ArrivalLag (MkQuantity lag)) =
+    ArrivalFraction . toRational . max 0 $ (1 - (2.0/3.0) * lag) ** 3
