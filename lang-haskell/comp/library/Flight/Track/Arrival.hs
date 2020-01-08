@@ -11,13 +11,16 @@ module Flight.Track.Arrival (TrackArrival(..)) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Score (ArrivalPlacing(..), ArrivalFraction(..))
+import Flight.Score (ArrivalPlacing(..), ArrivalFraction(..), ArrivalLag(..))
 
 -- ^ If arrived at goal then arrival rank and fraction.
 data TrackArrival =
     TrackArrival
         { rank :: ArrivalPlacing
+        , lag :: ArrivalLag (Quantity Double [u| h |])
         , frac :: ArrivalFraction
         }
     deriving (Eq, Ord, Show, Generic)

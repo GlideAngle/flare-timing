@@ -13,13 +13,13 @@ import qualified FlareTiming.Plot.Arrival.PlotTime as P (hgPlotTime)
 import WireTypes.Fraction
     (Fractions(..), ArrivalFraction(..), showArrivalFrac, showArrivalFracDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..))
+import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..), ArrivalLag(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilot)
 
 placings :: [TrackArrival] -> ([[Double]], [[Double]])
 placings arrivals =
-    (xy <$> soloPlaces, xy <$> equalPlaces)
+    (xyPosition <$> soloPlaces, xyPosition <$> equalPlaces)
     where
         (soloPlaces, equalPlaces) =
                 partition
@@ -28,11 +28,21 @@ placings arrivals =
                         TrackArrival{rank = ArrivalPlacingEqual _ _} -> False)
                     arrivals
 
-xy :: TrackArrival -> [Double]
-xy TrackArrival{rank = ArrivalPlacing x, frac = ArrivalFraction y} =
+xyPosition :: TrackArrival -> [Double]
+xyPosition TrackArrival{rank = ArrivalPlacing x, frac = ArrivalFraction y} =
     [fromIntegral x, y]
-xy TrackArrival{rank = ArrivalPlacingEqual x _, frac = ArrivalFraction y} =
+xyPosition TrackArrival{rank = ArrivalPlacingEqual x _, frac = ArrivalFraction y} =
     [fromIntegral x, y]
+
+lagMax :: [TrackArrival] -> Double
+lagMax arrivals = maximum $ [x | TrackArrival{lag = ArrivalLag x} <- arrivals]
+
+lags :: [TrackArrival] -> [[Double]]
+lags arrivals = xyLag <$> arrivals
+
+xyLag :: TrackArrival -> [Double]
+xyLag TrackArrival{lag = ArrivalLag x, frac = ArrivalFraction y} =
+    [x, y]
 
 arrivalPositionPlot
     :: MonadWidget t m
@@ -77,8 +87,10 @@ arrivalTimePlot sEx av = do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival-time") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
-                                let (soloPlaces, equalPlaces) = placings . snd . unzip $ av'
-                                _ <- P.hgPlotTime (_element_raw elPlot) soloPlaces equalPlaces
+                                let arrivals = snd $ unzip av'
+                                let xys = lags arrivals
+                                let lagMax' = lagMax arrivals
+                                _ <- P.hgPlotTime (_element_raw elPlot) lagMax' xys
                                 return ())
                             ]
 

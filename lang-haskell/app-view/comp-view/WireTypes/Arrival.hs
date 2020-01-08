@@ -1,5 +1,6 @@
 module WireTypes.Arrival
     ( ArrivalPlacing(..)
+    , ArrivalLag(..)
     , TrackArrival(..)
     ) where
 
@@ -31,9 +32,21 @@ instance FromJSON ArrivalPlacing where
 
     parseJSON _ = empty
 
+newtype ArrivalLag = ArrivalLag Double
+    deriving (Eq, Ord, Show)
+
+instance FromJSON ArrivalLag where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'h' : ' ' : xs -> return . ArrivalLag . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
 data TrackArrival =
     TrackArrival
         { rank :: ArrivalPlacing
+        , lag :: ArrivalLag
         , frac :: ArrivalFraction
         }
     deriving (Eq, Ord, Show, Generic)

@@ -18,20 +18,32 @@ import Stats (TimeStats(..), FlightStats(..))
 
 arrivalsByRank :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
 arrivalsByRank xs =
-    sortOn (rank . snd) $ (fmap . fmap) f ys
+    sortOn (rank . snd) $ (fmap . fmap) f ys'
     where
-        ys :: [(Pilot, ArrivalPlacing)]
+        ys :: [(Pilot, (ArrivalPlacing, UTCTime))]
         ys =
             catMaybes
-            $ (\(p, FlightStats{..}) -> (p,) <$> (join $ positionAtEss <$> statTimeRank))
+            $ (\(p, FlightStats{..}) -> do
+                pos <- join $ positionAtEss <$> statTimeRank
+                esT <- esMark <$> statTimeRank
+                return (p, (pos, esT)))
             <$> xs
 
         pilots :: PilotsAtEss
         pilots = PilotsAtEss . toInteger $ length ys
 
-        f position =
+        minT = minimum $ snd . snd <$> ys
+
+        ys' =
+            (\(p, (n, t)) ->
+                let lag = ArrivalLag $ pilotArrivalLag minT t
+                in (p, (n, lag)))
+            <$> ys
+
+        f (position, tm) =
             TrackArrival
                 { rank = position
+                , lag = tm
                 , frac = arrivalRankFraction pilots position
                 }
 
@@ -62,6 +74,7 @@ arrivalsByTime xs =
         f (pEss, tm) =
             TrackArrival
                 { rank = pEss
+                , lag = tm
                 , frac = arrivalTimeFraction pilots tm
                 }
 
