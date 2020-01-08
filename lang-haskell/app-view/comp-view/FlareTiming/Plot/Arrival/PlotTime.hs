@@ -32,10 +32,6 @@ foreign import javascript unsafe
     \  , range: [0, $2]\
     \  , graphType: 'scatter'\
     \  }]\
-    \, annotations: [{\
-    \    y: 0.2\
-    \  , text: 'minimum possible fraction'\
-    \  }]\
     \})"
     plotTime_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
