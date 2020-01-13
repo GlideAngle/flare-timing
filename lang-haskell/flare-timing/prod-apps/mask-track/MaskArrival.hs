@@ -1,5 +1,5 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-module MaskArrival (maskArrival, arrivalsByRank, arrivalsByTime) where
+module MaskArrival (maskArrival, arrivalInputs, arrivalsByRank, arrivalsByTime) where
 
 import Data.Time.Clock (UTCTime)
 import Data.Maybe (catMaybes)
@@ -16,19 +16,22 @@ import Flight.Score
     )
 import Stats (TimeStats(..), FlightStats(..))
 
-arrivalsByRank :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
-arrivalsByRank xs =
+type ArrivalInputs = [(Pilot, (ArrivalPlacing, UTCTime))]
+
+arrivalInputs :: [(Pilot, FlightStats k)] -> ArrivalInputs
+arrivalInputs xs =
+    catMaybes
+    $ (\(p, FlightStats{..}) -> do
+        pos <- join $ positionAtEss <$> statTimeRank
+        esT <- esMark <$> statTimeRank
+        return (p, (pos, esT)))
+    <$> xs
+
+
+arrivalsByRank :: ArrivalInputs -> [(Pilot, TrackArrival)]
+arrivalsByRank ys =
     sortOn (rank . snd) $ (fmap . fmap) f ys'
     where
-        ys :: [(Pilot, (ArrivalPlacing, UTCTime))]
-        ys =
-            catMaybes
-            $ (\(p, FlightStats{..}) -> do
-                pos <- join $ positionAtEss <$> statTimeRank
-                esT <- esMark <$> statTimeRank
-                return (p, (pos, esT)))
-            <$> xs
-
         pilots :: PilotsAtEss
         pilots = PilotsAtEss . toInteger $ length ys
 
@@ -47,19 +50,10 @@ arrivalsByRank xs =
                 , frac = arrivalRankFraction pilots position
                 }
 
-arrivalsByTime :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
-arrivalsByTime xs =
+arrivalsByTime :: ArrivalInputs -> [(Pilot, TrackArrival)]
+arrivalsByTime ys =
     sortOn (rank . snd) $ (fmap . fmap) f ys'
     where
-        ys :: [(Pilot, (ArrivalPlacing, UTCTime))]
-        ys =
-            catMaybes
-            $ (\(p, FlightStats{..}) -> do
-                pos <- join $ positionAtEss <$> statTimeRank
-                esT <- esMark <$> statTimeRank
-                return (p, (pos, esT)))
-            <$> xs
-
         pilots :: PilotsAtEss
         pilots = PilotsAtEss . toInteger $ length ys
 

@@ -73,7 +73,7 @@ import Flight.Scribe
 import qualified Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
-import MaskArrival (maskArrival, arrivalsByTime, arrivalsByRank)
+import MaskArrival (maskArrival, arrivalInputs, arrivalsByTime, arrivalsByRank)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (maskLead, raceTimes)
 import Mask.Reach.Time (maskReachTime)
@@ -142,11 +142,12 @@ writeMask
                     [
                         let aRank = maybe True arrivalRank tweak
                             aTime = maybe False arrivalTime tweak
+                            ys' = arrivalInputs ys
                         in
                             case (aRank, aTime) of
-                                (True, _) -> arrivalsByRank ys
-                                (False, True) -> arrivalsByTime ys
-                                (False, False) -> arrivalsByRank ys
+                                (True, _) -> arrivalsByRank ys'
+                                (False, True) -> arrivalsByTime ys'
+                                (False, False) -> arrivalsByRank ys'
 
                     | Task{taskTweak = tweak} <- tasks
                     | ys <- yss
