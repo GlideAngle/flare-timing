@@ -43,7 +43,7 @@ drive o = do
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
     end <- getTime Monotonic
-    fprint ("Extracting expected or normative optimal routes completed in " % timeSpecs % "\n") start end
+    fprint ("Extracting expected or normative efforts completed in " % timeSpecs % "\n") start end
 
 go :: TrimFsdbFile -> IO ()
 go trimFsdbFile = do
