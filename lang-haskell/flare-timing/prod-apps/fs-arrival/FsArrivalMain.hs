@@ -17,11 +17,11 @@ import Flight.Comp
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , Nominal(..)
-    , trimFsdbToNormEffort
+    , trimFsdbToNormArrival
     , findTrimFsdb
     , ensureExt
     )
-import Flight.Scribe (readTrimFsdb, writeNormEffort)
+import Flight.Scribe (readTrimFsdb, writeNormArrival)
 import FsArrivalOptions (description)
 
 main :: IO ()
@@ -50,7 +50,7 @@ go trimFsdbFile = do
     FsdbXml contents <- readTrimFsdb trimFsdbFile
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ normEfforts (FsdbXml contents')
-    either print (writeNormEffort (trimFsdbToNormEffort trimFsdbFile)) settings
+    either print (writeNormArrival (trimFsdbToNormArrival trimFsdbFile)) settings
 
 fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
 fsdbNominal (FsdbXml contents) = do

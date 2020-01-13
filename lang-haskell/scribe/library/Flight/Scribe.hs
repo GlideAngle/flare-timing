@@ -1,5 +1,6 @@
 module Flight.Scribe
-    ( readNormEffort, writeNormEffort
+    ( readNormArrival, writeNormArrival
+    , readNormEffort, writeNormEffort
     , readNormRoute, writeNormRoute
     , readNormScore, writeNormScore
     , readComp, writeComp
@@ -44,6 +45,7 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CleanFsdbFile(..)
     , TrimFsdbFile(..)
+    , NormArrivalFile(..)
     , NormEffortFile(..)
     , NormRouteFile(..)
     , NormScoreFile(..)
@@ -115,6 +117,20 @@ writeNormScore :: NormScoreFile -> NormPointing -> IO ()
 writeNormScore (NormScoreFile path) pointing = do
     let cfg = Y.setConfCompare (fieldOrder pointing) Y.defConfig
     let yaml = Y.encodePretty cfg pointing
+    BS.writeFile path yaml
+
+readNormArrival
+    :: (MonadThrow m, MonadIO m)
+    => NormArrivalFile
+    -> m Landing
+readNormArrival (NormArrivalFile path) = do
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
+
+writeNormArrival :: NormArrivalFile -> Landing -> IO ()
+writeNormArrival (NormArrivalFile path) track = do
+    let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
+    let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
 
 readNormEffort

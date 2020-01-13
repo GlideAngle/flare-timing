@@ -6,6 +6,7 @@ module Flight.Path
     , CleanFsdbFile(..)
     , TrimFsdbFile(..)
     , FsdbXml(..)
+    , NormArrivalFile(..)
     , NormEffortFile(..)
     , NormRouteFile(..)
     , NormScoreFile(..)
@@ -31,9 +32,11 @@ module Flight.Path
     , AlignTimeDir(..)
     , DiscardFurtherDir(..)
     , PegThenDiscardDir(..)
+    , trimFsdbToNormArrival
     , trimFsdbToNormEffort
     , trimFsdbToNormRoute
     , trimFsdbToNormScore
+    , compToNormArrival
     , compToNormEffort
     , compToNormRoute
     , compToNormScore
@@ -61,6 +64,7 @@ module Flight.Path
     , alignTimePath
     , discardFurtherPath
     , pegThenDiscardPath
+    , findNormArrival
     , findNormEffort
     , findNormRoute
     , findNormScore
@@ -85,6 +89,9 @@ import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
 import Flight.Score (PilotId(..), PilotName(..), Pilot(..))
+
+-- | The path to a competition expected arrival file.
+newtype NormArrivalFile = NormArrivalFile FilePath deriving Show
 
 -- | The path to a competition expected effort file.
 newtype NormEffortFile = NormEffortFile FilePath deriving Show
@@ -181,9 +188,17 @@ newtype LandOutFile = LandOutFile FilePath deriving Show
 -- | The path to as gap point file.
 newtype GapPointFile = GapPointFile FilePath deriving Show
 
+compToNormArrival :: CompInputFile -> NormArrivalFile
+compToNormArrival (CompInputFile p) =
+    NormArrivalFile $ flip replaceExtension (ext NormArrival) $ dropExtension p
+
 compToNormEffort :: CompInputFile -> NormEffortFile
 compToNormEffort (CompInputFile p) =
     NormEffortFile $ flip replaceExtension (ext NormEffort) $ dropExtension p
+
+trimFsdbToNormArrival :: TrimFsdbFile -> NormArrivalFile
+trimFsdbToNormArrival (TrimFsdbFile p) =
+    NormArrivalFile $ flip replaceExtension (ext NormArrival) $ dropExtension p
 
 trimFsdbToNormEffort :: TrimFsdbFile -> NormEffortFile
 trimFsdbToNormEffort (TrimFsdbFile p) =
@@ -315,6 +330,7 @@ data FileType
     | TrimFsdb
     | Kml
     | Igc
+    | NormArrival
     | NormEffort
     | NormRoute
     | NormScore
@@ -342,6 +358,7 @@ ext CleanFsdb = ".clean-fsdb.xml"
 ext TrimFsdb = ".trim-fsdb.xml"
 ext Kml = ".kml"
 ext Igc = ".igc"
+ext NormArrival = ".norm-arrival.yaml"
 ext NormEffort = ".norm-effort.yaml"
 ext NormRoute = ".norm-route.yaml"
 ext NormScore = ".norm-score.yaml"
@@ -369,6 +386,7 @@ ensureExt CleanFsdb = flip replaceExtensions "clean-fsdb.xml"
 ensureExt TrimFsdb = flip replaceExtensions "trim-fsdb.xml"
 ensureExt Kml = id
 ensureExt Igc = id
+ensureExt NormArrival = flip replaceExtensions "norm-arrival.yaml"
 ensureExt NormEffort = flip replaceExtensions "norm-effort.yaml"
 ensureExt NormRoute = flip replaceExtensions "norm-route.yaml"
 ensureExt NormScore = flip replaceExtensions "norm-score.yaml"
@@ -389,6 +407,15 @@ ensureExt MaskSpeed = flip replaceExtensions "mask-speed.yaml"
 ensureExt BonusReach = flip replaceExtensions "bonus-reach.yaml"
 ensureExt LandOut = flip replaceExtensions "land-out.yaml"
 ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"
+
+findNormArrival' :: FilePath -> IO [NormArrivalFile]
+findNormArrival' dir = fmap NormArrivalFile <$> findFiles NormArrival dir
+
+findNormArrival
+    :: (HasField "dir" o String, HasField "file" o String)
+    => o
+    -> IO [NormArrivalFile]
+findNormArrival = findFileType NormArrival findNormArrival' NormArrivalFile
 
 findNormEffort' :: FilePath -> IO [NormEffortFile]
 findNormEffort' dir = fmap NormEffortFile <$> findFiles NormEffort dir
