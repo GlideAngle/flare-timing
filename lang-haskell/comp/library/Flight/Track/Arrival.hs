@@ -7,14 +7,26 @@ Stability   : experimental
 
 The arrival standing of a pilot's track in comparison to other pilots.
 -}
-module Flight.Track.Arrival (TrackArrival(..)) where
+module Flight.Track.Arrival
+    ( ArrivalInputs
+    , TrackArrival(..)
+    , arrivalsByRank
+    , arrivalsByTime
+    ) where
 
+import Data.Time.Clock (UTCTime)
+import Data.List (sortOn)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Score (ArrivalPlacing(..), ArrivalFraction(..), ArrivalLag(..))
+import Flight.Track.Speed (pilotArrivalLag)
+import Flight.Score
+    ( Pilot(..), ArrivalPlacing(..), ArrivalFraction(..), ArrivalLag(..)
+    , PilotsAtEss(..)
+    , arrivalRankFraction, arrivalTimeFraction
+    )
 
 -- ^ If arrived at goal then arrival rank and fraction.
 data TrackArrival =
@@ -25,3 +37,49 @@ data TrackArrival =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)
+
+type ArrivalInputs = [(Pilot, (ArrivalPlacing, UTCTime))]
+
+arrivalsByRank :: ArrivalInputs -> [(Pilot, TrackArrival)]
+arrivalsByRank ys =
+    sortOn (rank . snd) $ (fmap . fmap) f ys'
+    where
+        pilots :: PilotsAtEss
+        pilots = PilotsAtEss . toInteger $ length ys
+
+        minT = minimum $ snd . snd <$> ys
+
+        ys' =
+            (\(p, (n, t)) ->
+                let lag = ArrivalLag $ pilotArrivalLag minT t
+                in (p, (n, lag)))
+            <$> ys
+
+        f (position, tm) =
+            TrackArrival
+                { rank = position
+                , lag = tm
+                , frac = arrivalRankFraction pilots position
+                }
+
+arrivalsByTime :: ArrivalInputs -> [(Pilot, TrackArrival)]
+arrivalsByTime ys =
+    sortOn (rank . snd) $ (fmap . fmap) f ys'
+    where
+        pilots :: PilotsAtEss
+        pilots = PilotsAtEss . toInteger $ length ys
+
+        minT = minimum $ snd . snd <$> ys
+
+        ys' =
+            (\(p, (n, t)) ->
+                let lag = ArrivalLag $ pilotArrivalLag minT t
+                in (p, (n, lag)))
+            <$> ys
+
+        f (pEss, tm) =
+            TrackArrival
+                { rank = pEss
+                , lag = tm
+                , frac = arrivalTimeFraction pilots tm
+                }
