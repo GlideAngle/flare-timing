@@ -105,7 +105,7 @@ testPkgs =
     , ("flight-fsdb", "parse")
     , ("flight-kml", "parse")
     , ("flight-task", "task")
-    ] 
+    ]
 
 -- | The pairs are names of the pkg and test.
 docTestPkgs :: [Pkg]
@@ -118,7 +118,7 @@ docTestPkgs =
     , "flight-kml"
     , "flight-igc"
     , "flight-track"
-    ] 
+    ]
 
 -- | The names of the test app executables.
 testApps :: [String]
@@ -126,27 +126,34 @@ testApps =
     [ "test-fsdb-parser"
     , "test-igc-parser"
     , "test-kml-parser"
-    ] 
+    ]
 
 -- | The names of the production app executables
 prodApps :: [String]
 prodApps =
-    [ "extract-input"
+    [ "fs-filter"
+    , "fs-route"
+    , "fs-arrival"
+    , "fs-effort"
+    , "fs-score"
+
+    , "extract-input"
     , "task-length"
     , "cross-zone"
     , "tag-zone"
+    , "peg-frame"
     , "align-time"
     , "discard-further"
     , "mask-track"
     , "land-out"
     , "gap-point"
-    ] 
+    ]
 
 -- | The names of the production app executables
 wwwApps :: [String]
 wwwApps =
     [ "comp-serve"
-    ] 
+    ]
 
 cleanRules :: Rules ()
 cleanRules = do

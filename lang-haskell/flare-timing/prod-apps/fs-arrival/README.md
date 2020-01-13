@@ -1,10 +1,10 @@
 ### Extracting Scoring Inputs
 
-    $ __shake-build/fs-route --help
+    $ __shake-build/fs-arrival --help
 
-    Extracts the distance difficulty chunking from a competition.
+    Extracts the arrival time, position and fraction from a competition.
 
-    fs-effort [OPTIONS]
+    fs-arrival [OPTIONS]
 
     Source:
       -d --dir=ITEM                  Over all *.comp.yaml files in this directory

@@ -62,6 +62,24 @@ in    defs
               , source-dirs =
                   "prod-apps/extract-input"
               }
+          , fs-arrival =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "flight-earth"
+                    , "flight-fsdb"
+                    , "flight-gap"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+              , main =
+                  "FsArrivalMain.hs"
+              , source-dirs =
+                  "prod-apps/fs-arrival"
+              }
           , fs-effort =
               { dependencies =
                     deps
