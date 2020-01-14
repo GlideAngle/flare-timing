@@ -6,21 +6,35 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNominal, parseNormEfforts)
-import Flight.Track.Land (Landing(..), TaskLanding(..), compLanding)
+import Flight.Fsdb
+    ( parseComp
+    , parseTweak
+    , parseScoreBack
+    , parseTasks
+    , parseNormArrivals
+    )
+import Flight.Track.Arrival (TrackArrival(..))
+import Flight.Track.Mask (MaskingArrival(..))
 import Flight.Comp
     ( FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
-    , Nominal(..)
+    , Pilot(..)
+    , Comp(..)
+    , Task(..)
+    , Tweak(..)
     , trimFsdbToNormArrival
     , findTrimFsdb
     , ensureExt
     )
+import Flight.Zone.MkZones (Discipline(..))
+import Flight.Score (ScoreBackTime(..), PilotsAtEss(..))
 import Flight.Scribe (readTrimFsdb, writeNormArrival)
 import FsArrivalOptions (description)
 
@@ -49,27 +63,69 @@ go :: TrimFsdbFile -> IO ()
 go trimFsdbFile = do
     FsdbXml contents <- readTrimFsdb trimFsdbFile
     let contents' = dropWhile (/= '<') contents
-    settings <- runExceptT $ normEfforts (FsdbXml contents')
+    settings <- runExceptT $ normArrivals (FsdbXml contents')
     either print (writeNormArrival (trimFsdbToNormArrival trimFsdbFile)) settings
 
-fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
-fsdbNominal (FsdbXml contents) = do
-    ns <- lift $ parseNominal contents
+fsdbComp :: FsdbXml -> ExceptT String IO Comp
+fsdbComp (FsdbXml contents) = do
+    cs <- lift $ parseComp contents
+    case cs of
+        Left msg -> ExceptT . return $ Left msg
+        Right [c] -> ExceptT . return $ Right c
+        Right _ -> do
+            let msg = "Expected only one comp"
+            lift $ print msg
+            throwE msg
+
+fsdbTweak :: Discipline -> FsdbXml -> ExceptT String IO Tweak
+fsdbTweak discipline (FsdbXml contents) = do
+    ns <- lift $ parseTweak discipline contents
     case ns of
         Left msg -> ExceptT . return $ Left msg
         Right [n] -> ExceptT . return $ Right n
         _ -> do
-            let msg = "Expected only one set of nominals for the comp"
+            let msg = "Expected only one set of tweaks for the comp"
             lift $ print msg
             throwE msg
 
-fsdbEfforts :: FsdbXml -> ExceptT String IO [TaskLanding]
-fsdbEfforts (FsdbXml contents) = do
-    fs <- lift $ parseNormEfforts contents
+fsdbScoreBack
+    :: FsdbXml
+    -> ExceptT String IO (Maybe (ScoreBackTime (Quantity Double [u| s |])))
+fsdbScoreBack (FsdbXml contents) = do
+    xs <- lift $ parseScoreBack contents
+    case xs of
+        Left msg -> ExceptT . return $ Left msg
+        Right [] -> ExceptT . return $ Right Nothing
+        Right [x] -> ExceptT . return $ Right x
+        _ -> do
+            let msg = "Expected one or no score back time for the comp"
+            lift $ print msg
+            throwE msg
+
+fsdbTasks
+    :: Discipline
+    -> Maybe Tweak
+    -> Maybe (ScoreBackTime (Quantity Double [u| s |]))
+    -> FsdbXml
+    -> ExceptT String IO [Task k]
+fsdbTasks discipline tw sb (FsdbXml contents) = do
+    ts <- lift $ parseTasks discipline tw sb contents
+    ExceptT $ return ts
+
+fsdbArrivals :: [Task k] -> FsdbXml -> ExceptT String IO [[(Pilot, TrackArrival)]]
+fsdbArrivals tasks (FsdbXml contents) = do
+    fs <- lift $ parseNormArrivals tasks contents
     ExceptT $ return fs
 
-normEfforts :: FsdbXml -> ExceptT String IO Landing
-normEfforts fsdbXml = do
-    Nominal{free} <- fsdbNominal fsdbXml
-    es <- fsdbEfforts fsdbXml
-    return $ compLanding free es
+normArrivals :: FsdbXml -> ExceptT String IO MaskingArrival
+normArrivals fsdbXml = do
+    Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
+    tw <- Just <$> fsdbTweak hgOrPg fsdbXml
+    sb <- fsdbScoreBack fsdbXml
+    ts <- fsdbTasks hgOrPg tw sb fsdbXml
+    as <- fsdbArrivals ts fsdbXml
+    return
+        MaskingArrival
+            { pilotsAtEss = PilotsAtEss . toInteger . length <$> as
+            , arrivalRank = as
+            }

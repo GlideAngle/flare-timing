@@ -127,7 +127,7 @@ readNormArrival (NormArrivalFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeNormArrival :: NormArrivalFile -> Landing -> IO ()
+writeNormArrival :: NormArrivalFile -> MaskingArrival -> IO ()
 writeNormArrival (NormArrivalFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track

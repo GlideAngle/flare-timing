@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fbd70c4c8e2b5fddbc203de940180e1541188eda8553f7d132765223f46e46a0
+-- hash: 6b4d665824fa49ba70be456d0e0a4d37bd1ee20dda0acb81e2c9bf4f95828954
 
 name:           flight-fsdb
 version:        0.1.0
@@ -45,6 +45,7 @@ library
       Flight.Fsdb.Pilot
       Flight.Fsdb.Stopped
       Flight.Fsdb.Task
+      Flight.Fsdb.TaskArrival
       Flight.Fsdb.TaskEffort
       Flight.Fsdb.TaskRoute
       Flight.Fsdb.TaskScore
@@ -95,6 +96,7 @@ test-suite doctest
       Flight.Fsdb.Pilot
       Flight.Fsdb.Stopped
       Flight.Fsdb.Task
+      Flight.Fsdb.TaskArrival
       Flight.Fsdb.TaskEffort
       Flight.Fsdb.TaskRoute
       Flight.Fsdb.TaskScore

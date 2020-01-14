@@ -15,6 +15,7 @@ module Flight.Track.Arrival
     ) where
 
 import Data.Time.Clock (UTCTime)
+import Data.Maybe (fromMaybe)
 import Data.List (sortOn)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -22,6 +23,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Track.Speed (pilotArrivalLag)
+import Flight.Track.Place (rankByArrival)
 import Flight.Score
     ( Pilot(..), ArrivalPlacing(..), ArrivalFraction(..), ArrivalLag(..)
     , PilotsAtEss(..)
@@ -38,7 +40,7 @@ data TrackArrival =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)
 
-type ArrivalInputs = [(Pilot, (ArrivalPlacing, UTCTime))]
+type ArrivalInputs = [(Pilot, UTCTime)]
 
 arrivalsByRank :: ArrivalInputs -> [(Pilot, TrackArrival)]
 arrivalsByRank ys =
@@ -47,12 +49,15 @@ arrivalsByRank ys =
         pilots :: PilotsAtEss
         pilots = PilotsAtEss . toInteger $ length ys
 
-        minT = minimum $ snd . snd <$> ys
+        ts = snd <$> ys
+        minT = minimum ts
+        placings = rankByArrival ts
+        place t = fromMaybe (ArrivalPlacing 0) (lookup t placings)
 
         ys' =
-            (\(p, (n, t)) ->
+            (\(p, t) ->
                 let lag = ArrivalLag $ pilotArrivalLag minT t
-                in (p, (n, lag)))
+                in (p, (place t, lag)))
             <$> ys
 
         f (position, tm) =
@@ -69,12 +74,15 @@ arrivalsByTime ys =
         pilots :: PilotsAtEss
         pilots = PilotsAtEss . toInteger $ length ys
 
-        minT = minimum $ snd . snd <$> ys
+        ts = snd <$> ys
+        minT = minimum ts
+        placings = rankByArrival ts
+        place t = fromMaybe (ArrivalPlacing 0) (lookup t placings)
 
         ys' =
-            (\(p, (n, t)) ->
+            (\(p, t) ->
                 let lag = ArrivalLag $ pilotArrivalLag minT t
-                in (p, (n, lag)))
+                in (p, (place t, lag)))
             <$> ys
 
         f (pEss, tm) =

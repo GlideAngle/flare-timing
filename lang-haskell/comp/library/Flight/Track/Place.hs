@@ -9,14 +9,16 @@ Task placing.
 -}
 module Flight.Track.Place
     ( rankByTotal
+    , rankByArrival
     , reIndex
     ) where
 
 import Data.Function (on)
 import Data.List (groupBy)
+import Data.Time.Clock (UTCTime)
 
 import Flight.Track.Point (Breakdown(..))
-import Flight.Score (Pilot(..), TaskPoints(..), TaskPlacing(..))
+import Flight.Score (Pilot(..), TaskPoints(..), TaskPlacing(..), ArrivalPlacing(..))
 import Data.Ratio.Rounding (dpRound)
 
 -- | Reindexing produces 1,2=,2=,4 and not 1,2=,2=,3 or 1,3=,3=,4.
@@ -72,3 +74,19 @@ truncateTaskPoints (TaskPoints x) = truncate . dpRound 0 $ x
 
 rankScore :: (Integer -> TaskPlacing) -> Integer -> Breakdown -> Breakdown
 rankScore f ii b = b{place = f ii}
+
+rankByArrival :: [UTCTime] -> [(UTCTime, ArrivalPlacing)]
+rankByArrival ts =
+    [ (y, f ii)
+    | (ii, ys) <-
+                reIndex
+                . zip [1..]
+                . groupBy (==)
+                $ ts
+    , let n = length ys
+    , let f =
+              if n == 1
+                 then ArrivalPlacing
+                 else flip ArrivalPlacingEqual $ fromIntegral n
+    , y <- ys
+    ]

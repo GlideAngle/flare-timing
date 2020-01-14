@@ -2,7 +2,6 @@
 module MaskArrival (maskArrival, arrivalInputs) where
 
 import Data.Maybe (catMaybes)
-import Control.Monad (join)
 
 import Flight.Comp (Pilot(..))
 import Flight.Track.Arrival (ArrivalInputs, TrackArrival(..))
@@ -14,9 +13,8 @@ arrivalInputs :: [(Pilot, FlightStats k)] -> ArrivalInputs
 arrivalInputs xs =
     catMaybes
     $ (\(p, FlightStats{..}) -> do
-        pos <- join $ positionAtEss <$> statTimeRank
         esT <- esMark <$> statTimeRank
-        return (p, (pos, esT)))
+        return (p, esT))
     <$> xs
 
 
