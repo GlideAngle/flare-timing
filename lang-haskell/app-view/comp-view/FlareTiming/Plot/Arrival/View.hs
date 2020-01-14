@@ -10,9 +10,7 @@ import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Arrival.PlotPosition as P (hgPlotPosition)
 import qualified FlareTiming.Plot.Arrival.PlotTime as P (hgPlotTime)
 
-import WireTypes.Fraction
-    (Fractions(..), ArrivalFraction(..), showArrivalFrac, showArrivalFracDiff)
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import WireTypes.Fraction (ArrivalFraction(..), showArrivalFrac, showArrivalFracDiff)
 import WireTypes.Arrival
     ( TrackArrival(..), ArrivalPlacing(..), ArrivalLag(..)
     , showArrivalLag, showArrivalLagDiff)
@@ -48,11 +46,10 @@ xyLag TrackArrival{lag = ArrivalLag x, frac = ArrivalFraction y} =
 
 arrivalPositionPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
-    -> Dynamic t [(Pilot, TrackArrival)]
+    => Dynamic t [(Pilot, TrackArrival)]
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-arrivalPositionPlot sEx av avN = do
+arrivalPositionPlot av avN = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -83,18 +80,17 @@ arrivalPositionPlot sEx av avN = do
 
                         return ()
 
-                tableBody rowArrivalPosition sEx av avN
+                tableBody rowArrivalPosition av avN
 
                 return ()
     return ()
 
 arrivalTimePlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
-    -> Dynamic t [(Pilot, TrackArrival)]
+    => Dynamic t [(Pilot, TrackArrival)]
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-arrivalTimePlot sEx av avN = do
+arrivalTimePlot av avN = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -130,15 +126,14 @@ arrivalTimePlot sEx av avN = do
 
                         return ()
 
-                tableBody rowArrivalTime sEx av avN
+                tableBody rowArrivalTime av avN
 
                 return ()
 
     return ()
 
 type ShowRow t m
-    = Map.Map Pilot Norm.NormBreakdown
-    -> Map.Map Pilot TrackArrival
+    = Map.Map Pilot TrackArrival
     -> Dynamic t Pilot
     -> Dynamic t TrackArrival
     -> m ()
@@ -146,28 +141,25 @@ type ShowRow t m
 tableBody
     :: MonadWidget t m
     => ShowRow t m
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackArrival)]
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-tableBody showRow sEx xs xsN = do
+tableBody showRow xs xsN = do
     el "tbody" $ do
-        _ <- dyn $ ffor2 sEx xsN (\sEx' xsN' -> do
-                let mapN = Map.fromList sEx'
+        _ <- dyn $ ffor xsN (\xsN' -> do
                 let mapT = Map.fromList xsN'
 
-                simpleList xs (uncurry (showRow mapN mapT) . splitDynPure))
+                simpleList xs (uncurry (showRow mapT) . splitDynPure))
 
         return ()
     return ()
 
 rowArrivalTime :: MonadWidget t m => ShowRow t m
-rowArrivalTime _ mapT p ta = do
+rowArrivalTime mapT p ta = do
     (yLag, yLagDiff, yFrac, yFracDiff) <- sample . current
                 $ ffor2 p ta (\pilot TrackArrival{frac, lag} ->
                     case Map.lookup pilot mapT of
-                        Just
-                            TrackArrival{frac = fracN, lag = lagN} ->
+                        Just TrackArrival{frac = fracN, lag = lagN} ->
                             ( showArrivalLag lagN
                             , showArrivalLagDiff lagN lag
                             , showArrivalFrac fracN
@@ -189,13 +181,11 @@ rowArrivalTime _ mapT p ta = do
         return ()
 
 rowArrivalPosition :: MonadWidget t m => ShowRow t m
-rowArrivalPosition mapN _ p ta = do
+rowArrivalPosition mapT p ta = do
     (yFrac, yFracDiff) <- sample . current
                 $ ffor2 p ta (\pilot TrackArrival{frac} ->
-                    case Map.lookup pilot mapN of
-                        Just
-                            Norm.NormBreakdown
-                                {fractions = Fractions {arrival = fracN}} ->
+                    case Map.lookup pilot mapT of
+                        Just TrackArrival{frac = fracN} ->
                             ( showArrivalFrac fracN
                             , showArrivalFracDiff fracN frac
                             )

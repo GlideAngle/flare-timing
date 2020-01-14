@@ -4,7 +4,6 @@ import Data.Maybe (fromMaybe)
 import Reflex.Dom
 import qualified Data.Text as T (Text)
 
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Arrival (TrackArrival(..))
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import qualified FlareTiming.Plot.Arrival.View as V
@@ -21,11 +20,10 @@ arrivalPlot
     :: MonadWidget t m
     => Dynamic t Discipline
     -> Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackArrival)])
     -> Dynamic t (Maybe [(Pilot, TrackArrival)])
     -> m ()
-arrivalPlot hgOrPg tweak sEx av avN = do
+arrivalPlot hgOrPg tweak av avN = do
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -70,19 +68,16 @@ arrivalPlot hgOrPg tweak sEx av avN = do
 
                                         Just Tweak{arrivalTime = True, arrivalRank = False} ->
                                             V.arrivalTimePlot
-                                                sEx
                                                 (fromMaybe [] <$> av)
                                                 (fromMaybe [] <$> avN)
 
                                         Just Tweak{arrivalTime = False, arrivalRank = True} ->
                                             V.arrivalPositionPlot
-                                                sEx
                                                 (fromMaybe [] <$> av)
                                                 (fromMaybe [] <$> avN)
 
                                         _ ->
                                             V.arrivalPositionPlot
-                                                sEx
                                                 (fromMaybe [] <$> av)
                                                 (fromMaybe [] <$> avN))
 

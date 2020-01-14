@@ -303,7 +303,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                 PlotTabEffort -> effortPlot hgOrPg sEx ef
                                 PlotTabTime -> timePlot sgs sEx sd
                                 PlotTabLead -> leadPlot tweak sEx ld
-                                PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av avN
+                                PlotTabArrive -> arrivalPlot hgOrPg tweak av avN
                                 PlotTabValid -> validPlot vy vw
                             )
                             <$> tabPlot
