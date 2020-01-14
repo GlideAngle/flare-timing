@@ -14,7 +14,7 @@ module Flight.Track.Place
     ) where
 
 import Data.Function (on)
-import Data.List (groupBy)
+import Data.List (groupBy, sort)
 import Data.Time.Clock (UTCTime)
 
 import Flight.Track.Point (Breakdown(..))
@@ -82,7 +82,7 @@ rankByArrival ts =
                 reIndex
                 . zip [1..]
                 . groupBy (==)
-                $ ts
+                $ sort ts
     , let n = length ys
     , let f =
               if n == 1

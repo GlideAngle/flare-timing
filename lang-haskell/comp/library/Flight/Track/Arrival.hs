@@ -46,13 +46,14 @@ arrivalsByRank :: ArrivalInputs -> [(Pilot, TrackArrival)]
 arrivalsByRank ys =
     sortOn (rank . snd) $ (fmap . fmap) f ys'
     where
+        n = toInteger $ length ys
         pilots :: PilotsAtEss
-        pilots = PilotsAtEss . toInteger $ length ys
+        pilots = PilotsAtEss n
 
         ts = snd <$> ys
         minT = minimum ts
         placings = rankByArrival ts
-        place t = fromMaybe (ArrivalPlacing 0) (lookup t placings)
+        place t = fromMaybe (ArrivalPlacing n) (lookup t placings)
 
         ys' =
             (\(p, t) ->
@@ -71,13 +72,14 @@ arrivalsByTime :: ArrivalInputs -> [(Pilot, TrackArrival)]
 arrivalsByTime ys =
     sortOn (rank . snd) $ (fmap . fmap) f ys'
     where
+        n = toInteger $ length ys
         pilots :: PilotsAtEss
-        pilots = PilotsAtEss . toInteger $ length ys
+        pilots = PilotsAtEss n
 
         ts = snd <$> ys
         minT = minimum ts
         placings = rankByArrival ts
-        place t = fromMaybe (ArrivalPlacing 0) (lookup t placings)
+        place t = fromMaybe (ArrivalPlacing n) (lookup t placings)
 
         ys' =
             (\(p, t) ->
