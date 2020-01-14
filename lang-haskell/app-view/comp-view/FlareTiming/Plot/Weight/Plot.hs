@@ -47,7 +47,7 @@ foreign import javascript unsafe
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  },{\
-    \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4 * ' + $2\
+    \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/' + $9 + ' * 1.4 * ' + $2\
     \  , nSamples: 101\
     \  , color: '#e41a1c'\
     \  , graphType: 'polyline'\
@@ -58,7 +58,7 @@ foreign import javascript unsafe
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  },{\
-    \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * ' + $3\
+    \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/' + $9 + ' * ' + $3\
     \  , nSamples: 101\
     \  , color: '#984ea3'\
     \  , graphType: 'polyline'\
@@ -70,8 +70,8 @@ foreign import javascript unsafe
     \  , graphType: 'scatter' \
     \  },{\
     \    fn:   '1 - ((0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3) + '\
-    \        + '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4 * ' + $2 + ' + '\
-    \        + '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * ' + $3 + ')'\
+    \        + '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/' + $9 + ' * 1.4 * ' + $2 + ' + '\
+    \        + '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/' + $9 + ' * ' + $3 + ')'\
     \  , nSamples: 101\
     \  , color: '#4daf4a'\
     \  , graphType: 'polyline'\
@@ -87,7 +87,7 @@ foreign import javascript unsafe
     \  , text: 'pilots in goal'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 hgWeightPlot
     :: IsElement e
@@ -114,6 +114,11 @@ hgWeightPlot
                | arrivalTime -> 1.0
                | otherwise -> 0.0
 
+    let awScale :: String =
+            if | arrivalRank -> "8"
+               | arrivalTime -> "4"
+               | otherwise -> "0"
+
     lw' <- toJSVal lw
     aw' <- toJSVal aw
     gr' <- toJSVal gr
@@ -121,8 +126,9 @@ hgWeightPlot
     a' <- toJSVal a
     l' <- toJSVal l
     t' <- toJSVal t
+    awScale' <- toJSVal awScale
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) lw' aw' gr' d' l' a' t'
+    Plot <$> hgPlot_ (unElement . toElement $ e) lw' aw' gr' d' l' a' t' awScale'
 
 foreign import javascript unsafe
     "functionPlot(\

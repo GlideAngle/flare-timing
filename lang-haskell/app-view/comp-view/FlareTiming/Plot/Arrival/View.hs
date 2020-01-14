@@ -13,7 +13,7 @@ import qualified FlareTiming.Plot.Arrival.PlotTime as P (hgPlotTime)
 import WireTypes.Fraction (ArrivalFraction(..), showArrivalFrac, showArrivalFracDiff)
 import WireTypes.Arrival
     ( TrackArrival(..), ArrivalPlacing(..), ArrivalLag(..)
-    , showArrivalLag, showArrivalLagDiff)
+    , showArrivalLagDiff)
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
