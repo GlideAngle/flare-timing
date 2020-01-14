@@ -16,6 +16,7 @@ import WireTypes.Arrival
     , showArrivalLag, showArrivalLagDiff)
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilot)
+import FlareTiming.Time (showHmsForHours, showHours)
 
 placings :: [TrackArrival] -> ([[Double]], [[Double]])
 placings arrivals =
@@ -116,17 +117,18 @@ arrivalTimePlot av avN = do
                 el "thead" $ do
                     el "tr" $ do
                         el "th" $ text " "
-                        el "th" $ text "Lag"
+                        elAttr "th" ("colspan" =: "2") $ text "Lag"
                         elAttr "th" ("colspan" =: "6") $ text ""
 
                     el "tr" $ do
                         el "th" $ text ""
+                        el "th" $ text "HH:MM:SS"
                         el "th" $ text "H.hhh"
-                        elClass "th" "th-norm th-norm-arrival" $ text ""
-                        elClass "th" "th-norm th-arrival-diff" $ text ""
+                        elClass "th" "th-norm th-norm-arrival" $ text "✓"
+                        elClass "th" "th-norm th-arrival-diff" $ text "Δ"
                         el "th" $ text "Fraction"
-                        elClass "th" "th-norm th-norm-arrival" $ text ""
-                        elClass "th" "th-norm th-arrival-diff" $ text ""
+                        elClass "th" "th-norm th-norm-arrival" $ text "✓"
+                        elClass "th" "th-norm th-arrival-diff" $ text "Δ"
                         el "th" $ text ""
 
                         return ()
@@ -165,7 +167,7 @@ rowArrivalTime mapT p ta = do
                 $ ffor2 p ta (\pilot TrackArrival{frac, lag} ->
                     case Map.lookup pilot mapT of
                         Just TrackArrival{frac = fracN, lag = lagN} ->
-                            ( showArrivalLag lagN
+                            ( showHr lagN
                             , showArrivalLagDiff lagN lag
                             , showArrivalFrac fracN
                             , showArrivalFracDiff fracN frac
@@ -175,7 +177,8 @@ rowArrivalTime mapT p ta = do
 
     el "tr" $ do
         el "td" . dynText $ showRank . rank <$> ta
-        el "td" . dynText $ showArrivalLag . lag <$> ta
+        el "td" . dynText $ showHms . lag <$> ta
+        el "td" . dynText $ showHr . lag <$> ta
         elClass "td" "td-norm" . text $ yLag
         elClass "td" "td-norm" . text $ yLagDiff
         el "td" . dynText $ showArrivalFrac . frac <$> ta
@@ -209,3 +212,9 @@ rowArrivalPosition mapT p ta = do
 showRank :: ArrivalPlacing -> T.Text
 showRank (ArrivalPlacing p) = T.pack . show $ p
 showRank (ArrivalPlacingEqual p _) = T.pack $ show p ++ "="
+
+showHr :: ArrivalLag -> T.Text
+showHr (ArrivalLag x) = showHours x
+
+showHms :: ArrivalLag -> T.Text
+showHms (ArrivalLag x) = showHmsForHours x

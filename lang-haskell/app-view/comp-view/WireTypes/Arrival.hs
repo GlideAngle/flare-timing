@@ -13,6 +13,7 @@ import Data.Aeson (Value(..), FromJSON(..))
 import qualified Data.Text as T (Text, pack, unpack)
 
 import WireTypes.Fraction (ArrivalFraction)
+import FlareTiming.Time (showHours)
 
 data ArrivalPlacing
     = ArrivalPlacing Integer
@@ -56,17 +57,16 @@ data TrackArrival =
     deriving anyclass (FromJSON)
 
 showArrivalLag :: ArrivalLag -> T.Text
-showArrivalLag (ArrivalLag h) =
-    T.pack $ printf "%.3f" h
+showArrivalLag (ArrivalLag h) = showHours h
 
 showArrivalLagDiff :: ArrivalLag -> ArrivalLag -> T.Text
 showArrivalLagDiff (ArrivalLag expected) (ArrivalLag actual)
     | f actual == f expected = "="
     | (filter (not . (flip elem) ['.', '+', '-', '0']) $ f (actual - expected)) == "" =
-        T.pack $ printf "%+.6f" (actual - expected)
+        T.pack $ printf "%+.06f" (actual - expected)
     | otherwise = g (actual - expected)
     where
         f :: Double -> String
-        f = printf "%+.3f"
+        f = printf "%+.03f"
 
         g = T.pack . f
