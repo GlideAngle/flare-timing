@@ -23,8 +23,9 @@ arrivalPlot
     -> Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackArrival)])
+    -> Dynamic t (Maybe [(Pilot, TrackArrival)])
     -> m ()
-arrivalPlot hgOrPg tweak sEx av = do
+arrivalPlot hgOrPg tweak sEx av avN = do
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -66,12 +67,24 @@ arrivalPlot hgOrPg tweak sEx av = do
                                     dyn $ ffor tweak (\case
                                         Just Tweak{arrivalRank = False, arrivalTime = False} ->
                                             notice
+
                                         Just Tweak{arrivalTime = True, arrivalRank = False} ->
-                                            V.arrivalTimePlot sEx (fromMaybe [] <$> av)
+                                            V.arrivalTimePlot
+                                                sEx
+                                                (fromMaybe [] <$> av)
+                                                (fromMaybe [] <$> avN)
+
                                         Just Tweak{arrivalTime = False, arrivalRank = True} ->
-                                            V.arrivalPositionPlot sEx (fromMaybe [] <$> av)
+                                            V.arrivalPositionPlot
+                                                sEx
+                                                (fromMaybe [] <$> av)
+                                                (fromMaybe [] <$> avN)
+
                                         _ ->
-                                            V.arrivalPositionPlot sEx (fromMaybe [] <$> av))
+                                            V.arrivalPositionPlot
+                                                sEx
+                                                (fromMaybe [] <$> av)
+                                                (fromMaybe [] <$> avN))
 
                                 return ())
 

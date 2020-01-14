@@ -2,12 +2,15 @@ module WireTypes.Arrival
     ( ArrivalPlacing(..)
     , ArrivalLag(..)
     , TrackArrival(..)
+    , showArrivalLag
+    , showArrivalLagDiff
     ) where
 
+import Text.Printf (printf)
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
 import Data.Aeson (Value(..), FromJSON(..))
-import qualified Data.Text as T (unpack)
+import qualified Data.Text as T (Text, pack, unpack)
 
 import WireTypes.Fraction (ArrivalFraction)
 
@@ -51,3 +54,19 @@ data TrackArrival =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
+
+showArrivalLag :: ArrivalLag -> T.Text
+showArrivalLag (ArrivalLag h) =
+    T.pack $ printf "%.6f" h
+
+showArrivalLagDiff :: ArrivalLag -> ArrivalLag -> T.Text
+showArrivalLagDiff (ArrivalLag expected) (ArrivalLag actual)
+    | f actual == f expected = "="
+    | (filter (not . (flip elem) ['.', '+', '-', '0']) $ f (actual - expected)) == "" =
+        T.pack $ printf "%+.10f" (actual - expected)
+    | otherwise = g (actual - expected)
+    where
+        f :: Double -> String
+        f = printf "%+.6f"
+
+        g = T.pack . f

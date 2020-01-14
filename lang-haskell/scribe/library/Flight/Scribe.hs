@@ -122,7 +122,7 @@ writeNormScore (NormScoreFile path) pointing = do
 readNormArrival
     :: (MonadThrow m, MonadIO m)
     => NormArrivalFile
-    -> m Landing
+    -> m MaskingArrival
 readNormArrival (NormArrivalFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents

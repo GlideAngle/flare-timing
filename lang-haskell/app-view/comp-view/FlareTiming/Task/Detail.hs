@@ -25,7 +25,7 @@ import FlareTiming.Comms
     , getTaskBolsterStats, getTaskBonusBolsterStats
     , getTaskReach, getTaskBonusReach
     , getTaskEffort, getTaskLanding, getTaskNormLanding
-    , getTaskArrival, getTaskLead, getTaskTime
+    , getTaskArrival, getTaskNormArrival, getTaskLead, getTaskTime
     , getTaskValidityWorking, getTaskNormValidityWorking
     , getTaskLengthNormSphere
     , getTaskLengthSphericalEdge
@@ -191,6 +191,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     lg <- holdDyn Nothing =<< (getTaskLanding ix pb)
     lgN <- holdDyn Nothing =<< (getTaskNormLanding ix pb)
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
+    avN <- holdDyn Nothing =<< (fmap Just <$> getTaskNormArrival ix pb)
     ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
     sd <- holdDyn Nothing =<< (fmap Just <$> getTaskTime ix pb)
     ft <- holdDyn Nothing =<< (fmap Just <$> getTaskFlyingSectionTimes ix pb)
@@ -302,7 +303,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                 PlotTabEffort -> effortPlot hgOrPg sEx ef
                                 PlotTabTime -> timePlot sgs sEx sd
                                 PlotTabLead -> leadPlot tweak sEx ld
-                                PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av
+                                PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av avN
                                 PlotTabValid -> validPlot vy vw
                             )
                             <$> tabPlot

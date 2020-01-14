@@ -28,7 +28,7 @@ foreign import javascript unsafe
     \    points: $4\
     \  , fnType: 'points'\
     \  , color: '#984ea3'\
-    \  , attr: { r: 2 }\
+    \  , attr: { r: $2 }\
     \  , range: [0, $2]\
     \  , graphType: 'scatter'\
     \  }]\
@@ -42,19 +42,19 @@ hgPlotTime
     -> [[Double]]
     -> IO Plot
 hgPlotTime e lagMax xys = do
-    let n :: Integer = fromIntegral $ length xys
+    let xMax :: Int = round $ lagMax + 0.5
 
     let xyFns :: [[Double]] =
             [ [x', fnTime x']
-            | x <- [1 .. 10 * n]
+            | x <- [1 .. 10 * xMax]
             , let x' = 0.1 * fromIntegral x
             ]
 
-    lagMax' <- toJSVal lagMax
+    xMax' <- toJSVal xMax
     xys' <- toJSValListOf xys
     xyFns' <- toJSValListOf xyFns
 
-    Plot <$> plotTime_ (unElement . toElement $ e) lagMax' xys' xyFns'
+    Plot <$> plotTime_ (unElement . toElement $ e) xMax' xys' xyFns'
 
 fnTime :: Double -> Double
 fnTime lag = max 0 $ (1 - (2.0/3.0) * lag) ** 3

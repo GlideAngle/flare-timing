@@ -39,6 +39,7 @@ module FlareTiming.Comms
     , getTaskLanding
     , getTaskNormScore
     , getTaskArrival
+    , getTaskNormArrival
     , getTaskLead
     , getTaskTime
     , emptyRoute
@@ -201,6 +202,9 @@ getTaskNormScore = getIxTask "fs-score" "score"
 
 getTaskArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
 getTaskArrival = getIxTask "mask-track" "arrival"
+
+getTaskNormArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
+getTaskNormArrival = getIxTask "fs-mask-track" "arrival"
 
 getTaskLead :: GetIxTask' t m [(Pilot, TrackLead)]
 getTaskLead = getIxTask "mask-track" "lead"
