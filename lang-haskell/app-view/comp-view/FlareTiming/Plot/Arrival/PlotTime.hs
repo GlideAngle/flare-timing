@@ -16,7 +16,7 @@ foreign import javascript unsafe
     \, width: 640\
     \, height: 460\
     \, disableZoom: true\
-    \, xAxis: {label: 'Arrival Lag', domain: [0, $2]}\
+    \, xAxis: {label: 'Arrival Lag (hours)', domain: [0, $2]}\
     \, yAxis: {domain: [-0.05, 1.05]}\
     \, data: [{\
     \    points: $3\
