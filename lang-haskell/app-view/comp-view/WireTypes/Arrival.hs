@@ -57,16 +57,16 @@ data TrackArrival =
 
 showArrivalLag :: ArrivalLag -> T.Text
 showArrivalLag (ArrivalLag h) =
-    T.pack $ printf "%.6f" h
+    T.pack $ printf "%.3f" h
 
 showArrivalLagDiff :: ArrivalLag -> ArrivalLag -> T.Text
 showArrivalLagDiff (ArrivalLag expected) (ArrivalLag actual)
     | f actual == f expected = "="
     | (filter (not . (flip elem) ['.', '+', '-', '0']) $ f (actual - expected)) == "" =
-        T.pack $ printf "%+.10f" (actual - expected)
+        T.pack $ printf "%+.6f" (actual - expected)
     | otherwise = g (actual - expected)
     where
         f :: Double -> String
-        f = printf "%+.6f"
+        f = printf "%+.3f"
 
         g = T.pack . f

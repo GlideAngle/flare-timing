@@ -113,16 +113,21 @@ arrivalTimePlot av avN = do
 
         elClass "div" "tile is-child" $
             elClass "table" "table is-striped" $ do
-                el "thead" $
+                el "thead" $ do
                     el "tr" $ do
-                        el "th" $ text "#"
-                        el "th" $ text "Lag (h)"
-                        elClass "th" "th-norm th-norm-arrival" $ text "✓"
-                        elClass "th" "th-norm th-arrival-diff" $ text "Δ"
+                        el "th" $ text " "
+                        el "th" $ text "Lag"
+                        elAttr "th" ("colspan" =: "6") $ text ""
+
+                    el "tr" $ do
+                        el "th" $ text ""
+                        el "th" $ text "H.hhh"
+                        elClass "th" "th-norm th-norm-arrival" $ text ""
+                        elClass "th" "th-norm th-arrival-diff" $ text ""
                         el "th" $ text "Fraction"
-                        elClass "th" "th-norm th-norm-arrival" $ text "✓"
-                        elClass "th" "th-norm th-arrival-diff" $ text "Δ"
-                        el "th" $ text "###-Pilot"
+                        elClass "th" "th-norm th-norm-arrival" $ text ""
+                        elClass "th" "th-norm th-arrival-diff" $ text ""
+                        el "th" $ text ""
 
                         return ()
 
