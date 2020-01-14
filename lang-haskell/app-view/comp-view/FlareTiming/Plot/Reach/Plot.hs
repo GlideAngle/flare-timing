@@ -23,6 +23,7 @@ foreign import javascript unsafe
     \    points: $4\
     \  , fnType: 'points'\
     \  , color: '#377eb8'\
+    \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $5\

@@ -24,6 +24,7 @@ foreign import javascript unsafe
     \  , fnType: 'points'\
     \  , color: '#984ea3'\
     \  , range: [1, $2]\
+    \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $4\
