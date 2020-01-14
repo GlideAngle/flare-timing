@@ -30,14 +30,14 @@ foreign import javascript unsafe
     \    points: $4\
     \  , fnType: 'points'\
     \  , color: '#984ea3'\
-    \  , attr: { r: 2 }\
+    \  , attr: { r: 3 }\
     \  , range: [1, $2]\
     \  , graphType: 'scatter'\
     \  },{\
     \    points: $5\
     \  , fnType: 'points'\
     \  , color: '#e41a1c'\
-    \  , attr: { r: 4 }\
+    \  , attr: { r: 5 }\
     \  , range: [1, $2]\
     \  , graphType: 'scatter'\
     \  }]\

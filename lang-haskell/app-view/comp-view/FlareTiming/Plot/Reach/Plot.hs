@@ -29,13 +29,13 @@ foreign import javascript unsafe
     \    points: $5\
     \  , fnType: 'points'\
     \  , color: '#377eb8'\
-    \  , attr: { r: 2 }\
+    \  , attr: { r: 3 }\
     \  , graphType: 'scatter'\
     \  },{\
     \    points: $6\
     \  , fnType: 'points'\
     \  , color: '#e41a1c'\
-    \  , attr: { r: 2 }\
+    \  , attr: { r: 3 }\
     \  , graphType: 'scatter'\
     \  }]\
     \})"

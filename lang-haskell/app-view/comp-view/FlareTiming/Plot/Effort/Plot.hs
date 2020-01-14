@@ -29,7 +29,7 @@ foreign import javascript unsafe
     \    points: $5\
     \  , fnType: 'points'\
     \  , color: '#ff7f00'\
-    \  , attr: { r: 2 }\
+    \  , attr: { r: 3 }\
     \  , graphType: 'scatter'\
     \  }]\
     \})"

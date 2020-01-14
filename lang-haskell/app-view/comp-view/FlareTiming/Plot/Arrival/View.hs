@@ -116,7 +116,7 @@ arrivalTimePlot av avN = do
                 el "thead" $
                     el "tr" $ do
                         el "th" $ text "#"
-                        el "th" $ text "Lag"
+                        el "th" $ text "Lag (h)"
                         elClass "th" "th-norm th-norm-arrival" $ text "✓"
                         elClass "th" "th-norm th-arrival-diff" $ text "Δ"
                         el "th" $ text "Fraction"

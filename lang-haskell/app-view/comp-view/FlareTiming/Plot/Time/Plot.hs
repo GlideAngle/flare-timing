@@ -17,7 +17,7 @@ foreign import javascript unsafe
     \, width: 640\
     \, height: 460\
     \, disableZoom: true\
-    \, xAxis: {label: 'Time (Hours)', domain: [$2, $3]}\
+    \, xAxis: {label: 'Time (hours)', domain: [$2, $3]}\
     \, yAxis: {domain: [-0.1, 1.01]}\
     \, data: [{\
     \    points: $4\
@@ -34,7 +34,7 @@ foreign import javascript unsafe
     \    points: $5\
     \  , fnType: 'points'\
     \  , color: '#4daf4a'\
-    \  , attr: { r: 2 }\
+    \  , attr: { r: 3 }\
     \  , graphType: 'scatter'\
     \  }]\
     \})"
