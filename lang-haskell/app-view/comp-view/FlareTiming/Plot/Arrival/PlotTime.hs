@@ -23,12 +23,13 @@ foreign import javascript unsafe
     \  , fnType: 'points'\
     \  , color: '#984ea3'\
     \  , range: [0, $2]\
+    \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $4\
     \  , fnType: 'points'\
     \  , color: '#984ea3'\
-    \  , attr: { r: $2 }\
+    \  , attr: { r: 2 }\
     \  , range: [0, $2]\
     \  , graphType: 'scatter'\
     \  }]\
@@ -42,19 +43,19 @@ hgPlotTime
     -> [[Double]]
     -> IO Plot
 hgPlotTime e lagMax xys = do
-    let xMax :: Int = round $ lagMax + 0.5
+    let xMax = lagMax
 
     let xyFns :: [[Double]] =
             [ [x', fnTime x']
-            | x <- [1 .. 10 * xMax]
-            , let x' = 0.1 * fromIntegral x
+            | x <- [0.0, 1.0 .. 10.0 * xMax]
+            , let x' = 0.1 * x
             ]
 
     xMax' <- toJSVal xMax
     xys' <- toJSValListOf xys
     xyFns' <- toJSValListOf xyFns
 
-    Plot <$> plotTime_ (unElement . toElement $ e) xMax' xys' xyFns'
+    Plot <$> plotTime_ (unElement . toElement $ e) xMax' xyFns' xys'
 
 fnTime :: Double -> Double
 fnTime lag = max 0 $ (1 - (2.0/3.0) * lag) ** 3
