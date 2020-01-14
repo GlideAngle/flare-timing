@@ -13,7 +13,7 @@ import WireTypes.ValidityWorking
     , PilotsFlying(..)
     )
 import WireTypes.Route (TaskLength(..), TaskDistance(..), showTaskDistance)
-import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..), AwScaling(..))
+import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..), AwScaling(..), scaling)
 import WireTypes.Point
     ( GoalRatio(..)
     , Allocation(..)
@@ -37,6 +37,7 @@ textf fmt d = T.pack $ printf fmt d
 
 hookWorking
     :: Discipline
+    -> Maybe Tweak
     -> Vy.TaskValidity
     -> PilotsFlying
     -> GoalRatio
@@ -47,11 +48,12 @@ hookWorking
     -> Weights
     -> Points
     -> T.Text
-hookWorking hgOrPg tv pf gr lws aws td bd w p =
-    weightWorking hgOrPg pf gr lws aws td bd w <> pointWorking tv w p
+hookWorking hgOrPg tweak tv pf gr lws aws td bd w p =
+    weightWorking hgOrPg tweak pf gr lws aws td bd w <> pointWorking tv w p
 
 weightWorking
     :: Discipline
+    -> Maybe Tweak
     -> PilotsFlying
     -> GoalRatio
     -> Maybe LwScaling
@@ -62,6 +64,7 @@ weightWorking
     -> T.Text
 weightWorking
     hgOrPg
+    tweak
     (PilotsFlying pf)
     (GoalRatio gr)
     lws
@@ -120,6 +123,13 @@ weightWorking
         dw3 = 0.587 * gr3
         dw' = 0.9 - dw1 + dw2 - dw3
 
+        Tweak{arrivalRank, arrivalTime} = scaling HangGliding tweak
+        awScale =
+            if | arrivalRank -> 8
+               | arrivalTime -> 4
+               | otherwise -> 0
+        awScaleText = T.pack $ show awScale
+
         lw' =
             if lw == 0 then 0 else
             case (hgOrPg, gr) of
@@ -127,7 +137,7 @@ weightWorking
                 (Paragliding, _) -> ((1 - dw') / 8) * 1.4 * (maybe 1 (\(LwScaling x) -> x) $ lws)
                 (HangGliding, _) -> ((1 - dw') / 8) * 1.4
 
-        aw' = if aw == 0 then 0 else (1 - dw') / 8
+        aw' = if aw == 0 then 0 else (1 - dw') / awScale
 
         tw' = 1 - dw' - lw' - aw'
 
@@ -163,7 +173,10 @@ weightWorking
             " aw &="
             <> " \\\\begin{cases}"
             <> " \\\\dfrac{1 - dw}{8} * aws"
-            <> " &\\\\text{if hang gliding}"
+            <> " &\\\\text{if hang gliding with arrival position points}"
+            <> katexNewLine
+            <> " \\\\dfrac{1 - dw}{4} * aws"
+            <> " &\\\\text{if hang gliding with arrival time points}"
             <> katexNewLine
             <> " 0"
             <> " &\\\\text{if paragliding}"
@@ -195,9 +208,9 @@ weightWorking
         katexArrivalWeight Paragliding =
             " &= 0"
         katexArrivalWeight HangGliding =
-            " &= \\\\frac{1 - dw}{8} * aws"
+            " &= \\\\frac{1 - dw}{" <> awScaleText <> "} * aws"
             <> katexNewLine
-            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8}" <> maybe "" (\(AwScaling x) -> if x == 0 then "* 0" else textf "* %.3f" x) aws)
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{" <> awScaleText <> "}" <> maybe "" (\(AwScaling x) -> if x == 0 then "* 0" else textf "* %.3f" x) aws)
             <> katexNewLine
             <> (" &= " <> textf "%.3f" aw')
 
@@ -293,14 +306,14 @@ spacer = elClass "div" "spacer" $ return ()
 viewWeightWorking
     :: MonadWidget t m
     => Discipline
+    -> Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
-    -> Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe Allocation)
     -> Dynamic t (Maybe TaskLength)
     -> m ()
-viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
-    _ <- dyn $ ffor3 vy' vw' twk' (\vy vw twk -> do
+viewWeightWorking hgOrPg twk' vy' vw' al' ln' = do
+    _ <- dyn $ ffor3 twk' vy' vw' (\twk vy vw -> do
         _ <- dyn $ ffor2 al' ln' (\al ln ->
             case (vy, vw, twk, al, ln) of
                 (Nothing, _, _, _, _) -> text "Loading validity ..."
@@ -358,7 +371,7 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                     elAttr
                         "a"
                         (  ("class" =: "button")
-                        <> ("onclick" =: hookWorking hgOrPg task pf gr lwScaling awScaling td bd wts pts)
+                        <> ("onclick" =: hookWorking hgOrPg twk task pf gr lwScaling awScaling td bd wts pts)
                         )
                         (text "Show Working")
 

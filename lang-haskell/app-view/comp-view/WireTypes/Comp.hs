@@ -18,6 +18,7 @@ module WireTypes.Comp
     , Tweak(..)
     , LwScaling(..)
     , AwScaling(..)
+    , scaling
     , getAllRawZones
     , getRaceRawZones
     , getGoalShape
@@ -36,6 +37,7 @@ module WireTypes.Comp
 
 import Text.Printf (printf)
 import Data.Time.Clock (UTCTime)
+import Data.Maybe (fromMaybe)
 import Control.Applicative (empty)
 import Control.Monad (join)
 import GHC.Generics (Generic)
@@ -379,3 +381,37 @@ getRaceRawZones Task{zones = Zones{raw = tps}, speedSection = ss} =
             where
                 start' = fromInteger start
                 end' = fromInteger end
+
+scaling :: Discipline -> Maybe Tweak -> Tweak
+scaling HangGliding Nothing =
+    Tweak
+        { leadingWeightScaling = Just (LwScaling 1)
+        , arrivalRank = False
+        , arrivalTime = False
+        }
+scaling Paragliding Nothing =
+    Tweak
+        { leadingWeightScaling = Just (LwScaling 2)
+        , arrivalRank = False
+        , arrivalTime = False
+        }
+scaling
+    HangGliding
+    (Just Tweak{leadingWeightScaling = lw, arrivalRank, arrivalTime}) =
+    Tweak
+        { leadingWeightScaling = Just lw'
+        , arrivalRank
+        , arrivalTime
+        }
+    where
+        lw' = fromMaybe (LwScaling 1) lw
+scaling
+    Paragliding
+    (Just Tweak{leadingWeightScaling = lw, arrivalRank, arrivalTime}) =
+    Tweak
+        { leadingWeightScaling = Just lw'
+        , arrivalRank
+        , arrivalTime
+        }
+    where
+        lw' = fromMaybe (LwScaling 2) lw

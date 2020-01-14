@@ -7,10 +7,9 @@ import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal)
-import Data.Maybe (fromMaybe)
 import FlareTiming.Plot.Foreign (Plot(..))
 
-import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..))
+import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..), scaling)
 import WireTypes.Point
     ( GoalRatio(..)
     , DistanceWeight(..)
@@ -202,37 +201,3 @@ pgWeightPlot
     t' <- toJSVal t
 
     Plot <$> pgPlot_ (unElement . toElement $ e) lw' gr' d' l' t'
-
-scaling :: Discipline -> Maybe Tweak -> Tweak
-scaling HangGliding Nothing =
-    Tweak
-        { leadingWeightScaling = Just (LwScaling 1)
-        , arrivalRank = False
-        , arrivalTime = False
-        }
-scaling Paragliding Nothing =
-    Tweak
-        { leadingWeightScaling = Just (LwScaling 2)
-        , arrivalRank = False
-        , arrivalTime = False
-        }
-scaling
-    HangGliding
-    (Just Tweak{leadingWeightScaling = lw, arrivalRank, arrivalTime}) =
-    Tweak
-        { leadingWeightScaling = Just lw'
-        , arrivalRank
-        , arrivalTime
-        }
-    where
-        lw' = fromMaybe (LwScaling 1) lw
-scaling
-    Paragliding
-    (Just Tweak{leadingWeightScaling = lw, arrivalRank, arrivalTime}) =
-    Tweak
-        { leadingWeightScaling = Just lw'
-        , arrivalRank
-        , arrivalTime
-        }
-    where
-        lw' = fromMaybe (LwScaling 2) lw
