@@ -2,6 +2,7 @@ module Flight.Fsdb.TaskArrival (parseNormArrivals) where
 
 import Data.Time.Clock (UTCTime)
 import Data.Maybe (catMaybes)
+import Data.List (sortOn)
 
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
@@ -140,4 +141,4 @@ parseNormArrivals tasks contents = do
             | xs <- xss
             ]
 
-    return $ Right yss
+    return . Right $ sortOn (rank . snd) <$> yss
