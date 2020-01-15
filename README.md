@@ -1,12 +1,12 @@
 # Flare Timing
 
-**Flare Timing** is a reference implementation of [GAP](GAP.md). It consists of
-a series of small command line console apps that write down the working from
-each step in calculating pilot scores. As such data entry and scoring is
-headless but we do include a web app that can be hosted locally for visual
-checks and comparisons with expected or official results. It is possible to
-publish the data alongside this web app standalone as done at [flaretiming, the
-web site](https://flaretiming.com).
+**Flare Timing** is a reference implementation of [GAP](lang-haskell/GAP.md).
+It consists of a series of small command line console apps that write down the
+working from each step in calculating pilot scores. As such data entry and
+scoring is headless but we do include a web app that can be hosted locally for
+visual checks and comparisons with expected or official results. It is possible
+to publish the data alongside this web app standalone as done at [flaretiming,
+the web site](https://flaretiming.com).
 
 ## Installation
 
@@ -35,9 +35,11 @@ comparisons between flare-timing and FS.
 [`fs-filter`](lang-haskell/flare-timing/prod-apps/fs-filter).  
 2. Grab the optimal route around the tasks found by FS with
 [`fs-route`](lang-haskell/flare-timing/prod-apps/fs-route).  
-3. Grab the landouts from FS with
+3. Grab the arrival times and positions from FS with
+[`fs-arrival`](lang-haskell/flare-timing/prod-apps/fs-arrival).  
+4. Grab the landouts from FS with
 [`fs-effort`](lang-haskell/flare-timing/prod-apps/fs-effort).  
-3. Grab the scores from FS with
+5. Grab the scores from FS with
 [`fs-score`](lang-haskell/flare-timing/prod-apps/fs-score).  
 
 That's the `*.fsdb` file done with. From here on, flare-timing deals with the
