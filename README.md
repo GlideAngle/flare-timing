@@ -71,15 +71,17 @@ To get the backend server for hosting the comp data running locally:
 1. Unpack the `*.igc` or `*.kml` tracklogs with
 [`unpack-track`](lang-haskell/flare-timing/prod-apps/unpack-track).  
 2. Start the server with
-[`comp-serve`](lang-haskell/flare-timing/app-serve).  
+[`comp-serve`](lang-haskell/app-serve).  
 
 To host the frontend web app for the comp locally:
 
-1. Open a try-reflex shell with:
+1. Change directory:
+    `> cd lang-haskell`
+2. Open a try-reflex shell with:
     `> reflex-platform/try-reflex`
-2. Build the frontend and start its webpack dev server with:
+3. Build the frontend and start its webpack dev server with:
     `> ./stack-shake-build.sh view-start-ghcjs`
-3. Open a browser at the hosted URL, usually http://localhost:9000/app.html.
+4. Open a browser at the hosted URL, usually http://localhost:9000/app.html.
 
 Documentation is available online at
 [flare-timing.readthedocs.io](http://flare-timing.readthedocs.io/) and there's
