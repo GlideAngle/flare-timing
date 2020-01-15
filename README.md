@@ -14,7 +14,7 @@ Download the source, build and install with [stack](https://docs.haskellstack.or
 
 ```
 > git clone https://github.com/BlockScope/flare-timing.git --recursive
-> cd flare-timing
+> cd flare-timing/lang-haskell
 > stack install
 ```
 
