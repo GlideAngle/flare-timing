@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Arrival Time Points
+## app-view-0.24
+
+* Score hang gliding comps using arrival time points.
+
 # Jump the Gun
 ## app-view-0.23
 
