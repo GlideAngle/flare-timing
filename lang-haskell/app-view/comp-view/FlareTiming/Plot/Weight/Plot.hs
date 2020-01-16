@@ -113,10 +113,12 @@ hgWeightPlot
                | arrivalTime -> 1.0
                | otherwise -> 0.0
 
-    let awScale :: String =
+    let awDenom :: String =
             if | arrivalRank -> "8"
                | arrivalTime -> "4"
-               | otherwise -> "0"
+               -- NOTE: It doesn't really matter what the denominator is now
+               -- because the scaling is by zero.
+               | otherwise -> "1"
 
     lw' <- toJSVal lw
     aw' <- toJSVal aw
@@ -125,9 +127,9 @@ hgWeightPlot
     a' <- toJSVal a
     l' <- toJSVal l
     t' <- toJSVal t
-    awScale' <- toJSVal awScale
+    awDenom' <- toJSVal awDenom
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) lw' aw' gr' d' l' a' t' awScale'
+    Plot <$> hgPlot_ (unElement . toElement $ e) lw' aw' gr' d' l' a' t' awDenom'
 
 foreign import javascript unsafe
     "functionPlot(\
