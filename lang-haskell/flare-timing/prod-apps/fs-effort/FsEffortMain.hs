@@ -6,6 +6,8 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -21,6 +23,7 @@ import Flight.Comp
     , findTrimFsdb
     , ensureExt
     )
+import Flight.Score (MinimumDistance(..))
 import Flight.Scribe (readTrimFsdb, writeNormLandout)
 import FsEffortOptions (description)
 
@@ -63,13 +66,16 @@ fsdbNominal (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbEfforts :: FsdbXml -> ExceptT String IO [TaskLanding]
-fsdbEfforts (FsdbXml contents) = do
-    fs <- lift $ parseNormLandouts contents
+fsdbEfforts
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> FsdbXml
+    -> ExceptT String IO [TaskLanding]
+fsdbEfforts free (FsdbXml contents) = do
+    fs <- lift $ parseNormLandouts free contents
     ExceptT $ return fs
 
 normEfforts :: FsdbXml -> ExceptT String IO Landing
 normEfforts fsdbXml = do
     Nominal{free} <- fsdbNominal fsdbXml
-    es <- fsdbEfforts fsdbXml
+    es <- fsdbEfforts free fsdbXml
     return $ compLanding free es

@@ -47,10 +47,10 @@ import qualified Flight.Score as Gap (ChunkDifficulty(..))
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Pilot (getCompPilot)
 
-nullLanding :: TaskLanding
-nullLanding =
+nullLanding :: MinimumDistance (Quantity Double [u| km |]) -> TaskLanding
+nullLanding free =
     TaskLanding
-        { minDistance = MinimumDistance [u| 0 km |]
+        { minDistance = free
         , bestDistance = Nothing
         , landout = 0
         , lookahead = Nothing
@@ -132,8 +132,8 @@ xpChunk pidMap =
 ixc :: Double -> (IxChunk, Chunk (Quantity Double [u| km |]))
 ixc x = let q = MkQuantity x in (toIxChunk $ PilotDistance q, Chunk q)
 
-xpDifficulty :: PU TaskLanding
-xpDifficulty =
+xpDifficulty :: MinimumDistance (Quantity Double [u| km |]) -> PU TaskLanding
+xpDifficulty free =
     xpElem "FsTaskDifficulty"
     -- WARNING: Filter only attributes, ignoring child elements such as
     -- <FsChunk ... />. If not then the pickling will fail with
@@ -148,7 +148,7 @@ xpDifficulty =
         )
     $ xpWrap
         ( \(ahead, sc, ec, sumDiff, lo) ->
-            nullLanding
+            (nullLanding free)
                 { lookahead = Just $ Lookahead ahead
                 , chunking =
                     Just $
@@ -184,11 +184,15 @@ xpDifficulty =
         (xpAttr "sum_of_difficulty" xpInt)
         (xpAttr "no_of_pilots_lo" xpInt)
 
-getEffort :: ArrowXml a => [Pilot] -> a XmlTree (Either String TaskLanding)
-getEffort pilots =
+getEffort
+    :: ArrowXml a
+    => MinimumDistance (Quantity Double [u| km |])
+    -> [Pilot]
+    -> a XmlTree (Either String TaskLanding)
+getEffort free pilots =
     getChildren
     >>> deep (hasName "FsTaskDifficulty")
-    >>> arr (unpickleDoc' xpDifficulty)
+    >>> arr (unpickleDoc' $ xpDifficulty free)
     &&& listA getChunk
     >>> arr (\case
         (Left s, _) -> Left s
@@ -204,8 +208,11 @@ getEffort pilots =
             >>> hasName "FsChunk"
             >>> arr (unpickleDoc' $ xpChunk kps)
 
-parseNormLandouts :: String -> IO (Either String [TaskLanding])
-parseNormLandouts contents = do
+parseNormLandouts
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> String
+    -> IO (Either String [TaskLanding])
+parseNormLandouts free contents = do
     let doc =
             readString
                 [ withValidate no
@@ -215,5 +222,5 @@ parseNormLandouts contents = do
                 contents
 
     ps <- runX $ doc >>> getCompPilot
-    xs <- runX $ doc >>> getEffort ps
+    xs <- runX $ doc >>> getEffort free ps
     return $ sequence xs
