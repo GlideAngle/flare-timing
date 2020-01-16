@@ -45,6 +45,7 @@ import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
+import qualified Flight.Track.Arrival as Arrival (TrackArrival(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Land)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
@@ -71,6 +72,7 @@ import Flight.Scribe
     , readPilotPegThenDiscard
     )
 import qualified Flight.Score as Gap (ReachToggle(..))
+import Flight.Score (ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskArrival (maskArrival, arrivalInputs)
@@ -147,7 +149,12 @@ writeMask
                             case (aRank, aTime) of
                                 (True, _) -> arrivalsByRank ys'
                                 (False, True) -> arrivalsByTime ys'
-                                (False, False) -> arrivalsByRank ys'
+                                -- NOTE: We're not using either kind of arrival
+                                -- for points so zero the fraction.
+                                (False, False) ->
+                                    [ (p, ta{Arrival.frac = ArrivalFraction 0})
+                                    | (p, ta) <- arrivalsByRank ys'
+                                    ]
 
                     | Task{taskTweak = tweak} <- tasks
                     | ys <- yss

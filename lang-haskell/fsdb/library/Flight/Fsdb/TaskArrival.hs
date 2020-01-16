@@ -37,7 +37,7 @@ import Text.XML.HXT.Core
 
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
 import Flight.Comp (PilotId(..), Pilot(..), Tweak(..), Task(..))
-import Flight.Score (ArrivalPoints(..))
+import Flight.Score (ArrivalPoints(..), ArrivalFraction(..))
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)
@@ -135,7 +135,12 @@ parseNormArrivals tasks contents = do
                     case (aRank, aTime) of
                         (True, _) -> arrivalsByRank ys
                         (False, True) -> arrivalsByTime ys
-                        (False, False) -> arrivalsByRank ys
+                        -- NOTE: We're not using either kind of arrival
+                        -- for points so zero the fraction.
+                        (False, False) ->
+                            [ (p, ta{frac = ArrivalFraction 0})
+                            | (p, ta) <- arrivalsByRank ys
+                            ]
 
             | Task{taskTweak = tweak} <- tasks
             | xs <- xss
