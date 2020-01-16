@@ -68,7 +68,7 @@ liTask ds stats x' = do
                                     elClass "div" "field is-grouped is-grouped-multiline" $ do
                                         elClass "div" "control" $
                                             el "a" . text
-                                                $ T.intercalate " - " ns
+                                                $ T.intercalate "-" ns
                                         elClass "div" "control" $
                                             elClass "div" "tags has-addons" $ do
                                                 elClass "span" "tag" $ text (T.pack taskName)

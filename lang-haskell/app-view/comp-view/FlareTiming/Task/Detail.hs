@@ -94,7 +94,7 @@ taskTileZones utcOffset sb t len = do
     tz <- sample . current $ timeZone <$> utcOffset
     let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
-    let title = T.intercalate " - " <$> zs
+    let title = T.intercalate "-" <$> zs
     let ss = getSpeedSection <$> t
     let gs = length . getStartGates <$> t
     let d = ffor len (maybe "" $ \TaskLength{..} -> showTaskDistance taskRoute)
