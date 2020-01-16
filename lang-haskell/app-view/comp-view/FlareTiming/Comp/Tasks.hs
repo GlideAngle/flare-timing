@@ -54,16 +54,22 @@ liTask ds stats x' = do
                         _ -> ""
 
             let s = case drop (i - 1) stats of
-                        Just (m, sd) : _ -> printf "Δ = %+.1f ± %.1f" m sd
+                        Just (m, sd) : _ -> printf "%+03.1f ± %03.1f" m sd
                         _ -> ""
 
             (e, _) <-
-                    el' "li" $ do
-                        el "a" . text
-                            $ T.intercalate " - " ns
-                        elClass "div" "tags has-addons" $ do
-                            elClass "span" "tag is-white" $ text (T.pack taskName)
-                            elClass "span" "tag is-white" $ text d
-                            elClass "span" "tag is-white" $ text (T.pack s)
+                    elAttr' "li" ("style" =: "margin: 1em 0") $ do
+                        elClass "div" "field is-grouped is-grouped-multiline" $ do
+                            elClass "div" "control" $
+                                el "a" . text
+                                    $ T.intercalate " - " ns
+                            elClass "div" "control" $
+                                elClass "div" "tags has-addons" $ do
+                                    elClass "span" "tag" $ text (T.pack taskName)
+                                    elClass "span" "tag is-black" $ text d
+                            elClass "div" "control" $
+                                elClass "div" "tags has-addons" $ do
+                                    elClass "span" "tag" $ text "Δ"
+                                    elClass "span" "tag is-warning" $ text (T.pack s)
 
             return $ domEvent Click e
