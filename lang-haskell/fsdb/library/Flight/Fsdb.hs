@@ -24,7 +24,7 @@ module Flight.Fsdb
     , parseNormScores
     , parseNormRoutes
     , parseNormArrivals
-    , parseNormEfforts
+    , parseNormLandouts
     ) where
 
 import Flight.Fsdb.Clean

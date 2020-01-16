@@ -69,7 +69,7 @@ import Flight.Score
     , ReachStats(..), TaskPoints(..)
     )
 import Flight.Scribe
-    ( readComp, readNormArrival, readNormEffort, readNormRoute, readNormScore
+    ( readComp, readNormArrival, readNormLandout, readNormRoute, readNormScore
     , readRoute, readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
@@ -112,12 +112,12 @@ import Flight.Comp
     , LandOutFile(..)
     , GapPointFile(..)
     , NormArrivalFile(..)
-    , NormEffortFile(..)
+    , NormLandoutFile(..)
     , NormRouteFile(..)
     , NormScoreFile(..)
     , findCompInput
     , compToNormArrival
-    , compToNormEffort
+    , compToNormLandout
     , compToNormRoute
     , compToNormScore
     , compToTaskLength
@@ -162,7 +162,7 @@ data Config k
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
         , normArrival :: Maybe MaskingArrival
-        , normEffort :: Maybe Landing
+        , normLandout :: Maybe Landing
         , normRoute :: Maybe [GeoLines]
         , normScore :: Maybe Norm.NormPointing
         }
@@ -185,7 +185,7 @@ nullConfig cf cs =
         , landing = Nothing
         , pointing = Nothing
         , normArrival = Nothing
-        , normEffort = Nothing
+        , normLandout = Nothing
         , normRoute = Nothing
         , normScore = Nothing
         }
@@ -407,7 +407,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
     let normArrivalFile@(NormArrivalFile normArrivalPath) = compToNormArrival compFile
-    let normEffortFile@(NormEffortFile normEffortPath) = compToNormEffort compFile
+    let normLandoutFile@(NormLandoutFile normLandoutPath) = compToNormLandout compFile
     let normRouteFile@(NormRouteFile normRoutePath) = compToNormRoute compFile
     let normScoreFile@(NormScoreFile normScorePath) = compToNormScore compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
@@ -424,7 +424,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
     putStrLn $ "Reading expected or normative arrivals from '" ++ takeFileName normArrivalPath ++ "'"
-    putStrLn $ "Reading expected or normative land outs from '" ++ takeFileName normEffortPath ++ "'"
+    putStrLn $ "Reading expected or normative land outs from '" ++ takeFileName normLandoutPath ++ "'"
     putStrLn $ "Reading expected or normative optimal routes from '" ++ takeFileName normRoutePath ++ "'"
     putStrLn $ "Reading expected or normative scores from '" ++ takeFileName normScorePath ++ "'"
 
@@ -502,9 +502,9 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readNormArrival normArrivalFile)
                     (const $ return Nothing)
 
-            normE <-
+            normL <-
                 catchIO
-                    (Just <$> readNormEffort normEffortFile)
+                    (Just <$> readNormLandout normLandoutFile)
                     (const $ return Nothing)
 
             normR <-
@@ -519,7 +519,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
 
             case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
                 (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS bR lo gp normA normE normR ns)
+                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS bR lo gp normA normL normR ns)
                 (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs and task lengths"
                     f =<< mkTaskLengthApp cfg{routing = rt}
@@ -1198,7 +1198,7 @@ getTaskEffort ii = do
 
 getTaskNormLanding :: Int -> AppT k IO (Maybe TaskLanding)
 getTaskNormLanding ii = do
-    x <- asks normEffort
+    x <- asks normLandout
     return . join $ taskLanding (IxTask ii) <$> x
 
 getTaskLanding :: Int -> AppT k IO (Maybe TaskLanding)

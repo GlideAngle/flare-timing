@@ -7,7 +7,7 @@ module Flight.Path
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , NormArrivalFile(..)
-    , NormEffortFile(..)
+    , NormLandoutFile(..)
     , NormRouteFile(..)
     , NormScoreFile(..)
     , CompInputFile(..)
@@ -33,11 +33,11 @@ module Flight.Path
     , DiscardFurtherDir(..)
     , PegThenDiscardDir(..)
     , trimFsdbToNormArrival
-    , trimFsdbToNormEffort
+    , trimFsdbToNormLandout
     , trimFsdbToNormRoute
     , trimFsdbToNormScore
     , compToNormArrival
-    , compToNormEffort
+    , compToNormLandout
     , compToNormRoute
     , compToNormScore
     , fsdbToCleanFsdb
@@ -65,7 +65,7 @@ module Flight.Path
     , discardFurtherPath
     , pegThenDiscardPath
     , findNormArrival
-    , findNormEffort
+    , findNormLandout
     , findNormRoute
     , findNormScore
     , findFsdb
@@ -94,7 +94,7 @@ import Flight.Score (PilotId(..), PilotName(..), Pilot(..))
 newtype NormArrivalFile = NormArrivalFile FilePath deriving Show
 
 -- | The path to a competition expected effort file.
-newtype NormEffortFile = NormEffortFile FilePath deriving Show
+newtype NormLandoutFile = NormLandoutFile FilePath deriving Show
 
 -- | The path to a competition expected optimal route file.
 newtype NormRouteFile = NormRouteFile FilePath deriving Show
@@ -192,17 +192,17 @@ compToNormArrival :: CompInputFile -> NormArrivalFile
 compToNormArrival (CompInputFile p) =
     NormArrivalFile $ flip replaceExtension (ext NormArrival) $ dropExtension p
 
-compToNormEffort :: CompInputFile -> NormEffortFile
-compToNormEffort (CompInputFile p) =
-    NormEffortFile $ flip replaceExtension (ext NormEffort) $ dropExtension p
+compToNormLandout :: CompInputFile -> NormLandoutFile
+compToNormLandout (CompInputFile p) =
+    NormLandoutFile $ flip replaceExtension (ext NormLandout) $ dropExtension p
 
 trimFsdbToNormArrival :: TrimFsdbFile -> NormArrivalFile
 trimFsdbToNormArrival (TrimFsdbFile p) =
     NormArrivalFile $ flip replaceExtension (ext NormArrival) $ dropExtension p
 
-trimFsdbToNormEffort :: TrimFsdbFile -> NormEffortFile
-trimFsdbToNormEffort (TrimFsdbFile p) =
-    NormEffortFile $ flip replaceExtension (ext NormEffort) $ dropExtension p
+trimFsdbToNormLandout :: TrimFsdbFile -> NormLandoutFile
+trimFsdbToNormLandout (TrimFsdbFile p) =
+    NormLandoutFile $ flip replaceExtension (ext NormLandout) $ dropExtension p
 
 compToNormRoute :: CompInputFile -> NormRouteFile
 compToNormRoute (CompInputFile p) =
@@ -331,7 +331,7 @@ data FileType
     | Kml
     | Igc
     | NormArrival
-    | NormEffort
+    | NormLandout
     | NormRoute
     | NormScore
     | CompInput
@@ -359,7 +359,7 @@ ext TrimFsdb = ".trim-fsdb.xml"
 ext Kml = ".kml"
 ext Igc = ".igc"
 ext NormArrival = ".norm-arrival.yaml"
-ext NormEffort = ".norm-effort.yaml"
+ext NormLandout = ".norm-land-out.yaml"
 ext NormRoute = ".norm-route.yaml"
 ext NormScore = ".norm-score.yaml"
 ext CompInput = ".comp-input.yaml"
@@ -387,7 +387,7 @@ ensureExt TrimFsdb = flip replaceExtensions "trim-fsdb.xml"
 ensureExt Kml = id
 ensureExt Igc = id
 ensureExt NormArrival = flip replaceExtensions "norm-arrival.yaml"
-ensureExt NormEffort = flip replaceExtensions "norm-effort.yaml"
+ensureExt NormLandout = flip replaceExtensions "norm-land-out.yaml"
 ensureExt NormRoute = flip replaceExtensions "norm-route.yaml"
 ensureExt NormScore = flip replaceExtensions "norm-score.yaml"
 ensureExt CompInput = flip replaceExtensions "comp-input.yaml"
@@ -417,14 +417,14 @@ findNormArrival
     -> IO [NormArrivalFile]
 findNormArrival = findFileType NormArrival findNormArrival' NormArrivalFile
 
-findNormEffort' :: FilePath -> IO [NormEffortFile]
-findNormEffort' dir = fmap NormEffortFile <$> findFiles NormEffort dir
+findNormLandout' :: FilePath -> IO [NormLandoutFile]
+findNormLandout' dir = fmap NormLandoutFile <$> findFiles NormLandout dir
 
-findNormEffort
+findNormLandout
     :: (HasField "dir" o String, HasField "file" o String)
     => o
-    -> IO [NormEffortFile]
-findNormEffort = findFileType NormEffort findNormEffort' NormEffortFile
+    -> IO [NormLandoutFile]
+findNormLandout = findFileType NormLandout findNormLandout' NormLandoutFile
 
 findNormRoute' :: FilePath -> IO [NormRouteFile]
 findNormRoute' dir = fmap NormRouteFile <$> findFiles NormRoute dir

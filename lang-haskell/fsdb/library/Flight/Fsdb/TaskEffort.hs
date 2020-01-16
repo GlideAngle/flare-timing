@@ -1,4 +1,4 @@
-module Flight.Fsdb.TaskEffort (parseNormEfforts) where
+module Flight.Fsdb.TaskEffort (parseNormLandouts) where
 
 import Data.Either (partitionEithers)
 import Data.Map (Map)
@@ -204,8 +204,8 @@ getEffort pilots =
             >>> hasName "FsChunk"
             >>> arr (unpickleDoc' $ xpChunk kps)
 
-parseNormEfforts :: String -> IO (Either String [TaskLanding])
-parseNormEfforts contents = do
+parseNormLandouts :: String -> IO (Either String [TaskLanding])
+parseNormLandouts contents = do
     let doc =
             readString
                 [ withValidate no
