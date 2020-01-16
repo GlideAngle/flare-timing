@@ -6,6 +6,8 @@ of this changelog.
 ## app-view-0.24
 
 * Score hang gliding comps using arrival time points.
+* Document for stopped tasks at least that unpack-track needs to be run before
+  peg-frame.
 
 # Jump the Gun
 ## app-view-0.23
