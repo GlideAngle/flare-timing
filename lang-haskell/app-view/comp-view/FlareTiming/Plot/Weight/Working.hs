@@ -102,12 +102,12 @@ weightWorking
     <> katexNewLine
 
     <> arrivalWeightCases
-    <> katexArrivalWeight hgOrPg
+    <> katexArrivalWeight'
     <> katexCheck 3 (Recalc aw') (Expect aw)
     <> katexNewLine
     <> katexNewLine
 
-    <> katexTimeWeight lw aw
+    <> katexTimeWeight lw aw'
     <> katexCheck 3 (Recalc tw') (Expect tw)
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-weight-working')"
@@ -129,6 +129,10 @@ weightWorking
                | arrivalTime -> 4
                | otherwise -> 0
         awScaleText = T.pack $ show awScale
+        katexArrivalWeight' =
+            if arrivalRank || arrivalTime
+                then katexArrivalWeight hgOrPg
+                else katexArrivalWeightZero
 
         lw' =
             if lw == 0 then 0 else
@@ -137,7 +141,10 @@ weightWorking
                 (Paragliding, _) -> ((1 - dw') / 8) * 1.4 * (maybe 1 (\(LwScaling x) -> x) $ lws)
                 (HangGliding, _) -> ((1 - dw') / 8) * 1.4
 
-        aw' = if aw == 0 then 0 else (1 - dw') / awScale
+        aw' =
+            if | aw == 0 -> 0
+               | not (arrivalRank || arrivalTime) -> 0
+               | otherwise -> (1 - dw') / awScale
 
         tw' = 1 - dw' - lw' - aw'
 
@@ -179,6 +186,9 @@ weightWorking
             <> " &\\\\text{if hang gliding with arrival time points}"
             <> katexNewLine
             <> " 0"
+            <> " &\\\\text{if hang gliding without arrival points}"
+            <> katexNewLine
+            <> " 0"
             <> " &\\\\text{if paragliding}"
             <> " \\\\end{cases}"
             <> katexNewLine
@@ -204,6 +214,9 @@ weightWorking
             <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4" <> maybe "" (\(LwScaling x) -> if x == 0 then "* 0" else textf "* %.3f" x) lws)
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
+
+        katexArrivalWeightZero =
+            " &= 0"
 
         katexArrivalWeight Paragliding =
             " &= 0"
