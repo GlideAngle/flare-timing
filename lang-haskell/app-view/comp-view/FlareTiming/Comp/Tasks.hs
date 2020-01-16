@@ -43,33 +43,34 @@ liTask
     -> Dynamic t (IxTask, Task)
     -> m (Event t ())
 liTask ds stats x' = do
-    (ix, x@Task{taskName}) <- sample . current $ x'
-    case ix of
-        IxTaskNone -> return never
-        IxTask i -> do
-            let zs = getRaceRawZones x
-            let ns = TP.getName <$> zs
-            let d = case drop (i - 1) ds of
-                        dTask : _ -> showTaskDistance dTask
-                        _ -> ""
+    ev <- dyn $ ffor x' (\(ix, x@Task{taskName}) ->
+                case ix of
+                    IxTaskNone -> return never
+                    IxTask i -> do
+                        let zs = getRaceRawZones x
+                        let ns = TP.getName <$> zs
+                        let d = case drop (i - 1) ds of
+                                    dTask : _ -> showTaskDistance dTask
+                                    _ -> ""
 
-            let s = case drop (i - 1) stats of
-                        Just (m, sd) : _ -> printf "%+03.1f ± %03.1f" m sd
-                        _ -> ""
+                        let s = case drop (i - 1) stats of
+                                    Just (m, sd) : _ -> printf "%+03.1f ± %03.1f" m sd
+                                    _ -> ""
 
-            (e, _) <-
-                    elAttr' "li" ("style" =: "margin: 1em 0") $ do
-                        elClass "div" "field is-grouped is-grouped-multiline" $ do
-                            elClass "div" "control" $
-                                el "a" . text
-                                    $ T.intercalate " - " ns
-                            elClass "div" "control" $
-                                elClass "div" "tags has-addons" $ do
-                                    elClass "span" "tag" $ text (T.pack taskName)
-                                    elClass "span" "tag is-black" $ text d
-                            elClass "div" "control" $
-                                elClass "div" "tags has-addons" $ do
-                                    elClass "span" "tag" $ text "Δ"
-                                    elClass "span" "tag is-warning" $ text (T.pack s)
+                        (e, _) <-
+                                elAttr' "li" ("style" =: "margin: 1em 0") $ do
+                                    elClass "div" "field is-grouped is-grouped-multiline" $ do
+                                        elClass "div" "control" $
+                                            el "a" . text
+                                                $ T.intercalate " - " ns
+                                        elClass "div" "control" $
+                                            elClass "div" "tags has-addons" $ do
+                                                elClass "span" "tag" $ text (T.pack taskName)
+                                                elClass "span" "tag is-black" $ text d
+                                        elClass "div" "control" $
+                                            elClass "div" "tags has-addons" $ do
+                                                elClass "span" "tag" $ text "Δ"
+                                                elClass "span" "tag is-warning" $ text (T.pack s)
 
-            return $ domEvent Click e
+                        return $ domEvent Click e)
+    switchHold never ev
