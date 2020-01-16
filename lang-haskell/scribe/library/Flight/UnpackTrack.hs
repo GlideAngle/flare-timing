@@ -4,7 +4,7 @@ module Flight.UnpackTrack
     , readCompTrackRows
     ) where
 
-import Control.Exception.Safe (MonadThrow, throwString)
+import Control.Exception.Safe (MonadThrow, throwString, catchIO)
 import Control.Monad.Except (MonadIO, liftIO)
 import Control.Monad (zipWithM)
 import qualified Data.ByteString.Lazy as BL
@@ -70,7 +70,7 @@ readTaskTrackRows
 readTaskTrackRows compFile i =
     mapM
         (\p -> do
-            rows <- readPilotTrackRows compFile i p
+            rows <- catchIO (readPilotTrackRows compFile i p) (const $ return [])
             return $ if null rows then Nothing else Just (p, rows))
 
 readPilotTrackRows
