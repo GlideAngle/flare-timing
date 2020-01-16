@@ -11,6 +11,8 @@ of this changelog.
 * Color code closeness to scores of FS in the task list using green for less
   than 2 points, yellow for less than 8 points and red for greater than that in
   the mean of the differences in the total points.
+* Do not default to award arrival position points when no kind of arrival
+  points are allowed.
 
 # Jump the Gun
 ## app-view-0.23
