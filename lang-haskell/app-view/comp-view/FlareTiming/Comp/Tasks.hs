@@ -53,9 +53,15 @@ liTask ds stats x' = do
                                     dTask : _ -> showTaskDistance dTask
                                     _ -> ""
 
-                        let s = case drop (i - 1) stats of
-                                    Just (m, sd) : _ -> printf "%+03.1f ± %03.1f" m sd
-                                    _ -> ""
+                        let (s, statClass) = case drop (i - 1) stats of
+                                    Just (m, sd) : _ ->
+                                        let m' = abs m in
+                                        ( printf "%+03.1f ± %03.1f" m sd
+                                        , if | m' < 2 -> "tag is-success"
+                                             | m' < 8 -> "tag is-warning"
+                                             | otherwise -> "tag is-danger"
+                                        )
+                                    _ -> ("", "tag is-danger")
 
                         (e, _) <-
                                 elAttr' "li" ("style" =: "margin: 1em 0") $ do
@@ -70,7 +76,7 @@ liTask ds stats x' = do
                                         elClass "div" "control" $
                                             elClass "div" "tags has-addons" $ do
                                                 elClass "span" "tag" $ text "Δ"
-                                                elClass "span" "tag is-warning" $ text (T.pack s)
+                                                elClass "span" statClass $ text (T.pack s)
 
                         return $ domEvent Click e)
     switchHold never ev
