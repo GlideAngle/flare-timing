@@ -19,7 +19,6 @@ module Flight.Track.Land
     ) where
 
 import Control.Lens ((^?), element)
-import Data.Maybe (fromMaybe, listToMaybe)
 import Data.List (sortOn)
 import Data.String (IsString())
 import GHC.Generics (Generic)
@@ -122,9 +121,7 @@ data TaskLanding =
 compLanding :: MinimumDistance (Quantity Double [u| km |]) -> [TaskLanding] -> Landing
 compLanding free xs =
     Landing
-        { minDistance =
-            fromMaybe free . listToMaybe $
-            (\TaskLanding{minDistance = md} -> md) <$> xs
+        { minDistance = free
         , bestDistance =
             (\TaskLanding{bestDistance = bd} -> bd) <$> xs
         , landout =
