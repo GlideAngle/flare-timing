@@ -34,6 +34,7 @@ import Flight.Scribe (readComp, readMaskingEffort, writeLanding)
 import Flight.Score
     ( FlownMax(..)
     , PilotDistance(..)
+    , MinimumDistance(..)
     , Difficulty(..)
     , Pilot
     , mergeChunks
@@ -96,7 +97,7 @@ difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
         , difficulty = cs
         }
     where
-        md = free nominal
+        md@(MinimumDistance (MkQuantity free')) = free nominal
 
         pss :: [[Pilot]]
         pss = (fmap . fmap) fst land
@@ -106,7 +107,9 @@ difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
             (fmap . fmap)
             (PilotDistance
             . MkQuantity
-            . (\TrackDistance{made} -> maybe 0 unTaskDistanceAsKm made)
+            . (\TrackDistance{made} ->
+                -- NOTE: Anyone not having a made distance is given the free one.
+                maybe free' unTaskDistanceAsKm made)
             . snd)
             land
 
