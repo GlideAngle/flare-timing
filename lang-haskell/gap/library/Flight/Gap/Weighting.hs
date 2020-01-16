@@ -64,7 +64,7 @@ data Lw
 
 -- | Arrival weight is only for hang gliding.
 data Aw
-    = AwPg
+    = AwZero
     | AwHgRank DistanceWeight
     | AwHgTime DistanceWeight
     deriving Show
@@ -111,7 +111,7 @@ leadingWeight (LwScaled (LwScaling k) dw) =
     LeadingWeight $ lwDistanceWeight dw * k
 
 arrivalWeight :: Aw -> ArrivalWeight
-arrivalWeight AwPg =
+arrivalWeight AwZero =
     ArrivalWeight 0
 arrivalWeight (AwHgRank (DistanceWeight (n :% d))) =
     ArrivalWeight $ (d - n) % (8 * d)

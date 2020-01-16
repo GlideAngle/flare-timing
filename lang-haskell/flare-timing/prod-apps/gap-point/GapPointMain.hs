@@ -484,14 +484,12 @@ points'
             [
                 arrivalWeight $
                 maybe
-                    (if discipline == Paragliding
-                        then AwPg
-                        else (AwHgRank dw))
+                    AwZero
                     (\Tweak{arrivalRank = byRank, arrivalTime = byTime} ->
-                        if | discipline == Paragliding -> AwPg
-                           | byTime -> (AwHgTime dw)
-                           | byRank -> (AwHgRank dw)
-                           | otherwise -> (AwHgRank dw))
+                        if | discipline == Paragliding -> AwZero
+                           | byTime -> AwHgTime dw
+                           | byRank -> AwHgRank dw
+                           | otherwise -> AwZero)
                    tw
 
             | dw <- dws
