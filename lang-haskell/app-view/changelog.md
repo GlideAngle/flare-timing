@@ -8,6 +8,9 @@ of this changelog.
 * Score hang gliding comps using arrival time points.
 * Document for stopped tasks at least that unpack-track needs to be run before
   peg-frame.
+* Color code closeness to scores of FS in the task list using green for less
+  than 2 points, yellow for less than 8 points and red for greater than that in
+  the mean of the differences in the total points.
 
 # Jump the Gun
 ## app-view-0.23
