@@ -1,12 +1,16 @@
 # Flare Timing
 
-**Flare Timing** is a reference implementation of [GAP](lang-haskell/GAP.md).
-It consists of a series of small command line console apps that write down the
-working from each step in calculating pilot scores. As such data entry and
-scoring is headless but we do include a web app that can be hosted locally for
-visual checks and comparisons with expected or official results. It is possible
-to publish the data alongside this web app standalone as done at [flaretiming,
-the web site](https://flaretiming.com).
+**Flare Timing** is a reference implementation of [GAP](lang-haskell/GAP.md)
+scoring for cross country hang gliding and paragliding racing.
+
+Its command line console apps, one for each step in scoring, write down their
+workings along with their outputs. With these workings we can trace how
+a pilot's score has been calculated. There's no visual competition editor. The
+one file that defines a competition can be generated from an FS database, the
+`*.fsdb` file. It includes a web app that can be hosted locally for visual
+checks and comparisons with expected or official results. It is possible to
+publish the data alongside this web app standalone as done at [flaretiming, the
+web site](https://flaretiming.com).
 
 ## Installation
 
