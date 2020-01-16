@@ -54,23 +54,23 @@ tasks:
 [`cross-zone`](lang-haskell/flare-timing/prod-apps/cross-zone).  
 4. Interpolate between crossing fixes for the time and place where a track tags
 a zone with [`tag-zone`](lang-haskell/flare-timing/prod-apps/tag-zone).  
-5. Peg the timing window to a reference frame with
+5. Unpack the `*.igc` or `*.kml` tracklogs with
+[`unpack-track`](lang-haskell/flare-timing/prod-apps/unpack-track).  
+6. Peg the timing window to a reference frame with
 [`peg-frame`](lang-haskell/flare-timing/prod-apps/peg-frame).  
-6. Index fixes from the time of first crossing with
+7. Index fixes from the time of first crossing with
 [`align-time`](lang-haskell/flare-timing/prod-apps/align-time).  
-7. Discard fixes that get further from goal and note leading area with
+8. Discard fixes that get further from goal and note leading area with
 [`discard-further`](lang-haskell/flare-timing/prod-apps/discard-further).  
-8. Mask a task over its tracklogs with
+9. Mask a task over its tracklogs with
 [`mask-track`](lang-haskell/flare-timing/prod-apps/mask-track).  
-9. Group and count land outs with
+10. Group and count land outs with
 [`land-out`](lang-haskell/flare-timing/prod-apps/land-out).  
-10. Score the competition with [`gap-point`](lang-haskell/flare-timing/prod-apps/gap-point).  
+11. Score the competition with [`gap-point`](lang-haskell/flare-timing/prod-apps/gap-point).  
 
 To get the backend server for hosting the comp data running locally:
 
-1. Unpack the `*.igc` or `*.kml` tracklogs with
-[`unpack-track`](lang-haskell/flare-timing/prod-apps/unpack-track).  
-2. Start the server with
+Start the server with
 [`comp-serve`](lang-haskell/app-serve).  
 
 To host the frontend web app for the comp locally:
