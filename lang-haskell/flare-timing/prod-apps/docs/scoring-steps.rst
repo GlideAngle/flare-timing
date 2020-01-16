@@ -17,6 +17,12 @@ scoring proceeds in steps  [#]_;
 #. Interpolate between crossing fixes with
    `tag-zone <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/tag-zone>`__.
 
+#. Unpack track logs to a flat list of time with latitude and longitude with
+   `unpack-track
+   <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/unpack-track>`__
+   . This data supplies the pilot tracks that can be downloaded and shown on
+   the map and is used to find the scored track indices for stopped tasks.
+
 #. Peg out the time range of each track log that will be scored with
    `peg-frame <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/peg-frame>`__.
 
@@ -42,13 +48,6 @@ If hosting the web app then the following two steps are needed too:
    These values and differences are shown as extra columns in tables
    side-by-side with ``flare-timing`` values. This is a quick way to spot
    discrepancies between the two GAP scoring implementations.
-
-#. Unpack track logs to a flat list of time with latitude and longitude with
-   `unpack-track
-   <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/unpack-track>`__
-   . This data supplies the pilot tracks that can be downloaded and shown on
-   the map.
-
 
 .. [#]
    In this list, any step can use the inputs or outputs from a previous step.
