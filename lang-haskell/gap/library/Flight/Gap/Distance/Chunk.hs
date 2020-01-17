@@ -159,27 +159,32 @@ overlay
     (i, iStart)
     (j, jEnd)
     (k, kEnd)
-    ChunkLandings{chunk = a, down = ahead}
+    ChunkLandings{chunk = c, down = ahead}
     ChunkRelativeDifficulty{chunk = r, rel}
     ChunkDifficultyFraction{chunk = d, frac}
         | (l == i)
         && (i == j)
-        && (j == a)
-        && (a == k)
+        && (j == c)
+        && (c == k)
         && (k == r)
         && (r == d) =
-          Just ChunkDifficulty
-              { chunk = l
-              , startChunk = iStart
-              , endChunk = jEnd
-              , endAhead = kEnd
-              , down = down
-              , downs = downs
-              , downers = downers
-              , downward = ahead
-              , rel = rel
-              , frac = frac
-              }
+            let (downs', downers') =
+                    unzip
+                    $ sort
+                    $ zip downs downers
+            in
+                Just ChunkDifficulty
+                    { chunk = l
+                    , startChunk = iStart
+                    , endChunk = jEnd
+                    , endAhead = kEnd
+                    , down = down
+                    , downs = downs'
+                    , downers = downers'
+                    , downward = ahead
+                    , rel = rel
+                    , frac = frac
+                    }
         | otherwise = Nothing
 
 -- | How many 100 m chunks to look ahead when working out the distance
