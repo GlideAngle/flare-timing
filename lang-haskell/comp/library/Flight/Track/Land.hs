@@ -14,6 +14,7 @@ module Flight.Track.Land
     , TaskLanding(..)
     , TrackEffort(..)
     , compLanding
+    , bestOfDifficulty
     , taskLanding
     , effortRank
     ) where
@@ -25,6 +26,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import "newtype" Control.Newtype (Newtype(..))
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
@@ -133,6 +135,11 @@ compLanding free xs =
         , difficulty =
             (\TaskLanding{difficulty = dy} -> dy) <$> xs
         }
+
+bestOfDifficulty :: [ChunkDifficulty] -> Maybe (FlownMax (Quantity Double [u| km |]))
+bestOfDifficulty xs =
+    let ys = concat $ downs <$> xs
+    in pack <$> if null ys then Nothing else Just . unpack $ maximum ys
 
 -- | For each task, the landing for that task.
 data Landing =

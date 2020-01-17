@@ -2,6 +2,8 @@ module Flight.Fsdb.TaskEffort (parseNormLandouts) where
 
 import Data.Either (partitionEithers)
 import Data.Map (Map)
+import Data.Maybe (fromMaybe)
+import "newtype" Control.Newtype (Newtype(..))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -34,7 +36,7 @@ import Text.XML.HXT.Core
 
 import Flight.Units ()
 import Flight.Fsdb.Internal.XmlPickle ()
-import Flight.Track.Land (TaskLanding(..))
+import Flight.Track.Land (TaskLanding(..), bestOfDifficulty)
 import Flight.Comp (Pilot(..), PilotId(..))
 import Flight.Score
     ( MinimumDistance(..), PilotDistance(..)
@@ -223,4 +225,11 @@ parseNormLandouts free contents = do
 
     ps <- runX $ doc >>> getCompPilot
     xs <- runX $ doc >>> getEffort free ps
-    return $ sequence xs
+    let ys =
+            (fmap . fmap)
+                (\x@TaskLanding{difficulty} ->
+                    x{bestDistance =
+                        fromMaybe (Just . pack $ unpack free)
+                        $ bestOfDifficulty <$> difficulty})
+                xs
+    return $ sequence ys
