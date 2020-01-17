@@ -13,6 +13,7 @@ of this changelog.
   the mean of the differences in the total points.
 * Do not default to award arrival position points when no kind of arrival
   points are allowed.
+* Award pilots without a tracklog effort for minimum distance.
 
 # Jump the Gun
 ## app-view-0.23
