@@ -359,6 +359,7 @@ in    defs
               { dependencies =
                     deps
                   # [ "containers"
+                    , "newtype"
                     , "safe-exceptions"
                     , "time"
                     , "flight-gap"

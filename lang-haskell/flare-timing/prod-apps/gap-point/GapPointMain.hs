@@ -23,6 +23,7 @@ import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_, join)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
+import "newtype" Control.Newtype (Newtype(..))
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -653,6 +654,8 @@ points'
             | ld <- landoutDifficulty
             ]
 
+        dFree = TaskDistance . convert $ unpack free
+
         difficultyDistancePointsDfNoTrack :: [[(Pilot, DifficultyPoints)]] =
             [ maybe
                 []
@@ -663,8 +666,24 @@ points'
                                HangGliding -> madeDifficultyDfNoTrack free lWholeTask ld'
                                Paragliding -> const $ DifficultyFraction 0.0
 
+                        -- NOTE: These pilots get at least free distance.
+                        freeOrMore x@AwardedDistance{awardedMade = d} =
+                            let made = Stats.max dFree d in
+                                if | made == d -> x
+                                   | otherwise ->
+                                        maybe
+                                            x
+                                            (\(TaskDistance (MkQuantity td)) ->
+                                                let (TaskDistance (MkQuantity df)) = made in
+                                                x
+                                                    { awardedMade = made
+                                                    , awardedFrac = min 1 $ df / td
+                                                    })
+                                            lWholeTask
+
                         xs' =
-                            (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} -> (p, f $ Gap.extra <$> aw))
+                            (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} ->
+                                (p, f . fmap freeOrMore $ Gap.extra <$> aw))
                             <$> xs
                     in
                         (fmap . fmap)
@@ -892,7 +911,10 @@ madeDifficultyDfNoTrack (MinimumDistance dMin) td mapIxToFrac dAward =
             case (td, dAward) of
                 (_, Nothing) -> dMin
                 (Nothing, _) -> dMin
-                (Just td', Just dAward') -> awardByFrac (Clamp True) td' dAward'
+                (Just td', Just dAward') ->
+                    -- WARNING: Don't allow awardedFrac to give a pilot
+                    -- distance less than the free distance.
+                    Stats.max dMin $ awardByFrac (Clamp True) td' dAward'
 
         ix = toIxChunk (PilotDistance pd)
 

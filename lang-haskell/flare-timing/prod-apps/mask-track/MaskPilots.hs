@@ -120,46 +120,46 @@ maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
         yssDfNt :: [[(Pilot, FlightStats _)]] =
             [
                 fmap
-                (\Cmp.DfNoTrackPilot
-                    { pilot = p
-                    , awardedReach = dA
-                    , awardedVelocity = AwardedVelocity{ss, es}
-                    } ->
-                    let dm :: Quantity Double [u| m |] = convert dMin
+                    (\Cmp.DfNoTrackPilot
+                        { pilot = p
+                        , awardedReach = dA
+                        , awardedVelocity = AwardedVelocity{ss, es}
+                        } ->
+                        let dm :: Quantity Double [u| m |] = convert dMin
 
-                        d = TaskDistance
-                            <$> maybe
-                                (Just dm)
-                                (\ReachToggle{extra = dAward} -> do
-                                    td <- lTask
-                                    let a = awardByFrac (Clamp True) td dAward
+                            d = TaskDistance
+                                <$> maybe
+                                    (Just dm)
+                                    (\ReachToggle{extra = dAward} -> do
+                                        td <- lTask
+                                        let a = awardByFrac (Clamp True) td dAward
 
-                                    return $ max a dm)
-                                dA
+                                        return $ max a dm)
+                                    dA
 
-                        sLand = madeAwarded <$> lTask <*> d
+                            sLand = madeAwarded <$> lTask <*> d
 
-                        sTime =
-                            case (ss, es) of
-                                (Just ss', Just es') ->
-                                    let se = StartEnd ss' es
-                                        ssT = pilotTime [StartGate ss'] se
-                                        gsT = pilotTime gates se
-                                    in
-                                        do
-                                            ssT' <- ssT
-                                            gsT' <- gsT
-                                            return
-                                                TimeStats
-                                                    { ssTime = ssT'
-                                                    , gsTime = gsT'
-                                                    , esMark = es'
-                                                    , positionAtEss = Nothing
-                                                    }
-                                _ -> Nothing
+                            sTime =
+                                case (ss, es) of
+                                    (Just ss', Just es') ->
+                                        let se = StartEnd ss' es
+                                            ssT = pilotTime [StartGate ss'] se
+                                            gsT = pilotTime gates se
+                                        in
+                                            do
+                                                ssT' <- ssT
+                                                gsT' <- gsT
+                                                return
+                                                    TimeStats
+                                                        { ssTime = ssT'
+                                                        , gsTime = gsT'
+                                                        , esMark = es'
+                                                        , positionAtEss = Nothing
+                                                        }
+                                    _ -> Nothing
 
-                    in (p, nullStats{statLand = sLand, statTimeRank = sTime}))
-                dfNts
+                        in (p, nullStats{statLand = sLand, statTimeRank = sTime}))
+                    dfNts
             | DfNoTrack dfNts <- dfNtss
             | lTask <- (fmap. fmap) wholeTaskDistance lsTask
             | gates <- startGates <$> tasks

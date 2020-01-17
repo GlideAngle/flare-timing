@@ -538,6 +538,7 @@ getDidFlyIf predTrackLogFilename kps =
             &&& getAwardedTime
             >>> arr (\(pid, (ad, (abd, at))) -> (unKeyPilot (keyMap kps) . PilotId $ pid, ad, abd, at))
 
+        -- WARNING: Expect distance="0.000" with tracklog_filename="".
         getAwardedDistance =
             (getChildren
             >>> hasName "FsFlightData"
