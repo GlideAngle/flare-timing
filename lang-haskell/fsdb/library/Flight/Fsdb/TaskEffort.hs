@@ -1,6 +1,7 @@
 module Flight.Fsdb.TaskEffort (parseNormLandouts) where
 
 import Data.Either (partitionEithers)
+import Data.List (sortBy)
 import Data.Map (Map)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -107,23 +108,26 @@ xpChunk :: Map PilotId Pilot -> PU Gap.ChunkDifficulty
 xpChunk pidMap =
     xpElem "FsChunk"
     $ xpWrap
-        ( \(c, s, e, ea, d, dw, rel :: Double, frac :: Double, ds) ->
-            nullChunkDifficulty
-                { Gap.chunk = IxChunk c
-                , Gap.startChunk = Chunk $ MkQuantity s
-                , Gap.endChunk = Chunk $ MkQuantity e
-                , Gap.endAhead = Chunk $ MkQuantity ea
-                , Gap.down = d
-                , Gap.downward = dw
-                , Gap.downs =
-                    PilotDistance
-                    . MkQuantity
-                    . snd
-                    <$> ds
-                , Gap.downers = unKeyPilot pidMap . PilotId . fst <$> ds
-                , Gap.rel = RelativeDifficulty $ toRational rel
-                , Gap.frac = DifficultyFraction $ toRational frac
-                }
+        ( \(c, s, e, ea, d, dw, rel :: Double, frac :: Double, ds') ->
+            let distName (pid, pd) = (pd, unKeyPilot pidMap $ PilotId pid)
+                ds = sortBy (\a b -> distName a `compare` distName b) ds'
+            in
+                nullChunkDifficulty
+                    { Gap.chunk = IxChunk c
+                    , Gap.startChunk = Chunk $ MkQuantity s
+                    , Gap.endChunk = Chunk $ MkQuantity e
+                    , Gap.endAhead = Chunk $ MkQuantity ea
+                    , Gap.down = d
+                    , Gap.downward = dw
+                    , Gap.downs =
+                        PilotDistance
+                        . MkQuantity
+                        . snd
+                        <$> ds
+                    , Gap.downers = unKeyPilot pidMap . PilotId . fst <$> ds
+                    , Gap.rel = RelativeDifficulty $ toRational rel
+                    , Gap.frac = DifficultyFraction $ toRational frac
+                    }
         , \Gap.ChunkDifficulty
                 { Gap.chunk = IxChunk c
                 , Gap.startChunk = Chunk (MkQuantity s)
