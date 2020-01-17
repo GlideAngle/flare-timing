@@ -2,8 +2,6 @@ module Flight.Fsdb.TaskEffort (parseNormLandouts) where
 
 import Data.Either (partitionEithers)
 import Data.Map (Map)
-import Data.Maybe (fromMaybe)
-import "newtype" Control.Newtype (Newtype(..))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -36,13 +34,14 @@ import Text.XML.HXT.Core
 
 import Flight.Units ()
 import Flight.Fsdb.Internal.XmlPickle ()
-import Flight.Track.Land (TaskLanding(..), bestOfDifficulty)
+import Flight.Track.Land (TaskLanding(..))
 import Flight.Comp (Pilot(..), PilotId(..))
 import Flight.Score
     ( MinimumDistance(..), PilotDistance(..)
     , Lookahead(..), SumOfDifficulty(..)
     , IxChunk(..), Chunk(..), Chunking(..)
     , RelativeDifficulty(..), DifficultyFraction(..)
+    , ReachToggle(..), FlownMax(..)
     , toIxChunk
     )
 import qualified Flight.Score as Gap (ChunkDifficulty(..))
@@ -79,6 +78,30 @@ xpDown :: PU (String, Double)
 xpDown =
     xpElem "FsDown"
     $ xpPair (xpAttr "id" xpText) (xpAttr "down" xpPrim)
+
+xpReach :: PU (ReachToggle (FlownMax (Quantity Double [u| km |])))
+xpReach =
+    xpElem "FsTaskScoreParams"
+    $ xpFilterCont isAttr
+    $ xpFilterAttr
+        ( hasName "best_dist"
+        <+> hasName "best_real_dist"
+        )
+    $ xpWrap
+        ( (\(bdE, bdF) ->
+                ReachToggle
+                    { extra = FlownMax $ MkQuantity bdE
+                    , flown = FlownMax $ MkQuantity bdF
+                    })
+        , (\ReachToggle
+                { extra = FlownMax (MkQuantity bdE)
+                , flown = FlownMax (MkQuantity bdF)
+                } ->
+                    (bdE, bdF))
+        )
+    $ xpPair
+        (xpAttr "best_dist" xpPrim)
+        (xpAttr "best_real_dist" xpPrim)
 
 xpChunk :: Map PilotId Pilot -> PU Gap.ChunkDifficulty
 xpChunk pidMap =
@@ -186,6 +209,19 @@ xpDifficulty free =
         (xpAttr "sum_of_difficulty" xpInt)
         (xpAttr "no_of_pilots_lo" xpInt)
 
+getReach
+    :: ArrowXml a
+    => a XmlTree (Either String (ReachToggle (FlownMax (Quantity Double [u| km |]))))
+getReach =
+    getChildren
+    >>> deep (hasName "FsTask")
+    >>> getReach'
+    where
+        getReach' =
+            getChildren
+            >>> hasName "FsTaskScoreParams"
+            >>> arr (unpickleDoc' xpReach)
+
 getEffort
     :: ArrowXml a
     => MinimumDistance (Quantity Double [u| km |])
@@ -224,12 +260,23 @@ parseNormLandouts free contents = do
                 contents
 
     ps <- runX $ doc >>> getCompPilot
+    rs <- runX $ doc >>> getReach
     xs <- runX $ doc >>> getEffort free ps
-    let ys =
-            (fmap . fmap)
-                (\x@TaskLanding{difficulty} ->
-                    x{bestDistance =
-                        fromMaybe (Just . pack $ unpack free)
-                        $ bestOfDifficulty <$> difficulty})
-                xs
-    return $ sequence ys
+
+    let f ReachToggle{flown = bd} = bd
+    let g bd x = x{bestDistance = Just bd}
+
+    let rs' = sequence rs
+    let xs':: Either String [TaskLanding] = sequence xs
+    let ys :: Either String [TaskLanding] =
+            case (rs', xs') of
+                (Right rs'', Right xs'') ->
+                    Right
+                        [ g (f r) x
+                        | r <- rs''
+                        | x <- xs''
+                        ]
+
+                _ -> xs'
+
+    return ys
