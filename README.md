@@ -146,11 +146,11 @@ flare-timing includes or not.
     - [x] Double leading points weight
     - [ ] Proportional leading points weight if no pilot made goal
     - [ ] Adjustable stopped task bonus glide ratio (fixed at 4:1 for PG and 5:1 for HG)
-    - [ ] Jump-the-gun factor
-    - [ ] Jump-the-gun maximum
+    - [x] Jump-the-gun factor
+    - [x] Jump-the-gun maximum
 * Special Cases
     - [ ] End of the speed section but not goal
-    - [ ] Early start
+    - [x] Early start
     - [x] Stopped tasks
 * Stopped Tasks
     - [x] Stopped task time as announcement minus score back
