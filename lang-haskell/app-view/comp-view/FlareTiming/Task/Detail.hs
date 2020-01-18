@@ -54,6 +54,7 @@ import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
 import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Score.Over (tableScoreOver)
+import FlareTiming.Task.Score.Penal (tableScorePenal)
 import FlareTiming.Task.Score.Split (tableScoreSplit)
 import FlareTiming.Task.Score.Reach (tableScoreReach)
 import FlareTiming.Task.Score.Effort (tableScoreEffort)
@@ -235,6 +236,10 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                     (\case
                         ScoreTabOver ->
                             tableScoreHold
+
+                        ScoreTabPenal ->
+                            elAttr "div" ("id" =: "score-penal") $
+                            tableScorePenal utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                         ScoreTabSplit ->
                             elAttr "div" ("id" =: "score-points") $
                                 tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx

@@ -5,6 +5,7 @@ import Reflex.Dom
 
 data ScoreTab
     = ScoreTabOver
+    | ScoreTabPenal
     | ScoreTabSplit
     | ScoreTabReach
     | ScoreTabEffort
@@ -19,6 +20,8 @@ tabsScore =
     elClass "div" "tabs" $
         el "ul" $ mdo
             (over, _) <- elDynClass' "li" overClass $ el "a" (text "Overview")
+
+            (penal, _) <- elDynClass' "li" penalClass $ el "a" (text "Penal")
 
             (split, _) <- elDynClass' "li" splitClass . el "a" $ do
                             elClass "span" "legend-reach" $ text "▩"
@@ -49,6 +52,7 @@ tabsScore =
                             text "Arrival"
 
             let eOver = (const ScoreTabOver) <$> domEvent Click over
+            let ePenal = (const ScoreTabPenal) <$> domEvent Click penal
             let eSplit = (const ScoreTabSplit) <$> domEvent Click split
             let eReach = (const ScoreTabReach) <$> domEvent Click reach
             let eEffort = (const ScoreTabEffort) <$> domEvent Click effort
@@ -58,6 +62,18 @@ tabsScore =
 
             overClass <- holdDyn "is-active" . leftmost $
                             [ "is-active" <$ eOver
+                            , "" <$ ePenal
+                            , "" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eEffort
+                            , "" <$ eSpeed
+                            , "" <$ eTime
+                            , "" <$ eArrive
+                            ]
+
+            penalClass <- holdDyn "" . leftmost $
+                            [ "" <$ eOver
+                            , "is-active" <$ ePenal
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
@@ -68,6 +84,7 @@ tabsScore =
 
             splitClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
+                            , "" <$ ePenal
                             , "is-active" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
@@ -78,6 +95,7 @@ tabsScore =
 
             reachClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
+                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "is-active" <$ eReach
                             , "" <$ eEffort
@@ -88,6 +106,7 @@ tabsScore =
 
             effortClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
+                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "is-active" <$ eEffort
@@ -98,16 +117,7 @@ tabsScore =
 
             speedClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eEffort
-                            , "" <$ eSpeed
-                            , "is-active" <$ eTime
-                            , "" <$ eArrive
-                            ]
-
-            timeClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
+                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
@@ -116,8 +126,20 @@ tabsScore =
                             , "" <$ eArrive
                             ]
 
+            timeClass <- holdDyn "" . leftmost $
+                            [ "" <$ eOver
+                            , "" <$ ePenal
+                            , "" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eEffort
+                            , "" <$ eSpeed
+                            , "is-active" <$ eTime
+                            , "" <$ eArrive
+                            ]
+
             arriveClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
+                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
@@ -128,6 +150,7 @@ tabsScore =
 
             return . leftmost $
                 [ eOver
+                , ePenal
                 , eSplit
                 , eReach
                 , eEffort
