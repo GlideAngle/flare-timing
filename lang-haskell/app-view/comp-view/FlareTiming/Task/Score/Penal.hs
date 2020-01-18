@@ -59,8 +59,6 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
             . fromIntegral
             $ lenDfs + 1
 
-    let thSpace = elClass "th" "th-space" $ text ""
-
     let tableClass =
             let tc = "table is-striped is-narrow is-fullwidth" in
             ffor2 hgOrPg sgs (\x gs ->
@@ -135,7 +133,7 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
-                elAttr "th" ("colspan" =: "5") $ text ""
+                elAttr "th" ("colspan" =: "2") $ text ""
 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
@@ -175,11 +173,7 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
                         (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
 
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
+                elAttr "th" ("colspan" =: "5") $ text ""
 
         _ <- el "tbody" $ do
             _ <-
