@@ -51,6 +51,7 @@ import WireTypes.Zone (RawZone, Zones(..))
 import WireTypes.ZoneKind
 import WireTypes.Pilot (Pilot)
 import WireTypes.Point (StartGate(..), PointPenalty)
+import FlareTiming.Time (UtcOffset(..))
 
 type Name = String
 
@@ -62,10 +63,6 @@ data OpenClose =
         , close :: UTCTime
         }
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (FromJSON)
-
-newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
-    deriving (Eq, Ord, Show, Read, Generic)
     deriving anyclass (FromJSON)
 
 newtype MinimumDistance = MinimumDistance Double

@@ -83,6 +83,7 @@ import WireTypes.Speed (PilotTime)
 import WireTypes.Lead (LeadingArea, LeadingCoefficient)
 import WireTypes.Fraction (Fractions)
 import qualified FlareTiming.Statistics as Stats
+import FlareTiming.Time (showHmsForSecs)
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
@@ -200,7 +201,7 @@ showPilotDistanceDiff dp (PilotDistance expected) (PilotDistance actual)
 
 showPilotJumpedTheGun :: Maybe JumpedTheGun -> T.Text
 showPilotJumpedTheGun Nothing = ""
-showPilotJumpedTheGun (Just (JumpedTheGun a)) = T.pack . printf "%.0f s" $ a
+showPilotJumpedTheGun (Just (JumpedTheGun s)) = showHmsForSecs s
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =

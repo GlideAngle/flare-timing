@@ -26,6 +26,7 @@ import WireTypes.Point
     , showTaskPointsDiff
     , showTaskPointsDiffStats
     , showRounded
+    , showPilotJumpedTheGun
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -131,11 +132,11 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
+                elClass "th" "th-start-early" $ text "Early ¶"
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-start-gate" $ text "Gate"
                 elClass "th" "th-time-end" $ text "End"
                 elClass "th" "th-time" $ text "Time ‖"
-                elClass "th" "th-pace" $ text "Pace ¶"
                 elClass "th" "th-speed" $ text "Speed"
 
                 elClass "th" "th-min-distance" $ text "Min"
@@ -221,7 +222,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
             foot "* Any points so annotated are the maximum attainable."
             foot "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
             foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
-            foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
+            foot "¶ \"Early\" how much earlier than the start did this pilot jump the gun?"
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
@@ -259,7 +260,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                                         text " points.")
                             vw'
                         )
-                Paragliding -> 
+                Paragliding ->
                     dyn_ $ ffor vw (\vw' ->
                         maybe
                             (return ())
@@ -307,6 +308,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let xReach = reach <$> xB
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
+    let jtg = jump . snd <$> x
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
                         let n = showPilot p in
@@ -328,11 +330,11 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
+        elClass "td" "td-start-early" . dynText $ showPilotJumpedTheGun <$> jtg
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
         elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
         elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
         elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
-        elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree

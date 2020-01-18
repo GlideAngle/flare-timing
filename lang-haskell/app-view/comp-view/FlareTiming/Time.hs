@@ -1,5 +1,7 @@
 module FlareTiming.Time
-    ( showHmsForHours
+    ( UtcOffset(..)
+    , showHmsForSecs
+    , showHmsForHours
     , hoursToSecs
     , hoursToRoundSecs
     , showHours
@@ -17,7 +19,12 @@ import Text.Printf (printf)
 import Data.Time.Clock (UTCTime, NominalDiffTime, diffUTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
-import WireTypes.Comp (UtcOffset(..))
+import GHC.Generics (Generic)
+import Data.Aeson (FromJSON(..))
+
+newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
+    deriving (Eq, Ord, Show, Read, Generic)
+    deriving anyclass (FromJSON)
 
 show2i :: Integer -> String
 show2i = printf "%02d"
@@ -36,13 +43,16 @@ hoursToSecs hr = 3600 * hr
 hoursToRoundSecs :: Double -> Integer
 hoursToRoundSecs = round . hoursToSecs
 
-showHmsForHours :: Double -> T.Text
-showHmsForHours hr =
+showHmsForSecs :: Double -> T.Text
+showHmsForSecs s =
     T.pack $ show2i hr' ++ ":" ++ show2i min' ++ ":" ++ show2i sec'
     where
-        sec = round $ 3600 * abs hr
+        sec = round $ abs s
         (hr', min) = sec `divMod` 3600
         (min', sec') = min `divMod` 60
+
+showHmsForHours :: Double -> T.Text
+showHmsForHours = showHmsForSecs . hoursToSecs
 
 showTime :: TimeZone -> UTCTime -> String
 showTime tz =
