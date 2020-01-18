@@ -15,7 +15,8 @@ module Flight.Gap.Points
     , Points(..)
     , zeroPoints
     , taskPoints
-    , applyPointPenalties
+    , applyFractionalPenalties
+    , applyPenalties
     , availablePoints
     , jumpTheGunPenalty
     ) where
@@ -199,12 +200,23 @@ jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
 taskPoints :: forall a. Maybe (Penalty a) -> Points -> TaskPoints
 taskPoints = tallyPoints
 
--- | Applies the penalties, fractional ones before absolute ones.
-applyPointPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
-applyPointPenalties xs ps =
-    foldl' f (foldl' f ps fracs) points
+-- | Applies only fractional penalties.
+applyFractionalPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
+applyFractionalPenalties xs ps =
+    foldl' applyPenalty ps fracs
     where
-        f = applyPointPenalty
+        (fracs, _) =
+            partition
+                (\case
+                    PenaltyFraction _ -> True
+                    PenaltyPoints _ -> False)
+                xs
+
+-- | Applies the penalties, fractional ones before absolute ones.
+applyPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
+applyPenalties xs ps =
+    foldl' applyPenalty (foldl' applyPenalty ps fracs) points
+    where
         (fracs, points) =
             partition
                 (\case
@@ -212,10 +224,10 @@ applyPointPenalties xs ps =
                     PenaltyPoints _ -> False)
                 xs
 
-applyPointPenalty :: TaskPoints -> PointPenalty -> TaskPoints
-applyPointPenalty (TaskPoints p) (PenaltyPoints n) =
+applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
+applyPenalty (TaskPoints p) (PenaltyPoints n) =
     TaskPoints . max 0 $ p - (toRational n)
-applyPointPenalty (TaskPoints p) (PenaltyFraction n) =
+applyPenalty (TaskPoints p) (PenaltyFraction n) =
     TaskPoints . max 0 $ p - p * (toRational n)
 
 availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)

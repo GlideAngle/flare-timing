@@ -150,7 +150,8 @@ module Flight.Score
     , Points(..)
     , zeroPoints
     , taskPoints
-    , applyPointPenalties
+    , applyFractionalPenalties
+    , applyPenalties
     , availablePoints
     -- * Stopped task
     , LaunchToEss(..)

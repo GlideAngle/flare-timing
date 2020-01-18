@@ -93,6 +93,13 @@ data NormBreakdown =
 data Breakdown =
     Breakdown
         { place :: TaskPlacing
+        , subtotal :: TaskPoints
+        -- ^ The total points without any penalties applied.
+        , demeritFrac :: TaskPoints
+        -- ^ The effective points removed from applying fractional penalties.
+        , demeritPoint :: TaskPoints
+        -- ^ The effective points removed from applying point penalties. Points
+        -- removed will not take the total points to less than zero.
         , total :: TaskPoints
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.

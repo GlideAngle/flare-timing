@@ -29,7 +29,7 @@ import WireTypes.Point
     , showTaskArrivalPoints
     , showTaskLeadingPoints
     , showTaskTimePoints
-    , showTaskPoints
+    , showTaskPointsRounded
     , showTaskPointsDiff
     , showRounded
 
@@ -278,7 +278,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
                         ""
-                        (\x -> showTaskPoints (Just x) x)
+                        (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
 
                 thNorm
@@ -473,7 +473,7 @@ pointRow cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
         elClass "td" "td-norm td-arrival-points" . text $ yArrivalDiff
 
         elClass "td" "td-total-points" . dynText
-            $ zipDynWith showTaskPoints tp (total <$> xB)
+            $ zipDynWith showTaskPointsRounded tp (total <$> xB)
 
         elClass "td" "td-norm td-total-points" . text $ yScore
         elClass "td" "td-norm td-total-points" . text $ yDiff

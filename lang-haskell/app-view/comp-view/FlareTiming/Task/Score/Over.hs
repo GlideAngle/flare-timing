@@ -22,11 +22,11 @@ import WireTypes.Point
     , showTaskArrivalPoints
     , showTaskLeadingPoints
     , showTaskTimePoints
-    , showTaskPoints
+    , showTaskPointsRounded
     , showTaskPointsDiff
     , showTaskPointsDiffStats
     , showRounded
-    , showPilotJumpedTheGun
+    , showJumpedTheGunTime
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -192,7 +192,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
                         ""
-                        (\x -> showTaskPoints (Just x) x)
+                        (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
 
                 thSpace
@@ -330,7 +330,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elClass "td" "td-start-early" . dynText $ showPilotJumpedTheGun <$> jtg
+        elClass "td" "td-start-early" . dynText $ showJumpedTheGunTime <$> jtg
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
         elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
         elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
@@ -351,7 +351,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
             $ showMax Pt.arrival showTaskArrivalPoints pt points
 
         elClass "td" "td-total-points" . dynText
-            $ zipDynWith showTaskPoints tp (total <$> xB)
+            $ zipDynWith showTaskPointsRounded tp (total <$> xB)
 
         elClass "td" "td-norm td-total-points" $ dynText yScore
         elClass "td" "td-norm td-total-points" $ dynText yDiff

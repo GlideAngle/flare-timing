@@ -22,9 +22,7 @@ import WireTypes.Pilot
     ( Pilot(..), PilotId(..), PilotName(..)
     , AwardedDistance(..), AwardedVelocity(..), DfNoTrackPilot(..)
     )
-import WireTypes.Point
-    (PointPenalty(..), ReachToggle(..), JumpedTheGun(..)
-    , showPilotJumpedTheGun)
+import WireTypes.Point (PointPenalty(..), ReachToggle(..), JumpedTheGun(..), showJumpedTheGunTime)
 import WireTypes.Comp (UtcOffset(..))
 import FlareTiming.Time (showT, timeZone)
 
@@ -85,7 +83,7 @@ rowPenalJump
     => Dynamic t (Pilot, [PointPenalty], Maybe JumpedTheGun)
     -> m ()
 rowPenalJump ppp = do
-    let tdPoint = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
+    let tdPoint = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
     dyn_ $ ffor ppp (\(pilot, ps, jump) -> el "tr" $ do
         let pp =
                 find
@@ -101,7 +99,7 @@ rowPenalJump ppp = do
                 el "td" $ text ""
             Just (PenaltyPoints y) -> do
                 tdPoint y
-        elClass "td" "td-penalty" . text $ showPilotJumpedTheGun jump)
+        elClass "td" "td-penalty" . text $ showJumpedTheGunTime jump)
 
 rowPenalAuto
     :: MonadWidget t m

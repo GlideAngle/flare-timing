@@ -1,7 +1,6 @@
 module FlareTiming.Task.Score.Penal (tableScorePenal) where
 
 import Prelude hiding (min)
-import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
@@ -15,24 +14,23 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
-    , PilotDistance(..)
-    , ReachToggle(..)
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
     , showTaskTimePoints
-    , showTaskPoints
+    , showTaskPointsRounded
+    , showTaskPointsNonZero
     , showTaskPointsDiff
-    , showTaskPointsDiffStats
+    , showDemeritPointsNonZero
     , showRounded
-    , showPilotJumpedTheGun
+    , showJumpedTheGunTime
+    , showJumpedTheGunPenalty
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot)
-import FlareTiming.Time (timeZone)
 import FlareTiming.Task.Score.Show
 
 tableScorePenal
@@ -52,7 +50,7 @@ tableScorePenal
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScorePenal utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
+tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -107,43 +105,37 @@ tableScorePenal utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                                 (Paragliding, _) -> (thc, tdc))
                         vw')
 
-    let yDiff = ffor2 sEx sDfs (\sEx' sDfs' ->
-                    let exs = Map.fromList sEx'
-                    in
-                        [ let ex = Map.lookup pilot exs
-                          in ((\Norm.NormBreakdown{total = p} -> p) <$> ex, p')
-                        | (pilot, Breakdown{total = p'}) <- sDfs'
-                        ])
-
-    let pointStats = ffor yDiff (uncurry showTaskPointsDiffStats . unzip)
-
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-speed-section") . dynText
-                    $ showSpeedSection <$> ln
-                elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ dynText pointStats
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") $ text "Jump the Gun"
+                elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-demerit") $ text "Penalties"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Points"
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
                 elClass "th" "th-start-early" $ text "Early ¶"
-                elClass "th" "th-start-start" $ text "Start"
+                elClass "th" "th-demerit-points" $ text "Points"
 
                 elClass "th" "th-distance-points" $ text "Distance"
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
                 elClass "th" "th-leading-points" $ text "Lead"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
+                elClass "th" "th-total-points" $ text "Subtotal"
+                elClass "th" "th-demerit-points" $ text "Frac"
+                elClass "th" "th-demerit-points" $ text "Point"
                 elClass "th" "th-total-points" $ text "Total"
                 elClass "th" "th-norm th-total-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
-                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "5") $ text ""
 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
@@ -180,9 +172,12 @@ tableScorePenal utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
                         ""
-                        (\x -> showTaskPoints (Just x) x)
+                        (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
 
+                thSpace
+                thSpace
+                thSpace
                 thSpace
                 thSpace
 
@@ -203,7 +198,7 @@ tableScorePenal utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "12")
+        let tdFoot = elAttr "td" ("colspan" =: "15")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -276,8 +271,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
-    let tz = timeZone <$> utcOffset
+pointRow cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     let y = ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p'}) ->
@@ -293,10 +287,9 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let yScore = ffor y $ \(_, ys, _) -> ys
     let yDiff = ffor y $ \(_, _, yd) -> yd
 
-    let xReach = reach <$> xB
     let points = breakdown . snd <$> x
-    let v = velocity . snd <$> x
     let jtg = jump . snd <$> x
+    let jtgPenalties = penaltiesJump . snd <$> x
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
                         let n = showPilot p in
@@ -308,8 +301,8 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elClass "td" "td-start-early" . dynText $ showPilotJumpedTheGun <$> jtg
-        elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
+        elClass "td" "td-start-early" . dynText $ showJumpedTheGunTime <$> jtg
+        elClass "td" "td-demerit-points" . dynText $ showJumpedTheGunPenalty 1 <$> jtgPenalties
 
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
@@ -321,7 +314,16 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
             $ showMax Pt.arrival showTaskArrivalPoints pt points
 
         elClass "td" "td-total-points" . dynText
-            $ zipDynWith showTaskPoints tp (total <$> xB)
+            $ (showTaskPointsNonZero 1 . subtotal) <$> xB
+
+        elClass "td" "td-demerit-points" . dynText
+            $ (showDemeritPointsNonZero 1 . demeritFrac) <$> xB
+
+        elClass "td" "td-demerit-points" . dynText
+            $ (showDemeritPointsNonZero 1 . demeritPoint) <$> xB
+
+        elClass "td" "td-total-points" . dynText
+            $ zipDynWith showTaskPointsRounded tp (total <$> xB)
 
         elClass "td" "td-norm td-total-points" $ dynText yScore
         elClass "td" "td-norm td-total-points" $ dynText yDiff
@@ -375,7 +377,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "2"
+                        <> "colspan" =: "5"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"

@@ -31,7 +31,8 @@ module WireTypes.Point
     , showPilotDistance
     , showPilotDistanceDiff
     , showPilotAlt
-    , showPilotJumpedTheGun
+    , showJumpedTheGunTime
+    , showJumpedTheGunPenalty
     -- * Showing Points
     , showTaskDistancePoints
     , showTaskLinearPoints
@@ -40,7 +41,10 @@ module WireTypes.Point
     , showTaskTimePoints
     , showTaskLeadingPoints
     , showTaskPoints
+    , showTaskPointsRounded
+    , showTaskPointsNonZero
     , showTaskPointsDiffStats
+    , showDemeritPointsNonZero
     , showRounded
     , showTaskPointsDiff
     , showLinearPoints
@@ -199,9 +203,17 @@ showPilotDistanceDiff dp (PilotDistance expected) (PilotDistance actual)
 
         g = T.pack . f
 
-showPilotJumpedTheGun :: Maybe JumpedTheGun -> T.Text
-showPilotJumpedTheGun Nothing = ""
-showPilotJumpedTheGun (Just (JumpedTheGun s)) = showHmsForSecs s
+showJumpedTheGunTime :: Maybe JumpedTheGun -> T.Text
+showJumpedTheGunTime Nothing = ""
+showJumpedTheGunTime (Just (JumpedTheGun s)) = showHmsForSecs s
+
+-- | Positive penalties (demerits) are shown as negative amounts and negative
+-- penalties (bonuses) are shown as positive amounts.
+showJumpedTheGunPenalty :: Int -> [PointPenalty] -> T.Text
+showJumpedTheGunPenalty _ [] = ""
+showJumpedTheGunPenalty dp ps =
+    T.pack . printf "%+.*f" dp . sum
+    $ (\case (PenaltyFraction _) -> 0; (PenaltyPoints y) -> negate y) <$> ps
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
@@ -288,9 +300,23 @@ showTaskLeadingPoints :: Maybe LeadingPoints -> LeadingPoints -> T.Text
 showTaskLeadingPoints task (LeadingPoints p) =
     showMax p (\(LeadingPoints x) -> x) task
 
-showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
-showTaskPoints task (TaskPoints p) =
+showTaskPoints :: Int -> TaskPoints -> T.Text
+showTaskPoints dp (TaskPoints p) =
+    T.pack $ printf "%.*f" dp p
+
+showTaskPointsRounded :: Maybe TaskPoints -> TaskPoints -> T.Text
+showTaskPointsRounded task (TaskPoints p) =
     showMaxRounded p (\(TaskPoints x) -> x) task
+
+showTaskPointsNonZero :: Int -> TaskPoints -> T.Text
+showTaskPointsNonZero dp tp
+    | tp == TaskPoints 0 = ""
+    | otherwise = showTaskPoints dp tp
+
+showDemeritPointsNonZero :: Int -> TaskPoints -> T.Text
+showDemeritPointsNonZero dp (TaskPoints p)
+    | p == 0 = ""
+    | otherwise = showTaskPoints dp (TaskPoints $ negate p)
 
 showTaskPointsDiffStats :: [Maybe TaskPoints] -> [TaskPoints] -> T.Text
 showTaskPointsDiffStats es ps =
@@ -471,6 +497,9 @@ data NormBreakdown =
 data Breakdown =
     Breakdown
         { place :: TaskPlacing
+        , subtotal :: TaskPoints
+        , demeritFrac :: TaskPoints
+        , demeritPoint :: TaskPoints
         , total :: TaskPoints
         , jump :: Maybe JumpedTheGun
         , penaltiesJump :: [PointPenalty]

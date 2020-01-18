@@ -139,7 +139,7 @@ import Flight.Score
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
-    , availablePoints, applyPointPenalties
+    , availablePoints, applyFractionalPenalties, applyPenalties
     , toIxChunk
     , jumpTheGunPenalty
     )
@@ -1207,7 +1207,10 @@ tallyDf
     ) =
     Breakdown
         { place = TaskPlacing 0
-        , total = applyPointPenalties (penaltiesJump ++ penalties) total
+        , subtotal = subtotal
+        , demeritFrac = TaskPoints $ unpack subtotal - unpack withF
+        , demeritPoint = TaskPoints . Stats.max 0 $ unpack withF - unpack total
+        , total = total
         , jump = jump
         , penaltiesJump = penaltiesJump
         , penalties = penalties
@@ -1243,7 +1246,11 @@ tallyDf
         jump = join $ fst <$> jumpGates
         penaltiesJump = maybeToList $ jumpTheGunPenalty earlyPenalty <$> jump
 
-        total = TaskPoints $ r + dp + l + a + tp
+        subtotal = TaskPoints $ r + dp + l + a + tp
+        ps = penaltiesJump ++ penalties
+        withF = applyFractionalPenalties ps subtotal
+        total = applyPenalties ps subtotal
+
         ss' = getTagTime unStart
         es' = getTagTime unEnd
         getTagTime accessor =
@@ -1283,7 +1290,10 @@ tallyDfNoTrack
     ) =
     Breakdown
         { place = TaskPlacing 0
-        , total = applyPointPenalties penalties total
+        , subtotal = subtotal
+        , demeritFrac = TaskPoints $ unpack subtotal - unpack withF
+        , demeritPoint = TaskPoints . Stats.max 0 $ unpack withF - unpack total
+        , total = total
         , jump = Nothing
         , penaltiesJump = []
         , penalties = penalties
@@ -1324,7 +1334,9 @@ tallyDfNoTrack
                 gs' <- nonEmpty startGates
                 return $ startGateTaken gs' ss'
 
-        total = TaskPoints $ r + dp + l + a + tp
+        subtotal = TaskPoints $ r + dp + l + a + tp
+        withF = applyFractionalPenalties penalties subtotal
+        total = applyPenalties penalties subtotal
 
         dE = PilotDistance <$> do
                 dT <- dT'
