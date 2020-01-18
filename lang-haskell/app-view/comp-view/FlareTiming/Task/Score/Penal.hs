@@ -17,7 +17,6 @@ import WireTypes.Point
     , Breakdown(..)
     , PilotDistance(..)
     , ReachToggle(..)
-    , showPilotDistance
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
@@ -123,9 +122,8 @@ tableScorePenal utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ dynText pointStats
 
             el "tr" $ do
@@ -134,13 +132,6 @@ tableScorePenal utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                 elClass "th" "th-pilot" $ text "###-Pilot"
                 elClass "th" "th-start-early" $ text "Early ¶"
                 elClass "th" "th-start-start" $ text "Start"
-                elClass "th" "th-start-gate" $ text "Gate"
-                elClass "th" "th-time-end" $ text "End"
-                elClass "th" "th-time" $ text "Time ‖"
-                elClass "th" "th-speed" $ text "Speed"
-
-                elClass "th" "th-min-distance" $ text "Min"
-                elClass "th" "th-best-distance" $ text "Reach †"
 
                 elClass "th" "th-distance-points" $ text "Distance"
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
@@ -151,11 +142,8 @@ tableScorePenal utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                elAttr "th" ("colspan" =: "5") $ text ""
-                elClass "th" "th-speed-units" $ text "(km/h)"
-                elClass "th" "th-min-distance-units" $ text "(km)"
-                elClass "th" "th-best-distance-units" $ text "(km)"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
+                elAttr "th" ("colspan" =: "2") $ text ""
 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
@@ -215,7 +203,7 @@ tableScorePenal utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "18")
+        let tdFoot = elAttr "td" ("colspan" =: "12")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -316,30 +304,12 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let awardFree = ffor2 free xReach (\(MinimumDistance f) pd ->
-            let c = "td-best-distance" in
-            maybe
-                (c, "")
-                (\ReachToggle{extra = PilotDistance r} ->
-                    if r >= f then (c, "") else
-                       let c' = c <> " award-free"
-                       in (c', T.pack $ printf "%.1f" f))
-                pd)
-
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elClass "td" "td-start-early" . dynText $ showPilotJumpedTheGun <$> jtg
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
-        elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
-        elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
-        elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
-        elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
-
-        elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
-        elDynClass "td" (fst <$> awardFree) . dynText
-            $ maybe "" (showPilotDistance 1 . extra) <$> xReach
 
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
@@ -392,7 +362,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "12"
+                        <> "colspan" =: "6"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
