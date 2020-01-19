@@ -8,7 +8,7 @@ newtype TaskPoints = TaskPoints Rational
     deriving (Eq, Ord)
 
 instance Show TaskPoints where
-    show (TaskPoints x) = printf "TaskPoints %.2f" y
+    show (TaskPoints x) = printf "TaskPoints %.3f" y
         where
             y :: Double
             y = fromRational x
@@ -17,5 +17,5 @@ instance Newtype TaskPoints Rational where
     pack = TaskPoints
     unpack (TaskPoints a) = a
 
-deriveDecimalPlaces (DecimalPlaces 0) ''TaskPoints
+deriveDecimalPlaces (DecimalPlaces 3) ''TaskPoints
 deriveJsonViaSci ''TaskPoints

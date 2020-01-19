@@ -147,7 +147,7 @@ data Pointing =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Allocation =
-    Allocation 
+    Allocation
         { goalRatio :: GoalRatio
         , weight :: Weights
         , points :: Points

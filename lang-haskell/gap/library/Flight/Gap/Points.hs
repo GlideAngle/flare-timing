@@ -174,7 +174,7 @@ tallyPoints (Just (Early (LaunchToSssPoints d))) =
 
 tallyPoints (Just NoGoalPg) =
     \Points
-        { reach = LinearPoints linear 
+        { reach = LinearPoints linear
         , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         } ->
