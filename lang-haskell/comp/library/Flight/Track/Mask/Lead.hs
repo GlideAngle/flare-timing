@@ -34,15 +34,15 @@ import Flight.Track.Mask.Cmp (cmp)
 -- | For each task, the masking for effort for that task.
 data MaskingLead =
     MaskingLead
-        { raceTime :: [Maybe RaceTime]
+        { raceTime :: ![Maybe RaceTime]
         -- ^ For each task, the time of the last pilot crossing goal.
-        , sumDistance :: [Maybe (QTaskDistance Double [u| m |])]
+        , sumDistance :: ![Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the sum of all distance flown over minimum distance.
-        , leadAreaToCoef :: [Maybe (AreaToCoef (Quantity Rational [u| 1/((km^2)*s)|]))]
+        , leadAreaToCoef :: ![Maybe (AreaToCoef (Quantity Rational [u| 1/((km^2)*s)|]))]
         -- ^ For each task, the scaling of leading area.
-        , leadCoefMin :: [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
+        , leadCoefMin :: ![Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
         -- ^ For each task, the minimum of all pilot's leading coefficient.
-        , leadRank :: [[(Pilot, TrackLead)]]
+        , leadRank :: ![[(Pilot, TrackLead)]]
         -- ^ For each task, the rank order of leading and leading fraction.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -52,22 +52,22 @@ instance FieldOrdering MaskingLead where fieldOrder _ = cmp
 -- | The racing time for the speed section is required for leading points.
 data RaceTime =
     RaceTime
-        { openTask :: UTCTime
+        { openTask :: !UTCTime
         -- ^ The time of first allowed crossing of the start of the speed section.
-        , closeTask :: UTCTime
+        , closeTask :: !UTCTime
         -- ^ The time of last allowed crossing of the end of the speed section.
-        , firstLead :: Maybe FirstLead
-        , firstStart :: Maybe FirstStart
-        , lastArrival :: Maybe LastArrival
-        , leadArrival :: Maybe EssTime
+        , firstLead :: !(Maybe FirstLead)
+        , firstStart :: !(Maybe FirstStart)
+        , lastArrival :: !(Maybe LastArrival)
+        , leadArrival :: !(Maybe EssTime)
         -- ^ When the last pilot arrives at goal, seconds from the time of first lead.
-        , leadAllDown :: Maybe EssTime
+        , leadAllDown :: !(Maybe EssTime)
         -- ^ When the last pilot lands, seconds from the time of first lead.
-        , leadClose :: Maybe EssTime
+        , leadClose :: !(Maybe EssTime)
         -- ^ When the task closes, seconds from the time of first lead.
-        , tickClose :: Maybe EssTime
+        , tickClose :: !(Maybe EssTime)
         -- ^ When the task closes, seconds from the time of first race start.
-        , openClose :: EssTime
+        , openClose :: !EssTime
         -- ^ Seconds from open to close
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

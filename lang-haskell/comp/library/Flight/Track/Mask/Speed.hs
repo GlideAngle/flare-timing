@@ -25,21 +25,21 @@ import Flight.Track.Mask.Cmp (cmp)
 -- | For each task, the masking for speed for that task.
 data MaskingSpeed =
     MaskingSpeed
-        { ssBestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
+        { ssBestTime :: ![Maybe (BestTime (Quantity Double [u| h |]))]
         -- ^ For each task, the best time ignoring start gates.
-        , gsBestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
+        , gsBestTime :: ![Maybe (BestTime (Quantity Double [u| h |]))]
         -- ^ For each task, the best time from the start gate taken.
-        , taskDistance :: [Maybe (QTaskDistance Double [u| m |])]
+        , taskDistance :: ![Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the task distance.
         , taskSpeedDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the speed section subset of the task distance.
-        , ssSpeed :: [[(Pilot, TrackSpeed)]]
+        , ssSpeed :: ![[(Pilot, TrackSpeed)]]
         -- ^ For each task, for each pilot making goal, their time for the
         -- speed section and speed fraction, ignoring any start gates.
-        , gsSpeed :: [[(Pilot, TrackSpeed)]]
+        , gsSpeed :: ![[(Pilot, TrackSpeed)]]
         -- ^ For each task, for each pilot making goal, their time for the
         -- speed section and speed fraction, taking into account start gates.
-        , altStopped :: [[(Pilot, QAlt Double [u| m |])]]
+        , altStopped :: ![[(Pilot, QAlt Double [u| m |])]]
         -- ^ For each task, the altitude of each pilot at the score back time.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

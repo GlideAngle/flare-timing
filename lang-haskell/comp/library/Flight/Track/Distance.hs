@@ -35,11 +35,11 @@ type Land = QTaskDistance Double [u| m |]
 -- and nullify the tracklog.
 data AwardedDistance =
     AwardedDistance
-        { awardedMade :: Land
+        { awardedMade :: !Land
         -- ^ The distance awarded by the scorer to the pilot as-is.
-        , awardedTask :: Land
+        , awardedTask :: !Land
         -- ^ The task distance as read.
-        , awardedFrac :: Double
+        , awardedFrac :: !Double
         -- ^ The fraction of the task distance awarded to the pilot.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -47,9 +47,9 @@ data AwardedDistance =
 
 data TrackDistance a =
     TrackDistance
-        { togo :: Maybe a
+        { togo :: !(Maybe a)
         -- ^ The distance to goal.
-        , made :: Maybe (QTaskDistance Double [u| m |])
+        , made :: !(Maybe (QTaskDistance Double [u| m |]))
         -- ^ The task distance minus the distance to goal.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -57,8 +57,8 @@ data TrackDistance a =
 
 data TrackReach =
     TrackReach
-        { reach :: QTaskDistance Double [u| m |]
-        , frac :: LinearFraction
+        { reach :: !(QTaskDistance Double [u| m |])
+        , frac :: !LinearFraction
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)

@@ -42,8 +42,8 @@ import Flight.Comp (IxTask(..))
 
 data TrackEffort =
     TrackEffort
-        { effort :: QTaskDistance Double [u| m |]
-        , frac :: DifficultyFraction
+        { effort :: !(QTaskDistance Double [u| m |])
+        , frac :: !DifficultyFraction
         -- ^ This is a fraction of the possible effort points, not of the
         -- possible distance points.
         }
@@ -101,19 +101,19 @@ taskLanding (IxTask iTask) Landing{..} = do
 -- | The landing for a single task.
 data TaskLanding =
     TaskLanding
-        { minDistance :: MinimumDistance (Quantity Double [u| km |])
+        { minDistance :: !(MinimumDistance (Quantity Double [u| km |]))
         -- ^ The mimimum distance, set once for the comp. All pilots landing
         -- before this distance get this distance. The 100m segments start from
         -- here.
-        , bestDistance :: Maybe (FlownMax (Quantity Double [u| km |]))
+        , bestDistance :: !(Maybe (FlownMax (Quantity Double [u| km |])))
         -- ^ For each task, the best distance flown.
-        , landout :: Int
+        , landout :: !Int
         -- ^ For each task, the number of pilots landing out.
-        , lookahead :: Maybe Lookahead
+        , lookahead :: !(Maybe Lookahead)
         -- ^ For each task, how many 100m chunks to look ahead for land outs.
-        , chunking :: Maybe Chunking
+        , chunking :: !(Maybe Chunking)
         -- ^ For each task, the chunking.
-        , difficulty :: Maybe [ChunkDifficulty]
+        , difficulty :: !(Maybe [ChunkDifficulty])
         -- ^ The difficulty of each chunk.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -137,19 +137,19 @@ compLanding free xs =
 -- | For each task, the landing for that task.
 data Landing =
     Landing
-        { minDistance :: MinimumDistance (Quantity Double [u| km |])
+        { minDistance :: !(MinimumDistance (Quantity Double [u| km |]))
         -- ^ The mimimum distance, set once for the comp. All pilots landing
         -- before this distance get this distance. The 100m segments start from
         -- here.
-        , bestDistance :: [Maybe (FlownMax (Quantity Double [u| km |]))]
+        , bestDistance :: ![Maybe (FlownMax (Quantity Double [u| km |]))]
         -- ^ For each task, the best distance flown.
-        , landout :: [Int]
+        , landout :: ![Int]
         -- ^ For each task, the number of pilots landing out.
-        , lookahead :: [Maybe Lookahead]
+        , lookahead :: ![Maybe Lookahead]
         -- ^ For each task, how many 100m chunks to look ahead for land outs.
-        , chunking :: [Maybe Chunking]
+        , chunking :: ![Maybe Chunking]
         -- ^ For each task, the chunking.
-        , difficulty :: [Maybe [ChunkDifficulty]]
+        , difficulty :: ![Maybe [ChunkDifficulty]]
         -- ^ The difficulty of each chunk.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

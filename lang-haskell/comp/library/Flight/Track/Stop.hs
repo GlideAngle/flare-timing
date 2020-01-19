@@ -46,17 +46,17 @@ newtype RetroActive = RetroActive UTCTime
 
 data StopWindow =
     StopWindow
-        { lastStarters :: [Pilot]
+        { lastStarters :: ![Pilot]
         -- ^ The pilot or pilots last to start in an elapsed time race or
         -- a race to goal task with multiple start gates. For race to goal
         -- tasks with a single start gate @lastStarters@ will be an empty list.
-        , windowTimes :: FlyingSection UTCTime
+        , windowTimes :: !(FlyingSection UTCTime)
         -- ^ The scored window as a time range. For an elapsed time race or
         -- a race to goal task with only one start gate this will be the range
         -- from the start until the retroactive stop time.  For race to goal
         -- task with multiple start gates this will be the time available
         -- racing for the last pilot or pilots to start.
-        , windowSeconds :: Seconds
+        , windowSeconds :: !Seconds
         -- ^ The width of the time window.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -65,11 +65,11 @@ data StopWindow =
 -- | For a single track, the scored section.
 data TrackScoredSection =
     TrackScoredSection
-        { scoredFixes :: FlyingSection Int
+        { scoredFixes :: !(FlyingSection Int)
         -- ^ The scored section as indices into the list of fixes.
-        , scoredSeconds :: FlyingSection Seconds
+        , scoredSeconds :: !(FlyingSection Seconds)
         -- ^ The scored section as second offsets from the first fix.
-        , scoredTimes :: FlyingSection UTCTime
+        , scoredTimes :: !(FlyingSection UTCTime)
         -- ^ The scored section as a time range.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -79,13 +79,13 @@ data TrackScoredSection =
 -- restriction of time if the task was stopped.
 data Framing =
     Framing
-        { stopWindow :: [Maybe StopWindow]
+        { stopWindow :: ![Maybe StopWindow]
         -- ^ The scored time window for a stopped task.
-        , stopFlying :: [[(Pilot, Maybe TrackScoredSection)]]
+        , stopFlying :: ![[(Pilot, Maybe TrackScoredSection)]]
         -- ^ For each task, the pilots' flying section that is scored.
-        , timing :: [TrackTime]
+        , timing :: ![TrackTime]
           -- ^ For each made zone, the first and last tag.
-        , tagging :: [[PilotTrackTag]]
+        , tagging :: ![[PilotTrackTag]]
           -- ^ For each made zone, the tag.
         }
     deriving (Eq, Ord, Show, Generic)

@@ -136,16 +136,16 @@ newtype LastDown = LastDown UTCTime
 -- | A race task can be started and not finished if no one makes goal.
 data StartEnd a b =
     StartEnd
-        { unStart :: a
-        , unEnd :: Maybe b
+        { unStart :: !a
+        , unEnd :: !(Maybe b)
         }
     deriving Show
 
 data StartEndDown a b =
     StartEndDown
-        { unStart :: a
-        , unEnd :: Maybe b
-        , unDown :: Maybe b
+        { unStart :: !a
+        , unEnd :: !(Maybe b)
+        , unDown :: !(Maybe b)
         }
     deriving Show
 
@@ -166,9 +166,9 @@ type RoutesLookup a = IxTask -> Maybe a
 
 data TaskRouteDistance =
     TaskRouteDistance
-        { wholeTaskDistance :: QTaskDistance Double [u| m |]
-        , speedSubsetDistance :: QTaskDistance Double [u| m |]
-        , launchToEssDistance :: QTaskDistance Double [u| m |]
+        { wholeTaskDistance :: !(QTaskDistance Double [u| m |])
+        , speedSubsetDistance :: !(QTaskDistance Double [u| m |])
+        , launchToEssDistance :: !(QTaskDistance Double [u| m |])
         }
 
 newtype RoutesLookupTaskDistance =
@@ -185,16 +185,16 @@ newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
 
 data OpenClose =
     OpenClose
-        { open :: UTCTime
-        , close :: UTCTime
+        { open :: !UTCTime
+        , close :: !UTCTime
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 data EarlyStart =
     EarlyStart
-        { earliest :: JumpTheGunLimit (Quantity Double [u| s |])
-        , earlyPenalty :: SecondsPerPoint (Quantity Double [u| s |])
+        { earliest :: !(JumpTheGunLimit (Quantity Double [u| s |]))
+        , earlyPenalty :: !(SecondsPerPoint (Quantity Double [u| s |]))
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -252,13 +252,13 @@ pilotNamed CompSettings{pilots} xs = sort . nub . join $
 
 data CompSettings k =
     CompSettings
-        { comp :: Comp
-        , nominal :: Nominal
-        , compTweak :: Maybe Tweak
-        , tasks :: [Task k]
-        , taskFolders :: [TaskFolder]
-        , pilots :: [[PilotTrackLogFile]]
-        , pilotGroups :: [PilotGroup]
+        { comp :: !Comp
+        , nominal :: !Nominal
+        , compTweak :: !(Maybe Tweak)
+        , tasks :: ![Task k]
+        , taskFolders :: ![TaskFolder]
+        , pilots :: ![[PilotTrackLogFile]]
+        , pilotGroups :: ![PilotGroup]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -266,11 +266,11 @@ data CompSettings k =
 -- | Groups of pilots for a task.
 data PilotGroup =
     PilotGroup
-        { absent :: [Pilot]
+        { absent :: ![Pilot]
         -- ^ Pilots absent from a task.
-        , dnf :: [Pilot]
+        , dnf :: ![Pilot]
         -- ^ Pilots that did not fly.
-        , didFlyNoTracklog :: DfNoTrack
+        , didFlyNoTracklog :: !DfNoTrack
         -- ^ Pilots that did fly but have no tracklog. They may have been
         -- awarded a distance by the scorer.
         }
@@ -279,29 +279,29 @@ data PilotGroup =
 
 data Comp =
     Comp
-        { civilId :: String
-        , compName :: String
-        , discipline :: Discipline
-        , location :: String
-        , from :: String
-        , to :: String
-        , utcOffset :: UtcOffset
-        , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
-        , give :: Maybe Give
-        , earth :: EarthModel Double
-        , earthMath :: EarthMath
+        { civilId :: !String
+        , compName :: !String
+        , discipline :: !Discipline
+        , location :: !String
+        , from :: !String
+        , to :: !String
+        , utcOffset :: !UtcOffset
+        , scoreBack :: !(Maybe (ScoreBackTime (Quantity Double [u| s |])))
+        , give :: !(Maybe Give)
+        , earth :: !(EarthModel Double)
+        , earthMath :: !EarthMath
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 data Nominal =
     Nominal
-        { launch :: NominalLaunch
-        , goal :: NominalGoal
-        , distance :: NominalDistance (Quantity Double [u| km |])
-        , free :: MinimumDistance (Quantity Double [u| km |])
+        { launch :: !NominalLaunch
+        , goal :: !NominalGoal
+        , distance :: !(NominalDistance (Quantity Double [u| km |]))
+        , free :: !(MinimumDistance (Quantity Double [u| km |]))
         -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
-        , time :: NominalTime (Quantity Double [u| h |])
+        , time :: !(NominalTime (Quantity Double [u| h |]))
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -310,9 +310,9 @@ data Nominal =
 -- discipline.
 data Tweak =
     Tweak
-        { leadingWeightScaling :: Maybe LwScaling
-        , arrivalRank :: Bool
-        , arrivalTime :: Bool
+        { leadingWeightScaling :: !(Maybe LwScaling)
+        , arrivalRank :: !Bool
+        , arrivalTime :: !Bool
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -329,9 +329,9 @@ defaultNominal =
 
 data TaskStop =
     TaskStop
-        { announced :: UTCTime
+        { announced :: !UTCTime
         -- ^ The time at which the task was stopped.
-        , retroactive :: UTCTime
+        , retroactive :: !UTCTime
         -- ^ The time at which the task will be scored until.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -339,16 +339,16 @@ data TaskStop =
 
 data Task k =
     Task
-        { taskName :: String
-        , zones :: Zones
-        , speedSection :: SpeedSection
-        , zoneTimes :: [OpenClose]
-        , startGates :: [StartGate]
-        , stopped :: Maybe TaskStop
-        , taskTweak :: Maybe Tweak
-        , earlyStart :: EarlyStart
-        , penalsAuto :: [(Pilot, [PointPenalty], String)]
-        , penals :: [(Pilot, [PointPenalty], String)]
+        { taskName :: !String
+        , zones :: !Zones
+        , speedSection :: !SpeedSection
+        , zoneTimes :: ![OpenClose]
+        , startGates :: ![StartGate]
+        , stopped :: !(Maybe TaskStop)
+        , taskTweak :: !(Maybe Tweak)
+        , earlyStart :: !EarlyStart
+        , penalsAuto :: ![(Pilot, [PointPenalty], String)]
+        , penals :: ![(Pilot, [PointPenalty], String)]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

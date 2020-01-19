@@ -58,9 +58,9 @@ newtype Nyp = Nyp {unNyp :: [Pilot]}
 
 data DfNoTrackPilot =
     DfNoTrackPilot
-        { pilot :: Pilot
-        , awardedReach :: Maybe (ReachToggle AwardedDistance)
-        , awardedVelocity :: AwardedVelocity
+        { pilot :: !Pilot
+        , awardedReach :: !(Maybe (ReachToggle AwardedDistance))
+        , awardedVelocity :: !AwardedVelocity
         }
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
@@ -106,7 +106,7 @@ newtype TaskFolder = TaskFolder [ String ]
 instance Show TaskFolder where
     show (TaskFolder pathParts) = show pathParts
 
-data PilotTrackLogFile = PilotTrackLogFile Pilot (Maybe TrackLogFile)
+data PilotTrackLogFile = PilotTrackLogFile !Pilot !(Maybe TrackLogFile)
     deriving (Eq, Ord, Generic, ToJSON, FromJSON)
 
 instance Show PilotTrackLogFile where

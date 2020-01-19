@@ -34,9 +34,9 @@ import Flight.Zone.MkZones (Discipline(..))
 
 data TrackLead =
     TrackLead
-        { area :: LeadingArea (Quantity Double [u| (km^2)*s |])
-        , coef :: LeadingCoef (Quantity Double [u| 1 |])
-        , frac :: LeadingFraction
+        { area :: !(LeadingArea (Quantity Double [u| (km^2)*s |]))
+        , coef :: !(LeadingCoef (Quantity Double [u| 1 |]))
+        , frac :: !LeadingFraction
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)

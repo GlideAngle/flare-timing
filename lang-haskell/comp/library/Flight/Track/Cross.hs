@@ -40,14 +40,14 @@ import Flight.Score (Pilot(..))
 -- | For each task, the crossing for that task.
 data Crossing =
     Crossing
-        { suspectDnf :: [[Pilot]]
+        { suspectDnf :: ![[Pilot]]
         -- ^ For each task, the pilots whose tracklogs suggest they did not fly
         -- such as by having no fixes.
-        , flying :: [[(Pilot, Maybe TrackFlyingSection)]]
+        , flying :: ![[(Pilot, Maybe TrackFlyingSection)]]
         -- ^ For each task, the pilots' flying sections.
-        , crossing :: [[PilotTrackCross]]
+        , crossing :: ![[PilotTrackCross]]
         -- ^ For each task, for each made zone, the pair of fixes cross it.
-        , trackLogError :: [TrackLogError]
+        , trackLogError :: ![TrackLogError]
         -- ^ For each task, the pilots with track log problems. Note that
         -- pilots that flew but have no track appear here with
         -- @TrackLogFileNotSet@ as the error and will be awarded minimum
@@ -67,17 +67,17 @@ newtype Seconds = Seconds Integer
 -- | For a single track, the flying section.
 data TrackFlyingSection =
     TrackFlyingSection
-        { loggedFixes :: Maybe Int
+        { loggedFixes :: !(Maybe Int)
         -- ^ The number of logged fixes.
-        , flyingFixes :: FlyingSection Int
+        , flyingFixes :: !(FlyingSection Int)
         -- ^ The flying section as indices into the list of fixes.
-        , loggedSeconds :: Maybe Seconds
+        , loggedSeconds :: !(Maybe Seconds)
         -- ^ The number of seconds logging fixes.
-        , flyingSeconds :: FlyingSection Seconds
+        , flyingSeconds :: !(FlyingSection Seconds)
         -- ^ The flying section as second offsets from the first fix.
-        , loggedTimes :: FlyingSection UTCTime
+        , loggedTimes :: !(FlyingSection UTCTime)
         -- ^ The time range of all fixes logged, not just those flown.
-        , flyingTimes :: FlyingSection UTCTime
+        , flyingTimes :: !(FlyingSection UTCTime)
         -- ^ The flying section as a time range.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -86,11 +86,11 @@ data TrackFlyingSection =
 -- | For a single track, the zones crossed.
 data TrackCross =
     TrackCross
-        { zonesCrossSelected :: [Maybe ZoneCross]
+        { zonesCrossSelected :: ![Maybe ZoneCross]
         -- ^ The crossing selected as making the zone, for each zone.
-        , zonesCrossNominees :: [[Maybe ZoneCross]]
+        , zonesCrossNominees :: ![[Maybe ZoneCross]]
         -- ^ Every crossing of every zone not excluded.
-        , zonesCrossExcluded :: [[Maybe ZoneCross]]
+        , zonesCrossExcluded :: ![[Maybe ZoneCross]]
         -- ^ Excluded crossing of every zone.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -99,13 +99,13 @@ data TrackCross =
 -- | For a single task, which pilots have error detected with their track logs.
 data TrackLogError =
     TrackLogError
-        { fileUnset :: [Pilot]
+        { fileUnset :: ![Pilot]
         -- ^ Pilots without a track log file.
-        , dirMissing :: [Pilot]
+        , dirMissing :: ![Pilot]
         -- ^ A directory part of the log file path is missing.
-        , fileMissing :: [Pilot]
+        , fileMissing :: ![Pilot]
         -- ^ The log file is missing.
-        , fileUnread :: [Pilot]
+        , fileUnread :: ![Pilot]
         -- ^ The log file could not be read.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -128,15 +128,15 @@ trackLogErrors xs =
 
 -- | A timestamped latitude and longitude.
 data Fix =
-    Fix { fix :: Int
+    Fix { fix :: !Int
         -- ^ The 0-based index into the list of fixes from the track log.
-        , time :: UTCTime
+        , time :: !UTCTime
         -- ^ The time this fix was made.
-        , lat :: RawLat
+        , lat :: !RawLat
         -- ^ The latitude in decimal degrees, +ve is N and -ve is S.
-        , lng :: RawLng
+        , lng :: !RawLng
         -- ^ The longitude in decimal degrees, +ve is E and -ve is W.
-        , alt :: RawAlt
+        , alt :: !RawAlt
         -- ^ The altitude in decimal degrees, +ve is E and -ve is W.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -145,17 +145,17 @@ data Fix =
 -- | An interpolated fix.
 data InterpolatedFix =
     InterpolatedFix
-        { fixFrac :: Double
+        { fixFrac :: !Double
         -- ^ The fractional and 0-based index into the list of fixes from the
         -- track log representing how far between the two base fixes the
         -- interpolated point is.
-        , time :: UTCTime
+        , time :: !UTCTime
         -- ^ The interpolated time.
-        , lat :: RawLat
+        , lat :: !RawLat
         -- ^ The interpolated latitude in decimal degrees, +ve is N and -ve is S.
-        , lng :: RawLng
+        , lng :: !RawLng
         -- ^ The interpolated longitude in decimal degrees, +ve is E and -ve is W.
-        , alt :: RawAlt
+        , alt :: !RawAlt
         -- ^ The interpolated altitude in decimal degrees, +ve is E and -ve is W.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -164,8 +164,8 @@ data InterpolatedFix =
 -- | A crossing between two fixes.
 data ZoneTag =
     ZoneTag
-        { inter :: InterpolatedFix
-        , cross :: ZoneCross
+        { inter :: !InterpolatedFix
+        , cross :: !ZoneCross
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -186,9 +186,9 @@ asIfFix ZoneTag{inter = InterpolatedFix{fixFrac, time, lat, lng, alt}} =
 -- | A pair of fixes that cross a zone.
 data ZoneCross =
     ZoneCross
-        { crossingPair :: [Fix]
+        { crossingPair :: ![Fix]
         -- ^ The pair of fixes that cross the zone.
-        , inZone :: [Bool]
+        , inZone :: ![Bool]
         -- ^ Mark each fix as inside or outside the zone.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -197,8 +197,8 @@ data ZoneCross =
 -- | Associates a pilot with the zones they cross for a single task.
 data PilotTrackCross =
     PilotTrackCross
-        Pilot
-        (Maybe TrackCross)
+        !Pilot
+        !(Maybe TrackCross)
         -- ^ The cross should be Just if the pilot launched.
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

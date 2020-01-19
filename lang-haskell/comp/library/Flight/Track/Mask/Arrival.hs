@@ -21,9 +21,9 @@ import Flight.Track.Mask.Cmp (cmp)
 -- | For each task, the masking for arrival for that task.
 data MaskingArrival =
     MaskingArrival
-        { pilotsAtEss :: [PilotsAtEss]
+        { pilotsAtEss :: ![PilotsAtEss]
         -- ^ For each task, the number of pilots at goal.
-        , arrivalRank :: [[(Pilot, TrackArrival)]]
+        , arrivalRank :: ![[(Pilot, TrackArrival)]]
         -- ^ For each task, the rank order of arrival at goal and arrival fraction.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

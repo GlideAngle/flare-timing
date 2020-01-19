@@ -37,9 +37,9 @@ import Flight.Field (FieldOrdering(..))
 -- | For each task, the timing and tagging for that task.
 data Tagging =
     Tagging
-        { timing :: [TrackTime]
+        { timing :: ![TrackTime]
           -- ^ For each made zone, the first and last tag.
-        , tagging :: [[PilotTrackTag]]
+        , tagging :: ![[PilotTrackTag]]
           -- ^ For each made zone, the tag.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -58,17 +58,17 @@ newtype ZonesLastTag = ZonesLastTag [Maybe UTCTime]
 -- | The timing and tagging for a single task.
 data TrackTime =
     TrackTime
-        { zonesSum :: [Int]
+        { zonesSum :: ![Int]
         -- ^ For each zone, the number of pilots tagging the zone.
-        , zonesFirst :: ZonesFirstTag
+        , zonesFirst :: !ZonesFirstTag
         -- ^ For each zone, the time of the first tag.
-        , zonesLast :: ZonesLastTag
+        , zonesLast :: !ZonesLastTag
         -- ^ For each zone, the time of the last tag.
-        , zonesRankTime :: [[UTCTime]]
+        , zonesRankTime :: ![[UTCTime]]
         -- ^ For each zone, the ordered times of each tag.
-        , zonesRankPilot :: [[Pilot]]
+        , zonesRankPilot :: ![[Pilot]]
         -- ^ For each zone, the ordered pilots of each tag.
-        , lastLanding :: Maybe UTCTime
+        , lastLanding :: !(Maybe UTCTime)
         -- ^ For the task, the time of the last landing of any pilot.
         }
     deriving (Eq, Ord, Show, Generic)

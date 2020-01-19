@@ -33,9 +33,9 @@ import Flight.Score
 -- ^ If arrived at goal then arrival rank and fraction.
 data TrackArrival =
     TrackArrival
-        { rank :: ArrivalPlacing
-        , lag :: ArrivalLag (Quantity Double [u| h |])
-        , frac :: ArrivalFraction
+        { rank :: !ArrivalPlacing
+        , lag :: !(ArrivalLag (Quantity Double [u| h |]))
+        , frac :: !ArrivalFraction
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)

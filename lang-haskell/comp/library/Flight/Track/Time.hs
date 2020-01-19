@@ -92,8 +92,8 @@ type TickToTick = TickRow -> TickRow
 
 data AwardedVelocity =
     AwardedVelocity
-        { ss :: Maybe UTCTime
-        , es :: Maybe UTCTime
+        { ss :: !(Maybe UTCTime)
+        , es :: !(Maybe UTCTime)
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -153,15 +153,15 @@ allHeaders =
 
 data TrackRow =
     TrackRow
-        { fixIdx :: FixIdx
+        { fixIdx :: !FixIdx
         -- ^ The fix number for the whole track.
-        , time :: UTCTime
+        , time :: !UTCTime
         -- ^ Time of the fix.
-        , lat :: RawLat
+        , lat :: !RawLat
         -- ^ Latitude of the fix.
-        , lng :: RawLng
+        , lng :: !RawLng
         -- ^ Longitude of the fix.
-        , alt :: RawAlt
+        , alt :: !RawAlt
         -- ^ Altitude of the fix.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -169,25 +169,25 @@ data TrackRow =
 -- | A fix but with time as elapsed time from the first crossing time.
 data TimeRow =
     TimeRow
-        { fixIdx :: FixIdx
+        { fixIdx :: !FixIdx
         -- ^ The fix number for the whole track.
-        , time :: UTCTime
+        , time :: !UTCTime
         -- ^ Time of the fix.
-        , lat :: RawLat
+        , lat :: !RawLat
         -- ^ Latitude of the fix.
-        , lng :: RawLng
+        , lng :: !RawLng
         -- ^ Longitude of the fix.
-        , alt :: RawAlt
+        , alt :: !RawAlt
         -- ^ Altitude of the fix.
-        , tickLead :: Maybe LeadTick
+        , tickLead :: !(Maybe LeadTick)
         -- ^ Seconds from first lead.
-        , tickRace :: Maybe RaceTick
+        , tickRace :: !(Maybe RaceTick)
         -- ^ Seconds from first start.
-        , zoneIdx :: ZoneIdx
+        , zoneIdx :: !ZoneIdx
         -- ^ The fix number for this leg.
-        , legIdx :: LegIdx
+        , legIdx :: !LegIdx
         -- ^ Leg of the task.
-        , togo :: Double
+        , togo :: !Double
         -- ^ The distance yet to go to make goal in km.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -211,21 +211,21 @@ instance FlyClipping UTCTime [TimeRow] where
 -- | A fix but with time as elapsed time from the first crossing time.
 data TickRow =
     TickRow
-        { fixIdx :: FixIdx
+        { fixIdx :: !FixIdx
         -- ^ The fix number for the whole track.
-        , alt :: RawAlt
+        , alt :: !RawAlt
         -- ^ Altitude of the fix.
-        , tickLead :: Maybe LeadTick
+        , tickLead :: !(Maybe LeadTick)
         -- ^ Seconds from first lead.
-        , tickRace :: Maybe RaceTick
+        , tickRace :: !(Maybe RaceTick)
         -- ^ Seconds from first start.
-        , zoneIdx :: ZoneIdx
+        , zoneIdx :: !ZoneIdx
         -- ^ The fix number for this leg.
-        , legIdx :: LegIdx
+        , legIdx :: !LegIdx
         -- ^ Leg of the task
-        , togo :: Double
+        , togo :: !Double
         -- ^ The distance yet to go to make goal in km.
-        , area :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        , area :: !(LeadingArea (Quantity Double [u| (km^2)*s |]))
         -- ^ Leading coefficient area step.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

@@ -23,9 +23,9 @@ import Flight.Track.Mask.Cmp (cmp)
 -- | For each task, the masking for effort for that task.
 data MaskingEffort =
     MaskingEffort
-        { bestEffort :: [Maybe (QTaskDistance Double [u| m |])]
+        { bestEffort :: ![Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the best distance made.
-        , land :: [[(Pilot, TrackDistance Land)]]
+        , land :: ![[(Pilot, TrackDistance Land)]]
         -- ^ For each task, the distance of the landing spot for each pilot
         -- landing out.
         }

@@ -48,26 +48,26 @@ import Flight.Comp (StartGate)
 
 data Velocity =
     Velocity
-        { ss :: Maybe UTCTime
+        { ss :: !(Maybe UTCTime)
           -- ^ The time the pilot crossed the start and started the speed
           -- section.
-        , gs :: Maybe StartGate
+        , gs :: !(Maybe StartGate)
           -- ^ The time the pilot was deemed to have started when there are
           -- start gates. This is the opening time of the start gate that the
           -- pilot took.
-        , es :: Maybe UTCTime
-        , ssElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+        , es :: !(Maybe UTCTime)
+        , ssElapsed :: !(Maybe (PilotTime (Quantity Double [u| h |])))
           -- ^ The elapsed time from the moment the pilot crossed the start.
-        , gsElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+        , gsElapsed :: !(Maybe (PilotTime (Quantity Double [u| h |])))
           -- ^ The elapsed time from the start gate. Always as long as
           -- @ssElapsed@.
-        , ssDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
+        , ssDistance :: !(Maybe (PilotDistance (Quantity Double [u| km |])))
           -- ^ The best distance the pilot made over the speed section, not
           -- exceeding goal and may be further than where the pilot landed. The
           -- velocities over the speed section use this distance.
-        , ssVelocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
+        , ssVelocity :: !(Maybe (PilotVelocity (Quantity Double [u| km / h |])))
           -- ^ The velocity from the time the started the speed section.
-        , gsVelocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
+        , gsVelocity :: !(Maybe (PilotVelocity (Quantity Double [u| km / h |])))
           -- ^ The velocity from the start gate time.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -76,46 +76,46 @@ data Velocity =
 -- extracted from the *.fsdb file.
 data NormBreakdown =
     NormBreakdown
-        { place :: TaskPlacing
-        , total :: TaskPoints
-        , breakdown :: Points
-        , fractions :: Fractions
-        , reach :: ReachToggle Land
+        { place :: !TaskPlacing
+        , total :: !TaskPoints
+        , breakdown :: !Points
+        , fractions :: !Fractions
+        , reach :: !(ReachToggle Land)
         , landedMade :: Land
-        , ss :: Maybe UTCTime
-        , es :: Maybe UTCTime
-        , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
-        , leadingArea :: LeadingArea (Quantity Double [u| (km^2)*s |])
-        , leadingCoef :: LeadingCoef (Quantity Double [u| 1 |])
+        , ss :: !(Maybe UTCTime)
+        , es :: !(Maybe UTCTime)
+        , timeElapsed :: !(Maybe (PilotTime (Quantity Double [u| h |])))
+        , leadingArea :: !(LeadingArea (Quantity Double [u| (km^2)*s |]))
+        , leadingCoef :: !(LeadingCoef (Quantity Double [u| 1 |]))
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Breakdown =
     Breakdown
-        { place :: TaskPlacing
-        , subtotal :: TaskPoints
+        { place :: !TaskPlacing
+        , subtotal :: !TaskPoints
         -- ^ The total points without any penalties applied.
-        , demeritFrac :: TaskPoints
+        , demeritFrac :: !TaskPoints
         -- ^ The effective points removed from applying fractional penalties.
-        , demeritPoint :: TaskPoints
+        , demeritPoint :: !TaskPoints
         -- ^ The effective points removed from applying point penalties. Points
         -- removed will not take the total points to less than zero.
-        , total :: TaskPoints
+        , total :: !TaskPoints
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.
-        , jump :: Maybe (JumpedTheGun (Quantity Double [u| s |]))
-        , penaltiesJump :: [PointPenalty]
-        , penalties :: [PointPenalty]
-        , penaltyReason :: String
-        , breakdown :: Points
-        , velocity :: Maybe Velocity
-        , reach :: Maybe (ReachToggle (PilotDistance (Quantity Double [u| km |])))
+        , jump :: !(Maybe (JumpedTheGun (Quantity Double [u| s |])))
+        , penaltiesJump :: ![PointPenalty]
+        , penalties :: ![PointPenalty]
+        , penaltyReason :: !String
+        , breakdown :: !Points
+        , velocity :: !(Maybe Velocity)
+        , reach :: !(Maybe (ReachToggle (PilotDistance (Quantity Double [u| km |]))))
           -- ^ The best distance the pilot made, not exceeding goal and may be
           -- further than where the pilot landed. The linear distance points
           -- are awarded from this distance.
-        , landedMade :: Maybe (PilotDistance (Quantity Double [u| km |]))
+        , landedMade :: !(Maybe (PilotDistance (Quantity Double [u| km |])))
           -- ^ The distance along the course to where the pilot landed.
-        , stoppedAlt :: Maybe (QAlt Double [u| m |])
+        , stoppedAlt :: !(Maybe (QAlt Double [u| m |]))
           -- ^ The altitude of the pilot at the stopped task score back time.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -124,34 +124,34 @@ data Breakdown =
 -- FS.
 data NormPointing =
     NormPointing
-        { bestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
-        , validityWorkingLaunch :: [Maybe LaunchValidityWorking]
-        , validityWorkingTime :: [Maybe TimeValidityWorking]
-        , validityWorkingDistance :: [Maybe DistanceValidityWorking]
-        , validityWorkingStop :: [Maybe StopValidityWorking]
-        , validity :: [Maybe Validity]
-        , score :: [[(Pilot, NormBreakdown)]]
+        { bestTime :: ![Maybe (BestTime (Quantity Double [u| h |]))]
+        , validityWorkingLaunch :: ![Maybe LaunchValidityWorking]
+        , validityWorkingTime :: ![Maybe TimeValidityWorking]
+        , validityWorkingDistance :: ![Maybe DistanceValidityWorking]
+        , validityWorkingStop :: ![Maybe StopValidityWorking]
+        , validity :: ![Maybe Validity]
+        , score :: ![[(Pilot, NormBreakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | For each task, the points for that task.
 data Pointing =
     Pointing
-        { validityWorking :: [Maybe ValidityWorking]
-        , validity :: [Maybe Validity]
-        , allocation :: [Maybe Allocation]
-        , score :: [[(Pilot, Breakdown)]]
-        , scoreDf :: [[(Pilot, Breakdown)]]
-        , scoreDfNoTrack :: [[(Pilot, Breakdown)]]
+        { validityWorking :: ![Maybe ValidityWorking]
+        , validity :: ![Maybe Validity]
+        , allocation :: ![Maybe Allocation]
+        , score :: ![[(Pilot, Breakdown)]]
+        , scoreDf :: ![[(Pilot, Breakdown)]]
+        , scoreDfNoTrack :: ![[(Pilot, Breakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Allocation =
     Allocation
-        { goalRatio :: GoalRatio
-        , weight :: Weights
-        , points :: Points
-        , taskPoints :: TaskPoints
+        { goalRatio :: !GoalRatio
+        , weight :: !Weights
+        , points :: !Points
+        , taskPoints :: !TaskPoints
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

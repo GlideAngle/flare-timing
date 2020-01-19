@@ -23,14 +23,14 @@ import Flight.Score (ReachStats)
 -- | For each task, the masking for reach for that task.
 data MaskingReach =
     MaskingReach
-        { bolster :: [ReachStats]
+        { bolster :: ![ReachStats]
         -- ^ The bolstered reach, reach clamped below to minimum distance.
-        , reach :: [ReachStats]
+        , reach :: ![ReachStats]
         -- ^ The reach as flown, possibly less than minimum distance.
         -- ^ For each task, the best distance made.
-        , reachRank :: [[(Pilot, TrackReach)]]
+        , reachRank :: ![[(Pilot, TrackReach)]]
         -- ^ For each task, the rank order of reach and linear distance fraction.
-        , nigh :: [[(Pilot, TrackDistance Nigh)]]
+        , nigh :: ![[(Pilot, TrackDistance Nigh)]]
         -- ^ For each task, the best distance of each pilot landing out.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

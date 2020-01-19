@@ -1,5 +1,6 @@
 { default-extensions =
-    [ "DataKinds"
+    [ "BangPatterns"
+    , "DataKinds"
     , "DeriveFunctor"
     , "DeriveGeneric"
     , "DeriveAnyClass"

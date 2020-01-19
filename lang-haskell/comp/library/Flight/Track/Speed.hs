@@ -29,8 +29,8 @@ import Flight.Units ()
 -- ^ If arrived at goal then speed fraction.
 data TrackSpeed =
     TrackSpeed
-        { time :: PilotTime (Quantity Double [u| h |])
-        , frac :: SpeedFraction
+        { time :: !(PilotTime (Quantity Double [u| h |]))
+        , frac :: !SpeedFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
