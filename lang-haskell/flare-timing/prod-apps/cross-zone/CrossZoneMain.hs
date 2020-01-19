@@ -30,7 +30,6 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     , pilotNamed
-    , timeCheck
     )
 import Flight.Units ()
 import Flight.Track.Cross
@@ -200,11 +199,10 @@ flown c math tasks (IxTask i) fs =
             flownTask c math task fs
 
 flownTask :: Comp -> Math -> FnTask k MadeZones
-flownTask
-    Comp{earth, earthMath, give}
-    math
-    task@Task{zoneTimes, startGates, earlyStart} =
-    f give (timeCheck earlyStart startGates zoneTimes) task
+flownTask Comp{earth, earthMath, give} math task =
+    -- WARNING: FS doesn't exclude crossings if they are outside zone time
+    -- windows or if they jump the gun by too much.
+    f give (repeat $ const True) task
     where
         f = case ((earthMath, earth), math) of
                 (e@(Pythagorus, EarthAsFlat{}), Floating) ->
