@@ -111,7 +111,7 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") $ text "Jump the Gun"
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-demerit") $ text "Penalties"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Points"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
