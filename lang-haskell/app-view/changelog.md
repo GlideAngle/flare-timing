@@ -14,6 +14,8 @@ of this changelog.
 * Do not default to award arrival position points when no kind of arrival
   points are allowed.
 * Award pilots without a tracklog effort for minimum distance.
+* Add a table showing jump the gun penalties and how fractional and point
+  penalties are applied and the final points are rounded.
 
 # Jump the Gun
 ## app-view-0.23
