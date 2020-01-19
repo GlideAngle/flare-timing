@@ -68,7 +68,6 @@ module Flight.Comp
     , module Flight.Path
     ) where
 
-import Debug.Trace
 import Data.Ratio ((%))
 import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
@@ -253,10 +252,7 @@ timeCheck EarlyStart{earliest} startGates zoneTimes =
         let zoneCheck = maybe (const True) (zoneTimeCheck earliest) oc
             gateChecks = gateTimeCheck earliest <$> startGates
             gatesCheck t = null startGates || (or $ ($ t) <$> gateChecks)
-        in (\t ->
-            let zc = zoneCheck t
-                gc = gatesCheck t
-            in (trace $ "OC: " ++ show oc ++ ", SG: " ++ show startGates ++ ", T: " ++ show t ++ ", YN: " ++ show(zc, gc)) zc && gc)
+        in (\t -> zoneCheck t && gatesCheck t)
 
     | oc <- unpackOpenClose zoneTimes
     ]
