@@ -47,8 +47,7 @@ import Flight.Comp
     , compFileToCompDir
     , alignTimePath
     , openClose
-    , unpackOpenClose
-    , earlyTimecheck
+    , timeCheck
     )
 import Flight.Mask
     ( GeoDash(..), FnIxTask, RaceSections(..), GroupLeg(..), Ticked
@@ -215,7 +214,13 @@ group
         (_, Nothing) -> []
         (Nothing, _) -> []
         (Just Task{speedSection = Nothing}, _) -> []
-        (Just task@Task{speedSection = ss@(Just (start, end)), zoneTimes, earlyStart}, Just times) ->
+        (Just
+            task@Task
+                { speedSection = ss@(Just (start, end))
+                , zoneTimes
+                , startGates
+                , earlyStart
+                }, Just times) ->
             maybe
                 zs
                 ( maybe zs (\z -> zs ++ [z])
@@ -266,7 +271,7 @@ group
                                 )
                                 give
                                 sp
-                                (earlyTimecheck earlyStart <$> unpackOpenClose zoneTimes)
+                                (timeCheck earlyStart startGates zoneTimes)
                                 task
                                 scoredMarkedFixes
                         Rational -> error "Grouping for rational math is not yet implemented."

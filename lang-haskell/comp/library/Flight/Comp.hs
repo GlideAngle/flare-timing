@@ -44,8 +44,9 @@ module Flight.Comp
     , OpenClose(..)
     , EarlyStart(..)
     , nullEarlyStart
-    , earlyTimecheck
-    , earliestTimecheck
+    , gateTimeCheck
+    , zoneTimeCheck
+    , timeCheck
     -- * Pilot and their track logs.
     , PilotId(..)
     , PilotName(..)
@@ -67,6 +68,7 @@ module Flight.Comp
     , module Flight.Path
     ) where
 
+import Debug.Trace
 import Data.Ratio ((%))
 import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
@@ -225,22 +227,39 @@ unpackOpenClose = \case
 
 type TimePass = UTCTime -> Bool
 
-earlyTimecheck :: EarlyStart -> Maybe OpenClose -> TimePass
-earlyTimecheck EarlyStart{earliest} = earliestTimecheck earliest
+gateTimeCheck :: JumpTheGunLimit (Quantity Double [u| s |]) -> StartGate -> TimePass
+gateTimeCheck (JumpTheGunLimit (MkQuantity limit)) (StartGate sg) = \t ->
+    let limit' = negate $ fromIntegral (round limit :: Int)
+        earliestStart = limit' `addUTCTime` sg
+        notEarly = earliestStart <= t
 
-earliestTimecheck :: JumpTheGunLimit (Quantity Double [u| s |]) -> Maybe OpenClose -> TimePass
-earliestTimecheck (JumpTheGunLimit (MkQuantity limit)) oc' =
-    maybe
-        (const True)
-        (\oc ->
-            \t ->
-                let notLate = t <= close oc
-                    limit' = negate $ fromIntegral (round limit :: Int)
-                    earliestStart = limit' `addUTCTime` (open oc)
-                    notEarly = earliestStart <= t
+    in notEarly
 
-                in notEarly && notLate)
-        oc'
+-- | If a scorer sets the gate open time the same as the first start gate time
+-- then for jump the gun to work pilots must be able to start before the gate
+-- open time.
+zoneTimeCheck :: JumpTheGunLimit (Quantity Double [u| s |]) -> OpenClose -> TimePass
+zoneTimeCheck (JumpTheGunLimit (MkQuantity limit)) OpenClose{open, close} = \t ->
+    let notLate = t <= close
+        limit' = negate $ fromIntegral (round limit :: Int)
+        earliestStart = limit' `addUTCTime` open
+        notEarly = earliestStart <= t
+
+    in notEarly && notLate
+
+timeCheck :: EarlyStart -> [StartGate] -> [OpenClose] -> [TimePass]
+timeCheck EarlyStart{earliest} startGates zoneTimes =
+    [
+        let zoneCheck = maybe (const True) (zoneTimeCheck earliest) oc
+            gateChecks = gateTimeCheck earliest <$> startGates
+            gatesCheck t = null startGates || (or $ ($ t) <$> gateChecks)
+        in (\t ->
+            let zc = zoneCheck t
+                gc = gatesCheck t
+            in (trace $ "OC: " ++ show oc ++ ", SG: " ++ show startGates ++ ", T: " ++ show t ++ ", YN: " ++ show(zc, gc)) zc && gc)
+
+    | oc <- unpackOpenClose zoneTimes
+    ]
 
 pilotNamed :: CompSettings k -> [PilotName] -> [Pilot]
 pilotNamed CompSettings{pilots} [] = sort . nub . join $
