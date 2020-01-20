@@ -117,7 +117,7 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
                 elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
-                elClass "th" "th-start-early" $ text "Early ¶"
+                elClass "th" "th-start-early" $ text "Early †"
                 elClass "th" "th-demerit-points" $ text "Points"
 
                 elClass "th" "th-distance-points" $ text "Distance"
@@ -197,9 +197,7 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
 
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
-            foot "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
-            foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
-            foot "¶ \"Early\" how much earlier than the start did this pilot jump the gun?"
+            foot "† \"Early\" how much earlier than the start did this pilot jump the gun?"
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
