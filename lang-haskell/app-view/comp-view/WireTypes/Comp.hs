@@ -18,6 +18,9 @@ module WireTypes.Comp
     , Tweak(..)
     , LwScaling(..)
     , AwScaling(..)
+    , JumpTheGunLimit(..)
+    , SecondsPerPoint(..)
+    , EarlyStart(..)
     , scaling
     , getAllRawZones
     , getRaceRawZones
@@ -33,6 +36,8 @@ module WireTypes.Comp
     , showNominalTime
     , showScoreBackTime
     , showEarthMath
+    , showEarlyStartEarliest
+    , showEarlyStartPenaltyRate
     ) where
 
 import Text.Printf (printf)
@@ -52,6 +57,7 @@ import WireTypes.ZoneKind
 import WireTypes.Pilot (Pilot)
 import WireTypes.Point (StartGate(..), PointPenalty)
 import FlareTiming.Time (UtcOffset(..))
+import FlareTiming.Time (showHmsForSecs)
 
 type Name = String
 
@@ -302,6 +308,44 @@ data TaskStop =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
+newtype JumpTheGunLimit = JumpTheGunLimit Double
+    deriving (Eq, Ord)
+
+newtype SecondsPerPoint = SecondsPerPoint Double
+    deriving (Eq, Ord)
+
+showEarlyStartEarliest :: EarlyStart -> T.Text
+showEarlyStartEarliest EarlyStart{earliest = JumpTheGunLimit jtg} =
+    showHmsForSecs jtg
+
+showEarlyStartPenaltyRate :: EarlyStart -> T.Text
+showEarlyStartPenaltyRate EarlyStart{earlyPenalty = SecondsPerPoint spp} =
+    T.pack $ printf "1/%.0fs" spp
+
+instance FromJSON JumpTheGunLimit where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            's' : ' ' : xs -> return . JumpTheGunLimit . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+instance FromJSON SecondsPerPoint where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            's' : ' ' : xs -> return . SecondsPerPoint . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+data EarlyStart =
+    EarlyStart
+        { earliest :: JumpTheGunLimit
+        , earlyPenalty :: SecondsPerPoint
+        }
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (FromJSON)
+
 data Task =
     Task
         { taskName :: Name
@@ -311,6 +355,7 @@ data Task =
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
         , taskTweak :: Maybe Tweak
+        , earlyStart :: EarlyStart
         , penalsAuto :: [(Pilot, [PointPenalty], String)]
         , penals :: [(Pilot, [PointPenalty], String)]
         }

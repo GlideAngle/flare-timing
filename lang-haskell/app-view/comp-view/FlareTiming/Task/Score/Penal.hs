@@ -27,7 +27,10 @@ import WireTypes.Point
     , showJumpedTheGunPenalty
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
-import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
+import WireTypes.Comp
+    ( UtcOffset(..), Discipline(..), MinimumDistance(..)
+    , EarlyStart(..), showEarlyStartEarliest, showEarlyStartPenaltyRate
+    )
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot)
@@ -38,6 +41,7 @@ tableScorePenal
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
     -> Dynamic t MinimumDistance
+    -> Dynamic t EarlyStart
     -> Dynamic t [Pt.StartGate]
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t Dnf
@@ -50,7 +54,7 @@ tableScorePenal
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
+tableScorePenal utcOffset hgOrPg free early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -108,7 +112,8 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") $ text "Jump the Gun"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") . dynText
+                    $ ((<> " of Jump-the-Gun") . showEarlyStartEarliest) <$> early
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-demerit") $ text "Penalties"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
@@ -118,7 +123,7 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" $ text "###-Pilot"
                 elClass "th" "th-start-early" $ text "Early †"
-                elClass "th" "th-demerit-points" $ text "Points"
+                elClass "th" "th-early-demerit" $ text "Points"
 
                 elClass "th" "th-distance-points" $ text "Distance"
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
@@ -132,8 +137,10 @@ tableScorePenal utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sE
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
-                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+                el "th" $ text ""
+                elClass "th" "th-early-units" . dynText
+                    $ ((\r -> "(" <> r <> ")") . showEarlyStartPenaltyRate) <$> early
 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
