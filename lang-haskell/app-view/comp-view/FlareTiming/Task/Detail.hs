@@ -240,7 +240,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                         ScoreTabPenal ->
                             elAttr "div" ("id" =: "score-penal") $
-                            tableScorePenal utc hgOrPg free' early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                            tableScorePenal hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                         ScoreTabSplit ->
                             elAttr "div" ("id" =: "score-points") $
                                 tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx

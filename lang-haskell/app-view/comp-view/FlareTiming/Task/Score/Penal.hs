@@ -38,9 +38,7 @@ import FlareTiming.Task.Score.Show
 
 tableScorePenal
     :: MonadWidget t m
-    => Dynamic t UtcOffset
-    -> Dynamic t Discipline
-    -> Dynamic t MinimumDistance
+    => Dynamic t Discipline
     -> Dynamic t EarlyStart
     -> Dynamic t [Pt.StartGate]
     -> Dynamic t (Maybe TaskLength)
@@ -54,7 +52,7 @@ tableScorePenal
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScorePenal utcOffset hgOrPg free early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
+tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -189,8 +187,6 @@ tableScorePenal utcOffset hgOrPg free early sgs _ln dnf' dfNt _vy vw _wg pt tp s
                     (pointRow
                         (snd <$> cTimePoints)
                         (snd <$> cArrivalPoints)
-                        utcOffset
-                        free
                         dfNt
                         pt
                         tp
@@ -262,15 +258,13 @@ pointRow
     :: MonadWidget t m
     => Dynamic t T.Text
     -> Dynamic t T.Text
-    -> Dynamic t UtcOffset
-    -> Dynamic t MinimumDistance
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
+pointRow cTime cArrival dfNt pt tp sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     let y = ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p'}) ->
