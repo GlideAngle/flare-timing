@@ -133,8 +133,8 @@ module Flight.Score
     , ArrivalPlacing(..)
     , TaskPlacing(..)
     -- * Tallying points
-    , LaunchToSssPoints(..)
-    , MinimumDistancePoints(..)
+    , LaunchToStartPoints(..)
+    , TooEarlyPoints(..)
     , JumpedTheGun(..)
     , Hg
     , Pg
@@ -148,8 +148,10 @@ module Flight.Score
     , TimePoints(..)
     , TaskPoints(..)
     , Points(..)
+    , PointsReduced(..)
     , zeroPoints
     , taskPoints
+    , taskPointsSubtotal
     , applyFractionalPenalties
     , applyPenalties
     , availablePoints
@@ -191,7 +193,8 @@ module Flight.Score
     -- * Early start
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
-    , jumpTheGunPenalty
+    , jumpTheGunPenaltyHg
+    , jumpTheGunPenaltyPg
     ) where
 
 import Flight.Gap.Leading.Area

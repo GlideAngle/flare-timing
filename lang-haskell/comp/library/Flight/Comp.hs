@@ -102,6 +102,7 @@ import Flight.Score
     , PointPenalty(..)
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
+    , TooEarlyPoints(..)
     )
 import Flight.Geodesy (EarthMath(..), EarthModel(..))
 
@@ -196,6 +197,7 @@ data EarlyStart =
     EarlyStart
         { earliest :: JumpTheGunLimit (Quantity Double [u| s |])
         , earlyPenalty :: SecondsPerPoint (Quantity Double [u| s |])
+        , tooEarlyReset :: TooEarlyPoints
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -205,6 +207,7 @@ nullEarlyStart =
     EarlyStart
         (JumpTheGunLimit [u| 0 s |])
         (SecondsPerPoint [u| 0 s |])
+        (TooEarlyPoints 0)
 
 -- | If all the zone open and close times are the same then we may only be
 -- given a singleton list. This function retrieves the open close time

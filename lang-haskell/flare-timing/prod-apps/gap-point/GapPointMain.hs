@@ -6,7 +6,8 @@ import Prelude hiding (max)
 import qualified Prelude as Stats (max)
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
-import Data.Maybe (maybeToList, fromMaybe, catMaybes)
+import Data.Maybe (maybeToList, listToMaybe, fromMaybe, catMaybes)
+import Data.Either (lefts, rights)
 import Data.Function ((&))
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -117,7 +118,7 @@ import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)
-import qualified Flight.Score as Gap (ReachToggle(..))
+import qualified Flight.Score as Gap (ReachToggle(..), taskPoints)
 import Flight.Score
     ( MinimumDistance(..), LaunchToEss(..)
     , SumOfDistance(..), PilotDistance(..)
@@ -131,17 +132,19 @@ import Flight.Score
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
     , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
-    , PointPenalty
-    , TaskPlacing(..), TaskPoints(..), PilotVelocity(..), PilotTime(..)
+    , PointPenalty, PointsReduced(..)
+    , TaskPlacing(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
     , FlownMax(..)
+    , JumpedTheGun(..), TooEarlyPoints(..), LaunchToStartPoints(..)
+    , Penalty(..), Hg, Pg
     , unFlownMaxAsKm
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
-    , availablePoints, applyFractionalPenalties, applyPenalties
+    , availablePoints
     , toIxChunk
-    , jumpTheGunPenalty
+    , jumpTheGunPenaltyHg, jumpTheGunPenaltyPg
     )
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import GapPointOptions (description)
@@ -804,7 +807,7 @@ points'
                       $ Map.intersectionWith (,) dsF dsL
               in
                   rankByTotal . sortScores
-                  $ fmap (tallyDf startGates earlyStart)
+                  $ fmap (tallyDf discipline startGates earlyStart)
                   A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs
             | diffs <- difficultyDistancePointsDf
             | linears <- nighDistancePointsDfE
@@ -864,7 +867,7 @@ sortScores =
 
 zeroPoints :: Gap.Points
 zeroPoints =
-    Gap.Points 
+    Gap.Points
         { reach = LinearPoints 0
         , effort = DifficultyPoints 0
         , distance = DistancePoints 0
@@ -1151,7 +1154,8 @@ startEnd RaceSections{race} =
         (x : _, y : _) -> StartEnd x y
 
 tallyDf
-    :: [StartGate]
+    :: Discipline
+    -> [StartGate]
     -> EarlyStart
     ->
         ( Maybe (QAlt Double [u| m |])
@@ -1179,8 +1183,9 @@ tallyDf
         )
     -> Breakdown
 tallyDf
+    hgOrPg
     startGates
-    EarlyStart{earlyPenalty}
+    EarlyStart{earliest, earlyPenalty}
     ( alt
     ,
         ( g
@@ -1191,15 +1196,7 @@ tallyDf
                 ,
                     ( (dS, dE, dF, dL)
                     ,
-                        ( (penalties, penaltyReason)
-                        , x@Gap.Points
-                            { reach = LinearPoints r
-                            , effort = DifficultyPoints dp
-                            , leading = LeadingPoints l
-                            , arrival = ArrivalPoints a
-                            , time = TimePoints tp
-                            }
-                        )
+                        ((penalties, penaltyReason), x)
                     )
                 )
             )
@@ -1208,11 +1205,13 @@ tallyDf
     Breakdown
         { place = TaskPlacing 0
         , subtotal = subtotal
-        , demeritFrac = TaskPoints $ unpack subtotal - unpack withF
-        , demeritPoint = TaskPoints . Stats.max 0 $ unpack withF - unpack total
+        , subtotalAlt = subtotalAlt
+        , demeritFrac = fracApplied
+        , demeritPoint = pointApplied
+        , demeritReset = resetApplied
         , total = total
         , jump = jump
-        , penaltiesJump = penaltiesJump
+        , penaltiesJump = jumpDemerits
         , penalties = penalties
         , penaltyReason = penaltyReason
         , breakdown = x
@@ -1220,7 +1219,7 @@ tallyDf
             Just
             $ zeroVelocity
                 { ss = ss'
-                , gs = snd <$> jumpGates
+                , gs = snd <$> jumpGate
                 , es = es'
                 , ssDistance = dS
                 , ssElapsed = ssT
@@ -1238,18 +1237,50 @@ tallyDf
         , stoppedAlt = alt
         }
     where
-        jumpGates = do
+        jumpGate :: Maybe (Maybe (JumpedTheGun _), StartGate)
+        jumpGate = do
                 ss'' <- ss'
                 gs' <- nonEmpty startGates
                 return $ startGateTaken gs' ss''
 
-        jump = join $ fst <$> jumpGates
-        penaltiesJump = maybeToList $ jumpTheGunPenalty earlyPenalty <$> jump
+        tooEarlyPoints = TooEarlyPoints 111
+        launchToStartPoints = LaunchToStartPoints 222
 
-        subtotal = TaskPoints $ r + dp + l + a + tp
-        ps = penaltiesJump ++ penalties
-        withF = applyFractionalPenalties ps subtotal
-        total = applyPenalties ps subtotal
+        jump :: Maybe (JumpedTheGun _)
+        jump = join $ fst <$> jumpGate
+
+        (jumpDemerits, ptsReduced) =
+            case hgOrPg of
+                HangGliding ->
+                    let eitherPenalties :: [Either PointPenalty (Penalty Hg)]
+                        eitherPenalties =
+                            maybeToList
+                            $ jumpTheGunPenaltyHg tooEarlyPoints earliest earlyPenalty <$> jump
+
+                        jumpDemerits' = lefts eitherPenalties
+                        jumpReset = listToMaybe $ rights eitherPenalties
+
+                        ps :: [PointPenalty]
+                        ps = jumpDemerits ++ penalties
+
+                     in (jumpDemerits', Gap.taskPoints jumpReset ps x)
+
+                Paragliding ->
+                    let jumpReset :: Maybe (Penalty Pg)
+                        jumpReset =
+                            join
+                            $ jumpTheGunPenaltyPg launchToStartPoints <$> jump
+
+                     in ([], Gap.taskPoints jumpReset penalties x)
+
+        PointsReduced
+            { subtotal
+            , subtotalAlt
+            , fracApplied
+            , pointApplied
+            , resetApplied
+            , total
+            } = ptsReduced
 
         ss' = getTagTime unStart
         es' = getTagTime unEnd
@@ -1278,21 +1309,15 @@ tallyDfNoTrack
     dT'
     ( (aw', AwardedVelocity{ss, es})
     ,
-        ( (penalties, penaltyReason)
-        , x@Gap.Points
-            { reach = LinearPoints r
-            , effort = DifficultyPoints dp
-            , leading = LeadingPoints l
-            , arrival = ArrivalPoints a
-            , time = TimePoints tp
-            }
-        )
+        ((penalties, penaltyReason), x)
     ) =
     Breakdown
         { place = TaskPlacing 0
         , subtotal = subtotal
-        , demeritFrac = TaskPoints $ unpack subtotal - unpack withF
-        , demeritPoint = TaskPoints . Stats.max 0 $ unpack withF - unpack total
+        , subtotalAlt = subtotal
+        , demeritFrac = fracApplied
+        , demeritPoint = pointApplied
+        , demeritReset = resetApplied
         , total = total
         , jump = Nothing
         , penaltiesJump = []
@@ -1334,9 +1359,13 @@ tallyDfNoTrack
                 gs' <- nonEmpty startGates
                 return $ startGateTaken gs' ss'
 
-        subtotal = TaskPoints $ r + dp + l + a + tp
-        withF = applyFractionalPenalties penalties subtotal
-        total = applyPenalties penalties subtotal
+        PointsReduced
+            { subtotal
+            , fracApplied
+            , pointApplied
+            , resetApplied
+            , total
+            } = Gap.taskPoints Nothing penalties x
 
         dE = PilotDistance <$> do
                 dT <- dT'

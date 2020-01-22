@@ -70,7 +70,7 @@ import Flight.Comp
     )
 import Flight.Score
     ( ScoreBackTime(..), PointPenalty(..), ReachToggle(..)
-    , SecondsPerPoint(..), JumpTheGunLimit(..)
+    , SecondsPerPoint(..), JumpTheGunLimit(..), TooEarlyPoints(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)
@@ -105,7 +105,10 @@ xpPointPenaltyAuto =
         , \(xs, s) ->
             let pp =
                     find
-                        (\case PenaltyFraction _ -> False; PenaltyPoints _ -> True)
+                        (\case
+                            PenaltyFraction _ -> False
+                            PenaltyPoints _ -> True
+                            PenaltyReset _ -> False)
                         xs
 
             in
@@ -113,6 +116,7 @@ xpPointPenaltyAuto =
                     Nothing -> (0.0, s)
                     (Just (PenaltyPoints y)) -> (y, s)
                     (Just (PenaltyFraction _)) -> (0.0, s)
+                    (Just (PenaltyReset _)) -> (0.0, s)
         )
     $ xpPair
         (xpAttr "penalty_points_auto" xpPrim)
@@ -141,12 +145,18 @@ xpPointPenalty =
         , \(xs, s) ->
             let p =
                     find
-                        (\case PenaltyFraction _ -> True; PenaltyPoints _ -> False)
+                        (\case
+                            PenaltyFraction _ -> True
+                            PenaltyPoints _ -> False
+                            PenaltyReset _ -> False)
                         xs
 
                 pp =
                     find
-                        (\case PenaltyFraction _ -> False; PenaltyPoints _ -> True)
+                        (\case
+                            PenaltyFraction _ -> False
+                            PenaltyPoints _ -> True
+                            PenaltyReset _ -> False)
                         xs
 
             in
@@ -174,6 +184,7 @@ xpEarlyStart =
             EarlyStart
                 (JumpTheGunLimit . MkQuantity $ fromIntegral limit)
                 (SecondsPerPoint . MkQuantity $ fromIntegral rate)
+                (TooEarlyPoints 0)
         , \EarlyStart
             { earliest = JumpTheGunLimit (MkQuantity limit)
             , earlyPenalty = SecondsPerPoint (MkQuantity rate)

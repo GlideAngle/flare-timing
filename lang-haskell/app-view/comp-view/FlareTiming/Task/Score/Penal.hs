@@ -113,7 +113,7 @@ tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") . dynText
                     $ ((<> " of Jump-the-Gun") . showEarlyStartEarliest) <$> early
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-demerit") $ text "Penalties ‡"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
 
             el "tr" $ do
@@ -130,6 +130,7 @@ tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 elClass "th" "th-total-points" $ text "Subtotal"
                 elClass "th" "th-demerit-points" $ text "Frac"
                 elClass "th" "th-demerit-points" $ text "Points"
+                elClass "th" "th-demerit-points" $ text "Reset"
                 elClass "th" "th-total-points" $ text "Total"
                 elClass "th" "th-norm th-total-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
@@ -320,6 +321,9 @@ pointRow earliest cTime cArrival dfNt pt tp sEx x = do
         elClass "td" "td-demerit-points" . dynText
             $ (showDemeritPointsNonZero 1 . demeritPoint) <$> xB
 
+        elClass "td" "td-demerit-points" . dynText
+            $ (showDemeritPointsNonZero 1 . demeritReset) <$> xB
+
         elClass "td" "td-total-points" . dynText
             $ zipDynWith showTaskPointsRounded tp (total <$> xB)
 
@@ -375,7 +379,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "5"
+                        <> "colspan" =: "6"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"

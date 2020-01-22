@@ -314,6 +314,10 @@ newtype JumpTheGunLimit = JumpTheGunLimit Double
 newtype SecondsPerPoint = SecondsPerPoint Double
     deriving (Eq, Ord)
 
+newtype TooEarlyPoints = TooEarlyPoints Int
+    deriving (Eq, Ord, Show)
+    deriving newtype (FromJSON)
+
 showEarlyStartEarliest :: EarlyStart -> T.Text
 showEarlyStartEarliest EarlyStart{earliest = JumpTheGunLimit jtg} =
     showHmsForSecs jtg
@@ -342,6 +346,7 @@ data EarlyStart =
     EarlyStart
         { earliest :: JumpTheGunLimit
         , earlyPenalty :: SecondsPerPoint
+        , tooEarlyReset :: TooEarlyPoints
         }
     deriving (Eq, Ord, Generic)
     deriving anyclass (FromJSON)

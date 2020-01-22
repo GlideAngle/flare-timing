@@ -172,6 +172,7 @@ instance FromJSON PilotVelocity where
 data PointPenalty
     = PenaltyPoints Double
     | PenaltyFraction Double
+    | PenaltyReset Int
     deriving (Eq, Ord, Show, Generic)
 
 pointPenaltyOptions :: Options
@@ -181,6 +182,7 @@ pointPenaltyOptions =
         , constructorTagModifier = \case
             "PenaltyPoints" -> "penalty-points"
             "PenaltyFraction" -> "penalty-fraction"
+            "PenaltyReset" -> "penalty-reset"
             s -> s
         }
 
@@ -213,7 +215,11 @@ showJumpedTheGunPenalty :: Int -> [PointPenalty] -> T.Text
 showJumpedTheGunPenalty _ [] = ""
 showJumpedTheGunPenalty dp ps =
     T.pack . printf "%+.*f" dp . sum
-    $ (\case (PenaltyFraction _) -> 0; (PenaltyPoints y) -> negate y) <$> ps
+    $ (\case
+        (PenaltyFraction _) -> 0
+        (PenaltyReset _) -> 0
+        (PenaltyPoints y) -> negate y)
+    <$> ps
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
@@ -500,6 +506,7 @@ data Breakdown =
         , subtotal :: TaskPoints
         , demeritFrac :: TaskPoints
         , demeritPoint :: TaskPoints
+        , demeritReset :: TaskPoints
         , total :: TaskPoints
         , jump :: Maybe JumpedTheGun
         , penaltiesJump :: [PointPenalty]

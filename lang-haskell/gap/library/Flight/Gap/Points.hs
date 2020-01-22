@@ -4,8 +4,8 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
 module Flight.Gap.Points
-    ( LaunchToSssPoints(..)
-    , MinimumDistancePoints(..)
+    ( LaunchToStartPoints(..)
+    , TooEarlyPoints(..)
     , SecondsPerPoint(..)
     , JumpedTheGun(..)
     , Hg
@@ -13,12 +13,15 @@ module Flight.Gap.Points
     , Penalty(..)
     , PointPenalty(..)
     , Points(..)
+    , PointsReduced(..)
     , zeroPoints
     , taskPoints
+    , taskPointsSubtotal
     , applyFractionalPenalties
     , applyPenalties
     , availablePoints
-    , jumpTheGunPenalty
+    , jumpTheGunPenaltyHg
+    , jumpTheGunPenaltyPg
     ) where
 
 import Data.Ratio ((%))
@@ -44,10 +47,16 @@ import Flight.Gap.Weight.Distance
 import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
-import Flight.Gap.Time.Early (JumpedTheGun(..), SecondsPerPoint(..))
+import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerPoint(..))
 
-newtype LaunchToSssPoints = LaunchToSssPoints Rational deriving (Eq, Show)
-newtype MinimumDistancePoints = MinimumDistancePoints Rational deriving (Eq, Show)
+-- NOTE: Reset points are the final points awarded and so can be ints.
+newtype LaunchToStartPoints = LaunchToStartPoints Int
+    deriving (Eq, Ord, Show)
+    deriving newtype (ToJSON, FromJSON)
+
+newtype TooEarlyPoints = TooEarlyPoints Int
+    deriving (Eq, Ord, Show)
+    deriving newtype (ToJSON, FromJSON)
 
 newtype NoGoal = NoGoal Bool deriving (Eq, Show)
 
@@ -55,7 +64,7 @@ data Hg = Hg deriving (Show)
 data Pg = Pg deriving (Show)
 
 data Penalty a where
-    JumpedTooEarly :: MinimumDistancePoints -> Penalty Hg
+    JumpedTooEarly :: TooEarlyPoints -> Penalty Hg
 
     Jumped
         :: SecondsPerPoint (Quantity Double [u| s |])
@@ -68,12 +77,13 @@ data Penalty a where
         -> Penalty Hg
 
     NoGoalHg :: Penalty Hg
-    Early :: LaunchToSssPoints -> Penalty Pg
+    Early :: LaunchToStartPoints -> Penalty Pg
     NoGoalPg :: Penalty Pg
 
 data PointPenalty
     = PenaltyPoints Double
     | PenaltyFraction Double
+    | PenaltyReset Int
     deriving (Eq, Ord, Show, Generic)
 
 pointPenaltyOptions :: Options
@@ -83,6 +93,7 @@ pointPenaltyOptions =
         , constructorTagModifier = \case
             "PenaltyPoints" -> "penalty-points"
             "PenaltyFraction" -> "penalty-fraction"
+            "PenaltyReset" -> "penalty-reset"
             s -> s
         }
 
@@ -123,7 +134,7 @@ tallyPoints :: forall a. Maybe (Penalty a) -> TaskPointTally
 
 tallyPoints Nothing =
     \Points
-        { reach = LinearPoints linear 
+        { reach = LinearPoints linear
         , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         , time = TimePoints t
@@ -131,12 +142,12 @@ tallyPoints Nothing =
         } ->
         TaskPoints $ linear + diff + l + t + a
 
-tallyPoints (Just (JumpedTooEarly (MinimumDistancePoints p))) =
-    const $ TaskPoints p
+tallyPoints (Just (JumpedTooEarly (TooEarlyPoints p))) =
+    const . TaskPoints $ fromIntegral p
 
 tallyPoints (Just (JumpedNoGoal secs jump)) =
     \Points
-        { reach = LinearPoints linear 
+        { reach = LinearPoints linear
         , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         , time = TimePoints t
@@ -148,7 +159,7 @@ tallyPoints (Just (JumpedNoGoal secs jump)) =
 
 tallyPoints (Just (Jumped secs jump)) =
     \Points
-        { reach = LinearPoints linear 
+        { reach = LinearPoints linear
         , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         , time = TimePoints t
@@ -160,7 +171,7 @@ tallyPoints (Just (Jumped secs jump)) =
 
 tallyPoints (Just NoGoalHg) =
     \Points
-        { reach = LinearPoints linear 
+        { reach = LinearPoints linear
         , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         , time = TimePoints t
@@ -169,8 +180,8 @@ tallyPoints (Just NoGoalHg) =
         TaskPoints
         $ linear + diff + l + (8 % 10) * (t + a)
 
-tallyPoints (Just (Early (LaunchToSssPoints d))) =
-    const $ TaskPoints d
+tallyPoints (Just (Early (LaunchToStartPoints d))) =
+    const . TaskPoints $ fromIntegral d
 
 tallyPoints (Just NoGoalPg) =
     \Points
@@ -180,13 +191,23 @@ tallyPoints (Just NoGoalPg) =
         } ->
         TaskPoints $ linear + diff + l
 
-jumpTheGunPenalty
-    :: SecondsPerPoint (Quantity Double [u| s |])
+jumpTheGunPenaltyHg
+    :: TooEarlyPoints
+    -> JumpTheGunLimit (Quantity Double [u| s |])
+    -> SecondsPerPoint (Quantity Double [u| s |])
     -> JumpedTheGun (Quantity Double [u| s |])
-    -> PointPenalty
-jumpTheGunPenalty (SecondsPerPoint secs) (JumpedTheGun jump) =
-    let (MkQuantity penalty) = jump /: secs in
-    PenaltyPoints penalty
+    -> Either PointPenalty (Penalty Hg)
+jumpTheGunPenaltyHg pts (JumpTheGunLimit secsMax) (SecondsPerPoint secs) (JumpedTheGun jump)
+    | jump > secsMax = Right (JumpedTooEarly pts)
+    | otherwise = Left $ let (MkQuantity penalty) = jump /: secs in PenaltyPoints penalty
+
+jumpTheGunPenaltyPg
+    :: LaunchToStartPoints
+    -> JumpedTheGun (Quantity Double [u| s |])
+    -> Maybe (Penalty Pg)
+jumpTheGunPenaltyPg pts (JumpedTheGun jump)
+    | jump > [u| 0 s |] = Just $ Early pts
+    | otherwise = Nothing
 
 jumpTheGun
     :: SecondsPerPoint (Quantity Double [u| s |])
@@ -197,8 +218,65 @@ jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
     let (MkQuantity penalty) = toRational' $ jump /: secs in
     TaskPoints $ max 0 (pts - penalty)
 
-taskPoints :: forall a. Maybe (Penalty a) -> Points -> TaskPoints
-taskPoints = tallyPoints
+data PointsReduced =
+    PointsReduced
+        { subtotal :: TaskPoints
+        , subtotalAlt :: TaskPoints
+        , fracApplied :: TaskPoints
+        , pointApplied :: TaskPoints
+        , resetApplied :: TaskPoints
+        , total :: TaskPoints
+        }
+
+taskPoints :: forall a. Maybe (Penalty a) -> [PointPenalty] -> Points -> PointsReduced
+taskPoints p ps points =
+    PointsReduced
+        { subtotal = subtotal
+        , subtotalAlt = alt
+        , fracApplied = zeroOnReset . TaskPoints $ s - pointsF
+        , pointApplied = zeroOnReset . TaskPoints $ pointsF - pointsFP
+        , resetApplied = TaskPoints $ if r'' /= s then s - r'' else 0
+        , total = total
+        }
+    where
+        subtotal@(TaskPoints s) = taskPointsSubtotal points
+        alt@(TaskPoints r') = tallyPoints p points
+
+        withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
+        (TaskPoints pointsFP) = applyPointPenalties ps withF
+
+        (zeroOnReset, ps') =
+            -- NOTE: If the penalty was a reset, change the penalties.
+            maybe
+                (id, ps)
+                (\p' ->
+                    if isReset p'
+                        then (const $ TaskPoints 0, [PenaltyReset $ round r'])
+                        else (id, ps))
+                p
+
+        TaskPoints r'' = applyResetPenalties ps' subtotal
+        total = applyPenalties ps' subtotal
+
+isReset :: Penalty a -> Bool
+isReset = \case
+    JumpedTooEarly _ -> True
+    Jumped _ _ -> False
+    JumpedNoGoal _ _ -> False
+    NoGoalHg -> False
+    Early _ -> True
+    NoGoalPg -> False
+
+taskPointsSubtotal :: Points -> TaskPoints
+taskPointsSubtotal
+    Points
+        { reach = LinearPoints r
+        , effort = DifficultyPoints e
+        , leading = LeadingPoints l
+        , time = TimePoints t
+        , arrival = ArrivalPoints a
+        } =
+    TaskPoints $ r + e + l + t + a
 
 -- | Applies only fractional penalties.
 applyFractionalPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
@@ -209,26 +287,65 @@ applyFractionalPenalties xs ps =
             partition
                 (\case
                     PenaltyFraction _ -> True
-                    PenaltyPoints _ -> False)
+                    PenaltyPoints _ -> False
+                    PenaltyReset _ -> False)
                 xs
 
--- | Applies the penalties, fractional ones before absolute ones.
+-- | Applies only point penalties.
+applyPointPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
+applyPointPenalties xs ps =
+    foldl' applyPenalty ps points
+    where
+        (points, _) =
+            partition
+                (\case
+                    PenaltyFraction _ -> False
+                    PenaltyPoints _ -> True
+                    PenaltyReset _ -> False)
+                xs
+
+-- | Applies only reset penalties.
+applyResetPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
+applyResetPenalties xs ps =
+    foldl' applyPenalty ps resets
+    where
+        (resets, _) =
+            partition
+                (\case
+                    PenaltyFraction _ -> False
+                    PenaltyPoints _ -> False
+                    PenaltyReset _ -> True)
+                xs
+
+-- | Applies the penalties, fractional ones before absolute ones and finally
+-- the reset ones.
 applyPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
 applyPenalties xs ps =
-    foldl' applyPenalty (foldl' applyPenalty ps fracs) points
+    foldl' applyPenalty (foldl' applyPenalty (foldl' applyPenalty ps fracs) points) resets
     where
-        (fracs, points) =
+        (fracs, ys) =
             partition
                 (\case
                     PenaltyFraction _ -> True
-                    PenaltyPoints _ -> False)
+                    PenaltyPoints _ -> False
+                    PenaltyReset _ -> False)
                 xs
+
+        (resets, points) =
+            partition
+                (\case
+                    PenaltyFraction _ -> False
+                    PenaltyPoints _ -> False
+                    PenaltyReset _ -> True)
+                ys
 
 applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
 applyPenalty (TaskPoints p) (PenaltyPoints n) =
     TaskPoints . max 0 $ p - (toRational n)
 applyPenalty (TaskPoints p) (PenaltyFraction n) =
     TaskPoints . max 0 $ p - p * (toRational n)
+applyPenalty (TaskPoints _) (PenaltyReset n) =
+    TaskPoints . max 0 $ fromIntegral n
 
 availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePoints (TaskValidity tv) Weights{..} =
