@@ -74,6 +74,7 @@ module WireTypes.Point
 
 import Text.Printf (printf)
 import Data.Ord (comparing)
+import Data.List (partition)
 import Control.Applicative (empty)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
@@ -214,12 +215,33 @@ showJumpedTheGunTime (Just (JumpedTheGun s)) = showHmsForSecs s
 showJumpedTheGunPenalty :: Int -> [PointPenalty] -> T.Text
 showJumpedTheGunPenalty _ [] = ""
 showJumpedTheGunPenalty dp ps =
-    T.pack . printf "%+.*f" dp . sum
-    $ (\case
-        (PenaltyFraction _) -> 0
-        (PenaltyReset _) -> 0
-        (PenaltyPoints y) -> negate y)
-    <$> ps
+    let (points, _) =
+            partition
+                (\case
+                    PenaltyFraction _ -> False
+                    PenaltyPoints _ -> True
+                    PenaltyReset _ -> False)
+                ps
+
+        (resets, _) =
+            partition
+                (\case
+                    PenaltyFraction _ -> False
+                    PenaltyPoints _ -> False
+                    PenaltyReset _ -> True)
+                ps
+
+    in
+        T.pack $
+        if null resets
+           then
+                printf "%+.*f" dp . sum
+                $ (\case
+                    PenaltyPoints y -> negate y
+                    PenaltyFraction _ -> 0
+                    PenaltyReset _ -> 0)
+                <$> points
+            else ""
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =

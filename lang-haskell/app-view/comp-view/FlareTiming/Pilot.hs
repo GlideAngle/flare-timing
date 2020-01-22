@@ -145,12 +145,11 @@ rowPenalAuto ppp = do
         el "td" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
         case pp of
-            Nothing -> do
-                el "td" $ text ""
-            Just (PenaltyFraction _) -> do
-                el "td" $ text ""
             Just (PenaltyPoints y) -> do
                 td y
+            _ -> do
+                el "td" $ text ""
+
         el "td" . text $ T.pack reason)
 
 rowPenal
