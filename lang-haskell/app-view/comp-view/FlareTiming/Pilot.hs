@@ -23,7 +23,7 @@ import WireTypes.Pilot
     , AwardedDistance(..), AwardedVelocity(..), DfNoTrackPilot(..)
     )
 import WireTypes.Point (PointPenalty(..), ReachToggle(..), JumpedTheGun(..), showJumpedTheGunTime)
-import WireTypes.Comp (UtcOffset(..))
+import WireTypes.Comp (UtcOffset(..), JumpTheGunLimit(..))
 import FlareTiming.Time (showT, timeZone)
 
 rowPilot
@@ -80,9 +80,10 @@ rowDfNtReach ln' i pd = do
 
 rowPenalJump
     :: MonadWidget t m
-    => Dynamic t (Pilot, [PointPenalty], Maybe JumpedTheGun)
+    => Dynamic t JumpTheGunLimit
+    -> Dynamic t (Pilot, [PointPenalty], Maybe JumpedTheGun)
     -> m ()
-rowPenalJump ppp = do
+rowPenalJump earliest ppp = do
     let tdPoint = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
     dyn_ $ ffor ppp (\(pilot, ps, jump) -> el "tr" $ do
         let pp =
@@ -90,16 +91,23 @@ rowPenalJump ppp = do
                     (\case PenaltyFraction _ -> False; PenaltyPoints _ -> True)
                     ps
 
+        let classEarly = ffor earliest (\(JumpTheGunLimit e) ->
+                            let c = "td-start-early" in
+                            maybe
+                                c
+                                (\(JumpedTheGun j) ->
+                                    if j > e
+                                       then c <> " " <> "jumped-too-early"
+                                       else c)
+                                jump)
+
         el "td" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
+        elDynClass "td" classEarly . text $ showJumpedTheGunTime jump
         case pp of
-            Nothing -> do
-                el "td" $ text ""
-            Just (PenaltyFraction _) -> do
-                el "td" $ text ""
-            Just (PenaltyPoints y) -> do
-                tdPoint y
-        elClass "td" "td-penalty" . text $ showJumpedTheGunTime jump)
+            Nothing -> el "td" $ text ""
+            Just (PenaltyFraction _) -> el "td" $ text ""
+            Just (PenaltyPoints y) -> tdPoint y)
 
 rowPenalAuto
     :: MonadWidget t m

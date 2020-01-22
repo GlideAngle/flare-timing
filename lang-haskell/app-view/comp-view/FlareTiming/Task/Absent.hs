@@ -10,11 +10,12 @@ import WireTypes.Point (Breakdown(..))
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTaskPilotAbs)
 import FlareTiming.Pilot (rowPilot, rowDfNt, rowPenalJump, rowPenalAuto, rowPenal)
-import WireTypes.Comp (UtcOffset(..))
+import WireTypes.Comp (UtcOffset(..), EarlyStart(..))
 
 tableAbsent
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t EarlyStart
     -> IxTask
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t Nyp
@@ -24,7 +25,7 @@ tableAbsent
     -> Dynamic t Penal
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
+tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
     pb <- getPostBuild
     let nyp = unNyp <$> nyp'
     let dnf = unDnf <$> dnf'
@@ -166,10 +167,12 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                                         el "tr" $ do
                                                             el "th" $ text "Id"
                                                             el "th" $ text "Name"
+                                                            elClass "th" "th-start-early" $ text "Early"
                                                             elClass "th" "th-penalty" $ text "Point"
-                                                            elClass "th" "th-penalty" $ text "Early"
 
-                                                    el "tbody" $ simpleList jumpers rowPenalJump
+                                                    el "tbody" $
+                                                        simpleList jumpers (rowPenalJump (earliest <$> early))
+
                                             return ()
 
                                     if null penalAuto'' then return () else do
