@@ -94,7 +94,6 @@ data Breakdown =
     Breakdown
         { place :: TaskPlacing
         , subtotal :: TaskPoints
-        , subtotalAlt :: TaskPoints
         -- ^ The total points without any penalties applied.
         , demeritFrac :: TaskPoints
         -- ^ The effective points removed from applying fractional penalties.

@@ -1205,14 +1205,13 @@ tallyDf
     Breakdown
         { place = TaskPlacing 0
         , subtotal = subtotal
-        , subtotalAlt = subtotalAlt
         , demeritFrac = fracApplied
         , demeritPoint = pointApplied
         , demeritReset = resetApplied
         , total = total
         , jump = jump
-        , penaltiesJump = jumpDemerits
-        , penalties = penalties
+        , penaltiesJump = effectivePenaltiesJump
+        , penalties = effectivePenalties
         , penaltyReason = penaltyReason
         , breakdown = x
         , velocity =
@@ -1249,7 +1248,7 @@ tallyDf
         jump :: Maybe (JumpedTheGun _)
         jump = join $ fst <$> jumpGate
 
-        (jumpDemerits, ptsReduced) =
+        ptsReduced =
             case hgOrPg of
                 HangGliding ->
                     let eitherPenalties :: [Either PointPenalty (Penalty Hg)]
@@ -1257,13 +1256,10 @@ tallyDf
                             maybeToList
                             $ jumpTheGunPenaltyHg tooEarlyPoints earliest earlyPenalty <$> jump
 
-                        jumpDemerits' = lefts eitherPenalties
+                        jumpDemerits = lefts eitherPenalties
                         jumpReset = listToMaybe $ rights eitherPenalties
 
-                        ps :: [PointPenalty]
-                        ps = jumpDemerits ++ penalties
-
-                     in (jumpDemerits', Gap.taskPoints jumpReset ps x)
+                     in Gap.taskPoints jumpReset jumpDemerits penalties x
 
                 Paragliding ->
                     let jumpReset :: Maybe (Penalty Pg)
@@ -1271,15 +1267,16 @@ tallyDf
                             join
                             $ jumpTheGunPenaltyPg launchToStartPoints <$> jump
 
-                     in ([], Gap.taskPoints jumpReset penalties x)
+                     in Gap.taskPoints jumpReset [] penalties x
 
         PointsReduced
             { subtotal
-            , subtotalAlt
             , fracApplied
             , pointApplied
             , resetApplied
             , total
+            , effectivePenalties
+            , effectivePenaltiesJump
             } = ptsReduced
 
         ss' = getTagTime unStart
@@ -1314,14 +1311,13 @@ tallyDfNoTrack
     Breakdown
         { place = TaskPlacing 0
         , subtotal = subtotal
-        , subtotalAlt = subtotal
         , demeritFrac = fracApplied
         , demeritPoint = pointApplied
         , demeritReset = resetApplied
         , total = total
         , jump = Nothing
         , penaltiesJump = []
-        , penalties = penalties
+        , penalties = effectivePenalties
         , penaltyReason = penaltyReason
         , breakdown = x
 
@@ -1365,7 +1361,8 @@ tallyDfNoTrack
             , pointApplied
             , resetApplied
             , total
-            } = Gap.taskPoints Nothing penalties x
+            , effectivePenalties
+            } = Gap.taskPoints Nothing [] penalties x
 
         dE = PilotDistance <$> do
                 dT <- dT'

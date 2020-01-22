@@ -221,45 +221,71 @@ jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
 data PointsReduced =
     PointsReduced
         { subtotal :: TaskPoints
-        , subtotalAlt :: TaskPoints
         , fracApplied :: TaskPoints
         , pointApplied :: TaskPoints
         , resetApplied :: TaskPoints
         , total :: TaskPoints
+        , effectivePenalties :: [PointPenalty]
+        , effectivePenaltiesJump :: [PointPenalty]
         }
 
-taskPoints :: forall a. Maybe (Penalty a) -> [PointPenalty] -> Points -> PointsReduced
-taskPoints p ps points =
+taskPoints
+    :: forall a. Maybe (Penalty a)
+    -> [PointPenalty] -- ^ Penalties for jumping the gun.
+    -> [PointPenalty]
+    -> Points
+    -> PointsReduced
+taskPoints p psJump ps points =
     PointsReduced
         { subtotal = subtotal
-        , subtotalAlt = alt
         , fracApplied = zeroOnReset . TaskPoints $ s - pointsF
         , pointApplied = zeroOnReset . TaskPoints $ pointsF - pointsFP
-        , resetApplied = TaskPoints $ if r'' /= s then s - r'' else 0
+        , resetApplied = TaskPoints $ if reset' /= s then s - reset' else 0
         , total = total
+        , effectivePenalties = ps'
+        , effectivePenaltiesJump = psJump'
         }
     where
         subtotal@(TaskPoints s) = taskPointsSubtotal points
-        alt@(TaskPoints r') = tallyPoints p points
+        TaskPoints reset = tallyPoints p points
 
-        withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
-        (TaskPoints pointsFP) = applyPointPenalties ps withF
+        qs = psJump ++ ps
+        withF@(TaskPoints pointsF) = applyFractionalPenalties qs subtotal
+        (TaskPoints pointsFP) = applyPointPenalties qs withF
 
-        (zeroOnReset, ps') =
+        (zeroOnReset, ps', psJump') =
             -- NOTE: If the penalty was a reset, change the penalties.
             maybe
-                (id, ps)
+                (id, ps, psJump)
                 (\p' ->
                     if isReset p'
-                        then (const $ TaskPoints 0, [PenaltyReset $ round r'])
-                        else (id, ps))
+                        then
+                            let pReset = PenaltyReset $ round reset in
+                            ( const $ TaskPoints 0
+                            , [PenaltyReset $ round reset]
+                            , if maybe False isTooEarly p then pReset : psJump else psJump
+                            )
+                        else
+                            ( id
+                            , ps
+                            , psJump
+                            ))
                 p
 
-        TaskPoints r'' = applyResetPenalties ps' subtotal
+        TaskPoints reset' = applyResetPenalties ps' subtotal
         total = applyPenalties ps' subtotal
 
 isReset :: Penalty a -> Bool
 isReset = \case
+    JumpedTooEarly _ -> True
+    Jumped _ _ -> False
+    JumpedNoGoal _ _ -> False
+    NoGoalHg -> False
+    Early _ -> True
+    NoGoalPg -> False
+
+isTooEarly :: Penalty a -> Bool
+isTooEarly = \case
     JumpedTooEarly _ -> True
     Jumped _ _ -> False
     JumpedNoGoal _ _ -> False
