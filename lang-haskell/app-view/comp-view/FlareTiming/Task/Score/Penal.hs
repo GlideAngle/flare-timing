@@ -315,13 +315,13 @@ pointRow earliest cTime cArrival dfNt pt tp sEx x = do
         elClass "td" "td-total-points" . dynText
             $ (showTaskPointsNonZero 1 . subtotal) <$> xB
 
-        elClass "td" "td-demerit-points" . dynText
+        elClass "td" "td-demerit-points frac" . dynText
             $ (showDemeritPointsNonZero 1 . demeritFrac) <$> xB
 
-        elClass "td" "td-demerit-points" . dynText
+        elClass "td" "td-demerit-points points" . dynText
             $ (showDemeritPointsNonZero 1 . demeritPoint) <$> xB
 
-        elClass "td" "td-demerit-points" . dynText
+        elClass "td" "td-demerit-points reset" . dynText
             $ (showDemeritPointsNonZero 1 . demeritReset) <$> xB
 
         elClass "td" "td-total-points" . dynText
