@@ -700,6 +700,20 @@ points'
             | lWholeTask <- lsWholeTask
             ]
 
+        tooEarlyPoints :: [TooEarlyPoints]
+        tooEarlyPoints =
+            [
+                TooEarlyPoints . round . unpack
+                $ maybe
+                    (LinearPoints 0)
+                    (\ps' ->
+                        let bd = Just . TaskDistance $ convert b in
+                        (applyLinear free bd ps') (Just . unQuantity $ unpack free))
+                    ps
+            | ReachStats{max = FlownMax b} <- bolsterStatsE
+            | ps <- (fmap . fmap) points allocs
+            ]
+
         nighDistancePointsDfE :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
@@ -805,10 +819,12 @@ points'
                       $ Map.intersectionWith (\s (e, f, l) -> (s, e, f, l)) dsS
                       $ Map.intersectionWith (\e (f, l) -> (e, f, l)) dsE
                       $ Map.intersectionWith (,) dsF dsL
+
               in
                   rankByTotal . sortScores
-                  $ fmap (tallyDf discipline startGates earlyStart)
+                  $ fmap (tallyDf discipline startGates tooEarly earlyStart)
                   A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs
+            | tooEarly <- tooEarlyPoints
             | diffs <- difficultyDistancePointsDf
             | linears <- nighDistancePointsDfE
             | ls <- leadingPoints
@@ -1156,6 +1172,7 @@ startEnd RaceSections{race} =
 tallyDf
     :: Discipline
     -> [StartGate]
+    -> TooEarlyPoints
     -> EarlyStart
     ->
         ( Maybe (QAlt Double [u| m |])
@@ -1185,6 +1202,7 @@ tallyDf
 tallyDf
     hgOrPg
     startGates
+    tooEarlyPoints
     EarlyStart{earliest, earlyPenalty}
     ( alt
     ,
@@ -1242,7 +1260,6 @@ tallyDf
                 gs' <- nonEmpty startGates
                 return $ startGateTaken gs' ss''
 
-        tooEarlyPoints = TooEarlyPoints 111
         launchToStartPoints = LaunchToStartPoints 222
 
         jump :: Maybe (JumpedTheGun _)
