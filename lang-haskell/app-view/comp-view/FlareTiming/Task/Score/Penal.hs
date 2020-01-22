@@ -129,7 +129,7 @@ tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Subtotal"
                 elClass "th" "th-demerit-points" $ text "Frac"
-                elClass "th" "th-demerit-points" $ text "Point"
+                elClass "th" "th-demerit-points" $ text "Points"
                 elClass "th" "th-total-points" $ text "Total"
                 elClass "th" "th-norm th-total-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
