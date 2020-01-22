@@ -14,6 +14,7 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
+    , JumpedTheGun(..)
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
@@ -28,8 +29,8 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp
-    ( UtcOffset(..), Discipline(..), MinimumDistance(..)
-    , EarlyStart(..), showEarlyStartEarliest, showEarlyStartPenaltyRate
+    ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..)
+    , showEarlyStartEarliest, showEarlyStartPenaltyRate
     )
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
@@ -113,7 +114,7 @@ tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") . dynText
                     $ ((<> " of Jump-the-Gun") . showEarlyStartEarliest) <$> early
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-demerit") $ text "Penalties"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
 
             el "tr" $ do
@@ -185,6 +186,7 @@ tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 simpleList
                     sDfs
                     (pointRow
+                        (earliest <$> early)
                         (snd <$> cTimePoints)
                         (snd <$> cArrivalPoints)
                         dfNt
@@ -201,6 +203,7 @@ tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
             foot "† \"Early\" how much earlier than the start did this pilot jump the gun?"
+            foot "‡ Fractional penalties are applied before point penalties. The effective point reductions are shown here."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
@@ -256,7 +259,8 @@ tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
 
 pointRow
     :: MonadWidget t m
-    => Dynamic t T.Text
+    => Dynamic t JumpTheGunLimit
+    -> Dynamic t T.Text
     -> Dynamic t T.Text
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
@@ -264,7 +268,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow cTime cArrival dfNt pt tp sEx x = do
+pointRow earliest cTime cArrival dfNt pt tp sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     let y = ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p'}) ->
@@ -290,11 +294,21 @@ pointRow cTime cArrival dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
+    let earlyClass = ffor2 earliest jtg (\(JumpTheGunLimit e) jtg' ->
+                        let c = "td-start-early" in
+                        maybe
+                            c
+                            (\(JumpedTheGun j) ->
+                                if j > e
+                                   then c <> " " <> "jumped-too-early"
+                                   else c)
+                            jtg')
+
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elClass "td" "td-start-early" . dynText $ showJumpedTheGunTime <$> jtg
+        elDynClass "td" earlyClass . dynText $ showJumpedTheGunTime <$> jtg
         elClass "td" "td-demerit-points" . dynText $ showJumpedTheGunPenalty 1 <$> jtgPenalties
 
         elClass "td" "td-distance-points" . dynText

@@ -383,6 +383,12 @@ tr.pilot-dfnt .td-best-distance.award-free, tr.pilot-dfnt .td-landed-distance.aw
     text-decoration: line-through;
     @extend .has-text-danger;
 
+.td-start-early
+    @extend .has-text-success;
+
+.td-start-early.jumped-too-early
+    @extend .has-text-danger;
+
 .td-reach-points
     @extend .has-text-right;
 
@@ -403,13 +409,13 @@ table.pg .th-effort-points
     @extend .has-text-right;
 
 .td-time-points.gr-zero
-    color: transparent; 
+    color: transparent;
 
 .td-arrival-points
     @extend .has-text-right;
 
 .td-arrival-points.gr-zero
-    color: transparent; 
+    color: transparent;
 
 table.pg .td-effort-points, table.pg .td-arrival-points
     color: transparent;
