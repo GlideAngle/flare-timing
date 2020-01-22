@@ -232,7 +232,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
             tabScore <- tabsScore
             let tableScoreHold =
                     elAttr "div" ("id" =: "score-overview") $
-                        tableScoreOver utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                        tableScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
             _ <- widgetHold tableScoreHold $
                     (\case
                         ScoreTabOver ->

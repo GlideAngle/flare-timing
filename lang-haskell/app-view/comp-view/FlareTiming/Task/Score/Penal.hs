@@ -294,7 +294,7 @@ pointRow earliest cTime cArrival dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let earlyClass = ffor2 earliest jtg (\(JumpTheGunLimit e) jtg' ->
+    let classEarly = ffor2 earliest jtg (\(JumpTheGunLimit e) jtg' ->
                         let c = "td-start-early" in
                         maybe
                             c
@@ -308,7 +308,7 @@ pointRow earliest cTime cArrival dfNt pt tp sEx x = do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elDynClass "td" earlyClass . dynText $ showJumpedTheGunTime <$> jtg
+        elDynClass "td" classEarly . dynText $ showJumpedTheGunTime <$> jtg
         elClass "td" "td-demerit-points" . dynText $ showJumpedTheGunPenalty 1 <$> jtgPenalties
 
         elClass "td" "td-distance-points" . dynText

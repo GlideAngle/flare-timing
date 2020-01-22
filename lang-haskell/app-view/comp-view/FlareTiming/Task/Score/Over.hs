@@ -15,6 +15,7 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
+    , JumpedTheGun(..)
     , PilotDistance(..)
     , ReachToggle(..)
     , showPilotDistance
@@ -29,7 +30,10 @@ import WireTypes.Point
     , showJumpedTheGunTime
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
-import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
+import WireTypes.Comp
+    ( UtcOffset(..), Discipline(..), MinimumDistance(..)
+    , EarlyStart(..), JumpTheGunLimit(..)
+    )
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot)
@@ -40,6 +44,7 @@ tableScoreOver
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
+    -> Dynamic t EarlyStart
     -> Dynamic t MinimumDistance
     -> Dynamic t [Pt.StartGate]
     -> Dynamic t (Maybe TaskLength)
@@ -53,7 +58,7 @@ tableScoreOver
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
+tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -203,6 +208,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 simpleList
                     sDfs
                     (pointRow
+                        (earliest <$> early)
                         (snd <$> cTimePoints)
                         (snd <$> cArrivalPoints)
                         utcOffset
@@ -278,7 +284,8 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
 
 pointRow
     :: MonadWidget t m
-    => Dynamic t T.Text
+    => Dynamic t JumpTheGunLimit
+    -> Dynamic t T.Text
     -> Dynamic t T.Text
     -> Dynamic t UtcOffset
     -> Dynamic t MinimumDistance
@@ -288,7 +295,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
+pointRow earliest cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let xB = snd <$> x
@@ -316,6 +323,16 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
+    let classEarly = ffor2 earliest jtg (\(JumpTheGunLimit e) jtg' ->
+                        let c = "td-start-early" in
+                        maybe
+                            c
+                            (\(JumpedTheGun j) ->
+                                if j > e
+                                   then c <> " " <> "jumped-too-early"
+                                   else c)
+                            jtg')
+
     let awardFree = ffor2 free xReach (\(MinimumDistance f) pd ->
             let c = "td-best-distance" in
             maybe
@@ -330,7 +347,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elClass "td" "td-start-early" . dynText $ showJumpedTheGunTime <$> jtg
+        elDynClass "td" classEarly . dynText $ showJumpedTheGunTime <$> jtg
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
         elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
         elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
