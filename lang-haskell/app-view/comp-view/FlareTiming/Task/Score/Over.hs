@@ -15,7 +15,6 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
-    , JumpedTheGun(..)
     , PilotDistance(..)
     , ReachToggle(..)
     , showPilotDistance
@@ -36,7 +35,7 @@ import WireTypes.Comp
     )
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
-import FlareTiming.Pilot (showPilot)
+import FlareTiming.Pilot (showPilot, classOfEarlyStart)
 import FlareTiming.Time (timeZone)
 import FlareTiming.Task.Score.Show
 
@@ -323,15 +322,7 @@ pointRow earliest cTime cArrival utcOffset free dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let classEarly = ffor2 earliest jtg (\(JumpTheGunLimit e) jtg' ->
-                        let c = "td-start-early" in
-                        maybe
-                            c
-                            (\(JumpedTheGun j) ->
-                                if j > e
-                                   then c <> " " <> "jumped-too-early"
-                                   else c)
-                            jtg')
+    let classEarly = ffor2 earliest jtg classOfEarlyStart
 
     let awardFree = ffor2 free xReach (\(MinimumDistance f) pd ->
             let c = "td-best-distance" in

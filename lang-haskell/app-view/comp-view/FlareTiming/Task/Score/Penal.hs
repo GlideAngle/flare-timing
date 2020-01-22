@@ -14,7 +14,6 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
-    , JumpedTheGun(..)
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
@@ -34,7 +33,7 @@ import WireTypes.Comp
     )
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
-import FlareTiming.Pilot (showPilot)
+import FlareTiming.Pilot (showPilot, classOfEarlyStart)
 import FlareTiming.Task.Score.Show
 
 tableScorePenal
@@ -294,15 +293,7 @@ pointRow earliest cTime cArrival dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let classEarly = ffor2 earliest jtg (\(JumpTheGunLimit e) jtg' ->
-                        let c = "td-start-early" in
-                        maybe
-                            c
-                            (\(JumpedTheGun j) ->
-                                if j > e
-                                   then c <> " " <> "jumped-too-early"
-                                   else c)
-                            jtg')
+    let classEarly = ffor2 earliest jtg classOfEarlyStart
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" $ dynText yRank

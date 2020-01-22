@@ -5,6 +5,7 @@ module FlareTiming.Pilot
     , rowPilot
     , rowDfNt
     , rowDfNtReach
+    , classOfEarlyStart
     , rowPenalJump
     , rowPenalAuto
     , rowPenal
@@ -78,6 +79,16 @@ rowDfNtReach ln' i pd = do
             el "td" . text $ showPilotName p
             elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> (extra <$> d))
 
+classOfEarlyStart :: JumpTheGunLimit -> Maybe JumpedTheGun -> T.Text
+classOfEarlyStart (JumpTheGunLimit e) =
+    let c = "td-start-early" in
+    maybe
+        c
+        (\(JumpedTheGun j) ->
+            if j > e
+               then c <> " " <> "jumped-too-early"
+               else c)
+
 rowPenalJump
     :: MonadWidget t m
     => Dynamic t JumpTheGunLimit
@@ -91,15 +102,7 @@ rowPenalJump earliest ppp = do
                     (\case PenaltyFraction _ -> False; PenaltyPoints _ -> True)
                     ps
 
-        let classEarly = ffor earliest (\(JumpTheGunLimit e) ->
-                            let c = "td-start-early" in
-                            maybe
-                                c
-                                (\(JumpedTheGun j) ->
-                                    if j > e
-                                       then c <> " " <> "jumped-too-early"
-                                       else c)
-                                jump)
+        let classEarly = ffor earliest (flip classOfEarlyStart $ jump)
 
         el "td" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
