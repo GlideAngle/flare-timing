@@ -179,7 +179,7 @@ tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                         (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
 
-                elAttr "th" ("colspan" =: "5") $ text ""
+                elAttr "th" ("colspan" =: "6") $ text ""
 
         _ <- el "tbody" $ do
             _ <-
