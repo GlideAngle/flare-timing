@@ -242,7 +242,7 @@ taskPoints p psJump ps points =
         , pointApplied = zeroOnReset . TaskPoints $ pointsF - pointsFP
         , resetApplied = TaskPoints $ if reset' /= s then s - reset' else 0
         , total = total
-        , effectivePenalties = ps'
+        , effectivePenalties = qs'
         , effectivePenaltiesJump = psJump'
         }
     where
@@ -253,10 +253,10 @@ taskPoints p psJump ps points =
         withF@(TaskPoints pointsF) = applyFractionalPenalties qs subtotal
         (TaskPoints pointsFP) = applyPointPenalties qs withF
 
-        (zeroOnReset, ps', psJump') =
+        (zeroOnReset, qs', psJump') =
             -- NOTE: If the penalty was a reset, change the penalties.
             maybe
-                (id, ps, psJump)
+                (id, qs, psJump)
                 (\p' ->
                     if isReset p'
                         then
@@ -267,13 +267,13 @@ taskPoints p psJump ps points =
                             )
                         else
                             ( id
-                            , ps
+                            , qs
                             , psJump
                             ))
                 p
 
-        TaskPoints reset' = applyResetPenalties ps' subtotal
-        total = applyPenalties ps' subtotal
+        TaskPoints reset' = applyResetPenalties qs' subtotal
+        total = applyPenalties qs' subtotal
 
 isReset :: Penalty a -> Bool
 isReset = \case
