@@ -193,6 +193,7 @@ module Flight.Score
     -- * Early start
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
+    , LaunchToSss(..)
     , jumpTheGunPenaltyHg
     , jumpTheGunPenaltyPg
     ) where
@@ -223,6 +224,7 @@ import Flight.Gap.Distance.Relative
 import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Distance.Stop
+import Flight.Gap.Distance.Early
 import Flight.Gap.Leading
 import Flight.Gap.Place.Arrival
 import Flight.Gap.Place.Task

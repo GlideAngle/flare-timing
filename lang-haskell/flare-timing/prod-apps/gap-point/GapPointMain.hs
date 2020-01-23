@@ -256,6 +256,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 taskRoute
                 taskRouteSpeedSubset
                 stopRoute
+                startRoute
                 routes
 
     case (compSettings, cgs, tgs, ma, me, ml, mr, br, ms, landing, routes) of
@@ -380,6 +381,9 @@ points'
 
         lsLaunchToEssTask :: [Maybe (QTaskDistance Double [u| m |])] =
             (fmap . fmap) launchToEssDistance lsTask'
+
+        lsLaunchToSssTask :: [Maybe (QTaskDistance Double [u| m |])] =
+            (fmap . fmap) launchToSssDistance lsTask'
 
         -- NOTE: If there is no best distance, then either the task wasn't run
         -- or it has not been scored yet.
@@ -714,6 +718,27 @@ points'
             | ps <- (fmap . fmap) points allocs
             ]
 
+        launchToStartPoints :: [LaunchToStartPoints]
+        launchToStartPoints =
+            [
+                LaunchToStartPoints . round . unpack
+                $ maybe
+                    (LinearPoints 0)
+                    (\ps' ->
+                        let bd = Just . TaskDistance $ convert b
+                        in (applyLinear free bd ps') launchToStart)
+                    ps
+            | ReachStats{max = FlownMax b} <- bolsterStatsE
+            | ps <- (fmap . fmap) points allocs
+            | launchToStart <-
+                (fmap . fmap)
+                    (\(TaskDistance td) ->
+                        let ss :: Quantity _ [u| m |]
+                            ss = convert td
+                         in unQuantity ss)
+                    lsLaunchToSssTask
+            ]
+
         nighDistancePointsDfE :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
@@ -822,9 +847,10 @@ points'
 
               in
                   rankByTotal . sortScores
-                  $ fmap (tallyDf discipline startGates tooEarly earlyStart)
+                  $ fmap (tallyDf discipline startGates hgTooE pgTooE earlyStart)
                   A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs
-            | tooEarly <- tooEarlyPoints
+            | hgTooE <- tooEarlyPoints
+            | pgTooE <- launchToStartPoints
             | diffs <- difficultyDistancePointsDf
             | linears <- nighDistancePointsDfE
             | ls <- leadingPoints
@@ -1173,6 +1199,7 @@ tallyDf
     :: Discipline
     -> [StartGate]
     -> TooEarlyPoints
+    -> LaunchToStartPoints
     -> EarlyStart
     ->
         ( Maybe (QAlt Double [u| m |])
@@ -1203,6 +1230,7 @@ tallyDf
     hgOrPg
     startGates
     tooEarlyPoints
+    launchToStartPoints
     EarlyStart{earliest, earlyPenalty}
     ( alt
     ,
@@ -1259,8 +1287,6 @@ tallyDf
                 ss'' <- ss'
                 gs' <- nonEmpty startGates
                 return $ startGateTaken gs' ss''
-
-        launchToStartPoints = LaunchToStartPoints 222
 
         jump :: Maybe (JumpedTheGun _)
         jump = join $ fst <$> jumpGate

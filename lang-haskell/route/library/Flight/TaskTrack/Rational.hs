@@ -101,6 +101,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = Nothing
                         , speedRoute = Just . point $ ssLines
                         , stopRoute = Just . point $ stopLines
+                        , startRoute = Just . point $ startLines
                         }
                 , ellipsoidEdgeToEdge =
                     let x = ellipse taskLines in
@@ -109,6 +110,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = speedSubset ss <$> x
                         , speedRoute = ellipse ssLines
                         , stopRoute = ellipse stopLines
+                        , startRoute = ellipse startLines
                         }
                 , sphericalPointToPoint =
                     OptimalRoute
@@ -116,6 +118,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = Nothing
                         , speedRoute = Just . point $ ssLines
                         , stopRoute = Just . point $ stopLines
+                        , startRoute = Just . point $ startLines
                         }
                 , sphericalEdgeToEdge =
                     let x = sphere taskLines in
@@ -123,7 +126,8 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         { taskRoute = x
                         , taskRouteSpeedSubset = speedSubset ss <$> x
                         , speedRoute = sphere ssLines
-                        , stopRoute = sphere ssLines
+                        , stopRoute = sphere stopLines
+                        , startRoute = sphere startLines
                         }
                 , projection =
                     OptimalRoute
@@ -131,6 +135,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = Nothing
                         , speedRoute = projected ssLines
                         , stopRoute = projected stopLines
+                        , startRoute = projected startLines
                         }
                 }
         TaskDistanceByPoints ->
@@ -141,6 +146,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = Nothing
                         , speedRoute = Just . point $ ssLines
                         , stopRoute = Just . point $ stopLines
+                        , startRoute = Just . point $ startLines
                         }
                 , ellipsoidEdgeToEdge = emptyOptimal
                 , sphericalPointToPoint =
@@ -149,6 +155,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = Nothing
                         , speedRoute = Just . point $ ssLines
                         , stopRoute = Just . point $ stopLines
+                        , startRoute = Just . point $ startLines
                         }
                 , sphericalEdgeToEdge = emptyOptimal
                 , projection = emptyOptimal
@@ -163,6 +170,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = speedSubset ss <$> x
                         , speedRoute = ellipse ssLines
                         , stopRoute = ellipse stopLines
+                        , startRoute = ellipse startLines
                         }
                 , sphericalPointToPoint = emptyOptimal
                 , sphericalEdgeToEdge =
@@ -172,6 +180,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = speedSubset ss <$> x
                         , speedRoute = sphere ssLines
                         , stopRoute = sphere stopLines
+                        , startRoute = sphere startLines
                         }
                 , projection = emptyOptimal
                 }
@@ -187,6 +196,7 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
                         , taskRouteSpeedSubset = Nothing
                         , speedRoute = projected ssLines
                         , stopRoute = projected stopLines
+                        , startRoute = projected startLines
                         }
 
                 }
@@ -197,12 +207,16 @@ taskTrack sp excludeWaypoints tdm ss zsRaw =
         zsSpeedSection :: [Zone Rational]
         zsSpeedSection = sliceZones ss zsTask
 
+        zsStart :: [Zone Rational]
+        zsStart = sliceZones ((\(start, _) -> (1, start)) <$> ss) zsTask
+
         zsStop :: [Zone Rational]
         zsStop = sliceZones ((\(_, end) -> (1, end)) <$> ss) zsTask
 
         taskLines = trackLines sp excludeWaypoints zsTask
         ssLines = trackLines sp excludeWaypoints zsSpeedSection
         stopLines = trackLines sp excludeWaypoints zsStop
+        startLines = trackLines sp excludeWaypoints zsStart
 
 -- NOTE: The projected distance is worked out from easting and northing, in the
 -- projected plane but he distance for each leg is measured on the sphere.

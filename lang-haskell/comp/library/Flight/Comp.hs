@@ -171,6 +171,7 @@ data TaskRouteDistance =
         { wholeTaskDistance :: QTaskDistance Double [u| m |]
         , speedSubsetDistance :: QTaskDistance Double [u| m |]
         , launchToEssDistance :: QTaskDistance Double [u| m |]
+        , launchToSssDistance :: QTaskDistance Double [u| m |]
         }
 
 newtype RoutesLookupTaskDistance =
