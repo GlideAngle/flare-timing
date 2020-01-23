@@ -78,10 +78,11 @@ import FlareTiming.Events (IxTask(..))
 -- mapUri s = "http://2018-dalmatian.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2019-dalmatian.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2016-quest.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2017-dalby.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2019-italy.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "/json" <> s <> ".json"
 mapUri :: T.Text -> T.Text
-mapUri s = "http://localhost:3000" <> s
+mapUri s = "/json" <> s <> ".json"
 
 emptyRoute :: OptimalRoute (Maybe a)
 emptyRoute =
