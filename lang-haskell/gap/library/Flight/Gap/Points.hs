@@ -18,6 +18,8 @@ module Flight.Gap.Points
     , taskPoints
     , taskPointsSubtotal
     , applyFractionalPenalties
+    , applyPointPenalties
+    , applyResetPenalties
     , applyPenalties
     , availablePoints
     , jumpTheGunPenaltyHg
@@ -238,9 +240,12 @@ taskPoints
 taskPoints p psJump ps points =
     PointsReduced
         { subtotal = subtotal
-        , fracApplied = zeroOnReset . TaskPoints $ s - pointsF
-        , pointApplied = zeroOnReset . TaskPoints $ pointsF - pointsFP
-        , resetApplied = TaskPoints $ if reset' /= s then s - reset' else 0
+        , fracApplied =
+            TaskPoints $ s - pointsF
+        , pointApplied =
+            TaskPoints $ pointsF - pointsFP
+        , resetApplied =
+            TaskPoints $ pointsFP - pointsR
         , total = total
         , effectivePenalties = qs'
         , effectivePenaltiesJump = psJump'
@@ -253,26 +258,20 @@ taskPoints p psJump ps points =
         withF@(TaskPoints pointsF) = applyFractionalPenalties qs subtotal
         (TaskPoints pointsFP) = applyPointPenalties qs withF
 
-        (zeroOnReset, qs', psJump') =
+        (qs', psJump') =
             -- NOTE: If the penalty was a reset, change the penalties.
             maybe
-                (id, qs, psJump)
+                (qs, psJump)
                 (\p' ->
-                    if isReset p'
+                    if isReset p' && maybe False isTooEarly p
                         then
                             let pReset = PenaltyReset $ round reset in
-                            ( const $ TaskPoints 0
-                            , [PenaltyReset $ round reset]
-                            , if maybe False isTooEarly p then pReset : psJump else psJump
-                            )
+                            (pReset : qs, pReset : psJump)
                         else
-                            ( id
-                            , qs
-                            , psJump
-                            ))
+                            (qs, psJump))
                 p
 
-        TaskPoints reset' = applyResetPenalties qs' subtotal
+        TaskPoints pointsR = applyPenalties qs' subtotal
         total = applyPenalties qs' subtotal
 
 isReset :: Penalty a -> Bool
@@ -370,8 +369,8 @@ applyPenalty (TaskPoints p) (PenaltyPoints n) =
     TaskPoints . max 0 $ p - (toRational n)
 applyPenalty (TaskPoints p) (PenaltyFraction n) =
     TaskPoints . max 0 $ p - p * (toRational n)
-applyPenalty (TaskPoints _) (PenaltyReset n) =
-    TaskPoints . max 0 $ fromIntegral n
+applyPenalty (TaskPoints p) (PenaltyReset n) =
+    TaskPoints . max 0 . min p $ fromIntegral n
 
 availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePoints (TaskValidity tv) Weights{..} =

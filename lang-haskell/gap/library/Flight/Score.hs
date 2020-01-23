@@ -153,6 +153,8 @@ module Flight.Score
     , taskPoints
     , taskPointsSubtotal
     , applyFractionalPenalties
+    , applyPointPenalties
+    , applyResetPenalties
     , applyPenalties
     , availablePoints
     -- * Stopped task
