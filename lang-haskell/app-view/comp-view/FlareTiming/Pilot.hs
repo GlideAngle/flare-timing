@@ -163,13 +163,13 @@ rowPenal ppp = do
         el "td" . text . showPilotName $ pilot
         case (p, pp) of
             (Just (PenaltyFraction x), Nothing) -> do
-                td x
+                td $ negate x
                 el "td" $ text ""
             (Nothing, Just (PenaltyPoints y)) -> do
                 el "td" $ text ""
                 td $ negate y
             (Just (PenaltyFraction x), Just (PenaltyPoints y)) -> do
-                td x
+                td $ negate x
                 td $ negate y
             _ -> do
                 el "td" $ text ""
