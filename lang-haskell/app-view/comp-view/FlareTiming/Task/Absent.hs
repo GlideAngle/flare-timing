@@ -206,7 +206,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                             return ()
 
                                     el "p" . text
-                                        $ "These pilots were penalized or rewarded with a negative penalty."
+                                        $ "These pilots were penalized (-) or rewarded (+)."
                         )
 
     return ()

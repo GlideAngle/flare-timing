@@ -115,7 +115,7 @@ rowPenalJump earliest ppp = do
         elDynClass "td" classEarly . text $ showJumpedTheGunTime jump
 
         case pPoint of
-            Just (PenaltyPoints y) -> tdPoint y
+            Just (PenaltyPoints y) -> tdPoint $ negate y
             _ -> el "td" $ text ""
 
         case pReset of
@@ -127,7 +127,7 @@ rowPenalAuto
     => Dynamic t (Pilot, [PointPenalty], String)
     -> m ()
 rowPenalAuto ppp = do
-    let td = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
+    let td = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
     dyn_ $ ffor ppp (\(pilot, ps, reason) -> el "tr" $ do
         let pp =
                 find
@@ -137,10 +137,8 @@ rowPenalAuto ppp = do
         el "td" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
         case pp of
-            Just (PenaltyPoints y) -> do
-                td y
-            _ -> do
-                el "td" $ text ""
+            Just (PenaltyPoints y) -> td $ negate y
+            _ -> el "td" $ text ""
 
         el "td" . text $ T.pack reason)
 
@@ -149,7 +147,7 @@ rowPenal
     => Dynamic t (Pilot, [PointPenalty], String)
     -> m ()
 rowPenal ppp = do
-    let td = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
+    let td = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
     dyn_ $ ffor ppp (\(pilot, ps, reason) -> el "tr" $ do
         let p =
                 find
@@ -169,10 +167,10 @@ rowPenal ppp = do
                 el "td" $ text ""
             (Nothing, Just (PenaltyPoints y)) -> do
                 el "td" $ text ""
-                td y
+                td $ negate y
             (Just (PenaltyFraction x), Just (PenaltyPoints y)) -> do
                 td x
-                td y
+                td $ negate y
             _ -> do
                 el "td" $ text ""
                 el "td" $ text ""
