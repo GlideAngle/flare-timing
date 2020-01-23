@@ -16,6 +16,8 @@ of this changelog.
 * Award pilots without a tracklog effort for minimum distance.
 * Add a table showing jump the gun penalties and how fractional, point and
   reset penalties are applied and the final points are rounded.
+* Consistently strike out reach when the pilot was awarded minimum distance,
+  whether that pilot had a track or not.
 
 # Jump the Gun
 ## app-view-0.23
