@@ -96,21 +96,16 @@ rowPenalJump
     -> m ()
 rowPenalJump earliest ppp = do
     let tdPoint = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
+    let tdReset = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
     dyn_ $ ffor ppp (\(pilot, ps, jump) -> el "tr" $ do
         let pPoint =
                 find
-                    (\case
-                        PenaltyFraction _ -> False
-                        PenaltyPoints _ -> True
-                        PenaltyReset _ -> False)
+                    (\case PenaltyPoints{} -> True; _ -> False)
                     ps
 
         let pReset =
                 find
-                    (\case
-                        PenaltyFraction _ -> False
-                        PenaltyPoints _ -> False
-                        PenaltyReset _ -> True)
+                    (\case PenaltyReset{} -> True; _ -> False)
                     ps
 
         let classEarly = ffor earliest (flip classOfEarlyStart $ jump)
@@ -120,11 +115,11 @@ rowPenalJump earliest ppp = do
         elDynClass "td" classEarly . text $ showJumpedTheGunTime jump
 
         case pPoint of
-            Just (PenaltyPoints y) -> tdPoint y
+            Just (PenaltyPoints y) -> tdPoint y
             _ -> el "td" $ text ""
 
         case pReset of
-            Just (PenaltyReset y) -> tdPoint $ fromIntegral y
+            Just (PenaltyReset y) -> tdReset $ (fromIntegral y :: Double)
             _ -> el "td" $ text "")
 
 rowPenalAuto
@@ -136,10 +131,7 @@ rowPenalAuto ppp = do
     dyn_ $ ffor ppp (\(pilot, ps, reason) -> el "tr" $ do
         let pp =
                 find
-                    (\case
-                        PenaltyFraction _ -> False
-                        PenaltyPoints _ -> True
-                        PenaltyReset _ -> False)
+                    (\case PenaltyPoints{} -> True; _ -> False)
                     ps
 
         el "td" . text . showPilotId $ pilot
@@ -161,18 +153,12 @@ rowPenal ppp = do
     dyn_ $ ffor ppp (\(pilot, ps, reason) -> el "tr" $ do
         let p =
                 find
-                    (\case
-                        PenaltyFraction _ -> True
-                        PenaltyPoints _ -> False
-                        PenaltyReset _ -> False)
+                    (\case PenaltyFraction{} -> True; _ -> False)
                     ps
 
         let pp =
                 find
-                    (\case
-                        PenaltyFraction _ -> False
-                        PenaltyPoints _ -> True
-                        PenaltyReset _ -> False)
+                    (\case PenaltyPoints{} -> True; _ -> False)
                     ps
 
         el "td" . text . showPilotId $ pilot
