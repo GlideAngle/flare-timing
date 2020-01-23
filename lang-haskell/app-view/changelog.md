@@ -2,7 +2,7 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
-# Arrival Time Points
+# Arrival Time Points and Start Too Early
 ## app-view-0.24
 
 * Score hang gliding comps using arrival time points.
