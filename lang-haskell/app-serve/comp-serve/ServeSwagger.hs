@@ -1,9 +1,12 @@
 {-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE NoPatternSynonyms #-}
+
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module ServeSwagger (SwagUiApi, BolsterStats(..)) where
 
 import Data.Ratio
+import Text.RawString.QQ
 import Control.Lens
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..))
@@ -153,6 +156,17 @@ instance ToSchema (TaskZones Race Double) where
               ]
           & required .~ ["prolog", "race"]
 
+dp1 :: ParamSchema t
+dp1 = mempty
+    & type_ .~ SwaggerString
+    & pattern .~ Just [r|^\-?\d+\.\d km$|]
+
+instance ToSchema q => ToSchema (NominalDistance q) where
+    declareNamedSchema _ =
+        pure . NamedSchema Nothing $ mempty
+              & example ?~ "5.0 km"
+              & paramSchema .~ dp1
+
 instance ToSchema (Zones)
 instance ToSchema (RawZone)
 instance ToSchema q => ToSchema (Alt q)
@@ -184,7 +198,6 @@ instance ToSchema q => ToSchema (SecondsPerPoint q)
 instance ToSchema (Task k)
 instance ToSchema (Comp)
 instance ToSchema (Nominal)
-instance ToSchema q => ToSchema (NominalDistance q)
 instance ToSchema q => ToSchema (MinimumDistance q)
 instance ToSchema q => ToSchema (NominalTime q)
 instance ToSchema q => ToSchema (TaskDistance q)
