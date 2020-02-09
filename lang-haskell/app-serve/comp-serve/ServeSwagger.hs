@@ -50,7 +50,16 @@ instance (KnownUnit (Unpack u)) => ToSchema (Quantity Double u) where
     declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy String)
 
 instance ToSchema (TaskZones OpenDistance Double) where
-    declareNamedSchema _ = undefined
+    declareNamedSchema _ = do
+        doubleSchema <- declareSchemaRef (Proxy :: Proxy Double)
+        return . NamedSchema (Just "OpenDistance") $ mempty
+          & (type_ .~ SwaggerObject)
+          & properties .~
+              [ ("prolog", doubleSchema)
+              , ("open-mandatory", doubleSchema)
+              , ("open-free", doubleSchema)
+              ]
+          & required .~ ["prolog", "open-mandatory", "open-free"]
 
 instance ToSchema (TaskZones Race Double) where
     declareNamedSchema _ = do
