@@ -9,8 +9,6 @@ import Data.List ((\\), nub, sort, sortOn, find, zip4)
 import qualified Data.Map.Strict as Map
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..))
 import Network.Wai (Application)
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Handler.Warp
@@ -69,7 +67,7 @@ import Flight.Score
     , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     , DistanceValidity(..), LaunchValidity(..), TimeValidity(..)
     , TaskValidity(..), StopValidity(..)
-    , ReachStats(..), TaskPoints(..)
+    , TaskPoints(..)
     )
 import Flight.Scribe
     ( readComp, readNormArrival, readNormLandout, readNormRoute, readNormScore
@@ -148,7 +146,7 @@ import Flight.Distance (QTaskDistance)
 import qualified ServeOptions as Opt (description)
 import ServeTrack (RawLatLngTrack(..), tagToTrack)
 import ServeValidity (nullValidityWorking)
-import ServeSwagger (SwagUiApi)
+import ServeSwagger (SwagUiApi, BolsterStats(..))
 
 data Config k
     = Config
@@ -208,13 +206,6 @@ newtype AppT k m a =
         , MonadIO
         , MonadThrow
         )
-
-data BolsterStats =
-    BolsterStats
-        { bolster :: ReachStats
-        , reach :: ReachStats
-        }
-    deriving (Generic, ToJSON)
 
 type CompInputApi k =
     "comp-input" :> "comps"
@@ -371,13 +362,29 @@ type GapPointApi k =
         :> Get '[JSON] (Maybe TaskLanding)
 
 type CompInputSwagUiApi k = SwagUiApi :<|> CompInputApi k
+type TaskLengthSwagUiApi k = SwagUiApi :<|> TaskLengthApi k
+type GapPointSwagUiApi k = SwagUiApi :<|> GapPointApi k
 
 compInputSwagDoc :: Swagger
 compInputSwagDoc = toSwagger compInputApi
   & info.title   .~ "Comp Input API"
   & info.version .~ "1.0"
-  & info.description ?~ "This is an API that tests swagger integration"
-  & info.license ?~ ("MIT" & url ?~ URL "http://mit.com")
+  & info.description ?~ "The subset of endpoints served when only comp inputs are available."
+  & info.license ?~ ("MPL" & url ?~ URL "http://mozilla.org/MPL/2.0/")
+
+taskLengthSwagDoc :: Swagger
+taskLengthSwagDoc = toSwagger taskLengthApi
+  & info.title   .~ "Task Length API"
+  & info.version .~ "1.0"
+  & info.description ?~ "The subset of endpoints served when only comp inputs and task lengths are available."
+  & info.license ?~ ("MPL" & url ?~ URL "http://mozilla.org/MPL/2.0/")
+
+gapPointSwagDoc :: Swagger
+gapPointSwagDoc = toSwagger gapPointApi
+  & info.title   .~ "Gap Point API"
+  & info.version .~ "1.0"
+  & info.description ?~ "The full set of endpoints served when the comp has been scored."
+  & info.license ?~ ("MPL" & url ?~ URL "http://mozilla.org/MPL/2.0/")
 
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy
@@ -388,8 +395,14 @@ compInputSwagUiApi = Proxy
 taskLengthApi :: Proxy (TaskLengthApi k)
 taskLengthApi = Proxy
 
+taskLengthSwagUiApi :: Proxy (TaskLengthSwagUiApi k)
+taskLengthSwagUiApi = Proxy
+
 gapPointApi :: Proxy (GapPointApi k)
 gapPointApi = Proxy
+
+gapPointSwagUiApi :: Proxy (GapPointSwagUiApi k)
+gapPointSwagUiApi = Proxy
 
 convertApp :: Config k -> AppT k IO a -> Handler a
 convertApp cfg appt = Handler $ runReaderT (unApp appt) cfg
@@ -542,7 +555,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     f =<< mkTaskLengthApp cfg{routing = rt}
                 (_, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs"
-                    f =<< mkCompInputSwagUiApp cfg
+                    f =<< mkCompInputApp cfg
             where
                 -- NOTE: Add gzip with wai gzip middleware.
                 -- SEE: https://github.com/haskell-servant/servant/issues/786
@@ -557,14 +570,26 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                         defaultSettings
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
-mkCompInputSwagUiApp :: Config k -> IO Application
-mkCompInputSwagUiApp cfg = return . simpleCors . serve compInputSwagUiApi $ serverCompInputSwagUiApi cfg
+mkCompInputApp :: Config k -> IO Application
+mkCompInputApp cfg = return . simpleCors . serve compInputSwagUiApi $ serverCompInputSwagUiApi cfg
 
 mkTaskLengthApp :: Config k -> IO Application
-mkTaskLengthApp cfg = return . simpleCors . serve taskLengthApi $ serverTaskLengthApi cfg
+mkTaskLengthApp cfg = return . simpleCors . serve taskLengthSwagUiApi $ serverTaskLengthSwagUiApi cfg
 
 mkGapPointApp :: Config k -> IO Application
-mkGapPointApp cfg = return . simpleCors . serve gapPointApi $ serverGapPointApi cfg
+mkGapPointApp cfg = return . simpleCors . serve gapPointSwagUiApi $ serverGapPointSwagUiApi cfg
+
+serverCompInputSwagUiApi :: Config k -> Server (CompInputSwagUiApi k)
+serverCompInputSwagUiApi cfg =
+    swaggerSchemaUIServer compInputSwagDoc :<|> serverCompInputApi cfg
+
+serverTaskLengthSwagUiApi :: Config k -> Server (TaskLengthSwagUiApi k)
+serverTaskLengthSwagUiApi cfg =
+    swaggerSchemaUIServer taskLengthSwagDoc :<|> serverTaskLengthApi cfg
+
+serverGapPointSwagUiApi :: Config k -> Server (GapPointSwagUiApi k)
+serverGapPointSwagUiApi cfg =
+    swaggerSchemaUIServer gapPointSwagDoc :<|> serverGapPointApi cfg
 
 serverCompInputApi :: Config k -> Server (CompInputApi k)
 serverCompInputApi cfg =
@@ -575,10 +600,6 @@ serverCompInputApi cfg =
         :<|> getPilots <$> c
     where
         c = asks compSettings
-
-serverCompInputSwagUiApi :: Config k -> Server (CompInputSwagUiApi k)
-serverCompInputSwagUiApi cfg =
-    swaggerSchemaUIServer compInputSwagDoc :<|> serverCompInputApi cfg
 
 serverTaskLengthApi :: Config k -> Server (TaskLengthApi k)
 serverTaskLengthApi cfg =
