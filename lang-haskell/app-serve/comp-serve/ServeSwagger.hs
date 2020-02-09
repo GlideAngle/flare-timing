@@ -6,6 +6,7 @@
 module ServeSwagger (SwagUiApi, BolsterStats(..)) where
 
 import Data.Ratio
+import qualified Data.Text as T
 import Text.RawString.QQ
 import Control.Lens
 import GHC.Generics (Generic)
@@ -13,8 +14,9 @@ import Data.Aeson (ToJSON(..))
 import Servant (Proxy(..))
 import Data.Swagger
 import Servant.Swagger.UI
-import Data.UnitsOfMeasure (KnownUnit, Unpack)
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Show (showUnit)
 
 import Flight.Zone.ZoneKind
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
@@ -156,16 +158,16 @@ instance ToSchema (TaskZones Race Double) where
               ]
           & required .~ ["prolog", "race"]
 
-dp1 :: ParamSchema t
-dp1 = mempty
+dpUnit :: Int -> String -> ParamSchema t
+dpUnit n unit = mempty
     & type_ .~ SwaggerString
-    & pattern .~ Just [r|^\-?\d+\.\d km$|]
+    & pattern .~ (Just (T.pack ("^" ++ [r|\-?\d+\.\d{0,|] ++ show n ++ "} " ++ unit ++ "$")))
 
 instance ToSchema q => ToSchema (NominalDistance q) where
     declareNamedSchema _ =
         pure . NamedSchema Nothing $ mempty
               & example ?~ "5.0 km"
-              & paramSchema .~ dp1
+              & paramSchema .~ (dpUnit 1 (showUnit (undefined :: proxy [u| km |])))
 
 instance ToSchema (Zones)
 instance ToSchema (RawZone)
