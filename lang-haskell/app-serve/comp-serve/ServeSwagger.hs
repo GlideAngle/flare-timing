@@ -14,7 +14,7 @@ import Data.Aeson (ToJSON(..))
 import Servant (Proxy(..))
 import Data.Swagger
 import Servant.Swagger.UI
-import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
+import Data.UnitsOfMeasure (KnownUnit, Unpack)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showUnit)
 
@@ -161,13 +161,13 @@ instance ToSchema (TaskZones Race Double) where
 dpUnit :: Int -> String -> ParamSchema t
 dpUnit n unit = mempty
     & type_ .~ SwaggerString
-    & pattern .~ (Just (T.pack ("^" ++ [r|\-?\d+\.\d{0,|] ++ show n ++ "} " ++ unit ++ "$")))
+    -- SEE: https://www.regular-expressions.info/floatingpoint.html
+    & pattern .~ (Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "} " ++ unit ++ "$")))
 
-instance ToSchema q => ToSchema (NominalDistance q) where
-    declareNamedSchema _ =
-        pure . NamedSchema Nothing $ mempty
-              & example ?~ "5.0 km"
-              & paramSchema .~ (dpUnit 1 (showUnit (undefined :: proxy [u| km |])))
+instance (KnownUnit (Unpack u), q ~ Quantity a u, ToSchema q) => ToSchema (NominalDistance q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ (dpUnit 1 (showUnit (undefined :: proxy u)))
+        & example ?~ "5 km"
 
 instance ToSchema (Zones)
 instance ToSchema (RawZone)
