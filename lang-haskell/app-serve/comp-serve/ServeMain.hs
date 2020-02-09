@@ -21,9 +21,13 @@ import Servant
     , (:>)
     , errBody, err400, hoistServer, serve, throwError
     )
+import Data.Swagger (Swagger(..), URL(..), url, info, title, version, license, description)
+import Servant.Swagger
+import Servant.Swagger.UI
 import Network.Wai.Middleware.Gzip (gzip, def)
 import System.IO (hPutStrLn, stderr)
 import Control.Exception.Safe (MonadThrow, catchIO)
+import Control.Lens hiding (ix)
 import Control.Monad (join)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
@@ -46,10 +50,9 @@ import Flight.Track.Land
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
-import qualified Flight.Track.Mask as Mask (MaskingReach(..))
+import qualified Flight.Track.Mask as Mask (MaskingReach(..), MaskingArrival(..))
 import Flight.Track.Mask
-    ( MaskingArrival(..)
-    , MaskingEffort(..)
+    ( MaskingEffort(..)
     , MaskingLead(..)
     , MaskingReach(..)
     , MaskingSpeed(..)
@@ -115,6 +118,7 @@ import Flight.Comp
     , NormLandoutFile(..)
     , NormRouteFile(..)
     , NormScoreFile(..)
+    , Pilot(..)
     , findCompInput
     , compToNormArrival
     , compToNormLandout
@@ -141,9 +145,10 @@ import Flight.Route
 import Flight.Mask (checkTracks)
 import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (QTaskDistance)
-import ServeOptions (description)
+import qualified ServeOptions as Opt (description)
 import ServeTrack (RawLatLngTrack(..), tagToTrack)
 import ServeValidity (nullValidityWorking)
+import ServeSwagger (SwagUiApi)
 
 data Config k
     = Config
@@ -153,7 +158,7 @@ data Config k
         , crossing :: Maybe Cg.Crossing
         , tagging :: Maybe Tg.Tagging
         , framing :: Maybe Sp.Framing
-        , maskingArrival :: Maybe MaskingArrival
+        , maskingArrival :: Maybe Mask.MaskingArrival
         , maskingEffort :: Maybe MaskingEffort
         , maskingLead :: Maybe MaskingLead
         , maskingReach :: Maybe MaskingReach
@@ -161,7 +166,7 @@ data Config k
         , bonusReach :: Maybe MaskingReach
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
-        , normArrival :: Maybe MaskingArrival
+        , normArrival :: Maybe Mask.MaskingArrival
         , normLandout :: Maybe Landing
         , normRoute :: Maybe [GeoLines]
         , normScore :: Maybe Norm.NormPointing
@@ -365,8 +370,20 @@ type GapPointApi k =
     :<|> "land-out" :> (Capture "task" Int) :> "landing"
         :> Get '[JSON] (Maybe TaskLanding)
 
+type CompInputSwagUiApi k = SwagUiApi :<|> CompInputApi k
+
+compInputSwagDoc :: Swagger
+compInputSwagDoc = toSwagger compInputApi
+  & info.title   .~ "Comp Input API"
+  & info.version .~ "1.0"
+  & info.description ?~ "This is an API that tests swagger integration"
+  & info.license ?~ ("MIT" & url ?~ URL "http://mit.com")
+
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy
+
+compInputSwagUiApi :: Proxy (CompInputSwagUiApi k)
+compInputSwagUiApi = Proxy
 
 taskLengthApi :: Proxy (TaskLengthApi k)
 taskLengthApi = Proxy
@@ -380,7 +397,7 @@ convertApp cfg appt = Handler $ runReaderT (unApp appt) cfg
 main :: IO ()
 main = do
     name <- getProgName
-    options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
+    options <- cmdArgs $ mkOptions (ProgramName name) Opt.description Nothing
 
     let lf = LenientFile {coerceFile = ensureExt CompInput}
     err <- checkPaths lf options
@@ -525,7 +542,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     f =<< mkTaskLengthApp cfg{routing = rt}
                 (_, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs"
-                    f =<< mkCompInputApp cfg
+                    f =<< mkCompInputSwagUiApp cfg
             where
                 -- NOTE: Add gzip with wai gzip middleware.
                 -- SEE: https://github.com/haskell-servant/servant/issues/786
@@ -540,8 +557,8 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                         defaultSettings
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
-mkCompInputApp :: Config k -> IO Application
-mkCompInputApp cfg = return . simpleCors . serve compInputApi $ serverCompInputApi cfg
+mkCompInputSwagUiApp :: Config k -> IO Application
+mkCompInputSwagUiApp cfg = return . simpleCors . serve compInputSwagUiApi $ serverCompInputSwagUiApi cfg
 
 mkTaskLengthApp :: Config k -> IO Application
 mkTaskLengthApp cfg = return . simpleCors . serve taskLengthApi $ serverTaskLengthApi cfg
@@ -558,6 +575,10 @@ serverCompInputApi cfg =
         :<|> getPilots <$> c
     where
         c = asks compSettings
+
+serverCompInputSwagUiApi :: Config k -> Server (CompInputSwagUiApi k)
+serverCompInputSwagUiApi cfg =
+    swaggerSchemaUIServer compInputSwagDoc :<|> serverCompInputApi cfg
 
 serverTaskLengthApi :: Config k -> Server (TaskLengthApi k)
 serverTaskLengthApi cfg =
@@ -1208,7 +1229,7 @@ getTaskLanding ii = do
 
 getTaskArrivalNorm :: Int -> AppT k IO [(Pilot, TrackArrival)]
 getTaskArrivalNorm ii = do
-    xs' <- fmap arrivalRank <$> asks maskingArrival
+    xs' <- fmap Mask.arrivalRank <$> asks maskingArrival
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -1219,7 +1240,7 @@ getTaskArrivalNorm ii = do
 
 getTaskArrival :: Int -> AppT k IO [(Pilot, TrackArrival)]
 getTaskArrival ii = do
-    xs' <- fmap arrivalRank <$> asks maskingArrival
+    xs' <- fmap Mask.arrivalRank <$> asks maskingArrival
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of

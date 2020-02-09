@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b1f84e4a55302a1dca9eef7ce128ec531970b0af1f0aa8714ede0e8c6e33316f
+-- hash: f7daffda88202ebc0cec6b956b62f231e99c0397d25401764e70b64e3f2a5ac6
 
 name:           app-serve
 version:        0.1.0
@@ -34,6 +34,7 @@ executable comp-serve
   main-is: ServeMain.hs
   other-modules:
       ServeOptions
+      ServeSwagger
       ServeTrack
       ServeValidity
       Paths_app_serve
@@ -60,13 +61,19 @@ executable comp-serve
     , flight-mask
     , flight-route
     , flight-scribe
+    , flight-zone
+    , lens
     , mtl
     , raw-strings-qq
     , safe-exceptions
     , servant
     , servant-server
+    , servant-swagger
+    , servant-swagger-ui
     , siggy-chardust
     , statistics
+    , swagger2
+    , text
     , time
     , transformers
     , uom-plugin
