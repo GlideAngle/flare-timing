@@ -364,6 +364,32 @@ instance ToSchema UtmZone where
                     , latZone = 'H'
                     }
 
+instance {-# OVERLAPPING #-} ToSchema [(Pilot, [PointPenalty], String)] where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                ([
+                    ( Pilot (PilotId "24", PilotName "Brodrick Osborne")
+                    , [PenaltyPoints 5.7]
+                    , "Jumped the gun by 0:57"
+                    )
+                ,
+                    ( Pilot (PilotId "34", PilotName "Petr Polach")
+                    , [PenaltyFraction 1]
+                    , "Airspace Infringement"
+                    )
+                ,
+                    ( Pilot (PilotId "75", PilotName "Josh Woods")
+                    , [PenaltyFraction 0.1]
+                    , "Altitude violation of 01:41 - 10%"
+                    )
+                ,
+                    ( Pilot (PilotId "105", PilotName "Alan Arcos")
+                    , [PenaltyFraction $ negate 0.2]
+                    , "Handicap"
+                    )
+                ] :: [(Pilot, [PointPenalty], String)])
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
