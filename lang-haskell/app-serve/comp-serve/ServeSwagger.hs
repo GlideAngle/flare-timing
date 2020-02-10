@@ -90,10 +90,24 @@ _dpNum (DecimalPlaces n) = mempty
     & pattern .~ Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "}$"))
 
 dpUnit :: DecimalPlaces -> String -> ParamSchema t
-dpUnit (DecimalPlaces n) unit = mempty
+dpUnit (DecimalPlaces n) unit
+    | n <= 0 = intUnit unit
+    | otherwise = mempty
+        & type_ .~ SwaggerString
+        -- SEE: https://www.regular-expressions.info/floatingpoint.html
+        & pattern .~ Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "} " ++ unit ++ "$"))
+
+intUnit :: String -> ParamSchema t
+intUnit unit = mempty
     & type_ .~ SwaggerString
     -- SEE: https://www.regular-expressions.info/floatingpoint.html
-    & pattern .~ Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "} " ++ unit ++ "$"))
+    & pattern .~ Just (T.pack ([r|^[-+]?[0-9]+ |] ++ unit ++ "$"))
+
+posUnit :: String -> ParamSchema t
+posUnit unit = mempty
+    & type_ .~ SwaggerString
+    -- SEE: https://www.regular-expressions.info/floatingpoint.html
+    & pattern .~ Just (T.pack ([r|^[+]?[0-9]+ |] ++ unit ++ "$"))
 
 instance (KnownUnit (Unpack u), q ~ Quantity a u, ToSchema q) => ToSchema (NominalDistance q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
@@ -124,6 +138,16 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u))
         & example ?~ "400.0 m"
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (JumpTheGunLimit q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ posUnit (showUnit (undefined :: proxy u))
+        & example ?~ "300 s"
+
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (SecondsPerPoint q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ posUnit (showUnit (undefined :: proxy u))
+        & example ?~ "3 s"
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -135,7 +159,6 @@ instance ToSchema Discipline
 instance ToSchema UtcOffset
 instance ToSchema Give
 instance ToSchema LwScaling
-instance ToSchema k => ToSchema (JumpTheGunLimit k)
 instance ToSchema PointPenalty
 instance ToSchema TooEarlyPoints
 instance ToSchema EarlyStart
@@ -147,7 +170,6 @@ instance ToSchema Tweak
 instance ToSchema PilotId
 instance ToSchema PilotName
 instance ToSchema Pilot
-instance ToSchema q => ToSchema (SecondsPerPoint q)
 instance ToSchema (Task k)
 instance ToSchema Comp
 instance ToSchema Nominal
