@@ -161,6 +161,11 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
         & example ?~ "2.000000 h"
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (BestTime q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 6) (showUnit (undefined :: proxy u))
+        & example ?~ "3.718498 h"
+
 instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (ScoreBackTime q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
@@ -357,7 +362,6 @@ instance ToSchema q => ToSchema (SumOfDistance q)
 instance ToSchema (FlownMax q) => ToSchema (ReachToggle (FlownMax q))
 instance ToSchema NominalDistanceArea
 instance ToSchema TimeValidityWorking
-instance ToSchema q => ToSchema (BestTime q)
 instance ToSchema StopValidityWorking
 instance ToSchema q => ToSchema (LaunchToEss q)
 instance ToSchema ReachStats
