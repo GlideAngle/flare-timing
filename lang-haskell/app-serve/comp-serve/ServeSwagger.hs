@@ -5,6 +5,7 @@
 
 module ServeSwagger (SwagUiApi) where
 
+import Data.Time.Clock (UTCTime)
 import Data.Ratio
 import qualified Data.Text as T
 import Text.RawString.QQ
@@ -18,6 +19,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showUnit)
 
 import Data.Via.Scientific (DecimalPlaces(..))
+import Flight.Clip (FlyingSection)
 import Flight.Zone.ZoneKind
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Zone.TaskZones (TaskZones(..))
@@ -263,6 +265,14 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackReach) where
                       { frac = LinearFraction 1
                       , reach = TaskDistance $ convert [u| 111.259762 km |]
                       }
+                 )
+
+instance {-# OVERLAPPING #-} ToSchema (Pilot, FlyingSection UTCTime) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                 ( Pilot (PilotId "36", PilotName "Brad Porter")
+                 , ("2017-04-12T01:55:24Z", "2017-04-12T05:53:01Z") :: (String, String)
                  )
 
 instance ToSchema Zones
