@@ -390,6 +390,55 @@ instance {-# OVERLAPPING #-} ToSchema [(Pilot, [PointPenalty], String)] where
                     )
                 ] :: [(Pilot, [PointPenalty], String)])
 
+instance {-# OVERLAPPING #-} ToSchema (Pilot, Breakdown) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+               ( Pilot (PilotId "5", PilotName "Jonny Durand")
+               ,
+                   Breakdown
+                       { place = TaskPlacing 1
+                       , subtotal = TaskPoints 1000
+                       , demeritFrac = TaskPoints 0
+                       , demeritPoint = TaskPoints 0
+                       , demeritReset = TaskPoints 0
+                       , total = TaskPoints 1000
+                       , jump = Nothing
+                       , penaltiesJump = []
+                       , penalties = []
+                       , penaltyReason = ""
+                       , breakdown =
+                           Points
+                               { time = TimePoints 493.7
+                               , reach = LinearPoints 217.88
+                               , distance = DistancePoints 435.761
+                               , leading = LeadingPoints 0
+                               , effort = DifficultyPoints 217.88
+                               , arrival = ArrivalPoints 70.5
+                               }
+                       , velocity =
+                           Just
+                               Velocity
+                                   { gs = Just . StartGate $ read "2017-04-09 03:40:00 UTC"
+                                   , ssVelocity = Just $ PilotVelocity [u| 40.44 km / h |]
+                                   , ssElapsed = Just $ PilotTime [u| 2.462225 h |]
+                                   , gsElapsed = Just $ PilotTime [u| 2.469229 h |]
+                                   , es = Just $ read "2017-04-09 06:08:09.222861501556 UTC"
+                                   , ss = Just $ read "2017-04-09 03:40:25.213746678338 UTC"
+                                   , ssDistance = Just $ PilotDistance [u| 99.561 km |]
+                                   , gsVelocity = Just $ PilotVelocity [u| 40.30 km / h |]
+                                   }
+                      , reach =
+                          Just
+                              ReachToggle
+                                  { extra = PilotDistance [u| 99.561 km |]
+                                  , flown = PilotDistance [u| 99.561 km |]
+                                  }
+                      , landedMade = Just $ PilotDistance [u| 99.561 km |]
+                      , stoppedAlt = Nothing
+                      }
+                )
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
