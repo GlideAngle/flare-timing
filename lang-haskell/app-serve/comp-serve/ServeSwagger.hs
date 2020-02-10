@@ -186,6 +186,11 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ dpUnit (DecimalPlaces 6) (showUnit (undefined :: proxy u))
         & example ?~ "37.629588 km"
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (SumOfDistance q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u))
+        & example ?~ "9487.1 km"
+
 instance ToSchema PilotId where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & paramSchema .~ toParamSchema (Proxy :: Proxy String)
@@ -358,7 +363,6 @@ instance ToSchema LaunchValidityWorking
 instance ToSchema PilotsFlying
 instance ToSchema PilotsPresent
 instance ToSchema DistanceValidityWorking
-instance ToSchema q => ToSchema (SumOfDistance q)
 instance ToSchema (FlownMax q) => ToSchema (ReachToggle (FlownMax q))
 instance ToSchema NominalDistanceArea
 instance ToSchema TimeValidityWorking
