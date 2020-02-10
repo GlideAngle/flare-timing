@@ -194,6 +194,11 @@ instance ToSchema Pilot where
         & paramSchema .~ toParamSchema (Proxy :: Proxy [String])
         & example ?~ toJSON (["101", "Davis Straub"] :: [String])
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (PilotDistance q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
+        & example ?~ "62.255 km"
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -228,7 +233,6 @@ instance ToSchema ChunkDifficulty
 instance ToSchema RelativeDifficulty
 instance ToSchema DifficultyFraction
 instance ToSchema IxChunk
-instance ToSchema q => ToSchema (PilotDistance q)
 instance ToSchema (OptimalRoute (Maybe TrackLine))
 instance ToSchema Validity
 instance ToSchema TaskValidity
@@ -287,7 +291,7 @@ instance ToSchema ArrivalWeight
 instance ToSchema TimeWeight
 instance ToSchema Breakdown
 instance ToSchema q => ToSchema (JumpedTheGun q)
-instance ToSchema q => ToSchema (ReachToggle (PilotDistance q))
+instance ToSchema (PilotDistance q) => ToSchema (ReachToggle (PilotDistance q))
 instance ToSchema Velocity
 instance ToSchema q => ToSchema (PilotVelocity q)
 instance ToSchema DfNoTrackPilot
