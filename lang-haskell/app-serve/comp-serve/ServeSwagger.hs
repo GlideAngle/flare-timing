@@ -13,7 +13,7 @@ import Data.Aeson (ToJSON(..))
 import Servant (Proxy(..))
 import Data.Swagger
 import Servant.Swagger.UI
-import Data.UnitsOfMeasure (KnownUnit, Unpack)
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showUnit)
 
@@ -182,17 +182,17 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
 instance ToSchema PilotId where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & paramSchema .~ toParamSchema (Proxy :: Proxy String)
-        & example ?~ toJSON ("101" :: String)
+        & example ?~ toJSON (PilotId "101")
 
 instance ToSchema PilotName where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & paramSchema .~ toParamSchema (Proxy :: Proxy String)
-        & example ?~ toJSON ("Davis Straub" :: String)
+        & example ?~ toJSON (PilotName "Davis Straub")
 
 instance ToSchema Pilot where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & paramSchema .~ toParamSchema (Proxy :: Proxy [String])
-        & example ?~ toJSON (["101", "Davis Straub"] :: [String])
+        & example ?~ toJSON (Pilot (PilotId "101", PilotName "Davis Straub"))
 
 instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (PilotDistance q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
@@ -207,6 +207,17 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
 instance {-# OVERLAPPING #-} ToSchema (Chunk q) => ToSchema (IxChunk, Chunk q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & example ?~ toJSON (["1171", "117.1 km"] :: [String])
+
+instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackEffort) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                 ( Pilot (PilotId "106", PilotName "Larry Bunner")
+                 , TrackEffort
+                      { frac = DifficultyFraction 0.32864056
+                      , effort = TaskDistance $ convert [u| 24.828000 km |]
+                      }
+                 )
 
 instance ToSchema Zones
 instance ToSchema RawZone
