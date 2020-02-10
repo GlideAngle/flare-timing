@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE NoPatternSynonyms #-}
-{-# LANGUAGE DuplicateRecordFields #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
