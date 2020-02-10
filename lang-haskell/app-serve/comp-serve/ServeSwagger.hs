@@ -16,6 +16,7 @@ import Data.UnitsOfMeasure (KnownUnit, Unpack)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showUnit)
 
+import Data.Via.Scientific (DecimalPlaces(..))
 import Flight.Zone.ZoneKind
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Zone.TaskZones (TaskZones(..))
@@ -82,53 +83,57 @@ instance ToSchema (TaskZones Race Double) where
               ]
           & required .~ ["prolog", "race"]
 
-dpUnit :: Int -> String -> ParamSchema t
-dpUnit n unit = mempty
+dpUnit :: DecimalPlaces -> String -> ParamSchema t
+dpUnit (DecimalPlaces n) unit = mempty
     & type_ .~ SwaggerString
     -- SEE: https://www.regular-expressions.info/floatingpoint.html
     & pattern .~ (Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "} " ++ unit ++ "$")))
 
 instance (KnownUnit (Unpack u), q ~ Quantity a u, ToSchema q) => ToSchema (NominalDistance q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
-        & paramSchema .~ (dpUnit 1 (showUnit (undefined :: proxy u)))
+        & paramSchema .~ (dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u)))
         & example ?~ "5 km"
 
-instance ToSchema (Zones)
-instance ToSchema (RawZone)
-instance ToSchema q => ToSchema (Alt q)
-instance ToSchema (RawLat)
-instance ToSchema (RawLng)
-instance ToSchema (RawLatLng)
-instance ToSchema (EarthMath)
-instance ToSchema (Projection)
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (Alt q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ (dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u)))
+        & example ?~ "771.000 m"
+
+instance ToSchema Zones
+instance ToSchema RawZone
+instance ToSchema RawLat
+instance ToSchema RawLng
+instance ToSchema RawLatLng
+instance ToSchema EarthMath
+instance ToSchema Projection
 instance ToSchema (Ellipsoid Double)
 instance ToSchema (EarthModel Double)
-instance ToSchema (Discipline)
-instance ToSchema (UtcOffset)
-instance ToSchema (Give)
-instance ToSchema (LwScaling)
+instance ToSchema Discipline
+instance ToSchema UtcOffset
+instance ToSchema Give
+instance ToSchema LwScaling
 instance ToSchema k => ToSchema (JumpTheGunLimit k)
-instance ToSchema (PointPenalty)
-instance ToSchema (TooEarlyPoints)
-instance ToSchema (EarlyStart)
-instance ToSchema (OpenClose)
-instance ToSchema (StartGate)
-instance ToSchema (TaskStop)
+instance ToSchema PointPenalty
+instance ToSchema TooEarlyPoints
+instance ToSchema EarlyStart
+instance ToSchema OpenClose
+instance ToSchema StartGate
+instance ToSchema TaskStop
 instance ToSchema k => ToSchema (ScoreBackTime k)
-instance ToSchema (Tweak)
-instance ToSchema (PilotId)
-instance ToSchema (PilotName)
-instance ToSchema (Pilot)
+instance ToSchema Tweak
+instance ToSchema PilotId
+instance ToSchema PilotName
+instance ToSchema Pilot
 instance ToSchema q => ToSchema (Radius q)
 instance ToSchema q => ToSchema (SecondsPerPoint q)
 instance ToSchema (Task k)
-instance ToSchema (Comp)
-instance ToSchema (Nominal)
+instance ToSchema Comp
+instance ToSchema Nominal
 instance ToSchema q => ToSchema (MinimumDistance q)
 instance ToSchema q => ToSchema (NominalTime q)
 instance ToSchema q => ToSchema (TaskDistance q)
-instance ToSchema (NominalLaunch)
-instance ToSchema (NominalGoal)
+instance ToSchema NominalLaunch
+instance ToSchema NominalGoal
 instance ToSchema TrackLine
 instance ToSchema TaskLanding
 instance ToSchema Lookahead

@@ -57,6 +57,7 @@ in    defs
                   , "flight-route"
                   , "flight-scribe"
                   , "flight-zone"
+                  , "detour-via-sci"
                   , "siggy-chardust"
                   ]
               , ghc-options =
