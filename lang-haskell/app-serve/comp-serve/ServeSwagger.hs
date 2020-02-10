@@ -204,6 +204,10 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u))
         & example ?~ "62.2 km"
 
+instance {-# OVERLAPPING #-} ToSchema (Chunk q) => ToSchema (IxChunk, Chunk q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~ toJSON (["1171", "117.1 km"] :: [String])
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
