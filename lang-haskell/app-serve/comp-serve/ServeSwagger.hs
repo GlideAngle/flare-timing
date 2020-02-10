@@ -83,26 +83,44 @@ instance ToSchema (TaskZones Race Double) where
               ]
           & required .~ ["prolog", "race"]
 
+_dpNum :: DecimalPlaces -> ParamSchema t
+_dpNum (DecimalPlaces n) = mempty
+    & type_ .~ SwaggerString
+    -- SEE: https://www.regular-expressions.info/floatingpoint.html
+    & pattern .~ Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "}$"))
+
 dpUnit :: DecimalPlaces -> String -> ParamSchema t
 dpUnit (DecimalPlaces n) unit = mempty
     & type_ .~ SwaggerString
     -- SEE: https://www.regular-expressions.info/floatingpoint.html
-    & pattern .~ (Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "} " ++ unit ++ "$")))
+    & pattern .~ Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "} " ++ unit ++ "$"))
 
 instance (KnownUnit (Unpack u), q ~ Quantity a u, ToSchema q) => ToSchema (NominalDistance q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
-        & paramSchema .~ (dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u)))
+        & paramSchema .~ dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u))
         & example ?~ "5 km"
 
 instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (Alt q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
-        & paramSchema .~ (dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u)))
+        & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
         & example ?~ "771.000 m"
+
+instance ToSchema RawLat where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ toParamSchema (Proxy :: Proxy Double)
+        & minimum_ ?~ -90
+        & maximum_ ?~ 90
+        & example ?~ "32.2176"
+
+instance ToSchema RawLng where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ toParamSchema (Proxy :: Proxy Double)
+        & minimum_ ?~ -180
+        & maximum_ ?~ 180
+        & example ?~ "-101.71603"
 
 instance ToSchema Zones
 instance ToSchema RawZone
-instance ToSchema RawLat
-instance ToSchema RawLng
 instance ToSchema RawLatLng
 instance ToSchema EarthMath
 instance ToSchema Projection
