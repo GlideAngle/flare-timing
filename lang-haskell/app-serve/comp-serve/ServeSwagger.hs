@@ -298,6 +298,16 @@ instance ToSchema TrackFlyingSection where
                     , loggedFixes = Just 7673
                     }
 
+instance ToSchema AwardedDistance where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                AwardedDistance
+                    { awardedFrac = 0.9948250462723964
+                    , awardedMade = TaskDistance $ convert [u| 158.020000 km |]
+                    , awardedTask = TaskDistance $ convert [u| 158.842000 km |]
+                    }
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -393,7 +403,6 @@ instance ToSchema (PilotDistance q) => ToSchema (ReachToggle (PilotDistance q))
 instance ToSchema Velocity
 instance ToSchema q => ToSchema (PilotVelocity q)
 instance ToSchema DfNoTrackPilot
-instance ToSchema AwardedDistance
 instance ToSchema (ReachToggle AwardedDistance)
 instance ToSchema AwardedVelocity
 instance ToSchema Kml.MarkedFixes
