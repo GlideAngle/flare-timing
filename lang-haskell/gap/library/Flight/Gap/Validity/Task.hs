@@ -1,5 +1,6 @@
 module Flight.Gap.Validity.Task (TaskValidity(..)) where
 
+import GHC.Generics (Generic)
 import Data.Typeable (Typeable, typeOf)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific
@@ -7,7 +8,7 @@ import Data.Via.Scientific
 
 -- | Also called Day Quality.
 newtype TaskValidity = TaskValidity Rational
-    deriving (Eq, Ord, Typeable)
+    deriving (Eq, Ord, Typeable, Generic)
 
 instance Newtype TaskValidity Rational where
     pack = TaskValidity

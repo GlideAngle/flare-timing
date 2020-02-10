@@ -1,10 +1,11 @@
 module Flight.Gap.Weight.Arrival (ArrivalWeight(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype ArrivalWeight = ArrivalWeight Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance Newtype ArrivalWeight Rational where
     pack = ArrivalWeight

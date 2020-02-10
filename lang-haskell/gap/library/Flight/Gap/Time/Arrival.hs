@@ -1,5 +1,6 @@
 module Flight.Gap.Time.Arrival (ArrivalTime(..), ArrivalLag(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
@@ -32,7 +33,7 @@ instance (q ~ Quantity Double [u| h |]) => FromJSON (ArrivalTime q) where
         return x
 
 newtype ArrivalLag a = ArrivalLag a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ Quantity Double [u| h |])

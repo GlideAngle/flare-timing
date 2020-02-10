@@ -4,6 +4,7 @@ module Flight.Zone.Radius
     , RawRadius
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
@@ -17,7 +18,7 @@ type RawRadius = Radius
 type QRadius a u = Radius (Quantity a u)
 
 newtype Radius a = Radius a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ Quantity Double [u| m |])

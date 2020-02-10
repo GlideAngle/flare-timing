@@ -1,5 +1,6 @@
 module Flight.Gap.Time.Best (BestTime(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
@@ -11,7 +12,7 @@ import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 -- | Best time for the task, units of hours.
 newtype BestTime a = BestTime a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ Quantity Double [u| h |])

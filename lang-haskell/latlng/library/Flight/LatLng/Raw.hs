@@ -10,6 +10,7 @@
     , showAlt
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
@@ -27,7 +28,7 @@ data RawLatLng =
         { lat :: RawLat
         , lng :: RawLng
         }
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
 
 instance Show RawLatLng where
     show RawLatLng{lat, lng} =
@@ -42,9 +43,9 @@ instance FromJSON RawLatLng where
         <$> v .: "lat"
         <*> v .: "lng"
 
-newtype RawLat = RawLat Rational deriving (Eq, Ord)
-newtype RawLng = RawLng Rational deriving (Eq, Ord)
-newtype RawAlt = RawAlt Rational deriving (Eq, Ord)
+newtype RawLat = RawLat Rational deriving (Eq, Ord, Generic)
+newtype RawLng = RawLng Rational deriving (Eq, Ord, Generic)
+newtype RawAlt = RawAlt Rational deriving (Eq, Ord, Generic)
 
 instance Newtype RawLat Rational where
     pack = RawLat

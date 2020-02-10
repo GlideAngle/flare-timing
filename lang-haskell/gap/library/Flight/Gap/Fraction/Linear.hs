@@ -4,6 +4,7 @@ module Flight.Gap.Fraction.Linear
     , bestDistance'
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 import Data.Ratio ((%))
@@ -16,7 +17,7 @@ import Flight.Gap.Distance.Stop (FlownMax(..))
 import Flight.Gap.Distance.Pilot (PilotDistance(..))
 
 newtype LinearFraction = LinearFraction Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance Newtype LinearFraction Rational where
     pack = LinearFraction

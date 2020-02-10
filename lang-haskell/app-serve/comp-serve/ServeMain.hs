@@ -144,9 +144,9 @@ import Flight.Mask (checkTracks)
 import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (QTaskDistance)
 import qualified ServeOptions as Opt (description)
-import ServeTrack (RawLatLngTrack(..), tagToTrack)
+import ServeTrack (RawLatLngTrack(..), BolsterStats(..), tagToTrack)
 import ServeValidity (nullValidityWorking)
-import ServeSwagger (SwagUiApi, BolsterStats(..))
+import ServeSwagger (SwagUiApi)
 
 data Config k
     = Config

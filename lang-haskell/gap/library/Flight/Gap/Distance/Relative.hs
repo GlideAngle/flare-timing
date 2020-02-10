@@ -1,11 +1,12 @@
 module Flight.Gap.Distance.Relative (RelativeDifficulty(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 -- | The relative difficulty of a chunk.
 newtype RelativeDifficulty = RelativeDifficulty Rational
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
 
 instance Show RelativeDifficulty where
     show (RelativeDifficulty x) = show (fromRational x :: Double)

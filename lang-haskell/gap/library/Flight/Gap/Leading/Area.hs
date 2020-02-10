@@ -4,6 +4,7 @@ module Flight.Gap.Leading.Area
     , zeroLeadingAreaUnits
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Csv (ToField(..), FromField(..))
@@ -25,7 +26,7 @@ zeroLeadingAreaUnits =
     (zero :: Quantity _ [u| s |])
 
 newtype LeadingArea a = LeadingArea a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ LeadingAreaUnits)

@@ -1,5 +1,6 @@
 module Flight.Gap.Place.Task (TaskPlacing(..)) where
 
+import GHC.Generics (Generic)
 import Control.Applicative (empty)
 import qualified Data.Text as T
 import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
@@ -7,7 +8,7 @@ import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
 data TaskPlacing
     = TaskPlacing Integer
     | TaskPlacingEqual Integer
-    deriving (Eq, Show)
+    deriving (Eq, Show, Generic)
 
 instance Ord TaskPlacing where
     compare (TaskPlacing a) (TaskPlacing b) = compare a b

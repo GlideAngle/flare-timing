@@ -57,7 +57,7 @@ newtype LaunchToStartPoints = LaunchToStartPoints Int
     deriving newtype (ToJSON, FromJSON)
 
 newtype TooEarlyPoints = TooEarlyPoints Int
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
     deriving newtype (ToJSON, FromJSON)
 
 newtype NoGoal = NoGoal Bool deriving (Eq, Show)

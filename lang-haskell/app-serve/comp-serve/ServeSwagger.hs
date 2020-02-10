@@ -3,14 +3,12 @@
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module ServeSwagger (SwagUiApi, BolsterStats(..)) where
+module ServeSwagger (SwagUiApi) where
 
 import Data.Ratio
 import qualified Data.Text as T
 import Text.RawString.QQ
 import Control.Lens
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..))
 import Servant (Proxy(..))
 import Data.Swagger
 import Servant.Swagger.UI
@@ -43,83 +41,9 @@ import Flight.Track.Stop
 import Flight.Gap.Fraction (Fractions)
 import Flight.EastNorth
 import qualified Flight.Kml as Kml
-import ServeTrack (RawLatLngTrack(..))
-
-data BolsterStats =
-    BolsterStats
-        { bolster :: ReachStats
-        , reach :: ReachStats
-        }
-    deriving (Generic, ToJSON)
+import ServeTrack (RawLatLngTrack(..), BolsterStats(..))
 
 type SwagUiApi = SwaggerSchemaUI "swagger-ui" "swagger.json"
-
-deriving instance Generic LwScaling
-deriving instance Generic (Radius q)
-deriving instance Generic (Alt q)
-deriving instance Generic RawLat
-deriving instance Generic RawLng
-deriving instance Generic RawLatLng
-deriving instance Generic (ScoreBackTime k)
-deriving instance Generic EarthMath
-deriving instance Generic Projection
-deriving instance Generic (NominalDistance q)
-deriving instance Generic (MinimumDistance q)
-deriving instance Generic (NominalTime q)
-deriving instance Generic NominalLaunch
-deriving instance Generic NominalGoal
-deriving instance Generic (SecondsPerPoint k)
-deriving instance Generic TooEarlyPoints
-deriving instance Generic (JumpTheGunLimit k)
-deriving instance Generic (TaskDistance q)
-deriving instance Generic (Chunk q)
-deriving instance Generic (FlownMax q)
-deriving instance Generic (PilotDistance q)
-deriving instance Generic RelativeDifficulty
-deriving instance Generic DifficultyFraction
-deriving instance Generic TaskValidity
-deriving instance Generic LaunchValidity
-deriving instance Generic DistanceValidity
-deriving instance Generic TimeValidity
-deriving instance Generic StopValidity
-deriving instance Generic PilotsFlying
-deriving instance Generic PilotsPresent
-deriving instance Generic (SumOfDistance q)
-deriving instance Generic NominalDistanceArea
-deriving instance Generic (BestTime q)
-deriving instance Generic (LaunchToEss q)
-deriving instance Generic (FlownMean q)
-deriving instance Generic (FlownStdDev q)
-deriving instance Generic PilotsLanded
-deriving instance Generic (PilotTime q)
-deriving instance Generic (LeadingArea q)
-deriving instance Generic (LeadingCoef q)
-deriving instance Generic TaskPlacing
-deriving instance Generic TaskPoints
-deriving instance Generic LinearPoints
-deriving instance Generic DifficultyPoints
-deriving instance Generic DistancePoints
-deriving instance Generic LeadingPoints
-deriving instance Generic ArrivalPoints
-deriving instance Generic TimePoints
-deriving instance Generic LinearFraction
-deriving instance Generic DistanceFraction
-deriving instance Generic LeadingFraction
-deriving instance Generic ArrivalFraction
-deriving instance Generic SpeedFraction
-deriving instance Generic GoalRatio
-deriving instance Generic ReachWeight
-deriving instance Generic EffortWeight
-deriving instance Generic DistanceWeight
-deriving instance Generic LeadingWeight
-deriving instance Generic ArrivalWeight
-deriving instance Generic TimeWeight
-deriving instance Generic (JumpedTheGun q)
-deriving instance Generic (PilotVelocity q)
-deriving instance Generic RawLatLngTrack
-deriving instance Generic RawAlt
-deriving instance Generic (ArrivalLag q)
-deriving instance Generic ArrivalPlacing
 
 instance ToSchema (Ratio Integer) where
     declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy Double)
@@ -284,7 +208,6 @@ instance ToSchema DfNoTrackPilot
 instance ToSchema AwardedDistance
 instance ToSchema (ReachToggle AwardedDistance)
 instance ToSchema AwardedVelocity
-instance ToSchema RawLatLngTrack
 instance ToSchema Kml.MarkedFixes
 instance ToSchema Kml.Fix
 instance ToSchema Kml.Seconds
@@ -300,7 +223,6 @@ instance ToSchema InterpolatedFix
 instance ToSchema RawAlt
 instance ToSchema ZoneCross
 instance ToSchema Fix
-instance ToSchema BolsterStats
 instance ToSchema TrackReach
 instance ToSchema TrackArrival
 instance ToSchema q => ToSchema (ArrivalLag q)
@@ -308,3 +230,6 @@ instance ToSchema ArrivalPlacing
 instance ToSchema TrackLead
 instance ToSchema TrackSpeed
 instance ToSchema TrackEffort
+
+instance ToSchema RawLatLngTrack
+instance ToSchema BolsterStats

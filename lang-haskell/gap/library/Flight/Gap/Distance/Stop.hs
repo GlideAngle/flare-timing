@@ -6,6 +6,7 @@ module Flight.Gap.Distance.Stop
     , unFlownMaxAsKm
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, convert, toRational')
@@ -27,7 +28,7 @@ unFlownMaxAsKm (FlownMax d) =
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 newtype LaunchToEss a = LaunchToEss a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ Quantity Double [u| km |])
@@ -49,7 +50,7 @@ instance (q ~ Quantity Double [u| km |]) => FromJSON (LaunchToEss q) where
         return x
 
 newtype FlownMax a = FlownMax a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ Quantity Double [u| km |])
@@ -71,7 +72,7 @@ instance (q ~ Quantity Double [u| km |]) => FromJSON (FlownMax q) where
         return x
 
 newtype FlownMean a = FlownMean a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ Quantity Double [u| km |])
@@ -93,7 +94,7 @@ instance (q ~ Quantity Double [u| km |]) => FromJSON (FlownMean q) where
         return x
 
 newtype FlownStdDev a = FlownStdDev a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ Quantity Double [u| km |])

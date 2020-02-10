@@ -1,11 +1,12 @@
 module Flight.Gap.Fraction.Difficulty (DifficultyFraction(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 -- | The sum of relative difficulties up until the chunk of landing.
 newtype DifficultyFraction = DifficultyFraction Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance Newtype DifficultyFraction Rational where
     pack = DifficultyFraction

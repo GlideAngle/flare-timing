@@ -5,11 +5,12 @@ module Flight.Gap.Points.Distance
     ) where
 
 import Text.Printf (printf)
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype DistancePoints = DistancePoints Rational
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
 
 instance Show DistancePoints where
     show (DistancePoints x) = printf "DistancePoints %.2f" y
@@ -25,7 +26,7 @@ deriveDecimalPlaces (DecimalPlaces 3) ''DistancePoints
 deriveJsonViaSci ''DistancePoints
 
 newtype LinearPoints = LinearPoints Rational
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
 
 instance Show LinearPoints where
     show (LinearPoints x) = printf "LinearPoints %.2f" y
@@ -41,7 +42,7 @@ deriveDecimalPlaces (DecimalPlaces 3) ''LinearPoints
 deriveJsonViaSci ''LinearPoints
 
 newtype DifficultyPoints = DifficultyPoints Rational
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
 
 instance Show DifficultyPoints where
     show (DifficultyPoints x) = printf "DifficultyPoints %.2f" y

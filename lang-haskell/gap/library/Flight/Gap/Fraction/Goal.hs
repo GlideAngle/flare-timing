@@ -1,5 +1,6 @@
 module Flight.Gap.Fraction.Goal (NominalGoal(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific
     ( DecimalPlaces(..)
@@ -7,7 +8,7 @@ import Data.Via.Scientific
     )
 
 newtype NominalGoal = NominalGoal Rational
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
 
 instance Newtype NominalGoal Rational where
     pack = NominalGoal

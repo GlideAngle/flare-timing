@@ -4,9 +4,9 @@ module Flight.Geodesy.Math
     , EarthModel(..)
     ) where
 
+import GHC.Generics (Generic)
 import qualified Data.Text as T (pack)
 import Control.Applicative (empty)
-import GHC.Generics (Generic)
 import Data.Aeson
     ( Value(..), ToJSON(..), FromJSON(..), Options(..), SumEncoding(..)
     , genericToJSON, genericParseJSON, defaultOptions
@@ -24,7 +24,7 @@ data EarthMath
     | AndoyerLambert
     | ForsytheAndoyerLambert
     | FsAndoyer
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON EarthMath where
     toJSON em@Pythagorus = toJSON . String . T.pack $ show em
@@ -49,7 +49,7 @@ instance FromJSON EarthMath where
     parseJSON _ = empty
 
 data Projection = UTM
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON Projection where
     toJSON = const $ String "UTM"

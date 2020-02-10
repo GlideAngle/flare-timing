@@ -43,18 +43,18 @@ newtype PilotsAtEss = PilotsAtEss Integer
 -- | The number of pilots present for a task.
 {-@ newtype PilotsPresent = PilotsPresent {x :: Integer} @-}
 newtype PilotsPresent = PilotsPresent Integer
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
     deriving newtype (ToJSON, FromJSON)
 
 -- | The number of pilots flying a task.
 {-@ newtype PilotsFlying = PilotsFlying {x :: Integer} @-}
 newtype PilotsFlying = PilotsFlying Integer
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
     deriving newtype (ToJSON, FromJSON)
 
 -- | The number of pilots having landed.
 newtype PilotsLanded = PilotsLanded Integer
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
     deriving newtype (ToJSON, FromJSON)
 
 -- | The number of pilots that launched on a task.

@@ -19,13 +19,13 @@ module Flight.Gap.Distance.Chunk
     , mergeChunks
     ) where
 
+import GHC.Generics (Generic)
 import Data.Maybe (catMaybes)
 import Data.List (sort, group)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure ((*:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import GHC.Generics (Generic)
 import qualified Data.Map as Map
 
 import Flight.Units ()
@@ -48,7 +48,7 @@ instance Show IxChunk where
     show (IxChunk x) = show x
 
 newtype Chunk a = Chunk a
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
 
 instance Show a => Show (Chunk a) where
     show (Chunk x) = show x

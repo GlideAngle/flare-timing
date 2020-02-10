@@ -1,5 +1,6 @@
 module Flight.Gap.Place.Arrival (ArrivalPlacing(..)) where
 
+import GHC.Generics (Generic)
 import Control.Applicative (empty)
 import qualified Data.Text as T
 import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
@@ -8,7 +9,7 @@ import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
 data ArrivalPlacing
     = ArrivalPlacing Integer -- ^ The nth place
     | ArrivalPlacingEqual Integer Integer -- ^ This placing shared with n other pilots
-    deriving (Eq, Show)
+    deriving (Eq, Show, Generic)
 
 instance Ord ArrivalPlacing where
     compare (ArrivalPlacing a) (ArrivalPlacing b) = compare a b

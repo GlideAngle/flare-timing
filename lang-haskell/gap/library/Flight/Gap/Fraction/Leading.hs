@@ -4,6 +4,7 @@ module Flight.Gap.Fraction.Leading
     , LwScaling(..)
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific
     ( DecimalPlaces(..)
@@ -11,7 +12,7 @@ import Data.Via.Scientific
     )
 
 newtype LeadingFraction = LeadingFraction Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance Newtype LeadingFraction Rational where
     pack = LeadingFraction
@@ -34,7 +35,7 @@ deriveJsonViaSci ''EssTime
 deriveCsvViaSci ''EssTime
 
 newtype LwScaling = LwScaling Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance Newtype LwScaling Rational where
     pack = LwScaling

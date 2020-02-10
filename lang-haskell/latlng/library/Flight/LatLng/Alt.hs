@@ -1,5 +1,6 @@
 module Flight.LatLng.Alt (QAlt, Alt(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, convert)
@@ -10,7 +11,7 @@ import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 type QAlt a u = Alt (Quantity a u)
-newtype Alt a = Alt a deriving (Eq, Ord, Show)
+newtype Alt a = Alt a deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ Quantity Double [u| m |])

@@ -4,6 +4,7 @@ module Flight.Gap.Time.Early
     , JumpTheGunLimit(..)
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
@@ -15,7 +16,7 @@ import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 -- | Jumped the gun by this many seconds.
 newtype JumpedTheGun a = JumpedTheGun a
-    deriving (Eq, Ord, Show, Read)
+    deriving (Eq, Ord, Show, Read, Generic)
 
 instance
     (q ~ Quantity Double [u| s |])
@@ -38,7 +39,7 @@ instance (q ~ Quantity Double [u| s |]) => FromJSON (JumpedTheGun q) where
 
 -- | For this many seconds, loose 1 point.
 newtype SecondsPerPoint a = SecondsPerPoint a
-    deriving (Eq, Ord, Show, Read)
+    deriving (Eq, Ord, Show, Read, Generic)
 
 instance
     (q ~ Quantity Double [u| s |])
@@ -62,7 +63,7 @@ instance (q ~ Quantity Double [u| s |]) => FromJSON (SecondsPerPoint q) where
 -- | A jump of this many seconds incurs the maximum penalty, the score for
 -- minimum distance.
 newtype JumpTheGunLimit a = JumpTheGunLimit a
-    deriving (Eq, Ord, Show, Read)
+    deriving (Eq, Ord, Show, Read, Generic)
 
 instance
     (q ~ Quantity Double [u| s |])

@@ -1,5 +1,6 @@
 module Flight.Gap.Fraction.Launch (NominalLaunch(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific
     ( DecimalPlaces(..)
@@ -8,7 +9,7 @@ import Data.Via.Scientific
 
 {-@ newtype NominalLaunch = NominalLaunch {x :: Rational } @-}
 newtype NominalLaunch = NominalLaunch Rational
-    deriving (Eq, Ord, Read)
+    deriving (Eq, Ord, Read, Generic)
 
 instance Newtype NominalLaunch Rational where
     pack = NominalLaunch

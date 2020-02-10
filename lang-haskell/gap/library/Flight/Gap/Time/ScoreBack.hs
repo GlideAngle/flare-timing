@@ -1,5 +1,6 @@
 module Flight.Gap.Time.ScoreBack (ScoreBackTime(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
@@ -11,7 +12,7 @@ import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 -- | ScoreBack time for the task, units of hours.
 newtype ScoreBackTime a = ScoreBackTime a
-    deriving (Eq, Ord, Show, Read)
+    deriving (Eq, Ord, Show, Read, Generic)
 
 instance
     (q ~ Quantity Double [u| s |])

@@ -1,10 +1,11 @@
 module Flight.Gap.Weight.Leading (LeadingWeight(..)) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype LeadingWeight = LeadingWeight Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance Newtype LeadingWeight Rational where
     pack = LeadingWeight

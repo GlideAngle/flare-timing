@@ -1,11 +1,12 @@
 module Flight.Gap.Points.Leading (LeadingPoints(..)) where
 
 import Text.Printf (printf)
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype LeadingPoints = LeadingPoints Rational
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
 
 instance Show LeadingPoints where
     show (LeadingPoints x) = printf "LeadingPoints %.2f" y

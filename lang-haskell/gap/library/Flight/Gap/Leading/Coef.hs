@@ -4,6 +4,7 @@ module Flight.Gap.Leading.Coef
     , zeroLeadingCoefUnits
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Control.Applicative (empty)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
@@ -21,7 +22,7 @@ zeroLeadingCoefUnits :: LeadingCoefUnits
 zeroLeadingCoefUnits = zero
 
 newtype LeadingCoef a = LeadingCoef a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance
     (q ~ LeadingCoefUnits)

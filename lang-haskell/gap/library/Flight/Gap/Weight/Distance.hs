@@ -4,17 +4,18 @@ module Flight.Gap.Weight.Distance
     , EffortWeight(..)
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype DistanceWeight = DistanceWeight Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 newtype ReachWeight = ReachWeight Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 newtype EffortWeight = EffortWeight Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance Newtype DistanceWeight Rational where
     pack = DistanceWeight
