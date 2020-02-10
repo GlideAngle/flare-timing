@@ -112,7 +112,7 @@ posUnit unit = mempty
 instance (KnownUnit (Unpack u), q ~ Quantity a u, ToSchema q) => ToSchema (NominalDistance q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & paramSchema .~ dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u))
-        & example ?~ "5 km"
+        & example ?~ "120.0 km"
 
 instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (Alt q) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
@@ -148,6 +148,16 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ posUnit (showUnit (undefined :: proxy u))
         & example ?~ "3 s"
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (MinimumDistance q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
+        & example ?~ "5.000 km"
+
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (NominalTime q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
+        & example ?~ "2.000000 h"
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -173,8 +183,6 @@ instance ToSchema Pilot
 instance ToSchema (Task k)
 instance ToSchema Comp
 instance ToSchema Nominal
-instance ToSchema q => ToSchema (MinimumDistance q)
-instance ToSchema q => ToSchema (NominalTime q)
 instance ToSchema q => ToSchema (TaskDistance q)
 instance ToSchema NominalLaunch
 instance ToSchema NominalGoal
