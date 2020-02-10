@@ -336,6 +336,34 @@ instance {-# OVERLAPPING #-} ToSchema (Maybe (Double, Double)) where
         & example ?~ (toJSON $ ((Just (-16.82, 50.94298381524192)) :: Maybe (Double, Double)))
         & description ?~ "The difference in the mean of the points and the standard deviation in the points for a task."
 
+instance (KnownUnit (Unpack u), q ~ Quantity a u, ToSchema q) => ToSchema (TaskDistance q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 6) (showUnit (undefined :: proxy u))
+        & example ?~ "142.789048 km"
+
+instance {-# OVERLAPPING #-} (KnownUnit (Unpack u), q ~ Quantity a u, ToSchema q) => ToSchema [TaskDistance q] where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                ((TaskDistance . convert <$>
+                    [ [u| 142.789048 km |]
+                    , [u| 185.745298 km |]
+                    , [u| 195.224984 km |]
+                    , [u| 388.750173 km |]
+                    , [u| 153.936362 km |]
+                    , [u| 166.415908 km |]
+                    , [u| 172.107822 km |]
+                    ]) :: [TaskDistance (Quantity Double [u| m |])])
+
+instance ToSchema UtmZone where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                UtmZone
+                    { lngZone = 55
+                    , latZone = 'H'
+                    }
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -357,7 +385,6 @@ instance ToSchema Tweak
 instance ToSchema (Task k)
 instance ToSchema Comp
 instance ToSchema Nominal
-instance ToSchema q => ToSchema (TaskDistance q)
 instance ToSchema NominalLaunch
 instance ToSchema NominalGoal
 instance ToSchema TrackLine
@@ -390,7 +417,7 @@ instance ToSchema (ReachToggle ReachStats)
 instance ToSchema PilotsAtEss
 instance ToSchema PilotsLanded
 instance ToSchema NormBreakdown
-instance ToSchema q => ToSchema (ReachToggle (TaskDistance q))
+instance ToSchema (TaskDistance q) => ToSchema (ReachToggle (TaskDistance q))
 instance ToSchema q => ToSchema (PilotTime q)
 instance ToSchema q => ToSchema (LeadingArea q)
 instance ToSchema q => ToSchema (LeadingCoef q)
@@ -410,7 +437,6 @@ instance ToSchema LeadingFraction
 instance ToSchema ArrivalFraction
 instance ToSchema SpeedFraction
 instance ToSchema PlanarTrackLine
-instance ToSchema UtmZone
 instance ToSchema EastingNorthing
 instance ToSchema PilotTaskStatus
 instance ToSchema Allocation
