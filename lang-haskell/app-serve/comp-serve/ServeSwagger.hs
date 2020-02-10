@@ -271,19 +271,32 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, FlyingSection UTCTime) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & example ?~
             toJSON
-                 ( Pilot (PilotId "36", PilotName "Brad Porter")
-                 , (read "2017-04-12 01:55:24 UTC", read "2017-04-12 05:53:01 UTC") :: (UTCTime, UTCTime)
-                 )
+                ( Pilot (PilotId "36", PilotName "Brad Porter")
+                , (read "2017-04-12 01:55:24 UTC", read "2017-04-12 05:53:01 UTC") :: (UTCTime, UTCTime)
+                )
 
 instance ToSchema TrackScoredSection where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & example ?~
             toJSON
-                 TrackScoredSection
-                     { scoredSeconds = Just (0, 14257)
-                     , scoredTimes = Just (read "2017-04-12 01:55:24 UTC", read "2017-04-12 05:53:01 UTC")
-                     , scoredFixes = Just (0, 7672)
-                     }
+                TrackScoredSection
+                    { scoredSeconds = Just (0, 14257)
+                    , scoredTimes = Just (read "2017-04-12 01:55:24 UTC", read "2017-04-12 05:53:01 UTC")
+                    , scoredFixes = Just (0, 7672)
+                    }
+
+instance ToSchema TrackFlyingSection where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                TrackFlyingSection
+                    { flyingSeconds = Just (0, 14257)
+                    , loggedSeconds = Just $ Seconds 14257
+                    , loggedTimes = Just (read "2017-04-12 01:55:24 UTC", read "2017-04-12 05:53:01 UTC")
+                    , flyingFixes = Just (0, 7672)
+                    , flyingTimes = Just (read "2017-04-12 01:55:24 UTC", read "2017-04-12 05:53:01 UTC")
+                    , loggedFixes = Just 7673
+                    }
 
 instance ToSchema Zones
 instance ToSchema RawZone
@@ -391,7 +404,6 @@ instance ToSchema Kml.Latitude
 instance ToSchema Kml.Longitude
 instance ToSchema Kml.Altitude
 instance ToSchema Seconds
-instance ToSchema TrackFlyingSection
 instance ToSchema ZoneTag
 instance ToSchema InterpolatedFix
 instance ToSchema RawAlt
