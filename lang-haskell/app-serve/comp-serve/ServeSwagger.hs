@@ -163,6 +163,21 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
         & example ?~ "900.000 s"
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (FlownMax q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 6) (showUnit (undefined :: proxy u))
+        & example ?~ "126.747570 km"
+
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (FlownMean q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 6) (showUnit (undefined :: proxy u))
+        & example ?~ "106.814413 km"
+
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (FlownStdDev q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 6) (showUnit (undefined :: proxy u))
+        & example ?~ "37.629588 km"
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -201,7 +216,6 @@ instance ToSchema RelativeDifficulty
 instance ToSchema DifficultyFraction
 instance ToSchema IxChunk
 instance ToSchema q => ToSchema (PilotDistance q)
-instance ToSchema q => ToSchema (FlownMax q)
 instance ToSchema (OptimalRoute (Maybe TrackLine))
 instance ToSchema Validity
 instance ToSchema TaskValidity
@@ -215,7 +229,7 @@ instance ToSchema PilotsFlying
 instance ToSchema PilotsPresent
 instance ToSchema DistanceValidityWorking
 instance ToSchema q => ToSchema (SumOfDistance q)
-instance ToSchema q => ToSchema (ReachToggle (FlownMax q))
+instance ToSchema (FlownMax q) => ToSchema (ReachToggle (FlownMax q))
 instance ToSchema NominalDistanceArea
 instance ToSchema TimeValidityWorking
 instance ToSchema q => ToSchema (BestTime q)
@@ -223,8 +237,6 @@ instance ToSchema StopValidityWorking
 instance ToSchema q => ToSchema (LaunchToEss q)
 instance ToSchema ReachStats
 instance ToSchema (ReachToggle ReachStats)
-instance ToSchema q => ToSchema (FlownMean q)
-instance ToSchema q => ToSchema (FlownStdDev q)
 instance ToSchema PilotsAtEss
 instance ToSchema PilotsLanded
 instance ToSchema NormBreakdown
