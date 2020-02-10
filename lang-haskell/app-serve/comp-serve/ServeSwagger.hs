@@ -219,6 +219,17 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackEffort) where
                       }
                  )
 
+instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackSpeed) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                 ( Pilot (PilotId "101", PilotName "Davis Straub")
+                 , TrackSpeed
+                      { frac = SpeedFraction 0.68107665
+                      , time = PilotTime [u| 2.824138 h |]
+                      }
+                 )
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
