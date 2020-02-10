@@ -9,6 +9,7 @@ import Data.Ratio
 import qualified Data.Text as T
 import Text.RawString.QQ
 import Control.Lens
+import Data.Aeson (ToJSON(..))
 import Servant (Proxy(..))
 import Data.Swagger
 import Servant.Swagger.UI
@@ -178,6 +179,21 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ dpUnit (DecimalPlaces 6) (showUnit (undefined :: proxy u))
         & example ?~ "37.629588 km"
 
+instance ToSchema PilotId where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ toParamSchema (Proxy :: Proxy String)
+        & example ?~ toJSON ("101" :: String)
+
+instance ToSchema PilotName where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ toParamSchema (Proxy :: Proxy String)
+        & example ?~ toJSON ("Davis Straub" :: String)
+
+instance ToSchema Pilot where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ toParamSchema (Proxy :: Proxy [String])
+        & example ?~ toJSON (["101", "Davis Straub"] :: [String])
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -196,9 +212,6 @@ instance ToSchema OpenClose
 instance ToSchema StartGate
 instance ToSchema TaskStop
 instance ToSchema Tweak
-instance ToSchema PilotId
-instance ToSchema PilotName
-instance ToSchema Pilot
 instance ToSchema (Task k)
 instance ToSchema Comp
 instance ToSchema Nominal
