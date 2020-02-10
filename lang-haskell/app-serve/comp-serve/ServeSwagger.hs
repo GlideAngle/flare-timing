@@ -331,6 +331,11 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, [PilotTaskStatus]) where
                  , [DF, DFNoTrack, DF, DFNoTrack, DF, ABS, DF] :: [PilotTaskStatus]
                  )
 
+instance {-# OVERLAPPING #-} ToSchema (Maybe (Double, Double)) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~ (toJSON $ ((Just (-16.82, 50.94298381524192)) :: Maybe (Double, Double)))
+        & description ?~ "The difference in the mean of the points and the standard deviation in the points for a task."
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
