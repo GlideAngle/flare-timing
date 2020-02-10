@@ -199,6 +199,11 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
         & example ?~ "62.255 km"
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (Chunk q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u))
+        & example ?~ "62.2 km"
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -227,7 +232,6 @@ instance ToSchema TrackLine
 instance ToSchema TaskLanding
 instance ToSchema Lookahead
 instance ToSchema Chunking
-instance ToSchema q => ToSchema (Chunk q)
 instance ToSchema SumOfDifficulty
 instance ToSchema ChunkDifficulty
 instance ToSchema RelativeDifficulty
