@@ -254,6 +254,17 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackArrival) where
                       }
                  )
 
+instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackReach) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                 ( Pilot (PilotId "42", PilotName "Mikhail Karmazin")
+                 , TrackReach
+                      { frac = LinearFraction 1
+                      , reach = TaskDistance $ convert [u| 111.259762 km |]
+                      }
+                 )
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
