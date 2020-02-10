@@ -158,6 +158,11 @@ instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (
         & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
         & example ?~ "2.000000 h"
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (ScoreBackTime q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 3) (showUnit (undefined :: proxy u))
+        & example ?~ "900.000 s"
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -175,7 +180,6 @@ instance ToSchema EarlyStart
 instance ToSchema OpenClose
 instance ToSchema StartGate
 instance ToSchema TaskStop
-instance ToSchema k => ToSchema (ScoreBackTime k)
 instance ToSchema Tweak
 instance ToSchema PilotId
 instance ToSchema PilotName
