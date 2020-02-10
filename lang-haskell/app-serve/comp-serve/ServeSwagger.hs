@@ -480,6 +480,33 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, NormBreakdown) where
                       }
                 )
 
+instance ToSchema Allocation where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                Allocation
+                    { goalRatio = GoalRatio 0.46808511
+                    , points =
+                        Points
+                            { time = TimePoints 493.7
+                            , reach = LinearPoints 217.88
+                            , distance = DistancePoints 435.8
+                            , leading = LeadingPoints 0
+                            , effort = DifficultyPoints 217.88
+                            , arrival = ArrivalPoints 70.5
+                            }
+                    , weight =
+                        Weights
+                            { time = TimeWeight 0.4937
+                            , reach = ReachWeight 0.2179
+                            , distance = DistanceWeight 0.4358
+                            , leading = LeadingWeight 0
+                            , effort = EffortWeight 0.2179
+                            , arrival = ArrivalWeight 0.0705
+                            }
+                    , taskPoints = TaskPoints 1000
+                    }
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -555,7 +582,6 @@ instance ToSchema SpeedFraction
 instance ToSchema PlanarTrackLine
 instance ToSchema EastingNorthing
 instance ToSchema PilotTaskStatus
-instance ToSchema Allocation
 instance ToSchema GoalRatio
 instance ToSchema Weights
 instance ToSchema ReachWeight
