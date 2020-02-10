@@ -230,6 +230,18 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackSpeed) where
                       }
                  )
 
+instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackLead) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                 ( Pilot (PilotId "105", PilotName "Cory Barnwell")
+                 , TrackLead
+                      { frac = LeadingFraction 0.80786961
+                      , area = LeadingArea [u| 42221610.0724 km^2 s |]
+                      , coef = LeadingCoef 1.70921115
+                      }
+                 )
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
