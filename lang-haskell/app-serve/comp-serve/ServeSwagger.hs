@@ -119,6 +119,11 @@ instance ToSchema RawLng where
         & maximum_ ?~ 180
         & example ?~ "-101.71603"
 
+instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToSchema q) => ToSchema (Radius q) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & paramSchema .~ dpUnit (DecimalPlaces 1) (showUnit (undefined :: proxy u))
+        & example ?~ "400.0 m"
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
@@ -142,7 +147,6 @@ instance ToSchema Tweak
 instance ToSchema PilotId
 instance ToSchema PilotName
 instance ToSchema Pilot
-instance ToSchema q => ToSchema (Radius q)
 instance ToSchema q => ToSchema (SecondsPerPoint q)
 instance ToSchema (Task k)
 instance ToSchema Comp
