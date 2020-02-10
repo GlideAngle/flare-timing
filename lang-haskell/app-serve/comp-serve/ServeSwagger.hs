@@ -323,6 +323,14 @@ instance ToSchema AwardedDistance where
                     , awardedTask = TaskDistance $ convert [u| 158.842000 km |]
                     }
 
+instance {-# OVERLAPPING #-} ToSchema (Pilot, [PilotTaskStatus]) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+                 ( Pilot (PilotId "4", PilotName "Frank Chetcuti")
+                 , [DF, DFNoTrack, DF, DFNoTrack, DF, ABS, DF] :: [PilotTaskStatus]
+                 )
+
 instance ToSchema Zones
 instance ToSchema RawZone
 instance ToSchema RawLatLng
