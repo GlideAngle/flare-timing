@@ -5,7 +5,7 @@ of this changelog.
 # Open API Specification
 ## app-view-0.25
 
-* Added an OpenAPI specification [OAS](https://swagger.io/) for the server.
+* Added an OpenAPI specification ([OAS](https://swagger.io/)) for the server.
 
 # Arrival Time Points and Start Too Early
 ## app-view-0.24
