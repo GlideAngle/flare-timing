@@ -1,5 +1,6 @@
 import Prelude hiding (abs)
 import GHC.Records
+import qualified Data.Text as T (Text)
 import Data.Time.Clock (UTCTime)
 import System.Environment (getProgName)
 import Text.Printf (printf)
@@ -365,24 +366,27 @@ type CompInputSwagUiApi k = SwagUiApi :<|> CompInputApi k
 type TaskLengthSwagUiApi k = SwagUiApi :<|> TaskLengthApi k
 type GapPointSwagUiApi k = SwagUiApi :<|> GapPointApi k
 
+apiVersion :: T.Text
+apiVersion = "0.25"
+
 compInputSwagDoc :: Swagger
 compInputSwagDoc = toSwagger compInputApi
   & info.title   .~ "Comp Input API"
-  & info.version .~ "1.0"
+  & info.version .~ apiVersion
   & info.description ?~ "The subset of endpoints served when only comp inputs are available."
   & info.license ?~ ("MPL" & url ?~ URL "http://mozilla.org/MPL/2.0/")
 
 taskLengthSwagDoc :: Swagger
 taskLengthSwagDoc = toSwagger taskLengthApi
   & info.title   .~ "Task Length API"
-  & info.version .~ "1.0"
+  & info.version .~ apiVersion
   & info.description ?~ "The subset of endpoints served when only comp inputs and task lengths are available."
   & info.license ?~ ("MPL" & url ?~ URL "http://mozilla.org/MPL/2.0/")
 
 gapPointSwagDoc :: Swagger
 gapPointSwagDoc = toSwagger gapPointApi
   & info.title   .~ "Gap Point API"
-  & info.version .~ "1.0"
+  & info.version .~ apiVersion
   & info.description ?~ "The full set of endpoints served when the comp has been scored."
   & info.license ?~ ("MPL" & url ?~ URL "http://mozilla.org/MPL/2.0/")
 
