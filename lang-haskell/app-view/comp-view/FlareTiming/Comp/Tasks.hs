@@ -42,7 +42,16 @@ taskList ds' stats' xs = do
 
                             elClass "th" "th-task-stats-mean" $ text "Δ Mean"
                             elClass "th" "th-task-stats-stddev" $ text "± Std Dev"
+
                     rows <- el "tbody" $ simpleList ixs (rowTask ds stats)
+
+                    let tdFoot = elAttr "td" ("colspan" =: "6")
+                    let foot = el "tr" . tdFoot . text
+
+                    el "tfoot" $ do
+                        foot "Δ The mean of the difference in total points awarded compared to the expected total points."
+                        foot "± The standard deviation of the same."
+
                     return rows
 
             return $ switchDyn (listToIxTask <$> ys))
