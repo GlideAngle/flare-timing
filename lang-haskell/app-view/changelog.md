@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Tasks in a Table
+## app-view-0.26
+
+* Show a table of tasks instead of a list of tasks.
+
 # Open API Specification
 ## app-view-0.25
 
