@@ -31,18 +31,31 @@ taskList ds' stats' xs = do
                     return ()
 
             let ixs = zip (IxTask <$> [1..]) <$> xs
-            ys <- elClass "ol" "ol-tasks" $ simpleList ixs (liTask ds stats)
+            ys <-
+                elClass "table" "table" $ do
+                    el "thead" $ do
+                        el "tr" $ do
+                            el "th" $ text "#"
+                            elClass "th" "th-task-name" $ text "Name"
+                            elClass "th" "th-task-tps" $ text "Turnpoints"
+                            elClass "th" "th-task-dist" $ text "Distance"
+
+                            elClass "th" "th-task-stats-mean" $ text "Δ Mean"
+                            elClass "th" "th-task-stats-stddev" $ text "± Std Dev"
+                    rows <- el "tbody" $ simpleList ixs (rowTask ds stats)
+                    return rows
+
             return $ switchDyn (listToIxTask <$> ys))
 
     switchHold never ev
 
-liTask
+rowTask
     :: MonadWidget t m
     => [TaskDistance]
     -> [Maybe (Double, Double)]
     -> Dynamic t (IxTask, Task)
     -> m (Event t ())
-liTask ds stats x' = do
+rowTask ds stats x' = do
     ev <- dyn $ ffor x' (\(ix, x@Task{taskName}) ->
                 case ix of
                     IxTaskNone -> return never
@@ -53,30 +66,31 @@ liTask ds stats x' = do
                                     dTask : _ -> showTaskDistance dTask
                                     _ -> ""
 
-                        let (s, statClass) = case drop (i - 1) stats of
+                        let (mn, stddev, meanClass, sdClass) = case drop (i - 1) stats of
                                     Just (m, sd) : _ ->
-                                        let m' = abs m in
-                                        ( printf "%+03.1f ± %03.1f" m sd
-                                        , if | m' < 2 -> "tag is-success"
-                                             | m' < 8 -> "tag is-warning"
-                                             | otherwise -> "tag is-danger"
+                                        let (m', sd') = (abs m, abs sd) in
+                                        ( printf "%+03.1f" m
+                                        , printf "%03.1f" sd'
+                                        , if | m' < 2 -> "has-text-success"
+                                             | m' < 8 -> "has-text-warning"
+                                             | otherwise -> "has-text-danger"
+                                        , if | sd' < 2 -> "has-text-success"
+                                             | sd' < 8 -> "has-text-warning"
+                                             | otherwise -> "has-text-danger"
                                         )
-                                    _ -> ("", "tag is-danger")
+                                    _ -> ("", "", "has-text-danger", "has-text-danger")
 
                         (e, _) <-
-                                elAttr' "li" ("style" =: "margin: 1em 0") $ do
-                                    elClass "div" "field is-grouped is-grouped-multiline" $ do
-                                        elClass "div" "control" $
-                                            el "a" . text
-                                                $ T.intercalate "-" ns
-                                        elClass "div" "control" $
-                                            elClass "div" "tags has-addons" $ do
-                                                elClass "span" "tag" $ text (T.pack taskName)
-                                                elClass "span" "tag is-black" $ text d
-                                        elClass "div" "control" $
-                                            elClass "div" "tags has-addons" $ do
-                                                elClass "span" "tag" $ text "Δ"
-                                                elClass "span" statClass $ text (T.pack s)
+                                el' "tr" $ do
+                                    el "td" . text . T.pack $ printf "%d" i
+                                    elClass "td" "td-task-name" $ text (T.pack taskName)
+                                    elClass "td" "td-task-tps" $
+                                        el "a" . text $ T.intercalate "-" ns
+                                    elClass "td" "td-task-dist" $ text d
+                                    elClass "td" "td-task-stats-mean" $
+                                        elClass "span" meanClass $ text (T.pack mn)
+                                    elClass "td" "td-task-stats-stddev" $
+                                        elClass "span" sdClass $ text (T.pack stddev)
 
                         return $ domEvent Click e)
     switchHold never ev
