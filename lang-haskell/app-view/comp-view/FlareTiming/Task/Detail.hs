@@ -45,7 +45,8 @@ import FlareTiming.Plot.Weight (weightPlot)
 import FlareTiming.Plot.Reach (reachPlot)
 import FlareTiming.Plot.Effort (effortPlot)
 import FlareTiming.Plot.Time (timePlot)
-import FlareTiming.Plot.Lead (leadPlot)
+import FlareTiming.Plot.LeadCoef (leadCoefPlot)
+import FlareTiming.Plot.LeadArea (leadAreaPlot)
 import FlareTiming.Plot.Arrival (arrivalPlot)
 import FlareTiming.Plot.Valid (validPlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
@@ -312,11 +313,11 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                                 PlotTabLead -> do
                                     tabPlotLead <- tabsPlotLead
-                                    let plotLead = leadPlot tweak sEx ld
-                                    _ <- widgetHold (plotLead) $
+                                    let plotLeadCoef = leadCoefPlot tweak sEx ld
+                                    _ <- widgetHold (plotLeadCoef) $
                                             (\case
-                                                PlotLeadTabPoint -> plotLead
-                                                PlotLeadTabArea -> plotLead
+                                                PlotLeadTabPoint -> plotLeadCoef
+                                                PlotLeadTabArea -> leadAreaPlot tweak sEx ld
                                             )
                                             <$> tabPlotLead
                                     return ()

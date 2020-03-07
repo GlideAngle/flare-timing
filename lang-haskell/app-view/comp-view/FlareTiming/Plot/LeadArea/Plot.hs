@@ -1,7 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Lead.Plot (leadPlot) where
+module FlareTiming.Plot.LeadArea.Plot (leadAreaPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
@@ -40,13 +40,13 @@ foreign import javascript unsafe
     \})"
     plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
-leadPlot
+leadAreaPlot
     :: IsElement e
     => e
     -> (Double, Double)
     -> [[Double]]
     -> IO Plot
-leadPlot e (lcMin, lcMax) xs = do
+leadAreaPlot e (lcMin, lcMax) xs = do
     let xyfn :: [[Double]] =
             [ [x', fnGAP lcMin x']
             | x <- [0 :: Integer .. 199]

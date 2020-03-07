@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Lead (leadPlot) where
+module FlareTiming.Plot.LeadArea (leadAreaPlot) where
 
 import Data.Maybe (fromMaybe)
 import Reflex.Dom
@@ -6,16 +6,16 @@ import Reflex.Dom
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Lead (TrackLead(..))
-import qualified FlareTiming.Plot.Lead.View as V (leadPlot)
+import qualified FlareTiming.Plot.LeadArea.View as V (leadAreaPlot)
 import WireTypes.Pilot (Pilot(..))
 
-leadPlot
+leadAreaPlot
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackLead)])
     -> m ()
-leadPlot tweak sEx ld =
+leadAreaPlot tweak sEx ld =
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -41,6 +41,6 @@ leadPlot tweak sEx ld =
                                         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> notice
                                         _ -> return ())
 
-                                    V.leadPlot tweak sEx (fromMaybe [] <$> ld))
+                                    V.leadAreaPlot tweak sEx (fromMaybe [] <$> ld))
 
                     return ()
