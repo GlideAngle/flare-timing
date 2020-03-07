@@ -1,13 +1,11 @@
 module FlareTiming.Plot.LeadCoef.Table (tablePilotCoef) where
 
-import Text.Printf (printf)
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Fraction (Fractions(..), showLeadingFrac, showLeadingFracDiff)
 import WireTypes.Comp (Tweak(..), LwScaling(..))
-import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
+import WireTypes.Lead (TrackLead(..), showCoef, showCoefDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilot)
@@ -125,13 +123,3 @@ rowLeadCompare mapN p tl = do
         el "td" . dynText $ showPilot <$> p
 
         return ()
-
-showCoef :: LeadingCoefficient -> T.Text
-showCoef (LeadingCoefficient lc) = T.pack $ printf "%.3f" lc
-
-showCoefDiff :: LeadingCoefficient -> LeadingCoefficient -> T.Text
-showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
-    | f actual == f expected = "="
-    | otherwise = f (actual - expected)
-    where
-        f = T.pack . printf "%+.3f"

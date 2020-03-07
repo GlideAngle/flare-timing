@@ -2,8 +2,12 @@ module WireTypes.Lead
     ( LeadingArea(..)
     , LeadingCoefficient(..)
     , TrackLead(..)
+    , showArea, showAreaDiff
+    , showCoef, showCoefDiff
     ) where
 
+import Text.Printf (printf)
+import qualified Data.Text as T (Text, pack)
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..), Value(..))
@@ -36,3 +40,23 @@ data TrackLead =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
+
+showArea :: LeadingArea -> T.Text
+showArea (LeadingArea a) = T.pack $ printf "%.0f" a
+
+showAreaDiff :: LeadingArea -> LeadingArea -> T.Text
+showAreaDiff (LeadingArea expected) (LeadingArea actual)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.0f"
+
+showCoef :: LeadingCoefficient -> T.Text
+showCoef (LeadingCoefficient lc) = T.pack $ printf "%.3f" lc
+
+showCoefDiff :: LeadingCoefficient -> LeadingCoefficient -> T.Text
+showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.3f"
