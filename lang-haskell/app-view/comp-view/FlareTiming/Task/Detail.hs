@@ -52,6 +52,7 @@ import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
 import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
 import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
+import FlareTiming.Nav.TabPlotLead (PlotLeadTab(..), tabsPlotLead)
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Score.Over (tableScoreOver)
 import FlareTiming.Task.Score.Penal (tableScorePenal)
@@ -308,7 +309,18 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                 PlotTabReach -> reachPlot task sEx reach bonusReach
                                 PlotTabEffort -> effortPlot hgOrPg sEx ef
                                 PlotTabTime -> timePlot sgs sEx sd
-                                PlotTabLead -> leadPlot tweak sEx ld
+
+                                PlotTabLead -> do
+                                    tabPlotLead <- tabsPlotLead
+                                    let plotLead = leadPlot tweak sEx ld
+                                    _ <- widgetHold (plotLead) $
+                                            (\case
+                                                PlotLeadTabPoint -> plotLead
+                                                PlotLeadTabArea -> plotLead
+                                            )
+                                            <$> tabPlotLead
+                                    return ()
+
                                 PlotTabArrive -> arrivalPlot hgOrPg tweak av avN
                                 PlotTabValid -> validPlot vy vw
                             )
