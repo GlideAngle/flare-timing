@@ -5,7 +5,6 @@ import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
-import WireTypes.Fraction (Fractions(..), showLeadingFrac, showLeadingFracDiff)
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead
     (TrackLead(..), LeadingArea(..), LeadingCoefficient(..))
@@ -36,7 +35,6 @@ tablePilotSimple xs = do
                 el "tr" $ do
                     el "th" $ text "Area"
                     el "th" $ text "Coef"
-                    el "th" $ text "Frac"
                     el "th" $ text "###-Pilot"
 
                     return ()
@@ -55,7 +53,6 @@ rowLeadSimple pilot av = do
     el "tr" $ do
         el "td" . dynText $ showArea . area <$> av
         el "td" . dynText $ showCoef . coef <$> av
-        el "td" . dynText $ showLeadingFrac . frac <$> av
         el "td" . dynText $ showPilot <$> pilot
 
         return ()
@@ -73,13 +70,8 @@ tablePilotCompare _ sEx xs = do
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
                         $ text "Area"
                     elAttr "th" ("colspan" =: "3") $ text "Coefficient"
-                    elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-frac"))
-                        $ text "Fraction"
                     el "th" $ text "###-Pilot"
                 el "tr" $ do
-                    el "th" $ text ""
-                    elClass "th" "th-norm" $ text "✓"
-                    elClass "th" "th-norm" $ text "Δ"
                     el "th" $ text ""
                     elClass "th" "th-norm" $ text "✓"
                     elClass "th" "th-norm" $ text "Δ"
@@ -106,26 +98,22 @@ rowLeadCompare
     -> Dynamic t TrackLead
     -> m ()
 rowLeadCompare mapN p tl = do
-    (yArea, yAreaDiff, yCoef, yCoefDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p tl (\pilot TrackLead{area, coef, frac} ->
+    (yArea, yAreaDiff, yCoef, yCoefDiff) <- sample . current
+                $ ffor2 p tl (\pilot TrackLead{area, coef} ->
                     case Map.lookup pilot mapN of
                         Just
                             Norm.NormBreakdown
                                 { leadingArea = area'
                                 , leadingCoef = coef'
-                                , fractions = Fractions{leading = frac'}
                                 } ->
                             ( showArea area'
                             , showAreaDiff area' area
 
                             , showCoef coef'
                             , showCoefDiff coef' coef
-
-                            , showLeadingFrac frac'
-                            , showLeadingFracDiff frac' frac
                             )
 
-                        _ -> ("", "", "", "", "", ""))
+                        _ -> ("", "", "", ""))
 
     el "tr" $ do
         elClass "td" "td-lead-area" . dynText $ showArea . area <$> tl
@@ -134,9 +122,6 @@ rowLeadCompare mapN p tl = do
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
         elClass "td" "td-norm td-norm" . text $ yCoef
         elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
-        elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> tl
-        elClass "td" "td-norm" . text $ yFrac
-        elClass "td" "td-norm" . text $ yFracDiff
         el "td" . dynText $ showPilot <$> p
 
         return ()
@@ -144,15 +129,15 @@ rowLeadCompare mapN p tl = do
 showArea :: LeadingArea -> T.Text
 showArea (LeadingArea a) = T.pack $ printf "%.0f" a
 
-showCoef :: LeadingCoefficient -> T.Text
-showCoef (LeadingCoefficient lc) = T.pack $ printf "%.3f" lc
-
 showAreaDiff :: LeadingArea -> LeadingArea -> T.Text
 showAreaDiff (LeadingArea expected) (LeadingArea actual)
     | f actual == f expected = "="
     | otherwise = f (actual - expected)
     where
         f = T.pack . printf "%+.0f"
+
+showCoef :: LeadingCoefficient -> T.Text
+showCoef (LeadingCoefficient lc) = T.pack $ printf "%.3f" lc
 
 showCoefDiff :: LeadingCoefficient -> LeadingCoefficient -> T.Text
 showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
