@@ -84,18 +84,20 @@ tablePilotCompare _ sEx xs = do
 
                     return ()
 
-            _ <- dyn $ ffor sEx (\sEx' -> mdo
+            ev <- dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
 
-                    ePilots <- el "tbody" $
+                    ePilots :: Dynamic _ [Event _ Pilot] <- el "tbody" $
                             simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure)
-                    let ePilot = switchDyn $ leftmost <$> ePilots
-                    _ <- widgetHold (el "span" $ text "EMPTY") $
-                            (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
+                    let ePilot' :: Event _ Pilot = switchDyn $ leftmost <$> ePilots
+                    return ePilot')
 
-                    return ())
+            ePilot <- switchHold never ev
 
-            return ()
+            _ <- widgetHold (el "span" $ text "EMPTY") $
+                    (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
+
+            return ePilot
     return ()
 
 rowLeadCompare
