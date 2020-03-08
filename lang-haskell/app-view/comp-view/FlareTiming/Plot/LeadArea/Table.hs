@@ -22,8 +22,15 @@ tablePilotArea
     -> m ()
 tablePilotArea tweak sEx xs = do
     _ <- dyn $ ffor tweak (\case
-        Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> tablePilotSimple xs
-        _ -> tablePilotCompare tweak sEx xs)
+        Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> do
+            tablePilotSimple xs
+            return ()
+        _ -> mdo
+            _ <- widgetHold (el "span" $ text "EMPTY") $
+                    (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
+
+            ePilot <- tablePilotCompare tweak sEx xs
+            return ())
 
     return ()
 
@@ -64,9 +71,9 @@ tablePilotCompare
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
-    -> m ()
+    -> m (Event t Pilot)
 tablePilotCompare _ sEx xs = do
-    _ <- elClass "table" "table is-striped" $ do
+    ev <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
@@ -91,14 +98,10 @@ tablePilotCompare _ sEx xs = do
                             simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure)
                     let ePilot' :: Event _ Pilot = switchDyn $ leftmost <$> ePilots
                     return ePilot')
+            return ev
 
-            ePilot <- switchHold never ev
-
-            _ <- widgetHold (el "span" $ text "EMPTY") $
-                    (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
-
-            return ePilot
-    return ()
+    ePilot <- switchHold never ev
+    return ePilot
 
 rowLeadCompare
     :: MonadWidget t m
