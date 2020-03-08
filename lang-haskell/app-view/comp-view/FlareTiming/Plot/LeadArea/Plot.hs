@@ -13,12 +13,12 @@ import FlareTiming.Plot.Foreign (Plot(..))
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-lead'\
-    \, title: 'Lead Point Distribution'\
+    \, title: 'Area'\
     \, width: 480\
     \, height: 640\
     \, disableZoom: true\
-    \, xAxis: {label: 'Leading Coefficient', domain: [$2, $3]}\
-    \, yAxis: {domain: [-0.1, 1.01]}\
+    \, xAxis: {label: 'Distance in Speed Section [km]', domain: [$2, $3]}\
+    \, yAxis: {label: 'Time in Speed Section [s]', domain: [-0.1, 1.01]}\
     \, data: [{\
     \    points: $4\
     \  , fnType: 'points'\

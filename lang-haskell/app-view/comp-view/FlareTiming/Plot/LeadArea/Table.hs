@@ -2,7 +2,6 @@ module FlareTiming.Plot.LeadArea.Table (tablePilotArea) where
 
 import Reflex.Dom
 import qualified Data.Map.Strict as Map
-import qualified Data.Text as T (unpack)
 
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead
@@ -93,9 +92,9 @@ tablePilotCompare _ sEx xs = do
             ev <- dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
 
-                    ePilots :: Dynamic _ [Event _ Pilot] <- el "tbody" $
+                    ePilots <- el "tbody" $
                             simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure)
-                    let ePilot' :: Event _ Pilot = switchDyn $ leftmost <$> ePilots
+                    let ePilot' = switchDyn $ leftmost <$> ePilots
                     return ePilot')
             return ev
 

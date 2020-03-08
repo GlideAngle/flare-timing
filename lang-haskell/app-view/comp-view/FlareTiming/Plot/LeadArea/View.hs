@@ -59,7 +59,7 @@ leadAreaPlot tweak sEx ld = do
 
                         ld' <- sample . current $ ld
 
-                        _ <- widgetHold (el "span" $ text "EMPTY") $
+                        _ <- widgetHold (el "span" $ text "Select a pilot from the table") $
                                 (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
 
                     return ()
