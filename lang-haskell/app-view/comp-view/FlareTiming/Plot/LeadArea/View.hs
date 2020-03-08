@@ -10,6 +10,7 @@ import WireTypes.Comp (Tweak(..))
 import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
+import FlareTiming.Pilot (showPilot)
 import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
 
 placings :: [TrackLead] -> [[Double]]
@@ -34,7 +35,7 @@ leadAreaPlot
 leadAreaPlot tweak sEx ld = do
     pb <- delay 1 =<< getPostBuild
 
-    elClass "div" "tile is-ancestor" $ do
+    elClass "div" "tile is-ancestor" $ mdo
         elClass "div" "tile is-5" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
@@ -58,8 +59,13 @@ leadAreaPlot tweak sEx ld = do
 
                         ld' <- sample . current $ ld
 
+                        _ <- widgetHold (el "span" $ text "EMPTY") $
+                                (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
+
                     return ()
 
-        elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld
+        ePilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld
+        return ()
+
 
     return ()

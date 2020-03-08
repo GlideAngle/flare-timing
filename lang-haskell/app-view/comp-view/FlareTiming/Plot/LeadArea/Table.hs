@@ -19,20 +19,19 @@ tablePilotArea
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
-    -> m ()
+    -> m (Event t Pilot)
 tablePilotArea tweak sEx xs = do
-    _ <- dyn $ ffor tweak (\case
+    ev <- dyn $ ffor tweak (\case
         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> do
             tablePilotSimple xs
-            return ()
-        _ -> mdo
-            _ <- widgetHold (el "span" $ text "EMPTY") $
-                    (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
+            return never
 
+        _ -> do
             ePilot <- tablePilotCompare tweak sEx xs
-            return ())
+            return ePilot)
 
-    return ()
+    ePilot <- switchHold never ev
+    return ePilot
 
 tablePilotSimple
     :: MonadWidget t m
@@ -139,5 +138,5 @@ rowLeadCompare mapN p tl = do
 
         return ()
 
-    let ePilot = traceEventWith (T.unpack . showPilot) $ const pilot <$> domEvent Click eRow
+    let ePilot = const pilot <$> domEvent Click eRow
     return ePilot
