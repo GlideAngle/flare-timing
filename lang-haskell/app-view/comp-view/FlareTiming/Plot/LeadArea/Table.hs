@@ -2,6 +2,7 @@ module FlareTiming.Plot.LeadArea.Table (tablePilotArea) where
 
 import Reflex.Dom
 import qualified Data.Map.Strict as Map
+import qualified Data.Text as T (unpack)
 
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead
@@ -83,11 +84,16 @@ tablePilotCompare _ sEx xs = do
 
                     return ()
 
-            _ <- dyn $ ffor sEx (\sEx' -> do
+            _ <- dyn $ ffor sEx (\sEx' -> mdo
                     let mapN = Map.fromList sEx'
 
-                    el "tbody" $
-                        simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure))
+                    ePilots <- el "tbody" $
+                            simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure)
+                    let ePilot = switchDyn $ leftmost <$> ePilots
+                    _ <- widgetHold (el "span" $ text "EMPTY") $
+                            (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
+
+                    return ())
 
             return ()
     return ()
@@ -97,9 +103,9 @@ rowLeadCompare
     => Map.Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
-    -> m ()
+    -> m (Event t Pilot)
 rowLeadCompare mapN p tl = do
-    (yArea, yAreaDiff, yCoef, yCoefDiff) <- sample . current
+    (pilot, yArea, yAreaDiff, yCoef, yCoefDiff) <- sample . current
                 $ ffor2 p tl (\pilot TrackLead{area, coef} ->
                     case Map.lookup pilot mapN of
                         Just
@@ -107,16 +113,17 @@ rowLeadCompare mapN p tl = do
                                 { leadingArea = area'
                                 , leadingCoef = coef'
                                 } ->
-                            ( showArea area'
+                            ( pilot
+                            , showArea area'
                             , showAreaDiff area' area
 
                             , showCoef coef'
                             , showCoefDiff coef' coef
                             )
 
-                        _ -> ("", "", "", ""))
+                        _ -> (pilot, "", "", "", ""))
 
-    el "tr" $ do
+    (eRow, _) <- el' "tr" $ do
         elClass "td" "td-lead-area" . dynText $ showArea . area <$> tl
         elClass "td" "td-norm td-norm" . text $ yArea
         elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
@@ -126,3 +133,6 @@ rowLeadCompare mapN p tl = do
         el "td" . dynText $ showPilot <$> p
 
         return ()
+
+    let ePilot = traceEventWith (T.unpack . showPilot) $ const pilot <$> domEvent Click eRow
+    return ePilot
