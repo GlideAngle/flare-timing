@@ -46,6 +46,7 @@ import Flight.Gap.Fraction (Fractions(..))
 import Flight.EastNorth
 import qualified Flight.Kml as Kml
 import ServeTrack (RawLatLngTrack(..), BolsterStats(..))
+import ServeArea (RawLeadingArea(..))
 
 type SwagUiApi = SwaggerSchemaUI "swagger-ui" "swagger.json"
 
@@ -618,6 +619,13 @@ instance ToSchema ArrivalPlacing
 instance ToSchema TrackLead
 instance ToSchema TrackSpeed
 instance ToSchema TrackEffort
+instance ToSchema TickRow
+instance ToSchema FixIdx
+instance ToSchema ZoneIdx
+instance ToSchema LegIdx
+instance ToSchema LeadTick
+instance ToSchema RaceTick
 
 instance ToSchema RawLatLngTrack
+instance ToSchema RawLeadingArea
 instance ToSchema BolsterStats

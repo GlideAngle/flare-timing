@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b484ad7a70470385ed9148bf095a4ebc1d03e7b279d43c874efb3382e5bcffcc
+-- hash: fd4f413c522102b849680fb4ab486089e2958100693f71973e9755b5057f3f06
 
 name:           app-serve
 version:        0.1.0
@@ -33,6 +33,7 @@ source-repository head
 executable comp-serve
   main-is: ServeMain.hs
   other-modules:
+      ServeArea
       ServeOptions
       ServeSwagger
       ServeTrack

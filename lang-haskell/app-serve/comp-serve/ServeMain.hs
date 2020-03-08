@@ -28,7 +28,7 @@ import System.IO (hPutStrLn, stderr)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Lens hiding (ix)
 import Control.Monad (join)
-import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
 import Control.Monad.Except (ExceptT(..), MonadError)
 import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
@@ -80,6 +80,7 @@ import Flight.Scribe
     , readMaskingSpeed
     , readBonusReach
     , readLanding, readPointing
+    , readPilotDiscardFurther
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -146,6 +147,7 @@ import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (QTaskDistance)
 import qualified ServeOptions as Opt (description)
 import ServeTrack (RawLatLngTrack(..), BolsterStats(..), tagToTrack)
+import ServeArea (RawLeadingArea(..))
 import ServeValidity (nullValidityWorking)
 import ServeSwagger (SwagUiApi)
 
@@ -319,6 +321,9 @@ type GapPointApi k =
 
     :<|> "pilot-track" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] RawLatLngTrack
+
+    :<|> "discard-further" :> (Capture "task" Int) :> (Capture "pilot" String)
+        :> Get '[JSON] RawLeadingArea
 
     :<|> "cross-zone" :> "track-flying-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackFlyingSection
@@ -652,6 +657,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotNyp
         :<|> getTaskPilotDf
         :<|> getTaskPilotTrack
+        :<|> getTaskPilotArea
         :<|> getTaskPilotTrackFlyingSection
         :<|> getTaskPilotTrackScoredSection
         :<|> getTaskFlyingSectionTimes
@@ -1074,6 +1080,26 @@ getTaskPilotTrack ii pilotId = do
                         Right (_, mf) -> return $ RawLatLngTrack mf
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
+
+getTaskPilotArea :: Int -> String -> AppT k IO RawLeadingArea
+getTaskPilotArea ii pilotId = do
+    let ix = IxTask ii
+    let pilot = PilotId pilotId
+    cf <- asks compFile
+    ps <- getPilots <$> asks compSettings
+    let p = find (\(Pilot (pid, _)) -> pid == pilot) ps
+
+    case p of
+        Nothing -> throwError $ errPilotNotFound pilot
+        Just p' -> do
+            xs <-
+                liftIO $ catchIO
+                    (Just <$> readPilotDiscardFurther cf ix p')
+                    (const $ return Nothing)
+
+            case xs of
+                Nothing -> throwError $ errPilotTrackNotFound ix pilot
+                Just xs' -> return $ RawLeadingArea xs'
 
 getTaskPilotTrackFlyingSection :: Int -> String -> AppT k IO TrackFlyingSection
 getTaskPilotTrackFlyingSection ii pilotId = do
