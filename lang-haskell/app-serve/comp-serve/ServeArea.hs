@@ -17,4 +17,4 @@ mkRaw :: TickRow -> Maybe [Double]
 mkRaw TickRow{tickLead, togo}
     | tickLead == Nothing = Nothing
     | tickLead < Just 0 = Nothing
-    | otherwise = (\(LeadTick t) -> [t, togo]) <$> tickLead
+    | otherwise = (\(LeadTick t) -> [togo, t]) <$> tickLead
