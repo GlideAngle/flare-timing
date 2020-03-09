@@ -31,11 +31,13 @@ import Flight.Units ()
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Mask.Cmp (cmp)
 
--- | For each task, the masking for effort for that task.
+-- | For each task, the masking for leading for that task.
 data MaskingLead =
     MaskingLead
         { raceTime :: [Maybe RaceTime]
         -- ^ For each task, the time of the last pilot crossing goal.
+        , raceDistance :: [Maybe (QTaskDistance Double [u| m |])]
+        -- ^ For each task, the distance of the speed section.
         , sumDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the sum of all distance flown over minimum distance.
         , leadAreaToCoef :: [Maybe (AreaToCoef (Quantity Rational [u| 1/((km^2)*s)|]))]

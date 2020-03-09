@@ -72,6 +72,7 @@ maskLead
     (dsBest, rowTicks,) $
     MaskingLead
         { raceTime = raceTime
+        , raceDistance = lsSpeedSubset
         , sumDistance = dsSum
         , leadAreaToCoef = lcAreaToCoef
         , leadCoefMin = lcMin

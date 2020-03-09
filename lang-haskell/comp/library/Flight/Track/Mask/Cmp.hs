@@ -49,6 +49,9 @@ cmp a b =
         ("raceTime", "pilotsAtEss") -> GT
         ("raceTime", _) -> LT
 
+        ("raceDistance", "raceTime") -> GT
+        ("raceDistance", _) -> LT
+
         ("best", _) -> LT
         ("last", _) -> GT
 
@@ -92,6 +95,7 @@ cmp a b =
 
         ("sumDistance", "pilotsAtEss") -> GT
         ("sumDistance", "raceTime") -> GT
+        ("sumDistance", "raceDistance") -> GT
         ("sumDistance", "ssBestTime") -> GT
         ("sumDistance", "gsBestTime") -> GT
         ("sumDistance", "taskDistance") -> GT
@@ -102,6 +106,7 @@ cmp a b =
 
         ("leadAreaToCoef", "pilotsAtEss") -> GT
         ("leadAreaToCoef", "raceTime") -> GT
+        ("leadAreaToCoef", "raceDistance") -> GT
         ("leadAreaToCoef", "ssBestTime") -> GT
         ("leadAreaToCoef", "gsBestTime") -> GT
         ("leadAreaToCoef", "taskDistance") -> GT
@@ -113,6 +118,7 @@ cmp a b =
 
         ("leadCoefMin", "pilotsAtEss") -> GT
         ("leadCoefMin", "raceTime") -> GT
+        ("leadCoefMin", "raceDistance") -> GT
         ("leadCoefMin", "ssBestTime") -> GT
         ("leadCoefMin", "gsBestTime") -> GT
         ("leadCoefMin", "taskDistance") -> GT
@@ -125,6 +131,7 @@ cmp a b =
 
         ("leadRank", "pilotsAtEss") -> GT
         ("leadRank", "raceTime") -> GT
+        ("leadRank", "raceDistance") -> GT
         ("leadRank", "ssBestTime") -> GT
         ("leadRank", "gsBestTime") -> GT
         ("leadRank", "taskDistance") -> GT
@@ -137,6 +144,7 @@ cmp a b =
 
         ("arrivalRank", "pilotsAtEss") -> GT
         ("arrivalRank", "raceTime") -> GT
+        ("arrivalRank", "raceDistance") -> GT
         ("arrivalRank", "ssBestTime") -> GT
         ("arrivalRank", "gsBestTime") -> GT
         ("arrivalRank", "taskDistance") -> GT
@@ -150,6 +158,7 @@ cmp a b =
 
         ("flowMean", "pilotsAtEss") -> GT
         ("flowMean", "raceTime") -> GT
+        ("flowMean", "raceDistance") -> GT
         ("flowMean", "ssBestTime") -> GT
         ("flowMean", "gsBestTime") -> GT
         ("flowMean", "taskDistance") -> GT
@@ -164,6 +173,7 @@ cmp a b =
 
         ("bolsterStdDev", "pilotsAtEss") -> GT
         ("bolsterStdDev", "raceTime") -> GT
+        ("bolsterStdDev", "raceDistance") -> GT
         ("bolsterStdDev", "ssBestTime") -> GT
         ("bolsterStdDev", "gsBestTime") -> GT
         ("bolsterStdDev", "taskDistance") -> GT
@@ -179,6 +189,7 @@ cmp a b =
 
         ("reachMean", "pilotsAtEss") -> GT
         ("reachMean", "raceTime") -> GT
+        ("reachMean", "raceDistance") -> GT
         ("reachMean", "ssBestTime") -> GT
         ("reachMean", "gsBestTime") -> GT
         ("reachMean", "taskDistance") -> GT
@@ -195,6 +206,7 @@ cmp a b =
 
         ("reachStdDev", "pilotsAtEss") -> GT
         ("reachStdDev", "raceTime") -> GT
+        ("reachStdDev", "raceDistance") -> GT
         ("reachStdDev", "ssBestTime") -> GT
         ("reachStdDev", "gsBestTime") -> GT
         ("reachStdDev", "taskDistance") -> GT
@@ -212,6 +224,7 @@ cmp a b =
 
         ("reachRank", "pilotsAtEss") -> GT
         ("reachRank", "raceTime") -> GT
+        ("reachRank", "raceDistance") -> GT
         ("reachRank", "ssBestTime") -> GT
         ("reachRank", "gsBestTime") -> GT
         ("reachRank", "taskDistance") -> GT
@@ -230,6 +243,7 @@ cmp a b =
 
         ("ssSpeed", "pilotsAtEss") -> GT
         ("ssSpeed", "raceTime") -> GT
+        ("ssSpeed", "raceDistance") -> GT
         ("ssSpeed", "ssBestTime") -> GT
         ("ssSpeed", "gsBestTime") -> GT
         ("ssSpeed", "taskDistance") -> GT
@@ -250,6 +264,7 @@ cmp a b =
 
         ("gsSpeed", "pilotsAtEss") -> GT
         ("gsSpeed", "raceTime") -> GT
+        ("gsSpeed", "raceDistance") -> GT
         ("gsSpeed", "ssBestTime") -> GT
         ("gsSpeed", "gsBestTime") -> GT
         ("gsSpeed", "taskDistance") -> GT
@@ -271,6 +286,7 @@ cmp a b =
 
         ("nigh", "pilotsAtEss") -> GT
         ("nigh", "raceTime") -> GT
+        ("nigh", "raceDistance") -> GT
         ("nigh", "ssBestTime") -> GT
         ("nigh", "gsBestTime") -> GT
         ("nigh", "taskDistance") -> GT
