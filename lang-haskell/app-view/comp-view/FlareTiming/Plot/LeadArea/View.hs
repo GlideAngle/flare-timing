@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.LeadArea.View (leadAreaPlot) where
 
 import Reflex.Dom
@@ -6,7 +8,7 @@ import qualified FlareTiming.Plot.LeadArea.Plot as P (leadAreaPlot)
 
 import WireTypes.Comp (Tweak(..))
 import WireTypes.Route (TaskDistance(..))
-import WireTypes.Lead (TrackLead(..), RawLeadingArea(..), EssTime(..))
+import WireTypes.Lead (TrackLead(..), RawLeadingArea(..), EssTime(..), nullArea)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot)
 import FlareTiming.Pilot (showPilot)
@@ -24,6 +26,18 @@ xyRange xys =
         xs = concat $ (take 1) <$> xys
         ys = concat $ (take 1 . drop 1) <$> xys
 
+seriesRangeOrDefault :: [RawLeadingArea] -> ((Double, Double), (Double, Double))
+seriesRangeOrDefault [] = ((0, 1), (0, 1))
+seriesRangeOrDefault xs = maximum $ seriesRange <$> xs
+
+seriesRange :: RawLeadingArea -> ((Double, Double), (Double, Double))
+seriesRange RawLeadingArea{leadAllDown, raceDistance, distanceTime = xs} =
+    (xR', yR')
+    where
+        (xR, yR) = xyRange xs
+        xR' = maybe xR (\(TaskDistance rd) -> (0, rd)) raceDistance
+        yR' = maybe yR (\(EssTime down) -> (0, down)) leadAllDown
+
 leadAreaPlot
     :: MonadWidget t m
     => IxTask
@@ -39,11 +53,8 @@ leadAreaPlot ix tweak sEx ld = do
                 elClass "div" "tile is-child" $ do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 480px")) $ return ()
                     performEvent_ $ leftmost
-                            [ ffor area (\RawLeadingArea{leadAllDown, raceDistance, distanceTime = xs} -> liftIO $ do
-                                let (xR, yR) = xyRange xs
-                                let xR' = maybe xR (\(TaskDistance rd) -> (0, rd)) raceDistance
-                                let yR' = maybe yR (\(EssTime down) -> (0, down)) leadAllDown
-                                _ <- P.leadAreaPlot (_element_raw elPlot) (xR', yR') xs
+                            [ ffor eAreas (\as -> liftIO $ do
+                                _ <- P.leadAreaPlot (_element_raw elPlot) (seriesRangeOrDefault as) (distanceTime <$> as)
                                 return ())
                             ]
 
@@ -97,10 +108,9 @@ leadAreaPlot ix tweak sEx ld = do
                                         return ()
                     return ()
 
-        ePilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld
-        area <- getTaskPilotArea ix ePilot
-        let pilots = take 5 $ repeat nullPilot
-        ePilots <- updated <$> foldDyn (\p ps -> take 5 $ p : ps) pilots ePilot
+        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld
+        let pilots :: [Pilot] = take 5 $ repeat nullPilot
+        ePilots :: Event _ [Pilot] <- updated <$> foldDyn (\p ps -> take 5 $ p : ps) pilots ePilot
 
         ePilot1 <-
             updated
@@ -151,6 +161,10 @@ leadAreaPlot ix tweak sEx ld = do
                             _ -> np)
                     nullPilot
                     ePilots
+
+        area :: Event _ RawLeadingArea <- getTaskPilotArea ix ePilot
+        let areas :: [RawLeadingArea] = take 5 $ repeat nullArea
+        eAreas :: Event _ [RawLeadingArea] <- updated <$> foldDyn (\a as -> take 5 $ a : as) areas area
 
         return ()
 

@@ -6,6 +6,7 @@ module WireTypes.Lead
     , EssTime(..)
     , showArea, showAreaDiff
     , showCoef, showCoefDiff
+    , nullArea
     ) where
 
 import Text.Printf (printf)
@@ -68,6 +69,14 @@ showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
     | otherwise = f (actual - expected)
     where
         f = T.pack . printf "%+.3f"
+
+nullArea :: RawLeadingArea
+nullArea =
+    RawLeadingArea
+        { leadAllDown = Nothing
+        , raceDistance = Nothing
+        , distanceTime = []
+        }
 
 data RawLeadingArea =
     RawLeadingArea
