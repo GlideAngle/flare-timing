@@ -18,24 +18,12 @@ foreign import javascript unsafe
     \, height: 640\
     \, disableZoom: true\
     \, xAxis: {label: 'Distance in Speed Section [km]', domain: [$2, $3]}\
-    \, yAxis: {label: 'Time in Speed Section [s]', domain: [-0.1, 1.01]}\
+    \, yAxis: {label: 'Time in Speed Section [s]', domain: [$4, $5]}\
     \, data: [{\
-    \    points: $4\
-    \  , fnType: 'points'\
-    \  , color: '#e41a1c'\
-    \  , graphType: 'polyline'\
-    \  },{\
     \    points: $6\
     \  , fnType: 'points'\
     \  , color: '#e41a1c'\
-    \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
-    \  },{\
-    \    points: $5\
-    \  , fnType: 'points'\
-    \  , color: '#e41a1c'\
-    \  , attr: { r: 3 }\
-    \  , graphType: 'scatter'\
     \  }]\
     \})"
     plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
@@ -43,38 +31,18 @@ foreign import javascript unsafe
 leadAreaPlot
     :: IsElement e
     => e
-    -> (Double, Double)
+    -> ((Double, Double), (Double, Double))
     -> [[Double]]
     -> IO Plot
-leadAreaPlot e (lcMin, lcMax) xs = do
-    let xyfn :: [[Double]] =
-            [ [x', fnGAP lcMin x']
-            | x <- [0 :: Integer .. 199]
-            , let step = abs $ (lcMax - lcMin) / 200
-            , let x' = lcMin + step * fromIntegral x
-            ]
+leadAreaPlot e ((xMin, xMax), (yMin, yMax)) xs = do
+    let xPad = (\case 0 -> 1.0; x -> x) . abs $ (xMax - xMin) / 40
+    xMin' <- toJSVal $ xMin - xPad
+    xMax' <- toJSVal $ xMax + xPad
 
-    let xyfnFS :: [[Double]] =
-            [ [x', fnFS lcMin x']
-            | x <- [0 :: Integer .. 199]
-            , let step = abs $ (lcMax - lcMin) / 200
-            , let x' = lcMin + step * fromIntegral x
-            ]
-    let pad = (\case 0 -> 1.0; x -> x) . abs $ (lcMax - lcMin) / 40
-    lcMin' <- toJSVal $ lcMin - pad
-    lcMax' <- toJSVal $ lcMax + pad
-    xyfn' <- toJSValListOf xyfn
-    xyfnFS' <- toJSValListOf xyfnFS
+    let yPad = (\case 0 -> 1.0; x -> x) . abs $ (yMax - yMin) / 40
+    yMin' <- toJSVal $ yMin - yPad
+    yMax' <- toJSVal $ yMax + yPad
+
     xs' <- toJSValListOf $ nub xs
 
-    Plot <$> plot_ (unElement . toElement $ e) lcMin' lcMax' xyfn' xs' xyfnFS'
-
--- | The equation from the GAP rules.
-fnGAP :: Double -> Double -> Double
-fnGAP lcMin lc =
-    max 0.0 $ 1.0 - ((lc - lcMin)**2/lcMin**(1.0/2.0))**(1.0/3.0)
-
--- | The equation from the FS implementation.
-fnFS :: Double -> Double -> Double
-fnFS lcMin lc =
-    max 0.0 $ 1.0 - ((lc - lcMin)/lcMin**(1.0/2.0))**(2.0/3.0)
+    Plot <$> plot_ (unElement . toElement $ e) xMin' xMax' yMin' yMax' xs'

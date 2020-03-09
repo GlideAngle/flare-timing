@@ -1,53 +1,49 @@
 module FlareTiming.Plot.LeadArea.View (leadAreaPlot) where
 
 import Reflex.Dom
-import Reflex.Time (delay)
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.LeadArea.Plot as P (leadAreaPlot)
 
-import WireTypes.Fraction (LeadingFraction(..))
 import WireTypes.Comp (Tweak(..))
-import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
+import WireTypes.Lead (TrackLead(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilot)
 import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
+import FlareTiming.Comms (getTaskPilotArea)
+import FlareTiming.Events (IxTask(..))
 
-placings :: [TrackLead] -> [[Double]]
-placings = fmap xy
-
-xy :: TrackLead -> [Double]
-xy TrackLead{coef = LeadingCoefficient x, frac = LeadingFraction y} =
-    [x, y]
-
-lcRange :: [TrackLead] -> (Double, Double)
-lcRange xs =
-    (minimum ys, maximum ys)
+xyRange :: [[Double]] -> ((Double, Double), (Double, Double))
+xyRange xys =
+    case (null xs, null ys) of
+        (True, _) -> ((0, 1), (0, 1))
+        (_, True) -> ((0, 1), (0, 1))
+        (False, False) -> ((minimum xs, maximum xs), (minimum ys, maximum ys))
     where
-        ys = (\TrackLead{coef = LeadingCoefficient x} -> x) <$> xs
+        xs = concat $ (take 1) <$> xys
+        ys = concat $ (take 1 . drop 1) <$> xys
 
 leadAreaPlot
     :: MonadWidget t m
-    => Dynamic t (Maybe Tweak)
+    => IxTask
+    -> Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-leadAreaPlot tweak sEx ld = do
-    pb <- delay 1 =<< getPostBuild
+leadAreaPlot ix tweak sEx ld = do
 
     elClass "div" "tile is-ancestor" $ mdo
         elClass "div" "tile is-5" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 480px")) $ return ()
-                    rec performEvent_ $ leftmost
-                            [ ffor pb (\_ -> liftIO $ do
-                                let xs = snd . unzip $ ld'
-                                _ <- P.leadAreaPlot (_element_raw elPlot) (lcRange xs) (placings xs)
+                    performEvent_ $ leftmost
+                            [ ffor area (\xs -> liftIO $ do
+                                _ <- P.leadAreaPlot (_element_raw elPlot) (xyRange xs) xs
                                 return ())
                             ]
 
-                        elClass "div" "level" $
+                    elClass "div" "level" $
                             elClass "div" "level-item" $
                                 el "ul" $ do
                                     el "li" $ do
@@ -57,14 +53,14 @@ leadAreaPlot tweak sEx ld = do
                                         elClass "span" "legend-leading" $ text "- -"
                                         text " FS equation"
 
-                        ld' <- sample . current $ ld
-
-                        _ <- widgetHold (el "span" $ text "Select a pilot from the table") $
-                                (\pp -> el "span" $ text (showPilot pp)) <$> ePilot
+                    _ <- widgetHold (el "span" $ text "Select a pilot from the table") $
+                                (\pp -> el "span" $ text (showPilot pp))<$> ePilot
 
                     return ()
 
         ePilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld
+        area <- getTaskPilotArea ix ePilot
+
         return ()
 
 
