@@ -117,8 +117,7 @@ leadAreaPlot ix tweak sEx ld = do
 
         let pilotAreas :: [(Pilot, RawLeadingArea)] = take 5 $ repeat (nullPilot, nullArea)
         dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilotAreas (updated pilotArea')
-        dPilotAreas' :: Dynamic _ [(Pilot, RawLeadingArea)] <- holdUniqDyn dPilotAreas
-        let ePilotAreas :: Event _ [(Pilot, RawLeadingArea)] = updated dPilotAreas'
+        let ePilotAreas :: Event _ [(Pilot, RawLeadingArea)] = updated dPilotAreas
         let ePilots :: Event _ [Pilot] = ffor ePilotAreas (fmap fst)
         let eAreas :: Event _ [RawLeadingArea] = ffor ePilotAreas (fmap snd)
 
