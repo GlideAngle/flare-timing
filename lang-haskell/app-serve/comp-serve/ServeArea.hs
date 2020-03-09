@@ -2,24 +2,30 @@ module ServeArea (RawLeadingArea(..)) where
 
 import GHC.Generics (Generic)
 import Data.Maybe (catMaybes)
+import Control.Monad (join)
 import Data.Aeson (ToJSON(..), (.=), object)
 import Data.UnitsOfMeasure ((-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.Track.Time (TickRow(..), LeadTick(..))
+import Flight.Score (EssTime(..))
+import Flight.Track.Mask (RaceTime(..))
 
 data RawLeadingArea =
     RawLeadingArea
-        { raceDistance :: Maybe (QTaskDistance Double [u| m |])
+        { raceTime :: Maybe RaceTime
+        , raceDistance :: Maybe (QTaskDistance Double [u| m |])
         -- ^ The distance of the speed section.
         , ticks :: [TickRow]
         }
     deriving (Eq, Ord, Generic)
 
 instance ToJSON RawLeadingArea where
-    toJSON RawLeadingArea{raceDistance = d, ticks = xs} = object
+    toJSON RawLeadingArea{raceTime = t, raceDistance = d, ticks = xs} = object
         [ "race-distance" .= toJSON d
+        , "lead-all-down" .= toJSON (join $ leadAllDown <$> t)
+        -- When the last pilot lands, seconds from the time of first lead.
         , "distance-time" .= toJSON (catMaybes $ mkDistanceTime d <$> xs)
         ]
 

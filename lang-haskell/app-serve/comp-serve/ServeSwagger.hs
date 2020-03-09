@@ -20,6 +20,7 @@ import Data.UnitsOfMeasure.Show (showUnit)
 
 import Data.Via.Scientific (DecimalPlaces(..))
 import Flight.Clip (FlyingSection)
+import Flight.Track.Mask
 import Flight.Zone.ZoneKind
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Zone.TaskZones (TaskZones(..))
@@ -625,6 +626,11 @@ instance ToSchema ZoneIdx
 instance ToSchema LegIdx
 instance ToSchema LeadTick
 instance ToSchema RaceTick
+instance ToSchema EssTime
+instance ToSchema RaceTime
+instance ToSchema FirstLead
+instance ToSchema FirstStart
+instance ToSchema LastArrival
 
 instance ToSchema RawLatLngTrack
 instance ToSchema RawLeadingArea

@@ -35,7 +35,7 @@ import Flight.Track.Mask.Cmp (cmp)
 data MaskingLead =
     MaskingLead
         { raceTime :: [Maybe RaceTime]
-        -- ^ For each task, the time of the last pilot crossing goal.
+        -- ^ For each task, the race times.
         , raceDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the distance of the speed section.
         , sumDistance :: [Maybe (QTaskDistance Double [u| m |])]

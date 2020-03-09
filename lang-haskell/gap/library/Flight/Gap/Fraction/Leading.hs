@@ -24,7 +24,7 @@ deriveCsvViaSci ''LeadingFraction
 
 -- | Task time when the last pilot made the end of the speed section.
 newtype EssTime = EssTime Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance Newtype EssTime Rational where
     pack = EssTime

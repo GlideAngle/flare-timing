@@ -1094,16 +1094,17 @@ getTaskPilotArea ii pilotId = do
     case (p, ml) of
         (Nothing, _) -> throwError $ errPilotNotFound pilot
         (_, Nothing) -> throwError $ errPilotNotFound pilot
-        (Just p', Just MaskingLead{raceDistance}) -> do
+        (Just p', Just MaskingLead{raceTime = rt, raceDistance = rd}) -> do
             xs <-
                 liftIO $ catchIO
                     (Just <$> readPilotDiscardFurther cf ix p')
                     (const $ return Nothing)
 
-            case (xs, take 1 $ drop jj raceDistance) of
-                (Nothing, _) -> throwError $ errPilotTrackNotFound ix pilot
-                (Just _, []) -> throwError $ errPilotTrackNotFound ix pilot
-                (Just xs', d : _) -> return $ RawLeadingArea d xs'
+            case (xs, take 1 $ drop jj rt, take 1 $ drop jj rd) of
+                (Nothing, _, _) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just _, [], _) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just _, _, []) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just xs', t : _, d : _) -> return $ RawLeadingArea t d xs'
 
 getTaskPilotTrackFlyingSection :: Int -> String -> AppT k IO TrackFlyingSection
 getTaskPilotTrackFlyingSection ii pilotId = do
