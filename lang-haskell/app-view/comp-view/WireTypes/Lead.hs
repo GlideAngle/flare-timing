@@ -2,6 +2,7 @@ module WireTypes.Lead
     ( LeadingArea(..)
     , LeadingCoefficient(..)
     , TrackLead(..)
+    , RawLeadingArea(..)
     , showArea, showAreaDiff
     , showCoef, showCoefDiff
     ) where
@@ -9,11 +10,13 @@ module WireTypes.Lead
 import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
 import Control.Applicative (empty)
+import Data.Foldable (asum)
 import GHC.Generics (Generic)
-import Data.Aeson (FromJSON(..), Value(..))
+import Data.Aeson ((.:), FromJSON(..), Value(..), withObject)
 import qualified Data.Text as T (unpack)
 
 import WireTypes.Fraction (LeadingFraction)
+import WireTypes.Route (TaskDistance(..))
 
 newtype LeadingArea = LeadingArea Double
     deriving (Eq, Ord, Show, Generic)
@@ -60,3 +63,21 @@ showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
     | otherwise = f (actual - expected)
     where
         f = T.pack . printf "%+.3f"
+
+data RawLeadingArea =
+    RawLeadingArea
+        { raceDistance :: Maybe TaskDistance
+        -- ^ The distance of the speed section in km.
+        , distanceTime :: [[Double]]
+        -- ^ Pairs of (distance, lead time) in (km, s).
+        }
+    deriving (Eq, Ord, Generic)
+
+instance FromJSON RawLeadingArea where
+    parseJSON = withObject "RawLeadingArea" $ \o ->
+        asum
+            [ do
+                rd :: Maybe TaskDistance <- o .: "race-distance"
+                dt :: [[Double]] <- o .: "distance-time"
+                return $ RawLeadingArea rd dt
+            ]

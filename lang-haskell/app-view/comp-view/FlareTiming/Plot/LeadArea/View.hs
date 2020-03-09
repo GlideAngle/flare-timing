@@ -5,7 +5,8 @@ import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.LeadArea.Plot as P (leadAreaPlot)
 
 import WireTypes.Comp (Tweak(..))
-import WireTypes.Lead (TrackLead(..))
+import WireTypes.Route (TaskDistance(..))
+import WireTypes.Lead (TrackLead(..), RawLeadingArea(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilot)
@@ -38,8 +39,10 @@ leadAreaPlot ix tweak sEx ld = do
                 elClass "div" "tile is-child" $ do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 480px")) $ return ()
                     performEvent_ $ leftmost
-                            [ ffor area (\xs -> liftIO $ do
-                                _ <- P.leadAreaPlot (_element_raw elPlot) (xyRange xs) xs
+                            [ ffor area (\RawLeadingArea{raceDistance, distanceTime = xs} -> liftIO $ do
+                                let (xR, yR) = xyRange xs
+                                let xR' = maybe xR (\(TaskDistance rd) -> (0, rd)) raceDistance
+                                _ <- P.leadAreaPlot (_element_raw elPlot) (xR', yR) xs
                                 return ())
                             ]
 
@@ -62,6 +65,5 @@ leadAreaPlot ix tweak sEx ld = do
         area <- getTaskPilotArea ix ePilot
 
         return ()
-
 
     return ()

@@ -17,8 +17,8 @@ foreign import javascript unsafe
     \, width: 480\
     \, height: 640\
     \, disableZoom: true\
-    \, xAxis: {label: 'Distance in Speed Section [km]', domain: [0, $3]}\
-    \, yAxis: {label: 'Time in Speed Section [s]', domain: [0, $5]}\
+    \, xAxis: {label: 'Distance in Speed Section [km]', domain: [$2, $3]}\
+    \, yAxis: {label: 'Time in Speed Section [s]', domain: [$4, $5]}\
     \, data: [{\
     \    points: $6\
     \  , fnType: 'points'\

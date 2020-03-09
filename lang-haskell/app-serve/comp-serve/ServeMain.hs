@@ -1083,23 +1083,27 @@ getTaskPilotTrack ii pilotId = do
 
 getTaskPilotArea :: Int -> String -> AppT k IO RawLeadingArea
 getTaskPilotArea ii pilotId = do
+    let jj = ii - 1
     let ix = IxTask ii
     let pilot = PilotId pilotId
     cf <- asks compFile
+    ml <- asks maskingLead
     ps <- getPilots <$> asks compSettings
     let p = find (\(Pilot (pid, _)) -> pid == pilot) ps
 
-    case p of
-        Nothing -> throwError $ errPilotNotFound pilot
-        Just p' -> do
+    case (p, ml) of
+        (Nothing, _) -> throwError $ errPilotNotFound pilot
+        (_, Nothing) -> throwError $ errPilotNotFound pilot
+        (Just p', Just MaskingLead{raceDistance}) -> do
             xs <-
                 liftIO $ catchIO
                     (Just <$> readPilotDiscardFurther cf ix p')
                     (const $ return Nothing)
 
-            case xs of
-                Nothing -> throwError $ errPilotTrackNotFound ix pilot
-                Just xs' -> return $ RawLeadingArea xs'
+            case (xs, take 1 $ drop jj raceDistance) of
+                (Nothing, _) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just _, []) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just xs', d : _) -> return $ RawLeadingArea d xs'
 
 getTaskPilotTrackFlyingSection :: Int -> String -> AppT k IO TrackFlyingSection
 getTaskPilotTrackFlyingSection ii pilotId = do
