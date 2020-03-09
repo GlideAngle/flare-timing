@@ -3,6 +3,7 @@ module WireTypes.Lead
     , LeadingCoefficient(..)
     , TrackLead(..)
     , RawLeadingArea(..)
+    , EssTime(..)
     , showArea, showAreaDiff
     , showCoef, showCoefDiff
     ) where
@@ -17,6 +18,10 @@ import qualified Data.Text as T (unpack)
 
 import WireTypes.Fraction (LeadingFraction)
 import WireTypes.Route (TaskDistance(..))
+
+newtype EssTime = EssTime Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
 
 newtype LeadingArea = LeadingArea Double
     deriving (Eq, Ord, Show, Generic)
@@ -66,7 +71,8 @@ showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
 
 data RawLeadingArea =
     RawLeadingArea
-        { raceDistance :: Maybe TaskDistance
+        { leadAllDown :: Maybe EssTime
+        , raceDistance :: Maybe TaskDistance
         -- ^ The distance of the speed section in km.
         , distanceTime :: [[Double]]
         -- ^ Pairs of (distance, lead time) in (km, s).
@@ -77,7 +83,8 @@ instance FromJSON RawLeadingArea where
     parseJSON = withObject "RawLeadingArea" $ \o ->
         asum
             [ do
+                ld :: Maybe EssTime <- o .: "lead-all-down"
                 rd :: Maybe TaskDistance <- o .: "race-distance"
                 dt :: [[Double]] <- o .: "distance-time"
-                return $ RawLeadingArea rd dt
+                return $ RawLeadingArea ld rd dt
             ]
