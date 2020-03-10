@@ -26,23 +26,25 @@ instance ToJSON RawLeadingArea where
         [ "race-distance" .= toJSON d
         , "lead-all-down" .= toJSON down
         -- When the last pilot lands, seconds from the time of first lead.
-        , "distance-time" .= toJSON (stepUp down d . catMaybes $ mkDistanceTime d <$> xs)
+        , "distance-time" .= toJSON ys
+        , "step-up" .= toJSON (stepUp down d ys)
         ]
         where
             down = join $ leadAllDown <$> t
+            ys = catMaybes $ mkDistanceTime d <$> xs
 
 stepUp :: Maybe EssTime -> Maybe (QTaskDistance Double [u| m |]) -> [[Double]] -> [[Double]]
 stepUp Nothing _ xs = xs
 stepUp _ Nothing xs = xs
 stepUp (Just (EssTime tMax)) (Just (TaskDistance td)) xs =
     case reverse xs of
-        [d, _] : _ ->
+        x@[d, _] : _ ->
             let (MkQuantity dMax) :: Quantity Double [u| km |] = convert td
                 tMax' = fromRational tMax
             in
-                if d >= dMax then xs else xs ++ [[d, tMax'], [dMax, tMax']]
+                if d >= dMax then [] else [x, [d, tMax'], [dMax, tMax']]
 
-        _ -> xs
+        _ -> []
 
 mkDistanceTime :: Maybe (QTaskDistance Double [u| m |]) -> TickRow -> Maybe [Double]
 mkDistanceTime Nothing _ = Nothing

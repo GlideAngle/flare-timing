@@ -54,7 +54,12 @@ leadAreaPlot ix tweak sEx ld = do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ leftmost
                             [ ffor eAreas (\as -> liftIO $ do
-                                _ <- P.leadAreaPlot (_element_raw elPlot) (seriesRangeOrDefault as) (distanceTime <$> as)
+                                _ <- P.leadAreaPlot
+                                        (_element_raw elPlot)
+                                        (seriesRangeOrDefault as)
+                                        (distanceTime <$> as)
+                                        (stepUp <$> as)
+
                                 return ())
                             ]
 
