@@ -48,10 +48,10 @@ leadAreaPlot
 leadAreaPlot ix tweak sEx ld = do
 
     elClass "div" "tile is-ancestor" $ mdo
-        elClass "div" "tile is-5" $
+        elClass "div" "tile is-7" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
-                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 480px")) $ return ()
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ leftmost
                             [ ffor eAreas (\as -> liftIO $ do
                                 _ <- P.leadAreaPlot (_element_raw elPlot) (seriesRangeOrDefault as) (distanceTime <$> as)
@@ -62,7 +62,7 @@ leadAreaPlot ix tweak sEx ld = do
                             elClass "div" "level-item" $
                                 el "ul" $ do
                                     el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "Select a pilot from the table") $
+                                        _ <- widgetHold (el "span" $ text "Select a pilot from the table to see a plot of area") $
                                                     (\pp -> do
                                                         elClass "span" "legend-reach" $ text "▩"
                                                         el "span" $ text (showPilot pp)
@@ -71,7 +71,7 @@ leadAreaPlot ix tweak sEx ld = do
                                         return ()
 
                                     el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "Select next pilot") $
+                                        _ <- widgetHold (el "span" $ text "") $
                                                     (\pp -> do
                                                         elClass "span" "legend-effort" $ text "▩"
                                                         el "span" $ text (showPilot pp)
@@ -80,7 +80,7 @@ leadAreaPlot ix tweak sEx ld = do
                                         return ()
 
                                     el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "Select next pilot") $
+                                        _ <- widgetHold (el "span" $ text "") $
                                                     (\pp -> do
                                                         elClass "span" "legend-time" $ text "▩"
                                                         el "span" $ text (showPilot pp)
@@ -89,7 +89,7 @@ leadAreaPlot ix tweak sEx ld = do
                                         return ()
 
                                     el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "Select next pilot") $
+                                        _ <- widgetHold (el "span" $ text "") $
                                                     (\pp -> do
                                                         elClass "span" "legend-leading" $ text "▩"
                                                         el "span" $ text (showPilot pp)
@@ -98,7 +98,7 @@ leadAreaPlot ix tweak sEx ld = do
                                         return ()
 
                                     el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "Select next pilot") $
+                                        _ <- widgetHold (el "span" $ text "") $
                                                     (\pp -> do
                                                         elClass "span" "legend-arrival" $ text "▩"
                                                         el "span" $ text (showPilot pp)

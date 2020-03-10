@@ -4,11 +4,7 @@ import Reflex.Dom
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Comp (Tweak(..), LwScaling(..))
-import WireTypes.Lead
-    ( TrackLead(..)
-    , showArea, showAreaDiff
-    , showCoef, showCoefDiff
-    )
+import WireTypes.Lead (TrackLead(..), showArea, showAreaDiff, showCoef)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilot)
@@ -76,15 +72,13 @@ tablePilotCompare _ sEx xs = do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
                         $ text "Area"
-                    elAttr "th" ("colspan" =: "3") $ text "Coefficient"
+                    el "th" $ text "Coef"
                     el "th" $ text "###-Pilot"
                 el "tr" $ do
                     el "th" $ text ""
                     elClass "th" "th-norm" $ text "✓"
                     elClass "th" "th-norm" $ text "Δ"
                     el "th" $ text ""
-                    elClass "th" "th-norm" $ text "✓"
-                    elClass "th" "th-norm" $ text "Δ"
                     el "th" $ text ""
 
                     return ()
@@ -108,31 +102,23 @@ rowLeadCompare
     -> Dynamic t TrackLead
     -> m (Event t Pilot)
 rowLeadCompare mapN p tl = do
-    (pilot, yArea, yAreaDiff, yCoef, yCoefDiff) <- sample . current
-                $ ffor2 p tl (\pilot TrackLead{area, coef} ->
+    (pilot, yArea, yAreaDiff) <- sample . current
+                $ ffor2 p tl (\pilot TrackLead{area} ->
                     case Map.lookup pilot mapN of
                         Just
-                            Norm.NormBreakdown
-                                { leadingArea = area'
-                                , leadingCoef = coef'
-                                } ->
+                            Norm.NormBreakdown{leadingArea = area'} ->
                             ( pilot
                             , showArea area'
                             , showAreaDiff area' area
-
-                            , showCoef coef'
-                            , showCoefDiff coef' coef
                             )
 
-                        _ -> (pilot, "", "", "", ""))
+                        _ -> (pilot, "", ""))
 
     (eRow, _) <- el' "tr" $ do
         elClass "td" "td-lead-area" . dynText $ showArea . area <$> tl
         elClass "td" "td-norm td-norm" . text $ yArea
         elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
-        elClass "td" "td-norm td-norm" . text $ yCoef
-        elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
         el "td" . dynText $ showPilot <$> p
 
         return ()

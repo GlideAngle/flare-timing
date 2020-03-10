@@ -14,7 +14,7 @@ foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-lead'\
     \, title: 'Area'\
-    \, width: 480\
+    \, width: 700\
     \, height: 640\
     \, disableZoom: true\
     \, xAxis: {label: 'Distance in Speed Section [km]', domain: [$2, $3]}\
