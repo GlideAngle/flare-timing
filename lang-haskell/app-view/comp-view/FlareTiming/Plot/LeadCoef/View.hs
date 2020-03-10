@@ -35,10 +35,10 @@ leadCoefPlot tweak sEx ld = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
-        elClass "div" "tile is-5" $
+        elClass "div" "tile is-7" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
-                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 480px")) $ return ()
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
                                 let xs = snd . unzip $ ld'

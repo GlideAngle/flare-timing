@@ -14,7 +14,7 @@ foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-lead'\
     \, title: 'Lead Point Distribution'\
-    \, width: 480\
+    \, width: 700\
     \, height: 640\
     \, disableZoom: true\
     \, xAxis: {label: 'Leading Coefficient', domain: [$2, $3]}\
