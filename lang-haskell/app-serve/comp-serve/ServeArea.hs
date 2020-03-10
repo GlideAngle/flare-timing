@@ -27,16 +27,39 @@ instance ToJSON RawLeadingArea where
         , "lead-all-down" .= toJSON down
         -- When the last pilot lands, seconds from the time of first lead.
         , "distance-time" .= toJSON ys
-        , "step-up" .= toJSON (stepUp down d ys)
+        , "area-after-down" .= toJSON (areaAfterDown down d ys)
+        , "area-before-start" .= toJSON (areaBeforeStart d ys)
         ]
         where
             down = join $ leadAllDown <$> t
             ys = catMaybes $ mkDistanceTime d <$> xs
 
-stepUp :: Maybe EssTime -> Maybe (QTaskDistance Double [u| m |]) -> [[Double]] -> [[Double]]
-stepUp Nothing _ xs = xs
-stepUp _ Nothing xs = xs
-stepUp (Just (EssTime tMax)) (Just (TaskDistance td)) xs =
+-- | The area added before the pilot starts if they were not the first to start.
+areaBeforeStart
+    ::  Maybe (QTaskDistance Double [u| m |])
+    -- ^ The speed section distance.
+    -> [[Double]]
+    -> [[Double]]
+areaBeforeStart Nothing xs = xs
+areaBeforeStart (Just (TaskDistance td)) xs =
+    case xs of
+        [_, t] : _ ->
+            let (MkQuantity dMax) :: Quantity Double [u| km |] = convert td
+            in if t > 0 then [[0, t], [dMax, t]] else []
+
+        _ -> []
+
+-- | The area added after the pilot lands. On the graph this steps up.
+areaAfterDown
+    :: Maybe EssTime
+    -- ^ The time of the last pilot down.
+    -> Maybe (QTaskDistance Double [u| m |])
+    -- ^ The speed section distance.
+    -> [[Double]]
+    -> [[Double]]
+areaAfterDown Nothing _ xs = xs
+areaAfterDown _ Nothing xs = xs
+areaAfterDown (Just (EssTime tMax)) (Just (TaskDistance td)) xs =
     case reverse xs of
         x@[d, _] : _ ->
             let (MkQuantity dMax) :: Quantity Double [u| km |] = convert td

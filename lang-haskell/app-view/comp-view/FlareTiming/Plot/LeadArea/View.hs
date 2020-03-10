@@ -58,7 +58,8 @@ leadAreaPlot ix tweak sEx ld = do
                                         (_element_raw elPlot)
                                         (seriesRangeOrDefault as)
                                         (distanceTime <$> as)
-                                        (stepUp <$> as)
+                                        (areaAfterDown <$> as)
+                                        (areaBeforeStart <$> as)
 
                                 return ())
                             ]

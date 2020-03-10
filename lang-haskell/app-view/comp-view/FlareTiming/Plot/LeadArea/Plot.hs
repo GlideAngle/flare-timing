@@ -74,9 +74,39 @@ foreign import javascript unsafe
     \  , color: '#984ea3'\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
+    \  },{\
+    \    points: $16\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
+    \    points: $17\
+    \  , fnType: 'points'\
+    \  , color: '#ff7f00'\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
+    \    points: $18\
+    \  , fnType: 'points'\
+    \  , color: '#4daf4a'\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
+    \    points: $19\
+    \  , fnType: 'points'\
+    \  , color: '#e41a1c'\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
+    \    points: $20\
+    \  , fnType: 'points'\
+    \  , color: '#984ea3'\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
     \  }]\
     \})"
-    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 leadAreaPlot
     :: IsElement e
@@ -84,9 +114,15 @@ leadAreaPlot
     -> ((Double, Double), (Double, Double))
     -> [[[Double]]]
     -> [[[Double]]]
+    -> [[[Double]]]
     -> IO Plot
 
-leadAreaPlot e ((xMin, xMax), (yMin, yMax)) (xs0 : xs1 : xs2 : xs3 : xs4 : _) (ys0 : ys1 : ys2 : ys3 : ys4 : _) = do
+leadAreaPlot
+    e
+    ((xMin, xMax), (yMin, yMax))
+    (xs0 : xs1 : xs2 : xs3 : xs4 : _)
+    (ys0 : ys1 : ys2 : ys3 : ys4 : _)
+    (zs0 : zs1 : zs2 : zs3 : zs4 : _) = do
     let xPad = (\case 0 -> 1.0; x -> x) . abs $ (xMax - xMin) / 40
     xMin' <- toJSVal $ xMin - xPad
     xMax' <- toJSVal $ xMax + xPad
@@ -107,6 +143,12 @@ leadAreaPlot e ((xMin, xMax), (yMin, yMax)) (xs0 : xs1 : xs2 : xs3 : xs4 : _) (y
     ys3' <- toJSValListOf $ nub ys3
     ys4' <- toJSValListOf $ nub ys4
 
-    Plot <$> plot_ (unElement . toElement $ e) xMin' xMax' yMin' yMax' xs0' xs1' xs2' xs3' xs4' ys0' ys1' ys2' ys3' ys4'
+    zs0' <- toJSValListOf $ nub zs0
+    zs1' <- toJSValListOf $ nub zs1
+    zs2' <- toJSValListOf $ nub zs2
+    zs3' <- toJSValListOf $ nub zs3
+    zs4' <- toJSValListOf $ nub zs4
 
-leadAreaPlot e r _ _ = let zs = take 4 (repeat []) in leadAreaPlot e r zs zs
+    Plot <$> plot_ (unElement . toElement $ e) xMin' xMax' yMin' yMax' xs0' xs1' xs2' xs3' xs4' ys0' ys1' ys2' ys3' ys4' zs0' zs1' zs2' zs3' zs4'
+
+leadAreaPlot e r _ _ _ = let zs = take 4 (repeat []) in leadAreaPlot e r zs zs zs
