@@ -57,12 +57,11 @@ showArea (LeadingArea a) =
     T.pack . f $ printf "%.0f" a
     where
         -- SEE: https://stackoverflow.com/questions/3752898/haskell-format-number-with-commas
-        f :: String -> String
         f x =
-            let (h, t) = case break (== '.') x of ([], t) -> (t, []); ht -> ht
+            let (h, t') = case break (== '.') x of ([], t) -> (t, []); ht -> ht
                 h' = reverse . intercalate "," . chunksOf 3 $ reverse h
             in
-                h' ++ t
+                h' ++ t'
 
 showAreaDiff :: LeadingArea -> LeadingArea -> T.Text
 showAreaDiff (LeadingArea expected) (LeadingArea actual)
