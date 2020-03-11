@@ -11,6 +11,8 @@ module WireTypes.Lead
 
 import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
+import Data.List
+import Data.List.Split
 import Control.Applicative (empty)
 import Data.Foldable (asum)
 import GHC.Generics (Generic)
@@ -51,7 +53,16 @@ data TrackLead =
     deriving anyclass (FromJSON)
 
 showArea :: LeadingArea -> T.Text
-showArea (LeadingArea a) = T.pack $ printf "%.0f" a
+showArea (LeadingArea a) =
+    T.pack . f $ printf "%.0f" a
+    where
+        -- SEE: https://stackoverflow.com/questions/3752898/haskell-format-number-with-commas
+        f :: String -> String
+        f x =
+            let (h, t) = case break (== '.') x of ([], t) -> (t, []); ht -> ht
+                h' = reverse . intercalate "," . chunksOf 3 $ reverse h
+            in
+                h' ++ t
 
 showAreaDiff :: LeadingArea -> LeadingArea -> T.Text
 showAreaDiff (LeadingArea expected) (LeadingArea actual)
