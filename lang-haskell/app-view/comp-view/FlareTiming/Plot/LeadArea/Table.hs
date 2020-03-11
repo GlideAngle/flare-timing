@@ -71,7 +71,7 @@ tablePilotCompare _ sEx xs = do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
-                        $ text "Area"
+                        $ text "Area (km·s)"
                     el "th" $ text "Coef"
                     el "th" $ text "###-Pilot"
                 el "tr" $ do
