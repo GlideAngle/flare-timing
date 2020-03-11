@@ -90,6 +90,12 @@ tablePilotCompare _ sEx xs = do
                             simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure)
                     let ePilot' = switchDyn $ leftmost <$> ePilots
                     return ePilot')
+
+            el "tfoot" $
+                el "tr" $
+                    elAttr "td" ("colspan" =: "5") $
+                        text "Δ A difference of actual value / expected value."
+
             return ev
 
     ePilot <- switchHold never ev
