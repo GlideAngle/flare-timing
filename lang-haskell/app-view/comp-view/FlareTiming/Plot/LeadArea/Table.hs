@@ -94,7 +94,7 @@ tablePilotCompare _ sEx xs = do
             el "tfoot" $
                 el "tr" $
                     elAttr "td" ("colspan" =: "5") $
-                        text "Δ A difference of actual value / expected value."
+                        text "Δ A difference of actual value over expected value minus one."
 
             return ev
 

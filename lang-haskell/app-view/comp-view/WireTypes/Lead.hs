@@ -57,9 +57,9 @@ showAreaDiff :: LeadingArea -> LeadingArea -> T.Text
 showAreaDiff (LeadingArea expected) (LeadingArea actual)
     | f actual == f expected = "="
     | expected == 0 = "∞"
-    | otherwise = f (actual / expected)
+    | otherwise = f (actual / expected - 1.0)
     where
-        f = T.pack . printf "%.4f"
+        f = T.pack . printf "%+.4f"
 
 showCoef :: LeadingCoefficient -> T.Text
 showCoef (LeadingCoefficient lc) = T.pack $ printf "%.3f" lc
