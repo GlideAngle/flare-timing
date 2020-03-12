@@ -23,7 +23,8 @@ module Flight.Track.Time
     , LegIdx(..)
     , TimeToTick
     , TickToTick
-    , leadingArea
+    , LeadingAreas(..)
+    , leadingAreas
     , leadingAreaSum
     , minLeadingCoef
     , taskToLeading
@@ -38,7 +39,7 @@ module Flight.Track.Time
 
 import Prelude hiding (seq)
 import Data.Function ((&))
-import Data.Maybe (fromMaybe, catMaybes, maybeToList, listToMaybe)
+import Data.Maybe (fromMaybe, catMaybes, listToMaybe)
 import Data.Csv
     ( ToNamedRecord(..), FromNamedRecord(..)
     , ToField(..), FromField(..)
@@ -138,6 +139,15 @@ newtype RaceTick = RaceTick Double
 
 instance Show RaceTick where
     show (RaceTick t) = showSecs $ toRational t
+
+data LeadingAreas a b =
+    LeadingAreas
+        { areaFlown :: a
+        , areaBeforeStart :: b
+        , areaAfterLanding :: b
+        }
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- WARNING: I suspect cassava doesn't support repeated column names.
 
@@ -406,33 +416,29 @@ leadingAreaSum (Just _) (Just (start, _)) xs =
 sum' :: [Quantity Double u] -> Quantity Double u
 sum' = foldr (+:) zero
 
-leadingArea
+leadingAreas
     :: (Int -> Leg)
     -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe LeadClose
     -> Maybe LeadAllDown
     -> Maybe LeadArrival
     -> [TickRow]
-    -> [TickRow]
+    -> LeadingAreas [TickRow] (Maybe TickRow)
 
-leadingArea _ _ _ _ _ [] = []
+leadingAreas _ _ _ _ _ [] = LeadingAreas [] Nothing Nothing
 
-leadingArea _ _ _ Nothing _ xs = xs
-leadingArea _ _ Nothing _ _ xs = xs
-leadingArea _ Nothing _ _ _ xs = xs
+leadingAreas _ _ _ Nothing _ xs = LeadingAreas xs Nothing Nothing
+leadingAreas _ _ Nothing _ _ xs = LeadingAreas xs Nothing Nothing
+leadingAreas _ Nothing _ _ _ xs = LeadingAreas xs Nothing Nothing
 
-leadingArea
+leadingAreas
     toLeg
     (Just (TaskDistance td))
     close@(Just (LeadClose (EssTime tt)))
     down
     arrival
     rows =
-    [ r{area = step}
-    | r <- rows
-    | step <- seq
-    ]
-    ++ extraRow
+        LeadingAreas flown Nothing extraRow
     where
         MkQuantity d = convert td :: Quantity Double [u| km |]
 
@@ -444,7 +450,13 @@ leadingArea
                 (LengthOfSs . MkQuantity . toRational $ d)
                 (toLcTrack toLeg close down arrival rows)
 
-        extraRow = maybeToList $ do
+        flown =
+            [ r{area = step}
+            | r <- rows
+            | step <- seq
+            ]
+
+        extraRow = do
             lr <- lastRow
             e <- extra
             return $ lr{area = e}
@@ -661,10 +673,15 @@ discard
     -> Maybe LeadAllDown
     -> Maybe LeadArrival
     -> Vector TimeRow
-    -> Vector TickRow
+    -> LeadingAreas (Vector TickRow) (Maybe TickRow)
 discard timeToTick tickToTick toLeg dRace close down arrival =
-    V.fromList
-    . leadingArea toLeg dRace close down arrival
+    (\LeadingAreas{areaFlown = af, areaBeforeStart = bs, areaAfterLanding = al} ->
+        LeadingAreas
+            { areaFlown = V.fromList af
+            , areaBeforeStart = bs
+            , areaAfterLanding = al
+            })
+    . leadingAreas toLeg dRace close down arrival
     . discardFurther
     . dropZeros
     . fmap tickToTick

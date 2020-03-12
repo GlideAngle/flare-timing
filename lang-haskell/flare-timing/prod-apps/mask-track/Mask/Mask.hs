@@ -43,6 +43,7 @@ import Flight.Comp
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
+import Flight.Track.Time (LeadingAreas(..))
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
 import qualified Flight.Track.Arrival as Arrival (TrackArrival(..))
@@ -215,7 +216,7 @@ writeMask
                         psLandingOut
                         gsBestTime
                         nullAltRowsBest
-                        nullAltRows
+                        ((fmap . fmap . fmap) (\xs -> LeadingAreas xs Nothing Nothing) nullAltRows)
 
             let (dsBonusAltBest, _, _) =
                     maskLead
@@ -227,7 +228,7 @@ writeMask
                         psLandingOut
                         gsBestTime
                         bonusAltRowsBest
-                        bonusAltRows
+                        ((fmap . fmap . fmap) (\xs -> LeadingAreas xs Nothing Nothing) bonusAltRows)
 
             dsNullAltNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
                 <- readCompTimeRows

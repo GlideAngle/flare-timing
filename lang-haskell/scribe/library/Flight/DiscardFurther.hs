@@ -22,7 +22,7 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList, null, last)
 
 import Flight.Track.Time
-    ( TickRow(..), LeadClose(..), LeadAllDown(..), LeadArrival(..)
+    ( TickRow(..), LeadClose(..), LeadAllDown(..), LeadArrival(..), LeadingAreas(..)
     , TimeToTick, TickToTick
     , discard, allHeaders
     )
@@ -151,7 +151,7 @@ readPilotAlignTimeWriteDiscardFurther
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
+    f . areaFlown . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) allHeaders
         dir = compFileToCompDir compFile
@@ -184,7 +184,7 @@ readPilotAlignTimeWritePegThenDiscard
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
+    f . areaFlown . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
     where
         f = writePegThenDiscard (PegThenDiscardFile $ dOut </> file) allHeaders
         dir = compFileToCompDir compFile
@@ -219,7 +219,7 @@ readCompLeading
     -> [Int -> Leg]
     -> [Maybe RaceTime]
     -> [[Pilot]]
-    -> IO [[(Pilot, [TickRow])]]
+    -> IO [[(Pilot, LeadingAreas [TickRow] (Maybe TickRow))]]
 readCompLeading timeToTicks tickToTicks lengths compFile select tasks toLegs raceTimes pilots =
     sequence
         [
@@ -246,7 +246,7 @@ readTaskLeading
     -> (Int -> Leg)
     -> Maybe RaceTime
     -> [Pilot]
-    -> IO [(Pilot, [TickRow])]
+    -> IO [(Pilot, LeadingAreas [TickRow] (Maybe TickRow))]
 readTaskLeading timeToTick tickToTick lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
     if not (select iTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
@@ -265,8 +265,8 @@ readPilotLeading
     -> (Int -> Leg)
     -> Maybe RaceTime
     -> Pilot
-    -> IO [TickRow]
-readPilotLeading _ _ _ _ _ _ Nothing _ = return []
+    -> IO (LeadingAreas [TickRow] (Maybe TickRow))
+readPilotLeading _ _ _ _ _ _ Nothing _ = return $ LeadingAreas [] Nothing Nothing
 readPilotLeading
     timeToTick
     tickToTick
@@ -278,7 +278,12 @@ readPilotLeading
     return $ f rows
     where
         f =
-            V.toList
+            (\LeadingAreas{areaFlown = af, areaBeforeStart = bs, areaAfterLanding = al} ->
+                LeadingAreas
+                    { areaFlown = V.toList af
+                    , areaBeforeStart = bs
+                    , areaAfterLanding = al
+                    })
             . discard
                 timeToTick
                 tickToTick

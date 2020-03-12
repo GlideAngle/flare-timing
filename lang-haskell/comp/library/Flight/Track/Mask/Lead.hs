@@ -47,7 +47,7 @@ data MaskingLead =
         , leadRank :: [[(Pilot, TrackLead)]]
         -- ^ For each task, the rank order of leading and leading fraction.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
 
 instance FieldOrdering MaskingLead where fieldOrder _ = cmp
 

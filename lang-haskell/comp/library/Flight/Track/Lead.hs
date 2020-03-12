@@ -14,11 +14,11 @@ module Flight.Track.Lead
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, maybeToList)
 import Data.List (sortOn)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u, toRational')
+import Data.UnitsOfMeasure ((+:), u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (QTaskDistance)
@@ -28,21 +28,22 @@ import Flight.Score
     , LwScaling(..)
     , leadingFraction, areaToCoef, mkCoef
     )
-import Flight.Track.Time (taskToLeading, leadingAreaSum, minLeadingCoef)
+import Flight.Track.Time (LeadingAreas(..), taskToLeading, leadingAreaSum, minLeadingCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Zone.MkZones (Discipline(..))
 
 data TrackLead =
     TrackLead
         { area :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        , areas :: LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))
         , coef :: LeadingCoef (Quantity Double [u| 1 |])
         , frac :: LeadingFraction
         }
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (FromJSON, ToJSON)
 
 compLeading
-    :: [[(Pilot, [Time.TickRow])]]
+    :: [[(Pilot, LeadingAreas [Time.TickRow] (Maybe Time.TickRow))]]
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Task k]
     ->
@@ -62,19 +63,30 @@ compLeading rowsLeadingStep lsTask tasks' =
                 | l <- (fmap . fmap) taskToLeading lsTask
                 ]
 
-        ass' :: [[(Pilot, Maybe (LeadingArea (Quantity Double [u| (km^2)*s |])))]] =
-                [ (fmap . fmap) (leadingAreaSum l s) xs
+        ass' :: [[(Pilot, Maybe (LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))))]] =
+                [ (fmap. fmap)
+                    (\LeadingAreas{areaFlown = af, areaBeforeStart = bs, areaAfterLanding = al} -> do
+                        af' <- leadingAreaSum l s af
+                        bs' <- leadingAreaSum l s $ maybeToList bs
+                        al' <- leadingAreaSum l s $ maybeToList al
+                        return
+                            LeadingAreas
+                                { areaFlown = af'
+                                , areaBeforeStart = bs'
+                                , areaAfterLanding = al'
+                                })
+                    xs
                 | l <- (fmap . fmap) taskToLeading lsTask
                 | s <- speedSection <$> tasks'
                 | xs <- rowsLeadingStep
                 ]
 
-        ass :: [[(Pilot, LeadingArea (Quantity Double [u| (km^2)*s |]))]] =
+        ass :: [[(Pilot, (LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))))]] =
                 catMaybes
                 <$> (fmap . fmap) floatMaybe ass'
 
         css :: [[(Pilot, LeadingCoef (Quantity Double [u| 1 |]))]] =
-                [ (fmap $ LeadingCoef . k . toRational' . unpack) <$> as
+                [ (fmap $ LeadingCoef . k . toRational' . unpack . sumAreas) <$> as
                 | k <- ks
                 | as <- ass
                 ]
@@ -89,7 +101,8 @@ compLeading rowsLeadingStep lsTask tasks' =
                     [
                         ( p
                         , TrackLead
-                            { area = a
+                            { area = sumAreas a
+                            , areas = a
                             , coef = c
                             , frac =
                                 maybe
@@ -107,6 +120,12 @@ compLeading rowsLeadingStep lsTask tasks' =
                 | as <- ass
                 | cs <- css
                 ]
+
+sumAreas
+    :: LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))
+    -> (LeadingArea (Quantity Double [u| (km^2)*s |]))
+sumAreas LeadingAreas{areaFlown = LeadingArea af, areaAfterLanding = LeadingArea al} =
+    LeadingArea $ af +: al
 
 floatMaybe :: (a, Maybe b) -> Maybe (a, b)
 floatMaybe (_, Nothing) = Nothing
