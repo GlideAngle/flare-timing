@@ -19,6 +19,7 @@ module Flight.Path
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , PegThenDiscardFile(..)
+    , LeadAreaFile(..)
     , MaskArrivalFile(..)
     , MaskEffortFile(..)
     , MaskLeadFile(..)
@@ -45,6 +46,7 @@ module Flight.Path
     , trimFsdbToComp
     , compToTaskLength
     , compToCross
+    , compToLeadArea
     , compToMaskArrival
     , compToMaskEffort
     , compToMaskLead
@@ -164,6 +166,9 @@ newtype DiscardFurtherFile = DiscardFurtherFile FilePath deriving Show
 -- | The path to a peg then discard file.
 newtype PegThenDiscardFile = PegThenDiscardFile FilePath deriving Show
 
+-- | The path to a leading area file.
+newtype LeadAreaFile = LeadAreaFile FilePath deriving Show
+
 -- | The path to a mask arrival file.
 newtype MaskArrivalFile = MaskArrivalFile FilePath deriving Show
 
@@ -176,16 +181,16 @@ newtype MaskLeadFile = MaskLeadFile FilePath deriving Show
 -- | The path to a mask reach file.
 newtype MaskReachFile = MaskReachFile FilePath deriving Show
 
--- | The path to as mask speed file.
+-- | The path to a mask speed file.
 newtype MaskSpeedFile = MaskSpeedFile FilePath deriving Show
 
 -- | The path to a mask reach with altitude bonus distance file.
 newtype BonusReachFile = BonusReachFile FilePath deriving Show
 
--- | The path to as land out file.
+-- | The path to a land out file.
 newtype LandOutFile = LandOutFile FilePath deriving Show
 
--- | The path to as gap point file.
+-- | The path to a gap point file.
 newtype GapPointFile = GapPointFile FilePath deriving Show
 
 compToNormArrival :: CompInputFile -> NormArrivalFile
@@ -243,6 +248,10 @@ compToTaskLength (CompInputFile p) =
 compToCross :: CompInputFile -> CrossZoneFile
 compToCross (CompInputFile p) =
     CrossZoneFile $ flip replaceExtension (ext CrossZone) $ dropExtension p
+
+compToLeadArea :: CompInputFile -> LeadAreaFile
+compToLeadArea (CompInputFile p) =
+    LeadAreaFile $ flip replaceExtension (ext LeadArea) $ dropExtension p
 
 compToMaskArrival :: CompInputFile -> MaskArrivalFile
 compToMaskArrival (CompInputFile p) =
@@ -343,6 +352,7 @@ data FileType
     | AlignTime
     | DiscardFurther
     | PegThenDiscard
+    | LeadArea
     | MaskArrival
     | MaskEffort
     | MaskLead
@@ -371,6 +381,7 @@ ext UnpackTrack = ".unpack-track.csv"
 ext AlignTime = ".align-time.csv"
 ext DiscardFurther = ".discard-further.csv"
 ext PegThenDiscard = ".peg-then-discard.csv"
+ext LeadArea = ".lead-area.yaml"
 ext MaskArrival = ".mask-arrival.yaml"
 ext MaskEffort = ".mask-effort.yaml"
 ext MaskLead = ".mask-lead.yaml"
@@ -399,6 +410,7 @@ ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
 ensureExt AlignTime = flip replaceExtensions "align-time.csv"
 ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"
 ensureExt PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
+ensureExt LeadArea = flip replaceExtensions "lead-area.yaml"
 ensureExt MaskArrival = flip replaceExtensions "mask-arrival.yaml"
 ensureExt MaskEffort = flip replaceExtensions "mask-effort.yaml"
 ensureExt MaskLead = flip replaceExtensions "mask-lead.yaml"

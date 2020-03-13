@@ -143,8 +143,8 @@ instance Show RaceTick where
 data LeadingAreas a b =
     LeadingAreas
         { areaFlown :: a
-        , areaBeforeStart :: b
         , areaAfterLanding :: b
+        , areaBeforeStart :: b
         }
     deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -438,7 +438,11 @@ leadingAreas
     down
     arrival
     rows =
-        LeadingAreas flown Nothing extraRow
+        LeadingAreas
+            { areaFlown = flown
+            , areaAfterLanding = afterLanding
+            , areaBeforeStart = Nothing
+            }
     where
         MkQuantity d = convert td :: Quantity Double [u| km |]
 
@@ -456,7 +460,7 @@ leadingAreas
             | step <- seq
             ]
 
-        extraRow = do
+        afterLanding = do
             lr <- lastRow
             e <- extra
             return $ lr{area = e}
@@ -678,8 +682,8 @@ discard timeToTick tickToTick toLeg dRace close down arrival =
     (\LeadingAreas{areaFlown = af, areaBeforeStart = bs, areaAfterLanding = al} ->
         LeadingAreas
             { areaFlown = V.fromList af
-            , areaBeforeStart = bs
             , areaAfterLanding = al
+            , areaBeforeStart = bs
             })
     . leadingAreas toLeg dRace close down arrival
     . discardFurther

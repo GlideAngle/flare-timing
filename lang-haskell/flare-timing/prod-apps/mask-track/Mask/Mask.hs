@@ -39,11 +39,11 @@ import Flight.Comp
     , compToMaskReach
     , compToMaskSpeed
     , compToBonusReach
+    , compToLeadArea
     )
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
-import Flight.Track.Time (LeadingAreas(..))
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
 import qualified Flight.Track.Arrival as Arrival (TrackArrival(..))
@@ -69,8 +69,10 @@ import Flight.Scribe
     , writeMaskingSpeed
     , writeBonusReach
     , readCompBestDistances, readCompTimeRows
-    , readPilotDiscardFurther
-    , readPilotPegThenDiscard
+    -- TODO: Take care to consider bonus altitude distance with leading area.
+    -- , readPilotDiscardFurther
+    -- , readPilotPegThenDiscard
+    , readDiscardingLead
     )
 import qualified Flight.Score as Gap (ReachToggle(..))
 import Flight.Score (ArrivalFraction(..))
@@ -163,11 +165,13 @@ writeMask
 
             let psArriving = (fmap . fmap) fst as
 
+            {- TODO: Take care to consider bonus altitude distance with leading area.
             let pilots =
                     [ pAs ++ pLs
                     | pAs <- psArriving
                     | pLs <- psLandingOut
                     ]
+            -}
 
             -- Zones (zs) of the task and zones ticked.
             let zsTaskTicked :: [Map Pilot _] = Map.fromList . landTaskTicked <$> yss
@@ -175,6 +179,7 @@ writeMask
             let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
             let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 
+            {- TODO: Take care to consider bonus altitude distance with leading area.
             nullAltRows :: [[(Pilot, [Time.TickRow])]]
                 <-
                     sequence $
@@ -190,6 +195,7 @@ writeMask
                     | ix <- (IxTask <$> [1 .. ])
                     | ps <- pilots
                     ]
+            -}
 
             -- For each task, for each pilot, the row closest to goal.
             nullAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
@@ -206,29 +212,31 @@ writeMask
                     (includeTask selectTasks)
                     ((fmap . fmap) fst dsLand)
 
+            discardingLeads <- readDiscardingLead (compToLeadArea compFile)
+
             let (dsNullAltBest, nullAltRowTicks, nullAltLead) =
                     maskLead
                         free
-                        tasks
                         raceTimes'
                         lsTask'
                         psArriving
                         psLandingOut
                         gsBestTime
                         nullAltRowsBest
-                        ((fmap . fmap . fmap) (\xs -> LeadingAreas xs Nothing Nothing) nullAltRows)
+                        discardingLeads
 
             let (dsBonusAltBest, _, _) =
                     maskLead
                         free
-                        tasks
                         raceTimes'
                         lsTask'
                         psArriving
                         psLandingOut
                         gsBestTime
                         bonusAltRowsBest
-                        ((fmap . fmap . fmap) (\xs -> LeadingAreas xs Nothing Nothing) bonusAltRows)
+                        -- TODO: Use bonus altitude calculating
+                        -- discardingLeads.
+                        discardingLeads
 
             dsNullAltNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
                 <- readCompTimeRows

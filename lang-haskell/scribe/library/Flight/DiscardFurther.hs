@@ -10,7 +10,7 @@ module Flight.DiscardFurther
 
 import Control.Exception.Safe (MonadThrow, throwString)
 import Control.Monad.Except (MonadIO, liftIO)
-import Control.Monad (zipWithM, when)
+import Control.Monad (zipWithM)
 import qualified Data.ByteString.Lazy as BL
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>))
@@ -139,8 +139,8 @@ readPilotAlignTimeWriteDiscardFurther
     -> (Int -> Leg)
     -> Maybe RaceTime
     -> Pilot
-    -> IO ()
-readPilotAlignTimeWriteDiscardFurther _ _ _ _ _ _ _ Nothing _ = return ()
+    -> IO (Maybe (LeadingAreas (Vector TickRow) (Maybe TickRow)))
+readPilotAlignTimeWriteDiscardFurther _ _ _ _ _ _ _ Nothing _ = return Nothing
 readPilotAlignTimeWriteDiscardFurther
     timeToTick
     tickToTick
@@ -148,10 +148,12 @@ readPilotAlignTimeWriteDiscardFurther
     compFile
     selectTask
     iTask@(IxTask i) toLeg (Just raceTime) pilot =
-    when (selectTask iTask) $ do
+    if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . areaFlown . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
+    let areas = discard timeToTick tickToTick toLeg taskLength close down arrival $ snd rows
+    _ <- f $ areaFlown areas
+    return $ Just areas
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) allHeaders
         dir = compFileToCompDir compFile
@@ -172,8 +174,8 @@ readPilotAlignTimeWritePegThenDiscard
     -> (Int -> Leg)
     -> Maybe RaceTime
     -> Pilot
-    -> IO ()
-readPilotAlignTimeWritePegThenDiscard _ _ _ _ _ _ _ Nothing _ = return ()
+    -> IO (Maybe (LeadingAreas (Vector TickRow) (Maybe TickRow)))
+readPilotAlignTimeWritePegThenDiscard _ _ _ _ _ _ _ Nothing _ = return Nothing
 readPilotAlignTimeWritePegThenDiscard
     timeToTick
     tickToTick
@@ -181,10 +183,12 @@ readPilotAlignTimeWritePegThenDiscard
     compFile
     selectTask
     iTask@(IxTask i) toLeg (Just raceTime) pilot =
-    when (selectTask iTask) $ do
+    if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . areaFlown . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
+    let areas = discard timeToTick tickToTick toLeg taskLength close down arrival $ snd rows
+    _ <- f $ areaFlown areas
+    return $ Just areas
     where
         f = writePegThenDiscard (PegThenDiscardFile $ dOut </> file) allHeaders
         dir = compFileToCompDir compFile

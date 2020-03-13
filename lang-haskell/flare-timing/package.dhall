@@ -289,6 +289,7 @@ in    defs
               { dependencies =
                     deps
                   # [ "safe-exceptions"
+                    , "vector"
                     , "flight-clip"
                     , "flight-gap"
                     , "flight-lookup"

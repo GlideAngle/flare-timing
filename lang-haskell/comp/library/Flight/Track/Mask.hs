@@ -10,10 +10,10 @@ Tracks masked with task control zones.
 module Flight.Track.Mask
     ( MaskingArrival(..)
     , MaskingEffort(..)
-    , MaskingLead(..)
     , MaskingReach(..)
     , MaskingSpeed(..)
     , RaceTime(..)
+    , MaskingLead(..)
     , racing
     ) where
 

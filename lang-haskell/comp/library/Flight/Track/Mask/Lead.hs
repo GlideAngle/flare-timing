@@ -7,7 +7,11 @@ Stability   : experimental
 
 Tracks masked with task control zones.
 -}
-module Flight.Track.Mask.Lead (MaskingLead(..), RaceTime(..), racing) where
+module Flight.Track.Mask.Lead
+    ( MaskingLead(..)
+    , RaceTime(..)
+    , racing
+    ) where
 
 import Data.Maybe (fromMaybe)
 import Data.Time.Clock (UTCTime, diffUTCTime, addUTCTime)
@@ -20,15 +24,10 @@ import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Distance (QTaskDistance)
 import Flight.Comp
     (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..), LastDown(..))
-import Flight.Score
-    ( Pilot(..)
-    , LeadingCoef(..)
-    , AreaToCoef(..)
-    , EssTime(..)
-    )
+import Flight.Score (Pilot(..), LeadingCoef(..), AreaToCoef(..), EssTime(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
-import Flight.Track.Lead (TrackLead(..))
+import Flight.Track.Lead (TrackLead(..), cmpArea)
 import Flight.Track.Mask.Cmp (cmp)
 
 -- | For each task, the masking for leading for that task.
@@ -49,7 +48,7 @@ data MaskingLead =
         }
     deriving (Eq, Ord, Generic, ToJSON, FromJSON)
 
-instance FieldOrdering MaskingLead where fieldOrder _ = cmp
+instance FieldOrdering MaskingLead where fieldOrder _ = cmpArea cmp
 
 -- | The racing time for the speed section is required for leading points.
 data RaceTime =

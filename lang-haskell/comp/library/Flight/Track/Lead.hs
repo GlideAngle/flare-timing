@@ -9,28 +9,53 @@ The lead standing of a pilot's track in comparison to other pilots.
 -}
 module Flight.Track.Lead
     ( TrackLead(..)
+    , DiscardingLead(..)
     , compLeading
     , lwScalingDefault
+    , cmpArea
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
-import Data.Maybe (catMaybes, maybeToList)
 import Data.List (sortOn)
+import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure ((+:), u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Field (FieldOrdering(..))
 import Flight.Distance (QTaskDistance)
-import Flight.Comp (Pilot, Task(..))
+import Flight.Comp (Pilot)
 import Flight.Score
     ( LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
     , LwScaling(..)
     , leadingFraction, areaToCoef, mkCoef
     )
-import Flight.Track.Time (LeadingAreas(..), taskToLeading, leadingAreaSum, minLeadingCoef)
-import qualified Flight.Track.Time as Time (TickRow(..))
+import Flight.Track.Time (LeadingAreas(..), taskToLeading, minLeadingCoef)
 import Flight.Zone.MkZones (Discipline(..))
+
+-- | For each task, the discarding for leading for that task. Further fixes are
+-- discarded and the leading areas collated.
+data DiscardingLead =
+    DiscardingLead
+        { areasWithDistanceSquared :: [[(Pilot, LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |])))]]
+        -- ^ For each task, the leading areas using distance squared.
+        }
+    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+
+instance FieldOrdering DiscardingLead where fieldOrder _ = cmpArea compare
+
+cmpArea :: (Ord a, IsString a) => (a -> a -> Ordering) -> a -> a -> Ordering
+cmpArea f a b =
+    case (a, b) of
+        ("areaFlown", _) -> LT
+
+        ("areaAfterLanding", "areaFlown") -> GT
+        ("areaAfterLanding", _) -> LT
+
+        ("areaBeforeStart", _) -> GT
+
+        _ -> f a b
 
 data TrackLead =
     TrackLead
@@ -43,14 +68,13 @@ data TrackLead =
     deriving anyclass (FromJSON, ToJSON)
 
 compLeading
-    :: [[(Pilot, LeadingAreas [Time.TickRow] (Maybe Time.TickRow))]]
+    :: DiscardingLead
     -> [Maybe (QTaskDistance Double [u| m |])]
-    -> [Task k]
     ->
         ( [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
         , [[(Pilot, TrackLead)]]
         )
-compLeading rowsLeadingStep lsTask tasks' =
+compLeading DiscardingLead{areasWithDistanceSquared = ass} lsTask =
     (lcMins, lead)
     where
         ks :: [Quantity Rational [u| (km^2)*s |] -> Quantity Double [u| 1 |]]
@@ -62,28 +86,6 @@ compLeading rowsLeadingStep lsTask tasks' =
 
                 | l <- (fmap . fmap) taskToLeading lsTask
                 ]
-
-        ass' :: [[(Pilot, Maybe (LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))))]] =
-                [ (fmap. fmap)
-                    (\LeadingAreas{areaFlown = af, areaBeforeStart = bs, areaAfterLanding = al} -> do
-                        af' <- leadingAreaSum l s af
-                        bs' <- leadingAreaSum l s $ maybeToList bs
-                        al' <- leadingAreaSum l s $ maybeToList al
-                        return
-                            LeadingAreas
-                                { areaFlown = af'
-                                , areaBeforeStart = bs'
-                                , areaAfterLanding = al'
-                                })
-                    xs
-                | l <- (fmap . fmap) taskToLeading lsTask
-                | s <- speedSection <$> tasks'
-                | xs <- rowsLeadingStep
-                ]
-
-        ass :: [[(Pilot, (LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))))]] =
-                catMaybes
-                <$> (fmap . fmap) floatMaybe ass'
 
         css :: [[(Pilot, LeadingCoef (Quantity Double [u| 1 |]))]] =
                 [ (fmap $ LeadingCoef . k . toRational' . unpack . sumAreas) <$> as
@@ -126,10 +128,6 @@ sumAreas
     -> (LeadingArea (Quantity Double [u| (km^2)*s |]))
 sumAreas LeadingAreas{areaFlown = LeadingArea af, areaAfterLanding = LeadingArea al} =
     LeadingArea $ af +: al
-
-floatMaybe :: (a, Maybe b) -> Maybe (a, b)
-floatMaybe (_, Nothing) = Nothing
-floatMaybe (a, Just b) = Just (a, b)
 
 -- | The default explicit leading weight scaling for each discipline?
 lwScalingDefault :: Discipline -> LwScaling

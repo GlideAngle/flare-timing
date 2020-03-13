@@ -257,6 +257,11 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackLead) where
                  , TrackLead
                       { frac = LeadingFraction 0.80786961
                       , area = LeadingArea [u| 42221610.0724 km^2 s |]
+                      , areas =
+                          LeadingAreas
+                              (LeadingArea [u| 42221610.0724 km^2 s |])
+                              (LeadingArea [u| 0 km^2 s |])
+                              (LeadingArea [u| 0 km^2 s |])
                       , coef = LeadingCoef 1.70921115
                       }
                  )
@@ -617,6 +622,7 @@ instance ToSchema TrackReach
 instance ToSchema TrackArrival
 instance ToSchema q => ToSchema (ArrivalLag q)
 instance ToSchema ArrivalPlacing
+instance (ToSchema a, ToSchema b) => ToSchema (LeadingAreas a b)
 instance ToSchema TrackLead
 instance ToSchema TrackSpeed
 instance ToSchema TrackEffort

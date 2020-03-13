@@ -10,6 +10,7 @@ module Flight.Scribe
     , readFraming, writeFraming
     , readMaskingArrival, writeMaskingArrival
     , readMaskingEffort, writeMaskingEffort
+    , readDiscardingLead, writeDiscardingLead
     , readMaskingLead, writeMaskingLead
     , readMaskingReach, writeMaskingReach
     , readMaskingSpeed, writeMaskingSpeed
@@ -37,7 +38,8 @@ import Flight.Track.Cross (Crossing)
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Stop (Framing(..))
 import Flight.Track.Mask
-    (MaskingArrival, MaskingEffort, MaskingLead, MaskingReach, MaskingSpeed)
+    (MaskingArrival, MaskingEffort, MaskingReach, MaskingSpeed, MaskingLead)
+import Flight.Track.Lead (DiscardingLead)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, NormPointing)
 import Flight.Route (GeoLines)
@@ -54,6 +56,7 @@ import Flight.Comp
     , CrossZoneFile(..)
     , TagZoneFile(..)
     , PegFrameFile(..)
+    , LeadAreaFile(..)
     , MaskArrivalFile(..)
     , MaskEffortFile(..)
     , MaskLeadFile(..)
@@ -218,6 +221,13 @@ writeFraming (PegFrameFile path) stopTask = do
     let yaml = Y.encodePretty cfg stopTask
     BS.writeFile path yaml
 
+readDiscardingLead
+    :: MonadIO m
+    => LeadAreaFile
+    -> m DiscardingLead
+readDiscardingLead (LeadAreaFile path) =
+    liftIO $ BS.readFile path >>= decodeThrow
+
 readMaskingArrival
     :: MonadIO m
     => MaskArrivalFile
@@ -259,6 +269,12 @@ readBonusReach
     -> m MaskingReach
 readBonusReach (BonusReachFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
+
+writeDiscardingLead :: LeadAreaFile -> DiscardingLead -> IO ()
+writeDiscardingLead (LeadAreaFile path) discardingLead = do
+    let cfg = Y.setConfCompare (fieldOrder discardingLead) Y.defConfig
+    let yaml = Y.encodePretty cfg discardingLead
+    BS.writeFile path yaml
 
 writeMaskingArrival :: MaskArrivalFile -> MaskingArrival -> IO ()
 writeMaskingArrival (MaskArrivalFile path) maskTrack = do

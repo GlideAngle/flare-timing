@@ -20,7 +20,8 @@ import Flight.Lookup.Tag (TaskLeadingLookup(..))
 import Flight.Distance
     (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Comp.Distance (compDistance)
-import Flight.Track.Time (LeadingAreas(..), LeadTick)
+import Flight.Track.Lead (DiscardingLead(..))
+import Flight.Track.Time (LeadTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
@@ -47,28 +48,26 @@ raceTimes lookupTaskLeading iTasks tasks =
 
 maskLead
     :: (MinimumDistance (Quantity Double [u| km |]))
-    -> [Task k]
     -> [Maybe RaceTime]
     -> [Maybe TaskRouteDistance]
     -> [[Pilot]]
     -> [[Pilot]]
     -> [Maybe (BestTime (Quantity Double [u| h |]))]
     -> [[Maybe (Pilot, Time.TickRow)]]
-    -> [[(Pilot, LeadingAreas [Time.TickRow] (Maybe Time.TickRow))]]
+    -> DiscardingLead
     -> ( [Maybe (QTaskDistance Double [u| m |])]
        , [[Maybe (Pilot, Maybe LeadTick)]]
        , MaskingLead
        )
 maskLead
     free
-    tasks
     raceTime
     lsTask
     psArriving
     psLandingOut
     gsBestTime
     rows
-    rowsLeadingStep =
+    discardingLead =
     (dsBest, rowTicks,) $
     MaskingLead
         { raceTime = raceTime
@@ -81,7 +80,7 @@ maskLead
     where
         lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask
         lsSpeedSubset = (fmap . fmap) speedSubsetDistance lsTask
-        (lcMin, lead) = compLeading rowsLeadingStep lsSpeedSubset tasks
+        (lcMin, lead) = compLeading discardingLead lsSpeedSubset
 
         lcAreaToCoef =
                 [
