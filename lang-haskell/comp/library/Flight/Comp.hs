@@ -178,8 +178,7 @@ data TaskRouteDistance =
         }
 
 routeLengthOfSs :: TaskRouteDistance -> LengthOfSs
-routeLengthOfSs TaskRouteDistance{wholeTaskDistance = TaskDistance d} =
-    -- TODO: Shouldn't leading use the speed section length?
+routeLengthOfSs TaskRouteDistance{speedSubsetDistance = TaskDistance d} =
     let dKm :: Quantity Double [u| km |] = convert d
         dKm' :: Quantity Rational [u| km |] = toRational' dKm
     in LengthOfSs dKm'
