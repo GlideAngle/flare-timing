@@ -448,7 +448,7 @@ leadingAreas _ Nothing _ _ _ xs = LeadingAreas xs Nothing Nothing
 
 leadingAreas
     toLeg
-    (Just (LengthOfSs lenOfSs))
+    (Just lengthOfSs)
     close@(Just (LeadClose (EssTime tt)))
     down@(Just leadAllDown)
     arrival
@@ -459,15 +459,13 @@ leadingAreas
             , areaBeforeStart = beforeStart
             }
     where
-        MkQuantity d = fromRational' lenOfSs :: Quantity Double [u| km |]
-
         (_, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival rows)
 
         LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea =
             areaSteps
                 (TaskDeadline $ MkQuantity tt)
                 leadAllDown
-                (LengthOfSs . MkQuantity . toRational $ d)
+                lengthOfSs
                 lcTrack
 
         flown =
