@@ -87,9 +87,30 @@ nullArea =
         { leadAllDown = Nothing
         , raceDistance = Nothing
         , distanceTime = []
-        , distanceTimeAfterDown = []
+        , distanceTimeAfterLanding = []
         , distanceTimeBeforeStart = []
+        , areas = let z = LeadingAreaSquared 0 in LeadingAreas z z z
         }
+
+data LeadingAreas a b =
+    LeadingAreas
+        { areaFlown :: a
+        , areaAfterLanding :: b
+        , areaBeforeStart :: b
+        }
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (FromJSON)
+
+newtype LeadingAreaSquared = LeadingAreaSquared Double
+    deriving (Eq, Ord, Show)
+
+instance FromJSON LeadingAreaSquared where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            's' : ' ' : '2' : '^' : 'm' : 'k' : xs -> return . LeadingAreaSquared . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
 
 data RawLeadingArea =
     RawLeadingArea
@@ -98,8 +119,9 @@ data RawLeadingArea =
         -- ^ The distance of the speed section in km.
         , distanceTime :: [[Double]]
         -- ^ Pairs of (distance, lead time) in (km, s).
-        , distanceTimeAfterDown :: [[Double]]
+        , distanceTimeAfterLanding :: [[Double]]
         , distanceTimeBeforeStart :: [[Double]]
+        , areas :: LeadingAreas LeadingAreaSquared LeadingAreaSquared
         }
     deriving (Eq, Ord, Generic)
 
@@ -110,14 +132,23 @@ instance FromJSON RawLeadingArea where
                 ld :: Maybe EssTime <- o .: "lead-all-down"
                 rd :: Maybe TaskDistance <- o .: "race-distance"
                 dt :: [[Double]] <- o .: "distance-time"
-                ad :: [[Double]] <- o .: "distance-time-after-down"
+                al :: [[Double]] <- o .: "distance-time-after-landing"
                 bs :: [[Double]] <- o .: "distance-time-before-start"
+                af' :: LeadingAreaSquared <- o .: "area-flown"
+                al' :: LeadingAreaSquared <- o .: "area-after-landing"
+                bs' :: LeadingAreaSquared <- o .: "area-before-start"
                 return
                     RawLeadingArea
                         { leadAllDown = ld
                         , raceDistance = rd
                         , distanceTime = dt
-                        , distanceTimeAfterDown = ad
+                        , distanceTimeAfterLanding = al
                         , distanceTimeBeforeStart = bs
+                        , areas =
+                            LeadingAreas
+                                { areaFlown = af'
+                                , areaAfterLanding = al'
+                                , areaBeforeStart = bs'
+                                }
                         }
             ]

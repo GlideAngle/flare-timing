@@ -47,7 +47,7 @@ import Flight.Track.Distance (TrackReach(..))
 import Flight.Track.Land
     (Landing(..), TaskLanding(..), TrackEffort(..), effortRank, taskLanding)
 import Flight.Track.Arrival (TrackArrival(..))
-import Flight.Track.Lead (TrackLead(..))
+import Flight.Track.Lead (DiscardingLead(..), TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import qualified Flight.Track.Mask as Mask (MaskingReach(..), MaskingArrival(..))
 import Flight.Track.Mask
@@ -75,6 +75,7 @@ import Flight.Scribe
     , readRoute, readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
+    , readDiscardingLead
     , readMaskingLead
     , readMaskingReach
     , readMaskingSpeed
@@ -109,6 +110,7 @@ import Flight.Comp
     , MaskArrivalFile(..)
     , MaskEffortFile(..)
     , MaskLeadFile(..)
+    , LeadAreaFile(..)
     , MaskReachFile(..)
     , MaskSpeedFile(..)
     , BonusReachFile(..)
@@ -128,6 +130,7 @@ import Flight.Comp
     , compToCross
     , compToMaskArrival
     , compToMaskEffort
+    , compToLeadArea
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
@@ -161,6 +164,7 @@ data Config k
         , framing :: Maybe Sp.Framing
         , maskingArrival :: Maybe Mask.MaskingArrival
         , maskingEffort :: Maybe MaskingEffort
+        , discardingLead :: Maybe DiscardingLead
         , maskingLead :: Maybe MaskingLead
         , maskingReach :: Maybe MaskingReach
         , maskingSpeed :: Maybe MaskingSpeed
@@ -184,6 +188,7 @@ nullConfig cf cs =
         , framing = Nothing
         , maskingArrival = Nothing
         , maskingEffort = Nothing
+        , discardingLead = Nothing
         , maskingLead = Nothing
         , maskingReach = Nothing
         , maskingSpeed = Nothing
@@ -439,6 +444,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
     let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
     let maskEffortFile@(MaskEffortFile maskEffortPath) = compToMaskEffort compFile
+    let leadAreaFile@(LeadAreaFile leadAreaPath) = compToLeadArea compFile
     let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
     let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
     let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
@@ -456,6 +462,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading scored section from '" ++ takeFileName stopPath ++ "'"
     putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
     putStrLn $ "Reading effort from '" ++ takeFileName maskEffortPath ++ "'"
+    putStrLn $ "Reading leading area from '" ++ takeFileName leadAreaPath ++ "'"
     putStrLn $ "Reading leading from '" ++ takeFileName maskLeadPath ++ "'"
     putStrLn $ "Reading reach from '" ++ takeFileName maskReachPath ++ "'"
     putStrLn $ "Reading speed from '" ++ takeFileName maskSpeedPath ++ "'"
@@ -504,6 +511,11 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             maskingEffort <-
                 catchIO
                     (Just <$> readMaskingEffort maskEffortFile)
+                    (const $ return Nothing)
+
+            discardingLead <-
+                catchIO
+                    (Just <$> readDiscardingLead leadAreaFile)
                     (const $ return Nothing)
 
             maskingLead <-
@@ -556,13 +568,13 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readNormScore normScoreFile)
                     (const $ return Nothing)
 
-            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
-                (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS bR lo gp normA normL normR ns)
-                (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _) -> do
+            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
+                (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
+                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE dL mL mR mS bR lo gp normA normL normR ns)
+                (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs and task lengths"
                     f =<< mkTaskLengthApp cfg{routing = rt}
-                (_, _, _, _, _, _, _, _, _, _, _, _, _) -> do
+                (_, _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs"
                     f =<< mkCompInputApp cfg
             where
@@ -1088,23 +1100,32 @@ getTaskPilotArea ii pilotId = do
     let pilot = PilotId pilotId
     cf <- asks compFile
     ml <- asks maskingLead
+    dl <- asks discardingLead
     ps <- getPilots <$> asks compSettings
     let p = find (\(Pilot (pid, _)) -> pid == pilot) ps
 
-    case (p, ml) of
-        (Nothing, _) -> throwError $ errPilotNotFound pilot
-        (_, Nothing) -> throwError $ errPilotNotFound pilot
-        (Just p', Just MaskingLead{raceTime = rt, raceDistance = rd}) -> do
+    case (p, ml, dl) of
+        (Nothing, _, _) -> throwError $ errPilotNotFound pilot
+        (_, Nothing, _) -> throwError $ errPilotNotFound pilot
+        (_, _, Nothing) -> throwError $ errPilotNotFound pilot
+        (Just p'
+            , Just MaskingLead{raceTime = rt, raceDistance = rd}
+            , Just DiscardingLead{areasWithDistanceSquared = sq}) -> do
+
             xs <-
                 liftIO $ catchIO
                     (Just <$> readPilotDiscardFurther cf ix p')
                     (const $ return Nothing)
 
-            case (xs, take 1 $ drop jj rt, take 1 $ drop jj rd) of
-                (Nothing, _, _) -> throwError $ errPilotTrackNotFound ix pilot
-                (Just _, [], _) -> throwError $ errPilotTrackNotFound ix pilot
-                (Just _, _, []) -> throwError $ errPilotTrackNotFound ix pilot
-                (Just xs', t : _, d : _) -> return $ RawLeadingArea t d xs'
+            case (xs, take 1 $ drop jj rt, take 1 $ drop jj rd, take 1 $ drop jj sq) of
+                (Nothing, _, _, _) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just _, [], _, _) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just _, _, [], _) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just _, _, _, []) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just xs', t : _, d : _, areas : _) ->
+                    case find (\(p'', _) -> p'' == p') areas of
+                        Nothing -> throwError $ errPilotTrackNotFound ix pilot
+                        Just (_, a) -> return $ RawLeadingArea t d xs' a
 
 getTaskPilotTrackFlyingSection :: Int -> String -> AppT k IO TrackFlyingSection
 getTaskPilotTrackFlyingSection ii pilotId = do

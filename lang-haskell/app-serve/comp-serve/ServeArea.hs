@@ -9,7 +9,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.Track.Time (TickRow(..), LeadTick(..))
-import Flight.Score (EssTime(..))
+import Flight.Score (LeadingArea(..), LeadingAreas(..), LeadingAreaUnits, EssTime(..))
 import Flight.Track.Mask (RaceTime(..))
 
 data RawLeadingArea =
@@ -18,30 +18,45 @@ data RawLeadingArea =
         , raceDistance :: Maybe (QTaskDistance Double [u| m |])
         -- ^ The distance of the speed section.
         , ticks :: [TickRow]
+        , areaWithDistanceSquared :: LeadingAreas (LeadingArea LeadingAreaUnits) (LeadingArea LeadingAreaUnits)
         }
     deriving (Eq, Ord, Generic)
 
 instance ToJSON RawLeadingArea where
-    toJSON RawLeadingArea{raceTime = t, raceDistance = d, ticks = xs} = object
+    toJSON
+        RawLeadingArea
+            { raceTime = t
+            , raceDistance = d
+            , ticks = xs
+            , areaWithDistanceSquared =
+                LeadingAreas
+                    { areaFlown = af
+                    , areaAfterLanding = al
+                    , areaBeforeStart = bs
+                    }
+            } = object
         [ "race-distance" .= toJSON d
         , "lead-all-down" .= toJSON down
         -- When the last pilot lands, seconds from the time of first lead.
         , "distance-time" .= toJSON ys
-        , "distance-time-after-down" .= toJSON (areaAfterDown down d ys)
-        , "distance-time-before-start" .= toJSON (areaBeforeStart d ys)
+        , "distance-time-after-landing" .= toJSON (distanceTimeAfterDown down d ys)
+        , "distance-time-before-start" .= toJSON (distanceTimeBeforeStart d ys)
+        , "area-flown" .= toJSON af
+        , "area-after-landing" .= toJSON al
+        , "area-before-start" .= toJSON bs
         ]
         where
             down = join $ leadAllDown <$> t
             ys = catMaybes $ mkDistanceTime d <$> xs
 
 -- | The area added before the pilot starts if they were not the first to start.
-areaBeforeStart
+distanceTimeBeforeStart
     ::  Maybe (QTaskDistance Double [u| m |])
     -- ^ The speed section distance.
     -> [[Double]]
     -> [[Double]]
-areaBeforeStart Nothing xs = xs
-areaBeforeStart (Just (TaskDistance td)) xs =
+distanceTimeBeforeStart Nothing xs = xs
+distanceTimeBeforeStart (Just (TaskDistance td)) xs =
     case xs of
         [_, t] : _ ->
             let (MkQuantity dMax) :: Quantity Double [u| km |] = convert td
@@ -50,16 +65,16 @@ areaBeforeStart (Just (TaskDistance td)) xs =
         _ -> []
 
 -- | The area added after the pilot lands. On the graph this steps up.
-areaAfterDown
+distanceTimeAfterDown
     :: Maybe EssTime
     -- ^ The time of the last pilot down.
     -> Maybe (QTaskDistance Double [u| m |])
     -- ^ The speed section distance.
     -> [[Double]]
     -> [[Double]]
-areaAfterDown Nothing _ xs = xs
-areaAfterDown _ Nothing xs = xs
-areaAfterDown (Just (EssTime tMax)) (Just (TaskDistance td)) xs =
+distanceTimeAfterDown Nothing _ xs = xs
+distanceTimeAfterDown _ Nothing xs = xs
+distanceTimeAfterDown (Just (EssTime tMax)) (Just (TaskDistance td)) xs =
     case reverse xs of
         x@[d, _] : _ ->
             let (MkQuantity dMax) :: Quantity Double [u| km |] = convert td

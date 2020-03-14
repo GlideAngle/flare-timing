@@ -25,6 +25,8 @@ data LeadingAreas a b =
     deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+deriving instance (Show a, Show b) => Show (LeadingAreas a b)
+
 type LeadingAreaUnits = Quantity Double [u| (km^2)*s |]
 
 zeroLeadingAreaUnits :: LeadingAreaUnits
