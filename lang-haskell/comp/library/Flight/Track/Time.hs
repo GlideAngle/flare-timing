@@ -431,6 +431,13 @@ leadingAreaBeforeStart LcPoint{mark = TaskTime t, togo = DistanceToEss d}
 sum' :: [Quantity Double u] -> Quantity Double u
 sum' = foldr (+:) zero
 
+data LeadingLanding
+    = LandedAfterEss -- ^ ESS was made.
+    | LandedBeforeLastEss (Maybe LcPoint) -- ^ Landed out before the last pilot made ESS.
+    | LandedAfterLastEss (Maybe LcPoint) -- ^ Landed out after the last pilot made ESS.
+    | LandedOutEveryPilot (Maybe LcPoint) -- ^ Landed out but so did everyone else.
+    | LandedNoLeaders -- ^ Can't identify any leadings pilots.
+
 leadingAreas
     :: (Int -> Leg)
     -> Maybe LengthOfSs
@@ -459,7 +466,7 @@ leadingAreas
             , areaBeforeStart = beforeStart
             }
     where
-        (_, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival rows)
+        (landing, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival rows)
 
         LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea =
             areaSteps
@@ -475,9 +482,12 @@ leadingAreas
             ]
 
         afterLanding =
-            case reverse lcPoints of
-                (y : _) -> Just y
-                _ -> Nothing
+            case landing of
+                LandedAfterEss -> Nothing
+                LandedBeforeLastEss x -> x
+                LandedAfterLastEss x -> x
+                LandedOutEveryPilot x -> x
+                LandedNoLeaders -> Nothing
 
         beforeStart =
             case lcPoints of
@@ -504,13 +514,6 @@ newtype LeadClose = LeadClose EssTime
 
 instance Show LeadClose where
     show (LeadClose (EssTime t)) = show (fromRational t :: Double)
-
-data LeadingLanding
-    = LandedAfterEss -- ^ESS was made.
-    | LandedBeforeLastEss (Maybe LcPoint) -- ^ Landed out before the last pilot made ESS.
-    | LandedAfterLastEss (Maybe LcPoint) -- ^ Landed out after the last pilot made ESS.
-    | LandedOutEveryPilot (Maybe LcPoint) -- ^ Landed out but so did everyone else.
-    | LandedNoLeaders -- ^ Can't identify any leadings pilots.
 
 toLcTrack
     :: (Int -> Leg)
