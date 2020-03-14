@@ -113,11 +113,14 @@ module Flight.Score
     , TaskDeadline(..)
     , LengthOfSs(..)
     , LeadingAreaScaling(..)
+    , LeadingAreas(..)
     , LeadingArea(..)
+    , LeadingAreaUnits
     , LeadingCoef(..)
     , AreaToCoef(..)
     , LeadingFraction(..)
     , EssTime(..)
+    , LeadAllDown(..)
     , clampToEss
     , clampToDeadline
     , areaSteps
@@ -129,6 +132,7 @@ module Flight.Score
     , madeGoal
     , cleanTrack
     , showSecs
+    , zeroLeadingAreaUnits
     -- * Places
     , ArrivalPlacing(..)
     , TaskPlacing(..)

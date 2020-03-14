@@ -34,8 +34,10 @@ module Flight.Comp
     , StartEndDown(..)
     , StartEndDownMark
     , RoutesLookupTaskDistance(..)
+    , RoutesLookup
     , TaskRouteDistance(..)
     , TimePass
+    , routeLengthOfSs
     , showTask
     , openClose
     , unpackOpenClose
@@ -77,7 +79,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Maybe (listToMaybe)
 import Data.List (intercalate, nub, sort)
 import Data.String (IsString())
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone.SpeedSection (SpeedSection)
@@ -86,7 +88,7 @@ import Flight.Zone.Raw (Give, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
-import Flight.Distance (QTaskDistance)
+import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.Score
     ( Leg(..)
     , NominalLaunch(..)
@@ -103,6 +105,7 @@ import Flight.Score
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
     , TooEarlyPoints(..)
+    , LengthOfSs(..)
     )
 import Flight.Geodesy (EarthMath(..), EarthModel(..))
 
@@ -173,6 +176,13 @@ data TaskRouteDistance =
         , launchToEssDistance :: QTaskDistance Double [u| m |]
         , launchToSssDistance :: QTaskDistance Double [u| m |]
         }
+
+routeLengthOfSs :: TaskRouteDistance -> LengthOfSs
+routeLengthOfSs TaskRouteDistance{wholeTaskDistance = TaskDistance d} =
+    -- TODO: Shouldn't leading use the speed section length?
+    let dKm :: Quantity Double [u| km |] = convert d
+        dKm' :: Quantity Rational [u| km |] = toRational' dKm
+    in LengthOfSs dKm'
 
 newtype RoutesLookupTaskDistance =
     RoutesLookupTaskDistance

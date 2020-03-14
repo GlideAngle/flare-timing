@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Prelude hiding (last)
-import Data.Maybe (fromMaybe, catMaybes, maybeToList)
+import Data.Maybe (fromMaybe, catMaybes)
 import Data.List.NonEmpty (nonEmpty, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -55,8 +55,9 @@ import Flight.Comp
     , pilotNamed
     )
 import Flight.Track.Time
-    ( LeadingAreas(..), TimeToTick, TickRow
-    , glideRatio, altBonusTimeToTick, copyTimeToTick, taskToLeading, leadingAreaSum
+    ( LeadingAreas(..), LeadAllDown(..), TimeToTick, TickRow
+    , glideRatio, altBonusTimeToTick, copyTimeToTick, taskToLeading
+    , leadingAreaFlown, leadingAreaAfterLanding, leadingAreaBeforeStart
     )
 import Flight.Track.Lead (DiscardingLead(..))
 import Flight.Track.Mask (RaceTime(..), racing)
@@ -67,7 +68,7 @@ import Flight.Scribe
     , readPilotAlignTimeWritePegThenDiscard
     , writeDiscardingLead
     )
-import Flight.Score (LeadingArea(..))
+import Flight.Score (LeadingArea(..), LcPoint)
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
@@ -198,7 +199,7 @@ filterTime
                     | ld <- raceLastDown
                     ]
 
-            let raceTime =
+            let raceTimes =
                     [ do
                         rt@RaceTime{..} <- crt
                         return $
@@ -231,7 +232,7 @@ filterTime
                         pilots
                 | n <- (IxTask <$> [1 .. ])
                 | toLeg <- speedSectionToLeg . speedSection <$> tasks
-                | rt <- raceTime
+                | rt <- raceTimes
                 | pilots <- taskPilots
                 ]
 
@@ -246,7 +247,7 @@ filterTime
                     | Task{stopped, zones = Zones{raw = zs}} <- tasks
                     ]
 
-            tss :: [[(Pilot, Maybe (LeadingAreas (Vector TickRow) (Maybe TickRow)))]] <- sequence
+            tss :: [[(Pilot, Maybe (LeadingAreas (Vector TickRow) (Maybe LcPoint)))]] <- sequence
                 [
                     sequence
                     [ do
@@ -266,7 +267,7 @@ filterTime
                     ]
                 | n <- (IxTask <$> [1 .. ])
                 | toLeg <- speedSectionToLeg . speedSection <$> tasks
-                | rt <- raceTime
+                | rt <- raceTimes
                 | pilots <- taskPilots
                 | timeToTick <- altBonusesOnTime
                 ]
@@ -276,17 +277,27 @@ filterTime
                         catMaybes $
                         [
                             do
-                                LeadingAreas{areaFlown = af, areaBeforeStart = bs, areaAfterLanding = al} <- a
+                                RaceTime{leadAllDown} <- rt
+                                down <- leadAllDown
+                                LeadingAreas{areaFlown = af, areaBeforeStart, areaAfterLanding} <- a
 
-                                let g = leadingAreaSum l s
-                                af' <- g $ V.toList af
-                                let bs' = fromMaybe (LeadingArea [u| 0 (km^2)*s |]) (g $ maybeToList bs)
-                                let al' = fromMaybe (LeadingArea [u| 0 (km^2)*s |]) (g $ maybeToList al)
+                                flown <- leadingAreaFlown l s $ V.toList af
+
+                                let beforeStart =
+                                        fromMaybe (LeadingArea [u| 0 (km^2)*s |]) $ do
+                                            bs <- areaBeforeStart
+                                            leadingAreaBeforeStart bs
+
+                                let afterLanding =
+                                        fromMaybe (LeadingArea [u| 0 (km^2)*s |]) $ do
+                                            al <- areaAfterLanding
+                                            leadingAreaAfterLanding (LeadAllDown down) al
+
                                 let a' =
                                         LeadingAreas
-                                            { areaFlown = af'
-                                            , areaAfterLanding = al'
-                                            , areaBeforeStart = bs'
+                                            { areaFlown = flown
+                                            , areaAfterLanding = afterLanding
+                                            , areaBeforeStart = beforeStart
                                             }
                                 return (p, a')
 
@@ -295,6 +306,7 @@ filterTime
                     | ts <- tss
                     | l <- (fmap . fmap) taskToLeading lsSpeedTask
                     | s <- speedSection <$> tasks
+                    | rt <- raceTimes
                     ]
 
             writeDiscardingLead (compToLeadArea compFile) (DiscardingLead ass)

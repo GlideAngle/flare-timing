@@ -36,8 +36,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces)
 import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Units ()
-import Flight.Gap.Fraction.Leading (LeadingFraction(..))
-import Flight.Gap.Leading.Area (LeadingArea(..), LeadingAreaUnits)
+import Flight.Gap.Fraction.Leading (EssTime(..), LeadingFraction(..), LeadAllDown(..))
+import Flight.Gap.Leading.Area (LeadingAreas(..), LeadingArea(..), LeadingAreaUnits, zeroLeadingAreaUnits)
 import Flight.Gap.Leading.Coef (LeadingCoef(..), LeadingCoefUnits, zeroLeadingCoefUnits)
 import Flight.Gap.Leading.Scaling (AreaToCoef(..), AreaToCoefUnits)
 import Flight.Gap.Equation (powerFraction)
@@ -99,18 +99,13 @@ data LcPoint =
         }
     deriving (Eq, Ord, Show)
 
-data LcSeq a =
-    LcSeq
-        { seq :: [a]
-        , extra :: Maybe a
-        }
-    deriving (Eq, Ord, Show)
+newtype LcSeq a = LcSeq{seq :: [a]} deriving (Eq, Ord, Show)
 
 -- | A pilot's track where points are task time paired with distance to the end
 -- of the speed section.
 type LcTrack = LcSeq LcPoint
 
-type LcArea = LcSeq (LeadingArea LeadingAreaUnits)
+type LcArea = LeadingAreas (LcSeq (LeadingArea LeadingAreaUnits)) (LeadingArea LeadingAreaUnits)
 type LcCoef = LcSeq (LeadingCoef LeadingCoefUnits)
 
 madeGoal :: LcTrack -> Bool
@@ -152,7 +147,7 @@ initialOffside (LengthOfSs len) x@LcSeq{seq = xs} =
      }
 
 cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
-cleanTrack len = towardsGoal . positiveTime . initialOffside len 
+cleanTrack len = towardsGoal . positiveTime . initialOffside len
 
 -- TODO: Log a case with uom-plugin
 -- areaSteps _ (LengthOfSs [u| 0 km |]) LcSeq{seq = xs} =
@@ -173,42 +168,40 @@ cleanTrack len = towardsGoal . positiveTime . initialOffside len
 -- | Calculate the leading area for a single track.
 areaSteps
     :: TaskDeadline
+    -> LeadAllDown
     -> LengthOfSs
     -> LcTrack
     -> LcArea
-areaSteps _ (LengthOfSs [u| 0 % 1 km |]) LcSeq{seq = xs} =
-    LcSeq
-        { seq = const (LeadingArea zero) <$> xs
-        , extra = Nothing
+areaSteps _ _ (LengthOfSs [u| 0 % 1 km |]) LcSeq{seq = xs} =
+    LeadingAreas
+        { areaFlown = LcSeq{seq = const (LeadingArea zero) <$> xs}
+        , areaAfterLanding = LeadingArea zeroLeadingAreaUnits
+        , areaBeforeStart = LeadingArea zeroLeadingAreaUnits
         }
 
-areaSteps _ _ LcSeq{seq = []} =
-    LcSeq
-        { seq = []
-        , extra = Nothing
+areaSteps _ _ _ LcSeq{seq = []} =
+    LeadingAreas
+        { areaFlown = LcSeq{seq = []}
+        , areaAfterLanding = LeadingArea zeroLeadingAreaUnits
+        , areaBeforeStart = LeadingArea zeroLeadingAreaUnits
         }
 
 areaSteps
     deadline@(TaskDeadline dl)
-    _
-    track@LcSeq{seq = xs', extra}
+    (LeadAllDown (EssTime tEss))
+    (LengthOfSs lenOfSs)
+    track@LcSeq{seq = xs'}
     | dl <= [u| 1s |] =
-        LcSeq
-            { seq = const (LeadingArea zero) <$> xs'
-            , extra = Nothing
+        LeadingAreas
+            { areaFlown = LcSeq{seq = const (LeadingArea zero) <$> xs'}
+            , areaAfterLanding = LeadingArea zeroLeadingAreaUnits
+            , areaBeforeStart = LeadingArea zeroLeadingAreaUnits
             }
     | otherwise =
-        LcSeq
-            { seq =
-                LeadingArea
-                . fromRational'
-                <$> steps
-
-            , extra =
-                LeadingArea
-                . fromRational'
-                . g
-                <$> extra
+        LeadingAreas
+            { areaFlown = LcSeq{seq = LeadingArea . fromRational' <$> steps}
+            , areaAfterLanding = afterLanding
+            , areaBeforeStart = beforeStart
             }
         where
             withinDeadline :: LcTrack
@@ -222,8 +215,8 @@ areaSteps
                     [] -> []
                     (y : _) -> y : ys
 
-            f :: LcPoint -> LcPoint -> Quantity _ [u| (km^2)*s |]
-            f
+            stepArea :: LcPoint -> LcPoint -> Quantity _ [u| (km^2)*s |]
+            stepArea
                 LcPoint
                     { mark = TaskTime tM
                     , togo = DistanceToEss dM
@@ -238,14 +231,26 @@ areaSteps
                 | not (isRaceLeg leg) = zero
                 | otherwise = tN *: (dM *: dM -: dN *: dN)
 
-            g :: LcPoint -> Quantity _ [u| (km^2)*s |]
-            g LcPoint
-                { mark = TaskTime t
-                , togo = DistanceToEss d
-                } = t *: d *: d
+            afterArea :: LcPoint -> Quantity _ [u| (km^2)*s |]
+            afterArea LcPoint{mark = TaskTime t@(MkQuantity ticks), togo = DistanceToEss d} =
+                if ticks == tEss then zero else t *: d *: d
+
+            beforeArea :: LcPoint -> Quantity _ [u| (km^2)*s |]
+            beforeArea LcPoint{mark = TaskTime t} =
+                t *: lenOfSs *: lenOfSs
 
             steps :: [Quantity _ [u| (km^2)*s |]]
-            steps = zipWith f ys' ys
+            steps = zipWith stepArea ys' ys
+
+            afterLanding =
+                case reverse ys of
+                    (y : _) -> LeadingArea . fromRational' $ afterArea y
+                    _ -> LeadingArea zeroLeadingAreaUnits
+
+            beforeStart =
+                case ys of
+                    (y : _) -> LeadingArea . fromRational' $ beforeArea y
+                    _ -> LeadingArea zeroLeadingAreaUnits
 
 isRaceLeg :: Leg -> Bool
 isRaceLeg (RaceLeg _) = True
@@ -278,13 +283,14 @@ areaToCoef (LengthOfSs l) =
 -- | Calculate the leading coefficient for a single track.
 leadingCoefficient
     :: TaskDeadline
+    -> LeadAllDown
     -> LengthOfSs
     -> LcTrack
     -> LeadingCoef LeadingCoefUnits
-leadingCoefficient deadline len xs =
+leadingCoefficient deadline leadAllDown len xs =
     LeadingCoef $ sum'
     $ f
-    <$> seq (areaSteps deadline len xs)
+    <$> seq (leadingAreaSum $ areaSteps deadline leadAllDown len xs)
     where
         sum' = foldr (+:) zero
 
@@ -294,13 +300,17 @@ leadingCoefficient deadline len xs =
         f :: LeadingArea LeadingAreaUnits -> LeadingCoefUnits
         f (LeadingArea a) = k $ toRational' a
 
+leadingAreaSum :: LcArea -> LcSeq (LeadingArea LeadingAreaUnits)
+leadingAreaSum = undefined
+
 -- | Calculate the leading coefficient for all tracks.
 leadingCoefficients
     :: TaskDeadline
+    -> LeadAllDown
     -> LengthOfSs
     -> [LcTrack]
     -> [LeadingCoef LeadingCoefUnits]
-leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
+leadingCoefficients deadline@(TaskDeadline maxTaskTime) leadAllDown len tracks =
     snd <$> csSorted
     where
         k :: Quantity Rational [u| (km^2)*s |] -> Quantity Double [u| 1 |]
@@ -334,7 +344,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
                 xsLandedOut
 
         lc :: LcTrack -> LeadingCoef LeadingCoefUnits
-        lc = leadingCoefficient deadline len
+        lc = leadingCoefficient deadline leadAllDown len
 
         csMadeGoal :: [(Int, LeadingCoef LeadingCoefUnits)]
         csMadeGoal = second lc <$> xsMadeGoal
@@ -399,20 +409,23 @@ allZero tracks = const (LeadingFraction 0) <$> tracks
 -- | Calculate the leading factor for all tracks.
 leadingFractions
     :: TaskDeadline
+    -> LeadAllDown
     -> LengthOfSs
     -> [LcTrack]
     -> [LeadingFraction]
-leadingFractions (TaskDeadline (MkQuantity 0)) _ tracks =
+leadingFractions (TaskDeadline (MkQuantity 0)) _ _ tracks =
     allZero tracks
-leadingFractions _ (LengthOfSs (MkQuantity 0)) tracks =
+leadingFractions _ (LeadAllDown (EssTime 0)) _ tracks =
     allZero tracks
-leadingFractions deadlines lens tracks =
+leadingFractions _ _ (LengthOfSs (MkQuantity 0)) tracks =
+    allZero tracks
+leadingFractions deadlines leadAllDown lens tracks =
     if | cMin == zeroLeadingCoefUnits -> allZero tracks
        | leadingDenominator cMin == 0 -> allZero tracks
        | otherwise -> leadingFraction (LeadingCoef cMin) <$> cs
     where
         cs :: [LeadingCoef LeadingCoefUnits]
-        cs = leadingCoefficients deadlines lens tracks
+        cs = leadingCoefficients deadlines leadAllDown lens tracks
 
         csNonZero :: [LeadingCoef LeadingCoefUnits]
         csNonZero = filter gtZero cs

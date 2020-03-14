@@ -1,5 +1,6 @@
 module Flight.Gap.Leading.Area
-    ( LeadingArea(..)
+    ( LeadingAreas(..)
+    , LeadingArea(..)
     , LeadingAreaUnits
     , zeroLeadingAreaUnits
     ) where
@@ -14,6 +15,15 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
+
+data LeadingAreas a b =
+    LeadingAreas
+        { areaFlown :: a
+        , areaAfterLanding :: b
+        , areaBeforeStart :: b
+        }
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 type LeadingAreaUnits = Quantity Double [u| (km^2)*s |]
 
