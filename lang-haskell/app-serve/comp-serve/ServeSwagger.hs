@@ -257,11 +257,6 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackLead) where
                  , TrackLead
                       { frac = LeadingFraction 0.80786961
                       , area = LeadingArea [u| 42221610.0724 km^2 s |]
-                      , areas =
-                          LeadingAreas
-                              (LeadingArea [u| 42221610.0724 km^2 s |])
-                              (LeadingArea [u| 0 km^2 s |])
-                              (LeadingArea [u| 0 km^2 s |])
                       , coef = LeadingCoef 1.70921115
                       }
                  )

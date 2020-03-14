@@ -60,7 +60,6 @@ cmpArea f a b =
 data TrackLead =
     TrackLead
         { area :: LeadingArea (Quantity Double [u| (km^2)*s |])
-        , areas :: LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))
         , coef :: LeadingCoef (Quantity Double [u| 1 |])
         , frac :: LeadingFraction
         }
@@ -104,7 +103,6 @@ compLeading DiscardingLead{areasWithDistanceSquared = ass} lsTask =
                         ( p
                         , TrackLead
                             { area = sumAreas a
-                            , areas = a
                             , coef = c
                             , frac =
                                 maybe
