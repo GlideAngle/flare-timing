@@ -87,8 +87,8 @@ nullArea =
         { leadAllDown = Nothing
         , raceDistance = Nothing
         , distanceTime = []
-        , areaAfterDown = []
-        , areaBeforeStart = []
+        , distanceTimeAfterDown = []
+        , distanceTimeBeforeStart = []
         }
 
 data RawLeadingArea =
@@ -98,8 +98,8 @@ data RawLeadingArea =
         -- ^ The distance of the speed section in km.
         , distanceTime :: [[Double]]
         -- ^ Pairs of (distance, lead time) in (km, s).
-        , areaAfterDown :: [[Double]]
-        , areaBeforeStart :: [[Double]]
+        , distanceTimeAfterDown :: [[Double]]
+        , distanceTimeBeforeStart :: [[Double]]
         }
     deriving (Eq, Ord, Generic)
 
@@ -110,7 +110,14 @@ instance FromJSON RawLeadingArea where
                 ld :: Maybe EssTime <- o .: "lead-all-down"
                 rd :: Maybe TaskDistance <- o .: "race-distance"
                 dt :: [[Double]] <- o .: "distance-time"
-                ad :: [[Double]] <- o .: "area-after-down"
-                bs :: [[Double]] <- o .: "area-before-start"
-                return $ RawLeadingArea ld rd dt ad bs
+                ad :: [[Double]] <- o .: "distance-time-after-down"
+                bs :: [[Double]] <- o .: "distance-time-before-start"
+                return
+                    RawLeadingArea
+                        { leadAllDown = ld
+                        , raceDistance = rd
+                        , distanceTime = dt
+                        , distanceTimeAfterDown = ad
+                        , distanceTimeBeforeStart = bs
+                        }
             ]

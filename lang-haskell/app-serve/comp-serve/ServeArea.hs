@@ -27,8 +27,8 @@ instance ToJSON RawLeadingArea where
         , "lead-all-down" .= toJSON down
         -- When the last pilot lands, seconds from the time of first lead.
         , "distance-time" .= toJSON ys
-        , "area-after-down" .= toJSON (areaAfterDown down d ys)
-        , "area-before-start" .= toJSON (areaBeforeStart d ys)
+        , "distance-time-after-down" .= toJSON (areaAfterDown down d ys)
+        , "distance-time-before-start" .= toJSON (areaBeforeStart d ys)
         ]
         where
             down = join $ leadAllDown <$> t
