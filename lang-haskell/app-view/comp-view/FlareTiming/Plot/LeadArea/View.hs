@@ -69,6 +69,16 @@ leadAreaPlot ix tweak sEx ld = do
         elClass "div" "tile is-7" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
+                    let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
+
+                    _ <- elDynClass "article" dMsgClass $ do
+                            elClass "div" "message-header" $ do
+                                el "p" $ text "Plot Instructions"
+                            elClass "div" "message-body" $
+                                text "Tap a row to plot distance versus time and visualise area."
+
+                            return ()
+
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ leftmost
                             [ ffor eAreas (\as -> liftIO $ do
@@ -82,18 +92,11 @@ leadAreaPlot ix tweak sEx ld = do
                                 return ())
                             ]
 
-                    let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
                     let dTableClass = ffor dPilot (\p -> "table is-striped" <> if p == nullPilot then " is-hidden" else "")
 
                     elClass "div" "level" $
                             elClass "div" "level-item" $ do
-                                _ <- elDynClass "article" dMsgClass $ do
-                                        elClass "div" "message-header" $ do
-                                            el "p" $ text "Plot Instructions"
-                                        elClass "div" "message-body" $ text "Select a pilot from the table to see a plot of area"
-                                        return ()
-
-                                _ <- elDynClass "table" dTableClass $ do
+                                _ <- elDynClass "table" dTableClass $
                                         el "thead" $ do
                                             el "tr" $ do
                                                 el "th" $ text ""
