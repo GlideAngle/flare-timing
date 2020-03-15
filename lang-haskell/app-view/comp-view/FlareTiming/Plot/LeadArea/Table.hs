@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.LeadArea.Table (tablePilotArea) where
 
 import Reflex.Dom
@@ -19,8 +21,8 @@ tablePilotArea
 tablePilotArea tweak sEx xs select = do
     ev <- dyn $ ffor tweak (\case
         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> do
-            tablePilotSimple xs
-            return never
+            ePilot <- tablePilotSimple xs select
+            return ePilot
 
         _ -> do
             ePilot <- tablePilotCompare tweak sEx xs select
@@ -32,9 +34,10 @@ tablePilotArea tweak sEx xs select = do
 tablePilotSimple
     :: MonadWidget t m
     => Dynamic t [(Pilot, TrackLead)]
-    -> m ()
-tablePilotSimple xs = do
-    _ <- elClass "table" "table is-striped" $ do
+    -> Dynamic t [Pilot]
+    -> m (Event t Pilot)
+tablePilotSimple xs select = do
+    ePilot :: Event _ Pilot <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "Area"
@@ -43,23 +46,34 @@ tablePilotSimple xs = do
 
                     return ()
 
-            el "tbody" $ do
-                simpleList xs (uncurry rowLeadSimple . splitDynPure)
+            ev <- el "tbody" $ do
+                ePilots <- simpleList xs (uncurry (rowLeadSimple select) . splitDynPure)
+                let ePilot' = switchDyn $ leftmost <$> ePilots
+                return ePilot'
 
-    return ()
+            return ev
+
+    return ePilot
 
 rowLeadSimple
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Dynamic t [Pilot]
+    -> Dynamic t Pilot
     -> Dynamic t TrackLead
-    -> m ()
-rowLeadSimple pilot av = do
-    el "tr" $ do
+    -> m (Event t Pilot)
+rowLeadSimple select p av = do
+    pilot <- sample $ current p
+    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
+
+    (eRow, _) <- elDynClass' "tr" rowClass $ do
         el "td" . dynText $ showArea . area <$> av
         el "td" . dynText $ showCoef . coef <$> av
-        el "td" . dynText $ showPilot <$> pilot
+        el "td" . dynText $ showPilot <$> p
 
         return ()
+
+    let ePilot = const pilot <$> domEvent Click eRow
+    return ePilot
 
 tablePilotCompare
     :: MonadWidget t m
@@ -69,7 +83,7 @@ tablePilotCompare
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
 tablePilotCompare _ sEx xs select = do
-    ev <- elClass "table" "table is-striped" $ do
+    ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
