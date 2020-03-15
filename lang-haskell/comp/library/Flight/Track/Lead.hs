@@ -27,7 +27,7 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Distance (QTaskDistance)
 import Flight.Comp (Pilot)
 import Flight.Score
-    ( LeadingArea(..), LeadingAreaUnits, LeadingCoef(..), LeadingFraction(..)
+    ( LeadingArea(..), LeadingArea2Units, LeadingCoef(..), LeadingFraction(..)
     , LwScaling(..)
     , leadingFraction, areaToCoef, mkCoef
     )
@@ -38,7 +38,7 @@ import Flight.Zone.MkZones (Discipline(..))
 -- discarded and the leading areas collated.
 data DiscardingLead =
     DiscardingLead
-        { areasWithDistanceSquared :: [[(Pilot, LeadingAreas (LeadingArea LeadingAreaUnits) (LeadingArea LeadingAreaUnits))]]
+        { areasWithDistanceSquared :: [[(Pilot, LeadingAreas (LeadingArea LeadingArea2Units) (LeadingArea LeadingArea2Units))]]
         -- ^ For each task, the leading areas using distance squared.
         }
     deriving (Eq, Ord, Generic, ToJSON, FromJSON)

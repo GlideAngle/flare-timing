@@ -115,7 +115,7 @@ module Flight.Score
     , LeadingAreaScaling(..)
     , LeadingAreas(..)
     , LeadingArea(..)
-    , LeadingAreaUnits
+    , LeadingArea2Units
     , LeadingCoef(..)
     , AreaToCoef(..)
     , LeadingFraction(..)
@@ -127,12 +127,10 @@ module Flight.Score
     , areaToCoef
     , mkCoef
     , leadingFraction
-    , leadingFractions
-    , leadingCoefficient
     , madeGoal
     , cleanTrack
     , showSecs
-    , zeroLeadingAreaUnits
+    , zeroLeadingArea2Units
     -- * Places
     , ArrivalPlacing(..)
     , TaskPlacing(..)

@@ -70,6 +70,7 @@ import Flight.LatLng.Raw (RawLat, RawLng, RawAlt(..))
 import Flight.Score
     ( LeadingAreas(..)
     , LeadingArea(..)
+    , LeadingArea2Units
     , LeadingCoef(..)
     , TaskTime(..)
     , DistanceToEss(..)
@@ -468,7 +469,7 @@ leadingAreas
     where
         (landing, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival rows)
 
-        LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea =
+        LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea LeadingArea2Units =
             areaSteps
                 (TaskDeadline $ MkQuantity tt)
                 leadAllDown
