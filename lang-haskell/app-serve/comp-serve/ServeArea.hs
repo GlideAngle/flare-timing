@@ -9,7 +9,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.Track.Time (TickRow(..), LeadTick(..))
-import Flight.Score (LeadingArea(..), LeadingAreas(..), LeadingAreaUnits, EssTime(..))
+import Flight.Score (LeadingArea(..), LeadingAreas(..), LeadingArea2Units, EssTime(..))
 import Flight.Track.Mask (RaceTime(..))
 
 data RawLeadingArea =
@@ -18,7 +18,7 @@ data RawLeadingArea =
         , raceDistance :: Maybe (QTaskDistance Double [u| m |])
         -- ^ The distance of the speed section.
         , ticks :: [TickRow]
-        , areaWithDistanceSquared :: LeadingAreas (LeadingArea LeadingAreaUnits) (LeadingArea LeadingAreaUnits)
+        , areaWithDistanceSquared :: LeadingAreas (LeadingArea LeadingArea2Units) (LeadingArea LeadingArea2Units)
         }
     deriving (Eq, Ord, Generic)
 

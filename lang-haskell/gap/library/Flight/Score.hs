@@ -115,6 +115,7 @@ module Flight.Score
     , LeadingAreaScaling(..)
     , LeadingAreas(..)
     , LeadingArea(..)
+    , LeadingArea1Units
     , LeadingArea2Units
     , LeadingCoef(..)
     , AreaToCoef(..)
@@ -123,13 +124,14 @@ module Flight.Score
     , LeadAllDown(..)
     , clampToEss
     , clampToDeadline
-    , areaSteps
+    , area2Steps
     , areaToCoef
     , mkCoef
     , leadingFraction
     , madeGoal
     , cleanTrack
     , showSecs
+    , zeroLeadingArea1Units
     , zeroLeadingArea2Units
     -- * Places
     , ArrivalPlacing(..)
@@ -230,6 +232,7 @@ import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Distance.Stop
 import Flight.Gap.Distance.Early
 import Flight.Gap.Leading
+import Flight.Gap.Leading2Area
 import Flight.Gap.Place.Arrival
 import Flight.Gap.Place.Task
 import Flight.Gap.Points.Arrival

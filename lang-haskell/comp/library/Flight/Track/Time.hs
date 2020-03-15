@@ -85,7 +85,7 @@ import Flight.Score
     , LeadAllDown(..)
     , Pilot
     , GlideRatio(..)
-    , areaSteps
+    , area2Steps
     , showSecs
     )
 import Flight.Distance (QTaskDistance, TaskDistance(..))
@@ -470,7 +470,7 @@ leadingAreas
         (landing, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival rows)
 
         LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea LeadingArea2Units =
-            areaSteps
+            area2Steps
                 (TaskDeadline $ MkQuantity tt)
                 leadAllDown
                 lengthOfSs
