@@ -117,6 +117,7 @@ data LeadingAreas a b =
 
 newtype LeadingAreaSquared = LeadingAreaSquared Double
     deriving (Eq, Ord, Show)
+    deriving newtype Num
 
 instance FromJSON LeadingAreaSquared where
     parseJSON x@(String _) = do

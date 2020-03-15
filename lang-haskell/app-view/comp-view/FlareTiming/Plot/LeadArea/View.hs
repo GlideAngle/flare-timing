@@ -65,13 +65,18 @@ leadAreaPlot ix tweak sEx ld = do
                         , areaBeforeStart = LeadingAreaSquared bs
                         }
                   | af == 0 && al == 0 && bs == 0 -> do
-                    elAttr "td" ("colspan" =: "3") $ text ""
+                    elAttr "td" ("colspan" =: "5") $ text ""
                     return ()
 
                 Just LeadingAreas{areaFlown = af, areaAfterLanding = al, areaBeforeStart = bs} -> do
+                    let afl = af + al
+                    let abfl = bs + afl
+
                     elClass "td" "has-text-right" . text $ showAreaSquared bs
-                    elClass "td" "has-text-right" . text $ showAreaSquared af
+                    elClass "td" "has-text-right has-text-weight-bold" . text $ showAreaSquared af
                     elClass "td" "has-text-right" . text $ showAreaSquared al
+                    elClass "td" "has-text-right has-text-weight-bold" . text $ showAreaSquared afl
+                    elClass "td" "has-text-right" . text $ showAreaSquared abfl
 
                     return ()
             return ()
@@ -112,9 +117,11 @@ leadAreaPlot ix tweak sEx ld = do
                                             el "tr" $ do
                                                 el "th" $ text ""
                                                 el "th" $ text "###-Pilot"
-                                                elClass "th" "has-text-right" $ text "Before"
-                                                elClass "th" "has-text-right" $ text "Flown"
-                                                elClass "th" "has-text-right" $ text "After"
+                                                elClass "th" "has-text-right" $ text "b = Before"
+                                                elClass "th" "has-text-right" $ text "f = Flown"
+                                                elClass "th" "has-text-right" $ text "a = After"
+                                                elClass "th" "has-text-right" $ text "f + a"
+                                                elClass "th" "has-text-right" $ text "b + f + a"
 
                                                 return ()
                                             el "tr" $ do
