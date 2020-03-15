@@ -490,7 +490,7 @@ leadingAreas
                 LandedNoLeaders -> Nothing
 
         beforeStart =
-            case lcPoints of
+            case filter (\LcPoint{leg} -> case leg of RaceLeg _ -> True; _ -> False) lcPoints of
                 (y : _) -> Just y
                 _ -> Nothing
 
