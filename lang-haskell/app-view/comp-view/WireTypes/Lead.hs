@@ -1,10 +1,12 @@
 module WireTypes.Lead
     ( LeadingArea(..)
+    , LeadingAreas(..)
     , LeadingCoefficient(..)
     , TrackLead(..)
     , RawLeadingArea(..)
     , EssTime(..)
     , showArea, showAreaDiff
+    , showAreaSquared
     , showCoef, showCoefDiff
     , nullArea
     ) where
@@ -54,6 +56,17 @@ data TrackLead =
 
 showArea :: LeadingArea -> T.Text
 showArea (LeadingArea a) =
+    T.pack . f $ printf "%.0f" a
+    where
+        -- SEE: https://stackoverflow.com/questions/3752898/haskell-format-number-with-commas
+        f x =
+            let (h, t') = case break (== '.') x of ([], t) -> (t, []); ht -> ht
+                h' = reverse . intercalate "," . chunksOf 3 $ reverse h
+            in
+                h' ++ t'
+
+showAreaSquared :: LeadingAreaSquared -> T.Text
+showAreaSquared (LeadingAreaSquared a) =
     T.pack . f $ printf "%.0f" a
     where
         -- SEE: https://stackoverflow.com/questions/3752898/haskell-format-number-with-commas

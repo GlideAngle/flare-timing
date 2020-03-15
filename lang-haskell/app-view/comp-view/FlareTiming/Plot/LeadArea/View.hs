@@ -8,7 +8,10 @@ import qualified FlareTiming.Plot.LeadArea.Plot as P (leadAreaPlot)
 
 import WireTypes.Comp (Tweak(..))
 import WireTypes.Route (TaskDistance(..))
-import WireTypes.Lead (TrackLead(..), RawLeadingArea(..), EssTime(..), nullArea)
+import WireTypes.Lead
+    ( TrackLead(..), RawLeadingArea(..), EssTime(..), LeadingAreas(..)
+    , nullArea, showAreaSquared
+    )
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot)
 import FlareTiming.Pilot (showPilot)
@@ -46,6 +49,23 @@ leadAreaPlot
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
 leadAreaPlot ix tweak sEx ld = do
+    let pilotLegend classes (pp, areas) = do
+            elClass "span" classes $ text "▩"
+            el "span" $ text (showPilot pp)
+            case areas of
+                Nothing -> return ()
+                Just LeadingAreas{areaFlown = af, areaAfterLanding = al, areaBeforeStart = bs} -> do
+                    el "span" . text $
+                        " ("
+                        <> showAreaSquared bs
+                        <> " << "
+                        <> showAreaSquared af
+                        <> " >> "
+                        <> showAreaSquared al
+                        <> ")"
+
+                    return ()
+            return ()
 
     elClass "div" "tile is-ancestor" $ mdo
         elClass "div" "tile is-7" $
@@ -69,48 +89,27 @@ leadAreaPlot ix tweak sEx ld = do
                                 el "ul" $ do
                                     el "li" $ do
                                         _ <- widgetHold (el "span" $ text "Select a pilot from the table to see a plot of area") $
-                                                    (\pp -> do
-                                                        elClass "span" "legend-reach" $ text "▩"
-                                                        el "span" $ text (showPilot pp)
-                                                        return ())
-                                                    <$> ePilot1
+                                                    pilotLegend "legend-reach" <$> ePilot1
                                         return ()
 
                                     el "li" $ do
                                         _ <- widgetHold (el "span" $ text "") $
-                                                    (\pp -> do
-                                                        elClass "span" "legend-effort" $ text "▩"
-                                                        el "span" $ text (showPilot pp)
-                                                        return ())
-                                                    <$> ePilot2
+                                                    pilotLegend "legend-effort" <$> ePilot2
                                         return ()
 
                                     el "li" $ do
                                         _ <- widgetHold (el "span" $ text "") $
-                                                    (\pp -> do
-                                                        elClass "span" "legend-time" $ text "▩"
-                                                        el "span" $ text (showPilot pp)
-                                                        return ())
-                                                    <$> ePilot3
+                                                    pilotLegend "legend-time" <$> ePilot3
                                         return ()
 
                                     el "li" $ do
                                         _ <- widgetHold (el "span" $ text "") $
-                                                    (\pp -> do
-                                                        elClass "span" "legend-leading" $ text "▩"
-                                                        el "span" $ text (showPilot pp)
-                                                        return ())
-                                                    <$> ePilot4
+                                                    pilotLegend "legend-leading" <$> ePilot4
                                         return ()
 
                                     el "li" $ do
                                         _ <- widgetHold (el "span" $ text "") $
-                                                    (\pp -> do
-                                                        elClass "span" "legend-arrival" $ text "▩"
-                                                        el "span" $ text (showPilot pp)
-                                                        return ())
-                                                    <$> ePilot5
-
+                                                    pilotLegend "legend-arrival" <$> ePilot5
                                         return ()
                     return ()
 
@@ -124,7 +123,7 @@ leadAreaPlot ix tweak sEx ld = do
         let pilotAreas :: [(Pilot, RawLeadingArea)] = take 5 $ repeat (nullPilot, nullArea)
         dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilotAreas (updated pilotArea')
         let ePilotAreas :: Event _ [(Pilot, RawLeadingArea)] = updated dPilotAreas
-        let ePilots :: Event _ [Pilot] = ffor ePilotAreas (fmap fst)
+        let ePilots :: Event _ [(Pilot, Maybe _)] = ffor ePilotAreas ((fmap . fmap) (Just . areas))
         let eAreas :: Event _ [RawLeadingArea] = ffor ePilotAreas (fmap snd)
 
         ePilot1 <-
@@ -134,7 +133,7 @@ leadAreaPlot ix tweak sEx ld = do
                         case take 1 $ ps ++ repeat np of
                             p : _ -> p
                             _ -> np)
-                    nullPilot
+                    (nullPilot, Nothing)
                     ePilots
 
         ePilot2 <-
@@ -144,7 +143,7 @@ leadAreaPlot ix tweak sEx ld = do
                         case take 1 . drop 1 $ (ps ++ repeat np) of
                             p : _ -> p
                             _ -> np)
-                    nullPilot
+                    (nullPilot, Nothing)
                     ePilots
 
         ePilot3 <-
@@ -154,7 +153,7 @@ leadAreaPlot ix tweak sEx ld = do
                         case take 1 . drop 2 $ (ps ++ repeat np) of
                             p : _ -> p
                             _ -> np)
-                    nullPilot
+                    (nullPilot, Nothing)
                     ePilots
 
         ePilot4 <-
@@ -164,7 +163,7 @@ leadAreaPlot ix tweak sEx ld = do
                         case take 1 . drop 3 $ (ps ++ repeat np) of
                             p : _ -> p
                             _ -> np)
-                    nullPilot
+                    (nullPilot, Nothing)
                     ePilots
 
         ePilot5 <-
@@ -174,7 +173,7 @@ leadAreaPlot ix tweak sEx ld = do
                         case take 1 . drop 4 $ (ps ++ repeat np) of
                             p : _ -> p
                             _ -> np)
-                    nullPilot
+                    (nullPilot, Nothing)
                     ePilots
 
         return ()
