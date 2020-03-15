@@ -339,6 +339,7 @@ data Nominal =
 data Tweak =
     Tweak
         { leadingWeightScaling :: Maybe LwScaling
+        , leadingAreaDistanceSquared :: Bool
         , arrivalRank :: Bool
         , arrivalTime :: Bool
         }

@@ -3,11 +3,12 @@
 
 module Flight.Fsdb.Tweak (parseTweak, xpTweak) where
 
+import Data.Maybe (fromMaybe)
 import Control.Arrow ((***))
 import Control.Monad (join)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
-    , unpickleDoc', xpWrap, xpElem, xpAttr, xpOption, xpFilterAttr, xp4Tuple
+    , unpickleDoc', xpWrap, xpElem, xpAttr, xpOption, xpFilterAttr, xp5Tuple
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -39,12 +40,13 @@ xpTweak discipline =
     xpElem "FsScoreFormula"
     $ xpFilterAttr
         (hasName "use_leading_points"
+        <+> hasName "use_distance_squared_for_LC"
         <+> hasName "double_leading_weight"
         <+> hasName "use_arrival_position_points"
         <+> hasName "use_arrival_time_points"
         )
     $ xpWrap
-        ( \(lp, dlw, ar, at) ->
+        ( \(lp, lsq, dlw, ar, at) ->
             let ls =
                     case (lp, dlw) of
                         (Just False, _) -> Just $ LwScaling 0
@@ -58,10 +60,16 @@ xpTweak discipline =
             in
                 Tweak
                     { leadingWeightScaling = ls'
+                    , leadingAreaDistanceSquared = fromMaybe False lsq
                     , arrivalRank = ar && discipline /= Paragliding
                     , arrivalTime = at && discipline /= Paragliding
                     }
-        , \Tweak{leadingWeightScaling = ls, arrivalRank = ar, arrivalTime = at} ->
+        , \Tweak
+            { leadingWeightScaling = ls
+            , leadingAreaDistanceSquared = lsq
+            , arrivalRank = ar
+            , arrivalTime = at
+            } ->
             let (lp, lw) =
                     -- SEE: https://stackoverflow.com/questions/9722689/haskell-how-to-map-a-tuple
                     join (***) Just $
@@ -71,10 +79,11 @@ xpTweak discipline =
                         Just (LwScaling _) -> (True, True)
                         Nothing -> (True, True)
 
-            in (lp, lw, ar, at)
+            in (lp, Just lsq, lw, ar, at)
         )
-    $ xp4Tuple
+    $ xp5Tuple
         (xpOption $ xpAttr "use_leading_points" xpBool)
+        (xpOption $ xpAttr "use_distance_squared_for_LC" xpBool)
         (xpOption $ xpAttr "double_leading_weight" xpBool)
         (xpAttr "use_arrival_position_points" xpBool)
         (xpAttr "use_arrival_time_points" xpBool)
@@ -88,7 +97,7 @@ getCompTweak discipline =
     >>> deep (hasName "FsCompetition")
     /> hasName "FsScoreFormula"
     >>> arr (unpickleDoc' $ xpTweak discipline))
-    `orElse` (constA . Right $ Tweak Nothing (discipline == HangGliding) False)
+    `orElse` (constA . Right $ Tweak Nothing False (discipline == HangGliding) False)
 
 parseTweak :: Discipline -> String -> IO (Either String [Tweak])
 parseTweak discipline contents = do

@@ -153,6 +153,7 @@ fsScoreFormula =
                     , "double_leading_weight"
                     , "use_arrival_position_points"
                     , "use_arrival_time_points"
+                    , "use_distance_squared_for_LC"
                     ])
                 . localPart)
             (isElem >>> hasName "FsScoreFormula")
