@@ -9,7 +9,8 @@ import qualified FlareTiming.Plot.LeadArea.Plot as P (leadAreaPlot)
 import WireTypes.Comp (Tweak(..))
 import WireTypes.Route (TaskDistance(..))
 import WireTypes.Lead
-    ( TrackLead(..), RawLeadingArea(..), EssTime(..), LeadingAreas(..)
+    ( TrackLead(..), RawLeadingArea(..), EssTime(..)
+    , LeadingAreas(..), LeadingAreaSquared(..)
     , nullArea, showAreaSquared
     )
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
@@ -54,6 +55,16 @@ leadAreaPlot ix tweak sEx ld = do
             el "td" $ text (showPilot pp)
             case areas of
                 Nothing -> do
+                    elAttr "td" ("colspan" =: "3") $ text ""
+                    return ()
+
+                Just
+                    LeadingAreas
+                        { areaFlown = LeadingAreaSquared af
+                        , areaAfterLanding = LeadingAreaSquared al
+                        , areaBeforeStart = LeadingAreaSquared bs
+                        }
+                  | af == 0 && al == 0 && bs == 0 -> do
                     elAttr "td" ("colspan" =: "3") $ text ""
                     return ()
 

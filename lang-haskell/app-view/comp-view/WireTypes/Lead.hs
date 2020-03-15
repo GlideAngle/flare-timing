@@ -1,5 +1,6 @@
 module WireTypes.Lead
     ( LeadingArea(..)
+    , LeadingAreaSquared(..)
     , LeadingAreas(..)
     , LeadingCoefficient(..)
     , TrackLead(..)
