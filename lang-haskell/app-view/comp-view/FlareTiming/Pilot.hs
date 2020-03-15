@@ -183,4 +183,5 @@ showPilotName :: Pilot -> T.Text
 showPilotName (Pilot (_, PilotName x)) = T.pack x
 
 showPilot :: Pilot -> T.Text
+showPilot (Pilot (PilotId "", _)) = ""
 showPilot (Pilot (PilotId x, PilotName y)) = T.pack $ printf "%03s-%s" x y
