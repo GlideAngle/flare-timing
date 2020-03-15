@@ -130,7 +130,7 @@ leadAreaPlot ix tweak sEx ld = do
                                 return ()
                     return ()
 
-        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld
+        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld dPilots
         dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
 
         area :: Event _ RawLeadingArea <- getTaskPilotArea ix (updated dPilot)
@@ -139,6 +139,7 @@ leadAreaPlot ix tweak sEx ld = do
 
         let pilotAreas :: [(Pilot, RawLeadingArea)] = take 5 $ repeat (nullPilot, nullArea)
         dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilotAreas (updated pilotArea')
+        let dPilots :: Dynamic _ [Pilot] = ffor dPilotAreas (fmap fst)
         let ePilotAreas :: Event _ [(Pilot, RawLeadingArea)] = updated dPilotAreas
         let ePilotLegends :: Event _ [(Pilot, Maybe _)] = ffor ePilotAreas ((fmap . fmap) (Just . areas))
         let eAreas :: Event _ [RawLeadingArea] = ffor ePilotAreas (fmap snd)

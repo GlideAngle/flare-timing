@@ -14,15 +14,16 @@ tablePilotArea
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
+    -> Dynamic t [Pilot]
     -> m (Event t Pilot)
-tablePilotArea tweak sEx xs = do
+tablePilotArea tweak sEx xs select = do
     ev <- dyn $ ffor tweak (\case
         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> do
             tablePilotSimple xs
             return never
 
         _ -> do
-            ePilot <- tablePilotCompare tweak sEx xs
+            ePilot <- tablePilotCompare tweak sEx xs select
             return ePilot)
 
     ePilot <- switchHold never ev
@@ -65,8 +66,9 @@ tablePilotCompare
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
+    -> Dynamic t [Pilot]
     -> m (Event t Pilot)
-tablePilotCompare _ sEx xs = do
+tablePilotCompare _ sEx xs select = do
     ev <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -87,7 +89,7 @@ tablePilotCompare _ sEx xs = do
                     let mapN = Map.fromList sEx'
 
                     ePilots <- el "tbody" $
-                            simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure)
+                            simpleList xs (uncurry (rowLeadCompare mapN select) . splitDynPure)
                     let ePilot' = switchDyn $ leftmost <$> ePilots
                     return ePilot')
 
@@ -104,10 +106,11 @@ tablePilotCompare _ sEx xs = do
 rowLeadCompare
     :: MonadWidget t m
     => Map.Map Pilot Norm.NormBreakdown
+    -> Dynamic t [Pilot]
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m (Event t Pilot)
-rowLeadCompare mapN p tl = do
+rowLeadCompare mapN select p tl = do
     (pilot, yArea, yAreaDiff) <- sample . current
                 $ ffor2 p tl (\pilot TrackLead{area} ->
                     case Map.lookup pilot mapN of
@@ -120,7 +123,9 @@ rowLeadCompare mapN p tl = do
 
                         _ -> (pilot, "", ""))
 
-    (eRow, _) <- el' "tr" $ do
+    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
+
+    (eRow, _) <- elDynClass' "tr" rowClass $ do
         elClass "td" "td-lead-area" . dynText $ showArea . area <$> tl
         elClass "td" "td-norm td-norm" . text $ yArea
         elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
