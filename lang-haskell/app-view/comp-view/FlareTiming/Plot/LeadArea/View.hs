@@ -50,19 +50,17 @@ leadAreaPlot
     -> m ()
 leadAreaPlot ix tweak sEx ld = do
     let pilotLegend classes (pp, areas) = do
-            elClass "span" classes $ text "▩"
-            el "span" $ text (showPilot pp)
+            el "td" $ elClass "span" classes $ text "▩"
+            el "td" $ text (showPilot pp)
             case areas of
-                Nothing -> return ()
+                Nothing -> do
+                    elAttr "td" ("colspan" =: "3") $ text ""
+                    return ()
+
                 Just LeadingAreas{areaFlown = af, areaAfterLanding = al, areaBeforeStart = bs} -> do
-                    el "span" . text $
-                        " ("
-                        <> showAreaSquared bs
-                        <> " << "
-                        <> showAreaSquared af
-                        <> " >> "
-                        <> showAreaSquared al
-                        <> ")"
+                    elClass "td" "has-text-right" . text $ showAreaSquared bs
+                    elClass "td" "has-text-right" . text $ showAreaSquared af
+                    elClass "td" "has-text-right" . text $ showAreaSquared al
 
                     return ()
             return ()
@@ -86,31 +84,40 @@ leadAreaPlot ix tweak sEx ld = do
 
                     elClass "div" "level" $
                             elClass "div" "level-item" $
-                                el "ul" $ do
-                                    el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "Select a pilot from the table to see a plot of area") $
-                                                    pilotLegend "legend-reach" <$> ePilot1
-                                        return ()
+                                elClass "table" "table is-striped" $ do
+                                    el "thead" $ do
+                                        el "tr" $ do
+                                            el "th" $ text ""
+                                            el "th" $ text "###-Pilot"
+                                            elClass "th" "has-text-right" $ text "Before"
+                                            elClass "th" "has-text-right" $ text "Flown"
+                                            elClass "th" "has-text-right" $ text "After"
 
-                                    el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "") $
-                                                    pilotLegend "legend-effort" <$> ePilot2
-                                        return ()
+                                            return ()
+                                        el "tr" $ do
+                                            _ <- widgetHold (el "span" $ text "Select a pilot from the table to see a plot of area") $
+                                                        pilotLegend "legend-reach" <$> ePilot1
+                                            return ()
 
-                                    el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "") $
-                                                    pilotLegend "legend-time" <$> ePilot3
-                                        return ()
+                                        el "tr" $ do
+                                            _ <- widgetHold (el "span" $ text "") $
+                                                        pilotLegend "legend-effort" <$> ePilot2
+                                            return ()
 
-                                    el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "") $
-                                                    pilotLegend "legend-leading" <$> ePilot4
-                                        return ()
+                                        el "tr" $ do
+                                            _ <- widgetHold (el "span" $ text "") $
+                                                        pilotLegend "legend-time" <$> ePilot3
+                                            return ()
 
-                                    el "li" $ do
-                                        _ <- widgetHold (el "span" $ text "") $
-                                                    pilotLegend "legend-arrival" <$> ePilot5
-                                        return ()
+                                        el "tr" $ do
+                                            _ <- widgetHold (el "span" $ text "") $
+                                                        pilotLegend "legend-leading" <$> ePilot4
+                                            return ()
+
+                                        el "tr" $ do
+                                            _ <- widgetHold (el "span" $ text "") $
+                                                        pilotLegend "legend-arrival" <$> ePilot5
+                                            return ()
                     return ()
 
         ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld
