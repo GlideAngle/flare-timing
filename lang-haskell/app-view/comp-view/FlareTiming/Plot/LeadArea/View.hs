@@ -82,49 +82,59 @@ leadAreaPlot ix tweak sEx ld = do
                                 return ())
                             ]
 
+                    let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
+                    let dTableClass = ffor dPilot (\p -> "table is-striped" <> if p == nullPilot then " is-hidden" else "")
+
                     elClass "div" "level" $
-                            elClass "div" "level-item" $
-                                elClass "table" "table is-striped" $ do
-                                    el "thead" $ do
-                                        el "tr" $ do
-                                            el "th" $ text ""
-                                            el "th" $ text "###-Pilot"
-                                            elClass "th" "has-text-right" $ text "Before"
-                                            elClass "th" "has-text-right" $ text "Flown"
-                                            elClass "th" "has-text-right" $ text "After"
+                            elClass "div" "level-item" $ do
+                                _ <- elDynClass "article" dMsgClass $ do
+                                        elClass "div" "message-header" $ do
+                                            el "p" $ text "Plot Instructions"
+                                        elClass "div" "message-body" $ text "Select a pilot from the table to see a plot of area"
+                                        return ()
 
-                                            return ()
-                                        el "tr" $ do
-                                            _ <- widgetHold (el "span" $ text "Select a pilot from the table to see a plot of area") $
-                                                        pilotLegend "legend-reach" <$> ePilot1
-                                            return ()
+                                _ <- elDynClass "table" dTableClass $ do
+                                        el "thead" $ do
+                                            el "tr" $ do
+                                                el "th" $ text ""
+                                                el "th" $ text "###-Pilot"
+                                                elClass "th" "has-text-right" $ text "Before"
+                                                elClass "th" "has-text-right" $ text "Flown"
+                                                elClass "th" "has-text-right" $ text "After"
 
-                                        el "tr" $ do
-                                            _ <- widgetHold (el "span" $ text "") $
-                                                        pilotLegend "legend-effort" <$> ePilot2
-                                            return ()
+                                                return ()
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-reach" <$> ePilot1
+                                                return ()
 
-                                        el "tr" $ do
-                                            _ <- widgetHold (el "span" $ text "") $
-                                                        pilotLegend "legend-time" <$> ePilot3
-                                            return ()
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-effort" <$> ePilot2
+                                                return ()
 
-                                        el "tr" $ do
-                                            _ <- widgetHold (el "span" $ text "") $
-                                                        pilotLegend "legend-leading" <$> ePilot4
-                                            return ()
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-time" <$> ePilot3
+                                                return ()
 
-                                        el "tr" $ do
-                                            _ <- widgetHold (el "span" $ text "") $
-                                                        pilotLegend "legend-arrival" <$> ePilot5
-                                            return ()
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-leading" <$> ePilot4
+                                                return ()
+
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-arrival" <$> ePilot5
+                                                return ()
+                                return ()
                     return ()
 
         ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld
-        ePilot' :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
+        dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
 
-        area :: Event _ RawLeadingArea <- getTaskPilotArea ix (updated ePilot')
-        pilotArea :: Dynamic _ (Pilot, RawLeadingArea) <- holdDyn (nullPilot, nullArea) (attachPromptlyDyn ePilot' area)
+        area :: Event _ RawLeadingArea <- getTaskPilotArea ix (updated dPilot)
+        pilotArea :: Dynamic _ (Pilot, RawLeadingArea) <- holdDyn (nullPilot, nullArea) (attachPromptlyDyn dPilot area)
         pilotArea' :: Dynamic _ (Pilot, RawLeadingArea) <- holdUniqDyn pilotArea
 
         let pilotAreas :: [(Pilot, RawLeadingArea)] = take 5 $ repeat (nullPilot, nullArea)
