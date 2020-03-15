@@ -7,8 +7,9 @@ of this changelog.
 
 * Show a plot of the leading area, selecting up to five pilots at once. Include
   the extra area added after landing and another potential area hinted at in FS
-  code comments, the area added before the start.
-* Show the leading area with thousands separator and units of km·s.
+  code comments, the area added before the start. Show the parts of the leading
+  area in the legend of the plot.
+* Show the leading area with thousands separator and units of km^2 s.
 * Show the leading area difference as actual value over expected value minus one.
 
 # Tasks in a Table
