@@ -34,7 +34,7 @@ import Control.Monad.Except (ExceptT(..), MonadError)
 import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList)
-
+import Numeric.Sampling
 import System.FilePath (takeFileName)
 
 import Flight.Clip (FlyingSection)
@@ -49,6 +49,7 @@ import Flight.Track.Land
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (DiscardingLead(..), TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
+import Flight.Track.Time (TickRow(..))
 import qualified Flight.Track.Mask as Mask (MaskingReach(..), MaskingArrival(..))
 import Flight.Track.Mask
     ( MaskingEffort(..)
@@ -1122,10 +1123,17 @@ getTaskPilotArea ii pilotId = do
                 (Just _, [], _, _) -> throwError $ errPilotTrackNotFound ix pilot
                 (Just _, _, [], _) -> throwError $ errPilotTrackNotFound ix pilot
                 (Just _, _, _, []) -> throwError $ errPilotTrackNotFound ix pilot
-                (Just xs', t : _, d : _, areas : _) ->
+                (Just [], _, _, _) -> throwError $ errPilotTrackNotFound ix pilot
+                (Just (x0 : xs1toN), t : _, d : _, areas : _) ->
                     case find (\(p'', _) -> p'' == p') areas of
                         Nothing -> throwError $ errPilotTrackNotFound ix pilot
-                        Just (_, a) -> return $ RawLeadingArea t d xs' a
+                        Just (_, a) ->
+                            case reverse xs1toN of
+                                [] -> return $ RawLeadingArea t d (x0 : xs1toN) a
+                                (xsN : xs2toM) -> do
+                                    ys <- liftIO $ resampleIO 500 xs2toM
+                                    let zs = x0 : (sortOn fixIdx ys) ++ [xsN]
+                                    return $ RawLeadingArea t d (nub zs) a
 
 getTaskPilotTrackFlyingSection :: Int -> String -> AppT k IO TrackFlyingSection
 getTaskPilotTrackFlyingSection ii pilotId = do

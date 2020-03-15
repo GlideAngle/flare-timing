@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fd4f413c522102b849680fb4ab486089e2958100693f71973e9755b5057f3f06
+-- hash: 62f1c5c88759c4ab3f8eef8821ae5036e23aa757d884e0cc2a2083eefe482c1a
 
 name:           app-serve
 version:        0.1.0
@@ -68,6 +68,7 @@ executable comp-serve
     , mtl
     , raw-strings-qq
     , safe-exceptions
+    , sampling
     , servant
     , servant-server
     , servant-swagger

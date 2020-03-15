@@ -29,6 +29,7 @@ in    defs
                   , "lens"
                   , "mtl"
                   , "raw-strings-qq"
+                  , "sampling"
                   , "safe-exceptions"
                   , "servant"
                   , "servant-server"
