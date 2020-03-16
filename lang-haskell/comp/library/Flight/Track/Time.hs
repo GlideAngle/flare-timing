@@ -1,4 +1,6 @@
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 {-|
 Module      : Flight.Track.Time
 Copyright   : (c) Block Scope Limited 2017
@@ -24,13 +26,14 @@ module Flight.Track.Time
     , TimeToTick
     , TickToTick
     , LeadingAreas(..)
-    , leadingAreas
+    , AreaSteps
+    , leading2Areas
     , leadingAreaFlown
     , leadingAreaAfterLanding
     , leadingAreaBeforeStart
     , minLeadingCoef
     , taskToLeading
-    , discard
+    , discard2
     , allHeaders
     , commentOnFixRange
     , copyTimeToTick
@@ -85,7 +88,6 @@ import Flight.Score
     , LeadAllDown(..)
     , Pilot
     , GlideRatio(..)
-    , area2Steps
     , showSecs
     )
 import Flight.Distance (QTaskDistance, TaskDistance(..))
@@ -96,6 +98,7 @@ import Data.Ratio.Rounding (dpRound)
 
 type TimeToTick = TimeRow -> TickRow
 type TickToTick = TickRow -> TickRow
+type AreaSteps u = TaskDeadline -> LeadAllDown -> LengthOfSs -> LcSeq LcPoint -> LcArea u
 
 data AwardedVelocity =
     AwardedVelocity
@@ -439,8 +442,9 @@ data LeadingLanding
     | LandedOutEveryPilot (Maybe LcPoint) -- ^ Landed out but so did everyone else.
     | LandedNoLeaders -- ^ Can't identify any leadings pilots.
 
-leadingAreas
-    :: (Int -> Leg)
+leading2Areas
+    :: AreaSteps LeadingArea2Units
+    -> (Int -> Leg)
     -> Maybe LengthOfSs
     -> Maybe LeadClose
     -> Maybe LeadAllDown
@@ -448,13 +452,14 @@ leadingAreas
     -> [TickRow]
     -> LeadingAreas [TickRow] (Maybe LcPoint)
 
-leadingAreas _ _ _ _ _ [] = LeadingAreas [] Nothing Nothing
+leading2Areas _ _ _ _ _ _ [] = LeadingAreas [] Nothing Nothing
 
-leadingAreas _ _ _ Nothing _ xs = LeadingAreas xs Nothing Nothing
-leadingAreas _ _ Nothing _ _ xs = LeadingAreas xs Nothing Nothing
-leadingAreas _ Nothing _ _ _ xs = LeadingAreas xs Nothing Nothing
+leading2Areas _ _ _ _ Nothing _ xs = LeadingAreas xs Nothing Nothing
+leading2Areas _ _ _ Nothing _ _ xs = LeadingAreas xs Nothing Nothing
+leading2Areas _ _ Nothing _ _ _ xs = LeadingAreas xs Nothing Nothing
 
-leadingAreas
+leading2Areas
+    areaSteps
     toLeg
     (Just lengthOfSs)
     close@(Just (LeadClose (EssTime tt)))
@@ -469,8 +474,8 @@ leadingAreas
     where
         (landing, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival rows)
 
-        LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea LeadingArea2Units =
-            area2Steps
+        LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea _ =
+            areaSteps
                 (TaskDeadline $ MkQuantity tt)
                 leadAllDown
                 lengthOfSs
@@ -668,8 +673,9 @@ altBonusTimeToTick (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..
             -- TODO: Stop rounding of togo in altBonus.
             in (unQuantity $ qAltGoal, fromRational . dpRound 3 . toRational $ unQuantity d)
 
-discard
-    :: TimeToTick
+discard2
+    :: AreaSteps LeadingArea2Units
+    -> TimeToTick
     -- ^ A function that converts the type of row. This is applied before rows
     -- are discarded.
     -> TickToTick
@@ -681,14 +687,14 @@ discard
     -> Maybe LeadArrival
     -> Vector TimeRow
     -> LeadingAreas (Vector TickRow) (Maybe LcPoint)
-discard timeToTick tickToTick toLeg dRace close down arrival =
+discard2 areaSteps timeToTick tickToTick toLeg dRace close down arrival =
     (\LeadingAreas{areaFlown = af, areaBeforeStart = bs, areaAfterLanding = al} ->
         LeadingAreas
             { areaFlown = V.fromList af
             , areaAfterLanding = al
             , areaBeforeStart = bs
             })
-    . leadingAreas toLeg dRace close down arrival
+    . leading2Areas areaSteps toLeg dRace close down arrival
     . discardFurther
     . dropZeros
     . fmap tickToTick

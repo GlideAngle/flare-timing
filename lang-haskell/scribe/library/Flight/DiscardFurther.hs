@@ -23,8 +23,8 @@ import qualified Data.Vector as V (fromList, toList, null, last)
 
 import Flight.Track.Time
     ( TickRow(..), LeadClose(..), LeadAllDown(..), LeadArrival(..), LeadingAreas(..)
-    , TimeToTick, TickToTick
-    , discard, allHeaders
+    , TimeToTick, TickToTick, AreaSteps
+    , discard2, allHeaders
     )
 import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
@@ -47,7 +47,7 @@ import Flight.Comp
     , routeLengthOfSs
     )
 import Flight.AlignTime (readAlignTime)
-import Flight.Score (LcPoint, Leg)
+import Flight.Score (LcPoint, Leg, LeadingArea2Units)
 
 data AltBonus = AltBonus Bool
 
@@ -130,7 +130,8 @@ readPilotBestDistance (AltBonus True) compFile (IxTask iTask) pilot = do
         (PegThenDiscardDir path, PegThenDiscardFile file) = pegThenDiscardPath dir iTask pilot
 
 readPilotAlignTimeWriteDiscardFurther
-    :: TimeToTick
+    :: AreaSteps LeadingArea2Units
+    -> TimeToTick
     -> TickToTick
     -> RoutesLookupTaskDistance
     -> CompInputFile
@@ -140,8 +141,9 @@ readPilotAlignTimeWriteDiscardFurther
     -> Maybe RaceTime
     -> Pilot
     -> IO (Maybe (LeadingAreas (Vector TickRow) (Maybe LcPoint)))
-readPilotAlignTimeWriteDiscardFurther _ _ _ _ _ _ _ Nothing _ = return Nothing
+readPilotAlignTimeWriteDiscardFurther _ _ _ _ _ _ _ _ Nothing _ = return Nothing
 readPilotAlignTimeWriteDiscardFurther
+    areaSteps
     timeToTick
     tickToTick
     (RoutesLookupTaskDistance lookupTaskLength)
@@ -151,7 +153,7 @@ readPilotAlignTimeWriteDiscardFurther
     if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    let areas = discard timeToTick tickToTick toLeg lengthOfSs close down arrival $ snd rows
+    let areas = discard2 areaSteps timeToTick tickToTick toLeg lengthOfSs close down arrival $ snd rows
     _ <- f $ areaFlown areas
     return $ Just areas
     where
@@ -165,7 +167,8 @@ readPilotAlignTimeWriteDiscardFurther
         arrival = LeadArrival <$> leadArrival raceTime
 
 readPilotAlignTimeWritePegThenDiscard
-    :: TimeToTick
+    :: AreaSteps LeadingArea2Units
+    -> TimeToTick
     -> TickToTick
     -> RoutesLookupTaskDistance
     -> CompInputFile
@@ -175,8 +178,9 @@ readPilotAlignTimeWritePegThenDiscard
     -> Maybe RaceTime
     -> Pilot
     -> IO (Maybe (LeadingAreas (Vector TickRow) (Maybe LcPoint)))
-readPilotAlignTimeWritePegThenDiscard _ _ _ _ _ _ _ Nothing _ = return Nothing
+readPilotAlignTimeWritePegThenDiscard _ _ _ _ _ _ _ _ Nothing _ = return Nothing
 readPilotAlignTimeWritePegThenDiscard
+    areaSteps
     timeToTick
     tickToTick
     (RoutesLookupTaskDistance lookupTaskLength)
@@ -186,7 +190,7 @@ readPilotAlignTimeWritePegThenDiscard
     if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    let areas = discard timeToTick tickToTick toLeg lengthOfSs close down arrival $ snd rows
+    let areas = discard2 areaSteps timeToTick tickToTick toLeg lengthOfSs close down arrival $ snd rows
     _ <- f $ areaFlown areas
     return $ Just areas
     where
@@ -214,7 +218,8 @@ readPilotPegThenDiscard compFile (IxTask i) pilot = do
     return $ V.toList rows
 
 readCompLeading
-    :: [TimeToTick]
+    :: AreaSteps LeadingArea2Units
+    -> [TimeToTick]
     -> [TickToTick]
     -> RoutesLookupTaskDistance
     -> CompInputFile
@@ -224,10 +229,10 @@ readCompLeading
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO [[(Pilot, LeadingAreas [TickRow] (Maybe LcPoint))]]
-readCompLeading timeToTicks tickToTicks lengths compFile select tasks toLegs raceTimes pilots =
+readCompLeading areaSteps timeToTicks tickToTicks lengths compFile select tasks toLegs raceTimes pilots =
     sequence
         [
-            (readTaskLeading timeToTick tickToTick lengths compFile select)
+            (readTaskLeading areaSteps timeToTick tickToTick lengths compFile select)
                 task
                 toLeg
                 rt
@@ -241,7 +246,8 @@ readCompLeading timeToTicks tickToTicks lengths compFile select tasks toLegs rac
         ]
 
 readTaskLeading
-    :: TimeToTick
+    :: AreaSteps LeadingArea2Units
+    -> TimeToTick
     -> TickToTick
     -> RoutesLookupTaskDistance
     -> CompInputFile
@@ -251,17 +257,18 @@ readTaskLeading
     -> Maybe RaceTime
     -> [Pilot]
     -> IO [(Pilot, LeadingAreas [TickRow] (Maybe LcPoint))]
-readTaskLeading timeToTick tickToTick lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
+readTaskLeading areaSteps timeToTick tickToTick lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
     if not (select iTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
-    xs <- mapM (readPilotLeading timeToTick tickToTick lengths compFile iTask toLeg raceTime) ps
+    xs <- mapM (readPilotLeading areaSteps timeToTick tickToTick lengths compFile iTask toLeg raceTime) ps
     return $ zip ps xs
     where
         dir = compFileToCompDir compFile
         (DiscardFurtherDir dOut) = discardFurtherDir dir i
 
 readPilotLeading
-    :: TimeToTick
+    :: AreaSteps LeadingArea2Units
+    -> TimeToTick
     -> TickToTick
     -> RoutesLookupTaskDistance
     -> CompInputFile
@@ -270,8 +277,9 @@ readPilotLeading
     -> Maybe RaceTime
     -> Pilot
     -> IO (LeadingAreas [TickRow] (Maybe LcPoint))
-readPilotLeading _ _ _ _ _ _ Nothing _ = return $ LeadingAreas [] Nothing Nothing
+readPilotLeading _ _ _ _ _ _ _ Nothing _ = return $ LeadingAreas [] Nothing Nothing
 readPilotLeading
+    areaSteps
     timeToTick
     tickToTick
     (RoutesLookupTaskDistance lookupTaskLength)
@@ -288,7 +296,8 @@ readPilotLeading
                     , areaBeforeStart = bs
                     , areaAfterLanding = al
                     })
-            . discard
+            . discard2
+                areaSteps
                 timeToTick
                 tickToTick
                 toLeg

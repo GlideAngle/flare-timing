@@ -68,7 +68,7 @@ import Flight.Scribe
     , readPilotAlignTimeWritePegThenDiscard
     , writeDiscardingLead
     )
-import Flight.Score (LeadingArea(..), LcPoint)
+import Flight.Score (LeadingArea(..), LcPoint, area2Steps)
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
@@ -221,6 +221,7 @@ filterTime
                 [
                     mapM_
                         (readPilotAlignTimeWriteDiscardFurther
+                            area2Steps
                             copyTimeToTick
                             id
                             routes
@@ -252,6 +253,7 @@ filterTime
                     sequence
                     [ do
                         a <- readPilotAlignTimeWritePegThenDiscard
+                                area2Steps
                                 timeToTick
                                 id
                                 routes
