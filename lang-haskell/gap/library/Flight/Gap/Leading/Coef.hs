@@ -24,14 +24,10 @@ zeroLeadingCoefUnits = zero
 newtype LeadingCoef a = LeadingCoef a
     deriving (Eq, Ord, Show, Generic)
 
-instance
-    (q ~ LeadingCoefUnits)
-    => DefaultDecimalPlaces (LeadingCoef q) where
+instance (q ~ LeadingCoefUnits) => DefaultDecimalPlaces (LeadingCoef q) where
     defdp _ = DecimalPlaces 8
 
-instance
-    (q ~ LeadingCoefUnits)
-    => Newtype (LeadingCoef q) q where
+instance (q ~ LeadingCoefUnits) => Newtype (LeadingCoef q) q where
     pack = LeadingCoef
     unpack (LeadingCoef a) = a
 
@@ -49,12 +45,8 @@ instance (q ~ LeadingCoefUnits) => FromJSON (LeadingCoef q) where
 
     parseJSON _ = empty
 
-instance
-    (q ~ LeadingCoefUnits)
-      => ToField (LeadingCoef q) where
+instance (q ~ LeadingCoefUnits) => ToField (LeadingCoef q) where
     toField (LeadingCoef (MkQuantity x)) = toField x
 
-instance
-    (q ~ LeadingCoefUnits)
-      => FromField (LeadingCoef q) where
+instance (q ~ LeadingCoefUnits) => FromField (LeadingCoef q) where
     parseField x = LeadingCoef . MkQuantity <$> parseField x

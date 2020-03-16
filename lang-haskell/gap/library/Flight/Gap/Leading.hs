@@ -11,8 +11,6 @@ module Flight.Gap.Leading
     , LengthOfSs(..)
     , madeGoal
     , cleanTrack
-    , areaToCoef
-    , mkCoef
     , leadingFraction
     , clampToEss
     , clampToDeadline
@@ -22,26 +20,16 @@ module Flight.Gap.Leading
 
 import Prelude hiding (seq)
 import "newtype" Control.Newtype (Newtype(..))
-import Control.Arrow (second)
-import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
-import Data.UnitsOfMeasure
-    ( (-:), (*:), (+:)
-    , u, zero, fromRational', toRational', recip'
-    )
+import Data.UnitsOfMeasure ((-:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces)
 import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Units ()
-import Flight.Gap.Fraction.Leading (EssTime(..), LeadingFraction(..), LeadAllDown(..))
-import Flight.Gap.Leading.Area
-    ( LeadingAreas(..), LeadingArea(..)
-    , LeadingArea1Units, zeroLeadingArea1Units
-    , LeadingArea2Units, zeroLeadingArea2Units
-    )
-import Flight.Gap.Leading.Coef (LeadingCoef(..), LeadingCoefUnits, zeroLeadingCoefUnits)
-import Flight.Gap.Leading.Scaling (AreaToCoef(..), AreaToCoefUnits)
+import Flight.Gap.Fraction.Leading (LeadingFraction(..))
+import Flight.Gap.Leading.Area (LeadingAreas(..), LeadingArea(..))
+import Flight.Gap.Leading.Coef (LeadingCoef(..), LeadingCoefUnits)
 import Flight.Gap.Equation (powerFraction)
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
@@ -169,25 +157,9 @@ clampToEss x@LcSeq{seq} =
         clamp p@LcPoint{togo = DistanceToEss dist} =
             p{togo = DistanceToEss $ max [u| 0 km |] dist}
 
-mkCoef
-    :: AreaToCoef AreaToCoefUnits
-    -> Quantity Rational [u| (km^2)*s |]
-    -> Quantity Double [u| 1 |]
-mkCoef (AreaToCoef k) area = fromRational' $ k *: area
-
-areaToCoef :: LengthOfSs -> AreaToCoef AreaToCoefUnits
-areaToCoef (LengthOfSs l) =
-    AreaToCoef . recip' $ [u| 1800 s |] *: l *: l
-
-leadingDenominator :: LeadingCoefUnits -> Double
-leadingDenominator (MkQuantity cMin) = cMin ** (1/2)
-
 leadingFraction
     :: LeadingCoef LeadingCoefUnits
     -> LeadingCoef LeadingCoefUnits
     -> LeadingFraction
 leadingFraction (LeadingCoef (MkQuantity lcMin)) (LeadingCoef (MkQuantity lc)) =
     LeadingFraction . toRational $ powerFraction lcMin lc
-
-allZero :: [LcTrack] -> [LeadingFraction]
-allZero tracks = const (LeadingFraction 0) <$> tracks

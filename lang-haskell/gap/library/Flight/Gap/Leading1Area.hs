@@ -1,12 +1,11 @@
 module Flight.Gap.Leading1Area
     ( area1Steps
+    , mk1Coef
+    , area1toCoef
     ) where
 
 import Prelude hiding (seq)
-import Data.UnitsOfMeasure
-    ( (-:), (*:)
-    , u, zero, fromRational'
-    )
+import Data.UnitsOfMeasure ((-:), (*:), u, zero, fromRational', recip')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
@@ -15,7 +14,18 @@ import Flight.Gap.Leading.Area
     ( LeadingAreas(..), LeadingArea(..)
     , LeadingArea1Units, zeroLeadingArea1Units
     )
+import Flight.Gap.Leading.Scaling (AreaToCoef(..), Area1ToCoefUnits)
 import Flight.Gap.Leading
+
+mk1Coef
+    :: AreaToCoef Area1ToCoefUnits
+    -> Quantity Rational [u| km*s |]
+    -> Quantity Double [u| 1 |]
+mk1Coef (AreaToCoef k) area = fromRational' $ k *: area
+
+area1toCoef :: LengthOfSs -> AreaToCoef Area1ToCoefUnits
+area1toCoef (LengthOfSs l) =
+    AreaToCoef . recip' $ [u| 1800 s |] *: l
 
 -- TODO: Log a case with uom-plugin
 -- area1Steps _ (LengthOfSs [u| 0 km |]) LcSeq{seq = xs} =

@@ -1,5 +1,5 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-module MaskLead (maskLead, raceTimes) where
+module MaskLead (mask2Lead, raceTimes) where
 
 import Data.Maybe (catMaybes)
 import Data.UnitsOfMeasure (u, convert, toRational')
@@ -23,9 +23,12 @@ import Flight.Comp.Distance (compDistance)
 import Flight.Track.Lead (DiscardingLead(..))
 import Flight.Track.Time (LeadTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
-import Flight.Track.Lead (comp2Leading)
+import Flight.Track.Lead2 (comp2Leading)
 import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
-import Flight.Score (BestTime(..), MinimumDistance(..), LengthOfSs(..), areaToCoef)
+import Flight.Score
+    ( BestTime(..), MinimumDistance(..), LengthOfSs(..)
+    , LeadingArea2Units, area2toCoef
+    )
 
 raceTimes :: TaskLeadingLookup -> [IxTask] -> [Task k] -> [Maybe RaceTime]
 raceTimes lookupTaskLeading iTasks tasks =
@@ -46,7 +49,7 @@ raceTimes lookupTaskLeading iTasks tasks =
     | task <- tasks
     ]
 
-maskLead
+mask2Lead
     :: (MinimumDistance (Quantity Double [u| km |]))
     -> [Maybe RaceTime]
     -> [Maybe TaskRouteDistance]
@@ -54,12 +57,12 @@ maskLead
     -> [[Pilot]]
     -> [Maybe (BestTime (Quantity Double [u| h |]))]
     -> [[Maybe (Pilot, Time.TickRow)]]
-    -> DiscardingLead
+    -> DiscardingLead LeadingArea2Units
     -> ( [Maybe (QTaskDistance Double [u| m |])]
        , [[Maybe (Pilot, Maybe LeadTick)]]
        , MaskingLead
        )
-maskLead
+mask2Lead
     free
     raceTime
     lsTask
@@ -84,7 +87,7 @@ maskLead
 
         lcAreaToCoef =
                 [
-                    areaToCoef
+                    area2toCoef
                     . LengthOfSs
                     . (\(TaskDistance d) -> convert . toRational' $ d)
                     <$> ssLen

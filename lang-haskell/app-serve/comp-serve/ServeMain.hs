@@ -166,7 +166,7 @@ data Config k
         , framing :: Maybe Sp.Framing
         , maskingArrival :: Maybe Mask.MaskingArrival
         , maskingEffort :: Maybe MaskingEffort
-        , discardingLead :: Maybe DiscardingLead
+        , discardingLead :: Maybe (DiscardingLead LeadingArea2Units)
         , maskingLead :: Maybe MaskingLead
         , maskingReach :: Maybe MaskingReach
         , maskingSpeed :: Maybe MaskingSpeed
@@ -1112,7 +1112,7 @@ getTaskPilotArea ii pilotId = do
         (_, _, Nothing) -> throwError $ errPilotNotFound pilot
         (Just p'
             , Just MaskingLead{raceTime = rt, raceDistance = rd}
-            , Just DiscardingLead{areasWithDistanceSquared = sq}) -> do
+            , Just DiscardingLead{areas = sq}) -> do
 
             xs <-
                 liftIO $ catchIO

@@ -1,7 +1,8 @@
 module Flight.Gap.Leading.Scaling
     ( LeadingAreaScaling(..)
     , AreaToCoef(..)
-    , AreaToCoefUnits
+    , Area1ToCoefUnits
+    , Area2ToCoefUnits
     , CoefUnits
     ) where
 
@@ -9,7 +10,7 @@ import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
@@ -17,27 +18,25 @@ import Flight.Units ()
 newtype LeadingAreaScaling = LeadingAreaScaling Rational
     deriving (Eq, Ord, Show)
 
-type AreaToCoefUnits = Quantity Rational [u| 1/((km^2)*s) |]
+type AreaToCoefUnits u = Quantity Rational u
+type Area1ToCoefUnits = Quantity Rational [u| 1/(km*s) |]
+type Area2ToCoefUnits = Quantity Rational [u| 1/((km^2)*s) |]
 type CoefUnits = Quantity Rational [u| 1 |]
 
 newtype AreaToCoef a = AreaToCoef a
     deriving (Eq, Ord, Show)
 
-instance
-    (q ~ AreaToCoefUnits)
-    => DefaultDecimalPlaces (AreaToCoef q) where
+instance (q ~ AreaToCoefUnits u) => DefaultDecimalPlaces (AreaToCoef q) where
     defdp _ = DecimalPlaces 14
 
-instance
-    (q ~ AreaToCoefUnits)
-    => Newtype (AreaToCoef q) q where
+instance (q ~ AreaToCoefUnits u) => Newtype (AreaToCoef q) q where
     pack = AreaToCoef
     unpack (AreaToCoef a) = a
 
-instance (q ~ AreaToCoefUnits) => ToJSON (AreaToCoef q) where
+instance (KnownUnit (Unpack u), q ~ AreaToCoefUnits u) => ToJSON (AreaToCoef q) where
     toJSON x = toJSON $ ViaQ x
 
-instance (q ~ AreaToCoefUnits) => FromJSON (AreaToCoef q) where
+instance (KnownUnit (Unpack u), q ~ AreaToCoefUnits u) => FromJSON (AreaToCoef q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x

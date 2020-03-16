@@ -28,6 +28,7 @@ import Prelude hiding (readFile, writeFile)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
+import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Yaml (decodeThrow)
 import qualified Data.Text.Encoding as T
 import qualified Data.Text as T
@@ -222,9 +223,9 @@ writeFraming (PegFrameFile path) stopTask = do
     BS.writeFile path yaml
 
 readDiscardingLead
-    :: MonadIO m
+    :: (MonadIO m, FromJSON (DiscardingLead q))
     => LeadAreaFile
-    -> m DiscardingLead
+    -> m (DiscardingLead q)
 readDiscardingLead (LeadAreaFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
@@ -270,7 +271,11 @@ readBonusReach
 readBonusReach (BonusReachFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
-writeDiscardingLead :: LeadAreaFile -> DiscardingLead -> IO ()
+writeDiscardingLead
+    :: (ToJSON (DiscardingLead q))
+    => LeadAreaFile
+    -> DiscardingLead q
+    -> IO ()
 writeDiscardingLead (LeadAreaFile path) discardingLead = do
     let cfg = Y.setConfCompare (fieldOrder discardingLead) Y.defConfig
     let yaml = Y.encodePretty cfg discardingLead

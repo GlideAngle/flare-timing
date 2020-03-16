@@ -80,7 +80,7 @@ import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskArrival (maskArrival, arrivalInputs)
 import MaskEffort (maskEffort, landDistances)
-import MaskLead (maskLead, raceTimes)
+import MaskLead (mask2Lead, raceTimes)
 import Mask.Reach.Time (maskReachTime)
 import Mask.Reach.Tick (maskReachTick)
 import MaskSpeed (maskSpeed)
@@ -215,7 +215,7 @@ writeMask
             discardingLeads <- readDiscardingLead (compToLeadArea compFile)
 
             let (dsNullAltBest, nullAltRowTicks, nullAltLead) =
-                    maskLead
+                    mask2Lead
                         free
                         raceTimes'
                         lsTask'
@@ -226,7 +226,7 @@ writeMask
                         discardingLeads
 
             let (dsBonusAltBest, _, _) =
-                    maskLead
+                    mask2Lead
                         free
                         raceTimes'
                         lsTask'

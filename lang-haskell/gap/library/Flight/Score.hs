@@ -126,8 +126,10 @@ module Flight.Score
     , clampToDeadline
     , area1Steps
     , area2Steps
-    , areaToCoef
-    , mkCoef
+    , area1toCoef
+    , area2toCoef
+    , mk1Coef
+    , mk2Coef
     , leadingFraction
     , madeGoal
     , cleanTrack

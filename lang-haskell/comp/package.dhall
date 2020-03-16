@@ -61,6 +61,8 @@ in    defs
               , "Flight.Track.Speed"
               , "Flight.Track.Arrival"
               , "Flight.Track.Lead"
+              , "Flight.Track.Lead1"
+              , "Flight.Track.Lead2"
               , "Flight.Track.Distance"
               ]
           }
