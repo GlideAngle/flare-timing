@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d156fc8e12c6a78d646bab9e46365a1b114fa112a81f19b11b80f3e60e676f2b
+-- hash: 63e7d4c600f5da182fdbc838c097bd1641c3d0caf182d7cc88811b1b1518cd69
 
 name:           flight-gap
 version:        0.1.0
@@ -58,6 +58,7 @@ library
       Flight.Gap.Leading.Area
       Flight.Gap.Leading.Coef
       Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
@@ -139,6 +140,7 @@ test-suite doctest
       Flight.Gap.Leading.Area
       Flight.Gap.Leading.Coef
       Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
@@ -223,6 +225,7 @@ test-suite score
       Flight.Gap.Leading.Area
       Flight.Gap.Leading.Coef
       Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival

@@ -124,6 +124,7 @@ module Flight.Score
     , LeadAllDown(..)
     , clampToEss
     , clampToDeadline
+    , area1Steps
     , area2Steps
     , areaToCoef
     , mkCoef
@@ -232,6 +233,7 @@ import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Distance.Stop
 import Flight.Gap.Distance.Early
 import Flight.Gap.Leading
+import Flight.Gap.Leading1Area
 import Flight.Gap.Leading2Area
 import Flight.Gap.Place.Arrival
 import Flight.Gap.Place.Task

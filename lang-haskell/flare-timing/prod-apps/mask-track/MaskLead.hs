@@ -23,7 +23,7 @@ import Flight.Comp.Distance (compDistance)
 import Flight.Track.Lead (DiscardingLead(..))
 import Flight.Track.Time (LeadTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
-import Flight.Track.Lead (compLeading)
+import Flight.Track.Lead (comp2Leading)
 import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
 import Flight.Score (BestTime(..), MinimumDistance(..), LengthOfSs(..), areaToCoef)
 
@@ -80,7 +80,7 @@ maskLead
     where
         lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask
         lsSpeedSubset = (fmap . fmap) speedSubsetDistance lsTask
-        (lcMin, lead) = compLeading discardingLead lsSpeedSubset
+        (lcMin, lead) = comp2Leading discardingLead lsSpeedSubset
 
         lcAreaToCoef =
                 [

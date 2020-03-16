@@ -70,6 +70,7 @@ import Flight.Score
     , DistanceValidity(..), LaunchValidity(..), TimeValidity(..)
     , TaskValidity(..), StopValidity(..)
     , TaskPoints(..)
+    , LeadingArea2Units
     )
 import Flight.Scribe
     ( readComp, readNormArrival, readNormLandout, readNormRoute, readNormScore
@@ -362,7 +363,7 @@ type GapPointApi k =
         :> Get '[JSON] [(Pilot, TrackArrival)]
 
     :<|> "mask-track" :> (Capture "task" Int) :> "lead"
-        :> Get '[JSON] [(Pilot, TrackLead)]
+        :> Get '[JSON] [(Pilot, TrackLead LeadingArea2Units)]
 
     :<|> "mask-track" :> (Capture "task" Int) :> "time"
         :> Get '[JSON] [(Pilot, TrackSpeed)]
@@ -1334,7 +1335,7 @@ getTaskArrival ii = do
 
         _ -> throwError $ errTaskStep "mask-track" ii
 
-getTaskLead :: Int -> AppT k IO [(Pilot, TrackLead)]
+getTaskLead :: Int -> AppT k IO [(Pilot, TrackLead LeadingArea2Units)]
 getTaskLead ii = do
     xs' <- fmap leadRank <$> asks maskingLead
     case xs' of

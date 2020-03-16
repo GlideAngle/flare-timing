@@ -249,7 +249,7 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackSpeed) where
                       }
                  )
 
-instance {-# OVERLAPPING #-} ToSchema (Pilot, TrackLead) where
+instance {-# OVERLAPPING #-} (u ~ LeadingArea2Units) => ToSchema (Pilot, TrackLead u) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & example ?~
             toJSON
@@ -618,7 +618,7 @@ instance ToSchema TrackArrival
 instance ToSchema q => ToSchema (ArrivalLag q)
 instance ToSchema ArrivalPlacing
 instance (ToSchema a, ToSchema b) => ToSchema (LeadingAreas a b)
-instance ToSchema TrackLead
+instance (u ~ LeadingArea2Units) => ToSchema (TrackLead u)
 instance ToSchema TrackSpeed
 instance ToSchema TrackEffort
 instance ToSchema TickRow

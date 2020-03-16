@@ -24,7 +24,7 @@ import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Distance (QTaskDistance)
 import Flight.Comp
     (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..), LastDown(..))
-import Flight.Score (Pilot(..), LeadingCoef(..), AreaToCoef(..), EssTime(..))
+import Flight.Score (Pilot(..), LeadingCoef(..), AreaToCoef(..), EssTime(..), LeadingArea2Units)
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Lead (TrackLead(..), cmpArea)
@@ -43,7 +43,7 @@ data MaskingLead =
         -- ^ For each task, the scaling of leading area.
         , leadCoefMin :: [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
         -- ^ For each task, the minimum of all pilot's leading coefficient.
-        , leadRank :: [[(Pilot, TrackLead)]]
+        , leadRank :: [[(Pilot, TrackLead LeadingArea2Units)]]
         -- ^ For each task, the rank order of leading and leading fraction.
         }
     deriving (Eq, Ord, Generic, ToJSON, FromJSON)

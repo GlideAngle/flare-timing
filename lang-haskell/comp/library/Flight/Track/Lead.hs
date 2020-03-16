@@ -10,7 +10,7 @@ The lead standing of a pilot's track in comparison to other pilots.
 module Flight.Track.Lead
     ( TrackLead(..)
     , DiscardingLead(..)
-    , compLeading
+    , comp2Leading
     , lwScalingDefault
     , cmpArea
     ) where
@@ -57,23 +57,25 @@ cmpArea f a b =
 
         _ -> f a b
 
-data TrackLead =
+data TrackLead u =
     TrackLead
-        { area :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        { area :: LeadingArea u
         , coef :: LeadingCoef (Quantity Double [u| 1 |])
         , frac :: LeadingFraction
         }
     deriving (Eq, Ord, Generic)
-    deriving anyclass (FromJSON, ToJSON)
 
-compLeading
+deriving instance (u ~ LeadingArea2Units) => FromJSON (TrackLead u)
+deriving instance (u ~ LeadingArea2Units) => ToJSON (TrackLead u)
+
+comp2Leading
     :: DiscardingLead
     -> [Maybe (QTaskDistance Double [u| m |])]
     ->
         ( [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
-        , [[(Pilot, TrackLead)]]
+        , [[(Pilot, TrackLead LeadingArea2Units)]]
         )
-compLeading DiscardingLead{areasWithDistanceSquared = ass} lsTask =
+comp2Leading DiscardingLead{areasWithDistanceSquared = ass} lsTask =
     (lcMins, lead)
     where
         ks :: [Quantity Rational [u| (km^2)*s |] -> Quantity Double [u| 1 |]]
@@ -87,7 +89,7 @@ compLeading DiscardingLead{areasWithDistanceSquared = ass} lsTask =
                 ]
 
         css :: [[(Pilot, LeadingCoef (Quantity Double [u| 1 |]))]] =
-                [ (fmap $ LeadingCoef . k . toRational' . unpack . sumAreas) <$> as
+                [ (fmap $ LeadingCoef . k . toRational' . unpack . sum2Areas) <$> as
                 | k <- ks
                 | as <- ass
                 ]
@@ -95,14 +97,14 @@ compLeading DiscardingLead{areasWithDistanceSquared = ass} lsTask =
         lcMins :: [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
         lcMins = minLeadingCoef <$> (fmap . fmap) snd css
 
-        lead :: [[(Pilot, TrackLead)]] =
+        lead :: [[(Pilot, TrackLead LeadingArea2Units)]] =
                 sortOn ((\TrackLead{coef = LeadingCoef c} -> c) . snd)
                 <$>
                 [
                     [
                         ( p
                         , TrackLead
-                            { area = sumAreas a
+                            { area = sum2Areas a
                             , coef = c
                             , frac =
                                 maybe
@@ -121,10 +123,10 @@ compLeading DiscardingLead{areasWithDistanceSquared = ass} lsTask =
                 | cs <- css
                 ]
 
-sumAreas
+sum2Areas
     :: LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))
     -> (LeadingArea (Quantity Double [u| (km^2)*s |]))
-sumAreas LeadingAreas{areaFlown = LeadingArea af, areaAfterLanding = LeadingArea al} =
+sum2Areas LeadingAreas{areaFlown = LeadingArea af, areaAfterLanding = LeadingArea al} =
     LeadingArea $ af +: al
 
 -- | The default explicit leading weight scaling for each discipline?

@@ -998,7 +998,7 @@ applyLinear
 
         MkQuantity best' = convert best :: Quantity Double [u| km |]
 
-leadingFraction :: TrackLead -> LeadingFraction
+leadingFraction :: TrackLead u -> LeadingFraction
 leadingFraction TrackLead{frac} = frac
 
 applyLeading :: Gap.Points -> LeadingFraction -> LeadingPoints
