@@ -309,6 +309,30 @@ in    defs
               , source-dirs =
                   "prod-apps/discard-further"
               }
+          , area-step =
+              { dependencies =
+                    deps
+                  # [ "safe-exceptions"
+                    , "vector"
+                    , "flight-clip"
+                    , "flight-gap"
+                    , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "AreaStepMain.hs"
+              , source-dirs =
+                  "prod-apps/area-step"
+              }
           , mask-track =
               { dependencies =
                     deps

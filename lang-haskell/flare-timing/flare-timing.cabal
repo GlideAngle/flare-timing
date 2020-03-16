@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e1b97d30bb252469fa5ce082178e9d68ddba448841a246b28fd1965c8aa65ca4
+-- hash: b0351ffe5b17232b96e7033aa6116eb8977b170e677798776fc4ff9fc4421d1e
 
 name:           flare-timing
 version:        0.1.0
@@ -65,6 +65,45 @@ executable align-time
     , siggy-chardust
     , transformers
     , uom-plugin
+    , yaml
+  default-language: Haskell2010
+
+executable area-step
+  main-is: AreaStepMain.hs
+  other-modules:
+      AreaStepOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/area-step
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-gap
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-time
+    , flight-zone
+    , formatting
+    , mtl
+    , raw-strings-qq
+    , safe-exceptions
+    , transformers
+    , uom-plugin
+    , vector
     , yaml
   default-language: Haskell2010
 
