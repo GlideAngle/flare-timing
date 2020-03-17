@@ -20,7 +20,7 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (find)
 import System.FilePath ((</>))
 
-import Flight.Track.Time (LeadTick(..), TimeRow(..), TimeHeader(..))
+import Flight.Track.Time (LeadTick(..), TimeRow(..), TimeHeader(..), timeHeader)
 import Flight.Comp
     ( CompInputFile(..)
     , AlignTimeFile(..)
@@ -40,10 +40,11 @@ readAlignTime (AlignTimeFile csvPath) = do
     contents <- liftIO $ BL.readFile csvPath
     either throwString return $ decodeByName contents
 
-writeAlignTime :: AlignTimeFile -> TimeHeader -> [TimeRow] -> IO ()
-writeAlignTime (AlignTimeFile path) (TimeHeader hs) xs =
+writeAlignTime :: AlignTimeFile -> [TimeRow] -> IO ()
+writeAlignTime (AlignTimeFile path) xs =
     L.writeFile path rows
     where
+        TimeHeader hs = timeHeader
         opts = defaultEncodeOptions {encUseCrLf = False}
         rows = encodeByNameWith opts hs xs
 

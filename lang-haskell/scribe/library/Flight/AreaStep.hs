@@ -36,10 +36,11 @@ import Flight.Comp
 import Flight.DiscardFurther (readDiscardFurther, readCompBestDistances)
 import Flight.Score (LcPoint, Leg, LeadingArea2Units)
 
-writeAreaStep :: AreaStepFile -> AreaHeader -> Vector AreaRow -> IO ()
-writeAreaStep (AreaStepFile path) (AreaHeader hs) xs =
+writeAreaStep :: AreaStepFile -> Vector AreaRow -> IO ()
+writeAreaStep (AreaStepFile path) xs =
     L.writeFile path rows
     where
+        (AreaHeader hs) = areaHeader
         opts = defaultEncodeOptions {encUseCrLf = False}
         rows = encodeByNameWith opts hs $ V.toList xs
 
@@ -67,7 +68,7 @@ writePilotAreaStep compFile selectTask iTask@(IxTask i) (pilot, LeadingAreas{are
     _ <- f areaRows
     return $ Just areaRows
     where
-        f = writeAreaStep (AreaStepFile $ dOut </> file) areaHeader
+        f = writeAreaStep (AreaStepFile $ dOut </> file)
         dir = compFileToCompDir compFile
         (AreaStepDir dOut, AreaStepFile file) = areaStepPath dir i pilot
 

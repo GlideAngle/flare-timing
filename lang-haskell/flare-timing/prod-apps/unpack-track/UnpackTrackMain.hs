@@ -17,7 +17,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), TrackRow(..)
-    , timeHeader, commentOnFixRange
+    , commentOnFixRange
     )
 import Flight.Comp
     ( FileType(CompInput)
@@ -132,7 +132,7 @@ writePilotTimes :: CompInputFile -> Int -> (Pilot, [TrackRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
     putStrLn . commentOnFixRange pilot $ fixIdx <$> rows
     _ <- createDirectoryIfMissing True dOut
-    _ <- writeUnpackTrack (UnpackTrackFile $ dOut </> f) timeHeader rows
+    _ <- writeUnpackTrack (UnpackTrackFile $ dOut </> f) rows
     return ()
     where
         dir = compFileToCompDir compFile

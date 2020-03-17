@@ -27,7 +27,7 @@ import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Zone.Raw (Give)
 import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
-    , timeHeader, commentOnFixRange
+    , commentOnFixRange
     )
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(UTM))
 import Flight.Earth.Ellipsoid (wgs84)
@@ -133,7 +133,7 @@ writePilotTimes :: CompInputFile -> Int -> (Pilot, [TimeRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
     putStrLn . commentOnFixRange pilot $ fixIdx <$> rows
     _ <- createDirectoryIfMissing True dOut
-    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) timeHeader rows
+    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) rows
     return ()
     where
         dir = compFileToCompDir compFile

@@ -20,7 +20,7 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (toList)
 import System.FilePath ((</>))
 
-import Flight.Track.Time (TrackRow(..), TimeHeader(..))
+import Flight.Track.Time (TrackRow(..), TimeHeader(..), timeHeader)
 import Flight.Comp
     ( CompInputFile(..)
     , UnpackTrackFile(..)
@@ -40,10 +40,11 @@ readUnpackTrack (UnpackTrackFile csvPath) = do
     contents <- liftIO $ BL.readFile csvPath
     either throwString return $ decodeByName contents
 
-writeUnpackTrack :: UnpackTrackFile -> TimeHeader -> [TrackRow] -> IO ()
-writeUnpackTrack (UnpackTrackFile path) (TimeHeader hs) xs =
+writeUnpackTrack :: UnpackTrackFile -> [TrackRow] -> IO ()
+writeUnpackTrack (UnpackTrackFile path) xs =
     L.writeFile path rows
     where
+        (TimeHeader hs) = timeHeader
         opts = defaultEncodeOptions {encUseCrLf = False}
         rows = encodeByNameWith opts hs xs
 

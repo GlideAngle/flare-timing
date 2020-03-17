@@ -62,10 +62,11 @@ readPegThenDiscard (PegThenDiscardFile csvPath) = do
     contents <- liftIO $ BL.readFile csvPath
     either throwString return $ decodeByName contents
 
-writeDiscardFurther :: DiscardFurtherFile -> TickHeader -> Vector TickRow -> IO ()
-writeDiscardFurther (DiscardFurtherFile path) (TickHeader hs) xs =
+writeDiscardFurther :: DiscardFurtherFile -> Vector TickRow -> IO ()
+writeDiscardFurther (DiscardFurtherFile path) xs =
     L.writeFile path rows
     where
+        (TickHeader hs) = tickHeader
         opts = defaultEncodeOptions {encUseCrLf = False}
         rows = encodeByNameWith opts hs $ V.toList xs
 
@@ -143,7 +144,7 @@ readPilotAlignTimeWriteDiscardFurther
     _ <- f tickRows
     return $ Just tickRows
     where
-        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) tickHeader
+        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file)
         dir = compFileToCompDir compFile
         (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
         (DiscardFurtherDir dOut) = discardFurtherDir dir i
