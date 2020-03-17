@@ -70,7 +70,7 @@ comp1Leading DiscardingLead{areas = ass} lsTask =
                 ]
 
 sum1Areas
-    :: LeadingAreas (LeadingArea (Quantity Double [u| km*s |])) (LeadingArea (Quantity Double [u| km*s |]))
-    -> (LeadingArea (Quantity Double [u| km*s |]))
+    :: LeadingAreas (LeadingArea LeadingArea1Units) (LeadingArea LeadingArea1Units)
+    -> (LeadingArea LeadingArea1Units)
 sum1Areas LeadingAreas{areaFlown = LeadingArea af, areaAfterLanding = LeadingArea al} =
     LeadingArea $ af +: al

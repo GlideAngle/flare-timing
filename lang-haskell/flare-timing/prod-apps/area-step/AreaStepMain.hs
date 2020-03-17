@@ -12,9 +12,10 @@ import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
 import Data.Vector (Vector)
 import qualified Data.Vector as V (toList)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure ((*:), u, zero)
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
+import Flight.Distance (QTaskDistance)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
@@ -40,6 +41,7 @@ import Flight.Comp
     , FirstStart(..)
     , LastArrival(..)
     , LastDown(..)
+    , Tweak(..)
     , compToTaskLength
     , compToCross
     , compToLeadArea
@@ -52,7 +54,7 @@ import Flight.Comp
 import Flight.Track.Time
     ( LeadingAreas(..), LeadAllDown(..), AreaRow
     , taskToLeading
-    , leading2AreaFlown, leading2AreaAfterLanding, leading2AreaBeforeStart
+    , leadingAreaFlown, leadingAreaAfterLanding, leadingAreaBeforeStart
     )
 import Flight.Track.Lead (DiscardingLead(..))
 import Flight.Track.Mask (RaceTime(..), racing)
@@ -62,7 +64,11 @@ import Flight.Scribe
     , writeCompAreaStep
     , readCompLeading, writeDiscardingLead
     )
-import Flight.Score (LeadingArea(..), LcPoint, LeadingArea2Units, area2Steps)
+import Flight.Score
+    ( LeadingArea(..), LcPoint
+    , LeadingArea1Units, area1Steps
+    , LeadingArea2Units, area2Steps
+    )
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
@@ -138,7 +144,7 @@ filterTime
         -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
-    CompSettings{tasks}
+    CompSettings{tasks, compTweak}
     routes
     (TaskLeadingLookup lookupTaskLeading)
     compFile selectTasks selectPilots f = do
@@ -211,55 +217,134 @@ filterTime
                     | task <- tasks
                     ]
 
-            ass :: [[(Pilot, LeadingAreas (Vector AreaRow) (Maybe LcPoint))]]
-                    <- readCompLeading
-                        area2Steps
-                        routes
-                        compFile
-                        (includeTask selectTasks)
-                        (take (length tasks) (IxTask <$> [1 .. ]))
-                        (speedSectionToLeg . speedSection <$> tasks)
-                        raceTimes
-                        taskPilots
+            let lc = if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1
+            lc routes compFile selectTasks tasks lsSpeedTask raceTimes taskPilots
 
-            _ <- writeCompAreaStep compFile iTasks ass
+lc1
+    :: RoutesLookupTaskDistance
+    -> CompInputFile
+    -> [IxTask]
+    -> [Task k]
+    -> [Maybe (QTaskDistance Double [u| m |])]
+    -> [Maybe RaceTime]
+    -> [[Pilot]]
+    -> IO ()
+lc1 routes compFile selectTasks tasks lsSpeedTask raceTimes taskPilots = do
+    let iTasks = IxTask <$> [1 .. length taskPilots]
+    let mkArea d t = d *: t
 
-            let ass' :: [[(Pilot, (LeadingAreas (LeadingArea LeadingArea2Units) (LeadingArea LeadingArea2Units)))]] =
-                    [
-                        catMaybes $
-                        [
-                            do
-                                RaceTime{leadAllDown} <- rt
-                                down <- leadAllDown
-                                flown <- leading2AreaFlown l s $ V.toList af
+    ass :: [[(Pilot, LeadingAreas (Vector (AreaRow [u| km*s |])) (Maybe LcPoint))]]
+            <- readCompLeading
+                area1Steps
+                routes
+                compFile
+                (includeTask selectTasks)
+                (take (length tasks) (IxTask <$> [1 .. ]))
+                (speedSectionToLeg . speedSection <$> tasks)
+                raceTimes
+                taskPilots
 
-                                let beforeStart =
-                                        fromMaybe (LeadingArea [u| 0 (km^2)*s |]) $ do
-                                            bs <- areaBeforeStart
-                                            leading2AreaBeforeStart bs
+    _ <- writeCompAreaStep compFile iTasks ass
 
-                                let afterLanding =
-                                        fromMaybe (LeadingArea [u| 0 (km^2)*s |]) $ do
-                                            al <- areaAfterLanding
-                                            leading2AreaAfterLanding (LeadAllDown down) al
+    let ass' :: [[(Pilot, (LeadingAreas (LeadingArea LeadingArea1Units) (LeadingArea LeadingArea1Units)))]] =
+            [
+                catMaybes $
+                [
+                    do
+                        RaceTime{leadAllDown} <- rt
+                        down <- leadAllDown
+                        flown <- leadingAreaFlown l s $ V.toList af
 
-                                let a' =
-                                        LeadingAreas
-                                            { areaFlown = flown
-                                            , areaAfterLanding = afterLanding
-                                            , areaBeforeStart = beforeStart
-                                            }
-                                return (p, a')
+                        let beforeStart =
+                                fromMaybe (LeadingArea zero) $ do
+                                    bs <- areaBeforeStart
+                                    leadingAreaBeforeStart mkArea bs
 
-                        | (p, LeadingAreas{areaFlown = af, areaBeforeStart, areaAfterLanding}) <- as
-                        ]
-                    | as <- ass
-                    | l <- (fmap . fmap) taskToLeading lsSpeedTask
-                    | s <- speedSection <$> tasks
-                    | rt <- raceTimes
-                    ]
+                        let afterLanding =
+                                fromMaybe (LeadingArea zero) $ do
+                                    al <- areaAfterLanding
+                                    leadingAreaAfterLanding mkArea (LeadAllDown down) al
 
-            writeDiscardingLead (compToLeadArea compFile) (DiscardingLead{areas = ass'})
+                        let a' =
+                                LeadingAreas
+                                    { areaFlown = flown
+                                    , areaAfterLanding = afterLanding
+                                    , areaBeforeStart = beforeStart
+                                    }
+                        return (p, a')
+
+                | (p, LeadingAreas{areaFlown = af, areaBeforeStart, areaAfterLanding}) <- as
+                ]
+            | as <- ass
+            | l <- (fmap . fmap) taskToLeading lsSpeedTask
+            | s <- speedSection <$> tasks
+            | rt <- raceTimes
+            ]
+
+    writeDiscardingLead (compToLeadArea compFile) (DiscardingLead{areas = ass'})
+
+lc2
+    :: RoutesLookupTaskDistance
+    -> CompInputFile
+    -> [IxTask]
+    -> [Task k]
+    -> [Maybe (QTaskDistance Double [u| m |])]
+    -> [Maybe RaceTime]
+    -> [[Pilot]]
+    -> IO ()
+lc2 routes compFile selectTasks tasks lsSpeedTask raceTimes taskPilots = do
+    let iTasks = IxTask <$> [1 .. length taskPilots]
+    let mkArea d t = d *: d *: t
+
+    ass :: [[(Pilot, LeadingAreas (Vector (AreaRow [u| (km^2)*s |])) (Maybe LcPoint))]]
+            <- readCompLeading
+                area2Steps
+                routes
+                compFile
+                (includeTask selectTasks)
+                (take (length tasks) (IxTask <$> [1 .. ]))
+                (speedSectionToLeg . speedSection <$> tasks)
+                raceTimes
+                taskPilots
+
+    _ <- writeCompAreaStep compFile iTasks ass
+
+    let ass' :: [[(Pilot, (LeadingAreas (LeadingArea LeadingArea2Units) (LeadingArea LeadingArea2Units)))]] =
+            [
+                catMaybes $
+                [
+                    do
+                        RaceTime{leadAllDown} <- rt
+                        down <- leadAllDown
+                        flown <- leadingAreaFlown l s $ V.toList af
+
+                        let beforeStart =
+                                fromMaybe (LeadingArea zero) $ do
+                                    bs <- areaBeforeStart
+                                    leadingAreaBeforeStart mkArea bs
+
+                        let afterLanding =
+                                fromMaybe (LeadingArea zero) $ do
+                                    al <- areaAfterLanding
+                                    leadingAreaAfterLanding mkArea (LeadAllDown down) al
+
+                        let a' =
+                                LeadingAreas
+                                    { areaFlown = flown
+                                    , areaAfterLanding = afterLanding
+                                    , areaBeforeStart = beforeStart
+                                    }
+                        return (p, a')
+
+                | (p, LeadingAreas{areaFlown = af, areaBeforeStart, areaAfterLanding}) <- as
+                ]
+            | as <- ass
+            | l <- (fmap . fmap) taskToLeading lsSpeedTask
+            | s <- speedSection <$> tasks
+            | rt <- raceTimes
+            ]
+
+    writeDiscardingLead (compToLeadArea compFile) (DiscardingLead{areas = ass'})
 
 checkAll
     :: CompInputFile

@@ -1,6 +1,7 @@
 module Flight.Gap.Leading.Area
     ( LeadingAreas(..)
     , LeadingArea(..)
+    , LeadingAreaUnits
     , LeadingArea1Units, zeroLeadingArea1Units
     , LeadingArea2Units, zeroLeadingArea2Units
     ) where

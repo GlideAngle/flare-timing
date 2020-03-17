@@ -115,6 +115,7 @@ module Flight.Score
     , LeadingAreaScaling(..)
     , LeadingAreas(..)
     , LeadingArea(..)
+    , LeadingAreaUnits
     , LeadingArea1Units
     , LeadingArea2Units
     , LeadingCoef(..)

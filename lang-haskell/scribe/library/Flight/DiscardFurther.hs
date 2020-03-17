@@ -23,7 +23,7 @@ import qualified Data.Vector as V (toList, null, last)
 import Flight.Track.Time
     ( TimeRow(..), TickRow(..), TimeToTick, TickToTick
     , TickHeader(..)
-    , discard2, tickHeader
+    , timesToKeptTicks, tickHeader
     )
 import Flight.Comp
     ( IxTask(..)
@@ -140,7 +140,7 @@ readPilotAlignTimeWriteDiscardFurther
     if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
-    let tickRows :: Vector TickRow = discard2 timeToTick tickToTick timeRows
+    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick timeRows
     _ <- f tickRows
     return $ Just tickRows
     where
@@ -166,7 +166,7 @@ readPilotAlignTimeWritePegThenDiscard
     if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
-    let tickRows :: Vector TickRow = discard2 timeToTick tickToTick timeRows
+    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick timeRows
     _ <- f tickRows
     return $ Just tickRows
     where

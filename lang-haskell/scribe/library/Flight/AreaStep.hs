@@ -15,7 +15,7 @@ import Flight.Track.Time
     ( AreaRow(..), TickRow(..)
     , LeadClose(..), LeadAllDown(..), LeadArrival(..), LeadingAreas(..)
     , AreaSteps, AreaHeader(..)
-    , area2, areaHeader
+    , ticksToAreas, areaHeader
     )
 import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
@@ -34,9 +34,9 @@ import Flight.Comp
     , routeLengthOfSs
     )
 import Flight.DiscardFurther (readDiscardFurther, readCompBestDistances)
-import Flight.Score (LcPoint, Leg, LeadingArea2Units)
+import Flight.Score (LcPoint, Leg, LeadingAreaUnits)
 
-writeAreaStep :: AreaStepFile -> Vector AreaRow -> IO ()
+writeAreaStep :: AreaStepFile -> Vector (AreaRow u) -> IO ()
 writeAreaStep (AreaStepFile path) xs =
     L.writeFile path rows
     where
@@ -47,8 +47,8 @@ writeAreaStep (AreaStepFile path) xs =
 writeCompAreaStep
     :: CompInputFile
     -> [IxTask]
-    -> [[(Pilot, LeadingAreas (Vector AreaRow) (Maybe LcPoint))]]
-    -> IO [[Maybe (Vector AreaRow)]]
+    -> [[(Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))]]
+    -> IO [[Maybe (Vector (AreaRow u))]]
 writeCompAreaStep compFile tasks ass =
         sequence
         [ sequence $ (writePilotAreaStep compFile (const True) task) <$> as
@@ -60,8 +60,8 @@ writePilotAreaStep
     :: CompInputFile
     -> (IxTask -> Bool)
     -> IxTask
-    -> (Pilot, LeadingAreas (Vector AreaRow) (Maybe LcPoint))
-    -> IO (Maybe (Vector AreaRow))
+    -> (Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))
+    -> IO (Maybe (Vector (AreaRow u)))
 writePilotAreaStep compFile selectTask iTask@(IxTask i) (pilot, LeadingAreas{areaFlown = areaRows}) =
     if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
@@ -73,7 +73,7 @@ writePilotAreaStep compFile selectTask iTask@(IxTask i) (pilot, LeadingAreas{are
         (AreaStepDir dOut, AreaStepFile file) = areaStepPath dir i pilot
 
 readCompLeading
-    :: AreaSteps LeadingArea2Units
+    :: AreaSteps (LeadingAreaUnits u)
     -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
@@ -81,7 +81,7 @@ readCompLeading
     -> [Int -> Leg]
     -> [Maybe RaceTime]
     -> [[Pilot]]
-    -> IO [[(Pilot, LeadingAreas (Vector AreaRow) (Maybe LcPoint))]]
+    -> IO [[(Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))]]
 readCompLeading areaSteps lengths compFile select tasks toLegs raceTimes pilots =
     sequence
         [
@@ -97,7 +97,7 @@ readCompLeading areaSteps lengths compFile select tasks toLegs raceTimes pilots 
         ]
 
 readTaskLeading
-    :: AreaSteps LeadingArea2Units
+    :: AreaSteps (LeadingAreaUnits u)
     -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
@@ -105,7 +105,7 @@ readTaskLeading
     -> (Int -> Leg)
     -> Maybe RaceTime
     -> [Pilot]
-    -> IO [(Pilot, LeadingAreas (Vector AreaRow) (Maybe LcPoint))]
+    -> IO [(Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))]
 readTaskLeading areaSteps lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
     if not (select iTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
@@ -116,14 +116,14 @@ readTaskLeading areaSteps lengths compFile select iTask@(IxTask i) toLeg raceTim
         (DiscardFurtherDir dOut) = discardFurtherDir dir i
 
 readPilotLeading
-    :: AreaSteps LeadingArea2Units
+    :: AreaSteps (LeadingAreaUnits u)
     -> RoutesLookupTaskDistance
     -> CompInputFile
     -> IxTask
     -> (Int -> Leg)
     -> Maybe RaceTime
     -> Pilot
-    -> IO (LeadingAreas (Vector AreaRow) (Maybe LcPoint))
+    -> IO (LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))
 readPilotLeading _ _ _ _ _ Nothing _ = return $ LeadingAreas V.empty Nothing Nothing
 readPilotLeading
     areaSteps
@@ -141,7 +141,7 @@ readPilotLeading
                     , areaBeforeStart = bs
                     , areaAfterLanding = al
                     })
-            . area2
+            . ticksToAreas
                 areaSteps
                 toLeg
                 lengthOfSs
