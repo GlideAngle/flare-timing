@@ -166,13 +166,13 @@ newtype AreaHeader = AreaHeader Header
 -- interested in are unpack-track with align-time and align-time with
 -- discard-further.
 timeHeader :: TimeHeader
-timeHeader = TimeHeader $ V.fromList ["fixIdx", "time", "lat", "lng", "alt", "tickLead", "tickRace", "zoneIdx", "legIdx", "togo"]
+timeHeader = TimeHeader $ V.fromList ["fixIdx", "legIdx", "zoneIdx", "tickLead", "tickRace", "time", "lat", "lng", "alt", "togo"]
 
 tickHeader :: TickHeader
-tickHeader = TickHeader $ V.fromList ["fixIdx", "time", "lat", "lng", "alt", "tickLead", "tickRace", "zoneIdx", "legIdx", "togo"]
+tickHeader = TickHeader $ V.fromList ["fixIdx", "legIdx", "zoneIdx", "tickLead", "tickRace", "time", "lat", "lng", "alt", "togo"]
 
 areaHeader :: AreaHeader
-areaHeader = AreaHeader $ V.fromList ["fixIdx", "tickLead", "togo", "area"]
+areaHeader = AreaHeader $ V.fromList ["fixIdx", "legIdx", "tickLead", "togo", "area"]
 
 data TrackRow =
     TrackRow
@@ -256,8 +256,6 @@ data AreaRow =
     AreaRow
         { fixIdx :: FixIdx
         -- ^ The fix number for the whole track.
-        , alt :: RawAlt
-        -- ^ Altitude of the fix.
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
         , legIdx :: LegIdx
@@ -418,7 +416,6 @@ instance ToNamedRecord AreaRow where
             local =
                 namedRecord
                     [ namedField "fixIdx" fixIdx
-                    , namedField "alt" alt
                     , namedField "tickLead" tickLead
                     , namedField "legIdx" legIdx
                     , namedField "togo" (f togo)
@@ -439,7 +436,6 @@ instance FromNamedRecord AreaRow where
     parseNamedRecord m =
         AreaRow <$>
         m .: "fixIdx" <*>
-        m .: "alt" <*>
         m .: "tickLead" <*>
         m .: "legIdx" <*>
         m .: "togo" <*>
@@ -508,7 +504,6 @@ tickToArea :: TickRow -> AreaRow
 tickToArea TickRow{..} =
     AreaRow
         { fixIdx = fixIdx
-        , alt = alt
         , tickLead = tickLead
         , legIdx = legIdx
         , togo = togo
@@ -556,10 +551,10 @@ leading2Areas
                         lcTrack
 
                 flown =
+                    filter keepArea
                     [
                         AreaRow
                             { fixIdx = fixIdx
-                            , alt = alt
                             , tickLead = tickLead
                             , legIdx = legIdx
                             , togo = togo
@@ -577,8 +572,12 @@ leading2Areas
                         LandedOutEveryPilot x -> x
                         LandedNoLeaders -> Nothing
 
+                keepLeg leg = case leg of RaceLeg _ -> True; _ -> False
+                keepPoint LcPoint{leg} = keepLeg leg
+                keepArea AreaRow{legIdx = LegIdx i} = keepLeg $ toLeg i
+
                 beforeStart =
-                    case filter (\LcPoint{leg} -> case leg of RaceLeg _ -> True; _ -> False) lcPoints of
+                    case filter keepPoint lcPoints of
                         (y : _) -> Just y
                         _ -> Nothing
 
