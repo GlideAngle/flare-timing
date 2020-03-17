@@ -260,10 +260,6 @@ data AreaRow =
         -- ^ Altitude of the fix.
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
-        , tickRace :: Maybe RaceTick
-        -- ^ Seconds from first start.
-        , zoneIdx :: ZoneIdx
-        -- ^ The fix number for this leg.
         , legIdx :: LegIdx
         -- ^ Leg of the task
         , togo :: Double
@@ -424,8 +420,6 @@ instance ToNamedRecord AreaRow where
                     [ namedField "fixIdx" fixIdx
                     , namedField "alt" alt
                     , namedField "tickLead" tickLead
-                    , namedField "tickRace" tickRace
-                    , namedField "zoneIdx" zoneIdx
                     , namedField "legIdx" legIdx
                     , namedField "togo" (f togo)
                     , namedField "area" area
@@ -447,8 +441,6 @@ instance FromNamedRecord AreaRow where
         m .: "fixIdx" <*>
         m .: "alt" <*>
         m .: "tickLead" <*>
-        m .: "tickRace" <*>
-        m .: "zoneIdx" <*>
         m .: "legIdx" <*>
         m .: "togo" <*>
         m .: "area"
@@ -518,8 +510,6 @@ tickToArea TickRow{..} =
         { fixIdx = fixIdx
         , alt = alt
         , tickLead = tickLead
-        , tickRace = tickRace
-        , zoneIdx = zoneIdx
         , legIdx = legIdx
         , togo = togo
         , area = LeadingArea zero
@@ -571,8 +561,6 @@ leading2Areas
                             { fixIdx = fixIdx
                             , alt = alt
                             , tickLead = tickLead
-                            , tickRace = tickRace
-                            , zoneIdx = zoneIdx
                             , legIdx = legIdx
                             , togo = togo
                             , area = a
