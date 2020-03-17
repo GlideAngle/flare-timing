@@ -7,16 +7,15 @@ module Flight.AreaStep
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>))
 import Data.Csv (EncodeOptions(..), encodeByNameWith, defaultEncodeOptions)
-import qualified Data.ByteString.Char8 as S (pack)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
-import qualified Data.Vector as V (empty, fromList, toList)
+import qualified Data.Vector as V (empty, toList)
 
 import Flight.Track.Time
     ( AreaRow(..), TickRow(..)
     , LeadClose(..), LeadAllDown(..), LeadArrival(..), LeadingAreas(..)
-    , AreaSteps
-    , area2, allHeaders
+    , AreaSteps, AreaHeader(..)
+    , area2, areaHeader
     )
 import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
@@ -37,12 +36,11 @@ import Flight.Comp
 import Flight.DiscardFurther (readDiscardFurther, readCompBestDistances)
 import Flight.Score (LcPoint, Leg, LeadingArea2Units)
 
-writeAreaStep :: AreaStepFile -> [String] -> Vector AreaRow -> IO ()
-writeAreaStep (AreaStepFile path) headers xs =
+writeAreaStep :: AreaStepFile -> AreaHeader -> Vector AreaRow -> IO ()
+writeAreaStep (AreaStepFile path) (AreaHeader hs) xs =
     L.writeFile path rows
     where
         opts = defaultEncodeOptions {encUseCrLf = False}
-        hs = V.fromList $ S.pack <$> headers
         rows = encodeByNameWith opts hs $ V.toList xs
 
 writeCompAreaStep
@@ -69,7 +67,7 @@ writePilotAreaStep compFile selectTask iTask@(IxTask i) (pilot, LeadingAreas{are
     _ <- f areaRows
     return $ Just areaRows
     where
-        f = writeAreaStep (AreaStepFile $ dOut </> file) allHeaders
+        f = writeAreaStep (AreaStepFile $ dOut </> file) areaHeader
         dir = compFileToCompDir compFile
         (AreaStepDir dOut, AreaStepFile file) = areaStepPath dir i pilot
 

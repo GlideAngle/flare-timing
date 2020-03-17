@@ -15,13 +15,12 @@ import Data.Csv
     , encodeByNameWith
     , defaultEncodeOptions
     )
-import qualified Data.ByteString.Char8 as S (pack)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
-import qualified Data.Vector as V (fromList, find)
+import qualified Data.Vector as V (find)
 import System.FilePath ((</>))
 
-import Flight.Track.Time (LeadTick(..), TimeRow(..))
+import Flight.Track.Time (LeadTick(..), TimeRow(..), TimeHeader(..))
 import Flight.Comp
     ( CompInputFile(..)
     , AlignTimeFile(..)
@@ -41,12 +40,11 @@ readAlignTime (AlignTimeFile csvPath) = do
     contents <- liftIO $ BL.readFile csvPath
     either throwString return $ decodeByName contents
 
-writeAlignTime :: AlignTimeFile -> [String] -> [TimeRow] -> IO ()
-writeAlignTime (AlignTimeFile path) headers xs =
+writeAlignTime :: AlignTimeFile -> TimeHeader -> [TimeRow] -> IO ()
+writeAlignTime (AlignTimeFile path) (TimeHeader hs) xs =
     L.writeFile path rows
     where
         opts = defaultEncodeOptions {encUseCrLf = False}
-        hs = V.fromList $ S.pack <$> headers
         rows = encodeByNameWith opts hs xs
 
 readCompTimeRows

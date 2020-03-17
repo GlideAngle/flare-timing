@@ -16,14 +16,14 @@ import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>))
 import Data.Csv
     (Header, decodeByName, EncodeOptions(..), encodeByNameWith, defaultEncodeOptions)
-import qualified Data.ByteString.Char8 as S (pack)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
-import qualified Data.Vector as V (fromList, toList, null, last)
+import qualified Data.Vector as V (toList, null, last)
 
 import Flight.Track.Time
     ( TimeRow(..), TickRow(..), TimeToTick, TickToTick
-    , discard2, allHeaders
+    , TickHeader(..)
+    , discard2, tickHeader
     )
 import Flight.Comp
     ( IxTask(..)
@@ -62,20 +62,18 @@ readPegThenDiscard (PegThenDiscardFile csvPath) = do
     contents <- liftIO $ BL.readFile csvPath
     either throwString return $ decodeByName contents
 
-writeDiscardFurther :: DiscardFurtherFile -> [String] -> Vector TickRow -> IO ()
-writeDiscardFurther (DiscardFurtherFile path) headers xs =
+writeDiscardFurther :: DiscardFurtherFile -> TickHeader -> Vector TickRow -> IO ()
+writeDiscardFurther (DiscardFurtherFile path) (TickHeader hs) xs =
     L.writeFile path rows
     where
         opts = defaultEncodeOptions {encUseCrLf = False}
-        hs = V.fromList $ S.pack <$> headers
         rows = encodeByNameWith opts hs $ V.toList xs
 
-writePegThenDiscard :: PegThenDiscardFile -> [String] -> Vector TickRow -> IO ()
-writePegThenDiscard (PegThenDiscardFile path) headers xs =
+writePegThenDiscard :: PegThenDiscardFile -> TickHeader -> Vector TickRow -> IO ()
+writePegThenDiscard (PegThenDiscardFile path) (TickHeader hs) xs =
     L.writeFile path rows
     where
         opts = defaultEncodeOptions {encUseCrLf = False}
-        hs = V.fromList $ S.pack <$> headers
         rows = encodeByNameWith opts hs $ V.toList xs
 
 lastRow :: Vector TickRow -> Maybe TickRow
@@ -145,7 +143,7 @@ readPilotAlignTimeWriteDiscardFurther
     _ <- f tickRows
     return $ Just tickRows
     where
-        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) allHeaders
+        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) tickHeader
         dir = compFileToCompDir compFile
         (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
         (DiscardFurtherDir dOut) = discardFurtherDir dir i
@@ -171,7 +169,7 @@ readPilotAlignTimeWritePegThenDiscard
     _ <- f tickRows
     return $ Just tickRows
     where
-        f = writePegThenDiscard (PegThenDiscardFile $ dOut </> file) allHeaders
+        f = writePegThenDiscard (PegThenDiscardFile $ dOut </> file) tickHeader
         dir = compFileToCompDir compFile
         (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
         (PegThenDiscardDir dOut) = pegThenDiscardDir dir i

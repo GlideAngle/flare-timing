@@ -15,13 +15,12 @@ import Data.Csv
     , encodeByNameWith
     , defaultEncodeOptions
     )
-import qualified Data.ByteString.Char8 as S (pack)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
-import qualified Data.Vector as V (fromList, toList)
+import qualified Data.Vector as V (toList)
 import System.FilePath ((</>))
 
-import Flight.Track.Time (TrackRow(..))
+import Flight.Track.Time (TrackRow(..), TimeHeader(..))
 import Flight.Comp
     ( CompInputFile(..)
     , UnpackTrackFile(..)
@@ -41,12 +40,11 @@ readUnpackTrack (UnpackTrackFile csvPath) = do
     contents <- liftIO $ BL.readFile csvPath
     either throwString return $ decodeByName contents
 
-writeUnpackTrack :: UnpackTrackFile -> [String] -> [TrackRow] -> IO ()
-writeUnpackTrack (UnpackTrackFile path) headers xs =
+writeUnpackTrack :: UnpackTrackFile -> TimeHeader -> [TrackRow] -> IO ()
+writeUnpackTrack (UnpackTrackFile path) (TimeHeader hs) xs =
     L.writeFile path rows
     where
         opts = defaultEncodeOptions {encUseCrLf = False}
-        hs = V.fromList $ S.pack <$> headers
         rows = encodeByNameWith opts hs xs
 
 readCompTrackRows

@@ -36,7 +36,11 @@ module Flight.Track.Time
     , taskToLeading
     , discard2
     , area2
-    , allHeaders
+
+    , TimeHeader(..), timeHeader
+    , TickHeader(..), tickHeader
+    , AreaHeader(..), areaHeader
+
     , commentOnFixRange
     , copyTimeToTick
     , altBonusTimeToTick
@@ -50,7 +54,7 @@ import Data.Maybe (fromMaybe, catMaybes)
 import Data.Csv
     ( ToNamedRecord(..), FromNamedRecord(..)
     , ToField(..), FromField(..)
-    , (.:)
+    , Header, (.:)
     , namedRecord, namedField
     )
 import Data.List ((\\), findIndices)
@@ -151,17 +155,24 @@ newtype RaceTick = RaceTick Double
 instance Show RaceTick where
     show (RaceTick t) = showSecs $ toRational t
 
+newtype TimeHeader = TimeHeader Header
+newtype TickHeader = TickHeader Header
+newtype AreaHeader = AreaHeader Header
+
 -- WARNING: I suspect cassava doesn't support repeated column names.
 
--- | To enable easy CSV comparison, each CSV file has the same headers but for
--- some files these columns are empty of data. The file comparisons I'm
+-- | To enable easy CSV comparison, some CSV files have the same headers but
+-- for some files these columns are empty of data. The file comparisons I'm
 -- interested in are unpack-track with align-time and align-time with
 -- discard-further.
-allHeaders :: [String]
-allHeaders =
-    ["fixIdx", "time", "lat", "lng", "alt"]
-    ++ ["tickLead", "tickRace", "zoneIdx", "legIdx", "togo"]
-    ++ ["area"]
+timeHeader :: TimeHeader
+timeHeader = TimeHeader $ V.fromList ["fixIdx", "time", "lat", "lng", "alt", "tickLead", "tickRace", "zoneIdx", "legIdx", "togo"]
+
+tickHeader :: TickHeader
+tickHeader = TickHeader $ V.fromList ["fixIdx", "time", "lat", "lng", "alt", "tickLead", "tickRace", "zoneIdx", "legIdx", "togo"]
+
+areaHeader :: AreaHeader
+areaHeader = AreaHeader $ V.fromList ["fixIdx", "tickLead", "togo", "area"]
 
 data TrackRow =
     TrackRow
