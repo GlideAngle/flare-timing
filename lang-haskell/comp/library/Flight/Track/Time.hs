@@ -17,6 +17,7 @@ module Flight.Track.Time
     , TrackRow(..)
     , TimeRow(..)
     , TickRow(..)
+    , AreaRow(..)
     , LeadAllDown(..)
     , LeadArrival(..)
     , LeadClose(..)
@@ -28,12 +29,13 @@ module Flight.Track.Time
     , LeadingAreas(..)
     , AreaSteps
     , leading2Areas
-    , leadingAreaFlown
-    , leadingAreaAfterLanding
-    , leadingAreaBeforeStart
+    , leading2AreaFlown
+    , leading2AreaAfterLanding
+    , leading2AreaBeforeStart
     , minLeadingCoef
     , taskToLeading
     , discard2
+    , area2
     , allHeaders
     , commentOnFixRange
     , copyTimeToTick
@@ -64,7 +66,7 @@ import Data.UnitsOfMeasure
     )
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Vector (Vector)
-import qualified Data.Vector as V (fromList, toList)
+import qualified Data.Vector as V (fromList, toList, empty, null)
 
 import Flight.Units ()
 import Flight.Clip (FlyCut(..), FlyClipping(..))
@@ -204,7 +206,7 @@ data TimeRow =
 
 betweenTimeRow :: UTCTime -> UTCTime -> TimeRow -> Bool
 betweenTimeRow t0 t1 TimeRow{time = t} =
-    t0 <= t && t <= t1 
+    t0 <= t && t <= t1
 
 instance FlyClipping UTCTime [TimeRow] where
     clipToCut x@FlyCut{cut = Nothing} =
@@ -221,6 +223,28 @@ instance FlyClipping UTCTime [TimeRow] where
 -- | A fix but with time as elapsed time from the first crossing time.
 data TickRow =
     TickRow
+        { fixIdx :: FixIdx
+        -- ^ The fix number for the whole track.
+        , alt :: RawAlt
+        -- ^ Altitude of the fix.
+        , tickLead :: Maybe LeadTick
+        -- ^ Seconds from first lead.
+        , tickRace :: Maybe RaceTick
+        -- ^ Seconds from first start.
+        , zoneIdx :: ZoneIdx
+        -- ^ The fix number for this leg.
+        , legIdx :: LegIdx
+        -- ^ Leg of the task
+        , togo :: Double
+        -- ^ The distance yet to go to make goal in km.
+        , area :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        -- ^ Leading coefficient area step.
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | A fix but with time as elapsed time from the first crossing time.
+data AreaRow =
+    AreaRow
         { fixIdx :: FixIdx
         -- ^ The fix number for the whole track.
         , alt :: RawAlt
@@ -383,6 +407,44 @@ instance FromNamedRecord TickRow where
         m .: "togo" <*>
         m .: "area"
 
+instance ToNamedRecord AreaRow where
+    toNamedRecord AreaRow{..} =
+        unions [local, dummyTrack]
+        where
+            local =
+                namedRecord
+                    [ namedField "fixIdx" fixIdx
+                    , namedField "alt" alt
+                    , namedField "tickLead" tickLead
+                    , namedField "tickRace" tickRace
+                    , namedField "zoneIdx" zoneIdx
+                    , namedField "legIdx" legIdx
+                    , namedField "togo" (f togo)
+                    , namedField "area" area
+                    ]
+
+            -- NOTE: Fields in TrackRow that are not in TickRow.
+            dummyTrack =
+                namedRecord
+                    [ namedField "time" ("" :: String)
+                    , namedField "lat" ("" :: String)
+                    , namedField "lng" ("" :: String)
+                    ]
+
+            f = unquote . unpack . encode
+
+instance FromNamedRecord AreaRow where
+    parseNamedRecord m =
+        AreaRow <$>
+        m .: "fixIdx" <*>
+        m .: "alt" <*>
+        m .: "tickLead" <*>
+        m .: "tickRace" <*>
+        m .: "zoneIdx" <*>
+        m .: "legIdx" <*>
+        m .: "togo" <*>
+        m .: "area"
+
 minLeadingCoef
     :: [LeadingCoef (Quantity Double [u| 1 |])]
     -> Maybe (LeadingCoef (Quantity Double [u| 1 |]))
@@ -392,42 +454,42 @@ minLeadingCoef xs =
 -- TODO: The GAP guide says that the best distance for zeroth time is the
 -- leading distance. Describe how this interacts with the distance to goal of
 -- the first point on course.
-leadingAreaFlown
+leading2AreaFlown
     :: Maybe LengthOfSs
     -> SpeedSection
-    -> [TickRow]
-    -> Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
-leadingAreaFlown Nothing _ _ = Nothing
-leadingAreaFlown _ _ [] = Nothing
-leadingAreaFlown (Just _) Nothing xs =
+    -> [AreaRow]
+    -> Maybe (LeadingArea LeadingArea2Units)
+leading2AreaFlown Nothing _ _ = Nothing
+leading2AreaFlown _ _ [] = Nothing
+leading2AreaFlown (Just _) Nothing xs =
     Just . LeadingArea $ sum' ys
     where
         ys =
-            (\TickRow{area = LeadingArea a} -> a)
+            (\AreaRow{area = LeadingArea a} -> a)
             <$> xs
-leadingAreaFlown (Just _) (Just (start, _)) xs =
+leading2AreaFlown (Just _) (Just (start, _)) xs =
     if null ys then Nothing else
     Just . LeadingArea $ sum' ys
     where
         ys =
-            (\TickRow{area = LeadingArea a} -> a)
-            <$> filter (\TickRow{legIdx = LegIdx ix} -> ix >= start) xs
+            (\AreaRow{area = LeadingArea a} -> a)
+            <$> filter (\AreaRow{legIdx = LegIdx ix} -> ix >= start) xs
 
-leadingAreaAfterLanding
+leading2AreaAfterLanding
     :: LeadAllDown
     -> LcPoint
-    -> Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
-leadingAreaAfterLanding (LeadAllDown (EssTime t)) LcPoint{togo = DistanceToEss d}
+    -> Maybe (LeadingArea LeadingArea2Units)
+leading2AreaAfterLanding (LeadAllDown (EssTime t)) LcPoint{togo = DistanceToEss d}
     | t' <= zero = Nothing
     | d <= zero = Nothing
     | otherwise = Just . LeadingArea . fromRational' $ t' *: d *: d
     where
         t' = MkQuantity t
 
-leadingAreaBeforeStart
+leading2AreaBeforeStart
     :: LcPoint
-    -> Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
-leadingAreaBeforeStart LcPoint{mark = TaskTime t, togo = DistanceToEss d}
+    -> Maybe (LeadingArea LeadingArea2Units)
+leading2AreaBeforeStart LcPoint{mark = TaskTime t, togo = DistanceToEss d}
     | t <= zero = Nothing
     | d <= zero = Nothing
     | otherwise = Just . LeadingArea . fromRational' $ t *: d *: d
@@ -442,6 +504,19 @@ data LeadingLanding
     | LandedOutEveryPilot (Maybe LcPoint) -- ^ Landed out but so did everyone else.
     | LandedNoLeaders -- ^ Can't identify any leadings pilots.
 
+tickToArea :: TickRow -> AreaRow
+tickToArea TickRow{..} =
+    AreaRow
+        { fixIdx = fixIdx
+        , alt = alt
+        , tickLead = tickLead
+        , tickRace = tickRace
+        , zoneIdx = zoneIdx
+        , legIdx = legIdx
+        , togo = togo
+        , area = LeadingArea zero
+        }
+
 leading2Areas
     :: AreaSteps LeadingArea2Units
     -> (Int -> Leg)
@@ -449,14 +524,12 @@ leading2Areas
     -> Maybe LeadClose
     -> Maybe LeadAllDown
     -> Maybe LeadArrival
-    -> [TickRow]
-    -> LeadingAreas [TickRow] (Maybe LcPoint)
+    -> Vector TickRow
+    -> LeadingAreas (Vector AreaRow) (Maybe LcPoint)
 
-leading2Areas _ _ _ _ _ _ [] = LeadingAreas [] Nothing Nothing
-
-leading2Areas _ _ _ _ Nothing _ xs = LeadingAreas xs Nothing Nothing
-leading2Areas _ _ _ Nothing _ _ xs = LeadingAreas xs Nothing Nothing
-leading2Areas _ _ Nothing _ _ _ xs = LeadingAreas xs Nothing Nothing
+leading2Areas _ _ _ _ Nothing _ xs = LeadingAreas (tickToArea <$> xs) Nothing Nothing
+leading2Areas _ _ _ Nothing _ _ xs = LeadingAreas (tickToArea <$> xs) Nothing Nothing
+leading2Areas _ _ Nothing _ _ _ xs = LeadingAreas (tickToArea <$> xs) Nothing Nothing
 
 leading2Areas
     areaSteps
@@ -465,40 +538,53 @@ leading2Areas
     close@(Just (LeadClose (EssTime tt)))
     down@(Just leadAllDown)
     arrival
-    rows =
-        LeadingAreas
-            { areaFlown = flown
-            , areaAfterLanding = afterLanding
-            , areaBeforeStart = beforeStart
-            }
-    where
-        (landing, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival rows)
+    xs
+        | V.null xs = LeadingAreas V.empty Nothing Nothing
+        | otherwise =
+            LeadingAreas
+                { areaFlown = V.fromList flown
+                , areaAfterLanding = afterLanding
+                , areaBeforeStart = beforeStart
+                }
+            where
+                ys = V.toList xs
+                (landing, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival ys)
 
-        LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea _ =
-            areaSteps
-                (TaskDeadline $ MkQuantity tt)
-                leadAllDown
-                lengthOfSs
-                lcTrack
+                LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea _ =
+                    areaSteps
+                        (TaskDeadline $ MkQuantity tt)
+                        leadAllDown
+                        lengthOfSs
+                        lcTrack
 
-        flown =
-            [ r{area = area}
-            | r <- rows
-            | area <- areas
-            ]
+                flown =
+                    [
+                        AreaRow
+                            { fixIdx = fixIdx
+                            , alt = alt
+                            , tickLead = tickLead
+                            , tickRace = tickRace
+                            , zoneIdx = zoneIdx
+                            , legIdx = legIdx
+                            , togo = togo
+                            , area = a
+                            }
+                    | TickRow{..} <- ys
+                    | a <- areas
+                    ]
 
-        afterLanding =
-            case landing of
-                LandedAfterEss -> Nothing
-                LandedBeforeLastEss x -> x
-                LandedAfterLastEss x -> x
-                LandedOutEveryPilot x -> x
-                LandedNoLeaders -> Nothing
+                afterLanding =
+                    case landing of
+                        LandedAfterEss -> Nothing
+                        LandedBeforeLastEss x -> x
+                        LandedAfterLastEss x -> x
+                        LandedOutEveryPilot x -> x
+                        LandedNoLeaders -> Nothing
 
-        beforeStart =
-            case filter (\LcPoint{leg} -> case leg of RaceLeg _ -> True; _ -> False) lcPoints of
-                (y : _) -> Just y
-                _ -> Nothing
+                beforeStart =
+                    case filter (\LcPoint{leg} -> case leg of RaceLeg _ -> True; _ -> False) lcPoints of
+                        (y : _) -> Just y
+                        _ -> Nothing
 
 toLcPoint :: (Int -> Leg) -> TickRow -> Maybe LcPoint
 toLcPoint _ TickRow{tickLead = Nothing} = Nothing
@@ -673,32 +759,38 @@ altBonusTimeToTick (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..
             -- TODO: Stop rounding of togo in altBonus.
             in (unQuantity $ qAltGoal, fromRational . dpRound 3 . toRational $ unQuantity d)
 
-discard2
+area2
     :: AreaSteps LeadingArea2Units
-    -> TimeToTick
-    -- ^ A function that converts the type of row. This is applied before rows
-    -- are discarded.
-    -> TickToTick
-    -- ^ A function that converts rows after discarding.
     -> (Int -> Leg)
     -> Maybe LengthOfSs
     -> Maybe LeadClose
     -> Maybe LeadAllDown
     -> Maybe LeadArrival
-    -> Vector TimeRow
-    -> LeadingAreas (Vector TickRow) (Maybe LcPoint)
-discard2 areaSteps timeToTick tickToTick toLeg dRace close down arrival =
+    -> Vector TickRow
+    -> LeadingAreas (Vector AreaRow) (Maybe LcPoint)
+area2 areaSteps toLeg dRace close down arrival =
     (\LeadingAreas{areaFlown = af, areaBeforeStart = bs, areaAfterLanding = al} ->
         LeadingAreas
-            { areaFlown = V.fromList af
+            { areaFlown = af
             , areaAfterLanding = al
             , areaBeforeStart = bs
             })
     . leading2Areas areaSteps toLeg dRace close down arrival
+
+discard2
+    :: TimeToTick
+    -- ^ A function that converts the type of row. This is applied before rows
+    -- are discarded.
+    -> TickToTick
+    -- ^ A function that converts rows after discarding.
+    -> Vector TimeRow
+    -> Vector TickRow
+discard2 timeToTick tickToTick =
+    V.fromList
     . discardFurther
     . dropZeros
-    . fmap tickToTick
     . V.toList
+    . fmap tickToTick
     . fmap timeToTick
 
 -- | Drop any rows where the distance togo is zero.

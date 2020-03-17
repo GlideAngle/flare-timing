@@ -22,6 +22,7 @@ module Flight.Scribe
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
+    , module Flight.AreaStep
     ) where
 
 import Prelude hiding (readFile, writeFile)
@@ -72,6 +73,7 @@ import Flight.Comp
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
+import Flight.AreaStep
 
 readFsdbXml :: FilePath -> IO FsdbXml
 readFsdbXml path =

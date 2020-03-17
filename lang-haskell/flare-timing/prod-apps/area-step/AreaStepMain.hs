@@ -2,7 +2,6 @@
 
 import Prelude hiding (last)
 import Data.Maybe (fromMaybe, catMaybes)
-import Data.List.NonEmpty (nonEmpty, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -14,14 +13,11 @@ import System.FilePath (takeFileName)
 import Data.Vector (Vector)
 import qualified Data.Vector as V (toList)
 import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Zone.MkZones (Zones(..))
-import Flight.Zone.Raw (RawZone(..))
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Route (OptimalRoute(..))
 import Flight.Comp
@@ -30,7 +26,6 @@ import Flight.Comp
     , TagZoneFile(..)
     , TaskLengthFile(..)
     , CompSettings(..)
-    , Comp(..)
     , TaskStop(..)
     , Task(..)
     , PilotName(..)
@@ -55,20 +50,19 @@ import Flight.Comp
     , pilotNamed
     )
 import Flight.Track.Time
-    ( LeadingAreas(..), LeadAllDown(..), TimeToTick, TickRow
-    , glideRatio, altBonusTimeToTick, copyTimeToTick, taskToLeading
-    , leadingAreaFlown, leadingAreaAfterLanding, leadingAreaBeforeStart
+    ( LeadingAreas(..), LeadAllDown(..), AreaRow
+    , taskToLeading
+    , leading2AreaFlown, leading2AreaAfterLanding, leading2AreaBeforeStart
     )
 import Flight.Track.Lead (DiscardingLead(..))
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     ( readComp, readRoute, readTagging
-    , readPilotAlignTimeWriteDiscardFurther
-    , readPilotAlignTimeWritePegThenDiscard
-    , writeDiscardingLead
+    , writeCompAreaStep
+    , readCompLeading, writeDiscardingLead
     )
-import Flight.Score (LeadingArea(..), LcPoint, area2Steps)
+import Flight.Score (LeadingArea(..), LcPoint, LeadingArea2Units, area2Steps)
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
@@ -144,7 +138,7 @@ filterTime
         -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
-    CompSettings{comp = Comp{discipline = hgOrPg}, tasks}
+    CompSettings{tasks}
     routes
     (TaskLeadingLookup lookupTaskLeading)
     compFile selectTasks selectPilots f = do
@@ -217,83 +211,37 @@ filterTime
                     | task <- tasks
                     ]
 
-            sequence_
-                [
-                    mapM_
-                        (readPilotAlignTimeWriteDiscardFurther
-                            area2Steps
-                            copyTimeToTick
-                            id
-                            routes
-                            compFile
-                            (includeTask selectTasks)
-                            n
-                            toLeg
-                            rt)
-                        pilots
-                | n <- (IxTask <$> [1 .. ])
-                | toLeg <- speedSectionToLeg . speedSection <$> tasks
-                | rt <- raceTimes
-                | pilots <- taskPilots
-                ]
+            ass :: [[(Pilot, LeadingAreas (Vector AreaRow) (Maybe LcPoint))]]
+                    <- readCompLeading
+                        area2Steps
+                        routes
+                        compFile
+                        (includeTask selectTasks)
+                        (take (length tasks) (IxTask <$> [1 .. ]))
+                        (speedSectionToLeg . speedSection <$> tasks)
+                        raceTimes
+                        taskPilots
 
-            let altBonusesOnTime :: [TimeToTick] =
-                    [
-                        fromMaybe copyTimeToTick $ do
-                            _ <- stopped
-                            zs' <- nonEmpty zs
-                            let RawZone{alt} = last zs'
-                            altBonusTimeToTick (glideRatio hgOrPg) <$> alt
+            _ <- writeCompAreaStep compFile iTasks ass
 
-                    | Task{stopped, zones = Zones{raw = zs}} <- tasks
-                    ]
-
-            tss :: [[(Pilot, Maybe (LeadingAreas (Vector TickRow) (Maybe LcPoint)))]] <- sequence
-                [
-                    sequence
-                    [ do
-                        a <- readPilotAlignTimeWritePegThenDiscard
-                                area2Steps
-                                timeToTick
-                                id
-                                routes
-                                compFile
-                                (includeTask selectTasks)
-                                n
-                                toLeg
-                                rt
-                                p
-                        return $ (p, a)
-
-                    | p <- pilots
-                    ]
-                | n <- (IxTask <$> [1 .. ])
-                | toLeg <- speedSectionToLeg . speedSection <$> tasks
-                | rt <- raceTimes
-                | pilots <- taskPilots
-                | timeToTick <- altBonusesOnTime
-                ]
-
-            let ass :: [[(Pilot, (LeadingAreas (LeadingArea (Quantity Double [u| (km^2)*s |])) (LeadingArea (Quantity Double [u| (km^2)*s |]))))]] =
+            let ass' :: [[(Pilot, (LeadingAreas (LeadingArea LeadingArea2Units) (LeadingArea LeadingArea2Units)))]] =
                     [
                         catMaybes $
                         [
                             do
                                 RaceTime{leadAllDown} <- rt
                                 down <- leadAllDown
-                                LeadingAreas{areaFlown = af, areaBeforeStart, areaAfterLanding} <- a
-
-                                flown <- leadingAreaFlown l s $ V.toList af
+                                flown <- leading2AreaFlown l s $ V.toList af
 
                                 let beforeStart =
                                         fromMaybe (LeadingArea [u| 0 (km^2)*s |]) $ do
                                             bs <- areaBeforeStart
-                                            leadingAreaBeforeStart bs
+                                            leading2AreaBeforeStart bs
 
                                 let afterLanding =
                                         fromMaybe (LeadingArea [u| 0 (km^2)*s |]) $ do
                                             al <- areaAfterLanding
-                                            leadingAreaAfterLanding (LeadAllDown down) al
+                                            leading2AreaAfterLanding (LeadAllDown down) al
 
                                 let a' =
                                         LeadingAreas
@@ -303,15 +251,15 @@ filterTime
                                             }
                                 return (p, a')
 
-                        | (p, a) <- ts
+                        | (p, LeadingAreas{areaFlown = af, areaBeforeStart, areaAfterLanding}) <- as
                         ]
-                    | ts <- tss
+                    | as <- ass
                     | l <- (fmap . fmap) taskToLeading lsSpeedTask
                     | s <- speedSection <$> tasks
                     | rt <- raceTimes
                     ]
 
-            writeDiscardingLead (compToLeadArea compFile) (DiscardingLead ass)
+            writeDiscardingLead (compToLeadArea compFile) (DiscardingLead{areas = ass'})
 
 checkAll
     :: CompInputFile

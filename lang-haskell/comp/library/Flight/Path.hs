@@ -18,6 +18,7 @@ module Flight.Path
     , UnpackTrackFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
+    , AreaStepFile(..)
     , PegThenDiscardFile(..)
     , LeadAreaFile(..)
     , MaskArrivalFile(..)
@@ -32,6 +33,7 @@ module Flight.Path
     , UnpackTrackDir(..)
     , AlignTimeDir(..)
     , DiscardFurtherDir(..)
+    , AreaStepDir(..)
     , PegThenDiscardDir(..)
     , trimFsdbToNormArrival
     , trimFsdbToNormLandout
@@ -62,10 +64,12 @@ module Flight.Path
     , alignTimeDir
     , discardFurtherDir
     , pegThenDiscardDir
+    , areaStepDir
     , unpackTrackPath
     , alignTimePath
     , discardFurtherPath
     , pegThenDiscardPath
+    , areaStepPath
     , findNormArrival
     , findNormLandout
     , findNormRoute
@@ -145,11 +149,14 @@ newtype PegFrameFile = PegFrameFile FilePath deriving Show
 -- | The path to an unpack track directory for a single task.
 newtype UnpackTrackDir = UnpackTrackDir FilePath deriving Show
 
+-- | The path to a discard further directory for a single task.
+newtype DiscardFurtherDir = DiscardFurtherDir FilePath deriving Show
+
 -- | The path to an align time directory for a single task.
 newtype AlignTimeDir = AlignTimeDir FilePath deriving Show
 
--- | The path to a discard further directory for a single task.
-newtype DiscardFurtherDir = DiscardFurtherDir FilePath deriving Show
+-- | The path to a area step directory for a single task.
+newtype AreaStepDir = AreaStepDir FilePath deriving Show
 
 -- | The path to a peg then discard directory for a single task.
 newtype PegThenDiscardDir = PegThenDiscardDir FilePath deriving Show
@@ -162,6 +169,9 @@ newtype AlignTimeFile = AlignTimeFile FilePath deriving Show
 
 -- | The path to a discard further file.
 newtype DiscardFurtherFile = DiscardFurtherFile FilePath deriving Show
+
+-- | The path to a area step file.
+newtype AreaStepFile = AreaStepFile FilePath deriving Show
 
 -- | The path to a peg then discard file.
 newtype PegThenDiscardFile = PegThenDiscardFile FilePath deriving Show
@@ -313,6 +323,10 @@ pegThenDiscardPath :: CompDir -> Int -> Pilot -> (PegThenDiscardDir, PegThenDisc
 pegThenDiscardPath dir task pilot =
     (pegThenDiscardDir dir task, PegThenDiscardFile $ pilotPath pilot <.> "csv")
 
+areaStepPath :: CompDir -> Int -> Pilot -> (AreaStepDir, AreaStepFile)
+areaStepPath dir task pilot =
+    (areaStepDir dir task, AreaStepFile $ pilotPath pilot <.> "csv")
+
 unpackTrackDir :: CompDir -> Int -> UnpackTrackDir
 unpackTrackDir comp task =
     UnpackTrackDir $ dotDir comp "unpack-track" task
@@ -328,6 +342,10 @@ discardFurtherDir comp task =
 pegThenDiscardDir :: CompDir -> Int -> PegThenDiscardDir
 pegThenDiscardDir comp task =
     PegThenDiscardDir $ dotDir comp "peg-then-discard" task
+
+areaStepDir :: CompDir -> Int -> AreaStepDir
+areaStepDir comp task =
+    AreaStepDir $ dotDir comp "area-step" task
 
 dotDir :: CompDir -> FilePath -> Int -> FilePath
 dotDir (CompDir dir) name task =
@@ -352,6 +370,7 @@ data FileType
     | AlignTime
     | DiscardFurther
     | PegThenDiscard
+    | AreaStep
     | LeadArea
     | MaskArrival
     | MaskEffort
@@ -381,6 +400,7 @@ ext UnpackTrack = ".unpack-track.csv"
 ext AlignTime = ".align-time.csv"
 ext DiscardFurther = ".discard-further.csv"
 ext PegThenDiscard = ".peg-then-discard.csv"
+ext AreaStep = ".area-step.csv"
 ext LeadArea = ".lead-area.yaml"
 ext MaskArrival = ".mask-arrival.yaml"
 ext MaskEffort = ".mask-effort.yaml"
@@ -410,6 +430,7 @@ ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
 ensureExt AlignTime = flip replaceExtensions "align-time.csv"
 ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"
 ensureExt PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
+ensureExt AreaStep = flip replaceExtensions "area-step.csv"
 ensureExt LeadArea = flip replaceExtensions "lead-area.yaml"
 ensureExt MaskArrival = flip replaceExtensions "mask-arrival.yaml"
 ensureExt MaskEffort = flip replaceExtensions "mask-effort.yaml"
