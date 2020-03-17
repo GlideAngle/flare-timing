@@ -237,8 +237,6 @@ data TickRow =
         -- ^ Leg of the task
         , togo :: Double
         -- ^ The distance yet to go to make goal in km.
-        , area :: LeadingArea (Quantity Double [u| (km^2)*s |])
-        -- ^ Leading coefficient area step.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -382,7 +380,6 @@ instance ToNamedRecord TickRow where
                     , namedField "zoneIdx" zoneIdx
                     , namedField "legIdx" legIdx
                     , namedField "togo" (f togo)
-                    , namedField "area" area
                     ]
 
             -- NOTE: Fields in TrackRow that are not in TickRow.
@@ -391,6 +388,7 @@ instance ToNamedRecord TickRow where
                     [ namedField "time" ("" :: String)
                     , namedField "lat" ("" :: String)
                     , namedField "lng" ("" :: String)
+                    , namedField "area" ("" :: String)
                     ]
 
             f = unquote . unpack . encode
@@ -404,8 +402,7 @@ instance FromNamedRecord TickRow where
         m .: "tickRace" <*>
         m .: "zoneIdx" <*>
         m .: "legIdx" <*>
-        m .: "togo" <*>
-        m .: "area"
+        m .: "togo"
 
 instance ToNamedRecord AreaRow where
     toNamedRecord AreaRow{..} =
@@ -678,7 +675,6 @@ copyTimeToTick TimeRow{..} =
         , zoneIdx = zoneIdx
         , legIdx = legIdx
         , togo = togo
-        , area = LeadingArea zero
         }
 
 glideRatio :: Discipline -> GlideRatio
@@ -696,7 +692,6 @@ altBonusTickToTick (GlideRatio gr) (Alt qAltGoal) row@TickRow{alt = RawAlt a, ..
         , zoneIdx = zoneIdx
         , legIdx = legIdx
         , togo = togo'
-        , area = LeadingArea zero
         }
     where
         qAlt :: Quantity Double [u| m |]
@@ -733,7 +728,6 @@ altBonusTimeToTick (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..
         , zoneIdx = zoneIdx
         , legIdx = legIdx
         , togo = togo'
-        , area = LeadingArea zero
         }
     where
         qAlt :: Quantity Double [u| m |]
