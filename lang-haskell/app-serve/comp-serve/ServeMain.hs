@@ -37,6 +37,7 @@ import qualified Data.Vector as V (fromList)
 import Numeric.Sampling
 import System.FilePath (takeFileName)
 
+import Flight.Units ()
 import Flight.Clip (FlyingSection)
 import qualified Flight.Track.Cross as Cg (Crossing(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
@@ -166,8 +167,8 @@ data Config k
         , framing :: Maybe Sp.Framing
         , maskingArrival :: Maybe Mask.MaskingArrival
         , maskingEffort :: Maybe MaskingEffort
-        , discardingLead :: Maybe (DiscardingLead LeadingArea2Units)
-        , maskingLead :: Maybe MaskingLead
+        , discardingLead2 :: Maybe (DiscardingLead LeadingArea2Units)
+        , maskingLead :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/(km^2)*s |])
         , maskingReach :: Maybe MaskingReach
         , maskingSpeed :: Maybe MaskingSpeed
         , bonusReach :: Maybe MaskingReach
@@ -190,7 +191,7 @@ nullConfig cf cs =
         , framing = Nothing
         , maskingArrival = Nothing
         , maskingEffort = Nothing
-        , discardingLead = Nothing
+        , discardingLead2 = Nothing
         , maskingLead = Nothing
         , maskingReach = Nothing
         , maskingSpeed = Nothing
@@ -515,7 +516,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readMaskingEffort maskEffortFile)
                     (const $ return Nothing)
 
-            discardingLead <-
+            discardingLead2 <-
                 catchIO
                     (Just <$> readDiscardingLead leadAreaFile)
                     (const $ return Nothing)
@@ -570,7 +571,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readNormScore normScoreFile)
                     (const $ return Nothing)
 
-            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
+            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
                 (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
                     f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE dL mL mR mS bR lo gp normA normL normR ns)
                 (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
@@ -1102,7 +1103,7 @@ getTaskPilotArea ii pilotId = do
     let pilot = PilotId pilotId
     cf <- asks compFile
     ml <- asks maskingLead
-    dl <- asks discardingLead
+    dl <- asks discardingLead2
     ps <- getPilots <$> asks compSettings
     let p = find (\(Pilot (pid, _)) -> pid == pilot) ps
 

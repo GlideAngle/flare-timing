@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 {-|
 Module      : Flight.Track.Lead
 Copyright   : (c) Block Scope Limited 2018
@@ -10,20 +12,32 @@ The lead standing of a pilot's track in comparison to other pilots.
 module Flight.Track.Lead
     ( TrackLead(..)
     , DiscardingLead(..)
+    , LeadingAreaSum
+    , MkLeadingCoef
+    , MkAreaToCoef
+    , sumAreas
+    , compLeading
     , lwScalingDefault
     , cmpArea
     ) where
 
+import "newtype" Control.Newtype (Newtype(..))
+import Data.List (sortOn)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
+import Data.UnitsOfMeasure ((+:), KnownUnit, Unpack, u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Field (FieldOrdering(..))
+import Flight.Distance (QTaskDistance)
 import Flight.Comp (Pilot)
-import Flight.Score (LeadingArea(..), LeadingCoef(..), LeadingFraction(..), LwScaling(..))
-import Flight.Track.Time (LeadingAreas(..))
+import Flight.Score
+    ( LeadingArea(..), LeadingCoef(..), LeadingFraction(..), LwScaling(..)
+    , LeadingAreaUnits, LeadingAreaToCoefUnits, LengthOfSs, AreaToCoef
+    , leadingFraction
+    )
+import Flight.Track.Time (LeadingAreas(..), taskToLeading, minLeadingCoef)
 import Flight.Zone.MkZones (Discipline(..))
 
 -- | For each task, the discarding for leading for that task. Further fixes are
@@ -66,3 +80,73 @@ deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToJSON 
 lwScalingDefault :: Discipline -> LwScaling
 lwScalingDefault HangGliding = LwScaling 1
 lwScalingDefault Paragliding = LwScaling 2
+
+type LeadingAreaSum u =
+    ( LeadingAreas (LeadingArea (LeadingAreaUnits u)) (LeadingArea (LeadingAreaUnits u))
+    -> LeadingArea (LeadingAreaUnits u)
+    )
+
+sumAreas :: (KnownUnit (Unpack u)) => LeadingAreaSum u
+sumAreas LeadingAreas{areaFlown = LeadingArea af, areaAfterLanding = LeadingArea al} =
+    LeadingArea $ af +: al
+
+type MkLeadingCoef u = LengthOfSs -> LeadingAreaToCoefUnits u -> Quantity Double [u| 1 |]
+type MkAreaToCoef v = LengthOfSs -> AreaToCoef (LeadingAreaToCoefUnits v)
+
+compLeading
+    :: (KnownUnit (Unpack u))
+    => LeadingAreaSum u
+    -> MkLeadingCoef u
+    -> DiscardingLead (LeadingAreaUnits u)
+    -> [Maybe (QTaskDistance Double [u| m |])]
+    ->
+        ( [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
+        , [[(Pilot, TrackLead (LeadingAreaUnits u))]]
+        )
+compLeading sumAreas' invert DiscardingLead{areas = ass} lsTask =
+    (lcMins, lead)
+    where
+        ks :: [Quantity Rational _ -> Quantity Double [u| 1 |]]
+        ks =
+                [ maybe
+                    (const [u| 1 |])
+                    invert
+                    l
+
+                | l <- (fmap . fmap) taskToLeading lsTask
+                ]
+
+        css :: [[(Pilot, LeadingCoef (Quantity Double [u| 1 |]))]] =
+                [ (fmap $ LeadingCoef . k . toRational' . unpack . sumAreas') <$> as
+                | k <- ks
+                | as <- ass
+                ]
+
+        lcMins :: [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
+        lcMins = minLeadingCoef <$> (fmap . fmap) snd css
+
+        lead :: [[(Pilot, TrackLead (LeadingAreaUnits _))]] =
+                sortOn ((\TrackLead{coef = LeadingCoef c} -> c) . snd)
+                <$>
+                [
+                    [
+                        ( p
+                        , TrackLead
+                            { area = sumAreas' a
+                            , coef = c
+                            , frac =
+                                maybe
+                                    (LeadingFraction 0)
+                                    (`leadingFraction` c)
+                                    lcMin
+                            }
+                        )
+
+                    | (_, a) <- as
+                    | (p, c) <- cs
+                    ]
+
+                | lcMin <- lcMins
+                | as <- ass
+                | cs <- css
+                ]

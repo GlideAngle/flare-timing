@@ -12,6 +12,11 @@ in    defs
           "Data"
       , github =
           "blockscope/flare-timing/scribe"
+      , ghc-options =
+          [ "-Wall"
+          , "-fplugin Data.UnitsOfMeasure.Plugin"
+          , "-fno-warn-partial-type-signatures"
+          ]
       , dependencies =
             defs.dependencies
           # [ "split"
@@ -31,12 +36,14 @@ in    defs
             , "text"
             , "yaml"
             , "vector"
+            , "uom-plugin"
             , "detour-via-sci"
             , "flight-clip"
             , "flight-comp"
             , "flight-gap"
             , "flight-latlng"
             , "flight-route"
+            , "flight-units"
             , "flight-zone"
             ]
       , library =

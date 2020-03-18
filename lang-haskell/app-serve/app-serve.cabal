@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 62f1c5c88759c4ab3f8eef8821ae5036e23aa757d884e0cc2a2083eefe482c1a
+-- hash: 7a8830e00d5117469f7635deb338a14f6875ac1a59a8d9e375ef5287c923cf1e
 
 name:           app-serve
 version:        0.1.0
@@ -63,6 +63,7 @@ executable comp-serve
     , flight-mask
     , flight-route
     , flight-scribe
+    , flight-units
     , flight-zone
     , lens
     , mtl

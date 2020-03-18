@@ -34,6 +34,7 @@ import Data.Yaml (decodeThrow)
 import qualified Data.Text.Encoding as T
 import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
+import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
 import Flight.Route (TaskTrack(..), cmpFields)
 import Flight.Track.Cross (Crossing)
@@ -246,9 +247,9 @@ readMaskingEffort (MaskEffortFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
 readMaskingLead
-    :: MonadIO m
+    :: (KnownUnit (Unpack u), KnownUnit (Unpack v), MonadIO m)
     => MaskLeadFile
-    -> m MaskingLead
+    -> m (MaskingLead u v)
 readMaskingLead (MaskLeadFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
@@ -295,7 +296,11 @@ writeMaskingEffort (MaskEffortFile path) maskTrack = do
     let yaml = Y.encodePretty cfg maskTrack
     BS.writeFile path yaml
 
-writeMaskingLead :: MaskLeadFile -> MaskingLead -> IO ()
+writeMaskingLead
+    :: (KnownUnit (Unpack u), KnownUnit (Unpack v))
+    => MaskLeadFile
+    -> MaskingLead u v
+    -> IO ()
 writeMaskingLead (MaskLeadFile path) maskTrack = do
     let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
     let yaml = Y.encodePretty cfg maskTrack

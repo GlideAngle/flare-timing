@@ -57,6 +57,7 @@ in    defs
                   , "flight-mask"
                   , "flight-route"
                   , "flight-scribe"
+                  , "flight-units"
                   , "flight-zone"
                   , "detour-via-sci"
                   , "siggy-chardust"

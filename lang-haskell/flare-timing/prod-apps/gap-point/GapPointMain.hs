@@ -221,9 +221,9 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readMaskingEffort maskEffortFile)
             (const $ return Nothing)
 
-    ml <-
+    ml2 :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/((km^2)*s) |]) <-
         catchIO
-            (Just <$> readMaskingLead maskLeadFile)
+            (Just <$> (readMaskingLead maskLeadFile))
             (const $ return Nothing)
 
     mr <-
@@ -259,7 +259,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 startRoute
                 routes
 
-    case (compSettings, cgs, tgs, ma, me, ml, mr, br, ms, landing, routes) of
+    case (compSettings, cgs, tgs, ma, me, ml2, mr, br, ms, landing, routes) of
         (Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the crossings."
         (_, _, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
@@ -271,8 +271,8 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (_, _, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
         (_, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
         (_, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just cg, Just tg, Just mA, Just mE, Just mL, Just mR, Just bR, Just mS, Just lg, Just _) ->
-            writePointing pointFile $ points' cs lookupTaskLength cg tg mA mE mL (mR, bR) mS lg
+        (Just cs, Just cg, Just tg, Just mA, Just mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) ->
+            writePointing pointFile $ points' cs lookupTaskLength cg tg mA mE mL2 (mR, bR) mS lg
 
 points'
     :: CompSettings k
@@ -281,7 +281,7 @@ points'
     -> Tagging
     -> MaskingArrival
     -> MaskingEffort
-    -> MaskingLead
+    -> MaskingLead _ _
     -> (MaskingReach, MaskingReach)
     -> MaskingSpeed
     -> Cmp.Landing

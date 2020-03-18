@@ -18,6 +18,8 @@ import Flight.Comp
     , PegFrameFile(..)
     , PilotName(..)
     , IxTask(..)
+    , CompSettings(..)
+    , Tweak(..)
     , compToTaskLength
     , compToCross
     , crossToTag
@@ -35,6 +37,8 @@ import Flight.Scribe (readComp, readRoute, readTagging, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskTrackOptions (description)
 import Mask.Mask (writeMask, check)
+import Flight.Track.Lead (sumAreas)
+import Flight.Score (mk1Coef, mk2Coef, area1toCoef, area2toCoef)
 
 main :: IO ()
 main = do
@@ -100,13 +104,23 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (_, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frame."
         (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just _, Just _, Just _) ->
-            writeMask
-                math
-                cs
-                lookupTaskLength
-                (tagTaskLeading tagging)
-                (IxTask <$> task)
-                (pilotNamed cs $ PilotName <$> pilot)
-                compFile
-                (check math lookupTaskLength scoredLookup tagging)
+        (Just cs, Just _, Just _, Just _) -> do
+            let iTasks = (IxTask <$> task)
+            let ps = (pilotNamed cs $ PilotName <$> pilot)
+            let ttl = tagTaskLeading tagging
+
+            let lc1 chk = do
+                    let invert = mk1Coef . area1toCoef
+
+                    _ <- writeMask sumAreas invert area1toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
+                    return ()
+
+            let lc2 chk = do
+                    let invert = mk2Coef . area2toCoef
+
+                    _ <- writeMask sumAreas invert area2toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
+                    return ()
+
+            let CompSettings{compTweak} = cs
+            let lc = if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1
+            lc (check math lookupTaskLength scoredLookup tagging)

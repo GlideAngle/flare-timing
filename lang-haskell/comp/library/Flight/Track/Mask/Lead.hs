@@ -15,7 +15,7 @@ module Flight.Track.Mask.Lead
 
 import Data.Maybe (fromMaybe)
 import Data.Time.Clock (UTCTime, diffUTCTime, addUTCTime)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -24,14 +24,17 @@ import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Distance (QTaskDistance)
 import Flight.Comp
     (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..), LastDown(..))
-import Flight.Score (Pilot(..), LeadingCoef(..), AreaToCoef(..), EssTime(..), LeadingArea2Units)
+import Flight.Score
+    ( Pilot(..), LeadingCoef(..), AreaToCoef(..), EssTime(..)
+    , LeadingAreaUnits, LeadingAreaToCoefUnits
+    )
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Lead (TrackLead(..), cmpArea)
 import Flight.Track.Mask.Cmp (cmp)
 
 -- | For each task, the masking for leading for that task.
-data MaskingLead =
+data MaskingLead u v =
     MaskingLead
         { raceTime :: [Maybe RaceTime]
         -- ^ For each task, the race times.
@@ -39,16 +42,19 @@ data MaskingLead =
         -- ^ For each task, the distance of the speed section.
         , sumDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the sum of all distance flown over minimum distance.
-        , leadAreaToCoef :: [Maybe (AreaToCoef (Quantity Rational [u| 1/((km^2)*s)|]))]
+        , leadAreaToCoef :: [Maybe (AreaToCoef (LeadingAreaToCoefUnits v))]
         -- ^ For each task, the scaling of leading area.
         , leadCoefMin :: [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
         -- ^ For each task, the minimum of all pilot's leading coefficient.
-        , leadRank :: [[(Pilot, TrackLead LeadingArea2Units)]]
+        , leadRank :: [[(Pilot, TrackLead (LeadingAreaUnits u))]]
         -- ^ For each task, the rank order of leading and leading fraction.
         }
-    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Generic)
 
-instance FieldOrdering MaskingLead where fieldOrder _ = cmpArea cmp
+instance FieldOrdering (MaskingLead u v) where fieldOrder _ = cmpArea cmp
+
+deriving instance (KnownUnit (Unpack u), KnownUnit (Unpack v)) => ToJSON (MaskingLead u v)
+deriving instance (KnownUnit (Unpack u), KnownUnit (Unpack v)) => FromJSON (MaskingLead u v)
 
 -- | The racing time for the speed section is required for leading points.
 data RaceTime =

@@ -9,7 +9,7 @@ import qualified Data.Map.Strict as Map (fromList)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
@@ -44,6 +44,7 @@ import Flight.Comp
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
+import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
 import qualified Flight.Track.Arrival as Arrival (TrackArrival(..))
@@ -81,7 +82,7 @@ import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, alt
 import MaskArrival (maskArrival, arrivalInputs)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (raceTimes)
-import MaskLead2 (mask2Lead)
+import MaskLeadCoef (maskLeadCoef)
 import Mask.Reach.Time (maskReachTime)
 import Mask.Reach.Tick (maskReachTick)
 import MaskSpeed (maskSpeed)
@@ -91,7 +92,11 @@ sp :: SampleParams Double
 sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 
 writeMask
-    :: Math
+    :: (KnownUnit (Unpack u), KnownUnit (Unpack v))
+    => LeadingAreaSum u
+    -> MkLeadingCoef u
+    -> MkAreaToCoef v
+    -> Math
     -> CompSettings k
     -> RoutesLookupTaskDistance
     -> TaskLeadingLookup
@@ -110,6 +115,9 @@ writeMask
             ])
     -> IO ()
 writeMask
+    sumAreas
+    invert
+    areaToCoef
     math
     CompSettings
         { comp = Comp{earthMath, give}
@@ -216,7 +224,10 @@ writeMask
             discardingLeads <- readDiscardingLead (compToLeadArea compFile)
 
             let (dsNullAltBest, nullAltRowTicks, nullAltLead) =
-                    mask2Lead
+                    maskLeadCoef
+                        sumAreas
+                        invert
+                        areaToCoef
                         free
                         raceTimes'
                         lsTask'
@@ -227,7 +238,10 @@ writeMask
                         discardingLeads
 
             let (dsBonusAltBest, _, _) =
-                    mask2Lead
+                    maskLeadCoef
+                        sumAreas
+                        invert
+                        areaToCoef
                         free
                         raceTimes'
                         lsTask'

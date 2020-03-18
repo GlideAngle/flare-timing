@@ -1,7 +1,7 @@
-﻿module MaskLead2 (mask2Lead) where
+﻿module MaskLeadCoef (maskLeadCoef) where
 
 import Data.Maybe (catMaybes)
-import Data.UnitsOfMeasure (u, convert, toRational')
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp
@@ -13,30 +13,37 @@ import Flight.Comp
 import Flight.Distance
     (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Comp.Distance (compDistance)
-import Flight.Track.Lead (DiscardingLead(..))
+import Flight.Track.Lead (DiscardingLead(..), LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import Flight.Track.Time (LeadTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
-import Flight.Track.Lead2 (comp2Leading)
+import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
 import Flight.Score
     ( BestTime(..), MinimumDistance(..), LengthOfSs(..)
-    , LeadingArea2Units, area2toCoef
+    , LeadingAreaUnits
     )
 
-mask2Lead
-    :: (MinimumDistance (Quantity Double [u| km |]))
+maskLeadCoef
+    :: (KnownUnit (Unpack u))
+    => LeadingAreaSum u
+    -> MkLeadingCoef u
+    -> MkAreaToCoef v
+    -> (MinimumDistance (Quantity Double [u| km |]))
     -> [Maybe RaceTime]
     -> [Maybe TaskRouteDistance]
     -> [[Pilot]]
     -> [[Pilot]]
     -> [Maybe (BestTime (Quantity Double [u| h |]))]
     -> [[Maybe (Pilot, Time.TickRow)]]
-    -> DiscardingLead LeadingArea2Units
+    -> DiscardingLead (LeadingAreaUnits u)
     -> ( [Maybe (QTaskDistance Double [u| m |])]
        , [[Maybe (Pilot, Maybe LeadTick)]]
-       , MaskingLead
+       , MaskingLead u v
        )
-mask2Lead
+maskLeadCoef
+    sumAreas
+    invert
+    areaToCoef
     free
     raceTime
     lsTask
@@ -57,11 +64,11 @@ mask2Lead
     where
         lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask
         lsSpeedSubset = (fmap . fmap) speedSubsetDistance lsTask
-        (lcMin, lead) = comp2Leading discardingLead lsSpeedSubset
+        (lcMin, lead) = compLeading sumAreas invert discardingLead lsSpeedSubset
 
         lcAreaToCoef =
                 [
-                    area2toCoef
+                    areaToCoef
                     . LengthOfSs
                     . (\(TaskDistance d) -> convert . toRational' $ d)
                     <$> ssLen

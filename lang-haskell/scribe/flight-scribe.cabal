@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1383115eb8b2158bad84cb5bdb253c211d170c442c29c3618d143aad9f795f4f
+-- hash: 999dbe632186851fb25f36d86d6a23933537ba27ed12753ad3c28b2e907eeb49
 
 name:           flight-scribe
 version:        0.1.0
@@ -42,7 +42,7 @@ library
   hs-source-dirs:
       library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
@@ -58,6 +58,7 @@ library
     , flight-gap
     , flight-latlng
     , flight-route
+    , flight-units
     , flight-zone
     , mtl
     , path
@@ -67,6 +68,7 @@ library
     , text
     , time
     , unordered-containers
+    , uom-plugin
     , vector
     , yaml
   default-language: Haskell2010

@@ -4,6 +4,9 @@ module Flight.Gap.Leading.Area
     , LeadingAreaUnits
     , LeadingArea1Units, zeroLeadingArea1Units
     , LeadingArea2Units, zeroLeadingArea2Units
+    , LeadingAreaToCoefUnits
+    , LeadingArea1ToCoefUnits
+    , LeadingArea2ToCoefUnits
     ) where
 
 import GHC.Generics (Generic)
@@ -18,8 +21,15 @@ import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 type LeadingAreaUnits u = Quantity Double u
-type LeadingArea1Units = Quantity Double [u| km*s |]
-type LeadingArea2Units = Quantity Double [u| (km^2)*s |]
+type LeadingAreaToCoefUnits u = Quantity Rational u
+type LeadingArea1U = [u| km*s |]
+type LeadingArea2U = [u| (km^2)*s |]
+type LeadingArea1UI = [u| 1/(km*s) |]
+type LeadingArea2UI = [u| 1/((km^2)*s) |]
+type LeadingArea1Units = LeadingAreaUnits LeadingArea1U
+type LeadingArea2Units = LeadingAreaUnits LeadingArea2U
+type LeadingArea1ToCoefUnits = LeadingAreaToCoefUnits LeadingArea1UI
+type LeadingArea2ToCoefUnits = LeadingAreaToCoefUnits LeadingArea2UI
 
 zeroLeadingArea1Units :: LeadingArea1Units
 zeroLeadingArea1Units =
