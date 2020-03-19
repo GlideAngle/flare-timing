@@ -11,6 +11,7 @@ of this changelog.
   area in the legend of the plot.
 * Show the leading area with thousands separator and units of km^2 s.
 * Show the leading area difference as actual value over expected value minus one.
+* Use distance or distance squared for the leading area.
 
 # Tasks in a Table
 ## app-view-0.26
