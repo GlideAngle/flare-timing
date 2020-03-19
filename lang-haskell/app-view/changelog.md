@@ -3,7 +3,7 @@ version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changel
 of this changelog.
 
 # Leading Area Plot
-## app-view-0.27
+## app-view-0.26
 
 * Show a plot of the leading area, selecting up to five pilots at once. Include
   the extra area added after landing and another potential area hinted at in FS
@@ -12,10 +12,6 @@ of this changelog.
 * Show the leading area with thousands separator and units of km^2 s.
 * Show the leading area difference as actual value over expected value minus one.
 * Use distance or distance squared for the leading area.
-
-# Tasks in a Table
-## app-view-0.26
-
 * Show a table of tasks instead of a list of tasks.
 
 # Open API Specification
