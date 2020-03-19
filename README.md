@@ -107,7 +107,7 @@ flare-timing includes or not.
     - [x] Pythagorus on a UTM plane
     - [x] Haversines on the sphere
     - [x] Vincenty on the ellipsoid
-    - [ ] Andoyer on the ellipsoid
+    - [x] Andoyer on the ellipsoid
 * Type of Task
     - [x] Race
     - [x] Elapsed time
@@ -138,16 +138,17 @@ flare-timing includes or not.
     - [x] Time (speed)
     - [x] Leading
     - [ ] Departure
+* Leading Area as a Function of Time and Distance Tweaks
+    - [x] Use distance; a = t * d
+    - [x] Use distance squared; a = t * d^2
+    - [ ] Use PWCA weighting; a = w(t, d)
 * Parameter Tweaks
     - [ ] Day quality override
     - [ ] 1000 points for winner if no pilot made goal
     - [ ] 1000 points for winner before day quality applied
-    - [ ] Use distance squared for leading coefficient
     - [x] Double leading points weight
     - [ ] Proportional leading points weight if no pilot made goal
     - [ ] Adjustable stopped task bonus glide ratio (fixed at 4:1 for PG and 5:1 for HG)
-    - [x] Jump-the-gun factor
-    - [x] Jump-the-gun maximum
 * Special Cases
     - [ ] End of the speed section but not goal
     - [x] Early start
@@ -161,6 +162,8 @@ flare-timing includes or not.
 * Penalties
     - [x] Absolute
     - [x] Fractional
+    - [x] Jump-the-gun factor
+    - [x] Jump-the-gun maximum
 * Task Ranking
     - [x] Overall
     - [ ] Female
