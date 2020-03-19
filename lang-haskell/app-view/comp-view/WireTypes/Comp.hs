@@ -294,6 +294,7 @@ instance Show AwScaling where
 data Tweak =
     Tweak
         { leadingWeightScaling :: Maybe LwScaling
+        , leadingAreaDistanceSquared :: Bool
         , arrivalRank :: Bool
         , arrivalTime :: Bool
         }
@@ -433,20 +434,23 @@ scaling :: Discipline -> Maybe Tweak -> Tweak
 scaling HangGliding Nothing =
     Tweak
         { leadingWeightScaling = Just (LwScaling 1)
+        , leadingAreaDistanceSquared = True
         , arrivalRank = False
         , arrivalTime = False
         }
 scaling Paragliding Nothing =
     Tweak
         { leadingWeightScaling = Just (LwScaling 2)
+        , leadingAreaDistanceSquared = True
         , arrivalRank = False
         , arrivalTime = False
         }
 scaling
     HangGliding
-    (Just Tweak{leadingWeightScaling = lw, arrivalRank, arrivalTime}) =
+    (Just Tweak{leadingWeightScaling = lw, ..}) =
     Tweak
         { leadingWeightScaling = Just lw'
+        , leadingAreaDistanceSquared
         , arrivalRank
         , arrivalTime
         }
@@ -454,9 +458,10 @@ scaling
         lw' = fromMaybe (LwScaling 1) lw
 scaling
     Paragliding
-    (Just Tweak{leadingWeightScaling = lw, arrivalRank, arrivalTime}) =
+    (Just Tweak{leadingWeightScaling = lw, ..}) =
     Tweak
         { leadingWeightScaling = Just lw'
+        , leadingAreaDistanceSquared
         , arrivalRank
         , arrivalTime
         }

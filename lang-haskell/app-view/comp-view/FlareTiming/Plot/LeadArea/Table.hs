@@ -3,6 +3,7 @@
 module FlareTiming.Plot.LeadArea.Table (tablePilotArea) where
 
 import Reflex.Dom
+import qualified Data.Text as T (Text)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Comp (Tweak(..), LwScaling(..))
@@ -21,7 +22,7 @@ tablePilotArea
 tablePilotArea tweak sEx xs select = do
     ev <- dyn $ ffor tweak (\case
         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> do
-            ePilot <- tablePilotSimple xs select
+            ePilot <- tablePilotSimple tweak xs select
             return ePilot
 
         _ -> do
@@ -31,16 +32,24 @@ tablePilotArea tweak sEx xs select = do
     ePilot <- switchHold never ev
     return ePilot
 
+thAreaUnits :: Maybe Tweak -> T.Text
+thAreaUnits tweak =
+    "Area " <>
+    if maybe True leadingAreaDistanceSquared tweak then "(km^2 s)" else "(km s)"
+
 tablePilotSimple
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackLead)]
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t [(Pilot, TrackLead)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
-tablePilotSimple xs select = do
+tablePilotSimple tweak xs select = do
+    let thArea = ffor tweak thAreaUnits
+
     ePilot :: Event _ Pilot <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "Area"
+                    el "th" $ dynText thArea
                     el "th" $ text "Coef"
                     el "th" $ text "###-Pilot"
 
@@ -82,12 +91,14 @@ tablePilotCompare
     -> Dynamic t [(Pilot, TrackLead)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
-tablePilotCompare _ sEx xs select = do
+tablePilotCompare tweak sEx xs select = do
+    let thArea = ffor tweak thAreaUnits
+
     ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
-                        $ text "Area (km^2 s)"
+                        $ dynText thArea
                     el "th" $ text "Coef"
                     el "th" $ text "###-Pilot"
                 el "tr" $ do
