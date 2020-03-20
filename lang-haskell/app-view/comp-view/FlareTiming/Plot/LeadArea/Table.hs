@@ -10,7 +10,7 @@ import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead (TrackLead(..), showArea, showAreaDiff, showCoef)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
-import FlareTiming.Pilot (showPilot)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 
 tablePilotArea
     :: MonadWidget t m
@@ -52,7 +52,7 @@ tablePilotSimple tweak xs select = do
                 el "tr" $ do
                     el "th" $ dynText thArea
                     el "th" $ text "Coef"
-                    el "th" $ text "###-Pilot"
+                    el "th" . dynText $ ffor w hashIdHyphenPilot
 
                     return ()
 
@@ -103,7 +103,7 @@ tablePilotCompare tweak sEx xs select = do
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
                         $ dynText thArea
                     el "th" $ text "Coef"
-                    el "th" $ text "###-Pilot"
+                    el "th" . dynText $ ffor w hashIdHyphenPilot
                 el "tr" $ do
                     el "th" $ text ""
                     elClass "th" "th-norm" $ text "✓"
