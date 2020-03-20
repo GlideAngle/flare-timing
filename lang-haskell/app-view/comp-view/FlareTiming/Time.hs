@@ -45,11 +45,15 @@ hoursToRoundSecs = round . hoursToSecs
 
 showHmsForSecs :: Double -> T.Text
 showHmsForSecs s =
-    T.pack $ show2i hr' ++ ":" ++ show2i min' ++ ":" ++ show2i sec'
+    T.pack $ if hms == "00:00:00" then hms' else hms
+
     where
+        hms = show2i hr' ++ ":" ++ show2i min' ++ ":" ++ show2i sec'
         sec = round $ abs s
         (hr', min) = sec `divMod` 3600
         (min', sec') = min `divMod` 60
+        s' = s - fromIntegral ((hr' * 3600) + (min' * 60))
+        hms' = show2i hr' ++ ":" ++ show2i min' ++ ":" ++ printf "%06.3f" s'
 
 showHmsForHours :: Double -> T.Text
 showHmsForHours = showHmsForSecs . hoursToSecs

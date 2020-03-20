@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Weighted Leading Area
+## app-view-0.27
+
+* Show milliseconds if a pilot jumped the gun by less than a second.
+
 # Leading Area Plot
 ## app-view-0.26
 
