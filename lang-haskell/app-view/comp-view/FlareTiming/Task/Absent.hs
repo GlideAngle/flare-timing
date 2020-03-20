@@ -53,7 +53,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                         _ <- elClass "table" "table is-striped is-narrow" $ do
                                                 el "thead" $ do
                                                     el "tr" $ do
-                                                        el "th" $ text "Id"
+                                                        elClass "th" "th-pid" $ text "Id"
                                                         el "th" $ text "Name"
 
                                                 el "tbody" $ simpleList abs rowPilot
@@ -77,7 +77,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                         _ <- elClass "table" "table is-striped is-narrow" $ do
                                                 el "thead" $ do
                                                     el "tr" $ do
-                                                        el "th" $ text "Id"
+                                                        elClass "th" "th-pid" $ text "Id"
                                                         el "th" $ text "Name"
 
                                                 el "tbody" $ simpleList dnf rowPilot
@@ -101,7 +101,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                         _ <- elClass "table" "table is-striped is-narrow" $ do
                                                 el "thead" $ do
                                                     el "tr" $ do
-                                                        el "th" $ text "Id"
+                                                        elClass "th" "th-pid" $ text "Id"
                                                         el "th" $ text "Name"
 
                                                 el "tbody" $ simpleList nyp rowPilot
@@ -128,7 +128,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                         _ <- elClass "table" "table is-striped is-narrow" $ do
                                                 el "thead" $ do
                                                     el "tr" $ do
-                                                        el "th" $ text "Id"
+                                                        elClass "th" "th-pid" $ text "Id"
                                                         el "th" $ text "Name"
                                                         elClass "th" "th-awarded-start" $ text "Start"
                                                         elClass "th" "th-awarded-end" $ text "End"
@@ -165,7 +165,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                             _ <- elClass "table" "table is-striped is-narrow" $ do
                                                     el "thead" $ do
                                                         el "tr" $ do
-                                                            el "th" $ text "Id"
+                                                            elClass "th" "th-pid" $ text "Id"
                                                             el "th" $ text "Name"
                                                             elClass "th" "th-start-early" $ text "Early"
                                                             elClass "th" "th-penalty" $ text "Points"
@@ -182,7 +182,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                             _ <- elClass "table" "table is-striped is-narrow" $ do
                                                     el "thead" $ do
                                                         el "tr" $ do
-                                                            el "th" $ text "Id"
+                                                            elClass "th" "th-pid" $ text "Id"
                                                             el "th" $ text "Name"
                                                             elClass "th" "th-norm th-penalty" $ text "✓ Points"
                                                             elClass "th" "th-norm th-penalty-reason" $ text "Reason"
@@ -196,7 +196,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                             _ <- elClass "table" "table is-striped is-narrow" $ do
                                                     el "thead" $ do
                                                         el "tr" $ do
-                                                            el "th" $ text "Id"
+                                                            elClass "th" "th-pid" $ text "Id"
                                                             el "th" $ text "Name"
                                                             elClass "th" "th-penalty" $ text "Fraction"
                                                             elClass "th" "th-penalty" $ text "Point"

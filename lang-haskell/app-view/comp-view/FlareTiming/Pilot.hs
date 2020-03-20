@@ -61,7 +61,7 @@ rowDfNt utcOffset ln' pd = do
     let tz' = timeZone <$> utcOffset
     dyn_ $ ffor3 tz' ln' pd (\tz ln DfNoTrackPilot{pilot = p, awardedReach = d, awardedVelocity = v} ->
         el "tr" $ do
-            el "td" . text $ showPilotId p
+            elClass "td" "td-pid" . text $ showPilotId p
             el "td" . text $ showPilotName p
             elClass "td" "td-awarded-start" . text $ showSs tz v
             elClass "td" "td-awarded-end" . text $ showEs tz v
@@ -76,7 +76,7 @@ rowDfNtReach
 rowDfNtReach ln' i pd = do
     dyn_ $ ffor2 ln' pd (\ln DfNoTrackPilot{pilot = p, awardedReach = d} ->
         el "tr" $ do
-            el "td" . text . T.pack $ show i
+            elClass "td" "td-pid" . text . T.pack $ show i
             el "td" . text $ showPilotName p
             elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> (extra <$> d))
 
@@ -111,7 +111,7 @@ rowPenalJump earliest ppp = do
 
         let classEarly = ffor earliest (flip classOfEarlyStart $ jump)
 
-        el "td" . text . showPilotId $ pilot
+        elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
         elDynClass "td" classEarly . text $ showJumpedTheGunTime jump
 
@@ -135,7 +135,7 @@ rowPenalAuto ppp = do
                     (\case PenaltyPoints{} -> True; _ -> False)
                     ps
 
-        el "td" . text . showPilotId $ pilot
+        elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
         case pp of
             Just (PenaltyPoints y) -> td $ negate y
@@ -160,7 +160,7 @@ rowPenal ppp = do
                     (\case PenaltyPoints{} -> True; _ -> False)
                     ps
 
-        el "td" . text . showPilotId $ pilot
+        elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
         case (p, pp) of
             (Just (PenaltyFraction x), Nothing) -> do

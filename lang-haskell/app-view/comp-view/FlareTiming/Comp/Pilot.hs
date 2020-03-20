@@ -18,7 +18,7 @@ tablePilot ts = do
     _ <- elClass "table" "table is-bordered is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "Id"
+                    elClass "th" "th-pid" $ text "Id"
                     el "th" $ text "Name"
 
                     _ <- simpleList ts thTask
@@ -43,7 +43,7 @@ rowPilotStatus
     -> m ()
 rowPilotStatus p ts = do
     el "tr" $ do
-        el "td" . dynText $ showPilotId <$> p
+        elClass "td" "td-pid" . dynText $ showPilotId <$> p
         el "td" . dynText $ showPilotName <$> p
 
         _ <- simpleList ts tdStatus
