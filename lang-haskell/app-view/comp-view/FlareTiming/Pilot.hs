@@ -2,6 +2,7 @@ module FlareTiming.Pilot
     ( showPilotId
     , showPilotName
     , showPilot
+    , hashIdHyphenPilot
     , rowPilot
     , rowDfNt
     , rowDfNtReach
@@ -182,6 +183,12 @@ showPilotId (Pilot (PilotId x, _)) = T.pack x
 showPilotName :: Pilot -> T.Text
 showPilotName (Pilot (_, PilotName x)) = T.pack x
 
-showPilot :: Pilot -> T.Text
-showPilot (Pilot (PilotId "", _)) = ""
-showPilot (Pilot (PilotId x, PilotName y)) = T.pack $ printf "%03s-%s" x y
+showPilot :: Int -> Pilot -> T.Text
+showPilot _ (Pilot (PilotId "", _)) = ""
+showPilot w _ | w <= 0 = ""
+showPilot w (Pilot (PilotId x, PilotName y)) =
+    T.pack $ printf "%0*s-%s" w x y
+
+hashIdHyphenPilot :: Int -> T.Text
+hashIdHyphenPilot w =
+    T.pack $ replicate w '#' ++ "-Pilot"

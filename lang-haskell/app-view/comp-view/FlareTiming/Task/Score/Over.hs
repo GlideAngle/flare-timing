@@ -33,9 +33,9 @@ import WireTypes.Comp
     ( UtcOffset(..), Discipline(..), MinimumDistance(..)
     , EarlyStart(..), JumpTheGunLimit(..)
     )
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
+import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
-import FlareTiming.Pilot (showPilot, classOfEarlyStart)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot, classOfEarlyStart)
 import FlareTiming.Time (timeZone)
 import FlareTiming.Task.Score.Show
 
@@ -58,6 +58,7 @@ tableScoreOver
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
 tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
+    let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -135,7 +136,7 @@ tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDf
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
-                elClass "th" "th-pilot" $ text "###-Pilot"
+                elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
                 elClass "th" "th-start-early" $ text "Early ¶"
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-start-gate" $ text "Gate"
@@ -207,6 +208,7 @@ tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDf
                 simpleList
                     sDfs
                     (pointRow
+                        w
                         (earliest <$> early)
                         (snd <$> cTimePoints)
                         (snd <$> cArrivalPoints)
@@ -217,7 +219,7 @@ tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDf
                         tp
                         (Map.fromList <$> sEx))
 
-            dnfRows dnfPlacing dnf'
+            dnfRows w dnfPlacing dnf'
             return ()
 
         let tdFoot = elAttr "td" ("colspan" =: "18")
@@ -283,7 +285,8 @@ tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDf
 
 pointRow
     :: MonadWidget t m
-    => Dynamic t JumpTheGunLimit
+    => Dynamic t Int
+    -> Dynamic t JumpTheGunLimit
     -> Dynamic t T.Text
     -> Dynamic t T.Text
     -> Dynamic t UtcOffset
@@ -294,7 +297,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow earliest cTime cArrival utcOffset free dfNt pt tp sEx x = do
+pointRow w earliest cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let xB = snd <$> x
@@ -316,8 +319,8 @@ pointRow earliest cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let v = velocity . snd <$> x
     let jtg = jump . snd <$> x
 
-    let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
-                        let n = showPilot p in
+    let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
+                        let n = showPilot w' p in
                         if p `elem` (Pilot.pilot <$> ps)
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
@@ -366,10 +369,11 @@ pointRow earliest cTime cArrival utcOffset free dfNt pt tp sEx x = do
 
 dnfRows
     :: MonadWidget t m
-    => TaskPlacing
+    => Dynamic t Int
+    -> TaskPlacing
     -> Dynamic t Dnf
     -> m ()
-dnfRows place ps' = do
+dnfRows w place ps' = do
     let ps = unDnf <$> ps'
     len <- sample . current $ length <$> ps
     let p1 = take 1 <$> ps
@@ -379,20 +383,21 @@ dnfRows place ps' = do
         0 -> do
             return ()
         1 -> do
-            _ <- simpleList ps (dnfRow place (Just 1))
+            _ <- simpleList ps (dnfRow w place (Just 1))
             return ()
         n -> do
-            _ <- simpleList p1 (dnfRow place (Just n))
-            _ <- simpleList pN (dnfRow place Nothing)
+            _ <- simpleList p1 (dnfRow w place (Just n))
+            _ <- simpleList pN (dnfRow w place Nothing)
             return ()
 
 dnfRow
     :: MonadWidget t m
-    => TaskPlacing
+    => Dynamic t Int
+    -> TaskPlacing
     -> Maybe Int
     -> Dynamic t Pilot
     -> m ()
-dnfRow place rows pilot = do
+dnfRow w place rows pilot = do
     let dnfMajor =
             case rows of
                 Nothing -> return ()
@@ -422,7 +427,7 @@ dnfRow place rows pilot = do
     elClass "tr" "tr-dnf" $ do
         elClass "td" "td-norm td-placing" $ text ""
         elClass "td" "td-placing" . text $ showRank place
-        elClass "td" "td-pilot" . dynText $ showPilot <$> pilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w pilot showPilot
         dnfMajor
         elClass "td" "td-total-points" $ text "0"
         dnfMinor

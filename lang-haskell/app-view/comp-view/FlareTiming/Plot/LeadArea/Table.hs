@@ -9,7 +9,7 @@ import qualified Data.Map.Strict as Map
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead (TrackLead(..), showArea, showAreaDiff, showCoef)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import FlareTiming.Pilot (showPilot)
 
 tablePilotArea
@@ -44,6 +44,7 @@ tablePilotSimple
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
 tablePilotSimple tweak xs select = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     let thArea = ffor tweak thAreaUnits
 
     ePilot :: Event _ Pilot <- elClass "table" "table is-striped" $ do
@@ -56,7 +57,7 @@ tablePilotSimple tweak xs select = do
                     return ()
 
             ev <- el "tbody" $ do
-                ePilots <- simpleList xs (uncurry (rowLeadSimple select) . splitDynPure)
+                ePilots <- simpleList xs (uncurry (rowLeadSimple w select) . splitDynPure)
                 let ePilot' = switchDyn $ leftmost <$> ePilots
                 return ePilot'
 
@@ -66,18 +67,19 @@ tablePilotSimple tweak xs select = do
 
 rowLeadSimple
     :: MonadWidget t m
-    => Dynamic t [Pilot]
+    => Dynamic t Int
+    -> Dynamic t [Pilot]
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m (Event t Pilot)
-rowLeadSimple select p av = do
+rowLeadSimple w select p av = do
     pilot <- sample $ current p
     let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
 
     (eRow, _) <- elDynClass' "tr" rowClass $ do
         el "td" . dynText $ showArea . area <$> av
         el "td" . dynText $ showCoef . coef <$> av
-        el "td" . dynText $ showPilot <$> p
+        el "td" . dynText $ ffor2 w p showPilot
 
         return ()
 
@@ -92,6 +94,7 @@ tablePilotCompare
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
 tablePilotCompare tweak sEx xs select = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     let thArea = ffor tweak thAreaUnits
 
     ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
@@ -114,7 +117,7 @@ tablePilotCompare tweak sEx xs select = do
                     let mapN = Map.fromList sEx'
 
                     ePilots <- el "tbody" $
-                            simpleList xs (uncurry (rowLeadCompare mapN select) . splitDynPure)
+                            simpleList xs (uncurry (rowLeadCompare w mapN select) . splitDynPure)
                     let ePilot' = switchDyn $ leftmost <$> ePilots
                     return ePilot')
 
@@ -130,12 +133,13 @@ tablePilotCompare tweak sEx xs select = do
 
 rowLeadCompare
     :: MonadWidget t m
-    => Map.Map Pilot Norm.NormBreakdown
+    => Dynamic t Int
+    -> Map.Map Pilot Norm.NormBreakdown
     -> Dynamic t [Pilot]
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m (Event t Pilot)
-rowLeadCompare mapN select p tl = do
+rowLeadCompare w mapN select p tl = do
     (pilot, yArea, yAreaDiff) <- sample . current
                 $ ffor2 p tl (\pilot TrackLead{area} ->
                     case Map.lookup pilot mapN of
@@ -155,7 +159,7 @@ rowLeadCompare mapN select p tl = do
         elClass "td" "td-norm td-norm" . text $ yArea
         elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
-        el "td" . dynText $ showPilot <$> p
+        el "td" . dynText $ ffor2 w p showPilot
 
         return ()
 

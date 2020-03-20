@@ -13,6 +13,7 @@ module WireTypes.Pilot
     , getPilotId
     , getPilotName
     , nullPilot
+    , pilotIdsWidth
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -88,3 +89,12 @@ getPilotName (Pilot (_, name)) = name
 
 nullPilot :: Pilot
 nullPilot = Pilot (PilotId "", PilotName "")
+
+pilotIdWidth :: Pilot -> Int
+pilotIdWidth (Pilot (PilotId pid, _)) =
+    length pid
+
+pilotIdsWidth :: [Pilot] -> Int
+pilotIdsWidth [] = 0
+pilotIdsWidth ps =
+    maximum $ pilotIdWidth <$> ps

@@ -7,8 +7,8 @@ import WireTypes.Fraction (Fractions(..), showLeadingFrac, showLeadingFracDiff)
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead (TrackLead(..), showCoef, showCoefDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Pilot (Pilot(..))
-import FlareTiming.Pilot (showPilot)
+import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 
 tablePilotCoef
     :: MonadWidget t m
@@ -28,30 +28,32 @@ tablePilotSimple
     => Dynamic t [(Pilot, TrackLead)]
     -> m ()
 tablePilotSimple xs = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "Coef"
                     el "th" $ text "Frac"
-                    el "th" $ text "###-Pilot"
+                    el "th" . dynText $ ffor w hashIdHyphenPilot
 
                     return ()
 
             el "tbody" $ do
-                simpleList xs (uncurry rowLeadSimple . splitDynPure)
+                simpleList xs (uncurry (rowLeadSimple w) . splitDynPure)
 
     return ()
 
 rowLeadSimple
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Dynamic t Int
+    -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m ()
-rowLeadSimple pilot av = do
+rowLeadSimple w pilot av = do
     el "tr" $ do
         el "td" . dynText $ showCoef . coef <$> av
         el "td" . dynText $ showLeadingFrac . frac <$> av
-        el "td" . dynText $ showPilot <$> pilot
+        el "td" . dynText $ ffor2 w pilot showPilot
 
         return ()
 
@@ -62,13 +64,14 @@ tablePilotCompare
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
 tablePilotCompare _ sEx xs = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3") $ text "Coefficient"
                     elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-frac"))
                         $ text "Fraction"
-                    el "th" $ text "###-Pilot"
+                    el "th" . dynText $ ffor w hashIdHyphenPilot
                 el "tr" $ do
                     el "th" $ text ""
                     elClass "th" "th-norm" $ text "✓"
@@ -84,18 +87,19 @@ tablePilotCompare _ sEx xs = do
                     let mapN = Map.fromList sEx'
 
                     el "tbody" $
-                        simpleList xs (uncurry (rowLeadCompare mapN) . splitDynPure))
+                        simpleList xs (uncurry (rowLeadCompare w mapN) . splitDynPure))
 
             return ()
     return ()
 
 rowLeadCompare
     :: MonadWidget t m
-    => Map.Map Pilot Norm.NormBreakdown
+    => Dynamic t Int
+    -> Map.Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m ()
-rowLeadCompare mapN p tl = do
+rowLeadCompare w mapN p tl = do
     (yCoef, yCoefDiff, yFrac, yFracDiff) <- sample . current
                 $ ffor2 p tl (\pilot TrackLead{coef, frac} ->
                     case Map.lookup pilot mapN of
@@ -120,6 +124,6 @@ rowLeadCompare mapN p tl = do
         elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> tl
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ showPilot <$> p
+        el "td" . dynText $ ffor2 w p showPilot
 
         return ()

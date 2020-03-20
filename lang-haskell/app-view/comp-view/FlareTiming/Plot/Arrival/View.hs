@@ -14,8 +14,8 @@ import WireTypes.Fraction (ArrivalFraction(..), showArrivalFrac, showArrivalFrac
 import WireTypes.Arrival
     ( TrackArrival(..), ArrivalPlacing(..), ArrivalLag(..)
     , showArrivalLagDiff)
-import WireTypes.Pilot (Pilot(..))
-import FlareTiming.Pilot (showPilot)
+import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
 
 placings :: [TrackArrival] -> ([[Double]], [[Double]])
@@ -50,7 +50,8 @@ arrivalPositionPlot
     => Dynamic t [(Pilot, TrackArrival)]
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-arrivalPositionPlot av avN = do
+arrivalPositionPlot xs xsN = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -60,12 +61,12 @@ arrivalPositionPlot av avN = do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival-position") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
-                                let (soloPlaces, equalPlaces) = placings . snd . unzip $ av'
+                                let (soloPlaces, equalPlaces) = placings . snd . unzip $ xs'
                                 _ <- P.hgPlotPosition (_element_raw elPlot) soloPlaces equalPlaces
                                 return ())
                             ]
 
-                        av' <- sample . current $ av
+                        xs' <- sample . current $ xs
 
                     return ()
 
@@ -77,11 +78,11 @@ arrivalPositionPlot av avN = do
                         el "th" $ text "Fraction"
                         elClass "th" "th-norm th-norm-arrival" $ text "✓"
                         elClass "th" "th-norm th-arrival-diff" $ text "Δ"
-                        el "th" $ text "###-Pilot"
+                        el "th" . dynText $ ffor w hashIdHyphenPilot
 
                         return ()
 
-                tableBody rowArrivalPosition av avN
+                tableBody rowArrivalPosition xs xsN
 
                 return ()
     return ()
@@ -91,7 +92,7 @@ arrivalTimePlot
     => Dynamic t [(Pilot, TrackArrival)]
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-arrivalTimePlot av avN = do
+arrivalTimePlot xs xsN = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -101,14 +102,14 @@ arrivalTimePlot av avN = do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival-time") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
-                                let arrivals = snd $ unzip av'
+                                let arrivals = snd $ unzip xs'
                                 let xys = lags arrivals
                                 let lagMax' = lagMax arrivals
                                 _ <- P.hgPlotTime (_element_raw elPlot) lagMax' xys
                                 return ())
                             ]
 
-                        av' <- sample . current $ av
+                        xs' <- sample . current $ xs
 
                     return ()
 
@@ -133,14 +134,15 @@ arrivalTimePlot av avN = do
 
                         return ()
 
-                tableBody rowArrivalTime av avN
+                tableBody rowArrivalTime xs xsN
 
                 return ()
 
     return ()
 
 type ShowRow t m
-    = Map.Map Pilot TrackArrival
+    = Dynamic t Int
+    -> Map.Map Pilot TrackArrival
     -> Dynamic t Pilot
     -> Dynamic t TrackArrival
     -> m ()
@@ -152,17 +154,18 @@ tableBody
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
 tableBody showRow xs xsN = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     el "tbody" $ do
         _ <- dyn $ ffor xsN (\xsN' -> do
                 let mapT = Map.fromList xsN'
 
-                simpleList xs (uncurry (showRow mapT) . splitDynPure))
+                simpleList xs (uncurry (showRow w mapT) . splitDynPure))
 
         return ()
     return ()
 
 rowArrivalTime :: MonadWidget t m => ShowRow t m
-rowArrivalTime mapT p ta = do
+rowArrivalTime w mapT p ta = do
     (yLag, yLagDiff, yFrac, yFracDiff) <- sample . current
                 $ ffor2 p ta (\pilot TrackArrival{frac, lag} ->
                     case Map.lookup pilot mapT of
@@ -184,12 +187,12 @@ rowArrivalTime mapT p ta = do
         el "td" . dynText $ showArrivalFrac . frac <$> ta
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ showPilot <$> p
+        el "td" . dynText $ ffor2 w p showPilot
 
         return ()
 
 rowArrivalPosition :: MonadWidget t m => ShowRow t m
-rowArrivalPosition mapT p ta = do
+rowArrivalPosition w mapT p ta = do
     (yFrac, yFracDiff) <- sample . current
                 $ ffor2 p ta (\pilot TrackArrival{frac} ->
                     case Map.lookup pilot mapT of
@@ -205,7 +208,7 @@ rowArrivalPosition mapT p ta = do
         el "td" . dynText $ showArrivalFrac . frac <$> ta
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ showPilot <$> p
+        el "td" . dynText $ ffor2 w p showPilot
 
         return ()
 

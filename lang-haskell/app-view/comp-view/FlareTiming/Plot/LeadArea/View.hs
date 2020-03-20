@@ -14,8 +14,8 @@ import WireTypes.Lead
     , nullArea, showAreaSquared
     )
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Pilot (Pilot(..), nullPilot)
-import FlareTiming.Pilot (showPilot)
+import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
 import FlareTiming.Comms (getTaskPilotArea)
 import FlareTiming.Events (IxTask(..))
@@ -49,10 +49,11 @@ leadAreaPlot
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-leadAreaPlot ix tweak sEx ld = do
+leadAreaPlot ix tweak sEx xs = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     let pilotLegend classes (pp, areas) = do
             el "td" $ elClass "span" classes $ text "▩"
-            el "td" $ text (showPilot pp)
+            el "td" . dynText $ ffor w (flip showPilot $ pp)
             case areas of
                 Nothing -> do
                     elAttr "td" ("colspan" =: "3") $ text ""
@@ -116,7 +117,7 @@ leadAreaPlot ix tweak sEx ld = do
                                         el "thead" $ do
                                             el "tr" $ do
                                                 el "th" $ text ""
-                                                el "th" $ text "###-Pilot"
+                                                el "th" . dynText $ ffor w hashIdHyphenPilot
                                                 elClass "th" "has-text-right" $ text "b = Before"
                                                 elClass "th" "has-text-right" $ text "f = Flown"
                                                 elClass "th" "has-text-right" $ text "a = After"
@@ -151,7 +152,7 @@ leadAreaPlot ix tweak sEx ld = do
                                 return ()
                     return ()
 
-        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx ld dPilots
+        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx xs dPilots
         dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
 
         area :: Event _ RawLeadingArea <- getTaskPilotArea ix (updated dPilot)

@@ -28,9 +28,9 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
+import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
-import FlareTiming.Pilot (showPilot)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Task.Score.Show
 
 tableScoreReach
@@ -51,6 +51,7 @@ tableScoreReach
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
 tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+    let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -78,7 +79,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
-                elClass "th" "th-pilot" $ text "###-Pilot"
+                elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
                 elClass "th" "th-min-distance" $ text "Min"
 
                 elClass "th" "th-distance-flown" $ text "Flown †"
@@ -122,6 +123,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
                 simpleList
                     (sortBy cmpReach <$> sDfs)
                     (pointRow
+                        w
                         utcOffset
                         free
                         ln
@@ -129,7 +131,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
                         pt
                         (Map.fromList <$> sEx))
 
-            dnfRows dnfPlacing dnf'
+            dnfRows w dnfPlacing dnf'
             return ()
 
         let tdFoot = elAttr "td" ("colspan" =: "21")
@@ -195,7 +197,8 @@ tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sE
 
 pointRow
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => Dynamic t Int
+    -> Dynamic t UtcOffset
     -> Dynamic t MinimumDistance
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t DfNoTrack
@@ -203,7 +206,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Bk.Breakdown)
     -> m ()
-pointRow _utcOffset free _ln dfNt pt sEx x = do
+pointRow w _utcOffset free _ln dfNt pt sEx x = do
     MinimumDistance free' <- sample . current $ free
 
     let pilot = fst <$> x
@@ -212,8 +215,8 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
     let extraReach = fmap extra . Bk.reach <$> xB
     let points = Bk.breakdown <$> xB
 
-    let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
-                        let n = showPilot p in
+    let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
+                        let n = showPilot w' p in
                         if p `elem` (Pilot.pilot <$> ps)
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
@@ -293,10 +296,11 @@ pointRow _utcOffset free _ln dfNt pt sEx x = do
 
 dnfRows
     :: MonadWidget t m
-    => TaskPlacing
+    => Dynamic t Int
+    -> TaskPlacing
     -> Dynamic t Dnf
     -> m ()
-dnfRows place ps' = do
+dnfRows w place ps' = do
     let ps = unDnf <$> ps'
     len <- sample . current $ length <$> ps
     let p1 = take 1 <$> ps
@@ -306,20 +310,21 @@ dnfRows place ps' = do
         0 -> do
             return ()
         1 -> do
-            _ <- simpleList ps (dnfRow place (Just 1))
+            _ <- simpleList ps (dnfRow w place (Just 1))
             return ()
         n -> do
-            _ <- simpleList p1 (dnfRow place (Just n))
-            _ <- simpleList pN (dnfRow place Nothing)
+            _ <- simpleList p1 (dnfRow w place (Just n))
+            _ <- simpleList pN (dnfRow w place Nothing)
             return ()
 
 dnfRow
     :: MonadWidget t m
-    => TaskPlacing
+    => Dynamic t Int
+    -> TaskPlacing
     -> Maybe Int
     -> Dynamic t Pilot
     -> m ()
-dnfRow place rows pilot = do
+dnfRow w place rows pilot = do
     let dnfMega =
             case rows of
                 Nothing -> return ()
@@ -335,6 +340,6 @@ dnfRow place rows pilot = do
 
     elClass "tr" "tr-dnf" $ do
         elClass "td" "td-placing" . text $ showRank place
-        elClass "td" "td-pilot" . dynText $ showPilot <$> pilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w pilot showPilot
         dnfMega
         return ()

@@ -15,9 +15,9 @@ import WireTypes.Fraction
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Speed (TrackSpeed(..), PilotTime(..))
 import qualified WireTypes.Speed as Speed (TrackSpeed(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point (StartGate)
-import FlareTiming.Pilot (showPilot)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
 import FlareTiming.Task.Score.Show
 
@@ -80,6 +80,7 @@ tablePilot
     -> Dynamic t [(Pilot, TrackSpeed)]
     -> m ()
 tablePilot sgs sEx xs = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -101,7 +102,7 @@ tablePilot sgs sEx xs = do
                     el "th" $ text ""
                     elClass "th" "th-norm" $ text "✓"
                     elClass "th" "th-norm" $ text "Δ"
-                    el "th" $ text "###-Pilot"
+                    el "th" . dynText $ ffor w hashIdHyphenPilot
 
                     return ()
 
@@ -109,18 +110,19 @@ tablePilot sgs sEx xs = do
                     let mapN = Map.fromList sEx'
 
                     el "tbody" $
-                        simpleList xs (uncurry (rowSpeed mapN) . splitDynPure))
+                        simpleList xs (uncurry (rowSpeed w mapN) . splitDynPure))
 
             return ()
     return ()
 
 rowSpeed
     :: MonadWidget t m
-    => Map Pilot Norm.NormBreakdown
+    => Dynamic t Int
+    -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackSpeed
     -> m ()
-rowSpeed mapN p ts = do
+rowSpeed w mapN p ts = do
     (yTime, yTimeDiff, yFrac, yFracDiff) <- sample . current
                 $ ffor2 p ts (\pilot TrackSpeed{time, frac} ->
                     case Map.lookup pilot mapN of
@@ -146,7 +148,7 @@ rowSpeed mapN p ts = do
         el "td" . dynText $ showSpeedFrac . frac <$> ts
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ showPilot <$> p
+        el "td" . dynText $ ffor2 w p showPilot
 
         return ()
 

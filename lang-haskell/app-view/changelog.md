@@ -6,6 +6,7 @@ of this changelog.
 ## app-view-0.27
 
 * Show milliseconds if a pilot jumped the gun by less than a second.
+* Display ###-pilot or ####-pilot dependening on the pilot id width.
 
 # Leading Area Plot
 ## app-view-0.26

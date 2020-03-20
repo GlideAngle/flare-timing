@@ -15,10 +15,10 @@ import WireTypes.Fraction
     , showEffortFrac, showEffortFracDiff
     )
 import WireTypes.Effort (TrackEffort(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import FlareTiming.Pilot (showPilot)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 
 placings :: [TrackEffort] -> [[Double]]
 placings = fmap xy
@@ -74,6 +74,7 @@ tablePilot
     -> Dynamic t [(Pilot, TrackEffort)]
     -> m ()
 tablePilot sEx xs = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -82,7 +83,7 @@ tablePilot sEx xs = do
                     elAttr "th" (("colspan" =: "3") <> ("class" =: "th-effort-frac"))
                         $ text "Fraction"
 
-                    el "th" $ text "###-Pilot"
+                    el "th" . dynText $ ffor w hashIdHyphenPilot
 
                     return ()
 
@@ -104,18 +105,19 @@ tablePilot sEx xs = do
                     let mapN = Map.fromList sEx'
 
                     el "tbody" $
-                        simpleList xs (uncurry (rowEffort mapN). splitDynPure))
+                        simpleList xs (uncurry (rowEffort w mapN). splitDynPure))
 
             return ()
     return ()
 
 rowEffort
     :: MonadWidget t m
-    => Map Pilot Norm.NormBreakdown
+    => Dynamic t Int
+    -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackEffort
     -> m ()
-rowEffort mapN p te = do
+rowEffort w mapN p te = do
     (yEffort, yEffortDiff, yFrac, yFracDiff) <- sample . current
             $ ffor2 p te (\pilot TrackEffort{effort, frac} ->
                 fromMaybe ("", "", "", "") $ do
@@ -152,7 +154,7 @@ rowEffort mapN p te = do
         elClass "td" "td-norm" $ text yFrac
         elClass "td" "td-norm" $ text yFracDiff
 
-        el "td" . dynText $ showPilot <$> p
+        el "td" . dynText $ ffor2 w p showPilot
 
         return ()
 

@@ -17,11 +17,11 @@ import WireTypes.Fraction
     )
 import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point
     (ReachToggle(..), PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import FlareTiming.Pilot (showPilot)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 
 placings :: [TrackReach] -> [[Double]]
 placings = fmap xy
@@ -99,7 +99,8 @@ tablePilotReach
     => Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
-tablePilotReach sEx reach = do
+tablePilotReach sEx xs = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -111,7 +112,7 @@ tablePilotReach sEx reach = do
                     elClass "th" "th-norm" $ text "✓"
                     elClass "th" "th-norm" $ text "Δ"
 
-                    el "th" $ text "###-Pilot"
+                    el "th" . dynText $ ffor w hashIdHyphenPilot
 
                     return ()
 
@@ -119,18 +120,19 @@ tablePilotReach sEx reach = do
                     let mapN = Map.fromList sEx'
 
                     el "tbody" $
-                        simpleList reach (uncurry (rowReach mapN) . splitDynPure))
+                        simpleList xs (uncurry (rowReach w mapN) . splitDynPure))
 
             return ()
     return ()
 
 rowReach
     :: MonadWidget t m
-    => Map Pilot Norm.NormBreakdown
+    => Dynamic t Int
+    -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m ()
-rowReach mapN p r = do
+rowReach w mapN p r = do
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
             $ ffor2 p r (\pilot TrackReach{reach, frac} ->
                 fromMaybe ("", "", "", "") $ do
@@ -167,7 +169,7 @@ rowReach mapN p r = do
         elClass "td" "td-norm" $ text yFrac
         elClass "td" "td-norm" $ text yFracDiff
 
-        elClass "td" "td-pilot" . dynText $ showPilot <$> p
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 
@@ -177,7 +179,8 @@ tablePilotReachBonus
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
-tablePilotReachBonus sEx reach bonusReach = do
+tablePilotReachBonus sEx xs bonusReach = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
     let tdFoot = elAttr "td" ("colspan" =: "6")
     let foot = el "tr" . tdFoot . text
 
@@ -189,7 +192,7 @@ tablePilotReachBonus sEx reach bonusReach = do
                     elAttr "th" (("colspan" =: "4") <> ("class" =: "th-reach-frac"))
                         $ text "Fraction"
 
-                    el "th" $ text "###-Pilot"
+                    el "th" . dynText $ ffor w hashIdHyphenPilot
 
                     return ()
 
@@ -215,7 +218,7 @@ tablePilotReachBonus sEx reach bonusReach = do
                     let mapN = Map.fromList sEx'
 
                     el "tbody" $
-                        simpleList reach (uncurry (rowReachBonus mapR mapN) . splitDynPure))
+                        simpleList xs (uncurry (rowReachBonus w mapR mapN) . splitDynPure))
 
             el "tfoot" $ do
                 foot "† Reach as scored."
@@ -226,12 +229,13 @@ tablePilotReachBonus sEx reach bonusReach = do
 
 rowReachBonus
     :: MonadWidget t m
-    => Map Pilot TrackReach
+    => Dynamic t Int
+    -> Map Pilot TrackReach
     -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m ()
-rowReachBonus mapR mapN p tr = do
+rowReachBonus w mapR mapN p tr = do
     (eReach, eReachDiff, eFrac
         , yReach, yReachDiff
         , yFrac, yFracDiff) <- sample . current
@@ -279,6 +283,6 @@ rowReachBonus mapR mapN p tr = do
         elClass "td" "td-norm" $ text yFrac
         elClass "td" "td-norm" $ text yFracDiff
 
-        elClass "td" "td-pilot" . dynText $ showPilot <$> p
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
