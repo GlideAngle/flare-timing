@@ -27,7 +27,7 @@ import Flight.Mask.Internal.Zone
     , slice, fixToPoint
     )
 import Flight.Mask.Internal.Cross
-    (CrossingPredicate, entersSeq, exitsSeq, isStartExit, crossingPredicates)
+    (CrossingPredicate, enterExitSeq, exitEnterSeq, isStartExit, crossingPredicates)
 import Flight.Mask.Time (GeoTime(..))
 
 instance GeoTag Double a => GeoTime Double a where
@@ -110,7 +110,7 @@ durationViaZones sepZs mkZone atTime speedSection _ zs os gs t0 xs =
             where
                 exits' :: (Fix, (TrackZone _, TrackZone _)) -> Bool
                 exits' (_, (zx, zy)) =
-                    case exitsSeq sepZs z0 [zx, zy] of
+                    case exitEnterSeq sepZs z0 [zx, zy] of
                         Right (ZoneExit _ _) : _ ->
                             True
 
@@ -119,7 +119,7 @@ durationViaZones sepZs mkZone atTime speedSection _ zs os gs t0 xs =
 
                 enters' :: (Fix, (TrackZone _, TrackZone _)) -> Bool
                 enters' (_, (zx, zy)) =
-                    case entersSeq sepZs zN [zx, zy] of
+                    case enterExitSeq sepZs zN [zx, zy] of
                         Left (ZoneEntry _ _) : _ ->
                             True
 

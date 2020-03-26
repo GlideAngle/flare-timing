@@ -4,8 +4,8 @@ module Flight.Mask.Internal.Cross
     , crossingPredicates
     , crossingSelectors
     , tickedZones
-    , entersSeq
-    , exitsSeq
+    , enterExitSeq
+    , exitEnterSeq
     , reindex
     ) where
 
@@ -110,36 +110,36 @@ crossSeq
     => SeparatedZones a
     -> CrossingPredicate a Crossing
 crossSeq sepZs z xs =
-    unOrdCrossing <$> (nub . sort $ enters ++ exits)
+    unOrdCrossing <$> (nub . sort $ enterExits ++ exitEnters)
     where
-        enters = OrdCrossing <$> entersSeq sepZs z xs
-        exits = OrdCrossing <$> exitsSeq sepZs z xs
+        enterExits = OrdCrossing <$> enterExitSeq sepZs z xs
+        exitEnters = OrdCrossing <$> exitEnterSeq sepZs z xs
 
 -- | Find the sequence of @take _ [entry, exit, .., entry, exit]@ going forward.
-entersSeq
+enterExitSeq
     :: (Real a, Fractional a)
     => SeparatedZones a
     -> CrossingPredicate a Crossing
-entersSeq sepZs z xs =
+enterExitSeq sepZs z xs =
     case entersSingle sepZs z xs of
         [] ->
             []
 
         (hit@(ZoneEntry _ jIdx@(ZoneIdx j)) : _) ->
-            Left hit : (reindex jIdx <$> exitsSeq sepZs z (drop j xs))
+            Left hit : (reindex jIdx <$> exitEnterSeq sepZs z (drop j xs))
 
 -- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
-exitsSeq
+exitEnterSeq
     :: (Real a, Fractional a)
     => SeparatedZones a
     -> CrossingPredicate a Crossing
-exitsSeq sepZs z xs =
+exitEnterSeq sepZs z xs =
     case exitsSingle sepZs z xs of
         [] ->
             []
 
         (hit@(ZoneExit _ jIdx@(ZoneIdx j)) : _) ->
-            Right hit : (reindex jIdx <$> entersSeq sepZs z (drop j xs))
+            Right hit : (reindex jIdx <$> enterExitSeq sepZs z (drop j xs))
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then

@@ -2,6 +2,7 @@
 
 module Flight.Mask.Tag.Double where
 
+import Debug.Trace
 import Prelude hiding (span)
 import Data.List ((\\))
 import Control.Arrow (first)
@@ -39,8 +40,8 @@ import Flight.Mask.Internal.Cross
     , crossingPredicates
     , crossingSelectors
     , tickedZones
-    , entersSeq
-    , exitsSeq
+    , enterExitSeq
+    , exitEnterSeq
     , reindex
     )
 import Flight.Mask.Interpolate (GeoTagInterpolate(..))
@@ -64,7 +65,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                     False
 
                 z : _ ->
-                    let ez = exitsSeq sepZs z (fixToPoint <$> fixes)
+                    let ez = exitEnterSeq sepZs z (fixToPoint <$> fixes)
                     in case ez of
                          Right (ZoneExit _ _) : _ -> True
                          _ -> False
@@ -79,7 +80,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                     False
 
                 z : _ ->
-                    let ez = entersSeq sepZs z (fixToPoint <$> fixes)
+                    let ez = enterExitSeq sepZs z (fixToPoint <$> fixes)
                     in case ez of
                          Left (ZoneEntry _ _) : _ -> True
                          _ -> False
@@ -214,7 +215,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             selectors :: [[Crossing] -> Maybe Crossing]
             selectors =
                 (\x ->
-                    let b = isStartExit sepZs fromZs x
+                    let b = traceShowId $ isStartExit sepZs fromZs x
                     in crossingSelectors b x) task
 
     tagZones
