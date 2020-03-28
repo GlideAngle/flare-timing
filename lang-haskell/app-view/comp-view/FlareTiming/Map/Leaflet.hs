@@ -36,13 +36,19 @@ module FlareTiming.Map.Leaflet
     , layersControl
     , layersExpand
     , addOverlay
+    , showLatLng
     ) where
 
 import Prelude hiding (map, log)
+import Text.Printf (printf)
 import GHCJS.Types (JSVal, JSString)
+import GHCJS.Foreign.Callback
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types
-    (ToJSVal(..), Element(..), toElement, toJSString, toJSVal, toJSValListOf)
+    ( ToJSVal(..), Element(..)
+    , fromJSValUnchecked, toJSVal
+    , toElement, toJSString, toJSValListOf
+    )
 
 import WireTypes.Pilot (PilotName(..))
 import FlareTiming.Earth (AzimuthFwd(..))
@@ -76,9 +82,9 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "$1['on']('click', function(e){\
     \ var pt = L.GeometryUtil.closest($1, $2, e.latlng, true);\
-    \ L['marker'](pt).addTo($1).bindPopup(e.latlng.toString());\
+    \ L['marker'](pt).addTo($1).bindPopup($3(e.latlng.lat, e.latlng.lng));\
     \})"
-    mapOnClick_ :: JSVal -> JSVal -> IO ()
+    mapOnClick_ :: JSVal -> JSVal -> Callback (JSVal -> JSVal -> IO JSVal) -> IO ()
 
 foreign import javascript unsafe
     "L['tileLayer']($1, {maxZoom: $2, opacity: 0.6})"
@@ -170,6 +176,16 @@ foreign import javascript unsafe
     "$1['setView']($2.getCenter())"
     panToBounds_ :: JSVal -> JSVal -> IO ()
 
+showLatLng :: (Double, Double) -> String
+showLatLng (lat, lng) =
+    printf fmt (abs lat) (abs lng)
+    where
+        fmt = case (lat < 0, lng < 0) of
+                  (True, True) -> "%.6f °S, %.6f °W"
+                  (False, True) -> "%.6f °N, %.6f °W"
+                  (True, False) -> "%.6f °S, %.6f °E"
+                  (False, False) -> "%.6f °N, %.6f °E"
+
 map :: IsElement e => e -> IO Map
 map e =
     Map <$> (map_ . unElement . toElement $ e)
@@ -183,8 +199,15 @@ mapInvalidateSize lmap =
     mapInvalidateSize_ (unMap lmap)
 
 mapOnClick :: Map -> Polyline -> IO ()
-mapOnClick lmap x =
-    mapOnClick_ (unMap lmap) (unPolyline x)
+mapOnClick lmap x = do
+    cb <- syncCallback2' (\lat lng -> do
+        lat' <- fromJSValUnchecked lat
+        lng' <- fromJSValUnchecked lng
+        let s = showLatLng (lat', lng')
+        toJSVal $ toJSString s)
+
+    mapOnClick_ (unMap lmap) (unPolyline x) cb
+    releaseCallback cb
 
 layerGroup :: Polyline -> [Marker] -> IO LayerGroup
 layerGroup line xs = do

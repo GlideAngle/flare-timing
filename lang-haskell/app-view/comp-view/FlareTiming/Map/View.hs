@@ -51,6 +51,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , layersExpand
     , addOverlay
     )
+import FlareTiming.Map.Leaflet (showLatLng)
 import WireTypes.Cross
     ( TrackFlyingSection(..)
     , TrackScoredSection(..)
@@ -192,16 +193,6 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = mdo
 
     return (zp', whereTo, downloadTrack')
 
-
-showLatLng :: (Double, Double) -> String
-showLatLng (lat, lng) =
-    printf fmt (abs lat) (abs lng)
-    where
-        fmt = case (lat < 0, lng < 0) of
-                  (True, True) -> "%f °S, %f °W"
-                  (False, True) -> "%f °N, %f °W"
-                  (True, False) -> "%f °S, %f °E"
-                  (False, False) -> "%f °N, %f °E"
 
 newtype TurnpointName = TurnpointName String
 newtype Color = Color String
