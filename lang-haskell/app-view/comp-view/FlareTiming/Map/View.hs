@@ -36,6 +36,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , marker
     , markerPopup
     , mapInvalidateSize
+    , mapOnClick
     , circle
     , circleAddToMap
     , semicircle
@@ -473,6 +474,7 @@ map
 
                         l0 <- L.trackLine t0 "black"
                         g0 <- L.layerGroup l0 $ concat tagMarks
+                        L.mapOnClick lmap' l0
 
                         -- NOTE: Adding the track now so that it displays.
                         L.layerGroupAddToMap g0 lmap'

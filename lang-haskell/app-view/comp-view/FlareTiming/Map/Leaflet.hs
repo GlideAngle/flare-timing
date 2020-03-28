@@ -11,6 +11,7 @@ module FlareTiming.Map.Leaflet
     , map
     , mapSetView
     , mapInvalidateSize
+    , mapOnClick
     , tileLayer
     , tileLayerAddToMap
     , marker
@@ -71,6 +72,13 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "$1['invalidateSize']()"
     mapInvalidateSize_ :: JSVal -> IO ()
+
+foreign import javascript unsafe
+    "$1['on']('click', function(e){\
+    \ var pt = L.GeometryUtil.closest($1, $2, e.latlng, true);\
+    \ L['marker'](pt).addTo($1).bindPopup(e.latlng.toString());\
+    \})"
+    mapOnClick_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['tileLayer']($1, {maxZoom: $2, opacity: 0.6})"
@@ -173,6 +181,10 @@ mapSetView lm (lat, lng) zoom =
 mapInvalidateSize :: Map -> IO ()
 mapInvalidateSize lmap =
     mapInvalidateSize_ (unMap lmap)
+
+mapOnClick :: Map -> Polyline -> IO ()
+mapOnClick lmap x =
+    mapOnClick_ (unMap lmap) (unPolyline x)
 
 layerGroup :: Polyline -> [Marker] -> IO LayerGroup
 layerGroup line xs = do
