@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Map.View (viewMap) where
 
 -- TODO: Find out why hiding Debug.Trace.debugEvent doesn't work.
