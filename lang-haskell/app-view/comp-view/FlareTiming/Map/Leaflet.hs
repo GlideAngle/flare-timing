@@ -94,7 +94,7 @@ foreign import javascript unsafe
     \   y.layer.setStyle({'opacity': '1.0'});\
     \ }\
     \ var pt = L.GeometryUtil.closest($2, y.layer, e.latlng, true);\
-    \ L['marker'](pt).addTo($2).bindPopup($1(e.latlng.lat, e.latlng.lng));\
+    \ L['marker'](pt).addTo($2).bindPopup($1(pt.lat, pt.lng));\
     \})"
     mapOnClick_ :: Callback (JSVal -> JSVal -> IO JSVal) -> JSVal -> JSVal -> IO ()
 
