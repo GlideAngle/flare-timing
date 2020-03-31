@@ -94,9 +94,10 @@ foreign import javascript unsafe
     \   y.layer.setStyle({'opacity': '1.0'});\
     \ }\
     \ var pt = L.GeometryUtil.closest($2, y.layer, e.latlng, true);\
-    \ L['marker'](pt).addTo($2).bindPopup($1(pt.lat, pt.lng));\
+    \ var ix = y.layer.getLatLngs().findIndex(function(z){ return z.lat === pt.lat && z.lng === pt.lng; });\
+    \ L['marker'](pt).addTo($2).bindPopup($1(ix, pt.lat, pt.lng));\
     \})"
-    mapOnClick_ :: Callback (JSVal -> JSVal -> IO JSVal) -> JSVal -> JSVal -> IO ()
+    mapOnClick_ :: Callback (JSVal -> JSVal -> JSVal -> IO JSVal) -> JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['tileLayer']($1, {maxZoom: $2, opacity: 0.6})"
@@ -212,10 +213,11 @@ mapInvalidateSize lmap =
 
 mapOnClick :: Map -> [Polyline] -> IO ()
 mapOnClick lmap xs = do
-    cb <- syncCallback2' (\lat lng -> do
+    cb <- syncCallback3' (\ix lat lng -> do
+        ix' :: Int <- fromJSValUnchecked ix
         lat' <- fromJSValUnchecked lat
         lng' <- fromJSValUnchecked lng
-        let s = showLatLng (lat', lng')
+        let s = printf "#%d" ix' ++ "<br />" ++ showLatLng (lat', lng')
         toJSVal $ toJSString s)
 
     ys :: JSVal <- toJSValListOf $ unPolyline <$> xs

@@ -221,12 +221,12 @@ fixMarker
 
     let msg =
             pn
-            ++ "<br>"
+            ++ "<br />"
             ++ "#"
             ++ show fix
             ++ " at "
             ++ showTime tz time
-            ++ "<br>"
+            ++ "<br />"
             ++ showLatLng latLng
 
     L.markerPopup fixMark msg
@@ -251,12 +251,12 @@ tagMarkers
 
     let msg =
             pn
-            ++ "<br>"
+            ++ "<br />"
             ++ "#"
             ++ printf "%.2f" fixFrac
             ++ " at "
             ++ showTime tz time
-            ++ "<br>"
+            ++ "<br />"
             ++ showLatLng latLng
 
     L.markerPopup tagMark msg
