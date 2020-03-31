@@ -88,15 +88,13 @@ foreign import javascript unsafe
     \     x.setStyle({'opacity': '0.5'});\
     \   }\
     \ });\
-    \ var ly = L.GeometryUtil.closestLayer($2, $3, e.latlng);\
-    \ if (ly === null) return;\
-    \ if (typeof ly.layer.setStyle === 'function') {\
-    \   ly.layer.setStyle({'opacity': '1.0'});\
+    \ var y = L.GeometryUtil.closestLayer($2, $3, e.latlng);\
+    \ if (y === null) return;\
+    \ if (typeof y.layer.setStyle === 'function') {\
+    \   y.layer.setStyle({'opacity': '1.0'});\
     \ }\
-    \ $3.forEach(function(y){\
-    \   var pt = L.GeometryUtil.closest($2, y, e.latlng, true);\
-    \   L['marker'](pt).addTo($2).bindPopup($1(e.latlng.lat, e.latlng.lng));\
-    \ });\
+    \ var pt = L.GeometryUtil.closest($2, y.layer, e.latlng, true);\
+    \ L['marker'](pt).addTo($2).bindPopup($1(e.latlng.lat, e.latlng.lng));\
     \})"
     mapOnClick_ :: Callback (JSVal -> JSVal -> IO JSVal) -> JSVal -> JSVal -> IO ()
 
