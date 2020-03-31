@@ -8,6 +8,7 @@ module FlareTiming.Map.Leaflet
     , Circle(..)
     , Semicircle(..)
     , LatLngBounds
+    , Polyline
     , map
     , mapSetView
     , mapInvalidateSize
@@ -80,11 +81,13 @@ foreign import javascript unsafe
     mapInvalidateSize_ :: JSVal -> IO ()
 
 foreign import javascript unsafe
-    "$1['on']('click', function(e){\
-    \ var pt = L.GeometryUtil.closest($1, $2, e.latlng, true);\
-    \ L['marker'](pt).addTo($1).bindPopup($3(e.latlng.lat, e.latlng.lng));\
+    "$2['on']('click', function(e){\
+    \ $3.forEach(function(track){\
+    \   var pt = L.GeometryUtil.closest($2, track, e.latlng, true);\
+    \   L['marker'](pt).addTo($2).bindPopup($1(e.latlng.lat, e.latlng.lng));\
+    \ });\
     \})"
-    mapOnClick_ :: JSVal -> JSVal -> Callback (JSVal -> JSVal -> IO JSVal) -> IO ()
+    mapOnClick_ :: Callback (JSVal -> JSVal -> IO JSVal) -> JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['tileLayer']($1, {maxZoom: $2, opacity: 0.6})"
@@ -198,15 +201,17 @@ mapInvalidateSize :: Map -> IO ()
 mapInvalidateSize lmap =
     mapInvalidateSize_ (unMap lmap)
 
-mapOnClick :: Map -> Polyline -> IO ()
-mapOnClick lmap x = do
+mapOnClick :: Map -> [Polyline] -> IO ()
+mapOnClick lmap xs = do
     cb <- syncCallback2' (\lat lng -> do
         lat' <- fromJSValUnchecked lat
         lng' <- fromJSValUnchecked lng
         let s = showLatLng (lat', lng')
         toJSVal $ toJSString s)
 
-    mapOnClick_ (unMap lmap) (unPolyline x) cb
+    ys :: JSVal <- toJSValListOf $ unPolyline <$> xs
+
+    mapOnClick_ cb (unMap lmap) ys
     releaseCallback cb
 
 layerGroup :: Polyline -> [Marker] -> IO LayerGroup

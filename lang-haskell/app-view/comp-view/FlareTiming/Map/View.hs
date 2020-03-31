@@ -27,6 +27,7 @@ import qualified FlareTiming.Map.Leaflet as L
     ( Marker(..)
     , Circle(..)
     , Semicircle(..)
+    , Polyline
     , map
     , mapSetView
     , layerGroup
@@ -431,13 +432,15 @@ map
 
     (eCanvas, _) <- elAttr' "div" ("id" =: "map" <> "style" =: "height: 680px;width: 100%") $ return ()
 
-    rec performEvent_ $ leftmost
-            [ ffor pb (\_ -> liftIO $ do
+    rec
+        performEvent_ $
+            ffor pb (\_ -> liftIO $ do
                 L.mapInvalidateSize lmap'
                 L.fitBounds lmap' bounds'
                 return ())
 
-            , updated $ ffor2 zoomOrPan evZoom (\zp zs -> liftIO $ do
+        performEvent_ $
+            updated $ ffor2 zoomOrPan evZoom (\zp zs -> liftIO $ do
                 bs <- L.latLngBounds $ zoneToLLR <$> zs
 
                 case zp of
@@ -446,40 +449,47 @@ map
 
                 return ())
 
-            , ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), (_, tags))) ->
-                if p == nullPilot || null pts then return () else
-                case (flying, scored) of
-                    (Nothing, _) -> return ()
-                    (_, Nothing) -> return ()
-                    (Just TrackFlyingSection{flyingFixes = Nothing}, _) -> return ()
-                    (_, Just TrackScoredSection{scoredFixes = Nothing}) -> return ()
-                    (Just TrackFlyingSection{flyingFixes = Just (i, _)}
-                        , Just TrackScoredSection{scoredFixes = Just (j0, jN)}) -> liftIO $ do
+        eTrack :: Event _ (Maybe L.Polyline) <- performEvent $
+                    ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), (_, tags))) ->
+                        if p == nullPilot || null pts then return Nothing else
+                        case (flying, scored) of
+                            (Nothing, _) -> return Nothing
+                            (_, Nothing) -> return Nothing
+                            (Just TrackFlyingSection{flyingFixes = Nothing}, _) -> return Nothing
+                            (_, Just TrackScoredSection{scoredFixes = Nothing}) -> return Nothing
+                            (Just TrackFlyingSection{flyingFixes = Just (i, _)}
+                                , Just TrackScoredSection{scoredFixes = Just (j0, jN)}) -> liftIO $ do
 
-                        let pn@(PilotName pn') = getPilotName p
-                        let n = jN - (j0 - i)
-                        let t0 = take n pts
-                        let t1 = drop n pts
+                                let pn@(PilotName pn') = getPilotName p
+                                let n = jN - (j0 - i)
+                                let t0 = take n pts
+                                let t1 = drop n pts
 
-                        tagMarks <- sequence $ tagMarkers pn tz <$> catMaybes tags
+                                tagMarks <- sequence $ tagMarkers pn tz <$> catMaybes tags
 
-                        l0 <- L.trackLine t0 "black"
-                        g0 <- L.layerGroup l0 $ concat tagMarks
-                        L.mapOnClick lmap' l0
+                                l0 <- L.trackLine t0 "black"
+                                g0 <- L.layerGroup l0 $ concat tagMarks
+                                --L.mapOnClick lmap' l0
 
-                        -- NOTE: Adding the track now so that it displays.
-                        L.layerGroupAddToMap g0 lmap'
+                                -- NOTE: Adding the track now so that it displays.
+                                L.layerGroupAddToMap g0 lmap'
 
-                        L.addOverlay layers' (PilotName (pn' <> " scored"), g0)
-                        L.layersExpand layers'
+                                L.addOverlay layers' (PilotName (pn' <> " scored"), g0)
+                                L.layersExpand layers'
 
-                        l1 <- L.discardLine t1 "black"
-                        g1 <- L.layerGroup l1 []
-                        L.addOverlay layers' (PilotName (pn' <> " not scored"), g1)
-                        L.layersExpand layers'
+                                l1 <- L.discardLine t1 "black"
+                                g1 <- L.layerGroup l1 []
+                                L.addOverlay layers' (PilotName (pn' <> " not scored"), g1)
+                                L.layersExpand layers'
 
-                        return ())
-            ]
+                                return $ Just l0)
+
+        dTracks :: Dynamic _ [L.Polyline] <- foldDyn (\t ts -> maybe ts (: ts) t) [] eTrack
+
+        performEvent_ $
+            ffor (updated dTracks) (\ts -> liftIO $ do
+                L.mapOnClick lmap' ts
+                return ())
 
         (lmap', bounds', layers') <- liftIO $ do
             lmap <- L.map (_element_raw eCanvas)
