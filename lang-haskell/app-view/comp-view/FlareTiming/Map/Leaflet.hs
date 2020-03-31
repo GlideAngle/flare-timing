@@ -86,6 +86,11 @@ foreign import javascript unsafe
     \   var pt = L.GeometryUtil.closest($2, track, e.latlng, true);\
     \   L['marker'](pt).addTo($2).bindPopup($1(e.latlng.lat, e.latlng.lng));\
     \ });\
+    \ var ly = L.GeometryUtil.closestLayer($2, $3, e.latlng);\
+    \ if (ly === null) return;\
+    \ if (typeof ly.layer.setStyle === 'function') {\
+    \   ly.layer.setStyle({'color':'#4daf4a'});\
+    \ }\
     \})"
     mapOnClick_ :: Callback (JSVal -> JSVal -> IO JSVal) -> JSVal -> JSVal -> IO ()
 
