@@ -29,6 +29,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , Circle(..)
     , Semicircle(..)
     , Polyline
+    , MarkerKind(..)
     , map
     , mapSetView
     , layerGroup
@@ -37,6 +38,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , tileLayer
     , tileLayerAddToMap
     , marker
+    , markerKind
     , markerPopup
     , mapInvalidateSize
     , mapOnClick
@@ -202,12 +204,13 @@ newtype Color = Color String
 
 marker :: Color -> (Double, Double) -> IO L.Marker
 marker _ latLng = do
-    mark <- L.marker latLng
+    mark <- L.markerKind L.MarkerKindTurnpoint latLng
     L.markerPopup mark $ showLatLng latLng
     return mark
 
-fixMarker :: PilotName -> TimeZone -> Fix -> IO L.Marker
+fixMarker :: L.MarkerKind -> PilotName -> TimeZone -> Fix -> IO L.Marker
 fixMarker
+    mk
     (PilotName pn)
     tz
     Fix
@@ -217,7 +220,7 @@ fixMarker
         , lng = RawLng lng
         } = do
     let latLng = (fromRational lat, fromRational lng)
-    fixMark <- L.marker latLng
+    fixMark <- L.markerKind mk latLng
 
     let msg =
             pn
@@ -236,8 +239,8 @@ crossMarkers :: PilotName -> TimeZone -> ZoneCross -> IO [L.Marker]
 crossMarkers p tz ZoneCross{crossingPair = xy} = do
     case xy of
         [x, y] -> do
-            xMark <- fixMarker p tz x
-            yMark <- fixMarker p tz y
+            xMark <- fixMarker L.MarkerKindCrossIn p tz x
+            yMark <- fixMarker L.MarkerKindCrossOut p tz y
             return [xMark, yMark]
 
         _ -> return []
@@ -257,7 +260,7 @@ tagMarkers
         , cross
         } = do
     let latLng = (fromRational lat, fromRational lng)
-    tagMark <- L.marker latLng
+    tagMark <- L.markerKind L.MarkerKindTagInter latLng
 
     let msg =
             pn
@@ -274,7 +277,7 @@ tagMarkers
 
 tpMarker :: TurnpointName -> (Double, Double) -> IO L.Marker
 tpMarker (TurnpointName tpName) latLng = do
-    xMark <- L.marker latLng
+    xMark <- L.markerKind L.MarkerKindTurnpoint latLng
     L.markerPopup xMark tpName
     return xMark
 

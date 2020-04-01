@@ -9,6 +9,7 @@ module FlareTiming.Map.Leaflet
     , Semicircle(..)
     , LatLngBounds
     , Polyline
+    , MarkerKind(..)
     , map
     , mapSetView
     , mapInvalidateSize
@@ -16,6 +17,7 @@ module FlareTiming.Map.Leaflet
     , tileLayer
     , tileLayerAddToMap
     , marker
+    , markerKind
     , markerAddToMap
     , markerPopup
     , circle
@@ -143,8 +145,12 @@ foreign import javascript unsafe
     layersExpand_ :: JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L['marker']([$1, $2], {icon: L.divIcon({className: '', html: \"<span class='ft icon' />\"})})"
+    "L['marker']([$1, $2])"
     marker_ :: Double -> Double -> IO JSVal
+
+foreign import javascript unsafe
+    "L['marker']([$2, $3], {icon: L.divIcon({className: '', html: $1})})"
+    markerHtml_ :: JSString -> Double -> Double -> IO JSVal
 
 foreign import javascript unsafe
     "$1['bindPopup']($2)"
@@ -317,6 +323,28 @@ tileLayer src maxZoom =
 -- will be checked and shown.
 tileLayerAddToMap :: TileLayer -> Map -> IO ()
 tileLayerAddToMap x lmap = addToMap_ (unTileLayer x) (unMap lmap)
+
+data MarkerKind
+    = MarkerKindCrossIn
+    | MarkerKindCrossOut
+    | MarkerKindTagIn
+    | MarkerKindTagOut
+    | MarkerKindTagInter
+    | MarkerKindTurnpoint
+
+markerKind :: MarkerKind -> (Double, Double) -> IO Marker
+markerKind mk (lat, lng) = do
+    let s :: String =
+            case mk of
+                MarkerKindCrossIn -> "cross-in"
+                MarkerKindCrossOut -> "cross-out"
+                MarkerKindTagIn -> "tag-in"
+                MarkerKindTagOut -> "tag-out"
+                MarkerKindTagInter -> "tag-inter"
+                MarkerKindTurnpoint -> "turnpoint"
+
+    let html :: String = printf "<span class='ft icon %s' />" s
+    Marker <$> markerHtml_ (toJSString html) lat lng
 
 marker :: (Double, Double) -> IO Marker
 marker (lat, lng) =
