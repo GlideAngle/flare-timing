@@ -235,12 +235,12 @@ fixMarker
     L.markerPopup fixMark msg
     return fixMark
 
-crossMarkers :: PilotName -> TimeZone -> ZoneCross -> IO [L.Marker]
-crossMarkers p tz ZoneCross{crossingPair = xy} = do
+crossMarkers :: (L.MarkerKind, L.MarkerKind) -> PilotName -> TimeZone -> ZoneCross -> IO [L.Marker]
+crossMarkers (xMk, yMk) p tz ZoneCross{crossingPair = xy} = do
     case xy of
         [x, y] -> do
-            xMark <- fixMarker L.MarkerKindCrossIn p tz x
-            yMark <- fixMarker L.MarkerKindCrossOut p tz y
+            xMark <- fixMarker xMk p tz x
+            yMark <- fixMarker yMk p tz y
             return [xMark, yMark]
 
         _ -> return []
@@ -273,7 +273,7 @@ tagMarkers
             ++ showLatLng latLng
 
     L.markerPopup tagMark msg
-    (tagMark,) <$> crossMarkers p tz cross
+    (tagMark,) <$> crossMarkers (L.MarkerKindTagIn, L.MarkerKindTagOut) p tz cross
 
 tpMarker :: TurnpointName -> (Double, Double) -> IO L.Marker
 tpMarker (TurnpointName tpName) latLng = do
@@ -503,13 +503,15 @@ map
                                             , zonesCrossExcluded = es
                                             } -> do
                                         unless (null ns) $ do
-                                            mNs <- sequence $ crossMarkers pn tz <$> (catMaybes $ concat ns)
+                                            let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
+                                            mNs <- sequence $ crossMarkers mks pn tz <$> (catMaybes $ concat ns)
                                             gNs <- L.layerGroup $ concat mNs
                                             L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNs)
                                             L.layersExpand layers'
 
                                         unless (null es) $ do
-                                            mEs <- sequence $ crossMarkers pn tz <$> (catMaybes $ concat es)
+                                            let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
+                                            mEs <- sequence $ crossMarkers mks pn tz <$> (catMaybes $ concat es)
                                             gEs <- L.layerGroup $ concat mEs
                                             L.addOverlay layers' (PilotName (pn' <> ": excluded"), gEs)
                                             L.layersExpand layers'
