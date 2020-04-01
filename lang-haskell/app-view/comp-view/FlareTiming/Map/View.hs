@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Map.View (viewMap) where
 
 -- TODO: Find out why hiding Debug.Trace.debugEvent doesn't work.
@@ -14,28 +16,30 @@ import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
 import Data.Time.LocalTime (TimeZone)
-
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
 import Data.Maybe (catMaybes, listToMaybe)
 import Data.List (zipWith4)
 import qualified Data.Map as Map
-import Control.Monad (sequence)
+import Control.Monad (sequence, unless)
 import Control.Monad.IO.Class (liftIO)
 
 import qualified FlareTiming.Map.Leaflet as L
     ( Marker(..)
     , Circle(..)
     , Semicircle(..)
+    , Polyline
     , map
     , mapSetView
     , layerGroup
+    , layerGroupAddLayer
     , layerGroupAddToMap
     , tileLayer
     , tileLayerAddToMap
     , marker
     , markerPopup
     , mapInvalidateSize
+    , mapOnClick
     , circle
     , circleAddToMap
     , semicircle
@@ -50,6 +54,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , layersExpand
     , addOverlay
     )
+import FlareTiming.Map.Leaflet (showLatLng)
 import WireTypes.Cross
     ( TrackFlyingSection(..)
     , TrackScoredSection(..)
@@ -192,16 +197,6 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = mdo
     return (zp', whereTo, downloadTrack')
 
 
-showLatLng :: (Double, Double) -> String
-showLatLng (lat, lng) =
-    printf fmt (abs lat) (abs lng)
-    where
-        fmt = case (lat < 0, lng < 0) of
-                  (True, True) -> "%f °S, %f °W"
-                  (False, True) -> "%f °N, %f °W"
-                  (True, False) -> "%f °S, %f °E"
-                  (False, False) -> "%f °N, %f °E"
-
 newtype TurnpointName = TurnpointName String
 newtype Color = Color String
 
@@ -226,18 +221,18 @@ fixMarker
 
     let msg =
             pn
-            ++ "<br>"
+            ++ "<br />"
             ++ "#"
             ++ show fix
             ++ " at "
             ++ showTime tz time
-            ++ "<br>"
+            ++ "<br />"
             ++ showLatLng latLng
 
     L.markerPopup fixMark msg
     return fixMark
 
-tagMarkers :: PilotName -> TimeZone -> ZoneTag -> IO [L.Marker]
+tagMarkers :: PilotName -> TimeZone -> ZoneTag -> IO (L.Marker, [L.Marker])
 tagMarkers
     p@(PilotName pn)
     tz
@@ -256,12 +251,12 @@ tagMarkers
 
     let msg =
             pn
-            ++ "<br>"
+            ++ "<br />"
             ++ "#"
             ++ printf "%.2f" fixFrac
             ++ " at "
             ++ showTime tz time
-            ++ "<br>"
+            ++ "<br />"
             ++ showLatLng latLng
 
     L.markerPopup tagMark msg
@@ -270,9 +265,9 @@ tagMarkers
         [x, y] -> do
             xMark <- fixMarker p tz x
             yMark <- fixMarker p tz y
-            return [xMark, tagMark, yMark]
+            return (tagMark, [xMark, yMark])
 
-        _ -> return [tagMark]
+        _ -> return (tagMark, [])
 
 tpMarker :: TurnpointName -> (Double, Double) -> IO L.Marker
 tpMarker (TurnpointName tpName) latLng = do
@@ -439,13 +434,15 @@ map
 
     (eCanvas, _) <- elAttr' "div" ("id" =: "map" <> "style" =: "height: 680px;width: 100%") $ return ()
 
-    rec performEvent_ $ leftmost
-            [ ffor pb (\_ -> liftIO $ do
+    rec
+        performEvent_ $
+            ffor pb (\_ -> liftIO $ do
                 L.mapInvalidateSize lmap'
                 L.fitBounds lmap' bounds'
                 return ())
 
-            , updated $ ffor2 zoomOrPan evZoom (\zp zs -> liftIO $ do
+        performEvent_ $
+            updated $ ffor2 zoomOrPan evZoom (\zp zs -> liftIO $ do
                 bs <- L.latLngBounds $ zoneToLLR <$> zs
 
                 case zp of
@@ -454,39 +451,61 @@ map
 
                 return ())
 
-            , ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), (_, tags))) ->
-                if p == nullPilot || null pts then return () else
-                case (flying, scored) of
-                    (Nothing, _) -> return ()
-                    (_, Nothing) -> return ()
-                    (Just TrackFlyingSection{flyingFixes = Nothing}, _) -> return ()
-                    (_, Just TrackScoredSection{scoredFixes = Nothing}) -> return ()
-                    (Just TrackFlyingSection{flyingFixes = Just (i, _)}
-                        , Just TrackScoredSection{scoredFixes = Just (j0, jN)}) -> liftIO $ do
+        eTrack :: Event _ (Maybe L.Polyline) <- performEvent $
+                    ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), (_, tags))) ->
+                        if p == nullPilot || null pts then return Nothing else
+                        case (flying, scored) of
+                            (Nothing, _) -> return Nothing
+                            (_, Nothing) -> return Nothing
+                            (Just TrackFlyingSection{flyingFixes = Nothing}, _) -> return Nothing
+                            (_, Just TrackScoredSection{scoredFixes = Nothing}) -> return Nothing
+                            (Just TrackFlyingSection{flyingFixes = Just (i, _)}
+                                , Just TrackScoredSection{scoredFixes = Just (j0, jN)}) -> liftIO $ do
 
-                        let pn@(PilotName pn') = getPilotName p
-                        let n = jN - (j0 - i)
-                        let t0 = take n pts
-                        let t1 = drop n pts
+                                let pn@(PilotName pn') = getPilotName p
+                                let n = jN - (j0 - i)
+                                let ts = take n pts
+                                let tsUnscored = drop n pts
 
-                        tagMarks <- sequence $ tagMarkers pn tz <$> catMaybes tags
+                                markers <- sequence $ tagMarkers pn tz <$> catMaybes tags
+                                let tagging = fst <$> markers
+                                let crossing = snd <$> markers
 
-                        l0 <- L.trackLine t0 "black"
-                        g0 <- L.layerGroup l0 $ concat tagMarks
+                                line <- L.trackLine ts "black"
+                                gTrack <- L.layerGroupAddLayer [] line
+                                gTagging <- L.layerGroup tagging
+                                gCrossing <- L.layerGroup $ concat crossing
 
-                        -- NOTE: Adding the track now so that it displays.
-                        L.layerGroupAddToMap g0 lmap'
+                                -- NOTE: Adding the track now so that it displays.
+                                L.layerGroupAddToMap gTrack lmap'
+                                L.layerGroupAddToMap gTagging lmap'
 
-                        L.addOverlay layers' (PilotName (pn' <> " scored"), g0)
-                        L.layersExpand layers'
+                                L.addOverlay layers' (PilotName (pn' <> ": track"), gTrack)
+                                L.layersExpand layers'
 
-                        l1 <- L.discardLine t1 "black"
-                        g1 <- L.layerGroup l1 []
-                        L.addOverlay layers' (PilotName (pn' <> " not scored"), g1)
-                        L.layersExpand layers'
+                                L.addOverlay layers' (PilotName (pn' <> ": taggings"), gTagging)
+                                L.layersExpand layers'
 
-                        return ())
-            ]
+                                L.addOverlay layers' (PilotName (pn' <> ": crossings"), gCrossing)
+                                L.layersExpand layers'
+
+                                -- NOTE: Don't bother with the track not scored
+                                -- layer if the unscored track is empty.
+                                unless (null tsUnscored) $ do
+                                    let msg = printf ": unscored %d" $ length tsUnscored
+                                    lineUnscored <- L.discardLine tsUnscored "black"
+                                    gUnscored <- L.layerGroupAddLayer [] lineUnscored
+                                    L.addOverlay layers' (PilotName (pn' <> msg), gUnscored)
+                                    L.layersExpand layers'
+
+                                return $ Just line)
+
+        dTracks :: Dynamic _ [L.Polyline] <- foldDyn (\t ts -> maybe ts (: ts) t) [] eTrack
+
+        performEvent_ $
+            ffor (updated dTracks) (\ts -> liftIO $ do
+                L.mapOnClick lmap' ts
+                return ())
 
         (lmap', bounds', layers') <- liftIO $ do
             lmap <- L.map (_element_raw eCanvas)
@@ -557,39 +576,39 @@ map
             _ <- sequence $ (flip L.semicircleAddToMap) lmap <$> giveLines
 
             courseLine <- L.routeLine pts "gray"
-            courseGroup <- L.layerGroup courseLine tpMarks
+            courseGroup <- L.layerGroupAddLayer tpMarks courseLine 
 
             taskNormRouteLine <- L.routeLine ptsTaskNormRoute "black"
             taskNormRouteMarks <- sequence $ zipWith marker cs ptsTaskNormRoute
-            taskNormRouteGroup <- L.layerGroup taskNormRouteLine taskNormRouteMarks
+            taskNormRouteGroup <- L.layerGroupAddLayer taskNormRouteMarks taskNormRouteLine
 
             taskSphericalRouteLine <- L.routeLine ptsTaskSphericalRoute "red"
             taskSphericalRouteMarks <- sequence $ zipWith marker cs ptsTaskSphericalRoute
-            taskSphericalRouteGroup <- L.layerGroup taskSphericalRouteLine taskSphericalRouteMarks
+            taskSphericalRouteGroup <- L.layerGroupAddLayer taskSphericalRouteMarks taskSphericalRouteLine
 
             taskSphericalRouteSubsetLine <- L.routeLine ptsTaskSphericalRouteSubset "green"
             taskSphericalRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskSphericalRouteSubset
-            taskSphericalRouteSubsetGroup <- L.layerGroup taskSphericalRouteSubsetLine taskSphericalRouteSubsetMarks
+            taskSphericalRouteSubsetGroup <- L.layerGroupAddLayer taskSphericalRouteSubsetMarks taskSphericalRouteSubsetLine
 
             speedSphericalRouteLine <- L.routeLine ptsSpeedSphericalRoute "magenta"
             speedSphericalRouteMarks <- sequence $ zipWith marker cs ptsSpeedSphericalRoute
-            speedSphericalRouteGroup <- L.layerGroup speedSphericalRouteLine speedSphericalRouteMarks
+            speedSphericalRouteGroup <- L.layerGroupAddLayer speedSphericalRouteMarks speedSphericalRouteLine
 
             taskEllipsoidRouteLine <- L.routeLine ptsTaskEllipsoidRoute "crimson"
             taskEllipsoidRouteMarks <- sequence $ zipWith marker cs ptsTaskEllipsoidRoute
-            taskEllipsoidRouteGroup <- L.layerGroup taskEllipsoidRouteLine taskEllipsoidRouteMarks
+            taskEllipsoidRouteGroup <- L.layerGroupAddLayer taskEllipsoidRouteMarks taskEllipsoidRouteLine
 
             taskEllipsoidRouteSubsetLine <- L.routeLine ptsTaskEllipsoidRouteSubset "lime"
             taskEllipsoidRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskEllipsoidRouteSubset
-            taskEllipsoidRouteSubsetGroup <- L.layerGroup taskEllipsoidRouteSubsetLine taskEllipsoidRouteSubsetMarks
+            taskEllipsoidRouteSubsetGroup <- L.layerGroupAddLayer taskEllipsoidRouteSubsetMarks taskEllipsoidRouteSubsetLine
 
             speedEllipsoidRouteLine <- L.routeLine ptsSpeedEllipsoidRoute "cyan"
             speedEllipsoidRouteMarks <- sequence $ zipWith marker cs ptsSpeedEllipsoidRoute
-            speedEllipsoidRouteGroup <- L.layerGroup speedEllipsoidRouteLine speedEllipsoidRouteMarks
+            speedEllipsoidRouteGroup <- L.layerGroupAddLayer speedEllipsoidRouteMarks speedEllipsoidRouteLine
 
             taskPlanarRouteLine <- L.routeLine ptsTaskPlanarRoute "salmon"
             taskPlanarRouteMarks <- sequence $ zipWith marker cs ptsTaskPlanarRoute
-            taskPlanarRouteGroup <- L.layerGroup taskPlanarRouteLine taskPlanarRouteMarks
+            taskPlanarRouteGroup <- L.layerGroupAddLayer taskPlanarRouteMarks taskPlanarRouteLine
 
             -- NOTE: Adding the route now so that it displays by default but
             -- can also be hidden via the layers control. The course line is

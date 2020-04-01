@@ -8,9 +8,11 @@ module FlareTiming.Map.Leaflet
     , Circle(..)
     , Semicircle(..)
     , LatLngBounds
+    , Polyline
     , map
     , mapSetView
     , mapInvalidateSize
+    , mapOnClick
     , tileLayer
     , tileLayerAddToMap
     , marker
@@ -31,17 +33,24 @@ module FlareTiming.Map.Leaflet
     , panToBounds
     , latLngBounds
     , layerGroup
+    , layerGroupAddLayer
     , layerGroupAddToMap
     , layersControl
     , layersExpand
     , addOverlay
+    , showLatLng
     ) where
 
 import Prelude hiding (map, log)
+import Text.Printf (printf)
 import GHCJS.Types (JSVal, JSString)
+import GHCJS.Foreign.Callback
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types
-    (ToJSVal(..), Element(..), toElement, toJSString, toJSVal, toJSValListOf)
+    ( ToJSVal(..), Element(..)
+    , fromJSValUnchecked, toJSVal
+    , toElement, toJSString, toJSValListOf
+    )
 
 import WireTypes.Pilot (PilotName(..))
 import FlareTiming.Earth (AzimuthFwd(..))
@@ -73,6 +82,25 @@ foreign import javascript unsafe
     mapInvalidateSize_ :: JSVal -> IO ()
 
 foreign import javascript unsafe
+    "$2['off']('click');\
+    \ $2['on']('click', function(e){\
+    \ $3.forEach(function(x){\
+    \   if (typeof x.setStyle === 'function') {\
+    \     x.setStyle({'opacity': '0.5'});\
+    \   }\
+    \ });\
+    \ var y = L.GeometryUtil.closestLayer($2, $3, e.latlng);\
+    \ if (y === null) return;\
+    \ if (typeof y.layer.setStyle === 'function') {\
+    \   y.layer.setStyle({'opacity': '1.0'});\
+    \ }\
+    \ var pt = L.GeometryUtil.closest($2, y.layer, e.latlng, true);\
+    \ var ix = y.layer.getLatLngs().findIndex(function(z){ return z.lat === pt.lat && z.lng === pt.lng; });\
+    \ L['marker'](pt).addTo($2).bindPopup($1(ix, pt.lat, pt.lng));\
+    \})"
+    mapOnClick_ :: Callback (JSVal -> JSVal -> JSVal -> IO JSVal) -> JSVal -> JSVal -> IO ()
+
+foreign import javascript unsafe
     "L['tileLayer']($1, {maxZoom: $2, opacity: 0.6})"
     tileLayer_ :: JSString -> Int -> IO JSVal
 
@@ -81,8 +109,12 @@ foreign import javascript unsafe
     addToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L.layerGroup($2).addLayer($1)"
-    layerGroup_ :: JSVal -> JSVal -> IO JSVal
+    "L.layerGroup($1).addLayer($2)"
+    layerGroupAddLayer_ :: JSVal -> JSVal -> IO JSVal
+
+foreign import javascript unsafe
+    "L.layerGroup($1)"
+    layerGroup_ :: JSVal -> IO JSVal
 
 foreign import javascript unsafe
     "L.control.layers(\
@@ -162,6 +194,16 @@ foreign import javascript unsafe
     "$1['setView']($2.getCenter())"
     panToBounds_ :: JSVal -> JSVal -> IO ()
 
+showLatLng :: (Double, Double) -> String
+showLatLng (lat, lng) =
+    printf fmt (abs lat) (abs lng)
+    where
+        fmt = case (lat < 0, lng < 0) of
+                  (True, True) -> "%.6f °S, %.6f °W"
+                  (False, True) -> "%.6f °N, %.6f °W"
+                  (True, False) -> "%.6f °S, %.6f °E"
+                  (False, False) -> "%.6f °N, %.6f °E"
+
 map :: IsElement e => e -> IO Map
 map e =
     Map <$> (map_ . unElement . toElement $ e)
@@ -174,10 +216,30 @@ mapInvalidateSize :: Map -> IO ()
 mapInvalidateSize lmap =
     mapInvalidateSize_ (unMap lmap)
 
-layerGroup :: Polyline -> [Marker] -> IO LayerGroup
-layerGroup line xs = do
+mapOnClick :: Map -> [Polyline] -> IO ()
+mapOnClick lmap xs = do
+    cb <- syncCallback3' (\ix lat lng -> do
+        ix' :: Int <- fromJSValUnchecked ix
+        lat' <- fromJSValUnchecked lat
+        lng' <- fromJSValUnchecked lng
+        let s = printf "#%d" ix' ++ "<br />" ++ showLatLng (lat', lng')
+        toJSVal $ toJSString s)
+
+    ys :: JSVal <- toJSValListOf $ unPolyline <$> xs
+
+    mapOnClick_ cb (unMap lmap) ys
+    releaseCallback cb
+
+layerGroup :: [Marker] -> IO LayerGroup
+layerGroup xs = do
     ys <- toJSVal $ unMarker <$> xs
-    fg <- layerGroup_ (unPolyline line) ys
+    fg <- layerGroup_ ys
+    return $ LayerGroup fg
+
+layerGroupAddLayer :: [Marker] -> Polyline -> IO LayerGroup
+layerGroupAddLayer xs line = do
+    ys <- toJSVal $ unMarker <$> xs
+    fg <- layerGroupAddLayer_ ys (unPolyline line)
     return $ LayerGroup fg
 
 layerGroupAddToMap :: LayerGroup -> Map -> IO ()
