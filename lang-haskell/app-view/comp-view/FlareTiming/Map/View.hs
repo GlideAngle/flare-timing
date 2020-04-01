@@ -33,6 +33,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , map
     , mapSetView
     , layerGroup
+    , layerGroupAddLayer
     , layerGroupAddToMap
     , tileLayer
     , tileLayerAddToMap
@@ -470,17 +471,21 @@ map
                                 tagMarks <- sequence $ tagMarkers pn tz <$> catMaybes tags
 
                                 l0 <- L.trackLine t0 "black"
-                                g0 <- L.layerGroup l0 $ concat tagMarks
+                                g0 <- L.layerGroupAddLayer [] l0
+                                g2 <- L.layerGroup (concat tagMarks)
 
                                 -- NOTE: Adding the track now so that it displays.
                                 L.layerGroupAddToMap g0 lmap'
 
-                                L.addOverlay layers' (PilotName (pn' <> " scored"), g0)
+                                L.addOverlay layers' (PilotName (pn' <> " track scored"), g0)
+                                L.layersExpand layers'
+
+                                L.addOverlay layers' (PilotName (pn' <> " tags"), g2)
                                 L.layersExpand layers'
 
                                 l1 <- L.discardLine t1 "black"
-                                g1 <- L.layerGroup l1 []
-                                L.addOverlay layers' (PilotName (pn' <> " not scored"), g1)
+                                g1 <- L.layerGroupAddLayer [] l1
+                                L.addOverlay layers' (PilotName (pn' <> " track not scored"), g1)
                                 L.layersExpand layers'
 
                                 return $ Just l0)
@@ -561,39 +566,39 @@ map
             _ <- sequence $ (flip L.semicircleAddToMap) lmap <$> giveLines
 
             courseLine <- L.routeLine pts "gray"
-            courseGroup <- L.layerGroup courseLine tpMarks
+            courseGroup <- L.layerGroupAddLayer tpMarks courseLine 
 
             taskNormRouteLine <- L.routeLine ptsTaskNormRoute "black"
             taskNormRouteMarks <- sequence $ zipWith marker cs ptsTaskNormRoute
-            taskNormRouteGroup <- L.layerGroup taskNormRouteLine taskNormRouteMarks
+            taskNormRouteGroup <- L.layerGroupAddLayer taskNormRouteMarks taskNormRouteLine
 
             taskSphericalRouteLine <- L.routeLine ptsTaskSphericalRoute "red"
             taskSphericalRouteMarks <- sequence $ zipWith marker cs ptsTaskSphericalRoute
-            taskSphericalRouteGroup <- L.layerGroup taskSphericalRouteLine taskSphericalRouteMarks
+            taskSphericalRouteGroup <- L.layerGroupAddLayer taskSphericalRouteMarks taskSphericalRouteLine
 
             taskSphericalRouteSubsetLine <- L.routeLine ptsTaskSphericalRouteSubset "green"
             taskSphericalRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskSphericalRouteSubset
-            taskSphericalRouteSubsetGroup <- L.layerGroup taskSphericalRouteSubsetLine taskSphericalRouteSubsetMarks
+            taskSphericalRouteSubsetGroup <- L.layerGroupAddLayer taskSphericalRouteSubsetMarks taskSphericalRouteSubsetLine
 
             speedSphericalRouteLine <- L.routeLine ptsSpeedSphericalRoute "magenta"
             speedSphericalRouteMarks <- sequence $ zipWith marker cs ptsSpeedSphericalRoute
-            speedSphericalRouteGroup <- L.layerGroup speedSphericalRouteLine speedSphericalRouteMarks
+            speedSphericalRouteGroup <- L.layerGroupAddLayer speedSphericalRouteMarks speedSphericalRouteLine
 
             taskEllipsoidRouteLine <- L.routeLine ptsTaskEllipsoidRoute "crimson"
             taskEllipsoidRouteMarks <- sequence $ zipWith marker cs ptsTaskEllipsoidRoute
-            taskEllipsoidRouteGroup <- L.layerGroup taskEllipsoidRouteLine taskEllipsoidRouteMarks
+            taskEllipsoidRouteGroup <- L.layerGroupAddLayer taskEllipsoidRouteMarks taskEllipsoidRouteLine
 
             taskEllipsoidRouteSubsetLine <- L.routeLine ptsTaskEllipsoidRouteSubset "lime"
             taskEllipsoidRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskEllipsoidRouteSubset
-            taskEllipsoidRouteSubsetGroup <- L.layerGroup taskEllipsoidRouteSubsetLine taskEllipsoidRouteSubsetMarks
+            taskEllipsoidRouteSubsetGroup <- L.layerGroupAddLayer taskEllipsoidRouteSubsetMarks taskEllipsoidRouteSubsetLine
 
             speedEllipsoidRouteLine <- L.routeLine ptsSpeedEllipsoidRoute "cyan"
             speedEllipsoidRouteMarks <- sequence $ zipWith marker cs ptsSpeedEllipsoidRoute
-            speedEllipsoidRouteGroup <- L.layerGroup speedEllipsoidRouteLine speedEllipsoidRouteMarks
+            speedEllipsoidRouteGroup <- L.layerGroupAddLayer speedEllipsoidRouteMarks speedEllipsoidRouteLine
 
             taskPlanarRouteLine <- L.routeLine ptsTaskPlanarRoute "salmon"
             taskPlanarRouteMarks <- sequence $ zipWith marker cs ptsTaskPlanarRoute
-            taskPlanarRouteGroup <- L.layerGroup taskPlanarRouteLine taskPlanarRouteMarks
+            taskPlanarRouteGroup <- L.layerGroupAddLayer taskPlanarRouteMarks taskPlanarRouteLine
 
             -- NOTE: Adding the route now so that it displays by default but
             -- can also be hidden via the layers control. The course line is

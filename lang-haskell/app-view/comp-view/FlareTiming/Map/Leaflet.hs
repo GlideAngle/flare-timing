@@ -33,6 +33,7 @@ module FlareTiming.Map.Leaflet
     , panToBounds
     , latLngBounds
     , layerGroup
+    , layerGroupAddLayer
     , layerGroupAddToMap
     , layersControl
     , layersExpand
@@ -108,8 +109,12 @@ foreign import javascript unsafe
     addToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L.layerGroup($2).addLayer($1)"
-    layerGroup_ :: JSVal -> JSVal -> IO JSVal
+    "L.layerGroup($1).addLayer($2)"
+    layerGroupAddLayer_ :: JSVal -> JSVal -> IO JSVal
+
+foreign import javascript unsafe
+    "L.layerGroup($1)"
+    layerGroup_ :: JSVal -> IO JSVal
 
 foreign import javascript unsafe
     "L.control.layers(\
@@ -225,10 +230,16 @@ mapOnClick lmap xs = do
     mapOnClick_ cb (unMap lmap) ys
     releaseCallback cb
 
-layerGroup :: Polyline -> [Marker] -> IO LayerGroup
-layerGroup line xs = do
+layerGroup :: [Marker] -> IO LayerGroup
+layerGroup xs = do
     ys <- toJSVal $ unMarker <$> xs
-    fg <- layerGroup_ (unPolyline line) ys
+    fg <- layerGroup_ ys
+    return $ LayerGroup fg
+
+layerGroupAddLayer :: [Marker] -> Polyline -> IO LayerGroup
+layerGroupAddLayer xs line = do
+    ys <- toJSVal $ unMarker <$> xs
+    fg <- layerGroupAddLayer_ ys (unPolyline line)
     return $ LayerGroup fg
 
 layerGroupAddToMap :: LayerGroup -> Map -> IO ()
