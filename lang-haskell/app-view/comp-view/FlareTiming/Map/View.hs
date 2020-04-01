@@ -59,7 +59,7 @@ import WireTypes.Cross
     ( TrackFlyingSection(..)
     , TrackScoredSection(..)
     , Fix(..), InterpolatedFix(..)
-    , ZoneCross(..), ZoneTag(..)
+    , ZoneCross(..), ZoneTag(..), TrackCross(..)
     )
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
 import WireTypes.Comp
@@ -328,7 +328,7 @@ viewMap
             )
         ,
             ( (Pilot, [[Double]])
-            , (Pilot, [Maybe ZoneTag])
+            , ((Pilot, [Maybe ZoneTag]), (Pilot, Maybe TrackCross))
             )
         )
     -> m (Event t Pilot)
@@ -390,7 +390,7 @@ map
             )
         ,
             ( (Pilot, [[Double]])
-            , (Pilot, [Maybe ZoneTag])
+            , ((Pilot, [Maybe ZoneTag]), (Pilot, Maybe TrackCross))
             )
         )
     -> m (Event t Pilot)
@@ -452,7 +452,7 @@ map
                 return ())
 
         eTrack :: Event _ (Maybe L.Polyline) <- performEvent $
-                    ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), (_, tags))) ->
+                    ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), ((_, tags), _))) ->
                         if p == nullPilot || null pts then return Nothing else
                         case (flying, scored) of
                             (Nothing, _) -> return Nothing

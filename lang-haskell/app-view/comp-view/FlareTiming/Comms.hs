@@ -30,6 +30,7 @@ module FlareTiming.Comms
     , getTaskPilotTrackFlyingSection
     , getTaskPilotTrackScoredSection
     , getTaskFlyingSectionTimes
+    , getTaskPilotCross
     , getTaskPilotTag
     , getTaskBolsterStats
     , getTaskBonusBolsterStats
@@ -358,6 +359,31 @@ getTaskPilotTrackScoredSection (IxTask ii) ev = do
         u (PilotId pid) =
             mapUri
             $ "/peg-frame/track-scored-section/"
+            <> (T.pack . show $ ii)
+            <> "/"
+            <> (T.pack pid)
+
+    let req' md = XhrRequest "GET" (u md) def
+    rsp <- performRequestAsync . fmap req' $ getPilotId <$> ev
+    return $ fmapMaybe decodeXhrResponse rsp
+
+getTaskPilotCross
+    ::
+        ( MonadIO (Performable m)
+        , HasJSContext (Performable m)
+        , PerformEvent t m
+        , TriggerEvent t m
+        , FromJSON a
+        )
+   => IxTask
+   -> Event t Pilot
+   -> m (Event t a)
+getTaskPilotCross IxTaskNone _ = return never
+getTaskPilotCross (IxTask ii) ev = do
+    let u :: PilotId -> T.Text
+        u (PilotId pid) =
+            mapUri
+            $ "/cross-zone/"
             <> (T.pack . show $ ii)
             <> "/"
             <> (T.pack pid)
