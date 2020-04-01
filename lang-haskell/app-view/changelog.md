@@ -7,6 +7,8 @@ of this changelog.
 
 * Show milliseconds if a pilot jumped the gun by less than a second.
 * Display ###-pilot or ####-pilot dependening on the pilot id width.
+* Add a marker to the nearest vertex on the nearest track line when the map is
+  clicked.
 
 # Leading Area Plot
 ## app-view-0.26
