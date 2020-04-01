@@ -232,7 +232,7 @@ fixMarker
     L.markerPopup fixMark msg
     return fixMark
 
-tagMarkers :: PilotName -> TimeZone -> ZoneTag -> IO [L.Marker]
+tagMarkers :: PilotName -> TimeZone -> ZoneTag -> IO (L.Marker, [L.Marker])
 tagMarkers
     p@(PilotName pn)
     tz
@@ -265,9 +265,9 @@ tagMarkers
         [x, y] -> do
             xMark <- fixMarker p tz x
             yMark <- fixMarker p tz y
-            return [xMark, tagMark, yMark]
+            return (tagMark, [xMark, yMark])
 
-        _ -> return [tagMark]
+        _ -> return (tagMark, [])
 
 tpMarker :: TurnpointName -> (Double, Double) -> IO L.Marker
 tpMarker (TurnpointName tpName) latLng = do
@@ -468,24 +468,30 @@ map
                                 let t1 = drop n pts
 
                                 tagMarks <- sequence $ tagMarkers pn tz <$> catMaybes tags
+                                let tagging = fst <$> tagMarks
+                                let crossing = snd <$> tagMarks
 
                                 l0 <- L.trackLine t0 "black"
                                 g0 <- L.layerGroupAddLayer [] l0
-                                g2 <- L.layerGroup (concat tagMarks)
+                                g2 <- L.layerGroup tagging
+                                g3 <- L.layerGroup $ concat crossing
 
                                 -- NOTE: Adding the track now so that it displays.
                                 L.layerGroupAddToMap g0 lmap'
 
-                                L.addOverlay layers' (PilotName (pn' <> " track scored"), g0)
+                                L.addOverlay layers' (PilotName (pn' <> ": track"), g0)
                                 L.layersExpand layers'
 
-                                L.addOverlay layers' (PilotName (pn' <> " tags"), g2)
+                                L.addOverlay layers' (PilotName (pn' <> ": taggings"), g2)
+                                L.layersExpand layers'
+
+                                L.addOverlay layers' (PilotName (pn' <> ": crossings"), g3)
                                 L.layersExpand layers'
 
                                 -- NOTE: Don't bother with the track not scored
                                 -- layer if the unscored track is empty.
                                 unless (null t1) $ do
-                                    let msg = printf " track unscored (%d)" $ length t1
+                                    let msg = printf ": fixes unscored %d" $ length t1
                                     l1 <- L.discardLine t1 "black"
                                     g1 <- L.layerGroupAddLayer [] l1
                                     L.addOverlay layers' (PilotName (pn' <> msg), g1)
