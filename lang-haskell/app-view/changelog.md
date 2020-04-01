@@ -8,7 +8,10 @@ of this changelog.
 * Show milliseconds if a pilot jumped the gun by less than a second.
 * Display ###-pilot or ####-pilot dependening on the pilot id width.
 * Add a marker to the nearest vertex on the nearest track line when the map is
-  clicked.
+  clicked. Use the default marker for these.
+* Show all crossings in a layer on the map, the nominees. Use different marker
+  icons for different items. Use unfilled circles for crossings and filled
+  circles for taggings.
 
 # Leading Area Plot
 ## app-view-0.26
