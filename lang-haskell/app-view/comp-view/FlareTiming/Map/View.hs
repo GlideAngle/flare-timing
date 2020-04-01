@@ -478,6 +478,7 @@ map
 
                                 -- NOTE: Adding the track now so that it displays.
                                 L.layerGroupAddToMap gTrack lmap'
+                                L.layerGroupAddToMap gTagging lmap'
 
                                 L.addOverlay layers' (PilotName (pn' <> ": track"), gTrack)
                                 L.layersExpand layers'
