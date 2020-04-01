@@ -494,11 +494,22 @@ map
 
                                 case cross of
                                     Nothing -> return ()
-                                    Just TrackCross{zonesCrossNominees = nominees} -> do
-                                        mNominees <- sequence $ crossMarkers pn tz <$> (catMaybes $ concat nominees)
-                                        gNominees <- L.layerGroup $ concat mNominees
-                                        L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNominees)
-                                        L.layersExpand layers'
+                                    Just
+                                        TrackCross
+                                            { zonesCrossNominees = ns
+                                            , zonesCrossExcluded = es
+                                            } -> do
+                                        unless (null ns) $ do
+                                            mNs <- sequence $ crossMarkers pn tz <$> (catMaybes $ concat ns)
+                                            gNs <- L.layerGroup $ concat mNs
+                                            L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNs)
+                                            L.layersExpand layers'
+
+                                        unless (null es) $ do
+                                            mEs <- sequence $ crossMarkers pn tz <$> (catMaybes $ concat es)
+                                            gEs <- L.layerGroup $ concat mEs
+                                            L.addOverlay layers' (PilotName (pn' <> ": excluded"), gEs)
+                                            L.layersExpand layers'
 
                                 -- NOTE: Don't bother with the track not scored
                                 -- layer if the unscored track is empty.
