@@ -16,13 +16,12 @@ import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
 import Data.Time.LocalTime (TimeZone)
-
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
 import Data.Maybe (catMaybes, listToMaybe)
 import Data.List (zipWith4)
 import qualified Data.Map as Map
-import Control.Monad (sequence)
+import Control.Monad (sequence, unless)
 import Control.Monad.IO.Class (liftIO)
 
 import qualified FlareTiming.Map.Leaflet as L
@@ -483,10 +482,14 @@ map
                                 L.addOverlay layers' (PilotName (pn' <> " tags"), g2)
                                 L.layersExpand layers'
 
-                                l1 <- L.discardLine t1 "black"
-                                g1 <- L.layerGroupAddLayer [] l1
-                                L.addOverlay layers' (PilotName (pn' <> " track not scored"), g1)
-                                L.layersExpand layers'
+                                -- NOTE: Don't bother with the track not scored
+                                -- layer if the unscored track is empty.
+                                unless (null t1) $ do
+                                    let msg = printf " track unscored (%d)" $ length t1
+                                    l1 <- L.discardLine t1 "black"
+                                    g1 <- L.layerGroupAddLayer [] l1
+                                    L.addOverlay layers' (PilotName (pn' <> msg), g1)
+                                    L.layersExpand layers'
 
                                 return $ Just l0)
 
