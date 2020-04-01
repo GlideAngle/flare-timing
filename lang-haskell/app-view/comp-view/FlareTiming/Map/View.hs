@@ -254,7 +254,7 @@ tagMarkers
                 , lat = RawLat lat
                 , lng = RawLng lng
                 }
-        , cross = ZoneCross{crossingPair = xy}
+        , cross
         } = do
     let latLng = (fromRational lat, fromRational lng)
     tagMark <- L.marker latLng
@@ -270,14 +270,7 @@ tagMarkers
             ++ showLatLng latLng
 
     L.markerPopup tagMark msg
-
-    case xy of
-        [x, y] -> do
-            xMark <- fixMarker p tz x
-            yMark <- fixMarker p tz y
-            return (tagMark, [xMark, yMark])
-
-        _ -> return (tagMark, [])
+    (tagMark,) <$> crossMarkers p tz cross
 
 tpMarker :: TurnpointName -> (Double, Double) -> IO L.Marker
 tpMarker (TurnpointName tpName) latLng = do
