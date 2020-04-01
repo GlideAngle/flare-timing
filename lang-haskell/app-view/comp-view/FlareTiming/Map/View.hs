@@ -464,40 +464,40 @@ map
 
                                 let pn@(PilotName pn') = getPilotName p
                                 let n = jN - (j0 - i)
-                                let t0 = take n pts
-                                let t1 = drop n pts
+                                let ts = take n pts
+                                let tsUnscored = drop n pts
 
-                                tagMarks <- sequence $ tagMarkers pn tz <$> catMaybes tags
-                                let tagging = fst <$> tagMarks
-                                let crossing = snd <$> tagMarks
+                                markers <- sequence $ tagMarkers pn tz <$> catMaybes tags
+                                let tagging = fst <$> markers
+                                let crossing = snd <$> markers
 
-                                l0 <- L.trackLine t0 "black"
-                                g0 <- L.layerGroupAddLayer [] l0
-                                g2 <- L.layerGroup tagging
-                                g3 <- L.layerGroup $ concat crossing
+                                line <- L.trackLine ts "black"
+                                gTrack <- L.layerGroupAddLayer [] line
+                                gTagging <- L.layerGroup tagging
+                                gCrossing <- L.layerGroup $ concat crossing
 
                                 -- NOTE: Adding the track now so that it displays.
-                                L.layerGroupAddToMap g0 lmap'
+                                L.layerGroupAddToMap gTrack lmap'
 
-                                L.addOverlay layers' (PilotName (pn' <> ": track"), g0)
+                                L.addOverlay layers' (PilotName (pn' <> ": track"), gTrack)
                                 L.layersExpand layers'
 
-                                L.addOverlay layers' (PilotName (pn' <> ": taggings"), g2)
+                                L.addOverlay layers' (PilotName (pn' <> ": taggings"), gTagging)
                                 L.layersExpand layers'
 
-                                L.addOverlay layers' (PilotName (pn' <> ": crossings"), g3)
+                                L.addOverlay layers' (PilotName (pn' <> ": crossings"), gCrossing)
                                 L.layersExpand layers'
 
                                 -- NOTE: Don't bother with the track not scored
                                 -- layer if the unscored track is empty.
-                                unless (null t1) $ do
-                                    let msg = printf ": fixes unscored %d" $ length t1
-                                    l1 <- L.discardLine t1 "black"
-                                    g1 <- L.layerGroupAddLayer [] l1
-                                    L.addOverlay layers' (PilotName (pn' <> msg), g1)
+                                unless (null tsUnscored) $ do
+                                    let msg = printf ": unscored %d" $ length tsUnscored
+                                    lineUnscored <- L.discardLine tsUnscored "black"
+                                    gUnscored <- L.layerGroupAddLayer [] lineUnscored
+                                    L.addOverlay layers' (PilotName (pn' <> msg), gUnscored)
                                     L.layersExpand layers'
 
-                                return $ Just l0)
+                                return $ Just line)
 
         dTracks :: Dynamic _ [L.Polyline] <- foldDyn (\t ts -> maybe ts (: ts) t) [] eTrack
 
