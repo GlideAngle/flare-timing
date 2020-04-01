@@ -143,7 +143,7 @@ foreign import javascript unsafe
     layersExpand_ :: JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L['marker']([$1, $2])"
+    "L['marker']([$1, $2], {icon: L.divIcon({className: '', html: \"<span class='ft icon' />\"})})"
     marker_ :: Double -> Double -> IO JSVal
 
 foreign import javascript unsafe
