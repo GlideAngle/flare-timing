@@ -232,6 +232,16 @@ fixMarker
     L.markerPopup fixMark msg
     return fixMark
 
+crossMarkers :: PilotName -> TimeZone -> ZoneCross -> IO [L.Marker]
+crossMarkers p tz ZoneCross{crossingPair = xy} = do
+    case xy of
+        [x, y] -> do
+            xMark <- fixMarker p tz x
+            yMark <- fixMarker p tz y
+            return [xMark, yMark]
+
+        _ -> return []
+
 tagMarkers :: PilotName -> TimeZone -> ZoneTag -> IO (L.Marker, [L.Marker])
 tagMarkers
     p@(PilotName pn)
@@ -452,7 +462,7 @@ map
                 return ())
 
         eTrack :: Event _ (Maybe L.Polyline) <- performEvent $
-                    ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), ((_, tags), _))) ->
+                    ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), ((_, tags), (_, cross)))) ->
                         if p == nullPilot || null pts then return Nothing else
                         case (flying, scored) of
                             (Nothing, _) -> return Nothing
@@ -488,6 +498,14 @@ map
 
                                 L.addOverlay layers' (PilotName (pn' <> ": crossings"), gCrossing)
                                 L.layersExpand layers'
+
+                                case cross of
+                                    Nothing -> return ()
+                                    Just TrackCross{zonesCrossNominees = nominees} -> do
+                                        mNominees <- sequence $ crossMarkers pn tz <$> (catMaybes $ concat nominees)
+                                        gNominees <- L.layerGroup $ concat mNominees
+                                        L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNominees)
+                                        L.layersExpand layers'
 
                                 -- NOTE: Don't bother with the track not scored
                                 -- layer if the unscored track is empty.
