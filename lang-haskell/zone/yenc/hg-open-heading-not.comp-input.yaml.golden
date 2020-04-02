@@ -2,22 +2,22 @@ prolog: []
 open-mandatory:
 - cylinder:
     center:
-    - -33.3562 deg
-    - 147.9336 deg
+    - -33.35620000 deg
+    - 147.93360000 deg
     radius: 400.0 m
 - cylinder:
     center:
-    - -33.12592 deg
-    - 147.91043 deg
+    - -33.12592000 deg
+    - 147.91043000 deg
     radius: 400.0 m
 - cylinder:
     center:
-    - -32.9378 deg
-    - 147.7097 deg
+    - -32.93780000 deg
+    - 147.70970000 deg
     radius: 400.0 m
 open-free:
   star:
     center:
-    - -33.3562 deg
-    - 147.9336 deg
+    - -33.35620000 deg
+    - 147.93360000 deg
     radius: 400.0 m

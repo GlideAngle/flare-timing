@@ -198,22 +198,22 @@ spec_From_YAML = do
         `shouldBe` (Right zkCyl)
 
     it "decodes a circle zone kind"
-        $ ydec 
+        $ ydec
         [hereFile|ydec/circle.yaml|]
         `shouldBe` (Right zkCircle)
 
     it "decodes an ESS is goal race"
-        $ ydec 
+        $ ydec
         [hereFile|ydec/ess-is-goal-race.yaml|]
         `shouldBe` (Right tzEssIsGoalRace)
 
     it "decodes an ESS is not goal race"
-        $ ydec 
+        $ ydec
         [hereFile|ydec/ess-is-not-goal-race.yaml|]
         `shouldBe` (Right tzEssIsNotGoalRace)
 
     it "decodes an ESS is not goal race with prolog and epilog"
-        $ ydec 
+        $ ydec
         [hereFile|ydec/ess-is-not-goal-race-pro-epi.yaml|]
         `shouldBe` (Right tzEssIsNotGoalRaceProEpi)
 
@@ -312,22 +312,22 @@ spec_From_JSON = do
         `shouldBe` (Just zkCyl)
 
     it "decodes a circle zone kind"
-        $ decode 
+        $ decode
         [hereFile|jdec/circle.json|]
         `shouldBe` (Just zkCircle)
 
     it "decodes an ESS is goal race"
-        $ decode 
+        $ decode
         [hereFile|jdec/ess-is-goal-race.json|]
         `shouldBe` (Just tzEssIsGoalRace)
 
     it "decodes an ESS is not goal race"
-        $ decode 
+        $ decode
         [hereFile|jdec/ess-is-not-goal-race.json|]
         `shouldBe` (Just tzEssIsNotGoalRace)
 
     it "decodes an ESS is not goal race with prolog and epilog"
-        $ decode 
+        $ decode
         [hereFile|jdec/ess-is-not-goal-race-pro-epi.json|]
         `shouldBe` (Just tzEssIsNotGoalRaceProEpi)
 

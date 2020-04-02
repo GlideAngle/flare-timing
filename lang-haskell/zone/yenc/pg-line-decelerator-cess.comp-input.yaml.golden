@@ -1,84 +1,84 @@
 - prolog:
   - cylinder:
       center:
-      - -32.4916 deg
-      - 147.91973 deg
+      - -32.49160000 deg
+      - 147.91973000 deg
       radius: 400.0 m
   race:
   - cylinder:
       center:
-      - -33.1903 deg
-      - 147.9857 deg
+      - -33.19030000 deg
+      - 147.98570000 deg
       radius: 400.0 m
   race-ess:
     cut-cone:
-      altitude: 340.0 m
+      altitude: 340.000 m
       center:
-      - -32.897 deg
-      - 148.2638 deg
+      - -32.89700000 deg
+      - 148.26380000 deg
       incline: 15.945 deg
       radius: 400.0 m
   epilog: []
   goal:
     semicircle:
       center:
-      - -34.4125 deg
-      - 146.8543 deg
+      - -34.41250000 deg
+      - 146.85430000 deg
       radius: 400.0 m
 - prolog:
   - cylinder:
       center:
-      - -32.4916 deg
-      - 147.91973 deg
+      - -32.49160000 deg
+      - 147.91973000 deg
       radius: 400.0 m
   race:
   - cylinder:
       center:
-      - -33.1903 deg
-      - 147.9857 deg
+      - -33.19030000 deg
+      - 147.98570000 deg
       radius: 400.0 m
   - cylinder:
       center:
-      - -32.897 deg
-      - 148.2638 deg
+      - -32.89700000 deg
+      - 148.26380000 deg
       radius: 400.0 m
   race-ess-is-goal:
     cut-semi-cone:
-      altitude: 198.0 m
+      altitude: 198.000 m
       center:
-      - -34.4125 deg
-      - 146.8543 deg
+      - -34.41250000 deg
+      - 146.85430000 deg
       incline: 15.945 deg
       radius: 400.0 m
 - prolog:
   - cylinder:
       center:
-      - -32.4916 deg
-      - 147.91973 deg
+      - -32.49160000 deg
+      - 147.91973000 deg
       radius: 400.0 m
   race:
   - cylinder:
       center:
-      - -33.1903 deg
-      - 147.9857 deg
+      - -33.19030000 deg
+      - 147.98570000 deg
       radius: 400.0 m
   race-ess:
     cut-cone:
-      altitude: 340.0 m
+      altitude: 340.000 m
       center:
-      - -32.897 deg
-      - 148.2638 deg
+      - -32.89700000 deg
+      - 148.26380000 deg
       incline: 15.945 deg
       radius: 400.0 m
   epilog:
   - cylinder:
       center:
-      - -33.1903 deg
-      - 147.9857 deg
+      - -33.19030000 deg
+      - 147.98570000 deg
       radius: 400.0 m
   goal:
     semicircle:
       center:
-      - -34.4125 deg
-      - 146.8543 deg
+      - -34.41250000 deg
+      - 146.85430000 deg
       radius: 400.0 m
