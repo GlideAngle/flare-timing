@@ -2,17 +2,16 @@
 
 module Flight.Mask.Tag.Double where
 
-import Debug.Trace
 import Prelude hiding (span)
 import Data.Coerce (coerce)
-import Data.Maybe (listToMaybe, catMaybes)
+import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
 import Data.List ((\\), partition)
 import Control.Arrow (first)
 import Control.Monad (join)
 
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
-import Flight.Zone.SpeedSection (sliceZones)
+import Flight.Zone.SpeedSection (sliceZones, restartZones)
 import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Zone.Raw (Give)
 import Flight.Kml (MarkedFixes(..))
@@ -148,7 +147,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         task@Task{zones, speedSection, startGates}
         MarkedFixes{mark0, fixes}
         indices =
-        (selected, nominees, selectedStart, NomineeStarts nomineeStarts, excluded)
+        (selected, nominees, SelectedStart selectedStart, NomineeStarts nomineeStarts, excluded)
         where
             sepZs = separatedZones @Double @Double e
             fromZs = fromZones @Double @Double e give
@@ -216,14 +215,32 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 ]
 
             -- The last start gate with a valid crossing.
-            selectedStart :: SelectedStart = SelectedStart $ do
+            selectedStart = do
                 (sg, xs) <- listToMaybe . take 1 $ reverse starts
                 case xs of
                     [] -> Nothing
                     x : _ -> Just (sg, x)
 
+            -- Replace the crossings of the start with the selected start.
+            xss'' :: [[Crossing]] = fromMaybe xss' $ do
+                (_, ZoneCross{crossingPair, inZone}) <- selectedStart
+
+                let crossing :: (ZoneIdx, ZoneIdx) -> Crossing =
+                        case inZone of
+                            [True, False] -> Right . uncurry ZoneExit
+                            [False, True] -> Left . uncurry ZoneEntry
+                            _ -> Left . uncurry ZoneEntry
+
+                case crossingPair of
+                    [Fix{fix = i}, Fix{fix = j}] ->
+                        let start = [crossing ((ZoneIdx i), (ZoneIdx j))]
+                        in Just $ restartZones speedSection start xss'
+
+                    _ ->
+                        Nothing
+
             yss :: [[OrdCrossing]]
-            yss = trimOrdLists ((fmap . fmap) OrdCrossing xss')
+            yss = trimOrdLists ((fmap . fmap) OrdCrossing xss'')
 
             yss' :: [[Crossing]]
             yss' = (fmap . fmap) unOrdCrossing yss
@@ -260,7 +277,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             selectors :: [[Crossing] -> Maybe Crossing]
             selectors =
                 (\x ->
-                    let b = traceShowId $ isStartExit sepZs fromZs x
+                    let b = isStartExit sepZs fromZs x
                     in crossingSelectors b x) task
 
     tagZones

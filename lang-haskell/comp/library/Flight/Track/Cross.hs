@@ -242,8 +242,25 @@ cmp a b =
         ("trackLogError", _) -> GT
 
         ("zonesCrossSelected", _) -> LT
+
         ("zonesCrossNominees", "zonesCrossSelected") -> GT
         ("zonesCrossNominees", _) -> LT
+
+        ("startSelected", "zonesCrossSelected") -> GT
+        ("startSelected", "zonesCrossNominees") -> GT
+        ("startSelected", _) -> LT
+
+        ("startNominees", "zonesCrossSelected") -> GT
+        ("startNominees", "zonesCrossNominees") -> GT
+        ("startNominees", "startSelected") -> GT
+        ("startNominees", _) -> LT
+
+        ("zonesCrossNominees", "zonesCrossSelected") -> GT
+        ("zonesCrossNominees", "zonesCrossNominees") -> GT
+        ("zonesCrossNominees", "startSelected") -> GT
+        ("zonesCrossNominees", _) -> LT
+        ("zonesCrossNominees", _) -> LT
+
         ("zonesCrossExcluded", _) -> GT
 
         ("fix", _) -> LT
