@@ -5,6 +5,7 @@ module Flight.Mask.Tag.Double where
 import Debug.Trace
 import Prelude hiding (span)
 import Data.Coerce (coerce)
+import Data.Maybe (listToMaybe, catMaybes)
 import Data.List ((\\), partition)
 import Control.Arrow (first)
 import Control.Monad (join)
@@ -28,7 +29,8 @@ import Flight.Mask.Internal.Zone
     ( MadeZones(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
-    , GatedCrossings(..)
+    , SelectedStart(..)
+    , NomineeStarts(..)
     , ExcludedCrossings(..)
     , ZoneEntry(..)
     , ZoneExit(..)
@@ -101,7 +103,8 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             { flying = flying'
             , selectedCrossings = selected
             , nomineeCrossings = nominees
-            , gatedCrossings = gated
+            , selectedStart = selectedStart
+            , nomineeStarts = nomineeStarts
             , excludedCrossings = excluded
             }
         where
@@ -126,7 +129,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             loggedTimes = timeRange mark0 loggedSeconds
             flyingTimes = timeRange mark0 flyingSeconds
 
-            (selected, nominees, gated, excluded) =
+            (selected, nominees, selectedStart, nomineeStarts, excluded) =
                 flyingCrossings @Double @Double e give tps task mf (flyingFixes flying')
 
     flyingCrossings
@@ -137,7 +140,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         -> Task k
         -> MarkedFixes
         -> FlyingSection Int -- ^ The fix indices of the flying section
-        -> (SelectedCrossings, NomineeCrossings, GatedCrossings, ExcludedCrossings)
+        -> (SelectedCrossings, NomineeCrossings, SelectedStart, NomineeStarts, ExcludedCrossings)
     flyingCrossings
         e
         give
@@ -145,7 +148,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         task@Task{zones, speedSection, startGates}
         MarkedFixes{mark0, fixes}
         indices =
-        (selected, nominees, gated, excluded)
+        (selected, nominees, selectedStart, NomineeStarts nomineeStarts, excluded)
         where
             sepZs = separatedZones @Double @Double e
             fromZs = fromZones @Double @Double e give
@@ -181,31 +184,43 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             nominees = NomineeCrossings nss
             excluded = ExcludedCrossings $ css \\ nss
 
-            gated =
-                GatedCrossings $
-                    if null speedSection then [] else
-                    case sliceZones speedSection (coerce nominees) of
-                        [] -> []
-                        (ns : _) ->
-                            [
-                                (sg,) $
-                                partition
-                                    (\case
-                                        Just
-                                            ZoneCross
-                                                { crossingPair =
-                                                    [ Fix{time = t0}
-                                                    , Fix{time = t1}
-                                                    ]
-                                                } ->
-                                            g <= t0 || g <= t1
+            nomineeStarts =
+                if null speedSection then [] else
+                case sliceZones speedSection (coerce nominees) of
+                    [] -> []
+                    (ns : _) ->
+                        [
+                            (sg,) $
+                            partition
+                                (\case
+                                    Just
+                                        ZoneCross
+                                            { crossingPair =
+                                                [ Fix{time = t0}
+                                                , Fix{time = t1}
+                                                ]
+                                            } ->
+                                        g <= t0 || g <= t1
 
-                                        Just ZoneCross{} -> False
-                                        Nothing -> False)
-                                    ns
+                                    Just ZoneCross{} -> False
+                                    Nothing -> False)
+                                ns
 
-                            | sg@(StartGate g) <- startGates
-                            ]
+                        | sg@(StartGate g) <- startGates
+                        ]
+
+            starts :: [(StartGate, [ZoneCross])] =
+                catMaybes
+                [ sequence (sg, sequence gs)
+                | (sg, (gs, _)) <- nomineeStarts
+                ]
+
+            -- The last start gate with a valid crossing.
+            selectedStart :: SelectedStart = SelectedStart $ do
+                (sg, xs) <- listToMaybe . take 1 $ reverse starts
+                case xs of
+                    [] -> Nothing
+                    x : _ -> Just (sg, x)
 
             yss :: [[OrdCrossing]]
             yss = trimOrdLists ((fmap . fmap) OrdCrossing xss')

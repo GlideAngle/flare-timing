@@ -3,6 +3,7 @@
 import Prelude hiding (span)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
+import Data.Coerce (coerce)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -46,10 +47,9 @@ import Flight.Mask
     , MadeZones(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
-    , GatedCrossings(..)
+    , SelectedStart(..)
+    , NomineeStarts(..)
     , ExcludedCrossings(..)
-    , unSelectedCrossings
-    , unNomineeCrossings
     , checkTracks
     , madeZones
     , nullFlying
@@ -153,10 +153,11 @@ writeCrossings compFile _ xs = do
 madeZonesToCross :: MadeZones -> TrackCross
 madeZonesToCross x =
     TrackCross
-        { zonesCrossSelected = unSelectedCrossings . selectedCrossings $ x
-        , zonesCrossNominees = unNomineeCrossings . nomineeCrossings $ x
-        , zonesCrossGated = unGatedCrossings . gatedCrossings $ x
-        , zonesCrossExcluded = unExcludedCrossings . excludedCrossings $ x
+        { zonesCrossSelected = coerce $ selectedCrossings x
+        , zonesCrossNominees = coerce $ nomineeCrossings x
+        , startSelected = coerce $ selectedStart x
+        , startNominees = coerce $ nomineeStarts x
+        , zonesCrossExcluded = coerce $ excludedCrossings x
         }
 
 crossings :: (Pilot, Maybe MadeZones) -> PilotTrackCross
@@ -194,7 +195,8 @@ flown c math tasks (IxTask i) fs =
                 { flying = nullFlying
                 , selectedCrossings = SelectedCrossings []
                 , nomineeCrossings = NomineeCrossings []
-                , gatedCrossings = GatedCrossings []
+                , selectedStart = SelectedStart Nothing
+                , nomineeStarts = NomineeStarts []
                 , excludedCrossings = ExcludedCrossings []
                 }
 

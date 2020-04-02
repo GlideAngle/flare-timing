@@ -2,7 +2,8 @@ module Flight.Mask.Internal.Zone
     ( MadeZones(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
-    , GatedCrossings(..)
+    , SelectedStart(..)
+    , NomineeStarts(..)
     , ExcludedCrossings(..)
     , ZoneEntry(..)
     , ZoneExit(..)
@@ -47,7 +48,8 @@ data MadeZones =
         { flying :: TrackFlyingSection
         , selectedCrossings :: SelectedCrossings
         , nomineeCrossings :: NomineeCrossings
-        , gatedCrossings :: GatedCrossings
+        , selectedStart :: SelectedStart
+        , nomineeStarts :: NomineeStarts
         , excludedCrossings :: ExcludedCrossings
         }
 
@@ -61,9 +63,14 @@ newtype NomineeCrossings =
     NomineeCrossings { unNomineeCrossings :: [[Maybe ZoneCross]] }
     deriving Show
 
--- | Crossings of the start, partitioned for each start gate.
-newtype GatedCrossings =
-    GatedCrossings { unGatedCrossings :: [(StartGate, ([Maybe ZoneCross], [Maybe ZoneCross]))] }
+-- | The start gate selected with its crossing.
+newtype SelectedStart =
+    SelectedStart { unSelectedStart :: Maybe (StartGate, ZoneCross) }
+    deriving Show
+
+-- | Crossings of the start zone, partitioned for each start gate.
+newtype NomineeStarts =
+    NomineeStarts { unNomineeStarts :: [(StartGate, ([Maybe ZoneCross], [Maybe ZoneCross]))] }
     deriving Show
 
 -- | Crossings excluded because they are outside of the open time window of the
