@@ -8,6 +8,7 @@ module WireTypes.Cross
     , InterpolatedFix(..)
     , ZoneTag(..)
     , ZoneCross(..)
+    , TrackCross(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -63,6 +64,15 @@ data ZoneCross =
     ZoneCross
         { crossingPair :: [Fix]
         , inZone :: [Bool]
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
+data TrackCross =
+    TrackCross
+        { zonesCrossSelected :: [Maybe ZoneCross]
+        , zonesCrossNominees :: [[Maybe ZoneCross]]
+        , zonesCrossExcluded :: [[Maybe ZoneCross]]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)

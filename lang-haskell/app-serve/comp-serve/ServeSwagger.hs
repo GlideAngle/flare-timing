@@ -613,6 +613,7 @@ instance ToSchema InterpolatedFix
 instance ToSchema RawAlt
 instance ToSchema ZoneCross
 instance ToSchema Fix
+instance ToSchema TrackCross
 instance ToSchema TrackReach
 instance ToSchema TrackArrival
 instance ToSchema q => ToSchema (ArrivalLag q)

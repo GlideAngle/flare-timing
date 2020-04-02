@@ -734,3 +734,25 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 .td-task-stats-mean, .td-task-stats-stddev
     @extend .has-text-right;
     @extend .has-text-weight-bold;
+
+.ft.icon
+  width: 1rem;
+  height: 1rem;
+  display: block;
+  left: -0.1rem;
+  top: -0.2rem
+  position: relative;
+  border-radius: 1rem 1rem;
+  border: 1px solid #656565cc;
+
+.ft.icon.turnpoint
+  background-color: #808080cc;
+
+.ft.icon.cross-in, .ft.icon.tag-in
+  border-color: $leading;
+
+.ft.icon.cross-out, .ft.icon.tag-out
+  border-color: $reach;
+
+.ft.icon.tag-inter
+  background-color: $total;

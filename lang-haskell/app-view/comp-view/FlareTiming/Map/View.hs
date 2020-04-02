@@ -29,6 +29,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , Circle(..)
     , Semicircle(..)
     , Polyline
+    , MarkerKind(..)
     , map
     , mapSetView
     , layerGroup
@@ -37,6 +38,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , tileLayer
     , tileLayerAddToMap
     , marker
+    , markerKind
     , markerPopup
     , mapInvalidateSize
     , mapOnClick
@@ -59,7 +61,7 @@ import WireTypes.Cross
     ( TrackFlyingSection(..)
     , TrackScoredSection(..)
     , Fix(..), InterpolatedFix(..)
-    , ZoneCross(..), ZoneTag(..)
+    , ZoneCross(..), ZoneTag(..), TrackCross(..)
     )
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
 import WireTypes.Comp
@@ -202,12 +204,13 @@ newtype Color = Color String
 
 marker :: Color -> (Double, Double) -> IO L.Marker
 marker _ latLng = do
-    mark <- L.marker latLng
+    mark <- L.markerKind L.MarkerKindTurnpoint latLng
     L.markerPopup mark $ showLatLng latLng
     return mark
 
-fixMarker :: PilotName -> TimeZone -> Fix -> IO L.Marker
+fixMarker :: L.MarkerKind -> PilotName -> TimeZone -> Fix -> IO L.Marker
 fixMarker
+    mk
     (PilotName pn)
     tz
     Fix
@@ -217,7 +220,7 @@ fixMarker
         , lng = RawLng lng
         } = do
     let latLng = (fromRational lat, fromRational lng)
-    fixMark <- L.marker latLng
+    fixMark <- L.markerKind mk latLng
 
     let msg =
             pn
@@ -232,6 +235,16 @@ fixMarker
     L.markerPopup fixMark msg
     return fixMark
 
+crossMarkers :: (L.MarkerKind, L.MarkerKind) -> PilotName -> TimeZone -> ZoneCross -> IO [L.Marker]
+crossMarkers (xMk, yMk) p tz ZoneCross{crossingPair = xy} = do
+    case xy of
+        [x, y] -> do
+            xMark <- fixMarker xMk p tz x
+            yMark <- fixMarker yMk p tz y
+            return [xMark, yMark]
+
+        _ -> return []
+
 tagMarkers :: PilotName -> TimeZone -> ZoneTag -> IO (L.Marker, [L.Marker])
 tagMarkers
     p@(PilotName pn)
@@ -244,10 +257,10 @@ tagMarkers
                 , lat = RawLat lat
                 , lng = RawLng lng
                 }
-        , cross = ZoneCross{crossingPair = xy}
+        , cross
         } = do
     let latLng = (fromRational lat, fromRational lng)
-    tagMark <- L.marker latLng
+    tagMark <- L.markerKind L.MarkerKindTagInter latLng
 
     let msg =
             pn
@@ -260,18 +273,11 @@ tagMarkers
             ++ showLatLng latLng
 
     L.markerPopup tagMark msg
-
-    case xy of
-        [x, y] -> do
-            xMark <- fixMarker p tz x
-            yMark <- fixMarker p tz y
-            return (tagMark, [xMark, yMark])
-
-        _ -> return (tagMark, [])
+    (tagMark,) <$> crossMarkers (L.MarkerKindTagIn, L.MarkerKindTagOut) p tz cross
 
 tpMarker :: TurnpointName -> (Double, Double) -> IO L.Marker
 tpMarker (TurnpointName tpName) latLng = do
-    xMark <- L.marker latLng
+    xMark <- L.markerKind L.MarkerKindTurnpoint latLng
     L.markerPopup xMark tpName
     return xMark
 
@@ -328,7 +334,7 @@ viewMap
             )
         ,
             ( (Pilot, [[Double]])
-            , (Pilot, [Maybe ZoneTag])
+            , ((Pilot, [Maybe ZoneTag]), (Pilot, Maybe TrackCross))
             )
         )
     -> m (Event t Pilot)
@@ -390,7 +396,7 @@ map
             )
         ,
             ( (Pilot, [[Double]])
-            , (Pilot, [Maybe ZoneTag])
+            , ((Pilot, [Maybe ZoneTag]), (Pilot, Maybe TrackCross))
             )
         )
     -> m (Event t Pilot)
@@ -452,7 +458,7 @@ map
                 return ())
 
         eTrack :: Event _ (Maybe L.Polyline) <- performEvent $
-                    ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), (_, tags))) ->
+                    ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), ((_, tags), (_, cross)))) ->
                         if p == nullPilot || null pts then return Nothing else
                         case (flying, scored) of
                             (Nothing, _) -> return Nothing
@@ -488,6 +494,27 @@ map
 
                                 L.addOverlay layers' (PilotName (pn' <> ": crossings"), gCrossing)
                                 L.layersExpand layers'
+
+                                case cross of
+                                    Nothing -> return ()
+                                    Just
+                                        TrackCross
+                                            { zonesCrossNominees = ns
+                                            , zonesCrossExcluded = es
+                                            } -> do
+                                        unless (null ns) $ do
+                                            let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
+                                            mNs <- sequence $ crossMarkers mks pn tz <$> (catMaybes $ concat ns)
+                                            gNs <- L.layerGroup $ concat mNs
+                                            L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNs)
+                                            L.layersExpand layers'
+
+                                        unless (null es) $ do
+                                            let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
+                                            mEs <- sequence $ crossMarkers mks pn tz <$> (catMaybes $ concat es)
+                                            gEs <- L.layerGroup $ concat mEs
+                                            L.addOverlay layers' (PilotName (pn' <> ": excluded"), gEs)
+                                            L.layersExpand layers'
 
                                 -- NOTE: Don't bother with the track not scored
                                 -- layer if the unscored track is empty.

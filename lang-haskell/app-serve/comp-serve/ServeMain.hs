@@ -39,10 +39,10 @@ import System.FilePath (takeFileName)
 
 import Flight.Units ()
 import Flight.Clip (FlyingSection)
-import qualified Flight.Track.Cross as Cg (Crossing(..))
+import qualified Flight.Track.Cross as Cg (Crossing(..), PilotTrackCross(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
 import qualified Flight.Track.Stop as Sp (Framing(..))
-import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..))
+import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..), TrackCross(..))
 import Flight.Track.Stop (TrackScoredSection(..))
 import Flight.Track.Distance (TrackReach(..))
 import Flight.Track.Land
@@ -152,7 +152,7 @@ import Flight.Mask (checkTracks)
 import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (QTaskDistance)
 import qualified ServeOptions as Opt (description)
-import ServeTrack (RawLatLngTrack(..), BolsterStats(..), tagToTrack)
+import ServeTrack (RawLatLngTrack(..), BolsterStats(..), crossToTrack, tagToTrack)
 import ServeArea (RawLeadingArea(..))
 import ServeValidity (nullValidityWorking)
 import ServeSwagger (SwagUiApi)
@@ -341,6 +341,9 @@ type GapPointApi k =
 
     :<|> "cross-zone" :> (Capture "task" Int) :> "flying-times"
         :> Get '[JSON] [(Pilot, FlyingSection UTCTime)]
+
+    :<|> "cross-zone" :> (Capture "task" Int) :> (Capture "pilot" String)
+        :> Get '[JSON] (Maybe TrackCross)
 
     :<|> "tag-zone" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] [Maybe ZoneTag]
@@ -676,6 +679,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotTrackFlyingSection
         :<|> getTaskPilotTrackScoredSection
         :<|> getTaskFlyingSectionTimes
+        :<|> getTaskPilotCross
         :<|> getTaskPilotTag
         :<|> getTaskBolsterStats
         :<|> getTaskBonusBolsterStats
@@ -1193,6 +1197,24 @@ getTaskFlyingSectionTimes ii = do
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "cross-zone" ii
+
+getTaskPilotCross :: Int -> String -> AppT k IO (Maybe TrackCross)
+getTaskPilotCross ii pilotId = do
+    let jj = ii - 1
+    let ix = IxTask ii
+    let pilot = PilotId pilotId
+    fss <- fmap Cg.crossing <$> asks crossing
+    let isPilot (Cg.PilotTrackCross (Pilot (pid, _)) _) = pid == PilotId pilotId
+
+    case fss of
+        Nothing -> throwError $ errPilotNotFound pilot
+        Just fss' -> do
+            case take 1 $ drop jj fss' of
+                fs : _ ->
+                    case find isPilot fs of
+                        Just y -> return $ crossToTrack y
+                        _ -> throwError $ errPilotTrackNotFound ix pilot
+                _ -> throwError $ errPilotTrackNotFound ix pilot
 
 getTaskPilotTag :: Int -> String -> AppT k IO [Maybe ZoneTag]
 getTaskPilotTag ii pilotId = do

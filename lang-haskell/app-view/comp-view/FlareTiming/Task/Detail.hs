@@ -35,7 +35,7 @@ import FlareTiming.Comms
     , getTaskPilotTrack
     , getTaskPilotTrackFlyingSection, getTaskFlyingSectionTimes
     , getTaskPilotTrackScoredSection
-    , getTaskPilotTag
+    , getTaskPilotCross, getTaskPilotTag
     , emptyRoute
     )
 import FlareTiming.Breadcrumb (crumbTask)
@@ -287,11 +287,16 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                     tag' <- holdDyn (nullPilot, []) (attachPromptlyDyn p' tag)
                     tag'' <- holdUniqDyn tag'
 
+                    cross <- getTaskPilotCross ix p
+                    cross' <- holdDyn (nullPilot, Nothing) (attachPromptlyDyn p' cross)
+                    cross'' <- holdUniqDyn cross'
+
                     trk <- getTaskPilotTrack ix p
                     trk' <- holdDyn (nullPilot, []) (attachPromptlyDyn p' trk)
                     trk'' <- holdUniqDyn trk'
 
-                    tt <- holdUniqDyn $ zipDynWith (,) trk'' tag''
+                    tagCross <- holdUniqDyn $ zipDynWith (,) tag'' cross''
+                    tt <- holdUniqDyn $ zipDynWith (,) trk'' tagCross
 
                     let pt =
                             push readyTrack
@@ -367,7 +372,7 @@ readyTrack
             )
         ,
             ( (Pilot, [a])
-            , (Pilot, [b])
+            , ((Pilot, [b]), (Pilot, Maybe c))
             )
         )
     -> m
@@ -381,17 +386,18 @@ readyTrack
                 )
             ,
                 ( (Pilot, [a])
-                , (Pilot, [b])
+                , ((Pilot, [b]), (Pilot, Maybe c))
                 )
             )
         )
-readyTrack x@((p, ((fq, tf), (sq, ts))), ((xq, xs), (yq, ys)))
+readyTrack x@((p, ((fq, tf), (sq, ts))), ((xq, xs), ((yq, ys), (zq, _))))
     | p == nullPilot = return Nothing
     | fq == nullPilot = return Nothing
     | sq == nullPilot = return Nothing
     | xq == nullPilot = return Nothing
     | yq == nullPilot = return Nothing
-    | p /= fq || p /= sq || p /= xq || p /= yq = return Nothing
+    | zq == nullPilot = return Nothing
+    | p /= fq || p /= sq || p /= xq || p /= yq || p /= zq = return Nothing
     | null xs = return Nothing
     | null ys = return Nothing
     | otherwise = return $
