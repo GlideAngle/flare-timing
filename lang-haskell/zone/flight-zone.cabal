@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b63eee6bbd80e5cb63e4c0fbc5bbaefa2214fa11edd0343c083f0b6aeff58873
+-- hash: 8a21c0fec81efd6324a50ea37754e66bc5709f85906b1c8da8d07138ed6566ec
 
 name:           flight-zone
 version:        0.1.0
@@ -98,7 +98,8 @@ test-suite doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      aeson
+      QuickCheck
+    , aeson
     , base >=4.10.1.0 && <5
     , detour-via-sci
     , detour-via-uom

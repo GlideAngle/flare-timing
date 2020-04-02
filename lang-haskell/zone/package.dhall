@@ -63,7 +63,7 @@ in    defs
                 }
             , doctest =
                 { dependencies =
-                    [ "doctest" ]
+                    [ "doctest", "QuickCheck" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
