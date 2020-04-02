@@ -107,3 +107,6 @@ class GeoTag g a => GeoLeg g a where
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> [(Maybe GroupLeg, MarkedFixes)]
+
+-- $setup
+-- >>> import Data.List.Split
