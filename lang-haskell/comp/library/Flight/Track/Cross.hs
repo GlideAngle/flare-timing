@@ -36,6 +36,7 @@ import Flight.Pilot (TrackFileFail(..))
 import Flight.LatLng.Raw (RawLat, RawLng, RawAlt)
 import Flight.Field (FieldOrdering(..))
 import Flight.Score (Pilot(..))
+import Flight.Comp (StartGate(..))
 
 -- | For each task, the crossing for that task.
 data Crossing =
@@ -90,6 +91,8 @@ data TrackCross =
         -- ^ The crossing selected as making the zone, for each zone.
         , zonesCrossNominees :: [[Maybe ZoneCross]]
         -- ^ Every crossing of every zone not excluded.
+        , zonesCrossGated :: [(StartGate, ([Maybe ZoneCross], [Maybe ZoneCross]))]
+        -- ^ Crossings of the start, partitioned by each start gate.
         , zonesCrossExcluded :: [[Maybe ZoneCross]]
         -- ^ Excluded crossing of every zone.
         }

@@ -4,19 +4,21 @@ module Flight.Mask.Tag.Double where
 
 import Debug.Trace
 import Prelude hiding (span)
-import Data.List ((\\))
+import Data.Coerce (coerce)
+import Data.List ((\\), partition)
 import Control.Arrow (first)
 import Control.Monad (join)
 
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
+import Flight.Zone.SpeedSection (sliceZones)
 import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Zone.Raw (Give)
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
-import Flight.Track.Cross (ZoneCross(..), ZoneTag(..), TrackFlyingSection(..))
+import Flight.Track.Cross (ZoneCross(..), ZoneTag(..), TrackFlyingSection(..), Fix(..))
 import Flight.Track.Time (ZoneIdx(..))
-import Flight.Comp (Task(..), TimePass)
+import Flight.Comp (Task(..), TimePass, StartGate(..))
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..), GeoZones(..))
 
 import Flight.Span.Sliver (GeoSliver(..))
@@ -26,6 +28,7 @@ import Flight.Mask.Internal.Zone
     ( MadeZones(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
+    , GatedCrossings(..)
     , ExcludedCrossings(..)
     , ZoneEntry(..)
     , ZoneExit(..)
@@ -98,6 +101,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             { flying = flying'
             , selectedCrossings = selected
             , nomineeCrossings = nominees
+            , gatedCrossings = gated
             , excludedCrossings = excluded
             }
         where
@@ -122,7 +126,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             loggedTimes = timeRange mark0 loggedSeconds
             flyingTimes = timeRange mark0 flyingSeconds
 
-            (selected, nominees, excluded) =
+            (selected, nominees, gated, excluded) =
                 flyingCrossings @Double @Double e give tps task mf (flyingFixes flying')
 
     flyingCrossings
@@ -133,15 +137,15 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         -> Task k
         -> MarkedFixes
         -> FlyingSection Int -- ^ The fix indices of the flying section
-        -> (SelectedCrossings, NomineeCrossings, ExcludedCrossings)
+        -> (SelectedCrossings, NomineeCrossings, GatedCrossings, ExcludedCrossings)
     flyingCrossings
         e
         give
         timechecks
-        task@Task{zones}
+        task@Task{zones, speedSection, startGates}
         MarkedFixes{mark0, fixes}
         indices =
-        (selected, nominees, excluded)
+        (selected, nominees, gated, excluded)
         where
             sepZs = separatedZones @Double @Double e
             fromZs = fromZones @Double @Double e give
@@ -176,6 +180,32 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
 
             nominees = NomineeCrossings nss
             excluded = ExcludedCrossings $ css \\ nss
+
+            gated =
+                GatedCrossings $
+                    if null speedSection then [] else
+                    case sliceZones speedSection (coerce nominees) of
+                        [] -> []
+                        (ns : _) ->
+                            [
+                                (sg,) $
+                                partition
+                                    (\case
+                                        Just
+                                            ZoneCross
+                                                { crossingPair =
+                                                    [ Fix{time = t0}
+                                                    , Fix{time = t1}
+                                                    ]
+                                                } ->
+                                            g <= t0 || g <= t1
+
+                                        Just ZoneCross{} -> False
+                                        Nothing -> False)
+                                    ns
+
+                            | sg@(StartGate g) <- startGates
+                            ]
 
             yss :: [[OrdCrossing]]
             yss = trimOrdLists ((fmap . fmap) OrdCrossing xss')

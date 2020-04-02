@@ -30,6 +30,7 @@ module Flight.Mask
     , RaceSections(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
+    , GatedCrossings(..)
     , ExcludedCrossings(..)
     , MadeZones(..)
     , Sliver(..)

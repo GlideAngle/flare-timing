@@ -5,6 +5,7 @@ module Flight.Mask.Tag
     , ZoneTimePass
     , SelectedCrossings(..)
     , NomineeCrossings(..)
+    , GatedCrossings(..)
     , ExcludedCrossings(..)
     , MadeZones(..)
     , PilotTrackFixes(..)
@@ -23,6 +24,7 @@ import Flight.Mask.Internal.Zone
     ( MadeZones(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
+    , GatedCrossings(..)
     , ExcludedCrossings(..)
     , Crossing
     , TaskZone(..)
@@ -64,7 +66,7 @@ class GeoTagInterpolate g a => GeoTag g a where
         -> Task k
         -> MarkedFixes
         -> FlyingSection Int -- ^ The fix indices of the flying section
-        -> (SelectedCrossings, NomineeCrossings, ExcludedCrossings)
+        -> (SelectedCrossings, NomineeCrossings, GatedCrossings, ExcludedCrossings)
 
     tagZones
         :: Trig g a
