@@ -1,0 +1,1062 @@
+comp:
+  compName: PWC 2019.1
+  discipline: pg
+  earthMath: Haversines
+  location: France
+  from: 2019-05-26
+  to: 2019-06-01
+  civilId: '0'
+  utcOffset:
+    timeZoneMinutes: 120
+  scoreBack: 300.000 s
+  give:
+    giveFraction: 1.0e-3
+    giveDistance: null
+  earth:
+    sphere:
+      radius: 6371000.0 m
+nominal:
+  launch: 0.96
+  goal: 0.3
+  distance: 50.0 km
+  free: 3.000 km
+  time: 1.250000 h
+compTweak:
+  arrivalRank: false
+  arrivalTime: false
+  leadingAreaDistanceSquared: true
+  leadingWeightScaling: null
+tasks:
+- taskName: T1
+  zones:
+    raw:
+    - zoneName: D02087
+      lat: 45.55303
+      lng: 6.10471
+      radius: 400.0 m
+      giveIn: 399.6 m
+      giveOut: 400.4 m
+      alt: 870.000 m
+    - zoneName: B15078
+      lat: 45.48916
+      lng: 6.12317
+      radius: 6000.0 m
+      giveIn: 5994.0 m
+      giveOut: 6006.0 m
+      alt: 784.000 m
+    - zoneName: B15078
+      lat: 45.48916
+      lng: 6.12317
+      radius: 1000.0 m
+      giveIn: 999.0 m
+      giveOut: 1001.0 m
+      alt: 784.000 m
+    - zoneName: B34204
+      lat: 45.64448
+      lng: 6.11947
+      radius: 9000.0 m
+      giveIn: 8991.0 m
+      giveOut: 9009.0 m
+      alt: 2040.000 m
+    - zoneName: A05034
+      lat: 45.45134
+      lng: 6.10537
+      radius: 4000.0 m
+      giveIn: 3996.0 m
+      giveOut: 4004.0 m
+      alt: 347.000 m
+    - zoneName: B21248
+      lat: 45.56637
+      lng: 6.36466
+      radius: 5000.0 m
+      giveIn: 4995.0 m
+      giveOut: 5005.0 m
+      alt: 2484.000 m
+    - zoneName: B15078
+      lat: 45.48916
+      lng: 6.12317
+      radius: 1000.0 m
+      giveIn: 999.0 m
+      giveOut: 1001.0 m
+      alt: 784.000 m
+    - zoneName: D01128
+      lat: 45.52966
+      lng: 6.25286
+      radius: 2000.0 m
+      giveIn: 1998.0 m
+      giveOut: 2002.0 m
+      alt: 1284.000 m
+    - zoneName: PC
+      lat: 45.56143
+      lng: 6.22534
+      radius: 100.0 m
+      giveIn: 99.9 m
+      giveOut: 100.1 m
+      alt: 294.000 m
+    raceKind:
+      prolog:
+      - cylinder:
+          center:
+          - 45.55303000 deg
+          - 6.10471000 deg
+          radius: 400.0 m
+      race:
+      - cylinder:
+          center:
+          - 45.48916000 deg
+          - 6.12317000 deg
+          radius: 6000.0 m
+      - cylinder:
+          center:
+          - 45.48916000 deg
+          - 6.12317000 deg
+          radius: 1000.0 m
+      - cylinder:
+          center:
+          - 45.64448000 deg
+          - 6.11947000 deg
+          radius: 9000.0 m
+      - cylinder:
+          center:
+          - 45.45134000 deg
+          - 6.10537000 deg
+          radius: 4000.0 m
+      - cylinder:
+          center:
+          - 45.56637000 deg
+          - 6.36466000 deg
+          radius: 5000.0 m
+      - cylinder:
+          center:
+          - 45.48916000 deg
+          - 6.12317000 deg
+          radius: 1000.0 m
+      race-ess:
+        cylinder:
+          center:
+          - 45.52966000 deg
+          - 6.25286000 deg
+          radius: 2000.0 m
+      epilog: []
+      goal:
+        semicircle:
+          center:
+          - 45.56143000 deg
+          - 6.22534000 deg
+          radius: 100.0 m
+    openKind: null
+  speedSection:
+  - 2
+  - 8
+  zoneTimes:
+  - open: 2019-05-26T10:00:00Z
+    close: 2019-05-26T18:00:00Z
+  - open: 2019-05-26T11:45:00Z
+    close: 2019-05-26T18:00:00Z
+  - open: 2019-05-26T11:45:00Z
+    close: 2019-05-26T18:00:00Z
+  - open: 2019-05-26T11:45:00Z
+    close: 2019-05-26T18:00:00Z
+  - open: 2019-05-26T11:45:00Z
+    close: 2019-05-26T18:00:00Z
+  - open: 2019-05-26T11:45:00Z
+    close: 2019-05-26T18:00:00Z
+  - open: 2019-05-26T11:45:00Z
+    close: 2019-05-26T18:00:00Z
+  - open: 2019-05-26T11:45:00Z
+    close: 2019-05-26T18:00:00Z
+  - open: 2019-05-26T11:45:00Z
+    close: 2019-05-26T18:00:00Z
+  startGates:
+  - 2019-05-26T11:45:00Z
+  stopped: null
+  taskTweak:
+    arrivalRank: false
+    arrivalTime: false
+    leadingAreaDistanceSquared: true
+    leadingWeightScaling: null
+  earlyStart:
+    earliest: 0 s
+    earlyPenalty: 0 s
+    tooEarlyReset: 0
+  penalsAuto: []
+  penals: []
+- taskName: T2
+  zones:
+    raw:
+    - zoneName: D02087
+      lat: 45.55303
+      lng: 6.10471
+      radius: 400.0 m
+      giveIn: 399.6 m
+      giveOut: 400.4 m
+      alt: 870.000 m
+    - zoneName: B29091
+      lat: 45.66998
+      lng: 6.30726
+      radius: 20000.0 m
+      giveIn: 19980.0 m
+      giveOut: 20020.0 m
+      alt: 910.000 m
+    - zoneName: B29091
+      lat: 45.66998
+      lng: 6.30726
+      radius: 8000.0 m
+      giveIn: 7992.0 m
+      giveOut: 8008.0 m
+      alt: 910.000 m
+    - zoneName: B10121
+      lat: 45.40697
+      lng: 6.05106
+      radius: 7000.0 m
+      giveIn: 6993.0 m
+      giveOut: 7007.0 m
+      alt: 1210.000 m
+    - zoneName: D01128
+      lat: 45.52966
+      lng: 6.25286
+      radius: 2500.0 m
+      giveIn: 2497.5 m
+      giveOut: 2502.5 m
+      alt: 1284.000 m
+    - zoneName: PC
+      lat: 45.56143
+      lng: 6.22534
+      radius: 100.0 m
+      giveIn: 99.9 m
+      giveOut: 100.1 m
+      alt: 294.000 m
+    raceKind:
+      prolog:
+      - cylinder:
+          center:
+          - 45.55303000 deg
+          - 6.10471000 deg
+          radius: 400.0 m
+      race:
+      - cylinder:
+          center:
+          - 45.66998000 deg
+          - 6.30726000 deg
+          radius: 20000.0 m
+      - cylinder:
+          center:
+          - 45.66998000 deg
+          - 6.30726000 deg
+          radius: 8000.0 m
+      - cylinder:
+          center:
+          - 45.40697000 deg
+          - 6.05106000 deg
+          radius: 7000.0 m
+      race-ess:
+        cylinder:
+          center:
+          - 45.52966000 deg
+          - 6.25286000 deg
+          radius: 2500.0 m
+      epilog: []
+      goal:
+        semicircle:
+          center:
+          - 45.56143000 deg
+          - 6.22534000 deg
+          radius: 100.0 m
+    openKind: null
+  speedSection:
+  - 2
+  - 5
+  zoneTimes:
+  - open: 2019-05-27T10:00:00Z
+    close: 2019-05-27T18:00:00Z
+  - open: 2019-05-27T11:00:00Z
+    close: 2019-05-27T18:00:00Z
+  - open: 2019-05-27T11:00:00Z
+    close: 2019-05-27T18:00:00Z
+  - open: 2019-05-27T11:00:00Z
+    close: 2019-05-27T18:00:00Z
+  - open: 2019-05-27T11:00:00Z
+    close: 2019-05-27T18:00:00Z
+  - open: 2019-05-27T11:00:00Z
+    close: 2019-05-27T18:00:00Z
+  startGates:
+  - 2019-05-27T11:00:00Z
+  stopped: null
+  taskTweak:
+    arrivalRank: false
+    arrivalTime: false
+    leadingAreaDistanceSquared: true
+    leadingWeightScaling: null
+  earlyStart:
+    earliest: 0 s
+    earlyPenalty: 0 s
+    tooEarlyReset: 0
+  penalsAuto: []
+  penals: []
+taskFolders:
+- - t_1_1
+- - t_1_2
+pilots:
+- - - - '460'
+      - Adrian SEITZ
+    - 0460.igc
+  - - - '278'
+      - Aleksei KOROBKOV
+    - 0278.igc
+  - - - '453'
+      - Alexander SCHALBER
+    - 0453.igc
+  - - - '5'
+      - Alexandre JOFRESA
+    - 0005.igc
+  - - - '30'
+      - Andreas MALECKI
+    - 0030.igc
+  - - - '47'
+      - Andreas NYFFENEGGER
+    - 0047.igc
+  - - - '236'
+      - Andrey ELISEEV
+    - 0236.igc
+  - - - '809'
+      - Andy TALLIA
+    - 0809.igc
+  - - - '1203'
+      - Arnaud BAUMY
+    - 1203.igc
+  - - - '374'
+      - Arnaud SECHER
+    - 0374.igc
+  - - - '174'
+      - Baptiste LAMBERT
+    - 0174.igc
+  - - - '1000'
+      - Bogdan BIALKA
+    - 1000.igc
+  - - - '1282'
+      - Bojan GABERSEK
+    - 1282.igc
+  - - - '6'
+      - Charles CAZAUX
+    - 0006.igc
+  - - - '421'
+      - Chigwon WON
+    - 0421.igc
+  - - - '701'
+      - Christian BARTHELMANN
+    - 0701.igc
+  - - - '43'
+      - Christian BIASI
+    - 0043.igc
+  - - - '203'
+      - Christian HOCHEGGER
+    - 0203.igc
+  - - - '8'
+      - Clement LATOUR
+    - 0008.igc
+  - - - '311'
+      - Constance METTETAL
+    - 0311.igc
+  - - - '273'
+      - Cristiano RICCI
+    - 0273.igc
+  - - - '2018'
+      - Cyrille MARCK
+    - 2018.igc
+  - - - '21'
+      - Damien LACAZE
+    - 0021.igc
+  - - - '147'
+      - Denis CHOURAQUI
+    - 0147.igc
+  - - - '61'
+      - Deonir SPANCERSKI
+    - 0061.igc
+  - - - '221'
+      - Dusan DURKOVI?
+    - 0221.igc
+  - - - '114'
+      - Elisabeth EGGER
+    - 0114.igc
+  - - - '249'
+      - Emil CERVENAN
+    - 0249.igc
+  - - - '202'
+      - Emma CASANOVA
+    - 0202.igc
+  - - - '10'
+      - Ernesto HINESTROZA
+    - 0010.igc
+  - - - '222'
+      - Federico NEVASTRO
+    - 0222.igc
+  - - - '45'
+      - Felix RODRIGUEZ FERNANDEZ
+    - 0045.igc
+  - - - '219'
+      - Ferdinand VOGEL
+    - 0219.igc
+  - - - '506'
+      - Flavio FUNIATI
+    - 0506.igc
+  - - - '266'
+      - Gildas BEN
+    - 0266.igc
+  - - - '216'
+      - Grant OSELAND
+    - 0216.igc
+  - - - '330'
+      - Helmut EICHHOLZER
+    - 0330.igc
+  - - - '626'
+      - Honorin HAMARD
+    - 0626.igc
+  - - - '416'
+      - Isidor FINK
+    - 0416.igc
+  - - - '206'
+      - Ivan HAAS
+    - 0206.igc
+  - - - '210'
+      - J.p. Robert VANDENBEGINE
+    - 0210.igc
+  - - - '925'
+      - Jack BAILEY
+    - 0925.igc
+  - - - '711'
+      - Jacques FOURNIER
+    - 0711.igc
+  - - - '1010'
+      - Jan JARES
+    - 1010.igc
+  - - - '427'
+      - Jerome DELBECQUE
+    - 0427.igc
+  - - - '92'
+      - Jesus COSTA SANCHEZ
+    - 0092.igc
+  - - - '18'
+      - Joachim OBERHAUSER
+    - 0018.igc
+  - - - '280'
+      - Joanna DI GRIGOLI
+    - 0280.igc
+  - - - '911'
+      - Joerg NUBER
+    - 0911.igc
+  - - - '770'
+      - Johannes BAUMGARTEN
+    - 0770.igc
+  - - - '49'
+      - Jonathan MARIN
+    - 0049.igc
+  - - - '205'
+      - Jose REBELO
+    - 0205.igc
+  - - - '517'
+      - Joze MOLEK
+    - 0517.igc
+  - - - '500'
+      - Jošt NAPRET
+    - 0500.igc
+  - - - '2'
+      - Julien WIRTZ
+    - 0002.igc
+  - - - '2111'
+      - Jurij VIDIC
+    - 2111.igc
+  - - - '256'
+      - Karel KUTA
+    - 0256.igc
+  - - - '124'
+      - Keiko HIRAKI
+    - 0124.igc
+  - - - '580'
+      - Kostiantyn GONCHARENKO
+    - 0580.igc
+  - - - '1987'
+      - Krzysztof SCHMIDT
+    - 1987.igc
+  - - - '107'
+      - Laurie GENOVESE
+    - 0107.igc
+  - - - '616'
+      - Leandro PADUA
+    - 0616.igc
+  - - - '72'
+      - Loïs GOUTAGNY
+    - 0072.igc
+  - - - '339'
+      - Luc ARMANT
+    - 0339.igc
+  - - - '315'
+      - Malin LOBB
+    - 0315.igc
+  - - - '217'
+      - Manu LALY
+    - 0217.igc
+  - - - '271'
+      - Manuel QUINTANILLA
+    - 0271.igc
+  - - - '22'
+      - Marco BUSETTA
+    - 0022.igc
+  - - - '104'
+      - Marco LITTAME
+    - 0104.igc
+  - - - '410'
+      - Mari-anne AANES
+    - 0410.igc
+  - - - '1405'
+      - Mariusz WISNIOWSKI
+    - 1405.igc
+  - - - '1268'
+      - Marko NOVAK
+    - 1268.igc
+  - - - '71'
+      - Martin LONG
+    - 0071.igc
+  - - - '69'
+      - Martin PETZ
+    - 0069.igc
+  - - - '215'
+      - Michael SOMMERAUER
+    - 0215.igc
+  - - - '59'
+      - Michal GIERLACH
+    - 0059.igc
+  - - - '54'
+      - Michal SNEIBERG
+    - 0054.igc
+  - - - '619'
+      - Michel MACQUET
+    - 0619.igc
+  - - - '313'
+      - Michele BOSCHI
+    - 0313.igc
+  - - - '55'
+      - Miguel DIAZ RUIZ
+    - 0055.igc
+  - - - '63'
+      - Mitch RILEY
+    - 0063.igc
+  - - - '992'
+      - Mitja JANCIC
+    - 0992.igc
+  - - - '7'
+      - Méryl DELFERRIERE
+    - 0007.igc
+  - - - '211'
+      - Nancy BERGE
+    - 0211.igc
+  - - - '248'
+      - Nanda WALLISER
+    - 0248.igc
+  - - - '234'
+      - Nicola DI BERNARDO
+    - 0234.igc
+  - - - '98'
+      - Nicola DONINI
+    - 0098.igc
+  - - - '259'
+      - Owen SHOEMAKER
+    - 0259.igc
+  - - - '618'
+      - Petr KOSTRHUN
+    - 0618.igc
+  - - - '1'
+      - Pierre REMY
+    - 0001.igc
+  - - - '34'
+      - Rafael MORAES BARROS
+    - 0034.igc
+  - - - '17'
+      - Rafael SALADINI
+    - 0017.igc
+  - - - '1116'
+      - Rolf DALE
+    - 1116.igc
+  - - - '40'
+      - Ronny GEIJSEN
+    - 0040.igc
+  - - - '3'
+      - Russell OGDEN
+    - 0003.igc
+  - - - '78'
+      - Rémi BOURDELLE
+    - 0078.igc
+  - - - '233'
+      - Samuel AVENNE
+    - 0233.igc
+  - - - '1115'
+      - Satsuki HOSHIDA
+    - 1115.igc
+  - - - '332'
+      - Sebastian OSPINA
+    - 0332.igc
+  - - - '611'
+      - Seiko FUKUOKA NAVILLE
+    - 0611.igc
+  - - - '1511'
+      - Sergi CLARET
+    - 1511.igc
+  - - - '240'
+      - Shinichi HOSHIDA
+    - 0240.igc
+  - - - '709'
+      - Simon METTETAL
+    - 0709.igc
+  - - - '46'
+      - Simon PELLISSIER
+    - 0046.igc
+  - - - '27'
+      - Stefan BERNHARD
+    - 0027.igc
+  - - - '13'
+      - Stefan WYSS
+    - 0013.igc
+  - - - '24'
+      - Stephan MORGENTHALER
+    - 0024.igc
+  - - - '105'
+      - Stephane BENOIT
+    - 0105.igc
+  - - - '35'
+      - Stephane DROUIN
+    - 0035.igc
+  - - - '12'
+      - Stéphane POULAIN
+    - 0012.igc
+  - - - '73'
+      - Tanguy RENAUD-GOUD
+    - 0073.igc
+  - - - '38'
+      - Theo WARDEN
+    - 0038.igc
+  - - - '811'
+      - Thomas GURY
+    - 0811.igc
+  - - - '515'
+      - Tilen CEGLAR
+    - 0515.igc
+  - - - '33'
+      - Tim ROCHAS
+    - 0033.igc
+  - - - '7087'
+      - Tomáš PODMANÍK
+    - 7087.igc
+  - - - '32'
+      - Torsten SIEGEL
+    - 0032.igc
+  - - - '7117'
+      - Ulrich PRINZ
+    - 7117.igc
+  - - - '512'
+      - Vitalii UMANSKYI
+    - 0512.igc
+  - - - '117'
+      - Xevi BONET DALMAU
+    - 0117.igc
+  - - - '29'
+      - Yael MARGELISCH
+    - 0029.igc
+  - - - '162'
+      - Yassen SAVOV
+    - 0162.igc
+  - - - '9'
+      - Yongtae AHN
+    - 0009.igc
+  - - - '50'
+      - Yoshiaki HIROKAWA
+    - 0050.igc
+  - - - '312'
+      - Yoshiki KUREMOTO
+    - 0312.igc
+  - - - '377'
+      - Yury MISHANIN
+    - 0377.igc
+  - - - '1113'
+      - Zoran LABOVIC
+    - 1113.igc
+- - - - '460'
+      - Adrian SEITZ
+    - 0460.igc
+  - - - '278'
+      - Aleksei KOROBKOV
+    - 0278.igc
+  - - - '453'
+      - Alexander SCHALBER
+    - 0453.igc
+  - - - '5'
+      - Alexandre JOFRESA
+    - 0005.igc
+  - - - '30'
+      - Andreas MALECKI
+    - 0030.igc
+  - - - '47'
+      - Andreas NYFFENEGGER
+    - 0047.igc
+  - - - '236'
+      - Andrey ELISEEV
+    - 0236.igc
+  - - - '809'
+      - Andy TALLIA
+    - 0809.igc
+  - - - '1203'
+      - Arnaud BAUMY
+    - 1203.igc
+  - - - '374'
+      - Arnaud SECHER
+    - 0374.igc
+  - - - '174'
+      - Baptiste LAMBERT
+    - 0174.igc
+  - - - '1000'
+      - Bogdan BIALKA
+    - 1000.igc
+  - - - '1282'
+      - Bojan GABERSEK
+    - 1282.igc
+  - - - '6'
+      - Charles CAZAUX
+    - 0006.igc
+  - - - '421'
+      - Chigwon WON
+    - 0421.igc
+  - - - '701'
+      - Christian BARTHELMANN
+    - 0701.igc
+  - - - '43'
+      - Christian BIASI
+    - 0043.igc
+  - - - '203'
+      - Christian HOCHEGGER
+    - 0203.igc
+  - - - '8'
+      - Clement LATOUR
+    - 0008.igc
+  - - - '311'
+      - Constance METTETAL
+    - 0311.igc
+  - - - '273'
+      - Cristiano RICCI
+    - 0273.igc
+  - - - '2018'
+      - Cyrille MARCK
+    - 2018.igc
+  - - - '21'
+      - Damien LACAZE
+    - 0021.igc
+  - - - '147'
+      - Denis CHOURAQUI
+    - 0147.igc
+  - - - '61'
+      - Deonir SPANCERSKI
+    - 0061.igc
+  - - - '221'
+      - Dusan DURKOVI?
+    - 0221.igc
+  - - - '114'
+      - Elisabeth EGGER
+    - 0114.igc
+  - - - '249'
+      - Emil CERVENAN
+    - 0249.igc
+  - - - '202'
+      - Emma CASANOVA
+    - 0202.igc
+  - - - '10'
+      - Ernesto HINESTROZA
+    - 0010.igc
+  - - - '222'
+      - Federico NEVASTRO
+    - 0222.igc
+  - - - '45'
+      - Felix RODRIGUEZ FERNANDEZ
+    - 0045.igc
+  - - - '219'
+      - Ferdinand VOGEL
+    - 0219.igc
+  - - - '506'
+      - Flavio FUNIATI
+    - 0506.igc
+  - - - '266'
+      - Gildas BEN
+    - 0266.igc
+  - - - '216'
+      - Grant OSELAND
+    - 0216.igc
+  - - - '330'
+      - Helmut EICHHOLZER
+    - 0330.igc
+  - - - '626'
+      - Honorin HAMARD
+    - 0626.igc
+  - - - '416'
+      - Isidor FINK
+    - 0416.igc
+  - - - '206'
+      - Ivan HAAS
+    - 0206.igc
+  - - - '210'
+      - J.p. Robert VANDENBEGINE
+    - 0210.igc
+  - - - '925'
+      - Jack BAILEY
+    - 0925.igc
+  - - - '711'
+      - Jacques FOURNIER
+    - 0711.igc
+  - - - '1010'
+      - Jan JARES
+    - 1010.igc
+  - - - '427'
+      - Jerome DELBECQUE
+    - 0427.igc
+  - - - '92'
+      - Jesus COSTA SANCHEZ
+    - 0092.igc
+  - - - '18'
+      - Joachim OBERHAUSER
+    - 0018.igc
+  - - - '280'
+      - Joanna DI GRIGOLI
+    - 0280.igc
+  - - - '911'
+      - Joerg NUBER
+    - 0911.igc
+  - - - '770'
+      - Johannes BAUMGARTEN
+    - 0770.igc
+  - - - '49'
+      - Jonathan MARIN
+    - 0049.igc
+  - - - '205'
+      - Jose REBELO
+    - 0205.igc
+  - - - '517'
+      - Joze MOLEK
+    - 0517.igc
+  - - - '500'
+      - Jošt NAPRET
+    - 0500.igc
+  - - - '2'
+      - Julien WIRTZ
+    - 0002.igc
+  - - - '2111'
+      - Jurij VIDIC
+    - 2111.igc
+  - - - '256'
+      - Karel KUTA
+    - 0256.igc
+  - - - '124'
+      - Keiko HIRAKI
+    - 0124.igc
+  - - - '580'
+      - Kostiantyn GONCHARENKO
+    - 0580.igc
+  - - - '1987'
+      - Krzysztof SCHMIDT
+    - 1987.igc
+  - - - '107'
+      - Laurie GENOVESE
+    - 0107.igc
+  - - - '616'
+      - Leandro PADUA
+    - 0616.igc
+  - - - '72'
+      - Loïs GOUTAGNY
+    - 0072.igc
+  - - - '339'
+      - Luc ARMANT
+    - 0339.igc
+  - - - '315'
+      - Malin LOBB
+    - 0315.igc
+  - - - '217'
+      - Manu LALY
+    - 0217.igc
+  - - - '271'
+      - Manuel QUINTANILLA
+    - 0271.igc
+  - - - '22'
+      - Marco BUSETTA
+    - 0022.igc
+  - - - '104'
+      - Marco LITTAME
+    - 0104.igc
+  - - - '410'
+      - Mari-anne AANES
+    - 0410.igc
+  - - - '1405'
+      - Mariusz WISNIOWSKI
+    - 1405.igc
+  - - - '1268'
+      - Marko NOVAK
+    - 1268.igc
+  - - - '71'
+      - Martin LONG
+    - 0071.igc
+  - - - '69'
+      - Martin PETZ
+    - 0069.igc
+  - - - '215'
+      - Michael SOMMERAUER
+    - 0215.igc
+  - - - '59'
+      - Michal GIERLACH
+    - 0059.igc
+  - - - '54'
+      - Michal SNEIBERG
+    - 0054.igc
+  - - - '313'
+      - Michele BOSCHI
+    - 0313.igc
+  - - - '55'
+      - Miguel DIAZ RUIZ
+    - 0055.igc
+  - - - '63'
+      - Mitch RILEY
+    - 0063.igc
+  - - - '992'
+      - Mitja JANCIC
+    - 0992.igc
+  - - - '7'
+      - Méryl DELFERRIERE
+    - 0007.igc
+  - - - '211'
+      - Nancy BERGE
+    - 0211.igc
+  - - - '248'
+      - Nanda WALLISER
+    - 0248.igc
+  - - - '234'
+      - Nicola DI BERNARDO
+    - 0234.igc
+  - - - '98'
+      - Nicola DONINI
+    - 0098.igc
+  - - - '259'
+      - Owen SHOEMAKER
+    - 0259.igc
+  - - - '618'
+      - Petr KOSTRHUN
+    - 0618.igc
+  - - - '1'
+      - Pierre REMY
+    - 0001.igc
+  - - - '34'
+      - Rafael MORAES BARROS
+    - 0034.igc
+  - - - '17'
+      - Rafael SALADINI
+    - 0017.igc
+  - - - '1116'
+      - Rolf DALE
+    - 1116.igc
+  - - - '40'
+      - Ronny GEIJSEN
+    - 0040.igc
+  - - - '3'
+      - Russell OGDEN
+    - 0003.igc
+  - - - '78'
+      - Rémi BOURDELLE
+    - 0078.igc
+  - - - '233'
+      - Samuel AVENNE
+    - 0233.igc
+  - - - '1115'
+      - Satsuki HOSHIDA
+    - 1115.igc
+  - - - '332'
+      - Sebastian OSPINA
+    - 0332.igc
+  - - - '611'
+      - Seiko FUKUOKA NAVILLE
+    - 0611.igc
+  - - - '1511'
+      - Sergi CLARET
+    - 1511.igc
+  - - - '240'
+      - Shinichi HOSHIDA
+    - 0240.igc
+  - - - '709'
+      - Simon METTETAL
+    - 0709.igc
+  - - - '46'
+      - Simon PELLISSIER
+    - 0046.igc
+  - - - '27'
+      - Stefan BERNHARD
+    - 0027.igc
+  - - - '13'
+      - Stefan WYSS
+    - 0013.igc
+  - - - '24'
+      - Stephan MORGENTHALER
+    - 0024.igc
+  - - - '105'
+      - Stephane BENOIT
+    - 0105.igc
+  - - - '35'
+      - Stephane DROUIN
+    - 0035.igc
+  - - - '12'
+      - Stéphane POULAIN
+    - 0012.igc
+  - - - '73'
+      - Tanguy RENAUD-GOUD
+    - 0073.igc
+  - - - '38'
+      - Theo WARDEN
+    - 0038.igc
+  - - - '811'
+      - Thomas GURY
+    - 0811.igc
+  - - - '515'
+      - Tilen CEGLAR
+    - 0515.igc
+  - - - '33'
+      - Tim ROCHAS
+    - 0033.igc
+  - - - '7087'
+      - Tomáš PODMANÍK
+    - 7087.igc
+  - - - '32'
+      - Torsten SIEGEL
+    - 0032.igc
+  - - - '7117'
+      - Ulrich PRINZ
+    - 7117.igc
+  - - - '512'
+      - Vitalii UMANSKYI
+    - 0512.igc
+  - - - '117'
+      - Xevi BONET DALMAU
+    - 0117.igc
+  - - - '29'
+      - Yael MARGELISCH
+    - 0029.igc
+  - - - '162'
+      - Yassen SAVOV
+    - 0162.igc
+  - - - '9'
+      - Yongtae AHN
+    - 0009.igc
+  - - - '50'
+      - Yoshiaki HIROKAWA
+    - 0050.igc
+  - - - '312'
+      - Yoshiki KUREMOTO
+    - 0312.igc
+  - - - '377'
+      - Yury MISHANIN
+    - 0377.igc
+  - - - '1113'
+      - Zoran LABOVIC
+    - 1113.igc
+pilotGroups:
+- absent: []
+  didFlyNoTracklog: []
+  dnf: []

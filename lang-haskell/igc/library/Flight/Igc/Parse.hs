@@ -268,7 +268,7 @@ parseFromFile fname =
 -- :}
 --
 -- >>> line n = unlines . take 1 . drop n . lines
--- 
+--
 -- >>> fileHFDTEDATE  = "./test-suite-doctest/Sasha-Serebrennikova.20180103-121306.30169.72.igc"
 -- >>> fileHFDTE  = "./test-suite-doctest/Brad-Porter.20180104-095852.36822.34.igc"
 --

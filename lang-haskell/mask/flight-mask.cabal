@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b3ac5d38d8f38c6f54d0fcc94c308b3904a2beb2c5a8a206054669346896594e
+-- hash: 01955d9bb36fd0561b5864b59fef966e2aaad2c9d644324b5db298c47178d108
 
 name:           flight-mask
 version:        0.1.0
@@ -24,6 +24,7 @@ extra-source-files:
     package.dhall
     changelog.md
     README.md
+    test-suite-doctest/PWC2019-1.comp-input.yaml
 
 source-repository head
   type: git

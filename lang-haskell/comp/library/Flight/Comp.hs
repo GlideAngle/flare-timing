@@ -390,7 +390,7 @@ showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
             , ", speed section "
             , show speedSection
             , ", zone times"
-            , show zoneTimes 
+            , show zoneTimes
             , ", start gates "
             , intercalate ", " $ show <$> startGates 
             ]

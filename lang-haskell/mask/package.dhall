@@ -13,6 +13,8 @@ in    defs
           "Data"
       , github =
           "blockscope/flare-timing/mask"
+      , extra-source-files =
+          defs.extra-source-files # [ "**/*.yaml" ]
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , default-extensions =

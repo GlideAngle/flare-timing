@@ -41,7 +41,12 @@ arguments =
     , "-XUndecidableSuperClasses"
 
     , "-isrc"
+    , "-fplugin=Data.UnitsOfMeasure.Plugin"
+
+    , "library/Flight/Span/Sliver.hs"
+    , "library/Flight/Span/Double.hs"
     , "library/Flight/Mask/Group.hs"
+    , "library/Flight/Mask/Internal/Cross.hs"
     ]
 
 main :: IO ()

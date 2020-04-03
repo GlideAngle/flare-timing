@@ -146,6 +146,9 @@ exitEnterSeq sepZs z xs =
 -- the start zone is entry otherwise it is exit. In one case the start cylinder
 -- contains the next turnpoint and in the other the start cylinder is
 -- completely separate from the next turnpoint.
+--
+-- >>> isStartExit sepZs fromZs task
+-- False
 isStartExit
     :: (Real a, Fractional a)
     => SeparatedZones a
@@ -226,3 +229,31 @@ tickedZones
     -> [[b]]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> import Language.Haskell.TH
+-- >>> import Language.Haskell.TH.Syntax (lift)
+-- >>> import qualified Data.ByteString as BS
+-- >>> import Data.ByteString.UTF8 as BSU
+-- >>> import Data.Yaml
+-- >>> import Flight.Geodesy
+-- >>> import Flight.Geodesy.Double ()
+-- >>> import Flight.Geodesy.Solution
+-- >>> import Flight.Earth.Ellipsoid (wgs84)
+-- >>> import Flight.Comp
+-- >>> import Flight.ShortestPath (GeoPath(..))
+-- >>> import Flight.ShortestPath.Double ()
+-- >>> import Flight.Span.Sliver (GeoSliver(..))
+-- >>> import Flight.Span.Double ()
+-- :{
+-- embedStr :: IO String -> ExpQ
+-- embedStr readStr = lift =<< runIO readStr
+-- :}
+--
+-- >>> fileComp  = "./test-suite-doctest/PWC2019-1.comp-input.yaml"
+-- >>> yamlComp = $(embedStr (System.IO.readFile fileComp))
+-- >>> Right CompSettings{tasks = task : _} = decodeEither' (BSU.fromString yamlComp) :: Either ParseException (CompSettings k)
+-- >>> e = (Vincenty, EarthAsEllipsoid wgs84)
+-- >>> fromZs = fromZones @Double @Double e Nothing
+-- >>> sepZs = separatedZones @Double @Double e
