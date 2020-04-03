@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 01955d9bb36fd0561b5864b59fef966e2aaad2c9d644324b5db298c47178d108
+-- hash: e0754eb8fa81ce9a1e3857ffbb8eca116029201a502472922574ae23af5844ba
 
 name:           flight-mask
 version:        0.1.0
@@ -24,6 +24,7 @@ extra-source-files:
     package.dhall
     changelog.md
     README.md
+    test-suite-doctest/Forbes2012.comp-input.yaml
     test-suite-doctest/PWC2019-1.comp-input.yaml
 
 source-repository head
@@ -169,5 +170,6 @@ test-suite doctest
     , these
     , time
     , uom-plugin
+    , utf8-string
     , yaml
   default-language: Haskell2010

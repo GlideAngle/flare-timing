@@ -15,6 +15,12 @@ import Data.Either (isRight)
 import Data.List (nub, sort, findIndex)
 import Control.Lens ((^?), element)
 
+import Flight.Zone (Zone(..), Radius(..), Bearing(..), radius)
+import Flight.Zone.Path (distancePointToPoint)
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.LatLng (AzimuthFwd, QLat, Lat(..), QLng, Lng(..), LatLng(..))
+import Data.UnitsOfMeasure ((+:))
+
 import Flight.Comp (Task(..), Zones(..))
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Units ()
@@ -147,8 +153,26 @@ exitEnterSeq sepZs z xs =
 -- contains the next turnpoint and in the other the start cylinder is
 -- completely separate from the next turnpoint.
 --
--- >>> isStartExit sepZs fromZs task
+-- >>> isStartExit sepZs' fromZs pg1
 -- False
+-- >>> isStartExit sepZs' fromZs pg2
+-- False
+-- >>> isStartExit sepZs' fromZs hg1
+-- True
+-- >>> isStartExit sepZs' fromZs hg2
+-- True
+-- >>> isStartExit sepZs' fromZs hg3
+-- True
+-- >>> isStartExit sepZs' fromZs hg4
+-- True
+-- >>> isStartExit sepZs' fromZs hg5
+-- True
+-- >>> isStartExit sepZs' fromZs hg6
+-- True
+-- >>> isStartExit sepZs' fromZs hg7
+-- True
+-- >>> isStartExit sepZs' fromZs hg8
+-- True
 isStartExit
     :: (Real a, Fractional a)
     => SeparatedZones a
@@ -230,6 +254,15 @@ tickedZones
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
 
+_clearlySeparated :: Real a => SpanLatLng a -> Zone a -> Zone a -> Bool
+_clearlySeparated span x y =
+    d > rxy
+    where
+        (Radius rx) = radius x
+        (Radius ry) = radius y
+        rxy = rx +: ry
+        (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
+
 -- $setup
 -- >>> :set -XTemplateHaskell
 -- >>> import Language.Haskell.TH
@@ -251,9 +284,16 @@ tickedZones fs zones xs =
 -- embedStr readStr = lift =<< runIO readStr
 -- :}
 --
--- >>> fileComp  = "./test-suite-doctest/PWC2019-1.comp-input.yaml"
--- >>> yamlComp = $(embedStr (System.IO.readFile fileComp))
--- >>> Right CompSettings{tasks = task : _} = decodeEither' (BSU.fromString yamlComp) :: Either ParseException (CompSettings k)
 -- >>> e = (Vincenty, EarthAsEllipsoid wgs84)
 -- >>> fromZs = fromZones @Double @Double e Nothing
 -- >>> sepZs = separatedZones @Double @Double e
+-- >>> sepZs' [z0, z1] = _clearlySeparated (arcLength @Double @Double e) z0 z1
+--
+-- >>> fileCompPg = "./test-suite-doctest/PWC2019-1.comp-input.yaml"
+-- >>> fileCompHg = "./test-suite-doctest/Forbes2012.comp-input.yaml"
+--
+-- >>> yamlCompPg = $(embedStr (System.IO.readFile fileCompPg))
+-- >>> yamlCompHg = $(embedStr (System.IO.readFile fileCompHg))
+--
+-- >>> Right CompSettings{tasks = pg1 : pg2 : _} = decodeEither' (BSU.fromString yamlCompPg) :: Either ParseException (CompSettings k)
+-- >>> Right CompSettings{tasks = hg1 : hg2 : hg3 : hg4 : hg5 : hg6 : hg7 : hg8 : _} = decodeEither' (BSU.fromString yamlCompHg) :: Either ParseException (CompSettings k)
