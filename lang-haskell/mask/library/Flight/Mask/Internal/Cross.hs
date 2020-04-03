@@ -15,12 +15,6 @@ import Data.Either (isRight)
 import Data.List (nub, sort, findIndex)
 import Control.Lens ((^?), element)
 
-import Flight.Zone (Zone(..), Radius(..), Bearing(..), radius)
-import Flight.Zone.Path (distancePointToPoint)
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
-import Flight.LatLng (AzimuthFwd, QLat, Lat(..), QLng, Lng(..), LatLng(..))
-import Data.UnitsOfMeasure ((+:))
-
 import Flight.Comp (Task(..), Zones(..))
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Units ()
@@ -254,15 +248,6 @@ tickedZones
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
 
-_clearlySeparated :: Real a => SpanLatLng a -> Zone a -> Zone a -> Bool
-_clearlySeparated span x y =
-    d > rxy
-    where
-        (Radius rx) = radius x
-        (Radius ry) = radius y
-        rxy = rx +: ry
-        (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
-
 -- $setup
 -- >>> :set -XTemplateHaskell
 -- >>> import Language.Haskell.TH
@@ -286,8 +271,10 @@ _clearlySeparated span x y =
 --
 -- >>> e = (Vincenty, EarthAsEllipsoid wgs84)
 -- >>> fromZs = fromZones @Double @Double e Nothing
+--
+-- WARNING: Use clearly separated zones when checking isStartExit.
 -- >>> sepZs = separatedZones @Double @Double e
--- >>> sepZs' [z0, z1] = _clearlySeparated (arcLength @Double @Double e) z0 z1
+-- >>> sepZs' [z0, z1] = clearlySeparatedZones (arcLength @Double @Double e) z0 z1
 --
 -- >>> fileCompPg = "./test-suite-doctest/PWC2019-1.comp-input.yaml"
 -- >>> fileCompHg = "./test-suite-doctest/Forbes2012.comp-input.yaml"

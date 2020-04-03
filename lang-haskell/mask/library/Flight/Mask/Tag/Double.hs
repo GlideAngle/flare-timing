@@ -19,6 +19,7 @@ import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Cross (ZoneCross(..), ZoneTag(..), TrackFlyingSection(..), Fix(..))
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Comp (Task(..), TimePass, StartGate(..))
+import Flight.Geodesy (clearlySeparatedZones)
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..), GeoZones(..))
 
 import Flight.Span.Sliver (GeoSliver(..))
@@ -150,6 +151,12 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         (selected, nominees, SelectedStart selectedStart, NomineeStarts nomineeStarts, excluded)
         where
             sepZs = separatedZones @Double @Double e
+
+            clearlySepZs zs =
+                case zs of
+                    [z0, z1] -> clearlySeparatedZones (arcLength @Double @Double e) z0 z1
+                    _ -> sepZs zs
+
             fromZs = fromZones @Double @Double e give
 
             keptFixes :: [Kml.Fix]
@@ -277,7 +284,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             selectors :: [[Crossing] -> Maybe Crossing]
             selectors =
                 (\x ->
-                    let b = isStartExit sepZs fromZs x
+                    let b = isStartExit clearlySepZs fromZs x
                     in crossingSelectors b x) task
 
     tagZones

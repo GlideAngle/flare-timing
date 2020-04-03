@@ -13,6 +13,7 @@ import Flight.Zone.Path (distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.LatLng (AzimuthFwd, QLat, Lat(..), QLng, Lng(..), LatLng(..))
 import Flight.Earth.Ellipsoid (Ellipsoid(..), polarRadius)
+import Internal.ClearlySeparated (clearlySeparatedZones)
 
 boundingBoxSeparated
     :: (Num a, Ord a, Fractional a)
@@ -131,7 +132,7 @@ separated _ _ span x@(Point _) y =
 separated _ _ span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
     | x == y = xR /= yR
     | dxy + minR < maxR = True
-    | otherwise = clearlySeparated span xc yc
+    | otherwise = clearlySeparatedZones span xc yc
     where
         (TaskDistance (MkQuantity dxy)) =
             edgesSum
@@ -143,7 +144,7 @@ separated _ _ span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
         (MkQuantity maxR) = max xR yR
 
 separated _ _ span x y =
-    clearlySeparated span x y
+    clearlySeparatedZones span x y
 
 -- | Are the control zones separated? This a prerequisite to being able to work
 -- out the distance between zones. The one exception is coincident cylinders
@@ -160,12 +161,3 @@ separatedZones
     -> Bool
 separatedZones ellipsoid azFwd span xs =
     and $ zipWith (separated ellipsoid azFwd span) xs (tail xs)
-
-clearlySeparated :: Real a => SpanLatLng a -> Zone a -> Zone a -> Bool
-clearlySeparated span x y =
-    d > rxy
-    where
-        (Radius rx) = radius x
-        (Radius ry) = radius y
-        rxy = rx +: ry
-        (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]

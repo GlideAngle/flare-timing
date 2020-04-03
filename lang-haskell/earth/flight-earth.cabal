@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1cc8dc8085b54bfd418071bd27f769bb6fbfa66f767c31da318cb13051ef81da
+-- hash: c362183a300e1634c085e1da443aba2b8a817c8851fb993c81ea8d13f8f76559
 
 name:           flight-earth
 version:        0.1.0
@@ -47,6 +47,7 @@ library
       Flight.Earth.ZoneShape.Rational
       Flight.Geodesy.Math
       Flight.Geodesy.Problem
+      Internal.ClearlySeparated
       Internal.CylinderOutline.Double
       Internal.CylinderOutline.Rational
       Internal.Ellipsoid.Cylinder.Vincenty.Double
@@ -249,6 +250,7 @@ test-suite doctest
       Flight.Geodesy.Problem
       Flight.Geodesy.Rational
       Flight.Geodesy.Solution
+      Internal.ClearlySeparated
       Internal.CylinderOutline.Double
       Internal.CylinderOutline.Rational
       Internal.Ellipsoid.Cylinder.Vincenty.Double
