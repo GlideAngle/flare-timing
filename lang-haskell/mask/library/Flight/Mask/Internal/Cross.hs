@@ -10,7 +10,7 @@ module Flight.Mask.Internal.Cross
     ) where
 
 import Prelude hiding (span)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Either (isRight)
 import Data.List (nub, sort, findIndex)
 import Control.Lens ((^?), element)
@@ -155,21 +155,21 @@ isStartExit
     -> (Zones -> [TaskZone a])
     -> Task k
     -> Bool
-isStartExit sepZs fromZones Task{speedSection, zones} =
-    case speedSection of
-        Nothing ->
-            False
-
-        Just (i, _) ->
-            let zs = fromZones zones in
-            case (zs ^? element (i - 1), zs ^? element i) of
-                (Just start, Just tp1) ->
-                    sepZs
-                    $ unTaskZone
-                    <$> [start, tp1]
-
-                _ ->
-                    False
+isStartExit sepZs fromZones Task{speedSection, zones}
+    | null speedSection = True
+    | null zs = True
+    | length zs <= 1 = True
+    | otherwise = fromMaybe True $ do
+        (i, _) <- speedSection
+        if i > 1
+            then
+                case (zs ^? element (i - 2), zs ^? element (i - 1)) of
+                    (Just tp, Just start) -> Just . not . sepZs $ unTaskZone <$> [tp, start]
+                    _ -> Nothing
+            else
+                Nothing
+    where
+        zs = fromZones zones
 
 -- | Some pilots track logs will have initial values way off from the location
 -- of the device. I suspect that the GPS logger is remembering the position it
