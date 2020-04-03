@@ -12,6 +12,8 @@ of this changelog.
 * Show all crossings in a layer on the map, the nominees. Use different marker
   icons for different items. Use unfilled circles for crossings and filled
   circles for taggings.
+* Pick the first crossing of the start gate taken.
+* Better detect whether a start is an entry or an exit.
 
 # Leading Area Plot
 ## app-view-0.26
