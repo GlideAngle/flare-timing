@@ -5,7 +5,7 @@ module Flight.Mask.Tag.Double where
 import Prelude hiding (span)
 import Data.Coerce (coerce)
 import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
-import Data.List ((\\), partition, sortOn)
+import Data.List ((\\), partition)
 import Control.Arrow (first)
 import Control.Monad (join)
 
@@ -218,7 +218,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             -- The start gates with sorted crossings.
             starts :: [(StartGate, [ZoneCross])] =
                 catMaybes
-                [ sequence (sg, sortOn crossingPair <$> sequence gs)
+                [ sequence (sg, sequence gs)
                 | (sg, (gs, _)) <- nomineeStarts
                 ]
 
