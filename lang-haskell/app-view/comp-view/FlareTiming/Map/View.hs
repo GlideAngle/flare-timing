@@ -511,7 +511,7 @@ map
                                             let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
                                             mNs <- sequence $ crossMarkers mks pn tz <$> (catMaybes $ concat ns)
                                             gNs <- L.layerGroup $ concat mNs
-                                            L.addOverlay layers' (PilotName (pn' <> ": crossing nominees"), gNs)
+                                            L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNs)
                                             L.layersExpand layers'
 
                                         unless (null ggs) $ do
@@ -521,7 +521,7 @@ map
                                                         let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
                                                         mGs <- sequence $ crossMarkers mks pn tz <$> gs
                                                         gGs <- L.layerGroup $ concat mGs
-                                                        let subtitle = printf ": %s nominees" (showTime tz sg)
+                                                        let subtitle = printf ": <kbd>%s</kbd>" (showTime tz sg)
                                                         L.addOverlay layers' (PilotName (pn' <> subtitle), gGs)
                                                         L.layersExpand layers'
 
