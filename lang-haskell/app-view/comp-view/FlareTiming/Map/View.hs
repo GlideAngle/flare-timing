@@ -442,8 +442,9 @@ map
     _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "tfoot" $
                 el "tr" $ do
-                    el "td" $ text "HH:MM:SS ✓ The start and its crossing"
-                    el "td" $ text "HH:MM:SS ☜ Crossing nominees for this start gate"
+                    el "th" $ text "HH:MM:SS Keys:"
+                    elClass "td" "has-text-right" $ text "✓ The start and its crossing"
+                    elClass "td" "has-text-right" $ text "☜ Crossing nominees for this start gate"
 
     rec
         performEvent_ $
