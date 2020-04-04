@@ -5,7 +5,7 @@ module Flight.Mask.Tag.Double where
 import Prelude hiding (span)
 import Data.Coerce (coerce)
 import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
-import Data.List ((\\), partition)
+import Data.List ((\\), filter)
 import Control.Arrow (first)
 import Control.Monad (join)
 
@@ -197,7 +197,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                     (ns : _) ->
                         [
                             (sg,) $
-                            partition
+                            filter
                                 (\case
                                     Just
                                         ZoneCross
@@ -219,7 +219,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             starts :: [(StartGate, [ZoneCross])] =
                 catMaybes
                 [ sequence (sg, sequence gs)
-                | (sg, (gs, _)) <- nomineeStarts
+                | (sg, gs) <- nomineeStarts
                 ]
 
             -- The last crossing of the last start gate with crossings.
