@@ -16,6 +16,8 @@ of this changelog.
 * Better detect whether a start is an entry or an exit.
 * Associate crossings with start gates and pick the last crossing of the last
   start as the start.
+* Show start nominee crossings for each start gate and the start crossing as
+  separate layers on the map.
 
 # Leading Area Plot
 ## app-view-0.26
