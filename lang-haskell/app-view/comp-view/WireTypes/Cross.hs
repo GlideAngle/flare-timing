@@ -15,6 +15,7 @@ import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
 import WireTypes.Zone (RawLat(..), RawLng(..))
+import WireTypes.Point (StartGate(..))
 
 type FlyingSection a = Maybe (a, a)
 
@@ -73,6 +74,8 @@ data TrackCross =
         { zonesCrossSelected :: [Maybe ZoneCross]
         , zonesCrossNominees :: [[Maybe ZoneCross]]
         , zonesCrossExcluded :: [[Maybe ZoneCross]]
+        , startSelected :: Maybe (StartGate, ZoneCross)
+        , startNominees :: [(StartGate, [ZoneCross])]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)

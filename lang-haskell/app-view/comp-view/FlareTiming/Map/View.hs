@@ -37,7 +37,6 @@ import qualified FlareTiming.Map.Leaflet as L
     , layerGroupAddToMap
     , tileLayer
     , tileLayerAddToMap
-    , marker
     , markerKind
     , markerPopup
     , mapInvalidateSize
@@ -475,12 +474,10 @@ map
 
                                 markers <- sequence $ tagMarkers pn tz <$> catMaybes tags
                                 let tagging = fst <$> markers
-                                let crossing = snd <$> markers
 
                                 line <- L.trackLine ts "black"
                                 gTrack <- L.layerGroupAddLayer [] line
                                 gTagging <- L.layerGroup tagging
-                                gCrossing <- L.layerGroup $ concat crossing
 
                                 -- NOTE: Adding the track now so that it displays.
                                 L.layerGroupAddToMap gTrack lmap'
@@ -492,21 +489,36 @@ map
                                 L.addOverlay layers' (PilotName (pn' <> ": taggings"), gTagging)
                                 L.layersExpand layers'
 
-                                L.addOverlay layers' (PilotName (pn' <> ": crossings"), gCrossing)
-                                L.layersExpand layers'
-
                                 case cross of
                                     Nothing -> return ()
                                     Just
                                         TrackCross
-                                            { zonesCrossNominees = ns
+                                            { zonesCrossSelected = ss
+                                            , zonesCrossNominees = ns
                                             , zonesCrossExcluded = es
+                                            , startNominees = ggs
                                             } -> do
+                                        let gs = snd <$> ggs
+
+                                        unless (null ss) $ do
+                                            let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
+                                            mSs <- sequence $ crossMarkers mks pn tz <$> (catMaybes ss)
+                                            gSs <- L.layerGroup $ concat mSs
+                                            L.addOverlay layers' (PilotName (pn' <> ": crossings"), gSs)
+                                            L.layersExpand layers'
+
                                         unless (null ns) $ do
                                             let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
                                             mNs <- sequence $ crossMarkers mks pn tz <$> (catMaybes $ concat ns)
                                             gNs <- L.layerGroup $ concat mNs
-                                            L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNs)
+                                            L.addOverlay layers' (PilotName (pn' <> ": crossing nominees"), gNs)
+                                            L.layersExpand layers'
+
+                                        unless (null gs) $ do
+                                            let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
+                                            mGs <- sequence $ crossMarkers mks pn tz <$> (concat gs)
+                                            gGs <- L.layerGroup $ concat mGs
+                                            L.addOverlay layers' (PilotName (pn' <> ": start nominees"), gGs)
                                             L.layersExpand layers'
 
                                         unless (null es) $ do
