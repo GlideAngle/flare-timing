@@ -515,18 +515,16 @@ map
                                             L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNs)
                                             L.layersExpand layers'
 
-                                        unless (null gStart) $ do
-                                            (flip (maybe (return ())))
-                                                gStart
+                                        unless (null gStart) $
+                                            maybe (return ())
                                                 (\(StartGate sg, g) -> do
-                                                    let gs = [g]
-
                                                     let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
-                                                    mGs <- sequence $ crossMarkers mks pn tz <$> gs
-                                                    gGs <- L.layerGroup $ concat mGs
+                                                    mG <- crossMarkers mks pn tz g
+                                                    gG <- L.layerGroup mG
                                                     let subtitle = printf ": <kbd>%s</kbd> ✓" (showTime tz sg)
-                                                    L.addOverlay layers' (PilotName (pn' <> subtitle), gGs)
+                                                    L.addOverlay layers' (PilotName (pn' <> subtitle), gG)
                                                     L.layersExpand layers')
+                                                gStart
 
                                         unless (null ggs) $ do
                                             sequence_
