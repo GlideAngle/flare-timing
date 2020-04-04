@@ -62,6 +62,7 @@ import WireTypes.Cross
     , Fix(..), InterpolatedFix(..)
     , ZoneCross(..), ZoneTag(..), TrackCross(..)
     )
+import WireTypes.Point (StartGate(..))
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
 import WireTypes.Comp
     ( UtcOffset(..), Task(..), SpeedSection
@@ -498,7 +499,6 @@ map
                                             , zonesCrossExcluded = es
                                             , startNominees = ggs
                                             } -> do
-                                        let gs = snd <$> ggs
 
                                         unless (null ss) $ do
                                             let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
@@ -514,12 +514,19 @@ map
                                             L.addOverlay layers' (PilotName (pn' <> ": crossing nominees"), gNs)
                                             L.layersExpand layers'
 
-                                        unless (null gs) $ do
-                                            let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
-                                            mGs <- sequence $ crossMarkers mks pn tz <$> (concat gs)
-                                            gGs <- L.layerGroup $ concat mGs
-                                            L.addOverlay layers' (PilotName (pn' <> ": start nominees"), gGs)
-                                            L.layersExpand layers'
+                                        unless (null ggs) $ do
+                                            sequence_
+                                                [
+                                                    unless (null gs) $ do
+                                                        let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
+                                                        mGs <- sequence $ crossMarkers mks pn tz <$> gs
+                                                        gGs <- L.layerGroup $ concat mGs
+                                                        let subtitle = printf ": %s nominees" (showTime tz sg)
+                                                        L.addOverlay layers' (PilotName (pn' <> subtitle), gGs)
+                                                        L.layersExpand layers'
+
+                                                | (StartGate sg, gs) <- ggs
+                                                ]
 
                                         unless (null es) $ do
                                             let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
