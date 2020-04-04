@@ -70,7 +70,7 @@ newtype SelectedStart =
 
 -- | Crossings of the start zone, partitioned for each start gate.
 newtype NomineeStarts =
-    NomineeStarts { unNomineeStarts :: [(StartGate, [Maybe ZoneCross])] }
+    NomineeStarts { unNomineeStarts :: [(StartGate, [ZoneCross])] }
     deriving Show
 
 -- | Crossings excluded because they are outside of the open time window of the

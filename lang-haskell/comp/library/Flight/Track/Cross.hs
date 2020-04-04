@@ -93,7 +93,7 @@ data TrackCross =
         -- ^ Every crossing of every zone not excluded.
         , startSelected :: Maybe (StartGate, ZoneCross)
         -- ^ Crossings of the start, partitioned by each start gate.
-        , startNominees :: [(StartGate, [Maybe ZoneCross])]
+        , startNominees :: [(StartGate, [ZoneCross])]
         -- ^ Crossings of the start, partitioned by each start gate.
         , zonesCrossExcluded :: [[Maybe ZoneCross]]
         -- ^ Excluded crossing of every zone.

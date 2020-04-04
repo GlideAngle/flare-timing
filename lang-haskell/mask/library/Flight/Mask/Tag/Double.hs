@@ -5,7 +5,7 @@ module Flight.Mask.Tag.Double where
 import Prelude hiding (span)
 import Data.Coerce (coerce)
 import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
-import Data.List ((\\), filter)
+import Data.List ((\\), filter, inits)
 import Control.Arrow (first)
 import Control.Monad (join)
 
@@ -148,7 +148,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         task@Task{zones, speedSection, startGates}
         MarkedFixes{mark0, fixes}
         indices =
-        (selected, nominees, SelectedStart selectedStart, NomineeStarts nomineeStarts, excluded)
+        (selected, nominees, SelectedStart selectedStart, NomineeStarts dedupStarts, excluded)
         where
             sepZs = separatedZones @Double @Double e
 
@@ -190,11 +190,13 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             nominees = NomineeCrossings nss
             excluded = ExcludedCrossings $ css \\ nss
 
-            nomineeStarts =
+            -- Ordered so that the last start gate is first.
+            nomineeStarts :: [(StartGate, [Maybe ZoneCross])] =
                 if null speedSection then [] else
                 case sliceZones speedSection (coerce nominees) of
                     [] -> []
                     (ns : _) ->
+                        reverse
                         [
                             (sg,) $
                             filter
@@ -222,9 +224,16 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 | (sg, gs) <- nomineeStarts
                 ]
 
+            -- Crossings associated with only one start gate each.
+            dedupStarts :: [(StartGate, [ZoneCross])] =
+                [ (sg, gs \\ concat gsSeen)
+                | (sg, gs) <- starts
+                | gsSeen <- inits $ snd <$> starts
+                ]
+
             -- The last crossing of the last start gate with crossings.
             selectedStart = do
-                (sg, xs) <- listToMaybe . take 1 $ reverse starts
+                (sg, xs) <- listToMaybe $ take 1 dedupStarts
                 case reverse xs of
                     [] -> Nothing
                     x : _ -> Just (sg, x)
