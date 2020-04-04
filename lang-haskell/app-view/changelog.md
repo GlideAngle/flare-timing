@@ -14,6 +14,8 @@ of this changelog.
   circles for taggings.
 * Pick the first crossing of the start gate taken.
 * Better detect whether a start is an entry or an exit.
+* Associate crossings with start gates and pick the last crossing of the last
+  start as the start.
 
 # Leading Area Plot
 ## app-view-0.26
