@@ -439,6 +439,11 @@ map
         <- taskZoneButtons task pilots $ () <$ pilotFlyingTrack
 
     (eCanvas, _) <- elAttr' "div" ("id" =: "map" <> "style" =: "height: 680px;width: 100%") $ return ()
+    _ <- elClass "table" "table is-narrow is-fullwidth" $
+            el "tfoot" $
+                el "tr" $ do
+                    el "td" $ text "HH:MM:SS ✓ The start and its crossing"
+                    el "td" $ text "HH:MM:SS ☜ Crossing nominees for this start gate"
 
     rec
         performEvent_ $
