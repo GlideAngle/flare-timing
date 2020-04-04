@@ -144,8 +144,12 @@ data Fix =
         , alt :: RawAlt
         -- ^ The altitude in decimal degrees, +ve is E and -ve is W.
         }
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+instance Ord Fix where
+    Fix{fix = i} `compare` Fix{fix = j} =
+        i `compare` j
 
 -- | An interpolated fix.
 data InterpolatedFix =
@@ -163,8 +167,12 @@ data InterpolatedFix =
         , alt :: RawAlt
         -- ^ The interpolated altitude in decimal degrees, +ve is E and -ve is W.
         }
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+instance Ord InterpolatedFix where
+    InterpolatedFix{fixFrac = i} `compare` InterpolatedFix{fixFrac = j} =
+        i `compare` j
 
 -- | A crossing between two fixes.
 data ZoneTag =
@@ -172,8 +180,12 @@ data ZoneTag =
         { inter :: InterpolatedFix
         , cross :: ZoneCross
         }
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+instance Ord ZoneTag where
+    ZoneTag{inter = i} `compare` ZoneTag{inter = j} =
+        i `compare` j
 
 endOfFlying :: Maybe TrackFlyingSection -> Maybe UTCTime
 endOfFlying = join . fmap (fmap snd . flyingTimes)
@@ -196,8 +208,12 @@ data ZoneCross =
         , inZone :: [Bool]
         -- ^ Mark each fix as inside or outside the zone.
         }
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+instance Ord ZoneCross where
+    ZoneCross{crossingPair = i} `compare` ZoneCross{crossingPair = j} =
+        i `compare` j
 
 -- | Associates a pilot with the zones they cross for a single task.
 data PilotTrackCross =
@@ -254,12 +270,6 @@ cmp a b =
         ("startNominees", "zonesCrossNominees") -> GT
         ("startNominees", "startSelected") -> GT
         ("startNominees", _) -> LT
-
-        ("zonesCrossNominees", "zonesCrossSelected") -> GT
-        ("zonesCrossNominees", "zonesCrossNominees") -> GT
-        ("zonesCrossNominees", "startSelected") -> GT
-        ("zonesCrossNominees", _) -> LT
-        ("zonesCrossNominees", _) -> LT
 
         ("zonesCrossExcluded", _) -> GT
 
