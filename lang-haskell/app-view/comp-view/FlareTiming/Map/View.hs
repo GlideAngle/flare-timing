@@ -497,6 +497,7 @@ map
                                             { zonesCrossSelected = ss
                                             , zonesCrossNominees = ns
                                             , zonesCrossExcluded = es
+                                            , startSelected = gStart
                                             , startNominees = ggs
                                             } -> do
 
@@ -514,6 +515,19 @@ map
                                             L.addOverlay layers' (PilotName (pn' <> ": nominees"), gNs)
                                             L.layersExpand layers'
 
+                                        unless (null gStart) $ do
+                                            (flip (maybe (return ())))
+                                                gStart
+                                                (\(StartGate sg, g) -> do
+                                                    let gs = [g]
+
+                                                    let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
+                                                    mGs <- sequence $ crossMarkers mks pn tz <$> gs
+                                                    gGs <- L.layerGroup $ concat mGs
+                                                    let subtitle = printf ": <kbd>%s</kbd> ✓" (showTime tz sg)
+                                                    L.addOverlay layers' (PilotName (pn' <> subtitle), gGs)
+                                                    L.layersExpand layers')
+
                                         unless (null ggs) $ do
                                             sequence_
                                                 [
@@ -521,7 +535,7 @@ map
                                                         let mks = (L.MarkerKindCrossIn, L.MarkerKindCrossOut)
                                                         mGs <- sequence $ crossMarkers mks pn tz <$> gs
                                                         gGs <- L.layerGroup $ concat mGs
-                                                        let subtitle = printf ": <kbd>%s</kbd>" (showTime tz sg)
+                                                        let subtitle = printf ": <kbd>%s</kbd> ☜" (showTime tz sg)
                                                         L.addOverlay layers' (PilotName (pn' <> subtitle), gGs)
                                                         L.layersExpand layers'
 
