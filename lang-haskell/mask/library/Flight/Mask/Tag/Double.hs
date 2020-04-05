@@ -231,10 +231,10 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 | gsSeen <- inits $ snd <$> starts
                 ]
 
-            -- The last crossing of the last start gate with crossings.
+            -- The first crossing of the last start gate with crossings.
             selectedStart = do
                 (sg, xs) <- listToMaybe . take 1 $ filter (not . null . snd) dedupStarts
-                case reverse xs of
+                case xs of
                     [] -> Nothing
                     x : _ -> Just (sg, x)
 
