@@ -25,16 +25,18 @@ trimToOrder _ [] _ = []
 trimToOrder [] ys (zMin : _) = filter (< zMin) ys
 
 trimToOrder xs ys zs@(_ : _) =
-    case xs' of
-        [] -> ys'
-        (x : _) -> filter (> x) ys'
+    case (xs, xs') of
+        (_, []) -> []
+        ([], _) -> ys'
+        (x : _, x' : _) -> filter (> x) $ filter (> x') ys'
     where
         (xs', ys') =
             case reverse zs of
                 [] -> ([], [])
                 (zMax : _) ->
                     case (findIndex (< zMax) xs, findIndex (< zMax) ys) of
-                        (_, Nothing) -> (xs, ys)
+                        (Nothing, Nothing) -> (xs, ys)
+                        (_, Nothing) -> (filter (< zMax) xs, ys)
                         (Nothing, _) -> ([], filter (< zMax) ys)
                         (Just _, Just _) -> (filter (< zMax) xs, filter (< zMax) ys)
 
@@ -103,7 +105,11 @@ trimToOrder [] ys [] = ys
 -- >>> trimOrdLists [[80],[3190],[3582,3966],[5179,5190],[7383,7401],[9908,9936],[],[],[]]
 -- [[80],[3190],[3582,3966],[5179,5190],[7383,7401],[9908,9936],[],[],[]]
 trimOrdLists :: Ord a => [[a]] -> [[a]]
-trimOrdLists ys =
+trimOrdLists (xs : ys@(y : _) : zs) = _trim (filter (< y) xs : ys : zs)
+trimOrdLists xss = _trim xss
+
+_trim :: Ord a => [[a]] -> [[a]]
+_trim ys =
     if ys == ys' then nonNullBlock ys else trimOrdLists ys'
     where
         xs = [] : ys
