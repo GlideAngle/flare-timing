@@ -272,21 +272,20 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             yss' :: [[Crossing]]
             yss' = (fmap . fmap) unOrdCrossing yss
 
+            prover timecheck = proveCrossing timecheck mark0 fixes
+
+            selectors :: [[Crossing] -> Maybe Crossing]
+            selectors = crossingSelectors startExits task
+
             selected =
                 SelectedCrossings
-                [
-                    let prover = proveCrossing timecheck mark0 fixes
-                    in selectZoneCross prover selector ys
-
+                [ selectZoneCross (prover timecheck) selector ys
                 | timecheck <- timechecks
                 | selector <- selectors
                 | ys <- yss'
                 ]
 
-            fs =
-                (\x ->
-                    let b = isStartExit sepZs fromZs x
-                    in crossingPredicates sepZs b x) task
+            fs = crossingPredicates sepZs startExits task
 
             f :: TimePass -> [Crossing] -> [Maybe ZoneCross]
             f _ [] = []
@@ -300,9 +299,6 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 p : f tp es
                 where
                     p = prove tp mark0 fixes m n [False, True]
-
-            selectors :: [[Crossing] -> Maybe Crossing]
-            selectors = crossingSelectors startExits task
 
     tagZones
         :: Trig Double a
