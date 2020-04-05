@@ -14,7 +14,7 @@ import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
     ( ZoneEntry(..)
     , ZoneExit(..)
-    , Crossing
+    , Crossing(..)
     , fixFromFix
     )
 
@@ -38,8 +38,8 @@ prove pass mark0 fixes i@(ZoneIdx i') j@(ZoneIdx j') bs = do
     if pass ti || pass tj then return zc else Nothing
 
 proveCrossing :: TimePass -> UTCTime -> [Kml.Fix] -> Crossing -> Maybe ZoneCross
-proveCrossing pass mark0 fixes (Right (ZoneExit m n)) =
+proveCrossing pass mark0 fixes (CrossExit (ZoneExit m n)) =
     prove pass mark0 fixes m n [True, False]
 
-proveCrossing pass mark0 fixes (Left (ZoneEntry m n)) =
+proveCrossing pass mark0 fixes (CrossEntry (ZoneEntry m n)) =
     prove pass mark0 fixes m n [False, True]

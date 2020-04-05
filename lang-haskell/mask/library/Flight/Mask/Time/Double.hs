@@ -23,7 +23,7 @@ import Flight.Span.Sliver (GeoSliver(..))
 import Flight.Mask.Tag (GeoTag(..))
 import Flight.Mask.Tag.Double ()
 import Flight.Mask.Internal.Zone
-    ( ZoneEntry(..), ZoneExit(..), Crossing, TaskZone(..), TrackZone(..)
+    ( ZoneEntry(..), ZoneExit(..), Crossing(..), TaskZone(..), TrackZone(..)
     , slice, fixToPoint
     )
 import Flight.Mask.Internal.Cross
@@ -111,7 +111,7 @@ durationViaZones sepZs mkZone atTime speedSection _ zs os gs t0 xs =
                 exits' :: (Fix, (TrackZone _, TrackZone _)) -> Bool
                 exits' (_, (zx, zy)) =
                     case exitEnterSeq sepZs z0 [zx, zy] of
-                        Right (ZoneExit _ _) : _ ->
+                        CrossExit (ZoneExit _ _) : _ ->
                             True
 
                         _ ->
@@ -120,7 +120,7 @@ durationViaZones sepZs mkZone atTime speedSection _ zs os gs t0 xs =
                 enters' :: (Fix, (TrackZone _, TrackZone _)) -> Bool
                 enters' (_, (zx, zy)) =
                     case enterExitSeq sepZs zN [zx, zy] of
-                        Left (ZoneEntry _ _) : _ ->
+                        CrossEntry (ZoneEntry _ _) : _ ->
                             True
 
                         _ ->

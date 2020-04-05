@@ -7,7 +7,7 @@ module Flight.Mask.Internal.Zone
     , ExcludedCrossings(..)
     , ZoneEntry(..)
     , ZoneExit(..)
-    , Crossing
+    , Crossing(..)
     , TaskZone(..)
     , TrackZone(..)
     , OrdCrossing(..)
@@ -17,6 +17,8 @@ module Flight.Mask.Internal.Zone
     , rowToPoint
     , fixFromFix
     , zonesToTaskZones
+    , isCrossEntry
+    , isCrossExit
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
@@ -81,13 +83,36 @@ newtype ExcludedCrossings =
 
 data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving (Eq, Show)
 data ZoneExit = ZoneExit ZoneIdx ZoneIdx deriving (Eq, Show)
-type Crossing = Either ZoneEntry ZoneExit
+
+data Crossing
+    = CrossEntry ZoneEntry
+    | CrossExit ZoneExit
+    deriving Eq
+
+instance Show Crossing where
+    show (CrossEntry (ZoneEntry i _)) = show i
+    show (CrossExit (ZoneExit i _)) = show i
+
+instance Ord Crossing where
+    (CrossEntry (ZoneEntry i _)) `compare` (CrossEntry (ZoneEntry j _)) = i `compare` j
+    (CrossEntry (ZoneEntry i _)) `compare` (CrossExit (ZoneExit j _)) = i `compare` j
+
+    (CrossExit (ZoneExit i _)) `compare` (CrossEntry (ZoneEntry j _)) = i `compare` j
+    (CrossExit (ZoneExit i _)) `compare` (CrossExit (ZoneExit j _)) = i `compare` j
+
+isCrossEntry :: Crossing -> Bool
+isCrossEntry (CrossEntry  _) = True
+isCrossEntry (CrossExit _) = False
+
+isCrossExit :: Crossing -> Bool
+isCrossExit (CrossEntry  _) = False
+isCrossExit (CrossExit _) = True
 
 newtype OrdCrossing = OrdCrossing { unOrdCrossing :: Crossing }
 
 pos :: OrdCrossing -> ZoneIdx
-pos (OrdCrossing (Left (ZoneEntry i _))) = i
-pos (OrdCrossing (Right (ZoneExit i _))) = i
+pos (OrdCrossing (CrossEntry (ZoneEntry i _))) = i
+pos (OrdCrossing (CrossExit (ZoneExit i _))) = i
 
 instance Eq OrdCrossing where
     x == y = pos x == pos y

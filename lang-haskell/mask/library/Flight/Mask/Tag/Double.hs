@@ -2,6 +2,7 @@
 
 module Flight.Mask.Tag.Double where
 
+import Debug.Trace
 import Prelude hiding (span)
 import Data.Coerce (coerce)
 import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
@@ -34,7 +35,7 @@ import Flight.Mask.Internal.Zone
     , ExcludedCrossings(..)
     , ZoneEntry(..)
     , ZoneExit(..)
-    , Crossing
+    , Crossing(..)
     , TaskZone(..)
     , OrdCrossing(..)
     , slice
@@ -72,7 +73,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 z : _ ->
                     let ez = exitEnterSeq sepZs z (fixToPoint <$> fixes)
                     in case ez of
-                         Right (ZoneExit _ _) : _ -> True
+                         CrossExit (ZoneExit _ _) : _ -> True
                          _ -> False
 
     madeGoal :: Trig Double a => Earth Double -> Maybe Give -> FnTask k Bool
@@ -87,7 +88,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 z : _ ->
                     let ez = enterExitSeq sepZs z (fixToPoint <$> fixes)
                     in case ez of
-                         Left (ZoneEntry _ _) : _ -> True
+                         CrossEntry (ZoneEntry _ _) : _ -> True
                          _ -> False
 
     madeZones
@@ -254,9 +255,9 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
 
                 let crossing :: (ZoneIdx, ZoneIdx) -> Crossing =
                         case inZone of
-                            [True, False] -> Right . uncurry ZoneExit
-                            [False, True] -> Left . uncurry ZoneEntry
-                            _ -> Left . uncurry ZoneEntry
+                            [True, False] -> CrossExit . uncurry ZoneExit
+                            [False, True] -> CrossEntry . uncurry ZoneEntry
+                            _ -> CrossEntry . uncurry ZoneEntry
 
                 case crossingPair of
                     [Fix{fix = i}, Fix{fix = j}] ->
@@ -267,7 +268,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                         Nothing
 
             yss :: [[OrdCrossing]]
-            yss = trimOrdLists ((fmap . fmap) OrdCrossing xss'')
+            yss = traceShowId $ trimOrdLists $ traceShowId ((fmap . fmap) OrdCrossing xss'')
 
             yss' :: [[Crossing]]
             yss' = (fmap . fmap) unOrdCrossing yss
@@ -290,12 +291,12 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             f :: TimePass -> [Crossing] -> [Maybe ZoneCross]
             f _ [] = []
 
-            f tp (Right (ZoneExit m n) : es) =
+            f tp (CrossExit (ZoneExit m n) : es) =
                 p : f tp es
                 where
                     p = prove tp mark0 fixes m n [True, False]
 
-            f tp (Left (ZoneEntry m n) : es) =
+            f tp (CrossEntry (ZoneEntry m n) : es) =
                 p : f tp es
                 where
                     p = prove tp mark0 fixes m n [False, True]

@@ -11,7 +11,6 @@ module Flight.Mask.Internal.Cross
 
 import Prelude hiding (span)
 import Data.Maybe (fromMaybe, listToMaybe)
-import Data.Either (isRight)
 import Data.List (nub, sort, findIndex)
 import Control.Lens ((^?), element)
 
@@ -23,8 +22,9 @@ import Flight.Mask.Internal.Zone
     , TrackZone(..)
     , ZoneEntry(..)
     , ZoneExit(..)
-    , Crossing
+    , Crossing(..)
     , OrdCrossing(..)
+    , isCrossExit
     )
 import Flight.Geodesy.Solution (SeparatedZones)
 
@@ -97,13 +97,13 @@ exitsSingle  =
 
 reindex
     :: ZoneIdx -- ^ The length of the track, the number of fixes
-    -> Either ZoneEntry ZoneExit
-    -> Either ZoneEntry ZoneExit
-reindex n (Right (ZoneExit i j)) =
-    Right $ ZoneExit (i + n) (j + n)
+    -> Crossing
+    -> Crossing
+reindex n (CrossExit (ZoneExit i j)) =
+    CrossExit $ ZoneExit (i + n) (j + n)
 
-reindex n (Left (ZoneEntry i j)) =
-    Left $ ZoneEntry (i + n) (j + n)
+reindex n (CrossEntry (ZoneEntry i j)) =
+    CrossEntry $ ZoneEntry (i + n) (j + n)
 
 crossSeq
     :: (Real a, Fractional a)
@@ -126,7 +126,7 @@ enterExitSeq sepZs z xs =
             []
 
         (hit@(ZoneEntry _ jIdx@(ZoneIdx j)) : _) ->
-            Left hit : (reindex jIdx <$> exitEnterSeq sepZs z (drop j xs))
+            CrossEntry hit : (reindex jIdx <$> exitEnterSeq sepZs z (drop j xs))
 
 -- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
 exitEnterSeq
@@ -139,7 +139,7 @@ exitEnterSeq sepZs z xs =
             []
 
         (hit@(ZoneExit _ jIdx@(ZoneIdx j)) : _) ->
-            Right hit : (reindex jIdx <$> enterExitSeq sepZs z (drop j xs))
+            CrossExit hit : (reindex jIdx <$> enterExitSeq sepZs z (drop j xs))
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then
@@ -226,7 +226,7 @@ crossingSelectors startIsExit Task{speedSection, zones} =
     zipWith
         (\ i _ ->
             if i == start && startIsExit
-               then selectLast . filter isRight
+               then selectLast . filter isCrossExit
                else selectFirst)
         [1 .. ]
         (raw zones)
