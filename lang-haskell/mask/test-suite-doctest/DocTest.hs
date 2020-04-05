@@ -47,6 +47,7 @@ arguments =
     , "library/Flight/Span/Double.hs"
     , "library/Flight/Mask/Group.hs"
     , "library/Flight/Mask/Internal/Cross.hs"
+    , "library/Flight/Mask/Tag/OrdLists.hs"
     ]
 
 main :: IO ()
