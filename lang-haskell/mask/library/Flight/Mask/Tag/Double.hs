@@ -218,17 +218,27 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                         ]
 
             -- The start gates with sorted crossings.
-            starts :: [(StartGate, [ZoneCross])] =
+            startCrossings :: [(StartGate, [ZoneCross])] =
                 catMaybes
                 [ sequence (sg, sequence gs)
                 | (sg, gs) <- nomineeStarts
                 ]
 
+            startExits = isStartExit clearlySepZs fromZs task
+            startPhase = (== if startExits then [True, False] else [False, True])
+
             -- Crossings associated with only one start gate each.
-            dedupStarts :: [(StartGate, [ZoneCross])] =
+            dedupCrossings :: [(StartGate, [ZoneCross])] =
                 [ (sg, gs \\ concat gsSeen)
-                | (sg, gs) <- starts
-                | gsSeen <- inits $ snd <$> starts
+                | (sg, gs) <- startCrossings
+                | gsSeen <- inits $ snd <$> startCrossings
+                ]
+
+            -- Crossings made to start, exiting for an exit start zone or entering
+            -- for an entry start zone.
+            dedupStarts :: [(StartGate, [ZoneCross])] =
+                [ (sg, filter (startPhase . inZone) gs)
+                | (sg, gs) <- dedupCrossings
                 ]
 
             -- The first crossing of the last start gate with crossings.
@@ -292,10 +302,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                     p = prove tp mark0 fixes m n [False, True]
 
             selectors :: [[Crossing] -> Maybe Crossing]
-            selectors =
-                (\x ->
-                    let b = isStartExit clearlySepZs fromZs x
-                    in crossingSelectors b x) task
+            selectors = crossingSelectors startExits task
 
     tagZones
         :: Trig Double a
