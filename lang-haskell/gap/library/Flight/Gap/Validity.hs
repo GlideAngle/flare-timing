@@ -31,7 +31,7 @@ import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure
-    ((+:), (-:), (*:), (/:), u, convert, toRational', sqrt', unQuantity)
+    ((+:), (-:), (*:), (/:), u, zero, convert, toRational', sqrt', unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Ratio (pattern (:%))
@@ -394,15 +394,20 @@ stopValidity
         }
     ed'@(LaunchToEss ed)
     | flying == 0 = (StopValidity 0, Nothing)
+    | denom == zero = (StopValidity 0, Nothing)
+    -- REVIEW: Check what the formula in the GAP rules does when flown > ed.
+    | flownMax' > ed = (StopValidity 0, Nothing)
     | ess > 0 = (StopValidity 1, Just w)
     | otherwise = (StopValidity $ Stats.min 1 (toRational $ unQuantity a + b**3), Just w)
         where
-            flownMax :: Quantity _ [u| km |]
+            flownMax :: Quantity Double [u| km |]
             flownMax = convert flownMax'
+            denom = ed -: flownMax +: [u| 1 km |]
 
+            a :: Quantity Double [u| 1 |]
             a =
                 sqrt' $
-                    ((flownMax -: flownMean) /: (ed -: flownMax +: [u| 1 km |]))
+                    ((flownMax -: flownMean) /: denom)
                     *: sqrt' (flownStdDev /: [u| 5 km |])
 
             b = fromIntegral landed / (fromIntegral flying :: Double)
