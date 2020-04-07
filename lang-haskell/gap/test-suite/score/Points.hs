@@ -4,6 +4,8 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Function ((&))
 import Data.Ratio ((%))
+import Data.Maybe (listToMaybe)
+import Data.Either (lefts, rights)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -13,6 +15,7 @@ import Flight.Score
     , TooEarlyPoints(..)
     , SecondsPerPoint(..)
     , JumpedTheGun(..)
+    , JumpTheGunLimit(..)
     , Hg
     , Pg
     , Penalty(..)
@@ -23,8 +26,10 @@ import Flight.Score
     , ArrivalPoints(..)
     , TimePoints(..)
     , TaskPoints(..)
+    , TooEarlyPoints(..)
     , Points(..)
     , PointsReduced(..)
+    , PointPenalty(..)
     , zeroPoints
     )
 
@@ -81,19 +86,38 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
             @?= TaskPoints 1
 
     , HU.testCase "Somewhat early start HG = full points minus jump the gun penalty" $
-        ((FS.taskPoints
-            (Just (Jumped (SecondsPerPoint [u| 1 s |]) (JumpedTheGun [u| 1 s |])))
-            []
-            []
-            Points
-                { reach = LinearPoints 10
-                , effort = DifficultyPoints 10
-                , distance = DistancePoints 20
-                , leading = LeadingPoints 10
-                , arrival = ArrivalPoints 10
-                , time = TimePoints 10
-                }) & total)
-            @?= TaskPoints 49
+        let jump = JumpedTheGun [u| 1 s |]
+            secs = SecondsPerPoint [u| 1 s |]
+            limit = JumpTheGunLimit [u| 3000 s |]
+
+            eitherPenalties :: [Either PointPenalty (Penalty Hg)]
+            eitherPenalties =
+                return $ FS.jumpTheGunPenaltyHg (TooEarlyPoints 1) limit secs jump
+
+            jumpDemerits = lefts eitherPenalties
+            jumpReset = listToMaybe $ rights eitherPenalties
+        in
+            (FS.taskPoints
+                jumpReset
+                jumpDemerits
+                []
+                Points
+                    { reach = LinearPoints 10
+                    , effort = DifficultyPoints 10
+                    , distance = DistancePoints 20
+                    , leading = LeadingPoints 10
+                    , arrival = ArrivalPoints 10
+                    , time = TimePoints 10
+                    })
+                @?= PointsReduced
+                        { subtotal = TaskPoints 50
+                        , fracApplied = TaskPoints 0
+                        , pointApplied = TaskPoints 1
+                        , resetApplied = TaskPoints 0
+                        , total = TaskPoints 49
+                        , effectivePenalties = [PenaltyPoints 1]
+                        , effectivePenaltiesJump = [PenaltyPoints 1]
+                        }
     ]
 
 correct :: forall a. Maybe (Penalty a) -> Points -> TaskPoints -> Bool

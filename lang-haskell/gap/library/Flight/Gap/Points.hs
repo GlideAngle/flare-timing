@@ -230,12 +230,12 @@ data PointsReduced =
         , effectivePenalties :: [PointPenalty]
         , effectivePenaltiesJump :: [PointPenalty]
         }
-        deriving Show
+        deriving (Eq, Show)
 
 taskPoints
-    :: forall a. Maybe (Penalty a)
+    :: forall a. Maybe (Penalty a) -- ^ Only applied if @isReset@ and @isTooEarly@.
     -> [PointPenalty] -- ^ Penalties for jumping the gun.
-    -> [PointPenalty]
+    -> [PointPenalty] -- ^ Other penalties.
     -> Points
     -> PointsReduced
 taskPoints p psJump ps points =
