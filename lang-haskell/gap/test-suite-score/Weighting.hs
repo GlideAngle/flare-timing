@@ -1,7 +1,6 @@
 module Weighting
     ( weightingUnits
     , distanceWeight
-    , arrivalWeightPgZ
     , arrivalWeight
     , leadingWeight
     , timeWeight
@@ -31,13 +30,19 @@ weightingUnits = testGroup "Weighting unit tests"
         FS.distanceWeight (GoalRatio 0) @?= DistanceWeight (9 % 10)
 
     , HU.testCase "Pg = 0 arrival weight" $
-        FS.arrivalWeight AwPg @?= ArrivalWeight 0
+        FS.arrivalWeight AwZero @?= ArrivalWeight 0
 
-    , HU.testCase "0 distance weight, Hg = 0.8 arrival weight" $
-        FS.arrivalWeight (AwHg (DistanceWeight 0)) @?= ArrivalWeight (1 % 8)
+    , HU.testCase "0 distance weight, Hg = 0.8 arrival by rank weight" $
+        FS.arrivalWeight (AwHgRank (DistanceWeight 0)) @?= ArrivalWeight (1 % 8)
 
-    , HU.testCase "1 distance weight, Hg = 0 arrival weight" $
-        FS.arrivalWeight (AwHg (DistanceWeight 1)) @?= ArrivalWeight 0
+    , HU.testCase "1 distance weight, Hg = 0 arrival by rank weight" $
+        FS.arrivalWeight (AwHgRank (DistanceWeight 1)) @?= ArrivalWeight 0
+
+    , HU.testCase "0 distance weight, Hg = 0.8 arrival by time weight" $
+        FS.arrivalWeight (AwHgTime (DistanceWeight 0)) @?= ArrivalWeight (1 % 8)
+
+    , HU.testCase "1 distance weight, Hg = 0 arrival by time weight" $
+        FS.arrivalWeight (AwHgTime (DistanceWeight 1)) @?= ArrivalWeight 0
 
     , HU.testCase "0 goal ratio, 0 distance ratio, Pg = 0 leading weight" $
         FS.leadingWeight (LwPgZ (DistanceRatio 0)) @?= LeadingWeight 0
@@ -93,10 +98,6 @@ weightingUnits = testGroup "Weighting unit tests"
 distanceWeight :: GrTest -> Bool
 distanceWeight (GrTest gr) =
     (\(DistanceWeight w) -> isNormal w) $ FS.distanceWeight gr
-
-arrivalWeightPgZ :: AwTestPgZ -> Bool
-arrivalWeightPgZ (AwTestPgZ x) =
-    (\(ArrivalWeight w) -> isNormal w) $ FS.arrivalWeight x
 
 arrivalWeight :: AwTest -> Bool
 arrivalWeight (AwTest x) =

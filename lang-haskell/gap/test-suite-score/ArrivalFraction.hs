@@ -7,7 +7,7 @@ import Data.Ratio ((%))
 import qualified Flight.Score as FS
 import Flight.Score
     ( PilotsAtEss(..)
-    , PositionAtEss(..)
+    , ArrivalPlacing(..)
     , ArrivalFraction(..)
     , isNormal
     )
@@ -23,20 +23,20 @@ minArrivalFraction = ArrivalFraction (1 % 5)
 arrivalFractionUnits :: TestTree
 arrivalFractionUnits = testGroup "Arrival fraction unit tests"
     [ HU.testCase "1 pilot at ESS, first at ESS = 1 arrival fraction" $
-        FS.arrivalFraction (PilotsAtEss 1) (PositionAtEss 1) @?= maxArrivalFraction
+        FS.arrivalRankFraction (PilotsAtEss 1) (ArrivalPlacing 1) @?= maxArrivalFraction
 
     , HU.testCase "2 pilots at ESS, first at ESS = 1 arrival fraction" $
-        FS.arrivalFraction (PilotsAtEss 2) (PositionAtEss 1) @?= maxArrivalFraction
+        FS.arrivalRankFraction (PilotsAtEss 2) (ArrivalPlacing 1) @?= maxArrivalFraction
 
     , HU.testCase "2 pilots at ESS, last at ESS > 0.2 arrival fraction" $
-        FS.arrivalFraction (PilotsAtEss 2) (PositionAtEss 2) `compare` minArrivalFraction
+        FS.arrivalRankFraction (PilotsAtEss 2) (ArrivalPlacing 2) `compare` minArrivalFraction
         @?= GT
 
     , HU.testCase "1000 pilots at ESS, last at ESS > 0.2 arrival fraction" $
-        FS.arrivalFraction (PilotsAtEss 1000) (PositionAtEss 1000) `compare` minArrivalFraction
+        FS.arrivalRankFraction (PilotsAtEss 1000) (ArrivalPlacing 1000) `compare` minArrivalFraction
         @?= GT
     ]
 
 arrivalFraction :: AfTest -> Bool
 arrivalFraction (AfTest (n, rank)) =
-    (\af@(ArrivalFraction x) -> isNormal x && af > minArrivalFraction) $ FS.arrivalFraction n rank
+    (\af@(ArrivalFraction x) -> isNormal x && af > minArrivalFraction) $ FS.arrivalRankFraction n rank

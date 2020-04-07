@@ -18,9 +18,10 @@ import Flight.Score
     , NominalDistance(..)
     , DistanceValidity(..)
     , MinimumDistance(..)
-    , MaximumDistance(..)
+    , FlownMax(..)
     , SumOfDistance(..)
     , PilotsFlying(..)
+    , ReachToggle(..)
     , isNormal
     )
 
@@ -36,7 +37,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (NominalDistance . MkQuantity $ 0)
             (PilotsFlying 0)
             (MinimumDistance . MkQuantity $ 0)
-            (MaximumDistance . MkQuantity $ 0)
+            (let d = (FlownMax . MkQuantity $ 0) in ReachToggle d d)
             (SumOfDistance . MkQuantity $ 0))
         @?= DistanceValidity (0 % 1)
 
@@ -48,7 +49,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (NominalDistance . MkQuantity $ 1)
             (PilotsFlying 1)
             (MinimumDistance . MkQuantity $ 1)
-            (MaximumDistance . MkQuantity $ 1)
+            (let d = (FlownMax . MkQuantity $ 1) in ReachToggle d d)
             (SumOfDistance . MkQuantity $ 1))
         @?= DistanceValidity (0 % 1)
 
@@ -61,7 +62,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (NominalDistance . MkQuantity $ 0)
             (PilotsFlying 1)
             (MinimumDistance . MkQuantity $ 1)
-            (MaximumDistance . MkQuantity $ 1)
+            (let d = (FlownMax . MkQuantity $ 1) in ReachToggle d d)
             (SumOfDistance . MkQuantity $ 1))
         @?= DistanceValidity (1 % 1)
 
@@ -73,7 +74,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (NominalDistance . MkQuantity $ 1)
             (PilotsFlying 0)
             (MinimumDistance . MkQuantity $ 1)
-            (MaximumDistance . MkQuantity $ 1)
+            (let d = (FlownMax . MkQuantity $ 1) in ReachToggle d d)
             (SumOfDistance . MkQuantity $ 1))
         @?= DistanceValidity (0 % 1)
 
@@ -85,7 +86,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (NominalDistance . MkQuantity $ 1)
             (PilotsFlying 1)
             (MinimumDistance . MkQuantity $ 0)
-            (MaximumDistance . MkQuantity $ 1)
+            (let d = (FlownMax . MkQuantity $ 1) in ReachToggle d d)
             (SumOfDistance . MkQuantity $ 1))
         @?= DistanceValidity (1 % 1)
 
@@ -97,7 +98,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (NominalDistance . MkQuantity $ 1)
             (PilotsFlying 1)
             (MinimumDistance . MkQuantity $ 1)
-            (MaximumDistance . MkQuantity $ 0)
+            (let d = (FlownMax . MkQuantity $ 0) in ReachToggle d d)
             (SumOfDistance . MkQuantity $ 1))
         @?= DistanceValidity (0 % 1)
 
@@ -109,7 +110,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (NominalDistance . MkQuantity $ 1)
             (PilotsFlying 1)
             (MinimumDistance . MkQuantity $ 1)
-            (MaximumDistance . MkQuantity $ 1)
+            (let d = (FlownMax . MkQuantity $ 1) in ReachToggle d d)
             (SumOfDistance . MkQuantity $ 0))
         @?= DistanceValidity (0 % 1)
     ]
@@ -119,7 +120,7 @@ distanceValidity
     -> NdTest
     -> PilotsFlying
     -> MinimumDistance (Quantity Double [u| km |])
-    -> MaximumDistance (Quantity Double [u| km |])
+    -> ReachToggle (FlownMax (Quantity Double [u| km |]))
     -> SumOfDistance (Quantity Double [u| km |])
     -> Bool
 distanceValidity
@@ -151,7 +152,7 @@ scDistanceValidity
         nd
         (PilotsFlying nFly)
         (MinimumDistance . MkQuantity $ dMin)
-        (MaximumDistance . MkQuantity $ dMax)
+        (let d = (FlownMax . MkQuantity $ dMax) in ReachToggle d d)
         (SumOfDistance . MkQuantity $ dSum)
 
 qcDistanceValidity :: NgTest
@@ -173,5 +174,5 @@ qcDistanceValidity
         nd
         (PilotsFlying nFly)
         (MinimumDistance . MkQuantity $ dMin)
-        (MaximumDistance . MkQuantity $ dMax)
+        (let d = (FlownMax . MkQuantity $ dMax) in ReachToggle d d)
         (SumOfDistance . MkQuantity $ dSum)

@@ -1,18 +1,19 @@
 module Stopped
     ( stoppedTimeUnits
     , stoppedScoreUnits
-    , stoppedValidityUnits
+    , stopValidityUnits
     , scoreTimeWindowUnits
     , applyGlideUnits
     , stopTaskTimeHg
     , stopTaskTimePg
     , canScoreStoppedHg
     , canScoreStoppedPg
-    , stoppedValidity
+    , stopValidity
     , scoreTimeWindow
     , applyGlide
     ) where
 
+import Data.Function ((&))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert, toRational')
@@ -27,12 +28,11 @@ import Flight.Score
     , TaskTime(..)
     , TaskStopTime(..)
     , CanScoreStopped(..)
-    , PilotsInGoalAtStop(..)
-    , PilotsLaunched(..)
-    , PilotsLandedBeforeStop(..)
-    , DistanceLaunchToEss(..)
-    , DistanceFlown(..)
-    , StoppedValidity(..)
+    , PilotsAtEss(..)
+    , PilotsLanded(..)
+    , PilotsFlying(..)
+    , LaunchToEss(..)
+    , StopValidity(..)
     , TaskType(..)
     , StartGates(..)
     , ScoreTimeWindow(..)
@@ -62,21 +62,21 @@ stoppedTimeUnits = testGroup "Effective task stop time"
 stoppedScoreUnits :: TestTree
 stoppedScoreUnits = testGroup "Can score a stopped task?"
     [ HU.testCase "Not when noone made goal and the task ran less than an hour, Hg womens" $
-        FS.canScoreStopped(Womens (PilotsInGoalAtStop 0) (TaskStopTime $ 59 * 60)) @?= False
+        FS.canScoreStopped(Womens (PilotsAtEss 0) (TaskStopTime $ 59 * 60)) @?= False
 
     , HU.testCase "When someone made goal, Hg womens" $
-        FS.canScoreStopped(Womens (PilotsInGoalAtStop 1) (TaskStopTime 0)) @?= True
+        FS.canScoreStopped(Womens (PilotsAtEss 1) (TaskStopTime 0)) @?= True
 
     , HU.testCase "When the task ran for 1 hr, Hg womans" $
-        FS.canScoreStopped(Womens (PilotsInGoalAtStop 0) (TaskStopTime $ 60 * 60)) @?= True
+        FS.canScoreStopped(Womens (PilotsAtEss 0) (TaskStopTime $ 60 * 60)) @?= True
 
     , HU.testCase "Not when noone made goal and the task ran less than 90 mins, Hg" $
-        FS.canScoreStopped(GoalOrDuration (PilotsInGoalAtStop 0) (TaskStopTime $ 89 * 60)) @?= False
+        FS.canScoreStopped(GoalOrDuration (PilotsAtEss 0) (TaskStopTime $ 89 * 60)) @?= False
     , HU.testCase "When someone made goal, Hg" $
-        FS.canScoreStopped(GoalOrDuration (PilotsInGoalAtStop 1) (TaskStopTime 0)) @?= True
+        FS.canScoreStopped(GoalOrDuration (PilotsAtEss 1) (TaskStopTime 0)) @?= True
 
     , HU.testCase "When the task ran for 90 mins, Hg" $
-        FS.canScoreStopped(GoalOrDuration (PilotsInGoalAtStop 0) (TaskStopTime $ 90 * 60)) @?= True
+        FS.canScoreStopped(GoalOrDuration (PilotsAtEss 0) (TaskStopTime $ 90 * 60)) @?= True
 
     , HU.testCase "When the task ran for 1 hr, Pg" $
         FS.canScoreStopped(FromGetGo (TaskStopTime $ 60 * 60)) @?= True
@@ -85,77 +85,93 @@ stoppedScoreUnits = testGroup "Can score a stopped task?"
         FS.canScoreStopped(FromLastStart [] (TaskStopTime $ 120 * 60)) @?= False
 
     , HU.testCase "Not when the last start was less than an hour before stop, Pg" $
-        FS.canScoreStopped(FromLastStart [TaskTime 0] (TaskStopTime $ 59 * 60)) @?= False
+        FS.canScoreStopped(FromLastStart [TaskTime [u| 0 s |]] (TaskStopTime $ 59 * 60)) @?= False
 
     , HU.testCase "When the last start was an hour before stop, Pg" $
-        FS.canScoreStopped(FromLastStart [TaskTime 0] (TaskStopTime $ 60 * 60)) @?= True
+        FS.canScoreStopped(FromLastStart [TaskTime [u| 0 s |]] (TaskStopTime $ 60 * 60)) @?= True
     ]
 
-stoppedValidityUnits :: TestTree
-stoppedValidityUnits = testGroup "Is a stopped task valid?"
+stopValidityUnits :: TestTree
+stopValidityUnits = testGroup "Is a stopped task valid?"
     [ HU.testCase "Not when noone launches" $
-        FS.stoppedValidity
-            (PilotsLaunched 0)
-            (PilotsLandedBeforeStop 0)
-            (DistanceLaunchToEss 100)
-            []
-            @?= StoppedValidity 0
+        ((FS.stopValidity
+            (PilotsFlying 0)
+            (PilotsAtEss 0)
+            (PilotsLanded 0)
+            (PilotsFlying 1)
+            (mkReachStats [])
+            (LaunchToEss [u| 1 km |])) & fst)
+            @?= StopValidity 0
 
     , HU.testCase "When everyone makes ESS, one pilot launched and is still flying = 0 validity" $
-        FS.stoppedValidity
-            (PilotsLaunched 1)
-            (PilotsLandedBeforeStop 0)
-            (DistanceLaunchToEss 1)
-            [DistanceFlown 1]
-            @?= StoppedValidity 1
+        ((FS.stopValidity
+            (PilotsFlying 1)
+            (PilotsAtEss 1)
+            (PilotsLanded 0)
+            (PilotsFlying 1)
+            (mkReachStats [1])
+            (LaunchToEss [u| 1 km |])) & fst)
+            @?= StopValidity 1
 
     , HU.testCase "When everyone makes ESS, one pilot launched and has landed = 1 validity" $
-        FS.stoppedValidity
-            (PilotsLaunched 1)
-            (PilotsLandedBeforeStop 1)
-            (DistanceLaunchToEss 1)
-            [DistanceFlown 1]
-            @?= StoppedValidity 1
+        ((FS.stopValidity
+            (PilotsFlying 1)
+            (PilotsAtEss 2)
+            (PilotsLanded 1)
+            (PilotsFlying 0)
+            (mkReachStats [1])
+            (LaunchToEss [u| 1 km |])) & fst)
+            @?= StopValidity 1
 
     , HU.testCase "When everyone makes ESS, two pilots launched, both still flying = 0 validity" $
-        FS.stoppedValidity
-            (PilotsLaunched 2)
-            (PilotsLandedBeforeStop 0)
-            (DistanceLaunchToEss 1)
-            [DistanceFlown 1, DistanceFlown 1]
-            @?= StoppedValidity 1
+        ((FS.stopValidity
+            (PilotsFlying 2)
+            (PilotsAtEss 2)
+            (PilotsLanded 0)
+            (PilotsFlying 2)
+            (mkReachStats [1, 1])
+            (LaunchToEss [u| 1 km |])) & fst)
+            @?= StopValidity 1
 
     , HU.testCase "When everyone makes ESS, two pilots launched, noone still flying = 1 validity" $
-        FS.stoppedValidity
-            (PilotsLaunched 2)
-            (PilotsLandedBeforeStop 2)
-            (DistanceLaunchToEss 1)
-            [DistanceFlown 1, DistanceFlown 1]
-            @?= StoppedValidity 1
+        ((FS.stopValidity
+            (PilotsFlying 2)
+            (PilotsAtEss 2)
+            (PilotsLanded 2)
+            (PilotsFlying 0)
+            (mkReachStats [1, 1])
+            (LaunchToEss [u| 1 km |])) & fst)
+            @?= StopValidity 1
 
     , HU.testCase "When everyone makes ESS, two pilots launched, one still flying = 0.5 validity" $
-        FS.stoppedValidity
-            (PilotsLaunched 2)
-            (PilotsLandedBeforeStop 1)
-            (DistanceLaunchToEss 1)
-            [DistanceFlown 1, DistanceFlown 1]
-            @?= StoppedValidity 1
+        ((FS.stopValidity
+            (PilotsFlying 2)
+            (PilotsAtEss 2)
+            (PilotsLanded 1)
+            (PilotsFlying 1)
+            (mkReachStats [1, 1])
+            (LaunchToEss [u| 1 km |])) & fst)
+            @?= StopValidity 1
 
     , HU.testCase "When one makes ESS, one still flying at launch point = 0.93 validity" $
-        FS.stoppedValidity
-            (PilotsLaunched 2)
-            (PilotsLandedBeforeStop 1)
-            (DistanceLaunchToEss 1)
-            [DistanceFlown 1, DistanceFlown 0]
-            @?= StoppedValidity 1
+        ((FS.stopValidity
+            (PilotsFlying 2)
+            (PilotsAtEss 1)
+            (PilotsLanded 0)
+            (PilotsFlying 1)
+            (mkReachStats [1, 0])
+            (LaunchToEss [u| 1 km |])) & fst)
+            @?= StopValidity 1
 
     , HU.testCase "When one makes ESS, one still flying on course halfway to ESS = 0.93 validity" $
-        FS.stoppedValidity
-            (PilotsLaunched 2)
-            (PilotsLandedBeforeStop 1)
-            (DistanceLaunchToEss 2)
-            [DistanceFlown 2, DistanceFlown 1]
-            @?= StoppedValidity 1
+        ((FS.stopValidity
+            (PilotsFlying 2)
+            (PilotsAtEss 1)
+            (PilotsLanded 0)
+            (PilotsFlying 1)
+            (mkReachStats [2, 1])
+            (LaunchToEss [u| 1 km |])) & fst)
+            @?= StopValidity 1
     ]
 
 scoreTimeWindowUnits :: TestTree
@@ -174,7 +190,7 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 RaceToGoal
                 (StartGates 1)
                 (TaskStopTime 1)
-                [TaskTime 0]
+                [TaskTime [u| 0 s |]]
                 @?= ScoreTimeWindow 1
 
         , HU.testCase "1 start gate, 1 launches at stop = start to stop" $
@@ -182,7 +198,7 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 RaceToGoal
                 (StartGates 1)
                 (TaskStopTime 1)
-                [TaskTime 1]
+                [TaskTime [u| 1 s |]]
                 @?= ScoreTimeWindow 1
 
         , HU.testCase "2 start gates, noone launches = 0" $
@@ -198,7 +214,7 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 RaceToGoal
                 (StartGates 2)
                 (TaskStopTime 1)
-                [TaskTime 0]
+                [TaskTime [u| 0 s |]]
                 @?= ScoreTimeWindow 1
 
         , HU.testCase "2 start gates, 1 launches at stop = 0" $
@@ -206,7 +222,7 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 RaceToGoal
                 (StartGates 2)
                 (TaskStopTime 1)
-                [TaskTime 1]
+                [TaskTime [u| 1 s |]]
                 @?= ScoreTimeWindow 0
         ]
     , testGroup "Elapsed time"
@@ -223,7 +239,7 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 ElapsedTime
                 (StartGates 1)
                 (TaskStopTime 1)
-                [TaskTime 0]
+                [TaskTime [u| 0 s |]]
                 @?= ScoreTimeWindow 1
 
         , HU.testCase "1 start gate, 1 launches at stop = 0" $
@@ -231,7 +247,7 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 ElapsedTime
                 (StartGates 1)
                 (TaskStopTime 1)
-                [TaskTime 1]
+                [TaskTime [u| 1 s |]]
                 @?= ScoreTimeWindow 0
 
         , HU.testCase "2 start gates, noone launches = 0" $
@@ -247,7 +263,7 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 ElapsedTime
                 (StartGates 2)
                 (TaskStopTime 1)
-                [TaskTime 0]
+                [TaskTime [u| 0 s |]]
                 @?= ScoreTimeWindow 1
 
         , HU.testCase "2 start gates, 1 launches at stop = 0" $
@@ -255,7 +271,7 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 ElapsedTime
                 (StartGates 2)
                 (TaskStopTime 1)
-                [TaskTime 1]
+                [TaskTime [u| 1 s |]]
                 @?= ScoreTimeWindow 0
         ]
     ]
@@ -273,36 +289,36 @@ applyGlideUnits = testGroup "Distance points with altitude bonus"
         FS.applyGlides
             (GlideRatio $ negate 1)
             [AltitudeAboveGoal 1]
-            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
-            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 1)]]
 
     , HU.testCase "Out at 1:1 below goal, 1:1 glide ratio = no changed tracks" $
         FS.applyGlides
             (GlideRatio 1)
             [AltitudeAboveGoal $ negate 1]
-            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
-            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 1)]]
 
     , HU.testCase "Out at 1:1 from goal, 1:1 glide ratio = at goal" $
         FS.applyGlides
             (GlideRatio 1)
             [AltitudeAboveGoal 1]
-            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
-            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
+            [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 0)]]
 
     , HU.testCase "Out at 1:1 from goal, 2:1 glide ratio = at goal with no overshoot" $
         FS.applyGlides
             (GlideRatio 2)
             [AltitudeAboveGoal 1]
-            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
-            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
+            [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 0)]]
 
     , HU.testCase "Out at 1:2 from goal, 1:1 glide ratio = halve distance from goal" $
         FS.applyGlides
             (GlideRatio 1)
             [AltitudeAboveGoal 1]
-            [StoppedTrack [(TaskTime 1, DistanceToGoal 2)]]
-            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 2)]]
+            @?= [StoppedTrack [(TaskTime [u| 1 s |], DistanceToGoal 1)]]
     ]
 
 correctTime :: forall a. StopTime a -> TaskStopTime -> Bool
@@ -333,11 +349,11 @@ stopTaskTimeHg (StopTimeTest x@(SingleGateStop _)) =
     correctTime x $ FS.stopTaskTime x
 
 correctCan :: forall a. CanScoreStopped a -> Bool -> Bool
-correctCan (Womens (PilotsInGoalAtStop n) (TaskStopTime t)) canScore
+correctCan (Womens (PilotsAtEss n) (TaskStopTime t)) canScore
     | n >= 1 = canScore
     | t >= 60 * 60 = canScore
     | otherwise = not canScore
-correctCan (GoalOrDuration (PilotsInGoalAtStop n) (TaskStopTime t)) canScore
+correctCan (GoalOrDuration (PilotsAtEss n) (TaskStopTime t)) canScore
     | n >= 1 = canScore
     | t >= 90 * 60 = canScore
     | otherwise = not canScore
@@ -347,7 +363,7 @@ correctCan (FromGetGo (TaskStopTime t)) canScore
 correctCan (FromLastStart [] _) canScore =
     not canScore
 correctCan (FromLastStart xs (TaskStopTime st)) canScore =
-    all (\(TaskTime t) -> st >= t + 60 * 60) xs == canScore
+    all (\(TaskTime (MkQuantity t)) -> st >= t + 60 * 60) xs == canScore
 
 canScoreStoppedHg :: StopCanScoreTest Hg -> Bool
 canScoreStoppedHg (StopCanScoreTest x@(Womens _ _)) =
@@ -361,9 +377,9 @@ canScoreStoppedPg (StopCanScoreTest x@(FromGetGo _)) =
 canScoreStoppedPg (StopCanScoreTest x@(FromLastStart _ _)) =
     correctCan x $ FS.canScoreStopped x
 
-stoppedValidity :: StopValidityTest -> Bool
-stoppedValidity (StopValidityTest (launched, landed, distance, xs)) =
-    (\(StoppedValidity x) -> isNormal x) $ FS.stoppedValidity launched landed distance xs
+stopValidity :: StopValidityTest -> Bool
+stopValidity (StopValidityTest ((launched, atEss, landed, stillFlying, distance), reach)) =
+    (\(StopValidity x, _) -> isNormal x) $ FS.stopValidity launched atEss landed stillFlying reach distance
 
 scoreTimeWindow :: StopWindowTest -> Bool
 scoreTimeWindow (StopWindowTest (taskType, gates, stop@(TaskStopTime st), xs)) =

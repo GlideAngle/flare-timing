@@ -2,10 +2,16 @@ module TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
+import Prelude hiding (max)
+import qualified Prelude (max)
 import Data.Ratio ((%))
 import Data.List (sortBy)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
+import qualified Statistics.Sample as Stats (meanVariance)
+import qualified Data.Vector as V (fromList)
+import Data.UnitsOfMeasure (u, zero)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Ratio (pattern (:%))
 import Flight.Score
@@ -13,7 +19,6 @@ import Flight.Score
     , Aw(..)
     , GoalRatio(..)
     , NominalGoal(..)
-    , MinimumDistance(..)
     , NominalDistance(..)
     , DistanceRatio(..)
     , DistanceWeight(..)
@@ -23,10 +28,10 @@ import Flight.Score
     , TimeValidity(..)
     , DistanceValidity(..)
     , PilotsAtEss(..)
-    , PositionAtEss(..)
+    , ArrivalPlacing(..)
     , BestTime(..)
     , PilotTime(..)
-    , BestDistance(..)
+    , FlownMax(..)
     , PilotDistance(..)
     , TaskTime(..)
     , DistanceToEss(..)
@@ -36,8 +41,8 @@ import Flight.Score
     , LcPoint(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
-    , LaunchToSssPoints(..)
-    , MinimumDistancePoints(..)
+    , LaunchToStartPoints(..)
+    , TooEarlyPoints(..)
     , SecondsPerPoint(..)
     , JumpedTheGun(..)
     , Hg
@@ -54,23 +59,24 @@ import Flight.Score
     , ScoreBackTime(..)
     , AnnouncedTime(..)
     , StartGateInterval(..)
-    , PilotsInGoalAtStop(..)
+    , PilotsAtEss(..)
     , CanScoreStopped(..)
     , TaskStopTime(..)
-    , PilotsLaunched(..)
-    , PilotsLandedBeforeStop(..)
-    , DistanceLaunchToEss(..)
-    , DistanceFlown(..)
+    , PilotsLanded(..)
+    , PilotsFlying(..)
+    , LaunchToEss(..)
+    , PilotDistance(..)
     , TaskType(..)
     , StartGates(..)
     , GlideRatio(..)
     , AltitudeAboveGoal(..)
     , DistanceToGoal(..)
     , StoppedTrack(..)
+    , ReachToggle(..)
+    , ReachStats(..)
+    , FlownMean(..)
+    , FlownStdDev(..)
     )
-
-import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Normal (Normal(..), NormalSum(..))
 import Flight.Units()
@@ -101,13 +107,14 @@ instance QC.Arbitrary NdTest where
             return $ NdTest (NominalDistance $ MkQuantity x)
 
 -- | Leading weight.
-newtype LwTest = LwTest (Lw Rational) deriving Show
+newtype LwTest = LwTest Lw deriving Show
 
 instance Monad m => SC.Serial m LwTest where
-    series = LwTest <$> (xs \/ ys)
+    series = LwTest <$> (xs \/ ys \/ zs)
         where
             xs = cons1 $ \(Normal x) -> LwHg (DistanceWeight x)
-            ys = cons1 $ \(Normal x) -> LwPg (DistanceWeight x)
+            ys = cons1 $ \(Normal r) -> LwPgZ (DistanceRatio r)
+            zs = cons1 $ \(Normal x) -> LwPg (DistanceWeight x)
 
 instance QC.Arbitrary LwTest where
     arbitrary = LwTest <$> arb
@@ -119,25 +126,25 @@ instance QC.Arbitrary LwTest where
                                   , LwPg (DistanceWeight r)
                                   ]
 
--- | Arrival weight for paragliding when goal ratio is zero.
-newtype AwTestPgZ = AwTestPgZ (Aw ()) deriving Show
-
-instance Monad m => SC.Serial m AwTestPgZ where
-    series = cons0 $ AwTestPgZ AwPg
-
-instance QC.Arbitrary AwTestPgZ where
-    arbitrary = arbitrary >>= \() -> return $ AwTestPgZ AwPg
-
 -- | Arrival weight.
-newtype AwTest = AwTest (Aw Rational) deriving Show
+newtype AwTest = AwTest Aw deriving Show
 
 instance Monad m => SC.Serial m AwTest where
-    series = cons1 $ \(Normal x) -> AwTest (AwHg (DistanceWeight x))
+    series = AwTest <$> (xs \/ ys \/ zs)
+        where
+            xs = cons0 AwZero
+            ys = cons1 $ \(Normal x) -> AwHgRank (DistanceWeight x)
+            zs = cons1 $ \(Normal x) -> AwHgTime (DistanceWeight x)
 
 instance QC.Arbitrary AwTest where
-    arbitrary = do
-        (Normal x) <- arbitrary
-        return $ AwTest (AwHg (DistanceWeight x))
+    arbitrary = AwTest <$> arb
+        where
+            arb = do
+                (Normal x) <- arbitrary
+                QC.oneof $ return <$> [ AwZero
+                                      , AwHgRank (DistanceWeight x)
+                                      , AwHgTime (DistanceWeight x)
+                                      ]
 
 -- | Goal ratio.
 newtype GrTest = GrTest GoalRatio deriving Show
@@ -175,17 +182,17 @@ instance QC.Arbitrary TvTest where
         return $ TvTest (LaunchValidity x, DistanceValidity y, TimeValidity z)
 
 -- | Arrival fraction
-newtype AfTest = AfTest (PilotsAtEss, PositionAtEss) deriving Show
+newtype AfTest = AfTest (PilotsAtEss, ArrivalPlacing) deriving Show
 
 instance Monad m => SC.Serial m AfTest where
     series =
         cons1 $ \(Normal (rank :% n)) ->
-             AfTest (PilotsAtEss n, PositionAtEss $ max 1 rank)
+             AfTest (PilotsAtEss n, ArrivalPlacing $ Prelude.max 1 rank)
 
 instance QC.Arbitrary AfTest where
     arbitrary = do
         (Normal (rank :% n)) <- arbitrary
-        return $ AfTest (PilotsAtEss n, PositionAtEss $ max 1 rank)
+        return $ AfTest (PilotsAtEss n, ArrivalPlacing $ Prelude.max 1 rank)
 
 -- | Speed fraction
 newtype SfTest =
@@ -211,10 +218,10 @@ instance QC.Arbitrary SfTest where
             , PilotTime . MkQuantity . fromRational $ (d + n) % 1
             )
 
--- | Linear fraction 
+-- | Linear fraction
 newtype LfTest =
     LfTest
-        ( BestDistance (Quantity Double [u| km |])
+        ( FlownMax (Quantity Double [u| km |])
         , PilotDistance (Quantity Double [u| km |])
         )
     deriving Show
@@ -223,7 +230,7 @@ instance Monad m => SC.Serial m LfTest where
     series =
         cons1 $ \(Normal ((n :% d) :: Rational))  ->
              LfTest
-                 ( BestDistance . MkQuantity . fromIntegral $ d + n
+                 ( FlownMax . MkQuantity . fromIntegral $ d + n
                  , PilotDistance . MkQuantity . fromIntegral $ d
                  )
 
@@ -231,15 +238,14 @@ instance QC.Arbitrary LfTest where
     arbitrary = do
         (Normal ((n :% d) :: Rational)) <- arbitrary
         return . LfTest $
-            ( BestDistance . MkQuantity . fromIntegral $ d + n
+            ( FlownMax . MkQuantity . fromIntegral $ d + n
             , PilotDistance . MkQuantity . fromIntegral $ d
             )
 
 -- | Difficulty fraction
 newtype DfTest =
     DfTest
-        ( MinimumDistance (Quantity Double [u| km |])
-        , BestDistance (Quantity Double [u| km |])
+        ( FlownMax (Quantity Double [u| km |])
         , [PilotDistance (Quantity Double [u| km |])]
         )
     deriving Show
@@ -249,15 +255,13 @@ mkDfTest xs =
     case toRational <$> sortBy (flip compare) (abs <$> xs) of
         [] ->
             DfTest
-                ( MinimumDistance . MkQuantity $ 0
-                , BestDistance . MkQuantity $ 0
+                ( FlownMax . MkQuantity $ 0
                 , []
                 )
 
         ys ->
             DfTest
-                ( MinimumDistance . MkQuantity . fromRational $ minimum ys
-                , BestDistance . MkQuantity . fromRational $ maximum ys
+                ( FlownMax . MkQuantity . fromRational $ maximum ys
                 , PilotDistance . MkQuantity . fromRational <$> reverse ys
                 )
 
@@ -275,12 +279,12 @@ newtype LcCleanTest = LcCleanTest (LengthOfSs, LcTrack) deriving Show
 mkLcTrack :: [Int] -> LcTrack
 mkLcTrack xs =
     case toRational <$> xs of
-         [] -> LcSeq [] Nothing
+         [] -> LcSeq []
          ys ->
-             LcSeq{seq = pts, extra = Nothing}
+             LcSeq{seq = pts}
              where
-                 ts = TaskTime <$> [1 .. ]
-                 ds = DistanceToEss <$> ys
+                 ts = TaskTime . MkQuantity <$> [1 .. ]
+                 ds = DistanceToEss . MkQuantity <$> ys
                  pts =
                      zipWith
                          (\t d -> LcPoint{leg = RaceLeg 0, mark = t, togo = d})
@@ -289,7 +293,7 @@ mkLcTrack xs =
 
 mkLcCleanTest :: Rational -> [Int] -> LcCleanTest
 mkLcCleanTest len xs =
-    LcCleanTest (LengthOfSs len, mkLcTrack xs)
+    LcCleanTest (LengthOfSs $ MkQuantity len, mkLcTrack xs)
 
 instance Monad m => SC.Serial m LcCleanTest where
     series = cons2 (\(SC.Positive len) xs -> mkLcCleanTest len xs)
@@ -305,7 +309,7 @@ newtype LcTest = LcTest (TaskDeadline, LengthOfSs, [LcTrack]) deriving Show
 
 mkLcTest :: Rational -> Rational -> [[Int]] -> LcTest
 mkLcTest deadline len xs =
-    LcTest (TaskDeadline deadline, LengthOfSs len, mkLcTrack <$> xs)
+    LcTest (TaskDeadline $ MkQuantity deadline, LengthOfSs $ MkQuantity len, mkLcTrack <$> xs)
 
 instance Monad m => SC.Serial m LcTest where
     series =
@@ -341,17 +345,17 @@ instance Monad m => SC.Serial m (PtTest Hg) where
                     , distance = DistancePoints d
                     , leading = LeadingPoints l
                     , time = TimePoints t
-                    , arrival = ArrivalPoints a 
+                    , arrival = ArrivalPoints a
                     }
 
             penalty =
                 cons0 Nothing
                 \/ cons1 (\(SC.Positive mdp) ->
-                        Just $ JumpedTooEarly (MinimumDistancePoints mdp))
+                        Just $ JumpedTooEarly (TooEarlyPoints mdp))
                 \/ cons2 (\(SC.Positive spp) (SC.Positive jtg) ->
-                        Just $ Jumped (SecondsPerPoint spp) (JumpedTheGun jtg))
+                        Just $ Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
                 \/ cons2 (\(SC.Positive spp) (SC.Positive jtg) ->
-                        Just $ JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg))
+                        Just $ JumpedNoGoal (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
                 \/ cons0 (Just NoGoalHg)
 
 instance Monad m => SC.Serial m (PtTest Pg) where
@@ -377,7 +381,7 @@ instance Monad m => SC.Serial m (PtTest Pg) where
 
             penalty =
                 cons0 Nothing
-                \/ cons1 (\(SC.Positive lts) -> Just $ Early (LaunchToSssPoints lts))
+                \/ cons1 (\(SC.Positive lts) -> Just $ Early (LaunchToStartPoints lts))
 
 newtype PointParts = PointParts Points deriving Show
 
@@ -406,20 +410,20 @@ instance QC.Arbitrary (PtTest Hg) where
                         QC.oneof
                             [ do
                                 (QC.Positive mdp) <- arbitrary
-                                return $ JumpedTooEarly (MinimumDistancePoints mdp)
+                                return $ JumpedTooEarly (TooEarlyPoints mdp)
                             , do
                                 (QC.Positive spp) <- arbitrary
                                 (QC.Positive jtg) <- arbitrary
-                                return $ Jumped (SecondsPerPoint spp) (JumpedTheGun jtg)
+                                return $ Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg)
                             , do
                                 (QC.Positive spp) <- arbitrary
                                 (QC.Positive jtg) <- arbitrary
-                                return $ JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg)
+                                return $ JumpedNoGoal (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg)
                             , return NoGoalHg
                             ]
 
                     return $ Just x
-                ] 
+                ]
 
         (PointParts parts) <- arbitrary
 
@@ -434,7 +438,7 @@ instance QC.Arbitrary (PtTest Pg) where
                     x <- QC.oneof
                             [ do
                                 (QC.Positive lts) <- arbitrary
-                                return $ Early (LaunchToSssPoints lts)
+                                return $ Early (LaunchToStartPoints lts)
                             , return NoGoalPg
                             ]
 
@@ -484,16 +488,16 @@ newtype StopCanScoreTest a = StopCanScoreTest (CanScoreStopped a) deriving Show
 instance Monad m => SC.Serial m (StopCanScoreTest Hg) where
     series = StopCanScoreTest <$>
                 cons2 (\(SC.Positive n) (SC.Positive t) ->
-                    Womens (PilotsInGoalAtStop n) (TaskStopTime t))
+                    Womens (PilotsAtEss n) (TaskStopTime t))
                 \/ cons2 (\(SC.Positive n) (SC.Positive t) ->
-                    GoalOrDuration (PilotsInGoalAtStop n) (TaskStopTime t))
+                    GoalOrDuration (PilotsAtEss n) (TaskStopTime t))
 
 instance Monad m => SC.Serial m (StopCanScoreTest Pg) where
     series = StopCanScoreTest <$>
                 cons1 (\(SC.Positive t) ->
                     FromGetGo (TaskStopTime t))
                 \/ cons2 (\xs (SC.Positive t) ->
-                    FromLastStart ((\(SC.Positive x) -> TaskTime (x % 1)) <$> xs) (TaskStopTime t))
+                    FromLastStart ((\(SC.Positive x) -> TaskTime $ MkQuantity x) <$> xs) (TaskStopTime t))
 
 instance QC.Arbitrary (StopCanScoreTest Hg) where
     arbitrary = StopCanScoreTest <$>
@@ -501,11 +505,11 @@ instance QC.Arbitrary (StopCanScoreTest Hg) where
             [ do
                 (QC.Positive n) <- arbitrary
                 (QC.Positive t) <- arbitrary
-                return $ Womens (PilotsInGoalAtStop n) (TaskStopTime t)
+                return $ Womens (PilotsAtEss n) (TaskStopTime t)
             , do
                 (QC.Positive n) <- arbitrary
                 (QC.Positive t) <- arbitrary
-                return $ GoalOrDuration (PilotsInGoalAtStop n) (TaskStopTime t)
+                return $ GoalOrDuration (PilotsAtEss n) (TaskStopTime t)
             ]
 
 instance QC.Arbitrary (StopCanScoreTest Pg) where
@@ -517,40 +521,77 @@ instance QC.Arbitrary (StopCanScoreTest Pg) where
             , do
                 (QC.Positive t) <- arbitrary
                 xs <- listOf $ choose (1, 10000)
-                return $ FromLastStart ((\x -> TaskTime (x % 1)) <$> xs) (TaskStopTime t)
+                return $ FromLastStart ((\x -> TaskTime . MkQuantity $ x % 1) <$> xs) (TaskStopTime t)
             ]
 
+mkReachStats :: [Double] -> ReachToggle ReachStats
+
+mkReachStats [] =
+    let x =
+            ReachStats
+                { max = FlownMax zero
+                , mean = FlownMean zero
+                , stdDev = FlownStdDev zero
+                }
+
+    in ReachToggle{extra = x, flown = x}
+
+mkReachStats xs =
+    let (xsMean, xsVariance) = Stats.meanVariance $ V.fromList xs
+        x =
+            ReachStats
+                { max = FlownMax . MkQuantity $ maximum xs
+                , mean = FlownMean $ MkQuantity xsMean
+                , stdDev = FlownStdDev . MkQuantity $ sqrt xsVariance
+                }
+
+    in ReachToggle{extra = x, flown = x}
+
 -- | Stopped task validity.
-newtype StopValidityTest = StopValidityTest ( PilotsLaunched
-                                            , PilotsLandedBeforeStop
-                                            , DistanceLaunchToEss
-                                            , [DistanceFlown]
-                                            ) deriving Show
+newtype StopValidityTest =
+    StopValidityTest
+        (
+            ( PilotsFlying
+            , PilotsAtEss
+            , PilotsLanded
+            , PilotsFlying
+            , LaunchToEss (Quantity Double [u| km |])
+            )
+        ,
+            ReachToggle ReachStats
+        )
+        deriving Show
 
 instance Monad m => SC.Serial m StopValidityTest where
-    series = StopValidityTest <$>
-                cons4 (\(SC.NonNegative notLanded)
+    series = decDepth $ curry StopValidityTest <$> x <~> cons1 mkReachStats
+        where
+            x = cons4 (\(SC.NonNegative notLanded)
+                        (SC.NonNegative atEss)
                         (SC.NonNegative landed)
-                        (SC.Positive d)
-                        
-                        xs->
-                            ( PilotsLaunched (notLanded + landed)
-                            , PilotsLandedBeforeStop landed
-                            , DistanceLaunchToEss d
-                            , (\x -> DistanceFlown $ x % 1) <$> xs
-                            ))
+                        (SC.Positive d) ->
+                            ( PilotsFlying (notLanded + atEss + landed)
+                            , PilotsAtEss $ fromIntegral atEss
+                            , PilotsLanded $ fromIntegral landed
+                            , PilotsFlying notLanded
+                            , LaunchToEss $ MkQuantity d))
 
 instance QC.Arbitrary StopValidityTest where
     arbitrary = StopValidityTest <$> do
         (QC.NonNegative notLanded) <- arbitrary
+        (QC.NonNegative atEss) <- arbitrary
         (QC.NonNegative landed) <- arbitrary
         (QC.Positive d) <- arbitrary
         xs <- listOf $ choose (1, 10000)
-        return ( PilotsLaunched (notLanded + landed)
-               , PilotsLandedBeforeStop landed
-               , DistanceLaunchToEss d
-               , (\x -> DistanceFlown $ x % 1) <$> xs
-               )
+
+        let x =
+                ( PilotsFlying (notLanded + atEss + landed)
+                , PilotsAtEss $ fromIntegral atEss
+                , PilotsLanded $ fromIntegral landed
+                , PilotsFlying notLanded
+                , LaunchToEss $ MkQuantity d
+                )
+
+        return (x, mkReachStats xs)
 
 -- | Stopped task, score time window.
 newtype StopWindowTest = StopWindowTest ( TaskType
@@ -567,7 +608,7 @@ instance Monad m => SC.Serial m StopWindowTest where
         SC.><
         cons1 (\(SC.NonNegative x) -> TaskStopTime x)
         SC.><
-        cons1 (\xs -> (\(SC.NonNegative x) -> TaskTime x) <$> xs)
+        cons1 (\xs -> (\(SC.NonNegative x) -> TaskTime $ MkQuantity x) <$> xs)
 
 instance QC.Arbitrary StopWindowTest where
     arbitrary = StopWindowTest <$> do
@@ -578,7 +619,7 @@ instance QC.Arbitrary StopWindowTest where
         return ( taskType
                , StartGates gates
                , TaskStopTime stop
-               , (\x -> TaskTime $ x % 1) <$> xs
+               , (\x -> TaskTime . MkQuantity $ x % 1) <$> xs
                )
 
 -- | Stopped task, apply glide.
@@ -595,7 +636,7 @@ instance Monad m => SC.Serial m StopGlideTest where
         SC.><
         cons1 (StoppedTrack .
                 zipWith
-                    (\t (SC.NonNegative d) -> (TaskTime t, DistanceToGoal d))
+                    (\t (SC.NonNegative d) -> (TaskTime $ MkQuantity t, DistanceToGoal d))
                     [1 .. ])
 
 instance QC.Arbitrary StopGlideTest where
@@ -607,7 +648,7 @@ instance QC.Arbitrary StopGlideTest where
                , AltitudeAboveGoal altitude
                , StoppedTrack $
                    zipWith
-                       (\t d -> (TaskTime t, DistanceToGoal $ d % 1))
+                       (\t d -> (TaskTime $ MkQuantity t, DistanceToGoal $ d % 1))
                        [1 .. ]
                        xs
                )

@@ -10,7 +10,8 @@ import Flight.Score
     , NominalTime(..)
     , BestTime(..)
     , NominalDistance(..)
-    , BestDistance(..)
+    , FlownMax(..)
+    , ReachToggle(..)
     , isNormal
     )
 
@@ -31,7 +32,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
             (Just . BestTime . MkQuantity $ 0)
             (Just . BestTime . MkQuantity $ 0)
             (NominalDistance . MkQuantity $ 0)
-            (BestDistance . MkQuantity $ 0))
+            (let d = (FlownMax . MkQuantity $ 0) in ReachToggle d d))
         @?= TimeValidity 0
 
     , HU.testCase "Time validity 1 0 (Just 1) 0 = 1" $
@@ -42,7 +43,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
             (Just . BestTime . MkQuantity $ 1)
             (Just . BestTime . MkQuantity $ 1)
             (NominalDistance . MkQuantity $ 0)
-            (BestDistance . MkQuantity $ 0))
+            (let d = (FlownMax . MkQuantity $ 0) in ReachToggle d d))
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 1 1 (Just 1) 1 = 1" $
@@ -53,7 +54,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
             (Just . BestTime . MkQuantity $ 1)
             (Just . BestTime . MkQuantity $ 1)
             (NominalDistance . MkQuantity $ 1)
-            (BestDistance . MkQuantity $ 1))
+            (let d = (FlownMax . MkQuantity $ 1) in ReachToggle d d))
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 0 0 Nothing 0 = 0" $
@@ -64,7 +65,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
             Nothing
             Nothing
             (NominalDistance . MkQuantity $ 0)
-            (BestDistance . MkQuantity $ 0))
+            (let d = (FlownMax . MkQuantity $ 0) in ReachToggle d d))
         @?= TimeValidity 0
 
     , HU.testCase "Time validity 0 1 Nothing 1 = 1" $
@@ -75,7 +76,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
             Nothing
             Nothing
             (NominalDistance . MkQuantity $ 1)
-            (BestDistance . MkQuantity $ 1))
+            (let d = (FlownMax . MkQuantity $ 1) in ReachToggle d d))
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 1 1 Nothing 1 = 1" $
@@ -86,7 +87,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
             Nothing
             Nothing
             (NominalDistance . MkQuantity $ 1)
-            (BestDistance . MkQuantity $ 1))
+            (let d = (FlownMax . MkQuantity $ 1) in ReachToggle d d))
         @?= TimeValidity 1
     ]
 
@@ -95,7 +96,7 @@ timeValidity
     -> Maybe (BestTime (Quantity Double [u| s |]))
     -> Maybe (BestTime (Quantity Double [u| s |]))
     -> NominalDistance (Quantity Double [u| km |])
-    -> BestDistance (Quantity Double [u| km |])
+    -> ReachToggle (FlownMax (Quantity Double [u| km |]))
     -> Bool
 timeValidity nt ssT gsT nd d =
     (\(TimeValidity x) -> isNormal x) . fst
@@ -119,7 +120,7 @@ scTimeValidity
         ((\(SC.NonNegative x) -> BestTime . MkQuantity $ x) <$> ssT)
         ((\(SC.NonNegative x) -> BestTime . MkQuantity $ x) <$> gsT)
         (NominalDistance . MkQuantity $ nd)
-        (BestDistance . MkQuantity $ d)
+        (let d' = (FlownMax . MkQuantity $ d) in ReachToggle d' d')
 
 qcTimeValidity
     :: QC.NonNegative Double 
@@ -139,4 +140,4 @@ qcTimeValidity
         ((\(QC.NonNegative x) -> BestTime . MkQuantity $ x) <$> ssT)
         ((\(QC.NonNegative x) -> BestTime . MkQuantity $ x) <$> gsT)
         (NominalDistance . MkQuantity $ nd)
-        (BestDistance . MkQuantity $ d)
+        (let d' = (FlownMax . MkQuantity $ d) in ReachToggle d' d')
