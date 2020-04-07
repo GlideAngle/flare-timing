@@ -230,6 +230,7 @@ data PointsReduced =
         , effectivePenalties :: [PointPenalty]
         , effectivePenaltiesJump :: [PointPenalty]
         }
+        deriving Show
 
 taskPoints
     :: forall a. Maybe (Penalty a)
