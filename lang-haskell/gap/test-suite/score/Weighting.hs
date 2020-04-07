@@ -39,7 +39,7 @@ weightingUnits = testGroup "Weighting unit tests"
         FS.arrivalWeight (AwHgRank (DistanceWeight 1)) @?= ArrivalWeight 0
 
     , HU.testCase "0 distance weight, Hg = 0.8 arrival by time weight" $
-        FS.arrivalWeight (AwHgTime (DistanceWeight 0)) @?= ArrivalWeight (1 % 8)
+        FS.arrivalWeight (AwHgTime (DistanceWeight 0)) @?= ArrivalWeight (1 % 4)
 
     , HU.testCase "1 distance weight, Hg = 0 arrival by time weight" $
         FS.arrivalWeight (AwHgTime (DistanceWeight 1)) @?= ArrivalWeight 0
