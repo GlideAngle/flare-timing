@@ -1,5 +1,32 @@
     let defs = ./../defaults.dhall
 
+in  let testdeps =
+          [ "base"
+          , "containers"
+          , "vector"
+          , "statistics"
+          , "aeson"
+          , "newtype"
+          , "scientific"
+          , "uom-plugin"
+          , "detour-via-sci"
+          , "detour-via-uom"
+          , "siggy-chardust"
+          , "flight-units"
+          , "tasty"
+          , "tasty-hunit"
+          , "tasty-quickcheck"
+          , "tasty-smallcheck"
+          , "smallcheck"
+          ]
+
+in  let testopts =
+          [ "-rtsopts"
+          , "-threaded"
+          , "-with-rtsopts=-N"
+          , "-fplugin Data.UnitsOfMeasure.Plugin"
+          ]
+
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
@@ -40,40 +67,59 @@ in    defs
           }
       , tests =
             ./../default-tests.dhall
-          ⫽ { score =
+          ⫽ { effort =
                 { dependencies =
-                    [ "base"
-                    , "containers"
-                    , "vector"
-                    , "statistics"
-                    , "aeson"
-                    , "newtype"
-                    , "scientific"
-                    , "uom-plugin"
-                    , "detour-via-sci"
-                    , "detour-via-uom"
-                    , "siggy-chardust"
-                    , "flight-units"
-                    , "tasty"
-                    , "tasty-hunit"
-                    , "tasty-quickcheck"
-                    , "tasty-smallcheck"
-                    , "smallcheck"
-                    ]
+                    testdeps
                 , ghc-options =
-                    [ "-rtsopts"
-                    , "-threaded"
-                    , "-with-rtsopts=-N"
-                    , "-fplugin Data.UnitsOfMeasure.Plugin"
-                    ]
+                    testopts
                 , main =
-                    "Score.hs"
+                    "EffortTestMain.hs"
                 , source-dirs =
-                    [ "library", "test-suite-score" ]
+                    [ "library", "test-suite/test", "test-suite/effort" ]
+                }
+            , leading =
+                { dependencies =
+                    testdeps
+                , ghc-options =
+                    testopts
+                , main =
+                    "LeadingTestMain.hs"
+                , source-dirs =
+                    [ "library", "test-suite/test", "test-suite/leading" ]
+                }
+            , score =
+                { dependencies =
+                    testdeps
+                , ghc-options =
+                    testopts
+                , main =
+                    "ScoreTestMain.hs"
+                , source-dirs =
+                    [ "library", "test-suite/test", "test-suite/score" ]
+                }
+            , stop =
+                { dependencies =
+                    testdeps
+                , ghc-options =
+                    testopts
+                , main =
+                    "StopTestMain.hs"
+                , source-dirs =
+                    [ "library", "test-suite/test", "test-suite/stop" ]
+                }
+            , validity =
+                { dependencies =
+                    testdeps
+                , ghc-options =
+                    testopts
+                , main =
+                    "ValidityTestMain.hs"
+                , source-dirs =
+                    [ "library", "test-suite/test", "test-suite/validity" ]
                 }
             , doctest =
                 { dependencies =
-                    defs.dependencies # [ "doctest" ]
+                    defs.dependencies # [ "QuickCheck", "doctest" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =

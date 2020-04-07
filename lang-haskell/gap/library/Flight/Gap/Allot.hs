@@ -27,37 +27,37 @@ import Flight.Gap.Equation (powerFraction, arrivalTimePowerFraction)
 -- | Given the placing and the number of pilots making the end of the speed
 -- section, work out the arrival fraction.
 --
--- >>> arrivalFraction (PilotsAtEss 1) (ArrivalPlacing 1)
+-- >>> arrivalRankFraction (PilotsAtEss 1) (ArrivalPlacing 1)
 -- ArrivalFraction (1 % 1)
--- >>> arrivalFraction (PilotsAtEss 100) (ArrivalPlacing 1)
+-- >>> arrivalRankFraction (PilotsAtEss 100) (ArrivalPlacing 1)
 -- ArrivalFraction (1 % 1)
 --
--- >>> arrivalFraction (PilotsAtEss 4) (ArrivalPlacing 2)
+-- >>> arrivalRankFraction (PilotsAtEss 4) (ArrivalPlacing 2)
 -- ArrivalFraction (36347 % 64000)
 -- >>> fromRational $ 36347 % 64000
 -- 0.567921875
 --
--- >>> arrivalFraction (PilotsAtEss 4) (ArrivalPlacing 3)
+-- >>> arrivalRankFraction (PilotsAtEss 4) (ArrivalPlacing 3)
 -- ArrivalFraction (2641 % 8000)
 -- >>> fromRational $ 2641 % 8000
 -- 0.330125
 --
--- >>> arrivalFraction (PilotsAtEss 4) (ArrivalPlacing 4)
+-- >>> arrivalRankFraction (PilotsAtEss 4) (ArrivalPlacing 4)
 -- ArrivalFraction (2909 % 12800)
 -- >>> fromRational $ 2909 % 12800
 -- 0.227265625
 --
--- >>> arrivalFraction (PilotsAtEss 4) (ArrivalPlacingEqual 3 2)
+-- >>> arrivalRankFraction (PilotsAtEss 4) (ArrivalPlacingEqual 3 2)
 -- ArrivalFraction (27191 % 102400)
 -- >>> fromRational $ 27191 % 102400
 -- 0.265537109375
 --
--- >>> arrivalFraction (PilotsAtEss 4) (ArrivalPlacingEqual 2 3)
+-- >>> arrivalRankFraction (PilotsAtEss 4) (ArrivalPlacingEqual 2 3)
 -- ArrivalFraction (2641 % 8000)
 -- >>> fromRational $ 2641 % 8000
 -- 0.330125
 --
--- >>> arrivalFraction (PilotsAtEss 4) (ArrivalPlacingEqual 1 4)
+-- >>> arrivalRankFraction (PilotsAtEss 4) (ArrivalPlacingEqual 1 4)
 -- ArrivalFraction (43873 % 102400)
 -- >>> fromRational $ 43873 % 102400
 -- 0.428447265625

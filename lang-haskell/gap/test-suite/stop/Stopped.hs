@@ -1,14 +1,12 @@
 module Stopped
     ( stoppedTimeUnits
     , stoppedScoreUnits
-    , stopValidityUnits
     , scoreTimeWindowUnits
     , applyGlideUnits
     , stopTaskTimeHg
     , stopTaskTimePg
     , canScoreStoppedHg
     , canScoreStoppedPg
-    , stopValidity
     , scoreTimeWindow
     , applyGlide
     ) where
@@ -89,89 +87,6 @@ stoppedScoreUnits = testGroup "Can score a stopped task?"
 
     , HU.testCase "When the last start was an hour before stop, Pg" $
         FS.canScoreStopped(FromLastStart [TaskTime [u| 0 s |]] (TaskStopTime $ 60 * 60)) @?= True
-    ]
-
-stopValidityUnits :: TestTree
-stopValidityUnits = testGroup "Is a stopped task valid?"
-    [ HU.testCase "Not when noone launches" $
-        ((FS.stopValidity
-            (PilotsFlying 0)
-            (PilotsAtEss 0)
-            (PilotsLanded 0)
-            (PilotsFlying 1)
-            (mkReachStats [])
-            (LaunchToEss [u| 1 km |])) & fst)
-            @?= StopValidity 0
-
-    , HU.testCase "When everyone makes ESS, one pilot launched and is still flying = 0 validity" $
-        ((FS.stopValidity
-            (PilotsFlying 1)
-            (PilotsAtEss 1)
-            (PilotsLanded 0)
-            (PilotsFlying 1)
-            (mkReachStats [1])
-            (LaunchToEss [u| 1 km |])) & fst)
-            @?= StopValidity 1
-
-    , HU.testCase "When everyone makes ESS, one pilot launched and has landed = 1 validity" $
-        ((FS.stopValidity
-            (PilotsFlying 1)
-            (PilotsAtEss 2)
-            (PilotsLanded 1)
-            (PilotsFlying 0)
-            (mkReachStats [1])
-            (LaunchToEss [u| 1 km |])) & fst)
-            @?= StopValidity 1
-
-    , HU.testCase "When everyone makes ESS, two pilots launched, both still flying = 0 validity" $
-        ((FS.stopValidity
-            (PilotsFlying 2)
-            (PilotsAtEss 2)
-            (PilotsLanded 0)
-            (PilotsFlying 2)
-            (mkReachStats [1, 1])
-            (LaunchToEss [u| 1 km |])) & fst)
-            @?= StopValidity 1
-
-    , HU.testCase "When everyone makes ESS, two pilots launched, noone still flying = 1 validity" $
-        ((FS.stopValidity
-            (PilotsFlying 2)
-            (PilotsAtEss 2)
-            (PilotsLanded 2)
-            (PilotsFlying 0)
-            (mkReachStats [1, 1])
-            (LaunchToEss [u| 1 km |])) & fst)
-            @?= StopValidity 1
-
-    , HU.testCase "When everyone makes ESS, two pilots launched, one still flying = 0.5 validity" $
-        ((FS.stopValidity
-            (PilotsFlying 2)
-            (PilotsAtEss 2)
-            (PilotsLanded 1)
-            (PilotsFlying 1)
-            (mkReachStats [1, 1])
-            (LaunchToEss [u| 1 km |])) & fst)
-            @?= StopValidity 1
-
-    , HU.testCase "When one makes ESS, one still flying at launch point = 0.93 validity" $
-        ((FS.stopValidity
-            (PilotsFlying 2)
-            (PilotsAtEss 1)
-            (PilotsLanded 0)
-            (PilotsFlying 1)
-            (mkReachStats [1, 0])
-            (LaunchToEss [u| 1 km |])) & fst)
-            @?= StopValidity 1
-
-    , HU.testCase "When one makes ESS, one still flying on course halfway to ESS = 0.93 validity" $
-        ((FS.stopValidity
-            (PilotsFlying 2)
-            (PilotsAtEss 1)
-            (PilotsLanded 0)
-            (PilotsFlying 1)
-            (mkReachStats [2, 1])
-            (LaunchToEss [u| 1 km |])) & fst)
-            @?= StopValidity 1
     ]
 
 scoreTimeWindowUnits :: TestTree
@@ -376,10 +291,6 @@ canScoreStoppedPg (StopCanScoreTest x@(FromGetGo _)) =
     correctCan x $ FS.canScoreStopped x
 canScoreStoppedPg (StopCanScoreTest x@(FromLastStart _ _)) =
     correctCan x $ FS.canScoreStopped x
-
-stopValidity :: StopValidityTest -> Bool
-stopValidity (StopValidityTest ((launched, atEss, landed, stillFlying, distance), reach)) =
-    (\(StopValidity x, _) -> isNormal x) $ FS.stopValidity launched atEss landed stillFlying reach distance
 
 scoreTimeWindow :: StopWindowTest -> Bool
 scoreTimeWindow (StopWindowTest (taskType, gates, stop@(TaskStopTime st), xs)) =

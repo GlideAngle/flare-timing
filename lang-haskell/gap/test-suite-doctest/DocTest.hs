@@ -13,6 +13,7 @@ arguments =
     , "library/Flight/Gap/Fraction/Speed.hs"
     , "library/Flight/Gap/Fraction/Difficulty.hs"
     , "library/Flight/Gap/Place/Arrival.hs"
+    , "library/Flight/Gap/Time/Arrival.hs"
     , "library/Flight/Gap/Time/Best.hs"
     , "library/Flight/Gap/Time/Pilot.hs"
     , "library/Flight/Gap/Allot.hs"
