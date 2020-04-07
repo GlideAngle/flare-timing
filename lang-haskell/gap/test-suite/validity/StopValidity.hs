@@ -19,7 +19,7 @@ import TestNewtypes
 
 stopValidityUnits :: TestTree
 stopValidityUnits = testGroup "Is a stopped task valid?"
-    [ HU.testCase "Not when noone launches" $
+    [ HU.testCase "Not when no one launches" $
         ((FS.stopValidity
             (PilotsFlying 0)
             (PilotsAtEss 0)

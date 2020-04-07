@@ -393,6 +393,7 @@ stopValidity
                 }
         }
     ed'@(LaunchToEss ed)
+    | flying == 0 = (StopValidity 0, Nothing)
     | ess > 0 = (StopValidity 1, Just w)
     | otherwise = (StopValidity $ Stats.min 1 (toRational $ unQuantity a + b**3), Just w)
         where
