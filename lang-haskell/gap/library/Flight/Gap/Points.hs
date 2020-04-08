@@ -11,28 +11,19 @@ module Flight.Gap.Points
     , Hg
     , Pg
     , Penalty(..)
-    , PointPenalty(..)
     , Points(..)
     , PointsReduced(..)
     , zeroPoints
     , taskPoints
     , taskPointsSubtotal
-    , applyFractionalPenalties
-    , applyPointPenalties
-    , applyResetPenalties
-    , applyPenalties
     , availablePoints
     , jumpTheGunPenaltyHg
     , jumpTheGunPenaltyPg
     ) where
 
 import Data.Ratio ((%))
-import Data.List (partition, foldl')
 import GHC.Generics (Generic)
-import Data.Aeson
-    ( ToJSON(..), FromJSON(..), Options(..), SumEncoding(..)
-    , genericToJSON, genericParseJSON, defaultOptions
-    )
+import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure ((/:), u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -50,6 +41,8 @@ import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
 import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerPoint(..))
+import Flight.Gap.Penalty
+    (PointPenalty(..), applyFractionalPenalties, applyPointPenalties, applyPenalties)
 
 -- NOTE: Reset points are the final points awarded and so can be ints.
 newtype LaunchToStartPoints = LaunchToStartPoints Int
@@ -81,29 +74,6 @@ data Penalty a where
     NoGoalHg :: Penalty Hg
     Early :: LaunchToStartPoints -> Penalty Pg
     NoGoalPg :: Penalty Pg
-
-data PointPenalty
-    = PenaltyPoints Double
-    | PenaltyFraction Double
-    | PenaltyReset Int
-    deriving (Eq, Ord, Show, Generic)
-
-pointPenaltyOptions :: Options
-pointPenaltyOptions =
-    defaultOptions
-        { sumEncoding = ObjectWithSingleField
-        , constructorTagModifier = \case
-            "PenaltyPoints" -> "penalty-points"
-            "PenaltyFraction" -> "penalty-fraction"
-            "PenaltyReset" -> "penalty-reset"
-            s -> s
-        }
-
-instance ToJSON PointPenalty where
-    toJSON = genericToJSON pointPenaltyOptions
-
-instance FromJSON PointPenalty where
-    parseJSON = genericParseJSON pointPenaltyOptions
 
 deriving instance Eq (Penalty a)
 deriving instance Show (Penalty a)
@@ -303,75 +273,6 @@ taskPointsSubtotal
         , arrival = ArrivalPoints a
         } =
     TaskPoints $ r + e + l + t + a
-
--- | Applies only fractional penalties.
-applyFractionalPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
-applyFractionalPenalties xs ps =
-    foldl' applyPenalty ps fracs
-    where
-        (fracs, _) =
-            partition
-                (\case
-                    PenaltyFraction _ -> True
-                    PenaltyPoints _ -> False
-                    PenaltyReset _ -> False)
-                xs
-
--- | Applies only point penalties.
-applyPointPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
-applyPointPenalties xs ps =
-    foldl' applyPenalty ps points
-    where
-        (points, _) =
-            partition
-                (\case
-                    PenaltyFraction _ -> False
-                    PenaltyPoints _ -> True
-                    PenaltyReset _ -> False)
-                xs
-
--- | Applies only reset penalties.
-applyResetPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
-applyResetPenalties xs ps =
-    foldl' applyPenalty ps resets
-    where
-        (resets, _) =
-            partition
-                (\case
-                    PenaltyFraction _ -> False
-                    PenaltyPoints _ -> False
-                    PenaltyReset _ -> True)
-                xs
-
--- | Applies the penalties, fractional ones before absolute ones and finally
--- the reset ones.
-applyPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
-applyPenalties xs ps =
-    foldl' applyPenalty (foldl' applyPenalty (foldl' applyPenalty ps fracs) points) resets
-    where
-        (fracs, ys) =
-            partition
-                (\case
-                    PenaltyFraction _ -> True
-                    PenaltyPoints _ -> False
-                    PenaltyReset _ -> False)
-                xs
-
-        (resets, points) =
-            partition
-                (\case
-                    PenaltyFraction _ -> False
-                    PenaltyPoints _ -> False
-                    PenaltyReset _ -> True)
-                ys
-
-applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
-applyPenalty (TaskPoints p) (PenaltyPoints n) =
-    TaskPoints . max 0 $ p - (toRational n)
-applyPenalty (TaskPoints p) (PenaltyFraction n) =
-    TaskPoints . max 0 $ p - p * (toRational n)
-applyPenalty (TaskPoints p) (PenaltyReset n) =
-    TaskPoints . max 0 . min p $ fromIntegral n
 
 availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePoints (TaskValidity tv) Weights{..} =

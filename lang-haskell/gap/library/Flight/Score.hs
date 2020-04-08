@@ -260,4 +260,5 @@ import Flight.Gap.Weight.Arrival
 import Flight.Gap.Weight.Time
 import Flight.Gap.Weighting
 import Flight.Gap.Points
+import Flight.Gap.Penalty
 import Flight.Gap.Stopped

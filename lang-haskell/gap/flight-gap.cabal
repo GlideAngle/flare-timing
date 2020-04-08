@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 49a3966d50f28813e159a2b61cdcc720615d7f39eedceb41dc9bb1592829beac
+-- hash: b0126f3df1f2cf132af8081f2a8fe731c8b238b8380c9b160c0cc59747c7f727
 
 name:           flight-gap
 version:        0.1.0
@@ -60,6 +60,7 @@ library
       Flight.Gap.Leading.Scaling
       Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -142,6 +143,7 @@ test-suite doctest
       Flight.Gap.Leading.Scaling
       Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -228,6 +230,7 @@ test-suite effort
       Flight.Gap.Leading.Scaling
       Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -323,6 +326,7 @@ test-suite leading
       Flight.Gap.Leading.Scaling
       Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -418,6 +422,7 @@ test-suite score
       Flight.Gap.Leading.Scaling
       Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -517,6 +522,7 @@ test-suite stop
       Flight.Gap.Leading.Scaling
       Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -612,6 +618,7 @@ test-suite validity
       Flight.Gap.Leading.Scaling
       Flight.Gap.Leading1Area
       Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
