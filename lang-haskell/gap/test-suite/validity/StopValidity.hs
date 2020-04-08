@@ -19,7 +19,7 @@ import TestNewtypes
 
 stopValidityUnits :: TestTree
 stopValidityUnits = testGroup "Is a stopped task valid?"
-    [ HU.testCase "Not when no one launches" $
+    [ HU.testCase "Not when no one launches = 0 validity" $
         ((FS.stopValidity
             (PilotsFlying 0)
             (PilotsAtEss 0)
@@ -29,7 +29,7 @@ stopValidityUnits = testGroup "Is a stopped task valid?"
             (LaunchToEss [u| 1 km |])) & fst)
             @?= StopValidity 0
 
-    , HU.testCase "When everyone makes ESS, one pilot launched and is still flying = 0 validity" $
+    , HU.testCase "When everyone makes ESS, one pilot launched and is still flying = 1 validity" $
         ((FS.stopValidity
             (PilotsFlying 1)
             (PilotsAtEss 1)
@@ -49,7 +49,7 @@ stopValidityUnits = testGroup "Is a stopped task valid?"
             (LaunchToEss [u| 1 km |])) & fst)
             @?= StopValidity 1
 
-    , HU.testCase "When everyone makes ESS, two pilots launched, both still flying = 0 validity" $
+    , HU.testCase "When everyone makes ESS, two pilots launched, both still flying = 1 validity" $
         ((FS.stopValidity
             (PilotsFlying 2)
             (PilotsAtEss 2)
@@ -69,7 +69,7 @@ stopValidityUnits = testGroup "Is a stopped task valid?"
             (LaunchToEss [u| 1 km |])) & fst)
             @?= StopValidity 1
 
-    , HU.testCase "When everyone makes ESS, two pilots launched, one still flying = 0.5 validity" $
+    , HU.testCase "When everyone makes ESS, two pilots launched, one still flying = 1 validity" $
         ((FS.stopValidity
             (PilotsFlying 2)
             (PilotsAtEss 2)
@@ -79,7 +79,7 @@ stopValidityUnits = testGroup "Is a stopped task valid?"
             (LaunchToEss [u| 1 km |])) & fst)
             @?= StopValidity 1
 
-    , HU.testCase "When one makes ESS, one still flying at launch point = 0.93 validity" $
+    , HU.testCase "When one makes ESS, one still flying at launch point = 1 validity" $
         ((FS.stopValidity
             (PilotsFlying 2)
             (PilotsAtEss 1)
@@ -89,14 +89,14 @@ stopValidityUnits = testGroup "Is a stopped task valid?"
             (LaunchToEss [u| 1 km |])) & fst)
             @?= StopValidity 1
 
-    , HU.testCase "When one makes ESS, one still flying on course halfway to ESS = 0.93 validity" $
+    , HU.testCase "When one makes ESS, one still flying on course halfway to ESS = 1 validity" $
         ((FS.stopValidity
             (PilotsFlying 2)
             (PilotsAtEss 1)
             (PilotsLanded 0)
             (PilotsFlying 1)
             (mkReachStats [2, 1])
-            (LaunchToEss [u| 1 km |])) & fst)
+            (LaunchToEss [u| 2 km |])) & fst)
             @?= StopValidity 1
     ]
 
