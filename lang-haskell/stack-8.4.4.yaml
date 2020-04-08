@@ -1,8 +1,8 @@
 resolver: lts-12.26
 tested-with: GHC == 8.4.4
+work-dir: .stack-work-844
 flags: {}
 packages:
 - detour-via-sci
 - siggy-chardust
 - tasty-compare
-work-dir: .stack-work-844

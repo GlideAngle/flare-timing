@@ -1,8 +1,15 @@
 resolver: lts-15.7
 tested-with: GHC == 8.8.3
+work-dir: .stack-work-883
 flags: {}
 packages:
 - detour-via-sci
 - siggy-chardust
 - tasty-compare
-work-dir: .stack-work-883
+extra-deps:
+- github: adamgundry/uom-plugin
+  commit: 1ac993808a9b3dae75574c1d5528ae804f39e3e7
+  subdirs:
+    - uom-plugin
+- hxt-xpath-9.1.2.2@sha256:9cd590ae93a04573db8f90fa4094625ebd97dded45da7667c577ce6b38a42900,1999
+- units-parser-0.1.1.3@sha256:ad34e7f04771bd367dcd9b7bf5d41c8ac79f813928dc4283a1dff91736505b66,1551
