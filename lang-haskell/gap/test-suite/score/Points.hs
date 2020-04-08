@@ -85,7 +85,7 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
                 }) & total)
             @?= TaskPoints 1
 
-    , HU.testCase "Somewhat early start HG = full points minus jump the gun penalty" $
+    , HU.testCase "Only just early start HG = full points minus jump the gun penalty" $
         let jump = JumpedTheGun [u| 1 s |]
             secs = SecondsPerPoint [u| 1 s |]
             limit = JumpTheGunLimit [u| 3000 s |]
@@ -117,6 +117,74 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
                         , total = TaskPoints 49
                         , effectivePenalties = [PenaltyPoints 1]
                         , effectivePenaltiesJump = [PenaltyPoints 1]
+                        }
+
+    , HU.testCase "Very early start HG = full points minus jump the gun penalty" $
+        let jump = JumpedTheGun [u| 3000 s |]
+            secs = SecondsPerPoint [u| 1 s |]
+            limit = JumpTheGunLimit [u| 3000 s |]
+
+            eitherPenalties :: [Either PointPenalty (Penalty Hg)]
+            eitherPenalties =
+                return $ FS.jumpTheGunPenaltyHg (TooEarlyPoints 1) limit secs jump
+
+            jumpDemerits = lefts eitherPenalties
+            jumpReset = listToMaybe $ rights eitherPenalties
+        in
+            (FS.taskPoints
+                jumpReset
+                jumpDemerits
+                []
+                Points
+                    { reach = LinearPoints 10
+                    , effort = DifficultyPoints 10
+                    , distance = DistancePoints 20
+                    , leading = LeadingPoints 10
+                    , arrival = ArrivalPoints 10
+                    , time = TimePoints 10
+                    })
+                @?= PointsReduced
+                        { subtotal = TaskPoints 50
+                        , fracApplied = TaskPoints 0
+                        , pointApplied = TaskPoints 50
+                        , resetApplied = TaskPoints 0
+                        , total = TaskPoints 0
+                        , effectivePenalties = [PenaltyPoints 3000]
+                        , effectivePenaltiesJump = [PenaltyPoints 3000]
+                        }
+
+    , HU.testCase "Too early start HG = points for minimum distance" $
+        let jump = JumpedTheGun [u| 3001 s |]
+            secs = SecondsPerPoint [u| 1 s |]
+            limit = JumpTheGunLimit [u| 3000 s |]
+
+            eitherPenalties :: [Either PointPenalty (Penalty Hg)]
+            eitherPenalties =
+                return $ FS.jumpTheGunPenaltyHg (TooEarlyPoints 1) limit secs jump
+
+            jumpDemerits = lefts eitherPenalties
+            jumpReset = listToMaybe $ rights eitherPenalties
+        in
+            (FS.taskPoints
+                jumpReset
+                jumpDemerits
+                []
+                Points
+                    { reach = LinearPoints 10
+                    , effort = DifficultyPoints 10
+                    , distance = DistancePoints 20
+                    , leading = LeadingPoints 10
+                    , arrival = ArrivalPoints 10
+                    , time = TimePoints 10
+                    })
+                @?= PointsReduced
+                        { subtotal = TaskPoints 50
+                        , fracApplied = TaskPoints 0
+                        , pointApplied = TaskPoints 0
+                        , resetApplied = TaskPoints 49
+                        , total = TaskPoints 1
+                        , effectivePenalties = [PenaltyReset 1]
+                        , effectivePenaltiesJump = [PenaltyReset 1]
                         }
     ]
 
