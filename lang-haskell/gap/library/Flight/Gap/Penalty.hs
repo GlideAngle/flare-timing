@@ -23,22 +23,22 @@ data PointPenalty
 
 -- | Applies the penalties, fractionals then absolutes and finally the resets.
 applyPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
-applyPenalties xs ps =
-    f (f (f ps fracs) points) resets
+applyPenalties xs p =
+    f (f (f p fracs) points) resets
     where
         f = foldl' applyPenalty
         (fracs, ys) = partition isPenaltyFraction xs
         (resets, points) = partition isPenaltyReset ys
 
-isPenaltyPoints, isPenaltyFraction, isPenaltyReset :: PointPenalty -> Bool
-isPenaltyPoints = \case PenaltyPoints{} -> True; _ -> False
-isPenaltyFraction = \case PenaltyFraction{} -> True; _ -> False
-isPenaltyReset = \case PenaltyReset{} -> True; _ -> False
-
 applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
 applyPenalty p (PenaltyPoints n) = max 0 $ p - TaskPoints n
 applyPenalty p (PenaltyFraction n) = max 0 $ p - p * TaskPoints n
 applyPenalty p (PenaltyReset n) = max 0 $ min p (TaskPoints $ fromIntegral n)
+
+isPenaltyPoints, isPenaltyFraction, isPenaltyReset :: PointPenalty -> Bool
+isPenaltyPoints = \case PenaltyPoints{} -> True; _ -> False
+isPenaltyFraction = \case PenaltyFraction{} -> True; _ -> False
+isPenaltyReset = \case PenaltyReset{} -> True; _ -> False
 
 pointPenaltyOptions :: Options
 pointPenaltyOptions =
