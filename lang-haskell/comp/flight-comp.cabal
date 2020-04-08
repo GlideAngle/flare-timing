@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a2b04d9f0ebb946da84d04573564cf2caf53cb8798ee0957eb3d13ac305c4469
+-- hash: e22ce451b04fc0644b9adbecd9cb89f66b6c190d4b8919895b6b46432a7abaee
 
 name:           flight-comp
 version:        0.1.0
@@ -77,7 +77,7 @@ library
     , flight-route
     , flight-units
     , flight-zone
-    , lens
+    , microlens
     , mtl
     , newtype
     , path
@@ -140,7 +140,7 @@ test-suite comp
     , flight-route
     , flight-units
     , flight-zone
-    , lens
+    , microlens
     , mtl
     , newtype
     , path
@@ -209,7 +209,7 @@ test-suite doctest
     , flight-route
     , flight-units
     , flight-zone
-    , lens
+    , microlens
     , mtl
     , newtype
     , path

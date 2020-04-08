@@ -23,7 +23,7 @@ in    defs
             , "directory"
             , "filepath"
             , "filemanip"
-            , "lens"
+            , "microlens"
             , "mtl"
             , "newtype"
             , "path"

@@ -18,7 +18,7 @@ module Flight.Track.Land
     , effortRank
     ) where
 
-import Control.Lens ((^?), element)
+import Lens.Micro ((^?), ix)
 import Data.List (sortOn)
 import Data.String (IsString())
 import GHC.Generics (Generic)
@@ -83,11 +83,11 @@ effortRank Landing{difficulty} =
 taskLanding :: IxTask -> Landing -> Maybe TaskLanding
 taskLanding (IxTask iTask) Landing{..} = do
     let i = fromIntegral iTask - 1
-    bd <- bestDistance ^? element i
-    lo <- landout ^? element i
-    la <- lookahead ^? element i
-    cg <- chunking ^? element i
-    df <- difficulty ^? element i
+    bd <- bestDistance ^? ix i
+    lo <- landout ^? ix i
+    la <- lookahead ^? ix i
+    cg <- chunking ^? ix i
+    df <- difficulty ^? ix i
     return
         TaskLanding
             { minDistance = minDistance
