@@ -52,8 +52,8 @@ import Data.Scientific
     , fromRationalRepetend
     , formatScientific
     )
-import Language.Haskell.TH (Q, Name, Dec, conT)
-import Language.Haskell.TH.Syntax
+import Language.Haskell.TH (conT)
+import Language.Haskell.TH.Syntax (Lift(..), Q, Name, Dec)
 import Data.Ratio.Rounding (dpRound)
 
 -- | A choice of 8 decimal places for
@@ -298,17 +298,17 @@ deriveCsvViaSci name =
 -- 0.1122334455667788
 -- >>> toSci (DecimalPlaces 8) x
 -- 0.11223345
--- 
+--
 -- When having to check numbers by hand, a fixed decimal is more familiar than
 -- a ratio of possibly large integers.
--- 
+--
 -- >>> encode x
 -- "{\"numerator\":280583613916947,\"denominator\":2500000000000000}"
 -- >>> encode (Lat x)
 -- "0.11223345"
--- 
+--
 -- With too few decimal places, the encoding will be lossy.
--- 
+--
 -- >>> decode (encode x) == Just x
 -- True
 -- >>> decode (encode (Lat x)) == Just (Lat x)

@@ -1,8 +1,0 @@
-resolver: nightly-2018-12-10
-tested-with: GHC == 8.6.2
-flags: {}
-packages:
-- detour-via-sci
-- siggy-chardust
-- tasty-compare
-work-dir: .stack-work-862

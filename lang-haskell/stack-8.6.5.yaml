@@ -1,0 +1,8 @@
+resolver: lts-14.27
+tested-with: GHC == 8.6.5
+flags: {}
+packages:
+- detour-via-sci
+- siggy-chardust
+- tasty-compare
+work-dir: .stack-work-865
