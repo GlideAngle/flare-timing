@@ -41,7 +41,7 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
         ((FS.taskPoints (Nothing :: Maybe (Penalty Hg)) [] [] zeroPoints) & total) @?= TaskPoints 0
 
     , HU.testCase "No penalties = sum of distance, leading, time & arrival points" $
-        ((FS.taskPoints
+        (FS.taskPoints
             Nothing
             []
             []
@@ -52,11 +52,19 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
                 , leading = LeadingPoints 1
                 , arrival = ArrivalPoints 1
                 , time = TimePoints 1
-                }) & total)
-            @?= TaskPoints 5
+                })
+            @?= PointsReduced
+                    { subtotal = TaskPoints 5
+                    , fracApplied = TaskPoints 0
+                    , pointApplied = TaskPoints 0
+                    , resetApplied = TaskPoints 0
+                    , total = TaskPoints 5
+                    , effectivePenalties = []
+                    , effectivePenaltiesJump = []
+                    }
 
     , HU.testCase "Early start PG = distance to start points only" $
-        ((FS.taskPoints
+        (FS.taskPoints
             (Just (Early $ LaunchToStartPoints 1))
             []
             []
@@ -67,11 +75,19 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
                 , leading = LeadingPoints 10
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
-                }) & total)
-            @?= TaskPoints 1
+                })
+            @?= PointsReduced
+                    { subtotal = TaskPoints 50
+                    , fracApplied = TaskPoints 0
+                    , pointApplied = TaskPoints 0
+                    , resetApplied = TaskPoints 49
+                    , total = TaskPoints 1
+                    , effectivePenalties = [PenaltyReset 1]
+                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    }
 
     , HU.testCase "Way too early start HG = minimum distance points only" $
-        ((FS.taskPoints
+        (FS.taskPoints
             (Just (JumpedTooEarly $ TooEarlyPoints 1))
             []
             []
@@ -82,8 +98,16 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
                 , leading = LeadingPoints 10
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
-                }) & total)
-            @?= TaskPoints 1
+                })
+            @?= PointsReduced
+                    { subtotal = TaskPoints 50
+                    , fracApplied = TaskPoints 0
+                    , pointApplied = TaskPoints 0
+                    , resetApplied = TaskPoints 49
+                    , total = TaskPoints 1
+                    , effectivePenalties = [PenaltyReset 1]
+                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    }
 
     , HU.testCase "Only just early start HG = full points minus jump the gun penalty" $
         let jump = JumpedTheGun [u| 1 s |]
