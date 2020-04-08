@@ -78,7 +78,7 @@ import Numeric.Natural (Natural)
 -- 123456789 % 100000
 
 -- SEE: https://stackoverflow.com/questions/12450501/round-number-to-specified-number-of-digits
-dpRound :: Integer -> Rational -> Rational
+dpRound :: RealFrac a => Integer -> a -> a
 dpRound n f
     | n < 0 = dpRound 0 f
     | otherwise =
@@ -132,7 +132,7 @@ dpRound n f
 -- 0 % 1
 -- >>> sdRound 0 (0.0000123456789 :: Rational)
 -- 0 % 1
-sdRound :: Natural -> Rational -> Rational
+sdRound :: RealFrac a => Natural -> a -> a
 sdRound sd' f =
     if m < 0
         then
@@ -144,7 +144,9 @@ sdRound sd' f =
                 LT -> 10^^p * fromInteger (round g)
     where
         sd = toInteger sd'
-        f' = fromRational f :: Double
+
+        f' :: Double
+        f' = fromRational $ toRational f 
 
         m = logBase 10 f'
         mZ = truncate m

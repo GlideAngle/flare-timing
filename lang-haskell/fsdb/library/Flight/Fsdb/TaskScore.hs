@@ -126,8 +126,8 @@ xpRankScore =
     $ xpWrap
         ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, dL, ss, es, ssE) ->
             NormBreakdown
-                { place = TaskPlacing . fromIntegral $ r
-                , total = TaskPoints . toRational $ p
+                { place = TaskPlacing $ fromIntegral r
+                , total = TaskPoints $ fromIntegral p
                 , breakdown =
                     Points
                         { reach = LinearPoints $ dToR ldp

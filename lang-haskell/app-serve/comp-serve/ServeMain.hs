@@ -944,7 +944,7 @@ getTaskPointsDiffStats = do
              in do
                     es'' <- es'
                     let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''
-                    let (mean, variance) = Stats.meanVariance . V.fromList $ fromRational <$> xs
+                    let (mean, variance) = Stats.meanVariance $ V.fromList xs
                     return (mean, sqrt variance)
 
 ellipsoidRouteLength :: TaskTrack -> Maybe (QTaskDistance Double [u| m |])

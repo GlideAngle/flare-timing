@@ -21,6 +21,25 @@ data PointPenalty
     | PenaltyReset Int
     deriving (Eq, Ord, Show, Generic)
 
+-- | Applies the penalties, fractionals then absolutes and finally the resets.
+applyPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
+applyPenalties xs ps =
+    f (f (f ps fracs) points) resets
+    where
+        f = foldl' applyPenalty
+        (fracs, ys) = partition isPenaltyFraction xs
+        (resets, points) = partition isPenaltyReset ys
+
+isPenaltyPoints, isPenaltyFraction, isPenaltyReset :: PointPenalty -> Bool
+isPenaltyPoints = \case PenaltyPoints{} -> True; _ -> False
+isPenaltyFraction = \case PenaltyFraction{} -> True; _ -> False
+isPenaltyReset = \case PenaltyReset{} -> True; _ -> False
+
+applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
+applyPenalty (TaskPoints p) (PenaltyPoints n) = TaskPoints . max 0 $ p - n
+applyPenalty (TaskPoints p) (PenaltyFraction n) = TaskPoints . max 0 $ p - p * n
+applyPenalty (TaskPoints p) (PenaltyReset n) = TaskPoints . max 0 . min p $ fromIntegral n
+
 pointPenaltyOptions :: Options
 pointPenaltyOptions =
     defaultOptions
@@ -37,24 +56,6 @@ instance ToJSON PointPenalty where
 
 instance FromJSON PointPenalty where
     parseJSON = genericParseJSON pointPenaltyOptions
-
-isPenaltyPoints :: PointPenalty -> Bool
-isPenaltyPoints = \case
-    PenaltyFraction _ -> False
-    PenaltyPoints _ -> True
-    PenaltyReset _ -> False
-
-isPenaltyFraction :: PointPenalty -> Bool
-isPenaltyFraction = \case
-    PenaltyFraction _ -> True
-    PenaltyPoints _ -> False
-    PenaltyReset _ -> False
-
-isPenaltyReset :: PointPenalty -> Bool
-isPenaltyReset = \case
-    PenaltyFraction _ -> False
-    PenaltyPoints _ -> False
-    PenaltyReset _ -> True
 
 -- | Applies only fractional penalties.
 applyFractionalPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
@@ -77,19 +78,3 @@ applyResetPenalties xs ps =
     where
         (resets, _) = partition isPenaltyReset xs
 
--- | Applies the penalties, fractional ones before absolute ones and finally
--- the reset ones.
-applyPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
-applyPenalties xs ps =
-    foldl' applyPenalty (foldl' applyPenalty (foldl' applyPenalty ps fracs) points) resets
-    where
-        (fracs, ys) = partition isPenaltyFraction xs
-        (resets, points) = partition isPenaltyReset ys
-
-applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
-applyPenalty (TaskPoints p) (PenaltyPoints n) =
-    TaskPoints . max 0 $ p - (toRational n)
-applyPenalty (TaskPoints p) (PenaltyFraction n) =
-    TaskPoints . max 0 $ p - p * (toRational n)
-applyPenalty (TaskPoints p) (PenaltyReset n) =
-    TaskPoints . max 0 . min p $ fromIntegral n

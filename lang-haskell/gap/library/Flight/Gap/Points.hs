@@ -112,7 +112,7 @@ tallyPoints Nothing =
         , time = TimePoints t
         , arrival = ArrivalPoints a
         } ->
-        TaskPoints $ linear + diff + l + t + a
+        TaskPoints . fromRational $ linear + diff + l + t + a
 
 tallyPoints (Just (JumpedTooEarly (TooEarlyPoints p))) =
     const . TaskPoints $ fromIntegral p
@@ -127,6 +127,7 @@ tallyPoints (Just (JumpedNoGoal secs jump)) =
         } ->
         jumpTheGun secs jump
         . TaskPoints
+        . fromRational
         $ linear + diff + l + (8 % 10) * (t + a)
 
 tallyPoints (Just (Jumped secs jump)) =
@@ -139,6 +140,7 @@ tallyPoints (Just (Jumped secs jump)) =
         } ->
         jumpTheGun secs jump
         . TaskPoints
+        . fromRational
         $ linear + diff + l + t + a
 
 tallyPoints (Just NoGoalHg) =
@@ -150,6 +152,7 @@ tallyPoints (Just NoGoalHg) =
         , arrival = ArrivalPoints a
         } ->
         TaskPoints
+        . fromRational
         $ linear + diff + l + (8 % 10) * (t + a)
 
 tallyPoints (Just (Early (LaunchToStartPoints d))) =
@@ -161,7 +164,7 @@ tallyPoints (Just NoGoalPg) =
         , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         } ->
-        TaskPoints $ linear + diff + l
+        TaskPoints . fromRational $ linear + diff + l
 
 jumpTheGunPenaltyHg
     :: TooEarlyPoints
@@ -188,7 +191,7 @@ jumpTheGun
     -> TaskPoints
 jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
     let (MkQuantity penalty) = toRational' $ jump /: secs in
-    TaskPoints $ max 0 (pts - penalty)
+    TaskPoints $ max 0 (pts - fromRational penalty)
 
 data PointsReduced =
     PointsReduced
@@ -272,7 +275,7 @@ taskPointsSubtotal
         , time = TimePoints t
         , arrival = ArrivalPoints a
         } =
-    TaskPoints $ r + e + l + t + a
+    TaskPoints . fromRational $ r + e + l + t + a
 
 availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePoints (TaskValidity tv) Weights{..} =

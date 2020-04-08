@@ -5,16 +5,13 @@ import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
-newtype TaskPoints = TaskPoints Rational
+newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Generic)
 
 instance Show TaskPoints where
-    show (TaskPoints x) = printf "TaskPoints %.3f" y
-        where
-            y :: Double
-            y = fromRational x
+    show (TaskPoints x) = printf "TaskPoints %.3f" x
 
-instance Newtype TaskPoints Rational where
+instance Newtype TaskPoints Double where
     pack = TaskPoints
     unpack (TaskPoints a) = a
 

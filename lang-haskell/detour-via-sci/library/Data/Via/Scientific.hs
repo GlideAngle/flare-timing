@@ -87,8 +87,8 @@ newtype DecimalPlaces = DecimalPlaces Int deriving (Show, Lift)
 -- (-5476377146882523) % 144115188075855872
 -- >>> y == fromRational (fromSci y)
 -- True
-fromSci :: Scientific -> Rational
-fromSci x = toRational (toRealFloat x :: Double)
+fromSci :: Fractional a => Scientific -> a
+fromSci x = fromRational $ toRational (toRealFloat x :: Double)
 
 -- | To 'Scientific' from 'Rational' as near as possible up to the given number
 -- of 'DecimalPlaces' with rounding.
@@ -102,9 +102,11 @@ fromSci x = toRational (toRealFloat x :: Double)
 -- True
 -- >>> x == toRational (toSci (DecimalPlaces 32) x)
 -- True
-toSci :: DecimalPlaces -> Rational -> Scientific
-toSci (DecimalPlaces dp) x =
-    let y = dpRound (toInteger dp) x
+toSci :: Real a => DecimalPlaces -> a -> Scientific
+toSci (DecimalPlaces dp) x' =
+    let x = toRational x'
+        y = dpRound (toInteger dp) x
+
     in case fromRationalRepetend (Just $ dp + 1) y of
         Left (s, _) -> s
         Right (s, _) -> s
@@ -143,39 +145,39 @@ class DefaultDecimalPlaces a where
 -- The original type, a newtype 'Rational', goes to and fro __via__
 -- __sci__entific so that the rational value can be encoded as a scientific
 -- value with a fixed number of decimal places.
-data ViaSci n where
+data ViaSci n d where
     ViaSci
-        :: (DefaultDecimalPlaces n, Newtype n Rational)
-        => n 
-        -> ViaSci n
+        :: (DefaultDecimalPlaces n, Newtype n a)
+        => n
+        -> ViaSci n a
 
-deriving instance (Eq n) => Eq (ViaSci n)
-deriving instance (Ord n) => Ord (ViaSci n)
+deriving instance (Eq n) => Eq (ViaSci n a)
+deriving instance (Ord n) => Ord (ViaSci n a)
 
 instance
-    (DefaultDecimalPlaces n, Newtype n Rational)
-    => Show (ViaSci n) where
+    (DefaultDecimalPlaces n, Newtype n a, Real a)
+    => Show (ViaSci n a) where
     show (ViaSci x) = show $ toSci (defdp x) (unpack x)
 
 instance
-    (DefaultDecimalPlaces n, Newtype n Rational)
-    => ToJSON (ViaSci n) where
+    (DefaultDecimalPlaces n, Newtype n a, Real a)
+    => ToJSON (ViaSci n a) where
     toJSON (ViaSci x) = Number $ toSci (defdp x) (unpack x)
 
 instance
-    (DefaultDecimalPlaces n, Newtype n Rational)
-    => FromJSON (ViaSci n) where
+    (DefaultDecimalPlaces n, Newtype n a, Fractional a)
+    => FromJSON (ViaSci n a) where
     parseJSON x@(Number _) = ViaSci <$> (pack . fromSci <$> parseJSON x)
     parseJSON _ = empty
 
 instance
-    (DefaultDecimalPlaces n, Newtype n Rational)
-    => ToField (ViaSci n) where
+    (DefaultDecimalPlaces n, Newtype n a, Real a)
+    => ToField (ViaSci n a) where
     toField (ViaSci x) = toField $ toSci (defdp x) (unpack x)
 
 instance
-    (DefaultDecimalPlaces n, Newtype n Rational)
-    => FromField (ViaSci n) where
+    (DefaultDecimalPlaces n, Newtype n a, Fractional a)
+    => FromField (ViaSci n a) where
     parseField x = ViaSci <$> (pack . fromSci <$> parseField x)
 
 -- SEE: https://markkarpov.com/tutorial/th.html
