@@ -36,9 +36,9 @@ isPenaltyFraction = \case PenaltyFraction{} -> True; _ -> False
 isPenaltyReset = \case PenaltyReset{} -> True; _ -> False
 
 applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
-applyPenalty (TaskPoints p) (PenaltyPoints n) = TaskPoints . max 0 $ p - n
-applyPenalty (TaskPoints p) (PenaltyFraction n) = TaskPoints . max 0 $ p - p * n
-applyPenalty (TaskPoints p) (PenaltyReset n) = TaskPoints . max 0 . min p $ fromIntegral n
+applyPenalty p (PenaltyPoints n) = max 0 $ p - TaskPoints n
+applyPenalty p (PenaltyFraction n) = max 0 $ p - p * TaskPoints n
+applyPenalty p (PenaltyReset n) = max 0 $ min p (TaskPoints $ fromIntegral n)
 
 pointPenaltyOptions :: Options
 pointPenaltyOptions =

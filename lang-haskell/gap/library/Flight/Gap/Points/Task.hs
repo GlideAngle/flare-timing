@@ -6,7 +6,8 @@ import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype TaskPoints = TaskPoints Double
-    deriving (Eq, Ord, Generic)
+    deriving stock (Eq, Ord, Generic)
+    deriving newtype Num
 
 instance Show TaskPoints where
     show (TaskPoints x) = printf "TaskPoints %.3f" x
