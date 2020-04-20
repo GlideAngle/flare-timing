@@ -52,6 +52,14 @@ leadCoefPlot _ix tweak sEx xs = do
                 elClass "div" "tile is-child" $ do
                     let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
 
+                    _ <- elDynClass "article" dMsgClass $ do
+                            elClass "div" "message-header" $ do
+                                el "p" $ text "Plot Instructions"
+                            elClass "div" "message-body" $
+                                text "Tap a row to highlight that pilot's point on the plot."
+
+                            return ()
+
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ ffor eRedraw (\ps -> liftIO $ do
                         let leads = snd . unzip $ ys
@@ -64,16 +72,8 @@ leadCoefPlot _ix tweak sEx xs = do
                         _ <- P.leadCoefPlot (_element_raw elPlot) (lcRange leads) (placings leads) (placings leads')
                         return ())
 
-                    _ <- elDynClass "article" dMsgClass $ do
-                            elClass "div" "message-header" $ do
-                                el "p" $ text "Plot Instructions"
-                            elClass "div" "message-body" $
-                                text "Tap a row to highlight that pilot's point on the plot."
-
-                            return ()
-
-                    let dTableClass = ffor dPilot (\p -> "table is-striped" <> if p == nullPilot then " is-hidden" else "")
-                    elClass "div" "level" $
+                    let dTableClass = ffor dPilot (\p -> "legend table" <> if p == nullPilot then " is-hidden" else "")
+                    elAttr "div" ("id" =: "legend-lead-coef" <> "class" =: "level") $
                             elClass "div" "level-item" $ do
                                 _ <- elDynClass "table" dTableClass $ do
                                         el "thead" $ do
