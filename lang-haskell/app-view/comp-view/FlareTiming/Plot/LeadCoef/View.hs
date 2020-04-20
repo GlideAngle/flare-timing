@@ -4,23 +4,18 @@ module FlareTiming.Plot.LeadCoef.View (leadCoefPlot) where
 
 import Reflex.Dom
 import Reflex.Time (delay)
+import Data.List (find)
+import Data.Maybe (catMaybes)
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.LeadCoef.Plot as P (leadCoefPlot)
 
 import WireTypes.Fraction (LeadingFraction(..))
 import WireTypes.Comp (Tweak(..))
-import WireTypes.Route (TaskDistance(..))
-import WireTypes.Lead
-    ( TrackLead(..), RawLeadingArea(..), EssTime(..)
-    , LeadingAreas(..), LeadingAreaSquared(..)
-    , LeadingCoefficient(..)
-    , nullArea, showAreaSquared
-    )
+import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.LeadCoef.Table (tablePilotCoef)
-import FlareTiming.Comms (getTaskPilotArea)
 import FlareTiming.Events (IxTask(..))
 
 placings :: [TrackLead] -> [[Double]]
@@ -43,7 +38,7 @@ leadCoefPlot
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-leadCoefPlot ix tweak sEx xs = do
+leadCoefPlot _ix tweak sEx xs = do
     pb <- delay 1 =<< getPostBuild
     let w = ffor xs (pilotIdsWidth . fmap fst)
     let pilotLegend classes pp = do
@@ -58,12 +53,16 @@ leadCoefPlot ix tweak sEx xs = do
                     let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
 
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
-                    performEvent_ $ leftmost
-                            [ ffor eRedraw (\_ -> liftIO $ do
-                                let ld = snd . unzip $ ld'
-                                _ <- P.leadCoefPlot (_element_raw elPlot) (lcRange ld) (placings ld)
-                                return ())
-                            ]
+                    performEvent_ $ ffor eRedraw (\ps -> liftIO $ do
+                        let leads = snd . unzip $ ys
+                        let leads' =
+                                snd . unzip . catMaybes $
+                                [ find (\(Pilot (qid, _), _) -> pid == qid) ys
+                                | Pilot (pid, _) <- ps
+                                ]
+
+                        _ <- P.leadCoefPlot (_element_raw elPlot) (lcRange leads) (placings leads) (placings leads')
+                        return ())
 
                     _ <- elDynClass "article" dMsgClass $ do
                             elClass "div" "message-header" $ do
@@ -85,13 +84,13 @@ leadCoefPlot ix tweak sEx xs = do
                                                 return ()
                                             el "tr" $ do
                                                 _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-reach" <$> ePilotLegend1
+                                                            pilotLegend "legend-select" <$> ePilotLegend1
                                                 return ()
 
                                 return ()
                     return ()
 
-        ld' <- sample $ current xs
+        ys <- sample $ current xs
 
         ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots
         dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
@@ -99,7 +98,7 @@ leadCoefPlot ix tweak sEx xs = do
         let pilots :: [Pilot] = take 1 $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take 1 $ pa : pas) pilots (updated dPilot)
         let ePilots :: Event _ [Pilot] = updated dPilots
-        let eRedraw = leftmost [pb, () <$ ePilots]
+        let eRedraw = leftmost [[] <$ pb, ePilots]
 
         ePilotLegend1 <-
             updated

@@ -25,28 +25,35 @@ foreign import javascript unsafe
     \  , color: '#e41a1c'\
     \  , graphType: 'polyline'\
     \  },{\
-    \    points: $6\
+    \    points: $5\
     \  , fnType: 'points'\
     \  , color: '#e41a1c'\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
-    \    points: $5\
+    \    points: $6\
     \  , fnType: 'points'\
     \  , color: '#e41a1c'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $7\
+    \  , fnType: 'points'\
+    \  , color: '#00d1b2'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
     \  }]\
     \})"
-    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 leadCoefPlot
     :: IsElement e
     => e
     -> (Double, Double)
-    -> [[Double]]
+    -> [[Double]] -- ^ All xy pairs
+    -> [[Double]] -- ^ Selected xy pairs
     -> IO Plot
-leadCoefPlot e (lcMin, lcMax) xs = do
+leadCoefPlot e (lcMin, lcMax) xs ys = do
     let xyfn :: [[Double]] =
             [ [x', fnGAP lcMin x']
             | x <- [0 :: Integer .. 199]
@@ -66,8 +73,9 @@ leadCoefPlot e (lcMin, lcMax) xs = do
     xyfn' <- toJSValListOf xyfn
     xyfnFS' <- toJSValListOf xyfnFS
     xs' <- toJSValListOf $ nub xs
+    ys' <- toJSValListOf $ nub ys
 
-    Plot <$> plot_ (unElement . toElement $ e) lcMin' lcMax' xyfn' xs' xyfnFS'
+    Plot <$> plot_ (unElement . toElement $ e) lcMin' lcMax' xyfn' xyfnFS' xs' ys'
 
 -- | The equation from the GAP rules.
 fnGAP :: Double -> Double -> Double
