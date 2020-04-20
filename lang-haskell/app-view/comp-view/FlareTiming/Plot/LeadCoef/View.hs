@@ -6,6 +6,7 @@ import Reflex.Dom
 import Reflex.Time (delay)
 import Data.List (find)
 import Data.Maybe (catMaybes)
+import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.LeadCoef.Plot as P (leadCoefPlot)
 
@@ -41,10 +42,12 @@ leadCoefPlot
 leadCoefPlot _ix tweak sEx xs = do
     pb <- delay 1 =<< getPostBuild
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    let pilotLegend classes pp = do
-            el "td" $ elClass "span" classes $ text "▩"
-            el "td" . dynText $ ffor w (flip showPilot $ pp)
-            return ()
+
+    let mkLegend classes pp = when (pp /= nullPilot) $ do
+            el "tr" $ do
+                el "td" $ elClass "span" classes $ text "▩"
+                el "td" . dynText $ ffor w (flip showPilot $ pp)
+                return ()
 
     elClass "div" "tile is-ancestor" $ mdo
         elClass "div" "tile is-7" $
@@ -82,30 +85,12 @@ leadCoefPlot _ix tweak sEx xs = do
                                                 el "th" . dynText $ ffor w hashIdHyphenPilot
                                                 return ()
 
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-reach" <$> ePilotLegend1
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-effort" <$> ePilotLegend2
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-time" <$> ePilotLegend3
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-leading" <$> ePilotLegend4
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-arrival" <$> ePilotLegend5
-                                                return ()
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend1 (mkLegend "legend-reach")
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend2 (mkLegend "legend-effort")
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend3 (mkLegend "legend-time")
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend4 (mkLegend "legend-leading")
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend5 (mkLegend "legend-arrival")
+                                            return ()
 
                                         el "tfoot" $ do
                                             el "tr" $ do
@@ -184,3 +169,4 @@ leadCoefPlot _ix tweak sEx xs = do
         return ()
 
     return ()
+
