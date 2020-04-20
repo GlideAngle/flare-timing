@@ -18,7 +18,7 @@ foreign import javascript unsafe
     \, height: 640\
     \, disableZoom: true\
     \, xAxis: {label: 'Leading Coefficient', domain: [$2, $3]}\
-    \, yAxis: {domain: [-0.1, 1.01]}\
+    \, yAxis: {domain: [-0.05, 1.05]}\
     \, data: [{\
     \    points: $4\
     \  , fnType: 'points'\
