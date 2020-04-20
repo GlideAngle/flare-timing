@@ -3,6 +3,7 @@
 module FlareTiming.Plot.LeadArea.View (leadAreaPlot) where
 
 import Reflex.Dom
+import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.LeadArea.Plot as P (leadAreaPlot)
 
@@ -51,36 +52,37 @@ leadAreaPlot
     -> m ()
 leadAreaPlot ix tweak sEx xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    let pilotLegend classes (pp, areas) = do
-            el "td" $ elClass "span" classes $ text "▩"
-            el "td" . dynText $ ffor w (flip showPilot $ pp)
-            case areas of
-                Nothing -> do
-                    elAttr "td" ("colspan" =: "3") $ text ""
-                    return ()
 
-                Just
-                    LeadingAreas
-                        { areaFlown = LeadingAreaSquared af
-                        , areaAfterLanding = LeadingAreaSquared al
-                        , areaBeforeStart = LeadingAreaSquared bs
-                        }
-                  | af == 0 && al == 0 && bs == 0 -> do
-                    elAttr "td" ("colspan" =: "5") $ text ""
-                    return ()
+    let mkLegend classes (pp, areas) = when (pp /= nullPilot) $ do
+            el "tr" $ do
+                el "td" $ elClass "span" classes $ text "▩"
+                el "td" . dynText $ ffor w (flip showPilot $ pp)
+                case areas of
+                    Nothing -> do
+                        elAttr "td" ("colspan" =: "3") $ text ""
+                        return ()
 
-                Just LeadingAreas{areaFlown = af, areaAfterLanding = al, areaBeforeStart = bs} -> do
-                    let afl = af + al
-                    let abfl = bs + afl
+                    Just
+                        LeadingAreas
+                            { areaFlown = LeadingAreaSquared af
+                            , areaAfterLanding = LeadingAreaSquared al
+                            , areaBeforeStart = LeadingAreaSquared bs
+                            }
+                      | af == 0 && al == 0 && bs == 0 -> do
+                        elAttr "td" ("colspan" =: "5") $ text ""
+                        return ()
 
-                    elClass "td" "has-text-right" . text $ showAreaSquared bs
-                    elClass "td" "has-text-right has-text-weight-bold" . text $ showAreaSquared af
-                    elClass "td" "has-text-right" . text $ showAreaSquared al
-                    elClass "td" "has-text-right has-text-weight-bold" . text $ showAreaSquared afl
-                    elClass "td" "has-text-right" . text $ showAreaSquared abfl
+                    Just LeadingAreas{areaFlown = af, areaAfterLanding = al, areaBeforeStart = bs} -> do
+                        let afl = af + al
+                        let abfl = bs + afl
 
-                    return ()
-            return ()
+                        elClass "td" "has-text-right" . text $ showAreaSquared bs
+                        elClass "td" "has-text-right has-text-weight-bold" . text $ showAreaSquared af
+                        elClass "td" "has-text-right" . text $ showAreaSquared al
+                        elClass "td" "has-text-right has-text-weight-bold" . text $ showAreaSquared afl
+                        elClass "td" "has-text-right" . text $ showAreaSquared abfl
+
+                        return ()
 
     elClass "div" "tile is-ancestor" $ mdo
         elClass "div" "tile is-7" $
@@ -126,30 +128,13 @@ leadAreaPlot ix tweak sEx xs = do
 
                                                 return ()
 
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-reach" <$> ePilotLegend1
-                                                return ()
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend1 (mkLegend "legend-reach")
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend2 (mkLegend "legend-effort")
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend3 (mkLegend "legend-time")
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend4 (mkLegend "legend-leading")
+                                            _ <- widgetHold (return ()) $ ffor ePilotLegend5 (mkLegend "legend-arrival")
+                                            return ()
 
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-effort" <$> ePilotLegend2
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-time" <$> ePilotLegend3
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-leading" <$> ePilotLegend4
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-arrival" <$> ePilotLegend5
-                                                return ()
                                 return ()
                     return ()
 
