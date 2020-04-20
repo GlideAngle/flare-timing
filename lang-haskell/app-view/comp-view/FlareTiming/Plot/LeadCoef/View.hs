@@ -75,12 +75,11 @@ leadCoefPlot _ix tweak sEx xs = do
                     let dTableClass = ffor dPilot (\p -> "table is-striped" <> if p == nullPilot then " is-hidden" else "")
                     elClass "div" "level" $
                             elClass "div" "level-item" $ do
-                                _ <- elDynClass "table" dTableClass $
+                                _ <- elDynClass "table" dTableClass $ do
                                         el "thead" $ do
                                             el "tr" $ do
                                                 el "th" $ text ""
                                                 el "th" . dynText $ ffor w hashIdHyphenPilot
-
                                                 return ()
 
                                             el "tr" $ do
@@ -106,6 +105,17 @@ leadCoefPlot _ix tweak sEx xs = do
                                             el "tr" $ do
                                                 _ <- widgetHold (el "span" $ text "") $
                                                             pilotLegend "legend-arrival" <$> ePilotLegend5
+                                                return ()
+
+                                        el "tfoot" $ do
+                                            el "tr" $ do
+                                                el "td" $ text "─"
+                                                el "td" $ text "GAP Equation"
+                                                return ()
+
+                                            el "tr" $ do
+                                                el "td" $ text "- -"
+                                                el "td" $ text "FS equation"
                                                 return ()
 
                                 return ()
