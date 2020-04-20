@@ -318,7 +318,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                                 PlotTabLead -> do
                                     tabPlotLead <- tabsPlotLead
-                                    let plotLeadCoef = leadCoefPlot tweak sEx ld
+                                    let plotLeadCoef = leadCoefPlot ix tweak sEx ld
                                     _ <- widgetHold (plotLeadCoef) $
                                             (\case
                                                 PlotLeadTabPoint -> plotLeadCoef

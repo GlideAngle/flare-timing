@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.LeadCoef.Table (tablePilotCoef) where
 
 import Reflex.Dom
@@ -15,21 +17,29 @@ tablePilotCoef
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
-    -> m ()
-tablePilotCoef tweak sEx xs = do
-    _ <- dyn $ ffor tweak (\case
-        Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> tablePilotSimple xs
-        _ -> tablePilotCompare tweak sEx xs)
+    -> Dynamic t [Pilot]
+    -> m (Event t Pilot)
+tablePilotCoef tweak sEx xs select = do
+    ev <- dyn $ ffor tweak (\case
+        Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> do
+            ePilot <- tablePilotSimple xs select
+            return ePilot
 
-    return ()
+        _ -> do
+            ePilot <- tablePilotCompare tweak sEx xs select
+            return ePilot)
+
+    ePilot <- switchHold never ev
+    return ePilot
 
 tablePilotSimple
     :: MonadWidget t m
     => Dynamic t [(Pilot, TrackLead)]
-    -> m ()
-tablePilotSimple xs = do
+    -> Dynamic t [Pilot]
+    -> m (Event t Pilot)
+tablePilotSimple xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    _ <- elClass "table" "table is-striped" $ do
+    ePilot :: Event _ Pilot <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "Coef"
@@ -38,34 +48,45 @@ tablePilotSimple xs = do
 
                     return ()
 
-            el "tbody" $ do
-                simpleList xs (uncurry (rowLeadSimple w) . splitDynPure)
+            ev <- el "tbody" $ do
+                ePilots <- simpleList xs (uncurry (rowLeadSimple w select) . splitDynPure)
+                let ePilot' = switchDyn $ leftmost <$> ePilots
+                return ePilot'
 
-    return ()
+            return ev
 
+    return ePilot
 rowLeadSimple
     :: MonadWidget t m
     => Dynamic t Int
+    -> Dynamic t [Pilot]
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
-    -> m ()
-rowLeadSimple w pilot av = do
-    el "tr" $ do
+    -> m (Event t Pilot)
+rowLeadSimple w select p av = do
+    pilot <- sample $ current p
+    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
+
+    (eRow, _) <- elDynClass' "tr" rowClass $ do
         el "td" . dynText $ showCoef . coef <$> av
         el "td" . dynText $ showLeadingFrac . frac <$> av
-        el "td" . dynText $ ffor2 w pilot showPilot
+        el "td" . dynText $ ffor2 w p showPilot
 
         return ()
+
+    let ePilot = const pilot <$> domEvent Click eRow
+    return ePilot
 
 tablePilotCompare
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
-    -> m ()
-tablePilotCompare _ sEx xs = do
+    -> Dynamic t [Pilot]
+    -> m (Event t Pilot)
+tablePilotCompare _ sEx xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    _ <- elClass "table" "table is-striped" $ do
+    ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3") $ text "Coefficient"
@@ -83,24 +104,28 @@ tablePilotCompare _ sEx xs = do
 
                     return ()
 
-            _ <- dyn $ ffor sEx (\sEx' -> do
+            ev <- dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
 
-                    el "tbody" $
-                        simpleList xs (uncurry (rowLeadCompare w mapN) . splitDynPure))
+                    ePilots <- el "tbody" $
+                        simpleList xs (uncurry (rowLeadCompare w mapN select) . splitDynPure)
+                    let ePilot' = switchDyn $ leftmost <$> ePilots
+                    return ePilot')
 
-            return ()
-    return ()
+            return ev
+    ePilot <- switchHold never ev
+    return ePilot
 
 rowLeadCompare
     :: MonadWidget t m
     => Dynamic t Int
     -> Map.Map Pilot Norm.NormBreakdown
+    -> Dynamic t [Pilot]
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
-    -> m ()
-rowLeadCompare w mapN p tl = do
-    (yCoef, yCoefDiff, yFrac, yFracDiff) <- sample . current
+    -> m (Event t Pilot)
+rowLeadCompare w mapN select p tl = do
+    (pilot, yCoef, yCoefDiff, yFrac, yFracDiff) <- sample . current
                 $ ffor2 p tl (\pilot TrackLead{coef, frac} ->
                     case Map.lookup pilot mapN of
                         Just
@@ -108,16 +133,18 @@ rowLeadCompare w mapN p tl = do
                                 { leadingCoef = coef'
                                 , fractions = Fractions{leading = frac'}
                                 } ->
-                            ( showCoef coef'
+                            ( pilot
+                            , showCoef coef'
                             , showCoefDiff coef' coef
-
                             , showLeadingFrac frac'
                             , showLeadingFracDiff frac' frac
                             )
 
-                        _ -> ("", "", "", ""))
+                        _ -> (pilot, "", "", "", ""))
 
-    el "tr" $ do
+    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
+
+    (eRow, _) <- elDynClass' "tr" rowClass $ do
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
         elClass "td" "td-norm td-norm" . text $ yCoef
         elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
@@ -127,3 +154,6 @@ rowLeadCompare w mapN p tl = do
         el "td" . dynText $ ffor2 w p showPilot
 
         return ()
+
+    let ePilot = const pilot <$> domEvent Click eRow
+    return ePilot
