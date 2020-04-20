@@ -22,18 +22,18 @@ foreign import javascript unsafe
     \, data: [{\
     \    points: $4\
     \  , fnType: 'points'\
-    \  , color: '#e41a1c'\
+    \  , color: '#808080'\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $5\
     \  , fnType: 'points'\
-    \  , color: '#e41a1c'\
+    \  , color: '#808080'\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $6\
     \  , fnType: 'points'\
-    \  , color: '#e41a1c'\
+    \  , color: '#1e1e1e'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter'\
     \  },{\
