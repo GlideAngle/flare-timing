@@ -46,35 +46,9 @@ leadCoefPlot
 leadCoefPlot ix tweak sEx xs = do
     pb <- delay 1 =<< getPostBuild
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    let pilotLegend classes (pp, areas) = do
+    let pilotLegend classes (pp, _) = do
             el "td" $ elClass "span" classes $ text "▩"
             el "td" . dynText $ ffor w (flip showPilot $ pp)
-            case areas of
-                Nothing -> do
-                    elAttr "td" ("colspan" =: "3") $ text ""
-                    return ()
-
-                Just
-                    LeadingAreas
-                        { areaFlown = LeadingAreaSquared af
-                        , areaAfterLanding = LeadingAreaSquared al
-                        , areaBeforeStart = LeadingAreaSquared bs
-                        }
-                  | af == 0 && al == 0 && bs == 0 -> do
-                    elAttr "td" ("colspan" =: "5") $ text ""
-                    return ()
-
-                Just LeadingAreas{areaFlown = af, areaAfterLanding = al, areaBeforeStart = bs} -> do
-                    let afl = af + al
-                    let abfl = bs + afl
-
-                    elClass "td" "has-text-right" . text $ showAreaSquared bs
-                    elClass "td" "has-text-right has-text-weight-bold" . text $ showAreaSquared af
-                    elClass "td" "has-text-right" . text $ showAreaSquared al
-                    elClass "td" "has-text-right has-text-weight-bold" . text $ showAreaSquared afl
-                    elClass "td" "has-text-right" . text $ showAreaSquared abfl
-
-                    return ()
             return ()
 
     elClass "div" "tile is-ancestor" $ mdo
@@ -107,11 +81,6 @@ leadCoefPlot ix tweak sEx xs = do
                                             el "tr" $ do
                                                 el "th" $ text ""
                                                 el "th" . dynText $ ffor w hashIdHyphenPilot
-                                                elClass "th" "has-text-right" $ text "b = Before"
-                                                elClass "th" "has-text-right" $ text "f = Flown"
-                                                elClass "th" "has-text-right" $ text "a = After"
-                                                elClass "th" "has-text-right" $ text "f + a"
-                                                elClass "th" "has-text-right" $ text "b + f + a"
 
                                                 return ()
                                             el "tr" $ do
