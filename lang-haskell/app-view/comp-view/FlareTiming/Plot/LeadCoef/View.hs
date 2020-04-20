@@ -46,7 +46,7 @@ leadCoefPlot
 leadCoefPlot ix tweak sEx xs = do
     pb <- delay 1 =<< getPostBuild
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    let pilotLegend classes (pp, _) = do
+    let pilotLegend classes pp = do
             el "td" $ elClass "span" classes $ text "▩"
             el "td" . dynText $ ffor w (flip showPilot $ pp)
             return ()
@@ -57,21 +57,21 @@ leadCoefPlot ix tweak sEx xs = do
                 elClass "div" "tile is-child" $ do
                     let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
 
-                    _ <- elDynClass "article" dMsgClass $ do
-                            elClass "div" "message-header" $ do
-                                el "p" $ text "Plot Instructions"
-                            elClass "div" "message-body" $
-                                text "Tap a row to plot distance versus time and visualise area."
-
-                            return ()
-
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ leftmost
-                            [ ffor eAreas (\_ -> liftIO $ do
+                            [ ffor eRedraw (\_ -> liftIO $ do
                                 let ld = snd . unzip $ ld'
                                 _ <- P.leadCoefPlot (_element_raw elPlot) (lcRange ld) (placings ld)
                                 return ())
                             ]
+
+                    _ <- elDynClass "article" dMsgClass $ do
+                            elClass "div" "message-header" $ do
+                                el "p" $ text "Plot Instructions"
+                            elClass "div" "message-body" $
+                                text "Tap a row to highlight that pilot's point on the plot."
+
+                            return ()
 
                     let dTableClass = ffor dPilot (\p -> "table is-striped" <> if p == nullPilot then " is-hidden" else "")
                     elClass "div" "level" $
@@ -96,16 +96,10 @@ leadCoefPlot ix tweak sEx xs = do
         ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots
         dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
 
-        area :: Event _ RawLeadingArea <- getTaskPilotArea ix (updated dPilot)
-        pilotArea :: Dynamic _ (Pilot, RawLeadingArea) <- holdDyn (nullPilot, nullArea) (attachPromptlyDyn dPilot area)
-        pilotArea' :: Dynamic _ (Pilot, RawLeadingArea) <- holdUniqDyn pilotArea
-
-        let pilotAreas :: [(Pilot, RawLeadingArea)] = take 1 $ repeat (nullPilot, nullArea)
-        dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take 1 $ pa : pas) pilotAreas (updated pilotArea')
-        let dPilots :: Dynamic _ [Pilot] = ffor dPilotAreas (fmap fst)
-        let ePilotAreas :: Event _ [(Pilot, RawLeadingArea)] = updated dPilotAreas
-        let ePilotLegends :: Event _ [(Pilot, Maybe _)] = ffor ePilotAreas ((fmap . fmap) (Just . areas))
-        let eAreas :: Event _ [RawLeadingArea] = ffor ePilotAreas (fmap snd)
+        let pilots :: [Pilot] = take 1 $ repeat nullPilot
+        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take 1 $ pa : pas) pilots (updated dPilot)
+        let ePilots :: Event _ [Pilot] = updated dPilots
+        let eRedraw = leftmost [pb, () <$ ePilots]
 
         ePilotLegend1 <-
             updated
@@ -114,8 +108,8 @@ leadCoefPlot ix tweak sEx xs = do
                         case take 1 $ ps ++ repeat np of
                             p : _ -> p
                             _ -> np)
-                    (nullPilot, Nothing)
-                    ePilotLegends
+                    nullPilot
+                    ePilots
 
         return ()
     return ()
