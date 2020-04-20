@@ -125,6 +125,7 @@ leadAreaPlot ix tweak sEx xs = do
                                                 elClass "th" "has-text-right" $ text "b + f + a"
 
                                                 return ()
+
                                             el "tr" $ do
                                                 _ <- widgetHold (el "span" $ text "") $
                                                             pilotLegend "legend-reach" <$> ePilotLegend1

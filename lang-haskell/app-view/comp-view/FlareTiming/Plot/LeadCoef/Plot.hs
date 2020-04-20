@@ -39,12 +39,36 @@ foreign import javascript unsafe
     \  },{\
     \    points: $7\
     \  , fnType: 'points'\
-    \  , color: '#00d1b2'\
+    \  , color: '#377eb8'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $8\
+    \  , fnType: 'points'\
+    \  , color: '#ff7f00'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $9\
+    \  , fnType: 'points'\
+    \  , color: '#4daf4a'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $10\
+    \  , fnType: 'points'\
+    \  , color: '#e41a1c'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $11\
+    \  , fnType: 'points'\
+    \  , color: '#984ea3'\
     \  , attr: { r: 9 }\
     \  , graphType: 'scatter'\
     \  }]\
     \})"
-    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 leadCoefPlot
     :: IsElement e
@@ -73,9 +97,13 @@ leadCoefPlot e (lcMin, lcMax) xs ys = do
     xyfn' <- toJSValListOf xyfn
     xyfnFS' <- toJSValListOf xyfnFS
     xs' <- toJSValListOf $ nub xs
-    ys' <- toJSValListOf $ nub ys
+    ys1 <- toJSValListOf $ take 1 ys
+    ys2 <- toJSValListOf $ take 1 $ drop 1 ys
+    ys3 <- toJSValListOf $ take 1 $ drop 2 ys
+    ys4 <- toJSValListOf $ take 1 $ drop 3 ys
+    ys5 <- toJSValListOf $ take 1 $ drop 4 ys
 
-    Plot <$> plot_ (unElement . toElement $ e) lcMin' lcMax' xyfn' xyfnFS' xs' ys'
+    Plot <$> plot_ (unElement . toElement $ e) lcMin' lcMax' xyfn' xyfnFS' xs' ys1 ys2 ys3 ys4 ys5
 
 -- | The equation from the GAP rules.
 fnGAP :: Double -> Double -> Double

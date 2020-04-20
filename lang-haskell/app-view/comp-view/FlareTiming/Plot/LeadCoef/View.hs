@@ -82,9 +82,30 @@ leadCoefPlot _ix tweak sEx xs = do
                                                 el "th" . dynText $ ffor w hashIdHyphenPilot
 
                                                 return ()
+
                                             el "tr" $ do
                                                 _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-select" <$> ePilotLegend1
+                                                            pilotLegend "legend-reach" <$> ePilotLegend1
+                                                return ()
+
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-effort" <$> ePilotLegend2
+                                                return ()
+
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-time" <$> ePilotLegend3
+                                                return ()
+
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-leading" <$> ePilotLegend4
+                                                return ()
+
+                                            el "tr" $ do
+                                                _ <- widgetHold (el "span" $ text "") $
+                                                            pilotLegend "legend-arrival" <$> ePilotLegend5
                                                 return ()
 
                                 return ()
@@ -95,8 +116,8 @@ leadCoefPlot _ix tweak sEx xs = do
         ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots
         dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
 
-        let pilots :: [Pilot] = take 1 $ repeat nullPilot
-        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take 1 $ pa : pas) pilots (updated dPilot)
+        let pilots :: [Pilot] = take 5 $ repeat nullPilot
+        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilots (updated dPilot)
         let ePilots :: Event _ [Pilot] = updated dPilots
         let eRedraw = leftmost [[] <$ pb, ePilots]
 
@@ -110,5 +131,46 @@ leadCoefPlot _ix tweak sEx xs = do
                     nullPilot
                     ePilots
 
+        ePilotLegend2 <-
+            updated
+            <$> foldDyn
+                    (\ps np ->
+                        case take 1 . drop 1 $ (ps ++ repeat np) of
+                            p : _ -> p
+                            _ -> np)
+                    nullPilot
+                    ePilots
+
+        ePilotLegend3 <-
+            updated
+            <$> foldDyn
+                    (\ps np ->
+                        case take 1 . drop 2 $ (ps ++ repeat np) of
+                            p : _ -> p
+                            _ -> np)
+                    nullPilot
+                    ePilots
+
+        ePilotLegend4 <-
+            updated
+            <$> foldDyn
+                    (\ps np ->
+                        case take 1 . drop 3 $ (ps ++ repeat np) of
+                            p : _ -> p
+                            _ -> np)
+                    nullPilot
+                    ePilots
+
+        ePilotLegend5 <-
+            updated
+            <$> foldDyn
+                    (\ps np ->
+                        case take 1 . drop 4 $ (ps ++ repeat np) of
+                            p : _ -> p
+                            _ -> np)
+                    nullPilot
+                    ePilots
+
         return ()
+
     return ()
