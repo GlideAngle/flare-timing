@@ -119,25 +119,6 @@ leadCoefPlot ix tweak sEx xs = do
                                                             pilotLegend "legend-reach" <$> ePilotLegend1
                                                 return ()
 
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-effort" <$> ePilotLegend2
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-time" <$> ePilotLegend3
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-leading" <$> ePilotLegend4
-                                                return ()
-
-                                            el "tr" $ do
-                                                _ <- widgetHold (el "span" $ text "") $
-                                                            pilotLegend "legend-arrival" <$> ePilotLegend5
-                                                return ()
                                 return ()
                     return ()
 
@@ -150,8 +131,8 @@ leadCoefPlot ix tweak sEx xs = do
         pilotArea :: Dynamic _ (Pilot, RawLeadingArea) <- holdDyn (nullPilot, nullArea) (attachPromptlyDyn dPilot area)
         pilotArea' :: Dynamic _ (Pilot, RawLeadingArea) <- holdUniqDyn pilotArea
 
-        let pilotAreas :: [(Pilot, RawLeadingArea)] = take 5 $ repeat (nullPilot, nullArea)
-        dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilotAreas (updated pilotArea')
+        let pilotAreas :: [(Pilot, RawLeadingArea)] = take 1 $ repeat (nullPilot, nullArea)
+        dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take 1 $ pa : pas) pilotAreas (updated pilotArea')
         let dPilots :: Dynamic _ [Pilot] = ffor dPilotAreas (fmap fst)
         let ePilotAreas :: Event _ [(Pilot, RawLeadingArea)] = updated dPilotAreas
         let ePilotLegends :: Event _ [(Pilot, Maybe _)] = ffor ePilotAreas ((fmap . fmap) (Just . areas))
@@ -162,46 +143,6 @@ leadCoefPlot ix tweak sEx xs = do
             <$> foldDyn
                     (\ps np ->
                         case take 1 $ ps ++ repeat np of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    ePilotLegends
-
-        ePilotLegend2 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 1 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    ePilotLegends
-
-        ePilotLegend3 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 2 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    ePilotLegends
-
-        ePilotLegend4 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 3 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    ePilotLegends
-
-        ePilotLegend5 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 4 $ (ps ++ repeat np) of
                             p : _ -> p
                             _ -> np)
                     (nullPilot, Nothing)
