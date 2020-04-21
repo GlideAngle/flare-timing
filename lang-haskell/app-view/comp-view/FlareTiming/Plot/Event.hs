@@ -19,6 +19,13 @@ import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.LeadCoef.Table (tablePilotCoef)
 import FlareTiming.Events (IxTask(..))
 
+mkLegend :: MonadWidget t m => Dynamic t Int -> Text -> Pilot -> m ()
+mkLegend w classes pp = when (pp /= nullPilot) $ do
+    el "tr" $ do
+        el "td" $ elClass "span" classes $ text "▩"
+        el "td" . dynText $ ffor w (flip showPilot $ pp)
+        return ()
+
 legendClasses :: [Text]
 legendClasses = fmap ("legend-" <>) ["reach", "effort", "time", "leading", "arrival"]
 

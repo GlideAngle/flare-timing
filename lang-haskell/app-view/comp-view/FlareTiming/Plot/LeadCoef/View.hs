@@ -3,12 +3,8 @@
 module FlareTiming.Plot.LeadCoef.View (leadCoefPlot) where
 
 import Reflex.Dom
-import Reflex.Time (delay)
-import Data.Text (Text)
 import Data.List (find)
 import Data.Maybe (catMaybes)
-import Control.Monad (when)
-import Control.Monad.Fix (MonadFix(..))
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import qualified FlareTiming.Plot.LeadCoef.Plot as P (leadCoefPlot)
 
@@ -17,10 +13,10 @@ import WireTypes.Comp (Tweak(..))
 import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
-import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
+import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.LeadCoef.Table (tablePilotCoef)
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Plot.Event (legendClasses, numLegendPilots, selectPilots)
+import FlareTiming.Plot.Event (mkLegend, legendClasses, numLegendPilots, selectPilots)
 
 placings :: [TrackLead] -> [[Double]]
 placings = fmap xy
@@ -44,11 +40,6 @@ leadCoefPlot
     -> m ()
 leadCoefPlot _ix tweak sEx xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    let mkLegend classes pp = when (pp /= nullPilot) $ do
-            el "tr" $ do
-                el "td" $ elClass "span" classes $ text "▩"
-                el "td" . dynText $ ffor w (flip showPilot $ pp)
-                return ()
 
     elClass "div" "tile is-ancestor" $ mdo
         elClass "div" "tile is-7" $
@@ -87,7 +78,7 @@ leadCoefPlot _ix tweak sEx xs = do
                                                 return ()
 
                                             sequence_
-                                                [ widgetHold (return ()) $ ffor e (mkLegend c)
+                                                [ widgetHold (return ()) $ ffor e (mkLegend w c)
                                                 | c <- legendClasses
                                                 | e <- [e1, e2, e3, e4, e5]
                                                 ]

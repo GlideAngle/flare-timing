@@ -56,6 +56,7 @@ tablePilotSimple xs select = do
             return ev
 
     return ePilot
+
 rowLeadSimple
     :: MonadWidget t m
     => Dynamic t Int

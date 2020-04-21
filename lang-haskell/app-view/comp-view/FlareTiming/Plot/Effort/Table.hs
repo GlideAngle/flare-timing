@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.Effort.Table (tableEffort) where
 
 import Reflex.Dom
@@ -20,10 +22,11 @@ tableEffort
     :: MonadWidget t m
     => Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackEffort)]
-    -> m ()
-tableEffort sEx xs = do
+    -> Dynamic t [Pilot]
+    -> m (Event t Pilot)
+tableEffort sEx xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    _ <- elClass "table" "table is-striped" $ do
+    ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" (("colspan" =: "3") <> ("class" =: "th-plot-effort"))
@@ -49,25 +52,32 @@ tableEffort sEx xs = do
 
                     return ()
 
-            _ <- dyn $ ffor sEx (\sEx' -> do
+            ev <- dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
 
-                    el "tbody" $
-                        simpleList xs (uncurry (rowEffort w mapN). splitDynPure))
+                    ePilots <- el "tbody" $
+                        simpleList xs (uncurry (rowEffort w select mapN). splitDynPure)
+                    let ePilot' = switchDyn $ leftmost <$> ePilots
+                    return ePilot')
 
-            return ()
-    return ()
+            return ev
+    ePilot <- switchHold never ev
+    return ePilot
 
 rowEffort
     :: MonadWidget t m
     => Dynamic t Int
+    -> Dynamic t [Pilot]
     -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackEffort
-    -> m ()
-rowEffort w mapN p te = do
+    -> m (Event t Pilot)
+rowEffort w select mapN p te = do
+    pilot <- sample $ current p
+    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
+
     (yEffort, yEffortDiff, yFrac, yFracDiff) <- sample . current
-            $ ffor2 p te (\pilot TrackEffort{effort, frac} ->
+            $ ffor2 p te (\p' TrackEffort{effort, frac} ->
                 fromMaybe ("", "", "", "") $ do
                     Norm.NormBreakdown
                         { landedMade = effortN
@@ -77,7 +87,7 @@ rowEffort w mapN p te = do
                                 , effort = eFracN
                                 , distance = dFracN
                                 }
-                        } <- Map.lookup pilot mapN
+                        } <- Map.lookup p' mapN
 
                     let quieten s =
                             case (rFracN, eFracN, dFracN) of
@@ -93,7 +103,7 @@ rowEffort w mapN p te = do
                         , quieten $ showEffortFracDiff eFracN frac
                         ))
 
-    el "tr" $ do
+    (eRow, _) <- elDynClass' "tr" rowClass $ do
         elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> te
         elClass "td" "td-norm" $ text yEffort
         elClass "td" "td-norm" $ text yEffortDiff
@@ -106,3 +116,5 @@ rowEffort w mapN p te = do
 
         return ()
 
+    let ePilot = const pilot <$> domEvent Click eRow
+    return ePilot
