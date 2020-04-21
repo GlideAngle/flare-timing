@@ -58,9 +58,6 @@ reachPlot task sEx xs xsBonus = do
 
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-reach") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ ffor eRedraw (\ps -> liftIO $ do
-                        let reaches = snd . unzip $ ys
-                        let reaches' = snd . unzip $ ysBonus
-
                         let ys' =
                                 catMaybes $
                                 [ find (\(Pilot (qid, _), _) -> pid == qid) ys
@@ -73,6 +70,12 @@ reachPlot task sEx xs xsBonus = do
                                 | Pilot (pid, _) <- ps
                                 ]
 
+                        let reaches = snd . unzip $ ys
+                        let reachesBonus = snd . unzip $ ysBonus
+
+                        let reaches' = snd . unzip $ ys'
+                        let reachesBonus' = snd . unzip $ ysBonus'
+
                         let tt = timeRange reaches
 
                         _ <-
@@ -80,9 +83,9 @@ reachPlot task sEx xs xsBonus = do
                                 P.reachPlot
                                     (_element_raw elPlot)
                                     tt
-                                    (placings reaches)
+                                    (placings reachesBonus)
                                     (reValue ys ysBonus)
-                                    (placings reaches')
+                                    (placings reachesBonus')
                                     (reValue ys' ysBonus')
                             else
                                 P.reachPlot
