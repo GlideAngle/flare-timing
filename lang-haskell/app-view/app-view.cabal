@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3fd0bccfa82e29f19e9c97ffc749125efb112fe964110f687c208c80220f57f9
+-- hash: 244b3c03a7d10c94536d64e3628f4b81b16b6ec787038e37a88819972ed36d50
 
 name:           app-view
 version:        0.1.0
@@ -55,9 +55,10 @@ executable comp-view
       FlareTiming.Nav.TabTask
       FlareTiming.Pilot
       FlareTiming.Plot.Arrival
-      FlareTiming.Plot.Arrival.PlotPosition
-      FlareTiming.Plot.Arrival.PlotTime
-      FlareTiming.Plot.Arrival.View
+      FlareTiming.Plot.ArrivalPosition.Plot
+      FlareTiming.Plot.ArrivalPosition.View
+      FlareTiming.Plot.ArrivalTime.Plot
+      FlareTiming.Plot.ArrivalTime.View
       FlareTiming.Plot.Effort
       FlareTiming.Plot.Effort.Plot
       FlareTiming.Plot.Effort.Table

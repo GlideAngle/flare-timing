@@ -1,7 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Arrival.PlotPosition (hgPlotPosition) where
+module FlareTiming.Plot.ArrivalPosition.Plot (hgPlotPosition) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)

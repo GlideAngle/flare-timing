@@ -1,13 +1,13 @@
 module FlareTiming.Plot.Arrival (arrivalPlot) where
 
-import Data.Maybe (fromMaybe)
 import Reflex.Dom
+import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text)
 
 import WireTypes.Arrival (TrackArrival(..))
 import WireTypes.Comp (Discipline(..), Tweak(..))
-import qualified FlareTiming.Plot.Arrival.View as V
-    (arrivalPositionPlot, arrivalTimePlot)
+import qualified FlareTiming.Plot.ArrivalPosition.View as V (arrivalPositionPlot)
+import qualified FlareTiming.Plot.ArrivalTime.View as V (arrivalTimePlot)
 import WireTypes.Pilot (Pilot(..))
 
 noPg :: T.Text
