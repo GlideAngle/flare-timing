@@ -88,9 +88,9 @@ leadCoefPlot _ix tweak sEx xs = do
                                                 return ()
 
                                             sequence_
-                                                [ widgetHold (return ()) $ ffor eNth (mkLegend c)
+                                                [ widgetHold (return ()) $ ffor e (mkLegend c)
                                                 | c <- classLegends
-                                                | eNth <- [e1, e2, e3, e4, e5]
+                                                | e <- [e1, e2, e3, e4, e5]
                                                 ]
 
                                             return ()
@@ -144,4 +144,7 @@ selectPilots dPilots x = do
                         es
 
     [e1, e2, e3, e4, e5] <- sequence $ nth <$> [0 .. 4]
+
+    -- TODO: Find out why I get "cyclic evaluation in fixIO" if I pass a list
+    -- rather than 5-tuple for the legend events with selected pilots.
     return (dPilot, eRedraw, (e1, e2, e3, e4, e5))
