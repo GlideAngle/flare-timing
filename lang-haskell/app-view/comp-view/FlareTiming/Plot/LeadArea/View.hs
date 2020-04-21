@@ -128,11 +128,11 @@ leadAreaPlot ix tweak sEx xs = do
 
                                                 return ()
 
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend1 (mkLegend "legend-reach")
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend2 (mkLegend "legend-effort")
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend3 (mkLegend "legend-time")
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend4 (mkLegend "legend-leading")
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend5 (mkLegend "legend-arrival")
+                                            _ <- widgetHold (return ()) $ ffor e1 (mkLegend "legend-reach")
+                                            _ <- widgetHold (return ()) $ ffor e2 (mkLegend "legend-effort")
+                                            _ <- widgetHold (return ()) $ ffor e3 (mkLegend "legend-time")
+                                            _ <- widgetHold (return ()) $ ffor e4 (mkLegend "legend-leading")
+                                            _ <- widgetHold (return ()) $ ffor e5 (mkLegend "legend-arrival")
                                             return ()
 
                                 return ()
@@ -149,10 +149,10 @@ leadAreaPlot ix tweak sEx xs = do
         dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilotAreas (updated pilotArea')
         let dPilots :: Dynamic _ [Pilot] = ffor dPilotAreas (fmap fst)
         let ePilotAreas :: Event _ [(Pilot, RawLeadingArea)] = updated dPilotAreas
-        let ePilotLegends :: Event _ [(Pilot, Maybe _)] = ffor ePilotAreas ((fmap . fmap) (Just . areas))
+        let es :: Event _ [(Pilot, Maybe _)] = ffor ePilotAreas ((fmap . fmap) (Just . areas))
         let eAreas :: Event _ [RawLeadingArea] = ffor ePilotAreas (fmap snd)
 
-        ePilotLegend1 <-
+        e1 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -160,9 +160,9 @@ leadAreaPlot ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     (nullPilot, Nothing)
-                    ePilotLegends
+                    es
 
-        ePilotLegend2 <-
+        e2 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -170,9 +170,9 @@ leadAreaPlot ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     (nullPilot, Nothing)
-                    ePilotLegends
+                    es
 
-        ePilotLegend3 <-
+        e3 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -180,9 +180,9 @@ leadAreaPlot ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     (nullPilot, Nothing)
-                    ePilotLegends
+                    es
 
-        ePilotLegend4 <-
+        e4 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -190,9 +190,9 @@ leadAreaPlot ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     (nullPilot, Nothing)
-                    ePilotLegends
+                    es
 
-        ePilotLegend5 <-
+        e5 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -200,7 +200,7 @@ leadAreaPlot ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     (nullPilot, Nothing)
-                    ePilotLegends
+                    es
 
         return ()
 

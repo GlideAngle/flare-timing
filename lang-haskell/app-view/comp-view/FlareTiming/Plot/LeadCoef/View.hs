@@ -85,11 +85,11 @@ leadCoefPlot _ix tweak sEx xs = do
                                                 el "th" . dynText $ ffor w hashIdHyphenPilot
                                                 return ()
 
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend1 (mkLegend "legend-reach")
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend2 (mkLegend "legend-effort")
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend3 (mkLegend "legend-time")
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend4 (mkLegend "legend-leading")
-                                            _ <- widgetHold (return ()) $ ffor ePilotLegend5 (mkLegend "legend-arrival")
+                                            _ <- widgetHold (return ()) $ ffor e1 (mkLegend "legend-reach")
+                                            _ <- widgetHold (return ()) $ ffor e2 (mkLegend "legend-effort")
+                                            _ <- widgetHold (return ()) $ ffor e3 (mkLegend "legend-time")
+                                            _ <- widgetHold (return ()) $ ffor e4 (mkLegend "legend-leading")
+                                            _ <- widgetHold (return ()) $ ffor e5 (mkLegend "legend-arrival")
                                             return ()
 
                                         el "tfoot" $ do
@@ -113,10 +113,10 @@ leadCoefPlot _ix tweak sEx xs = do
 
         let pilots :: [Pilot] = take 5 $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilots (updated dPilot)
-        let ePilots :: Event _ [Pilot] = updated dPilots
-        let eRedraw = leftmost [[] <$ pb, ePilots]
+        let es :: Event _ [Pilot] = updated dPilots
+        let eRedraw = leftmost [[] <$ pb, es]
 
-        ePilotLegend1 <-
+        e1 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -124,9 +124,9 @@ leadCoefPlot _ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     nullPilot
-                    ePilots
+                    es
 
-        ePilotLegend2 <-
+        e2 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -134,9 +134,9 @@ leadCoefPlot _ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     nullPilot
-                    ePilots
+                    es
 
-        ePilotLegend3 <-
+        e3 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -144,9 +144,9 @@ leadCoefPlot _ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     nullPilot
-                    ePilots
+                    es
 
-        ePilotLegend4 <-
+        e4 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -154,9 +154,9 @@ leadCoefPlot _ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     nullPilot
-                    ePilots
+                    es
 
-        ePilotLegend5 <-
+        e5 <-
             updated
             <$> foldDyn
                     (\ps np ->
@@ -164,7 +164,7 @@ leadCoefPlot _ix tweak sEx xs = do
                             p : _ -> p
                             _ -> np)
                     nullPilot
-                    ePilots
+                    es
 
         return ()
 
