@@ -42,6 +42,8 @@ leadCoefPlot
     -> m ()
 leadCoefPlot _ix tweak sEx xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
+    let classLegends = fmap ("legend-" <>) ["reach", "effort", "time", "leading", "arrival"]
+    let n = length classLegends
 
     let mkLegend classes pp = when (pp /= nullPilot) $ do
             el "tr" $ do
@@ -85,11 +87,12 @@ leadCoefPlot _ix tweak sEx xs = do
                                                 el "th" . dynText $ ffor w hashIdHyphenPilot
                                                 return ()
 
-                                            _ <- widgetHold (return ()) $ ffor e1 (mkLegend "legend-reach")
-                                            _ <- widgetHold (return ()) $ ffor e2 (mkLegend "legend-effort")
-                                            _ <- widgetHold (return ()) $ ffor e3 (mkLegend "legend-time")
-                                            _ <- widgetHold (return ()) $ ffor e4 (mkLegend "legend-leading")
-                                            _ <- widgetHold (return ()) $ ffor e5 (mkLegend "legend-arrival")
+                                            sequence_
+                                                [ widgetHold (return ()) $ ffor eNth (mkLegend c)
+                                                | c <- classLegends
+                                                | eNth <- [e1, e2, e3, e4, e5]
+                                                ]
+
                                             return ()
 
                                         el "tfoot" $ do
@@ -108,8 +111,8 @@ leadCoefPlot _ix tweak sEx xs = do
 
         ys <- sample $ current xs
 
-        let pilots :: [Pilot] = take 5 $ repeat nullPilot
-        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilots (updated dPilot)
+        let pilots :: [Pilot] = take n $ repeat nullPilot
+        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take n $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
             <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots')
 
