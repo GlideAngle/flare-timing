@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.Time.Table (tableSpeed) where
 
 import Reflex.Dom
@@ -21,10 +23,11 @@ tableSpeed
     => Dynamic t [StartGate]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackSpeed)]
-    -> m ()
-tableSpeed sgs sEx xs = do
+    -> Dynamic t [Pilot]
+    -> m (Event t Pilot)
+tableSpeed sgs sEx xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    _ <- elClass "table" "table is-striped" $ do
+    ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "2")
@@ -49,26 +52,33 @@ tableSpeed sgs sEx xs = do
 
                     return ()
 
-            _ <- dyn $ ffor sEx (\sEx' -> do
+            ev <- dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
 
-                    el "tbody" $
-                        simpleList xs (uncurry (rowSpeed w mapN) . splitDynPure))
+                    ePilots <- el "tbody" $
+                        simpleList xs (uncurry (rowSpeed w select mapN) . splitDynPure)
+                    let ePilot' = switchDyn $ leftmost <$> ePilots
+                    return ePilot')
 
-            return ()
-    return ()
+            return ev
+    ePilot <- switchHold never ev
+    return ePilot
 
 rowSpeed
     :: MonadWidget t m
     => Dynamic t Int
+    -> Dynamic t [Pilot]
     -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackSpeed
-    -> m ()
-rowSpeed w mapN p ts = do
+    -> m (Event t Pilot)
+rowSpeed w select mapN p ts = do
+    pilot <- sample $ current p
+    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
+
     (yTime, yTimeDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p ts (\pilot TrackSpeed{time, frac} ->
-                    case Map.lookup pilot mapN of
+                $ ffor2 p ts (\p' TrackSpeed{time, frac} ->
+                    case Map.lookup p' mapN of
                         Just
                             Norm.NormBreakdown
                                 { timeElapsed = timeN
@@ -83,7 +93,7 @@ rowSpeed w mapN p ts = do
 
                         _ -> ("", "", "", ""))
 
-    el "tr" $ do
+    (eRow, _) <- elDynClass' "tr" rowClass $ do
         el "td" . dynText $ showHr . Speed.time <$> ts
         el "td" . dynText $ showHms . Speed.time <$> ts
         elClass "td" "td-norm td-norm-pace" . text $ yTime
@@ -94,6 +104,9 @@ rowSpeed w mapN p ts = do
         el "td" . dynText $ ffor2 w p showPilot
 
         return ()
+
+    let ePilot = const pilot <$> domEvent Click eRow
+    return ePilot
 
 showHr :: PilotTime -> T.Text
 showHr (PilotTime x) = showHours x

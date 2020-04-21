@@ -84,7 +84,7 @@ leadCoefPlot _ix tweak sEx xs = do
                                                 return ()
 
                                             el "tr" $ do
-                                                el "td" $ text "- -"
+                                                el "td" $ text "--"
                                                 el "td" $ text "FS equation"
                                                 return ()
 
