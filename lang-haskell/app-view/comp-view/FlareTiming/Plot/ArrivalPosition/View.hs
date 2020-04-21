@@ -13,7 +13,8 @@ import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.ArrivalPosition.Table (tableArrivalPosition)
-import FlareTiming.Plot.Event (mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
+import FlareTiming.Plot.Event
+    (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
 placings :: [TrackArrival] -> ([[Double]], [[Double]])
 placings arrivals =
@@ -58,10 +59,9 @@ arrivalPositionPlot xs xsN = do
                         _ <- P.hgPlotPosition (_element_raw elPlot) (placings times) (placings times')
                         return ())
 
-                    let dTableClass = ffor dPilot (\p -> "legend table" <> if p == nullPilot then " is-hidden" else "")
                     elAttr "div" ("id" =: "legend-arrival-position" <> "class" =: "level") $
                             elClass "div" "level-item" $ do
-                                _ <- elDynClass "table" dTableClass $ do
+                                _ <- elDynClass "table" (tableClass <$> dPilot) $ do
                                         el "thead" $ do
                                             el "tr" $ do
                                                 el "th" $ text ""

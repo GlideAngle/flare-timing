@@ -20,7 +20,7 @@ import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
 import FlareTiming.Comms (getTaskPilotArea)
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Plot.Event (mkMsg)
+import FlareTiming.Plot.Event (tableClass, mkMsg)
 
 xyRange :: [[Double]] -> ((Double, Double), (Double, Double))
 xyRange xys =
@@ -104,11 +104,9 @@ leadAreaPlot ix tweak sEx xs = do
                                 return ())
                             ]
 
-                    let dTableClass = ffor dPilot (\p -> "table is-striped" <> if p == nullPilot then " is-hidden" else "")
-
                     elClass "div" "level" $
                             elClass "div" "level-item" $ do
-                                _ <- elDynClass "table" dTableClass $
+                                _ <- elDynClass "table" (tableClass <$> dPilot) $
                                         el "thead" $ do
                                             el "tr" $ do
                                                 el "th" $ text ""

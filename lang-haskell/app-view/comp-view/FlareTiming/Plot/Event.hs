@@ -12,6 +12,9 @@ import Control.Monad.IO.Class (MonadIO(..))
 import WireTypes.Pilot (Pilot(..), nullPilot)
 import FlareTiming.Pilot (showPilot)
 
+tableClass :: Pilot -> Text
+tableClass p = ("legend table" :: Text) <> if p == nullPilot then " is-hidden" else ""
+
 mkMsg :: MonadWidget t m => Dynamic t Pilot -> Text -> m ()
 mkMsg dPilot msg = do
     let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")

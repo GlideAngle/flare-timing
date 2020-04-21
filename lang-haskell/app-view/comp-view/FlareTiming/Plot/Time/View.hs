@@ -15,7 +15,8 @@ import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import WireTypes.Point (StartGate)
 import FlareTiming.Plot.Time.Table (tableSpeed)
-import FlareTiming.Plot.Event (mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
+import FlareTiming.Plot.Event
+    (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
 placings :: [TrackSpeed] -> [[Double]]
 placings = fmap xy
@@ -57,10 +58,9 @@ timePlot sgs sEx xs = do
                         _ <- P.timePlot (_element_raw elPlot) (timeRange times) (placings times) (placings times')
                         return ())
 
-                    let dTableClass = ffor dPilot (\p -> "legend table" <> if p == nullPilot then " is-hidden" else "")
                     elAttr "div" ("id" =: "legend-time" <> "class" =: "level") $
                             elClass "div" "level-item" $ do
-                                _ <- elDynClass "table" dTableClass $ do
+                                _ <- elDynClass "table" (tableClass <$> dPilot) $ do
                                         el "thead" $ do
                                             el "tr" $ do
                                                 el "th" $ text ""

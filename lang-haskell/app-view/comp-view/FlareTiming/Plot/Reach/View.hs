@@ -18,7 +18,8 @@ import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.Reach.TableReach (tablePilotReach)
 import FlareTiming.Plot.Reach.TableBonus (tablePilotReachBonus)
-import FlareTiming.Plot.Event (mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
+import FlareTiming.Plot.Event
+    (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
 placings :: [TrackReach] -> [[Double]]
 placings = fmap xy
@@ -97,10 +98,9 @@ reachPlot task sEx xs xsBonus = do
                                     []
                         return ())
 
-                    let dTableClass = ffor dPilot (\p -> "legend table" <> if p == nullPilot then " is-hidden" else "")
                     elAttr "div" ("id" =: "legend-effort" <> "class" =: "level") $
                             elClass "div" "level-item" $ do
-                                _ <- elDynClass "table" dTableClass $ do
+                                _ <- elDynClass "table" (tableClass <$> dPilot) $ do
                                         el "thead" $ do
                                             el "tr" $ do
                                                 el "th" $ text ""
