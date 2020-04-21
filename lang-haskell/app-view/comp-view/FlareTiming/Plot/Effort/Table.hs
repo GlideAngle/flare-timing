@@ -56,7 +56,7 @@ tableEffort sEx xs select = do
                     let mapN = Map.fromList sEx'
 
                     ePilots <- el "tbody" $
-                        simpleList xs (uncurry (rowEffort w select mapN). splitDynPure)
+                        simpleList xs (uncurry (rowEffort w select mapN) . splitDynPure)
                     let ePilot' = switchDyn $ leftmost <$> ePilots
                     return ePilot')
 
