@@ -118,10 +118,10 @@ leadCoefPlot _ix tweak sEx xs = do
     return ()
 
 selectPilots
-    :: (MonadIO (Performable m), PostBuild w m, TriggerEvent w m, PerformEvent w m, MonadHold w m, Control.Monad.Fix.MonadFix m)
-    => Dynamic w [Pilot]
-    -> (Dynamic w [Pilot] -> m (Event w Pilot))
-    -> m (Dynamic w Pilot, Event w [Pilot], (Event w Pilot, Event w Pilot, Event w Pilot, Event w Pilot, Event w Pilot))
+    :: (MonadIO (Performable m), PostBuild t m, TriggerEvent t m, PerformEvent t m, MonadHold t m, Control.Monad.Fix.MonadFix m)
+    => Dynamic t [Pilot]
+    -> (Dynamic t [Pilot] -> m (Event t Pilot))
+    -> m (Dynamic t Pilot, Event t [Pilot], (Event t Pilot, Event t Pilot, Event t Pilot, Event t Pilot, Event t Pilot))
 selectPilots dPilots x = do
     pb <- delay 1 =<< getPostBuild
 
