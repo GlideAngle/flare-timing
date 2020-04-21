@@ -84,7 +84,7 @@ effortPlot sEx xs = do
 
                                         el "tfoot" $ do
                                             el "tr" $ do
-                                                el "td" $ text "- - -"
+                                                el "td" $ text "--"
                                                 el "td" $ text "line of constant effort"
                                                 return ()
 
