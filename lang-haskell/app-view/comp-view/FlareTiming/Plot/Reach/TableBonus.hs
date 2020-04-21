@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 module FlareTiming.Plot.Reach.TableBonus (tablePilotReachBonus) where
 
 import Reflex.Dom
@@ -21,13 +22,14 @@ tablePilotReachBonus
     => Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
-    -> m ()
-tablePilotReachBonus sEx xs bonusReach = do
-    let w = ffor xs (pilotIdsWidth . fmap fst)
+    -> Dynamic t [Pilot]
+    -> m (Event t Pilot)
+tablePilotReachBonus sEx xs xsBonus select = do
     let tdFoot = elAttr "td" ("colspan" =: "6")
     let foot = el "tr" . tdFoot . text
+    let w = ffor xs (pilotIdsWidth . fmap fst)
 
-    _ <- elClass "table" "table is-striped" $ do
+    ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "5")
@@ -56,33 +58,41 @@ tablePilotReachBonus sEx xs bonusReach = do
 
                     return ()
 
-            _ <- dyn $ ffor2 bonusReach sEx (\br sEx' -> do
+            ev <- dyn $ ffor2 xsBonus sEx (\br sEx' -> do
                     let mapR = Map.fromList br
                     let mapN = Map.fromList sEx'
 
-                    el "tbody" $
-                        simpleList xs (uncurry (rowReachBonus w mapR mapN) . splitDynPure))
+                    ePilots <- el "tbody" $
+                        simpleList xs (uncurry (rowReachBonus w select mapR mapN) . splitDynPure)
+                    let ePilot' = switchDyn $ leftmost <$> ePilots
+                    return ePilot')
 
             el "tfoot" $ do
                 foot "† Reach as scored."
                 foot "Δ Altitude bonus reach."
                 foot "‡ The fraction of reach points as scored."
-            return ()
-    return ()
+
+            return ev
+    ePilot <- switchHold never ev
+    return ePilot
 
 rowReachBonus
     :: MonadWidget t m
     => Dynamic t Int
+    -> Dynamic t [Pilot]
     -> Map Pilot TrackReach
     -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
-    -> m ()
-rowReachBonus w mapR mapN p tr = do
+    -> m (Event t Pilot)
+rowReachBonus w select mapR mapN p tr = do
+    pilot <- sample $ current p
+    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
+
     (eReach, eReachDiff, eFrac
         , yReach, yReachDiff
         , yFrac, yFracDiff) <- sample . current
-            $ ffor2 p tr (\pilot TrackReach{reach = reachF} ->
+            $ ffor2 p tr (\p' TrackReach{reach = reachF} ->
                 fromMaybe ("", "", "", "", "", "", "") $ do
                     TrackReach{reach = reachE, frac = fracE} <- Map.lookup pilot mapR
 
@@ -94,7 +104,7 @@ rowReachBonus w mapR mapN p tr = do
                                 , effort = eFracN
                                 , distance = dFracN
                                 }
-                        } <- Map.lookup pilot mapN
+                        } <- Map.lookup p' mapN
 
                     let quieten s =
                             case (rFracN, eFracN, dFracN) of
@@ -114,7 +124,7 @@ rowReachBonus w mapR mapN p tr = do
                         , quieten $ showReachFracDiff rFracN fracE
                         ))
 
-    el "tr" $ do
+    (eRow, _) <- elDynClass' "tr" rowClass $ do
         elClass "td" "td-plot-reach" . dynText $ showPilotDistance 1 . reach <$> tr
         elClass "td" "td-plot-reach-bonus" $ text eReach
         elClass "td" "td-plot-reach-bonus-diff" $ text eReachDiff
@@ -129,3 +139,6 @@ rowReachBonus w mapR mapN p tr = do
         elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
+
+    let ePilot = const pilot <$> domEvent Click eRow
+    return ePilot

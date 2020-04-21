@@ -1,9 +1,10 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.Reach.View (reachPlot) where
 
 import Reflex.Dom
-import Reflex.Time (delay)
-import Data.Maybe (isJust)
-import Data.List (sortOn)
+import Data.Maybe (isJust, catMaybes)
+import Data.List (sortOn, find)
 
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
@@ -11,11 +12,13 @@ import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
 import WireTypes.Fraction (ReachFraction(..))
 import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import WireTypes.Point (PilotDistance(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.Reach.TableReach (tablePilotReach)
 import FlareTiming.Plot.Reach.TableBonus (tablePilotReachBonus)
+import FlareTiming.Plot.Event (mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
 placings :: [TrackReach] -> [[Double]]
 placings = fmap xy
@@ -44,46 +47,88 @@ reachPlot
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
-reachPlot task sEx reach bonusReach = do
-    pb <- delay 1 =<< getPostBuild
+reachPlot task sEx xs xsBonus = do
+    let w = ffor xs (pilotIdsWidth . fmap fst)
 
-    elClass "div" "tile is-ancestor" $ do
+    elClass "div" "tile is-ancestor" $ mdo
         elClass "div" "tile" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
-                (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-reach") <> ("style" =: "height: 460px;width: 640px")) $ return ()
-                rec performEvent_ $ leftmost
-                        [ ffor pb (\_ -> liftIO $ do
-                            let xs = snd . unzip $ reach'
-                            let tt = timeRange xs
-                            _ <-
-                                if isJust stopped then
-                                    P.reachPlot
-                                        (_element_raw elPlot)
-                                        tt
-                                        (placings xs)
-                                        (reValue reach' bonusReach')
-                                else
-                                    P.reachPlot
-                                        (_element_raw elPlot)
-                                        tt
-                                        (placings xs)
-                                        []
+                    mkMsg dPilot "Tap a row to highlight that pilot's point on the plot."
 
-                            return ())
-                        ]
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-reach") <> ("style" =: "height: 640px;width: 700px")) $ return ()
+                    performEvent_ $ ffor eRedraw (\ps -> liftIO $ do
+                        let reaches = snd . unzip $ ys
+                        let reaches' = snd . unzip $ ysBonus
 
-                    reach' <- sample . current $ reach
-                    Task{stopped} <- sample . current $ task
-                    bonusReach' <- sample . current $ bonusReach
+                        let ys' =
+                                catMaybes $
+                                [ find (\(Pilot (qid, _), _) -> pid == qid) ys
+                                | Pilot (pid, _) <- ps
+                                ]
 
-                return ()
+                        let ysBonus' =
+                                catMaybes $
+                                [ find (\(Pilot (qid, _), _) -> pid == qid) ysBonus
+                                | Pilot (pid, _) <- ps
+                                ]
 
-        elClass "div" "tile is-child" $ do
-            _ <- dyn $ ffor task (\case
-                    Task{stopped = Nothing} -> tablePilotReach sEx reach
-                    Task{stopped = Just _} -> tablePilotReachBonus sEx reach bonusReach)
+                        let tt = timeRange reaches
 
-            return ()
+                        _ <-
+                            if isJust stopped then
+                                P.reachPlot
+                                    (_element_raw elPlot)
+                                    tt
+                                    (placings reaches)
+                                    (reValue ys ysBonus)
+                                    (placings reaches')
+                                    (reValue ys' ysBonus')
+                            else
+                                P.reachPlot
+                                    (_element_raw elPlot)
+                                    tt
+                                    (placings reaches)
+                                    []
+                                    (placings reaches')
+                                    []
+                        return ())
+
+                    let dTableClass = ffor dPilot (\p -> "legend table" <> if p == nullPilot then " is-hidden" else "")
+                    elAttr "div" ("id" =: "legend-effort" <> "class" =: "level") $
+                            elClass "div" "level-item" $ do
+                                _ <- elDynClass "table" dTableClass $ do
+                                        el "thead" $ do
+                                            el "tr" $ do
+                                                el "th" $ text ""
+                                                el "th" . dynText $ ffor w hashIdHyphenPilot
+                                                return ()
+
+                                            sequence_
+                                                [ widgetHold (return ()) $ ffor e (mkLegend w c)
+                                                | c <- legendClasses
+                                                | e <- [e1, e2, e3, e4, e5]
+                                                ]
+
+                                            return ()
+                                return ()
+                    return ()
+
+        Task{stopped} <- sample . current $ task
+        ys <- sample $ current xs
+        ysBonus <- sample . current $ xsBonus
+
+        let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
+        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
+        (dPilot, eRedraw, (e1, e2, e3, e4, e5))
+            <- selectPilots dPilots (\dPilots' ->
+                    elClass "div" "tile is-child" $ do
+                        ev <- dyn $ ffor task (\case
+                                Task{stopped = Nothing} -> tablePilotReach sEx xs dPilots'
+                                Task{stopped = Just _} -> tablePilotReachBonus sEx xs xsBonus dPilots')
+                        ePilot <- switchHold never ev
+                        return ePilot)
+
+        return ()
 
     return ()

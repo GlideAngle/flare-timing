@@ -111,8 +111,8 @@ foreign import javascript unsafe
 hgPlotPosition
     :: IsElement e
     => e
-    -> ([[Double]], [[Double]])
-    -> ([[Double]], [[Double]])
+    -> ([[Double]], [[Double]]) -- ^ All
+    -> ([[Double]], [[Double]]) -- ^ Selected
     -> IO Plot
 hgPlotPosition e (xsSolo, xsEqual) (ysSolo, ysEqual) = do
     let n :: Integer = fromIntegral $ length xsSolo + length xsEqual

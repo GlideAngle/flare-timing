@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.Reach.TableReach (tablePilotReach) where
 
 import Reflex.Dom
@@ -20,10 +22,12 @@ tablePilotReach
     :: MonadWidget t m
     => Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackReach)]
-    -> m ()
-tablePilotReach sEx xs = do
+    -> Dynamic t [Pilot]
+    -> m (Event t Pilot)
+tablePilotReach sEx xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    _ <- elClass "table" "table is-striped" $ do
+
+    ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elClass "th" "th-plot-reach" $ text "Reach (km)"
@@ -38,25 +42,32 @@ tablePilotReach sEx xs = do
 
                     return ()
 
-            _ <- dyn $ ffor sEx (\sEx' -> do
+            ev <- dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
 
-                    el "tbody" $
-                        simpleList xs (uncurry (rowReach w mapN) . splitDynPure))
+                    ePilots <- el "tbody" $
+                        simpleList xs (uncurry (rowReach w select mapN) . splitDynPure)
+                    let ePilot' = switchDyn $ leftmost <$> ePilots
+                    return ePilot')
 
-            return ()
-    return ()
+            return ev
+    ePilot <- switchHold never ev
+    return ePilot
 
 rowReach
     :: MonadWidget t m
     => Dynamic t Int
+    -> Dynamic t [Pilot]
     -> Map Pilot Norm.NormBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
-    -> m ()
-rowReach w mapN p r = do
+    -> m (Event t Pilot)
+rowReach w select mapN p r = do
+    pilot <- sample $ current p
+    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
+
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
-            $ ffor2 p r (\pilot TrackReach{reach, frac} ->
+            $ ffor2 p r (\p' TrackReach{reach, frac} ->
                 fromMaybe ("", "", "", "") $ do
                     Norm.NormBreakdown
                         { reach = ReachToggle{extra = reachN}
@@ -66,7 +77,7 @@ rowReach w mapN p r = do
                                 , effort = eFracN
                                 , distance = dFracN
                                 }
-                        } <- Map.lookup pilot mapN
+                        } <- Map.lookup p' mapN
 
                     let quieten s =
                             case (rFracN, eFracN, dFracN) of
@@ -82,7 +93,7 @@ rowReach w mapN p r = do
                         , quieten $ showReachFracDiff rFracN frac
                         ))
 
-    el "tr" $ do
+    (eRow, _) <- elDynClass' "tr" rowClass $ do
         elClass "td" "td-plot-reach" . dynText $ (showPilotDistance 1) . reach <$> r
         elClass "td" "td-norm" $ text yReach
         elClass "td" "td-norm" $ text yReachDiff
@@ -94,3 +105,6 @@ rowReach w mapN p r = do
         elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
+
+    let ePilot = const pilot <$> domEvent Click eRow
+    return ePilot
