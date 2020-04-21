@@ -7,7 +7,8 @@ import Reflex.Time (delay)
 import Data.List (find)
 import Data.Maybe (catMaybes)
 import Control.Monad (when)
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Fix (MonadFix(..))
+import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import qualified FlareTiming.Plot.LeadCoef.Plot as P (leadCoefPlot)
 
 import WireTypes.Fraction (LeadingFraction(..))
@@ -40,7 +41,6 @@ leadCoefPlot
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
 leadCoefPlot _ix tweak sEx xs = do
-    pb <- delay 1 =<< getPostBuild
     let w = ffor xs (pilotIdsWidth . fmap fst)
 
     let mkLegend classes pp = when (pp /= nullPilot) $ do
@@ -108,65 +108,42 @@ leadCoefPlot _ix tweak sEx xs = do
 
         ys <- sample $ current xs
 
-        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots
-        dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
-
         let pilots :: [Pilot] = take 5 $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilots (updated dPilot)
-        let es :: Event _ [Pilot] = updated dPilots
-        let eRedraw = leftmost [[] <$ pb, es]
-
-        e1 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 $ ps ++ repeat np of
-                            p : _ -> p
-                            _ -> np)
-                    nullPilot
-                    es
-
-        e2 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 1 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    nullPilot
-                    es
-
-        e3 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 2 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    nullPilot
-                    es
-
-        e4 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 3 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    nullPilot
-                    es
-
-        e5 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 4 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    nullPilot
-                    es
+        (dPilot, eRedraw, (e1, e2, e3, e4, e5))
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots')
 
         return ()
 
     return ()
 
+selectPilots
+    :: (MonadIO (Performable m), PostBuild w m, TriggerEvent w m, PerformEvent w m, MonadHold w m, Control.Monad.Fix.MonadFix m)
+    => Dynamic w [Pilot]
+    -> (Dynamic w [Pilot] -> m (Event w Pilot))
+    -> m (Dynamic w Pilot, Event w [Pilot], (Event w Pilot, Event w Pilot, Event w Pilot, Event w Pilot, Event w Pilot))
+selectPilots dPilots x = do
+    pb <- delay 1 =<< getPostBuild
+
+    ePilot :: Event _ Pilot <- x dPilots
+    dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
+
+    let es :: Event _ [Pilot] = updated dPilots
+    let eRedraw = leftmost [[] <$ pb, es]
+
+    let nth n = updated
+                <$> foldDyn
+                        (\ps np ->
+                            case take 1 . drop n $ (ps ++ repeat np) of
+                                p : _ -> p
+                                _ -> np)
+                        nullPilot
+                        es
+
+    e1 <- nth 0
+    e2 <- nth 1
+    e3 <- nth 2
+    e4 <- nth 3
+    e5 <- nth 4
+
+    return (dPilot, eRedraw, (e1, e2, e3, e4, e5))
