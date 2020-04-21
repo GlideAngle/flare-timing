@@ -12,6 +12,18 @@ import Control.Monad.IO.Class (MonadIO(..))
 import WireTypes.Pilot (Pilot(..), nullPilot)
 import FlareTiming.Pilot (showPilot)
 
+mkMsg :: MonadWidget t m => Dynamic t Pilot -> Text -> m ()
+mkMsg dPilot msg = do
+    let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
+
+    _ <- elDynClass "article" dMsgClass $ do
+            elClass "div" "message-header" $ do
+                el "p" $ text "Plot Instructions"
+            elClass "div" "message-body" $
+                text msg
+
+    return ()
+
 mkLegend :: MonadWidget t m => Dynamic t Int -> Text -> Pilot -> m ()
 mkLegend w classes pp = when (pp /= nullPilot) $ do
     el "tr" $ do

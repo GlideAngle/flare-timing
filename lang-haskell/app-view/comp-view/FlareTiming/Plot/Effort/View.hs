@@ -15,7 +15,7 @@ import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.Effort.Table (tableEffort)
-import FlareTiming.Plot.Event (mkLegend, legendClasses, numLegendPilots, selectPilots)
+import FlareTiming.Plot.Event (mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
 placings :: [TrackEffort] -> [[Double]]
 placings = fmap xy
@@ -42,15 +42,7 @@ effortPlot sEx xs = do
         elClass "div" "tile" $
             elClass "div" "tile is-parent is-vertical" $
                 elClass "div" "tile is-child" $ do
-                    let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
-
-                    _ <- elDynClass "article" dMsgClass $ do
-                            elClass "div" "message-header" $ do
-                                el "p" $ text "Plot Instructions"
-                            elClass "div" "message-body" $
-                                text "Tap a row to highlight that pilot's point on the plot."
-
-                            return ()
+                    mkMsg dPilot "Tap a row to highlight that pilot's point on the plot."
 
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-effort") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ ffor eRedraw (\ps -> liftIO $ do

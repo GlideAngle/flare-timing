@@ -20,6 +20,7 @@ import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
 import FlareTiming.Comms (getTaskPilotArea)
 import FlareTiming.Events (IxTask(..))
+import FlareTiming.Plot.Event (mkMsg)
 
 xyRange :: [[Double]] -> ((Double, Double), (Double, Double))
 xyRange xys =
@@ -88,15 +89,7 @@ leadAreaPlot ix tweak sEx xs = do
         elClass "div" "tile is-7" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
-                    let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
-
-                    _ <- elDynClass "article" dMsgClass $ do
-                            elClass "div" "message-header" $ do
-                                el "p" $ text "Plot Instructions"
-                            elClass "div" "message-body" $
-                                text "Tap a row to plot distance versus time and visualise area."
-
-                            return ()
+                    mkMsg dPilot "Tap a row to plot distance versus time and visualise area."
 
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ leftmost
