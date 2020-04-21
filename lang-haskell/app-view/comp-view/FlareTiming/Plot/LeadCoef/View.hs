@@ -4,6 +4,7 @@ module FlareTiming.Plot.LeadCoef.View (leadCoefPlot) where
 
 import Reflex.Dom
 import Reflex.Time (delay)
+import Data.Text (Text)
 import Data.List (find)
 import Data.Maybe (catMaybes)
 import Control.Monad (when)
@@ -42,9 +43,6 @@ leadCoefPlot
     -> m ()
 leadCoefPlot _ix tweak sEx xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
-    let classLegends = fmap ("legend-" <>) ["reach", "effort", "time", "leading", "arrival"]
-    let n = length classLegends
-
     let mkLegend classes pp = when (pp /= nullPilot) $ do
             el "tr" $ do
                 el "td" $ elClass "span" classes $ text "▩"
@@ -89,7 +87,7 @@ leadCoefPlot _ix tweak sEx xs = do
 
                                             sequence_
                                                 [ widgetHold (return ()) $ ffor e (mkLegend c)
-                                                | c <- classLegends
+                                                | c <- legendClasses
                                                 | e <- [e1, e2, e3, e4, e5]
                                                 ]
 
@@ -111,14 +109,20 @@ leadCoefPlot _ix tweak sEx xs = do
 
         ys <- sample $ current xs
 
-        let pilots :: [Pilot] = take n $ repeat nullPilot
-        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take n $ pa : pas) pilots (updated dPilot)
+        let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
+        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
             <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots')
 
         return ()
 
     return ()
+
+legendClasses :: [Text]
+legendClasses = fmap ("legend-" <>) ["reach", "effort", "time", "leading", "arrival"]
+
+numLegendPilots :: Int
+numLegendPilots = length legendClasses
 
 selectPilots
     :: (MonadIO (Performable m), PostBuild t m, TriggerEvent t m, PerformEvent t m, MonadHold t m, Control.Monad.Fix.MonadFix m)
