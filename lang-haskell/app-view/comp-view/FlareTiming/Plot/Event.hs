@@ -1,23 +1,16 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.Event where
 
 import Reflex.Dom
 import Reflex.Time (delay)
 import Data.Text (Text)
-import Data.List (find)
-import Data.Maybe (catMaybes)
 import Control.Monad (when)
 import Control.Monad.Fix (MonadFix(..))
-import Control.Monad.IO.Class (MonadIO(..), liftIO)
-import qualified FlareTiming.Plot.LeadCoef.Plot as P (leadCoefPlot)
+import Control.Monad.IO.Class (MonadIO(..))
 
-import WireTypes.Fraction (LeadingFraction(..))
-import WireTypes.Comp (Tweak(..))
-import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
-import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
-import FlareTiming.Plot.LeadCoef.Table (tablePilotCoef)
-import FlareTiming.Events (IxTask(..))
+import WireTypes.Pilot (Pilot(..), nullPilot)
+import FlareTiming.Pilot (showPilot)
 
 mkLegend :: MonadWidget t m => Dynamic t Int -> Text -> Pilot -> m ()
 mkLegend w classes pp = when (pp /= nullPilot) $ do
