@@ -143,10 +143,5 @@ selectPilots dPilots x = do
                         nullPilot
                         es
 
-    e1 <- nth 0
-    e2 <- nth 1
-    e3 <- nth 2
-    e4 <- nth 3
-    e5 <- nth 4
-
+    [e1, e2, e3, e4, e5] <- sequence $ nth <$> [0 .. 4]
     return (dPilot, eRedraw, (e1, e2, e3, e4, e5))
