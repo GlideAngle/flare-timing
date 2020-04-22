@@ -17,6 +17,7 @@ import WireTypes.Point (StartGate)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
 import FlareTiming.Task.Score.Show (showPilotTime, showPilotTimeDiff)
+import FlareTiming.Plot.Event (rowClass)
 
 tableSpeed
     :: MonadWidget t m
@@ -73,7 +74,6 @@ rowSpeed
     -> m (Event t Pilot)
 rowSpeed w select mapN p ts = do
     pilot <- sample $ current p
-    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
 
     (yTime, yTimeDiff, yFrac, yFracDiff) <- sample . current
                 $ ffor2 p ts (\p' TrackSpeed{time, frac} ->
@@ -92,7 +92,7 @@ rowSpeed w select mapN p ts = do
 
                         _ -> ("", "", "", ""))
 
-    (eRow, _) <- elDynClass' "tr" rowClass $ do
+    (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         el "td" . dynText $ showHr . Speed.time <$> ts
         el "td" . dynText $ showHms . Speed.time <$> ts
         elClass "td" "td-norm td-norm-pace" . text $ yTime

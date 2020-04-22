@@ -17,6 +17,7 @@ import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point (showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
+import FlareTiming.Plot.Event (rowClass)
 
 tableEffort
     :: MonadWidget t m
@@ -73,7 +74,6 @@ rowEffort
     -> m (Event t Pilot)
 rowEffort w select mapN p te = do
     pilot <- sample $ current p
-    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
 
     (yEffort, yEffortDiff, yFrac, yFracDiff) <- sample . current
             $ ffor2 p te (\p' TrackEffort{effort, frac} ->
@@ -102,7 +102,7 @@ rowEffort w select mapN p te = do
                         , quieten $ showEffortFracDiff eFracN frac
                         ))
 
-    (eRow, _) <- elDynClass' "tr" rowClass $ do
+    (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> te
         elClass "td" "td-norm" $ text yEffort
         elClass "td" "td-norm" $ text yEffortDiff

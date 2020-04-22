@@ -11,6 +11,7 @@ import WireTypes.Fraction (showArrivalFrac, showArrivalFracDiff)
 import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
+import FlareTiming.Plot.Event (rowClass)
 
 tableArrivalPosition
     :: MonadWidget t m
@@ -52,8 +53,6 @@ rowArrivalPosition
     -> m (Event t Pilot)
 rowArrivalPosition w select mapT p ta = do
     pilot <- sample $ current p
-    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
-
     (yFrac, yFracDiff) <- sample . current
                 $ ffor2 p ta (\p' TrackArrival{frac} ->
                     case Map.lookup p' mapT of
@@ -64,7 +63,7 @@ rowArrivalPosition w select mapT p ta = do
 
                         _ -> ("", ""))
 
-    (eRow, _) <- elDynClass' "tr" rowClass $ do
+    (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         el "td" . dynText $ showRank . rank <$> ta
         el "td" . dynText $ showArrivalFrac . frac <$> ta
         elClass "td" "td-norm" . text $ yFrac

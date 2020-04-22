@@ -11,6 +11,7 @@ import WireTypes.Lead (TrackLead(..), showCoef, showCoefDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
+import FlareTiming.Plot.Event (rowClass)
 
 tablePilotCoef
     :: MonadWidget t m
@@ -65,9 +66,8 @@ rowLeadSimple
     -> m (Event t Pilot)
 rowLeadSimple w select p av = do
     pilot <- sample $ current p
-    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
 
-    (eRow, _) <- elDynClass' "tr" rowClass $ do
+    (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         el "td" . dynText $ showCoef . coef <$> av
         el "td" . dynText $ showLeadingFrac . frac <$> av
         el "td" . dynText $ ffor2 w p showPilot
@@ -140,9 +140,7 @@ rowLeadCompare w mapN select p tl = do
 
                         _ -> (pilot, "", "", "", ""))
 
-    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
-
-    (eRow, _) <- elDynClass' "tr" rowClass $ do
+    (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
         elClass "td" "td-norm td-norm" . text $ yCoef
         elClass "td" "td-norm td-time-diff" . text $ yCoefDiff

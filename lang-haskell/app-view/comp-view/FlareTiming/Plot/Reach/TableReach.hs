@@ -17,6 +17,7 @@ import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
+import FlareTiming.Plot.Event (rowClass)
 
 tablePilotReach
     :: MonadWidget t m
@@ -64,7 +65,6 @@ rowReach
     -> m (Event t Pilot)
 rowReach w select mapN p r = do
     pilot <- sample $ current p
-    let rowClass = ffor2 p select (\p' ps -> if p' `elem` ps then "is-selected" else "")
 
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
             $ ffor2 p r (\p' TrackReach{reach, frac} ->
@@ -93,7 +93,7 @@ rowReach w select mapN p r = do
                         , quieten $ showReachFracDiff rFracN frac
                         ))
 
-    (eRow, _) <- elDynClass' "tr" rowClass $ do
+    (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         elClass "td" "td-plot-reach" . dynText $ (showPilotDistance 1) . reach <$> r
         elClass "td" "td-norm" $ text yReach
         elClass "td" "td-norm" $ text yReachDiff

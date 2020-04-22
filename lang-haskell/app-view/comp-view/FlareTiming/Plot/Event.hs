@@ -29,6 +29,9 @@ unpackSelect ys = do
 tableClass :: Pilot -> Text
 tableClass p = ("legend table" :: Text) <> if p == nullPilot then " is-hidden" else ""
 
+rowClass :: (Foldable t, Eq a) => a -> t a -> Text
+rowClass p ps = if p `elem` ps then "is-selected" else ""
+
 mkMsg :: MonadWidget t m => Dynamic t Pilot -> Text -> m ()
 mkMsg dPilot msg = do
     let dMsgClass = ffor dPilot (\p -> "message is-primary" <> if p == nullPilot then "" else " is-hidden")
