@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e22ce451b04fc0644b9adbecd9cb89f66b6c190d4b8919895b6b46432a7abaee
+-- hash: cf9121e9d05fe1ec4ad7a3fc78f77c7a395a7dcf2fe2acb1781b31e516cde56b
 
 name:           flight-comp
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: comp
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

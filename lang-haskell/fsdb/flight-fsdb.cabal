@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6b4d665824fa49ba70be456d0e0a4d37bd1ee20dda0acb81e2c9bf4f95828954
+-- hash: 9e369c762dcf418c9bc7c5eb8061dbd3ee5e5a568a2987458628c6aaaefba17e
 
 name:           flight-fsdb
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: fsdb
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

@@ -39,6 +39,13 @@ packages:
       sha256: ea2b83e0b1ddd632012a4ee4d4e87b73038e7be3f9e999a65788d01064bf713a
   original:
     hackage: parser-combinators-1.0.0
+- completed:
+    hackage: HUnit-1.5.0.0@sha256:b15caa77f5237546894b53be5549f76cf106b187e6988e681669de67ea94bc82,1600
+    pantry-tree:
+      size: 878
+      sha256: c6d3549f14a2156953f09fa1ea3294a269cdba49085df973f37a441ec773eb5f
+  original:
+    hackage: HUnit-1.5.0.0@sha256:b15caa77f5237546894b53be5549f76cf106b187e6988e681669de67ea94bc82,1600
 snapshots:
 - completed:
     size: 527836

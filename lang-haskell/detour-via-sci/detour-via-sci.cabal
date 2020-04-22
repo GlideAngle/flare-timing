@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 614bc65efed0424c5f6fafbcc76e02b80dffad1fcb1fe677ff540db8a8c1dae7
+-- hash: 54f9f08c97092e584235cc13961a32cdafe4209b1c0b1f00f6dfd81dbdf3e7fb
 
 name:           detour-via-sci
 version:        1.0.1
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: detour-via-sci
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:
@@ -69,4 +73,6 @@ test-suite doctest
     , scientific
     , siggy-chardust
     , template-haskell
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010

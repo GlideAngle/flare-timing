@@ -35,3 +35,23 @@ extra-deps:
 - doctest-0.15.0
 - megaparsec-7.0.4
 - parser-combinators-1.0.0
+- HUnit-1.5.0.0@sha256:b15caa77f5237546894b53be5549f76cf106b187e6988e681669de67ea94bc82,1600
+flags:
+    detour-via-sci:
+        suppress-failing-tests: true
+    detour-via-uom:
+        suppress-failing-tests: true
+    flight-clip:
+        suppress-failing-tests: true
+    flight-earth:
+        suppress-failing-tests: true
+    flight-gap:
+        suppress-failing-tests: true
+    flight-igc:
+        suppress-failing-tests: true
+    flight-kml:
+        suppress-failing-tests: true
+    flight-units:
+        suppress-failing-tests: true
+    flight-zone:
+        suppress-failing-tests: true

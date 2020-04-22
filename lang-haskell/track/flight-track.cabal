@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d19f65bbc9c1b570fde99f2cd2f3d6ee708af8b4bdaa49cfcfaf85bcd7e56860
+-- hash: d41f5fedef26fcc71e94e327d030c6ce4546b158b746c0e83faa397ee21f47fb
 
 name:           flight-track
 version:        0.1.0
@@ -33,6 +33,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: track
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

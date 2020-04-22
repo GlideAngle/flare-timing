@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 30657d4613494ec40b32a35b8dc3595bb5fa14a3ad2c8add935b296af78f7201
+-- hash: c5a98002d2d6ffc6cdf2b7bd5c2e748718c8f56f70727b2cd0d3ec2647e0483f
 
 name:           flight-latlng
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: latlng
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

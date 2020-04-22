@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bcc6224c17fccb75622704466020a9d2feeb330eba4be90d1cdbc1bec8b54cad
+-- hash: 2247c5f0e81d602af4a18b39a362df915169481f533c3d4572d7debebbaa52bf
 
 name:           siggy-chardust
 version:        1.0.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: siggy-chardust
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

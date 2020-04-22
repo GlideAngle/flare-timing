@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c3c5ce3fded3aeccc7b53ef6b7f343e7d74291f18bda0dc908d31b659f336d23
+-- hash: 7967a977638ccc4b0c56859fbeb29008a3b7f66f5d3451bb738bdd8ecdb54a1f
 
 name:           build-flare-timing
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: build
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 executable build-flare-timing
   main-is: Main.hs

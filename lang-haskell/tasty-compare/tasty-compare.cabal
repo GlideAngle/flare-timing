@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bdee93c3da3f727a9cbe64b5cdc8fd8b038bf40749482777a100cbb8925eed40
+-- hash: 3dd97035095f3da9f2d37acd5088cf8087965b43a091f860533eb85e071e7907
 
 name:           tasty-compare
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: tasty-compare
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7c27e5b0502c144f421a36545a212370795fffceb4a5df3a48e474aabfd55685
+-- hash: aaa208f7fdb3c86d24da1e48e73445908fac36c62263108ace72adc251fb721d
 
 name:           flight-span
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: span
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

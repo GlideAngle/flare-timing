@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c794e75b4e686a7c847af12aa17dc58c58f30d6d512edb06187ebe96f5a4e58b
+-- hash: 367627e9b868a8fd6ada4d6bd89b43411f135d28badc5c68c7da2ac29b5405a5
 
 name:           flare-timing
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: flare-timing
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 executable align-time
   main-is: AlignTimeMain.hs

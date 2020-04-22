@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7a8830e00d5117469f7635deb338a14f6875ac1a59a8d9e375ef5287c923cf1e
+-- hash: 24d99d007f9ab11c9347f520d05a7b6f76464f01a6218bcc5015a55e5002f9da
 
 name:           app-serve
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: app-serve
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 executable comp-serve
   main-is: ServeMain.hs

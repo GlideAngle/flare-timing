@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e0754eb8fa81ce9a1e3857ffbb8eca116029201a502472922574ae23af5844ba
+-- hash: 56c07d7fefa756d7b2f0d7560cb42a77c33a23d19d8f199b3d06f67525e89158
 
 name:           flight-mask
 version:        0.1.0
@@ -31,6 +31,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: mask
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

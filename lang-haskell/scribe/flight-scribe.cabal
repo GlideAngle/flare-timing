@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 999dbe632186851fb25f36d86d6a23933537ba27ed12753ad3c28b2e907eeb49
+-- hash: f07b160e338c8b5b8805457223be5182bff1b8c213e5fa2e742375add7c57f90
 
 name:           flight-scribe
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: scribe
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

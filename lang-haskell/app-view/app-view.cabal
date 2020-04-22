@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a02e28657db12e978add67920518192d4cb7c9d13dcdc406a279ed276c4e0b31
+-- hash: d024b76a6149e5d7aedc68b116d9ffd548c3dbe7c0f95afc4a6604cab248c1a5
 
 name:           app-view
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: app-view
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 executable comp-view
   main-is: App.hs

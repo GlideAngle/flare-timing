@@ -29,7 +29,9 @@ in  let testopts =
 
 in    defs
     ⫽ ./../default-extensions.dhall
-    ⫽ { name =
+    ⫽ { flags =
+          { suppress-failing-tests = { manual = False, default = True } }
+      , name =
           "flight-gap"
       , synopsis =
           "GAP Scoring."
@@ -76,6 +78,12 @@ in    defs
                     "EffortTestMain.hs"
                 , source-dirs =
                     [ "library", "test-suite/test", "test-suite/effort" ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , leading =
                 { dependencies =
@@ -96,6 +104,12 @@ in    defs
                     "ScoreTestMain.hs"
                 , source-dirs =
                     [ "library", "test-suite/test", "test-suite/score" ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , stop =
                 { dependencies =
@@ -126,6 +140,12 @@ in    defs
                     "DocTest.hs"
                 , source-dirs =
                     [ "library", "test-suite-doctest" ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             }
       }

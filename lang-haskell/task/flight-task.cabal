@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f6d72ba5fe7be334bc07102c4ccd445acddef7b1564354a05e87bcff5eba3ccb
+-- hash: 78ff242455a5a1d028d01615bd0ea626907a253ca88384572771157ad1e7de41
 
 name:           flight-task
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: task
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:

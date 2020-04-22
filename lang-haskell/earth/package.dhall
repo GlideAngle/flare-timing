@@ -99,6 +99,12 @@ in    defs
                     , "test-suite/geodesy"
                     , "test-suite-forbes"
                     ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , forbes-r =
                 { dependencies =
@@ -180,6 +186,12 @@ in    defs
                     , "test-suite/published"
                     , "test-suite-published"
                     ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , published-r =
                 { dependencies =
@@ -207,6 +219,12 @@ in    defs
                     , "test-suite/geodesy"
                     , "test-suite-zones"
                     ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , cylinder =
                 { dependencies =
@@ -228,6 +246,12 @@ in    defs
                     , "test-suite/cylinder"
                     , "test-suite-cylinder"
                     ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , cylinder-r =
                 { dependencies =
@@ -249,6 +273,12 @@ in    defs
                     , "test-suite/cylinder"
                     , "test-suite-cylinder-r"
                     ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             }
       }

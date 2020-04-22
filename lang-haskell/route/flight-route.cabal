@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a4a53141a9d6f420fad7fb2f9e3c387a124d1edafa1dade11785387901766c51
+-- hash: 378abdfb37f23a65a2767460329be17a118e066fd88c6c325d30f518e4532b44
 
 name:           flight-route
 version:        0.1.0
@@ -29,6 +29,10 @@ source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
   subdir: route
+
+flag suppress-failing-tests
+  manual: False
+  default: True
 
 library
   exposed-modules:
