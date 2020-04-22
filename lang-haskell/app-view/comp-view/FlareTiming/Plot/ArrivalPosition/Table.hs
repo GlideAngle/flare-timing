@@ -32,12 +32,11 @@ tableArrivalPosition xs xsN select = do
 
                     return ()
 
-            ev <- dyn $ ffor xsN (\xsN' -> do
+            dyn $ ffor xsN (\xsN' -> do
                     let mapN = Map.fromList xsN'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowArrivalPosition w select mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
-            return ev
     switchHold never ev
 
 rowArrivalPosition

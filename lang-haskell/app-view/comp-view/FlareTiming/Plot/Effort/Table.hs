@@ -53,12 +53,11 @@ tableEffort sEx xs select = do
 
                     return ()
 
-            ev <- dyn $ ffor sEx (\sEx' -> do
+            dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowEffort w select mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
-            return ev
     switchHold never ev
 
 rowEffort

@@ -43,14 +43,12 @@ tablePilotReach sEx xs select = do
 
                     return ()
 
-            ev <- dyn $ ffor sEx (\sEx' -> do
+            dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowReach w select mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
-            return ev
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 rowReach
     :: MonadWidget t m
