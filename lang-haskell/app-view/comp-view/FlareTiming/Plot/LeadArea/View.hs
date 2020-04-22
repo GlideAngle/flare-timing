@@ -20,7 +20,7 @@ import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
 import FlareTiming.Comms (getTaskPilotArea)
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Plot.Event (tableClass, mkMsg)
+import FlareTiming.Plot.Event (tableClass, mkMsg, legendClasses, numLegendPilots)
 
 xyRange :: [[Double]] -> ((Double, Double), (Double, Double))
 xyRange xys =
@@ -119,11 +119,12 @@ leadAreaPlot ix tweak sEx xs = do
 
                                                 return ()
 
-                                            _ <- widgetHold (return ()) $ ffor e1 (mkLegend "legend-reach")
-                                            _ <- widgetHold (return ()) $ ffor e2 (mkLegend "legend-effort")
-                                            _ <- widgetHold (return ()) $ ffor e3 (mkLegend "legend-time")
-                                            _ <- widgetHold (return ()) $ ffor e4 (mkLegend "legend-leading")
-                                            _ <- widgetHold (return ()) $ ffor e5 (mkLegend "legend-arrival")
+                                            sequence_
+                                                [ widgetHold (return ()) $ ffor e (mkLegend c)
+                                                | c <- legendClasses
+                                                | e <- [e1, e2, e3, e4, e5]
+                                                ]
+
                                             return ()
 
                                 return ()
@@ -136,63 +137,23 @@ leadAreaPlot ix tweak sEx xs = do
         pilotArea :: Dynamic _ (Pilot, RawLeadingArea) <- holdDyn (nullPilot, nullArea) (attachPromptlyDyn dPilot area)
         pilotArea' :: Dynamic _ (Pilot, RawLeadingArea) <- holdUniqDyn pilotArea
 
-        let pilotAreas :: [(Pilot, RawLeadingArea)] = take 5 $ repeat (nullPilot, nullArea)
-        dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take 5 $ pa : pas) pilotAreas (updated pilotArea')
+        let pilotAreas :: [(Pilot, RawLeadingArea)] = take numLegendPilots $ repeat (nullPilot, nullArea)
+        dPilotAreas :: Dynamic _ [(Pilot, RawLeadingArea)] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilotAreas (updated pilotArea')
         let dPilots :: Dynamic _ [Pilot] = ffor dPilotAreas (fmap fst)
         let ePilotAreas :: Event _ [(Pilot, RawLeadingArea)] = updated dPilotAreas
         let es :: Event _ [(Pilot, Maybe _)] = ffor ePilotAreas ((fmap . fmap) (Just . areas))
         let eAreas :: Event _ [RawLeadingArea] = ffor ePilotAreas (fmap snd)
 
-        e1 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 $ ps ++ repeat np of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    es
+        let nth n = updated
+                    <$> foldDyn
+                            (\ps np ->
+                                case take 1 . drop n $ (ps ++ repeat np) of
+                                    p : _ -> p
+                                    _ -> np)
+                            (nullPilot, Nothing)
+                            es
 
-        e2 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 1 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    es
-
-        e3 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 2 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    es
-
-        e4 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 3 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    es
-
-        e5 <-
-            updated
-            <$> foldDyn
-                    (\ps np ->
-                        case take 1 . drop 4 $ (ps ++ repeat np) of
-                            p : _ -> p
-                            _ -> np)
-                    (nullPilot, Nothing)
-                    es
+        [e1, e2, e3, e4, e5] <- sequence $ nth <$> [0 .. 4]
 
         return ()
-
     return ()
