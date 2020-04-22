@@ -9,6 +9,7 @@ import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
 import Data.List (nub)
 import FlareTiming.Plot.Foreign (Plot(..))
+import FlareTiming.Plot.Event (uncurry5, unpackSelect)
 
 foreign import javascript unsafe
     "functionPlot(\
@@ -97,13 +98,9 @@ leadCoefPlot e (lcMin, lcMax) xs ys = do
     xyfn' <- toJSValListOf xyfn
     xyfnFS' <- toJSValListOf xyfnFS
     xs' <- toJSValListOf $ nub xs
-    ys1 <- toJSValListOf $ take 1 ys
-    ys2 <- toJSValListOf $ take 1 $ drop 1 ys
-    ys3 <- toJSValListOf $ take 1 $ drop 2 ys
-    ys4 <- toJSValListOf $ take 1 $ drop 3 ys
-    ys5 <- toJSValListOf $ take 1 $ drop 4 ys
+    ys' <- unpackSelect ys
 
-    Plot <$> plot_ (unElement . toElement $ e) lcMin' lcMax' xyfn' xyfnFS' xs' ys1 ys2 ys3 ys4 ys5
+    Plot <$> (uncurry5 $ plot_ (unElement . toElement $ e) lcMin' lcMax' xyfn' xyfnFS' xs') ys'
 
 -- | The equation from the GAP rules.
 fnGAP :: Double -> Double -> Double

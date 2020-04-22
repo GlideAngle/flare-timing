@@ -8,9 +8,23 @@ import Data.Text (Text)
 import Control.Monad (when)
 import Control.Monad.Fix (MonadFix(..))
 import Control.Monad.IO.Class (MonadIO(..))
+import GHCJS.Types (JSVal)
+import GHCJS.DOM.Types (ToJSVal(..), toJSValListOf)
 
 import WireTypes.Pilot (Pilot(..), nullPilot)
 import FlareTiming.Pilot (showPilot)
+
+uncurry5 :: (a -> b -> c -> d -> e -> f) -> ((a, b, c, d, e) -> f)
+uncurry5 f ~(a, b, c, d, e) = f a b c d e
+
+unpackSelect :: ToJSVal a => [a] -> IO (JSVal, JSVal, JSVal, JSVal, JSVal)
+unpackSelect ys = do
+    ys1 <- toJSValListOf $ take 1 ys
+    ys2 <- toJSValListOf $ take 1 $ drop 1 ys
+    ys3 <- toJSValListOf $ take 1 $ drop 2 ys
+    ys4 <- toJSValListOf $ take 1 $ drop 3 ys
+    ys5 <- toJSValListOf $ take 1 $ drop 4 ys
+    return (ys1, ys2, ys3, ys4, ys5)
 
 tableClass :: Pilot -> Text
 tableClass p = ("legend table" :: Text) <> if p == nullPilot then " is-hidden" else ""

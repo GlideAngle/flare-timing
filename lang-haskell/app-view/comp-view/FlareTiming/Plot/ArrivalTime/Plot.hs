@@ -6,8 +6,9 @@ module FlareTiming.Plot.ArrivalTime.Plot (hgPlotTime) where
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
 import GHCJS.DOM.Element (IsElement)
-import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
+import GHCJS.DOM.Types (ToJSVal(..), Element(..), toElement, toJSVal, toJSValListOf)
 import FlareTiming.Plot.Foreign (Plot(..))
+import FlareTiming.Plot.Event (uncurry5, unpackSelect)
 
 foreign import javascript unsafe
     "functionPlot(\
@@ -78,22 +79,16 @@ hgPlotTime e lagMax xs ys = do
 
     let xyFns :: [[Double]] =
             [ [x', fnTime x']
-            | x <- [0.0, 1.0 .. 10.0 * xMax]
+            | x <- [0.0, 1.0 .. 11.0 * xMax]
             , let x' = 0.1 * x
             ]
 
     xMax' <- toJSVal xMax
     xyFns' <- toJSValListOf xyFns
-
     xs' <- toJSValListOf xs
+    ys' <- unpackSelect ys
 
-    ys1 <- toJSValListOf $ take 1 ys
-    ys2 <- toJSValListOf $ take 1 $ drop 1 ys
-    ys3 <- toJSValListOf $ take 1 $ drop 2 ys
-    ys4 <- toJSValListOf $ take 1 $ drop 3 ys
-    ys5 <- toJSValListOf $ take 1 $ drop 4 ys
-
-    Plot <$> plotTime_ (unElement . toElement $ e) xMax' xyFns' xs' ys1 ys2 ys3 ys4 ys5
+    Plot <$> (uncurry5 $ plotTime_ (unElement . toElement $ e) xMax' xyFns' xs') ys'
 
 fnTime :: Double -> Double
 fnTime lag = max 0 $ (1 - (2.0/3.0) * lag) ** 3

@@ -9,6 +9,7 @@ import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
 import Data.List (nub)
 import FlareTiming.Plot.Foreign (Plot(..))
+import FlareTiming.Plot.Event (unpackSelect)
 
 foreign import javascript unsafe
     "functionPlot(\
@@ -125,18 +126,8 @@ reachPlot e (dMin, dMax) xs xsBonus ys ysBonus = do
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs
     xsBonus' <- toJSValListOf $ nub xsBonus
-
-    ys1 <- toJSValListOf $ take 1 ys
-    ys2 <- toJSValListOf $ take 1 $ drop 1 ys
-    ys3 <- toJSValListOf $ take 1 $ drop 2 ys
-    ys4 <- toJSValListOf $ take 1 $ drop 3 ys
-    ys5 <- toJSValListOf $ take 1 $ drop 4 ys
-
-    ysB1 <- toJSValListOf $ take 1 ysBonus
-    ysB2 <- toJSValListOf $ take 1 $ drop 1 ysBonus
-    ysB3 <- toJSValListOf $ take 1 $ drop 2 ysBonus
-    ysB4 <- toJSValListOf $ take 1 $ drop 3 ysBonus
-    ysB5 <- toJSValListOf $ take 1 $ drop 4 ysBonus
+    (ys1, ys2, ys3, ys4, ys5) <- unpackSelect ys
+    (bs1, bs2, bs3, bs4, bs5) <- unpackSelect ysBonus
 
     Plot <$>
         plot_
@@ -144,7 +135,7 @@ reachPlot e (dMin, dMax) xs xsBonus ys ysBonus = do
             dMin' dMax' xy'
             xs' xsBonus'
             ys1 ys2 ys3 ys4 ys5
-            ysB1 ysB2 ysB3 ysB4 ysB5
+            bs1 bs2 bs3 bs4 bs5
 
 fn :: Double -> Double -> Double
 fn 0 _ = 0

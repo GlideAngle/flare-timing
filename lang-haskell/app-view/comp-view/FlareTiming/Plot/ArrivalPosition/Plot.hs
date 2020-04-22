@@ -9,6 +9,7 @@ import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
 import Data.List (nub)
 import FlareTiming.Plot.Foreign (Plot(..))
+import FlareTiming.Plot.Event (unpackSelect)
 
 foreign import javascript unsafe
     "functionPlot(\
@@ -127,18 +128,8 @@ hgPlotPosition e (xsSolo, xsEqual) (ysSolo, ysEqual) = do
     xy' <- toJSValListOf xy
     xsSolo' <- toJSValListOf xsSolo
     xsEqual' <- toJSValListOf $ nub xsEqual
-
-    ysS1 <- toJSValListOf $ take 1 ysSolo
-    ysS2 <- toJSValListOf $ take 1 $ drop 1 ysSolo
-    ysS3 <- toJSValListOf $ take 1 $ drop 2 ysSolo
-    ysS4 <- toJSValListOf $ take 1 $ drop 3 ysSolo
-    ysS5 <- toJSValListOf $ take 1 $ drop 4 ysSolo
-
-    ysE1 <- toJSValListOf $ take 1 ysEqual
-    ysE2 <- toJSValListOf $ take 1 $ drop 1 ysEqual
-    ysE3 <- toJSValListOf $ take 1 $ drop 2 ysEqual
-    ysE4 <- toJSValListOf $ take 1 $ drop 3 ysEqual
-    ysE5 <- toJSValListOf $ take 1 $ drop 4 ysEqual
+    (ysS1, ysS2, ysS3, ysS4, ysS5) <- unpackSelect ysSolo
+    (ysE1, ysE2, ysE3, ysE4, ysE5) <- unpackSelect ysEqual
 
     Plot <$>
         plotPosition_
