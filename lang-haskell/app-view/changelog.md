@@ -2,6 +2,12 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Plot Selected Pilots
+## app-view-0.28
+
+* Selecting table rows will highlight points for those pilots in the scatter
+  plots.
+
 # Weighted Leading Area
 ## app-view-0.27
 
