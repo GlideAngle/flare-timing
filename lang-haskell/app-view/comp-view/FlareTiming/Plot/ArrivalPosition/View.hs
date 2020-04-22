@@ -6,13 +6,13 @@ import Reflex.Dom
 import Data.List (find, partition)
 import Data.Maybe (catMaybes)
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
-import qualified FlareTiming.Plot.ArrivalPosition.Plot as P (hgPlotPosition)
 
 import WireTypes.Fraction (ArrivalFraction(..))
 import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.ArrivalPosition.Table (tableArrivalPosition)
+import qualified FlareTiming.Plot.ArrivalPosition.Plot as P (hgPlotPosition)
 import FlareTiming.Plot.Event
     (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
@@ -86,5 +86,4 @@ arrivalPositionPlot xs xsN = do
             <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableArrivalPosition xs xsN dPilots')
 
         return ()
-
     return ()

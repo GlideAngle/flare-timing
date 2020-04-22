@@ -1,14 +1,20 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module FlareTiming.Plot.ArrivalTime.View (arrivalTimePlot) where
 
 import Reflex.Dom
-import Reflex.Time (delay)
-import Control.Monad.IO.Class (liftIO)
+import Data.List (find)
+import Data.Maybe (catMaybes)
+import Control.Monad.IO.Class (MonadIO(..), liftIO)
 
 import WireTypes.Fraction (ArrivalFraction(..))
 import WireTypes.Arrival (TrackArrival(..), ArrivalLag(..))
-import WireTypes.Pilot (Pilot)
+import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
+import FlareTiming.Pilot (hashIdHyphenPilot)
 import qualified FlareTiming.Plot.ArrivalTime.Plot as P (hgPlotTime)
 import FlareTiming.Plot.ArrivalTime.Table (tableArrivalTime)
+import FlareTiming.Plot.Event
+    (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
 lagMax :: [TrackArrival] -> Double
 lagMax arrivals = maximum $ [x | TrackArrival{lag = ArrivalLag x} <- arrivals]
@@ -25,26 +31,51 @@ arrivalTimePlot
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
 arrivalTimePlot xs xsN = do
-    pb <- delay 1 =<< getPostBuild
+    let w = ffor xs (pilotIdsWidth . fmap fst)
 
-    elClass "div" "tile is-ancestor" $ do
+    elClass "div" "tile is-ancestor" $ mdo
         elClass "div" "tile" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
-                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival-time") <> ("style" =: "height: 460px;width: 640px")) $ return ()
-                    rec performEvent_ $ leftmost
-                            [ ffor pb (\_ -> liftIO $ do
-                                let arrivals = snd $ unzip xs'
-                                let xys = lags arrivals
-                                let lagMax' = lagMax arrivals
-                                _ <- P.hgPlotTime (_element_raw elPlot) lagMax' xys
-                                return ())
-                            ]
+                    mkMsg dPilot "Tap a row to highlight that pilot's point on the plot."
 
-                        xs' <- sample . current $ xs
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival-time") <> ("style" =: "height: 640px;width: 700px")) $ return ()
+                    performEvent_ $ ffor eRedraw (\ps -> liftIO $ do
+                        let arrivals = snd $ unzip ys
+                        let arrivals' =
+                                snd . unzip . catMaybes $
+                                [ find (\(Pilot (qid, _), _) -> pid == qid) ys
+                                | Pilot (pid, _) <- ps
+                                ]
 
+                        _ <- P.hgPlotTime (_element_raw elPlot) (lagMax arrivals) (lags arrivals) (lags arrivals')
+                        return ())
+
+                    elAttr "div" ("id" =: "legend-arrival-time" <> "class" =: "level") $
+                            elClass "div" "level-item" $ do
+                                _ <- elDynClass "table" (tableClass <$> dPilot) $ do
+                                        el "thead" $ do
+                                            el "tr" $ do
+                                                el "th" $ text ""
+                                                el "th" . dynText $ ffor w hashIdHyphenPilot
+                                                return ()
+
+                                            sequence_
+                                                [ widgetHold (return ()) $ ffor e (mkLegend w c)
+                                                | c <- legendClasses
+                                                | e <- [e1, e2, e3, e4, e5]
+                                                ]
+
+                                            return ()
+                                return ()
                     return ()
 
-        elClass "div" "tile is-child" $ tableArrivalTime xs xsN
+        ys <- sample $ current xs
 
+        let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
+        dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
+        (dPilot, eRedraw, (e1, e2, e3, e4, e5))
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableArrivalTime xs xsN dPilots')
+
+        return ()
     return ()

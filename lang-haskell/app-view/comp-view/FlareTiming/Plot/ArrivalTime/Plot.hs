@@ -13,36 +13,67 @@ foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-arrival-time'\
     \, title: 'Arrival Time Point Distribution'\
-    \, width: 640\
-    \, height: 460\
+    \, width: 700\
+    \, height: 640\
     \, disableZoom: true\
     \, xAxis: {label: 'Arrival Lag (hours)', domain: [0, $2]}\
     \, yAxis: {domain: [-0.05, 1.05]}\
     \, data: [{\
     \    points: $3\
     \  , fnType: 'points'\
-    \  , color: '#984ea3'\
+    \  , color: '#808080'\
     \  , range: [0, $2]\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $4\
     \  , fnType: 'points'\
-    \  , color: '#984ea3'\
+    \  , color: '#1e1e1e'\
     \  , attr: { r: 3 }\
     \  , range: [0, $2]\
     \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $5\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $6\
+    \  , fnType: 'points'\
+    \  , color: '#ff7f00'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $7\
+    \  , fnType: 'points'\
+    \  , color: '#4daf4a'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $8\
+    \  , fnType: 'points'\
+    \  , color: '#e41a1c'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $9\
+    \  , fnType: 'points'\
+    \  , color: '#984ea3'\
+    \  , attr: { r: 9 }\
+    \  , graphType: 'scatter'\
     \  }]\
     \})"
-    plotTime_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plotTime_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 hgPlotTime
     :: IsElement e
     => e
     -> Double
-    -> [[Double]]
+    -> [[Double]] -- ^ All
+    -> [[Double]] -- ^ Selected
     -> IO Plot
-hgPlotTime e lagMax xys = do
+hgPlotTime e lagMax xs ys = do
     let xMax = lagMax
 
     let xyFns :: [[Double]] =
@@ -52,10 +83,17 @@ hgPlotTime e lagMax xys = do
             ]
 
     xMax' <- toJSVal xMax
-    xys' <- toJSValListOf xys
     xyFns' <- toJSValListOf xyFns
 
-    Plot <$> plotTime_ (unElement . toElement $ e) xMax' xyFns' xys'
+    xs' <- toJSValListOf xs
+
+    ys1 <- toJSValListOf $ take 1 ys
+    ys2 <- toJSValListOf $ take 1 $ drop 1 ys
+    ys3 <- toJSValListOf $ take 1 $ drop 2 ys
+    ys4 <- toJSValListOf $ take 1 $ drop 3 ys
+    ys5 <- toJSValListOf $ take 1 $ drop 4 ys
+
+    Plot <$> plotTime_ (unElement . toElement $ e) xMax' xyFns' xs' ys1 ys2 ys3 ys4 ys5
 
 fnTime :: Double -> Double
 fnTime lag = max 0 $ (1 - (2.0/3.0) * lag) ** 3
