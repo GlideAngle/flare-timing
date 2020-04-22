@@ -58,8 +58,7 @@ tablePilotSimple tweak xs select = do
 
             ev <- el "tbody" $ do
                 ePilots <- simpleList xs (uncurry (rowLeadSimple w select) . splitDynPure)
-                let ePilot' = switchDyn $ leftmost <$> ePilots
-                return ePilot'
+                return $ switchDyn $ leftmost <$> ePilots
 
             return ev
     return ePilot
@@ -112,11 +111,8 @@ tablePilotCompare tweak sEx xs select = do
 
             ev <- dyn $ ffor sEx (\sEx' -> do
                     let mapN = Map.fromList sEx'
-
-                    ePilots <- el "tbody" $
-                            simpleList xs (uncurry (rowLeadCompare w mapN select) . splitDynPure)
-                    let ePilot' = switchDyn $ leftmost <$> ePilots
-                    return ePilot')
+                    ePilots <- el "tbody" $ simpleList xs (uncurry (rowLeadCompare w mapN select) . splitDynPure)
+                    return $ switchDyn $ leftmost <$> ePilots)
 
             el "tfoot" $
                 el "tr" $

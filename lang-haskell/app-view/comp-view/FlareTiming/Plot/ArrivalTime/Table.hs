@@ -46,11 +46,8 @@ tableArrivalTime xs xsN select = do
 
             ev <- dyn $ ffor xsN (\xsN' -> do
                     let mapN = Map.fromList xsN'
-
-                    ePilots <- el "tbody" $
-                        simpleList xs (uncurry (rowArrivalTime w select mapN) . splitDynPure)
-                    let ePilot' = switchDyn $ leftmost <$> ePilots
-                    return ePilot')
+                    ePilots <- el "tbody" $ simpleList xs (uncurry (rowArrivalTime w select mapN) . splitDynPure)
+                    return $ switchDyn $ leftmost <$> ePilots)
 
             return ev
     switchHold never ev

@@ -62,11 +62,8 @@ tablePilotReachBonus sEx xs xsBonus select = do
             ev <- dyn $ ffor2 xsBonus sEx (\br sEx' -> do
                     let mapR = Map.fromList br
                     let mapN = Map.fromList sEx'
-
-                    ePilots <- el "tbody" $
-                        simpleList xs (uncurry (rowReachBonus w select mapR mapN) . splitDynPure)
-                    let ePilot' = switchDyn $ leftmost <$> ePilots
-                    return ePilot')
+                    ePilots <- el "tbody" $ simpleList xs (uncurry (rowReachBonus w select mapR mapN) . splitDynPure)
+                    return $ switchDyn $ leftmost <$> ePilots)
 
             el "tfoot" $ do
                 foot "† Reach as scored."
