@@ -61,8 +61,7 @@ tableEffort sEx xs select = do
                     return ePilot')
 
             return ev
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 rowEffort
     :: MonadWidget t m
@@ -116,5 +115,4 @@ rowEffort w select mapN p te = do
 
         return ()
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow

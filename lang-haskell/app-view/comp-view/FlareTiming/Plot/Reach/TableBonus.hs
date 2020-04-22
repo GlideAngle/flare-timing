@@ -73,8 +73,7 @@ tablePilotReachBonus sEx xs xsBonus select = do
                 foot "‡ The fraction of reach points as scored."
 
             return ev
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 rowReachBonus
     :: MonadWidget t m
@@ -140,5 +139,4 @@ rowReachBonus w select mapR mapN p tr = do
 
         return ()
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow

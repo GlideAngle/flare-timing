@@ -29,8 +29,7 @@ tablePilotCoef tweak sEx xs select = do
             ePilot <- tablePilotCompare tweak sEx xs select
             return ePilot)
 
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 tablePilotSimple
     :: MonadWidget t m
@@ -75,8 +74,7 @@ rowLeadSimple w select p av = do
 
         return ()
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow
 
 tablePilotCompare
     :: MonadWidget t m
@@ -114,8 +112,7 @@ tablePilotCompare _ sEx xs select = do
                     return ePilot')
 
             return ev
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 rowLeadCompare
     :: MonadWidget t m
@@ -156,5 +153,4 @@ rowLeadCompare w mapN select p tl = do
 
         return ()
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow

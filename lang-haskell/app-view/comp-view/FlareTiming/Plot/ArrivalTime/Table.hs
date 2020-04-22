@@ -52,8 +52,7 @@ tableArrivalTime xs xsN select = do
                     return ePilot')
 
             return ev
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 rowArrivalTime
     :: MonadWidget t m
@@ -90,8 +89,7 @@ rowArrivalTime w select mapT p ta = do
         elClass "td" "td-norm" . text $ yFracDiff
         el "td" . dynText $ ffor2 w p showPilot
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow
 
 showRank :: ArrivalPlacing -> T.Text
 showRank (ArrivalPlacing p) = T.pack . show $ p

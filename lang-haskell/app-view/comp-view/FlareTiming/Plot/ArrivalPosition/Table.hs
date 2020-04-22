@@ -40,8 +40,7 @@ tableArrivalPosition xs xsN select = do
                     return ePilot')
 
             return ev
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 rowArrivalPosition
     :: MonadWidget t m
@@ -74,8 +73,7 @@ rowArrivalPosition w select mapT p ta = do
 
         return ()
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow
 
 showRank :: ArrivalPlacing -> T.Text
 showRank (ArrivalPlacing p) = T.pack . show $ p

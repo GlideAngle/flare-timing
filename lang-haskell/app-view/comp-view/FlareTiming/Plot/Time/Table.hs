@@ -61,8 +61,7 @@ tableSpeed sgs sEx xs select = do
                     return ePilot')
 
             return ev
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 rowSpeed
     :: MonadWidget t m
@@ -105,8 +104,7 @@ rowSpeed w select mapN p ts = do
 
         return ()
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow
 
 showHr :: PilotTime -> T.Text
 showHr (PilotTime x) = showHours x

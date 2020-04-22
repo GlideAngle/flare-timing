@@ -29,8 +29,7 @@ tablePilotArea tweak sEx xs select = do
             ePilot <- tablePilotCompare tweak sEx xs select
             return ePilot)
 
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 thAreaUnits :: Maybe Tweak -> T.Text
 thAreaUnits tweak =
@@ -62,7 +61,6 @@ tablePilotSimple tweak xs select = do
                 return ePilot'
 
             return ev
-
     return ePilot
 
 rowLeadSimple
@@ -83,8 +81,7 @@ rowLeadSimple w select p av = do
 
         return ()
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow
 
 tablePilotCompare
     :: MonadWidget t m
@@ -128,8 +125,7 @@ tablePilotCompare tweak sEx xs select = do
 
             return ev
 
-    ePilot <- switchHold never ev
-    return ePilot
+    switchHold never ev
 
 rowLeadCompare
     :: MonadWidget t m
@@ -163,5 +159,4 @@ rowLeadCompare w mapN select p tl = do
 
         return ()
 
-    let ePilot = const pilot <$> domEvent Click eRow
-    return ePilot
+    return $ const pilot <$> domEvent Click eRow
