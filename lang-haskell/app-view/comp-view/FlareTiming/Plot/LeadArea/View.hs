@@ -153,6 +153,8 @@ leadAreaPlot ix tweak sEx xs = do
                             (nullPilot, Nothing)
                             es
 
+        -- TODO: Find out why I get "cyclic evaluation in fixIO" if I use this list
+        -- rather than pattern matching on the elements of the list.
         [e1, e2, e3, e4, e5] <- sequence $ nth <$> [0 .. 4]
 
         return ()
