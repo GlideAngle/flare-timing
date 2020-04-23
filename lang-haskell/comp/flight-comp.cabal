@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cf9121e9d05fe1ec4ad7a3fc78f77c7a395a7dcf2fe2acb1781b31e516cde56b
+-- hash: 4ca1e199575ff03840917176679055a0255c9c771cbd6a9124576ca40b526773
 
 name:           flight-comp
 version:        0.1.0
@@ -161,6 +161,8 @@ test-suite comp
     , unordered-containers
     , uom-plugin
     , vector
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010
 
 test-suite doctest
@@ -225,4 +227,6 @@ test-suite doctest
     , unordered-containers
     , uom-plugin
     , vector
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010

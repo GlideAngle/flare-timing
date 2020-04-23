@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 62baabb2fdb09fd4900e9cc0a8140f6d54a9a3a74214218eda60668850bf8dbb
+-- hash: c02b2f6426c31f818e401c89def4e2fcbca9cf834f3151fcdf8b390bb1432452
 
 name:           flight-time
 version:        0.1.0
@@ -108,4 +108,6 @@ test-suite golden
     , uom-plugin
     , utf8-string
     , vector
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010

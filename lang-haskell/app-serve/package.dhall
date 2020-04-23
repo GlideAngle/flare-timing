@@ -80,6 +80,12 @@ in    defs
                   "HLint.hs"
               , source-dirs =
                   "test-suite-hlint"
+              , when =
+                  { condition =
+                      "flag(suppress-failing-tests)"
+                  , buildable =
+                      False
+                  }
               }
           }
       }

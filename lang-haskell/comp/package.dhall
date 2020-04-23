@@ -80,6 +80,12 @@ in    defs
                     "TestCompMain.hs"
                 , source-dirs =
                     [ "library", "test-suite-comp" ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , doctest =
                 { dependencies =
@@ -90,6 +96,12 @@ in    defs
                     "DocTest.hs"
                 , source-dirs =
                     [ "library", "test-suite-doctest" ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             }
       }

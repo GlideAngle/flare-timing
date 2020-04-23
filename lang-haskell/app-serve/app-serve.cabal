@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 24d99d007f9ab11c9347f520d05a7b6f76464f01a6218bcc5015a55e5002f9da
+-- hash: 34b5a9cd383d929d891f0d9e758092eb5e900e02f34901e498f75ca64cd7171d
 
 name:           app-serve
 version:        0.1.0
@@ -106,4 +106,6 @@ test-suite hlint
       base
     , flight-comp
     , hlint
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010

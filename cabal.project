@@ -1,0 +1,7 @@
+with-compiler: ghc-8.2.2
+repository ghcjs-overlay
+    url: http://hackage-ghcjs-overlay.nomeata.de/
+    secure: True
+    root-keys:
+    key-threshold: 0
+packages: lang-haskell/*/*.cabal

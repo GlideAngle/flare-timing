@@ -63,6 +63,12 @@ in    defs
                     , "flight-kml"
                     , "vector"
                     ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             }
       }

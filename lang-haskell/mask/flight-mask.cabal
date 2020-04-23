@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 56c07d7fefa756d7b2f0d7560cb42a77c33a23d19d8f199b3d06f67525e89158
+-- hash: 51f886cfccd264bfe8c8ab4832f23a6dde3d87359f00691fa5cff92df5576a24
 
 name:           flight-mask
 version:        0.1.0
@@ -176,4 +176,6 @@ test-suite doctest
     , uom-plugin
     , utf8-string
     , yaml
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010

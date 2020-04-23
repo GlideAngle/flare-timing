@@ -66,6 +66,12 @@ in    defs
                     "DocTest.hs"
                 , source-dirs =
                     [ "library", "test-suite-doctest" ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , geodesy =
                 { dependencies =

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4b34366bfe1c60d0bd06fbae57b7e7a2ac80f7a93705a869baf421968463b5b4
+-- hash: 7af15eef959e6fd687d5cf0e3379e59969e03cafca6410ecfa2e76de072cae90
 
 name:           flight-earth
 version:        0.1.0
@@ -311,6 +311,8 @@ test-suite doctest
     , text
     , transformers
     , uom-plugin
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010
 
 test-suite forbes

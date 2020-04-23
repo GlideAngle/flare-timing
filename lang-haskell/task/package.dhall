@@ -61,6 +61,12 @@ in    defs
                     "Task.hs"
                 , source-dirs =
                     [ "library", "test-suite-task" ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             }
       }

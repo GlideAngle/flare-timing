@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d41f5fedef26fcc71e94e327d030c6ce4546b158b746c0e83faa397ee21f47fb
+-- hash: a93b4393588295b0f9402ec5740513c9a6ea9814ec6e7b5a84a7308609a35cd8
 
 name:           flight-track
 version:        0.1.0
@@ -91,4 +91,6 @@ test-suite doctest
     , split
     , time
     , utf8-string
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010

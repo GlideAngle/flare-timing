@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 78ff242455a5a1d028d01615bd0ea626907a253ca88384572771157ad1e7de41
+-- hash: 962d9f92305c89bb0ef0569c590abc55c08d15d4a9c352af106941a7a4a734bc
 
 name:           flight-task
 version:        0.1.0
@@ -111,4 +111,6 @@ test-suite task
     , tasty-quickcheck
     , tasty-smallcheck
     , uom-plugin
+  if flag(suppress-failing-tests)
+    buildable: False
   default-language: Haskell2010
