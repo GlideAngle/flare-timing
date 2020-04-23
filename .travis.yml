@@ -104,6 +104,8 @@ install:
     echo "packages: lang-haskell/track" >> cabal.project
     echo "packages: lang-haskell/units" >> cabal.project
     echo "packages: lang-haskell/zone" >> cabal.project
+    echo "packages: lang-haskell/hcoord/hcoord" >> cabal.project
+    echo "packages: lang-haskell/hcoord/hcoord-utm" >> cabal.project
   - echo 'package flight-clip' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - echo 'package flight-cmd' >> cabal.project
@@ -152,8 +154,12 @@ install:
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - echo 'package flight-zone' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
+  - echo 'package hcoord' >> cabal.project
+  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
+  - echo 'package hcoord-utm' >> cabal.project
+  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - |
-  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(detour-via-sci|detour-via-uom|flare-timing|flight-clip|flight-cmd|flight-comp|flight-earth|flight-fsdb|flight-gap|flight-igc|flight-kml|flight-latlng|flight-lookup|flight-mask|flight-route|flight-scribe|flight-span|flight-task|flight-time|flight-track|flight-units|flight-zone|siggy-chardust|tasty-compare)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
+  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(detour-via-sci|detour-via-uom|flare-timing|flight-clip|flight-cmd|flight-comp|flight-earth|flight-fsdb|flight-gap|flight-igc|flight-kml|flight-latlng|flight-lookup|flight-mask|flight-route|flight-scribe|flight-span|flight-task|flight-time|flight-track|flight-units|flight-zone|hcoord|hcoord-utm|siggy-chardust|tasty-compare)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
   - if [ -f "lang-haskell/clip/configure.ac" ]; then (cd "lang-haskell/clip" && autoreconf -i); fi
@@ -180,6 +186,8 @@ install:
   - if [ -f "lang-haskell/track/configure.ac" ]; then (cd "lang-haskell/track" && autoreconf -i); fi
   - if [ -f "lang-haskell/units/configure.ac" ]; then (cd "lang-haskell/units" && autoreconf -i); fi
   - if [ -f "lang-haskell/zone/configure.ac" ]; then (cd "lang-haskell/zone" && autoreconf -i); fi
+  - if [ -f "lang-haskell/hcoord/hcoord/configure.ac" ]; then (cd "lang-haskell/hcoord/hcoord" && autoreconf -i); fi
+  - if [ -f "lang-haskell/hcoord/hcoord-utm/configure.ac" ]; then (cd "lang-haskell/hcoord/hcoord-utm" && autoreconf -i); fi
   - ${CABAL} v2-freeze $WITHCOMPILER ${TEST} ${BENCH}
   - "cat cabal.project.freeze | sed -E 's/^(constraints: *| *)//' | sed 's/any.//'"
   - rm  cabal.project.freeze
@@ -218,6 +226,8 @@ script:
   - PKGDIR_flight_track="$(find . -maxdepth 1 -type d -regex '.*/flight-track-[0-9.]*')"
   - PKGDIR_flight_units="$(find . -maxdepth 1 -type d -regex '.*/flight-units-[0-9.]*')"
   - PKGDIR_flight_zone="$(find . -maxdepth 1 -type d -regex '.*/flight-zone-[0-9.]*')"
+  - PKGDIR_hcoord="$(find . -maxdepth 1 -type d -regex '.*/hcoord-[0-9.]*')"
+  - PKGDIR_hcoord_utm="$(find . -maxdepth 1 -type d -regex '.*/hcoord-utm-[0-9.]*')"
   # Generate cabal.project
   - rm -rf cabal.project cabal.project.local cabal.project.freeze
   - touch cabal.project
@@ -246,6 +256,8 @@ script:
     echo "packages: ${PKGDIR_flight_track}" >> cabal.project
     echo "packages: ${PKGDIR_flight_units}" >> cabal.project
     echo "packages: ${PKGDIR_flight_zone}" >> cabal.project
+    echo "packages: ${PKGDIR_hcoord}" >> cabal.project
+    echo "packages: ${PKGDIR_hcoord_utm}" >> cabal.project
   - echo 'package flight-clip' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - echo 'package flight-cmd' >> cabal.project
@@ -294,8 +306,12 @@ script:
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - echo 'package flight-zone' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
+  - echo 'package hcoord' >> cabal.project
+  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
+  - echo 'package hcoord-utm' >> cabal.project
+  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - |
-  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(detour-via-sci|detour-via-uom|flare-timing|flight-clip|flight-cmd|flight-comp|flight-earth|flight-fsdb|flight-gap|flight-igc|flight-kml|flight-latlng|flight-lookup|flight-mask|flight-route|flight-scribe|flight-span|flight-task|flight-time|flight-track|flight-units|flight-zone|siggy-chardust|tasty-compare)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
+  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(detour-via-sci|detour-via-uom|flare-timing|flight-clip|flight-cmd|flight-comp|flight-earth|flight-fsdb|flight-gap|flight-igc|flight-kml|flight-latlng|flight-lookup|flight-mask|flight-route|flight-scribe|flight-span|flight-task|flight-time|flight-track|flight-units|flight-zone|hcoord|hcoord-utm|siggy-chardust|tasty-compare)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
   # Building...
