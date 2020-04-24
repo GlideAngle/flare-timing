@@ -1,7 +1,8 @@
 name: Continuous Integration
 
 on:
-  pull_request: { "branches": [ "master", "fix/test-suite-score-393" ] }
+  pull_request: { "branches": [ "master" ] }
+  push: { "branches": [ "master", "fix/test-suite-score-393" ] }
 
 jobs:
   build:
