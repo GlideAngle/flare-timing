@@ -28,4 +28,4 @@ jobs:
 
     - name: 🔨 Build & Test
       run: |
-        stack test --no-terminal
+        stack test --no-terminal --stack-yaml=lang-haskell/stack.yaml
