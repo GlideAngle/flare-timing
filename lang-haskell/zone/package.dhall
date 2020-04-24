@@ -1,3 +1,5 @@
+-- NOTE: The serial test works fine locally but on travis-ci.org it fails
+-- ghc: could not execute: tasty-discover
     let defs = ./../defaults.dhall
 
 in    defs
@@ -60,6 +62,12 @@ in    defs
                     "Spec.hs"
                 , source-dirs =
                     [ "library", "test-suite-serial" ]
+                , when =
+                    { condition =
+                        "flag(suppress-failing-tests)"
+                    , buildable =
+                        False
+                    }
                 }
             , doctest =
                 { dependencies =
