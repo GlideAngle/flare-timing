@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: Stack CI
 
 on:
   pull_request: { "branches": [ "master" ] }
@@ -20,6 +20,7 @@ jobs:
 
     - name: 📥 Checkout repository
       uses: actions/checkout@v1
+        submodules: true
 
     - name: 🧰 Setup Stack
       uses: mstksg/setup-stack@v1
