@@ -13,19 +13,30 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: 💽 Install OS Packages
+    - name: Install OS Packages
       uses: mstksg/get-package@v1
       with:
         apt-get: libgmp-dev
 
-    - name: 📥 Checkout repository
+    - name: Checkout repository
       uses: actions/checkout@v1
       with:
         submodules: true
 
-    - name: 🧰 Setup Stack
+    - name: Setup Stack
       uses: mstksg/setup-stack@v1
 
-    - name: 🔨 Build & Test
+    - name: Cache Key
+      id: cache_key
+      run: echo ::set-output name=key::$(md5sum lang-haskell/stack.yaml | awk '{print $1}')
+
+    - name: Cache Dependencies
+      id: cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.stack
+        key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
+
+    - name: Build & Test
       run: |
         stack test --no-terminal --stack-yaml=lang-haskell/stack.yaml
