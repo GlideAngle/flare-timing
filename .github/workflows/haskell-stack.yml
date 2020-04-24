@@ -20,6 +20,7 @@ jobs:
 
     - name: 📥 Checkout repository
       uses: actions/checkout@v1
+      with:
         submodules: true
 
     - name: 🧰 Setup Stack
