@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0d043e9e20a0149c00f72914aceb383ab849be2a5c517cf39e41614b3aa7293f
+-- hash: 998bad320e393e466600cb3ace7a7a436fc706fd078323f9977937627c690730
 
 name:           flight-igc
 version:        2.0.0
@@ -55,7 +55,7 @@ library
       base >=4.10.1.0 && <5
     , bytestring
     , flight-clip
-    , megaparsec
+    , megaparsec >=7.0.4 && <7.1
     , tasty-quickcheck
     , time
     , utf8-string
@@ -81,7 +81,7 @@ test-suite doctest
     , bytestring
     , doctest
     , flight-clip
-    , megaparsec
+    , megaparsec >=7.0.4 && <7.1
     , tasty-quickcheck
     , time
     , utf8-string

@@ -20,7 +20,7 @@ in    defs
             defs.dependencies
           # [ "bytestring"
             , "flight-clip"
-            , "megaparsec"
+            , "megaparsec ^>= 7.0.4"
             , "tasty-quickcheck"
             , "time"
             , "utf8-string"

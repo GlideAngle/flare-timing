@@ -36,8 +36,8 @@ jobs:
     - name: Build
       run: |
         cabal v2-update
-        cabal v2-build all --enable-tests
+        cabal v2-build all
 
     - name: Unit and property tests
       run: |
-        cabal v2-test all --enable-tests
+        cabal v2-test all

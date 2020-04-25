@@ -17,7 +17,7 @@ in    defs
       , dependencies =
             defs.dependencies
           # [ "split"
-            , "megaparsec"
+            , "megaparsec ^>= 7.0.4"
             , "hxt"
             , "path"
             , "hxt-xpath"

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2247c5f0e81d602af4a18b39a362df915169481f533c3d4572d7debebbaa52bf
+-- hash: ebbeeed5203ed534569d2b26d626c01edb1d60bc5df763e216db70dbe373e443
 
 name:           siggy-chardust
 version:        1.0.0
@@ -79,6 +79,6 @@ test-suite doctest
   default-extensions: PackageImports
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.10.1.0 && <5
     , doctest
   default-language: Haskell2010
