@@ -1,4 +1,4 @@
-name: Cabal CI
+name: cabal
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         cabal update
-        cabal install --only-dependencies --enable-tests
+        cabal install --only-dependencies
 
     - name: Build
       run: |

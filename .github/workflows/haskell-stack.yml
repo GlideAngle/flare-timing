@@ -1,4 +1,4 @@
-name: Stack CI
+name: stack
 
 on:
   pull_request: { "branches": [ "master" ] }
