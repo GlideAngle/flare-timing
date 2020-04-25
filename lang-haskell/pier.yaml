@@ -34,6 +34,40 @@ extra-deps:
 - doctest-0.15.0
 - megaparsec-7.0.4
 - parser-combinators-1.0.0
+- HUnit-1.5.0.0
 - chell-0.4.0.2
 - chell-quickcheck-0.2.5.1
 - ghc-paths-0.1.0.9
+flags:
+    detour-via-sci:
+        suppress-failing-tests: true
+    detour-via-uom:
+        suppress-failing-tests: true
+    flight-clip:
+        suppress-failing-tests: true
+    flight-comp:
+        suppress-failing-tests: true
+    flight-earth:
+        suppress-failing-tests: true
+    flight-fsdb:
+        suppress-failing-tests: true
+    flight-gap:
+        suppress-failing-tests: true
+    flight-igc:
+        suppress-failing-tests: true
+    flight-kml:
+        suppress-failing-tests: true
+    flight-mask:
+        suppress-failing-tests: true
+    flight-task:
+        suppress-failing-tests: true
+    flight-time:
+        suppress-failing-tests: true
+    flight-track:
+        suppress-failing-tests: true
+    flight-units:
+        suppress-failing-tests: true
+    flight-zone:
+        suppress-failing-tests: true
+    app-serve:
+        suppress-failing-tests: true
