@@ -5,22 +5,28 @@
 
 packages:
 - completed:
-    cabal-file:
-      size: 2566
-      sha256: 2b70722593aeb34782ce591359fc6fd2d4fcb0a24276c8b949c9a8567ae539e6
-    name: pier
-    version: 0.1.0.0
-    git: https://github.com/blockscope/pier.git
+    hackage: pier-core-0.3.0.0@sha256:c653c69bcd4f24069e54c26f57e2a1206e0911433b6bc645c194e6e8d6b4f3cf,2422
     pantry-tree:
-      size: 2025
-      sha256: 54cd9dde6273e37a268d6d312bb6f3ccc4a7ac124a9a9bc61a21183ccb7bb7e1
-    commit: 9ea5b2b689610cc779618bdbf7bb169aae0520c9
+      size: 593
+      sha256: caa0cc069307ac9af3de774c3a54086098a4ecc1661bbcf1bad79f4e26b07e38
   original:
-    git: https://github.com/blockscope/pier.git
-    commit: 9ea5b2b689610cc779618bdbf7bb169aae0520c9
+    hackage: pier-core-0.3.0.0@sha256:c653c69bcd4f24069e54c26f57e2a1206e0911433b6bc645c194e6e8d6b4f3cf,2422
+    pantry-tree:
+      size: 593
+      sha256: caa0cc069307ac9af3de774c3a54086098a4ecc1661bbcf1bad79f4e26b07e38
+- completed:
+    hackage: pier-0.3.0.0@sha256:2941a67ea0b45f45afbcda83f571884aee015f0376cab8ee060ac268ee4d62d4,2595
+    pantry-tree:
+      size: 893
+      sha256: 526fc417db08b2966714e8085764ab6998229199b3f8bcd7746e5d903260dbec
+  original:
+    hackage: pier-0.3.0.0@sha256:2941a67ea0b45f45afbcda83f571884aee015f0376cab8ee060ac268ee4d62d4,2595
+    pantry-tree:
+      size: 893
+      sha256: 526fc417db08b2966714e8085764ab6998229199b3f8bcd7746e5d903260dbec
 snapshots:
 - completed:
-    size: 527836
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/11/22.yaml
-    sha256: 341870ac98d8a9f8f77c4adf2e9e0b22063e264a7fbeb4c85b7af5f380dac60e
-  original: lts-11.22
+    size: 502589
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/12/8.yaml
+    sha256: 68edd0f7c0c86755fe60278bc9523cb9ecca3858ac87d460696743bceffbd6f7
+  original: lts-12.8
