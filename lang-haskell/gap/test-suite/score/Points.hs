@@ -224,13 +224,13 @@ correct
         , time = TimePoints t
         }
     pts =
-    pts == TaskPoints (r + e + l + t + a)
+    pts == TaskPoints (fromRational $ r + e + l + t + a)
 
 correct
     (Just (JumpedTooEarly (TooEarlyPoints md)))
     _
     pts =
-    pts == TaskPoints (toRational md)
+    pts == TaskPoints (fromIntegral md)
 
 correct
     (Just (Jumped (SecondsPerPoint (MkQuantity spp)) (JumpedTheGun (MkQuantity jtg))))
@@ -244,7 +244,7 @@ correct
     pts =
     pts == TaskPoints (max 0 x)
     where
-        x = (r + e + l + t + a) - (toRational $ jtg / spp)
+        x = (fromRational $ r + e + l + t + a) - (jtg / spp)
 
 correct
     (Just (JumpedNoGoal (SecondsPerPoint (MkQuantity spp)) (JumpedTheGun (MkQuantity jtg))))
@@ -258,7 +258,7 @@ correct
     pts =
     pts == TaskPoints (max 0 x)
     where
-        x = (r + e + l + (8 % 10) * (t + a)) - (toRational $ jtg / spp)
+        x = (fromRational $ r + e + l + (8 % 10) * (t + a)) - (jtg / spp)
 
 correct
     (Just NoGoalHg)
@@ -270,10 +270,10 @@ correct
         , time = TimePoints t
         }
     pts =
-    pts == TaskPoints (r + e + l + (8 % 10) * (t + a))
+    pts == TaskPoints (fromRational $ r + e + l + (8 % 10) * (t + a))
 
 correct (Just (Early (LaunchToStartPoints lts))) Points{..} (TaskPoints pts) =
-    pts == toRational lts
+    pts == fromIntegral lts
 
 correct
     (Just NoGoalPg)
@@ -283,7 +283,7 @@ correct
         , leading = LeadingPoints l
         }
     pts =
-    pts == TaskPoints (r + e + l)
+    pts == TaskPoints (fromRational $ r + e + l)
 
 taskPointsHg :: PtTest Hg -> Bool
 taskPointsHg (PtTest (penalty, parts)) =

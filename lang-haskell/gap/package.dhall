@@ -104,12 +104,6 @@ in    defs
                     "ScoreTestMain.hs"
                 , source-dirs =
                     [ "library", "test-suite/test", "test-suite/score" ]
-                , when =
-                    { condition =
-                        "flag(suppress-failing-tests)"
-                    , buildable =
-                        False
-                    }
                 }
             , stop =
                 { dependencies =
