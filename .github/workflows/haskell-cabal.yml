@@ -8,12 +8,8 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-jobs:
-  build:
     name: ghc ${{ matrix.ghc }}
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         cabal: ["2.4"]
