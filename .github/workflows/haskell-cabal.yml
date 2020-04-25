@@ -10,6 +10,15 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+jobs:
+  build:
+    name: ghc ${{ matrix.ghc }}
+    runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        cabal: ["2.4"]
+        ghc:
+          - "8.2.2"
 
     steps:
     - uses: actions/checkout@v2
@@ -17,19 +26,22 @@ jobs:
         submodules: true
 
     - uses: actions/setup-haskell@v1
+      name: Setup Haskell
       with:
-        ghc-version: '8.2.2'
-        cabal-version: '3.0'
+        ghc-version: ${{ matrix.ghc }}
+        cabal-version: ${{ matrix.cabal }}
 
-    - name: Install dependencies
-      run: |
-        cabal update
-        cabal install --only-dependencies
+    - uses: actions/cache@v1
+      name: Cache ~/.cabal/store
+      with:
+        path: ~/.cabal/store
+        key: ${{ runner.os }}-${{ matrix.ghc }}-cabal
 
     - name: Build
       run: |
-        cabal configure --enable-tests
-        cabal build
+        cabal v2-update
+        cabal v2-build all --enable-tests
 
-    - name: Run tests
-      run: cabal test
+    - name: Unit and property tests
+      run: |
+        cabal v2-test all --enable-tests
