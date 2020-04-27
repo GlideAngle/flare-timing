@@ -30,10 +30,34 @@ applyPenalties xs p =
         (fracs, ys) = partition isPenaltyFraction xs
         (resets, points) = partition isPenaltyReset ys
 
+zP :: PointPenalty -> Maybe (Ordering, TaskPoints)
+zP (PenaltyPoints n) = Just (n `compare` 0, TaskPoints $ abs n)
+zP _ = Nothing
+
+zF :: PointPenalty -> Maybe (Ordering, TaskPoints)
+zF (PenaltyFraction n) = Just (n `compare` 0, TaskPoints $ abs n)
+zF _ = Nothing
+
+zR :: PointPenalty -> Maybe (Ordering, TaskPoints)
+zR (PenaltyReset n) = Just (n `compare` 0, TaskPoints . fromIntegral $ abs n)
+zR _ = Nothing
+
 applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
-applyPenalty p (PenaltyPoints n) = max 0 $ p - TaskPoints n
-applyPenalty p (PenaltyFraction n) = max 0 $ p - p * TaskPoints n
-applyPenalty p (PenaltyReset n) = max 0 $ min p (TaskPoints $ fromIntegral n)
+applyPenalty p pp
+
+    | Just (EQ, _) <- zP pp = p
+    | Just (GT, n) <- zP pp = max 0 $ p - n
+    | Just (LT, n) <- zP pp = p + n
+
+    | Just (EQ, _) <- zF pp = p
+    | Just (GT, n) <- zF pp = max 0 $ p * (1.0 - n)
+    | Just (LT, n) <- zF pp = p * (1.0 + n)
+
+    | Just (EQ, _) <- zR pp = 0
+    | Just (GT, n) <- zR pp = max 0 $ min p n
+    | Just (LT, n) <- zR pp = max p n
+
+    | otherwise = p
 
 isPenaltyPoints, isPenaltyFraction, isPenaltyReset :: PointPenalty -> Bool
 isPenaltyPoints = \case PenaltyPoints{} -> True; _ -> False

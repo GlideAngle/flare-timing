@@ -138,7 +138,7 @@ import Flight.Score
     , IxChunk(..), ChunkDifficulty(..)
     , FlownMax(..)
     , JumpedTheGun(..), TooEarlyPoints(..), LaunchToStartPoints(..)
-    , Penalty(..), Hg
+    , SitRep(..), Hg
     , unFlownMaxAsKm
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
@@ -1299,7 +1299,7 @@ tallyDf
         ptsReduced =
             case hgOrPg of
                 HangGliding ->
-                    let eitherPenalties :: [Either PointPenalty (Penalty Hg)]
+                    let eitherPenalties :: [Either PointPenalty (SitRep Hg)]
                         eitherPenalties =
                             maybeToList
                             $ jumpTheGunPenaltyHg tooEarlyPoints earliest earlyPenalty <$> jump
@@ -1420,8 +1420,8 @@ tallyDfNoTrack
                 , effectivePenalties
                 } =
                     case hgOrPg of
-                        HangGliding -> Gap.taskPoints NoPenaltyHg [] penalties x
-                        Paragliding -> Gap.taskPoints NoPenaltyPg [] penalties x
+                        HangGliding -> Gap.taskPoints NominalHg [] penalties x
+                        Paragliding -> Gap.taskPoints NominalPg [] penalties x
 
         dE = PilotDistance <$> do
                 dT <- dT'

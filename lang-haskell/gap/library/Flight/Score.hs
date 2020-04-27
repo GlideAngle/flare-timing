@@ -149,7 +149,7 @@ module Flight.Score
     , JumpedTheGun(..)
     , Hg
     , Pg
-    , Penalty(..)
+    , SitRep(..)
     , PointPenalty(..)
     , DistancePoints(..)
     , LinearPoints(..)
@@ -160,6 +160,7 @@ module Flight.Score
     , TaskPoints(..)
     , Points(..)
     , PointsReduced(..)
+    , ReconcilePointErrors(..)
     , zeroPoints
     , taskPoints
     , tallySubtotal

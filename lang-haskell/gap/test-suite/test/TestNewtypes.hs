@@ -47,7 +47,7 @@ import Flight.Score
     , JumpedTheGun(..)
     , Hg
     , Pg
-    , Penalty(..)
+    , SitRep(..)
     , PointPenalty(..)
     , LinearPoints(..)
     , DifficultyPoints(..)
@@ -326,12 +326,12 @@ instance QC.Arbitrary LcTest where
         return $ mkLcTest deadline len xs
 
 -- | Task points, tally and penalties.
-newtype PtTest a = PtTest (Penalty a, [PointPenalty], [PointPenalty], Points) deriving Show
+newtype PtTest a = PtTest (SitRep a, [PointPenalty], [PointPenalty], Points) deriving Show
 
 instance Monad m => SC.Serial m (PtTest Hg) where
     series = decDepth $ mkPtTest <$> penalty <~> jumps <~> others <~> cons4 mkParts
         where
-            mkPtTest :: Penalty Hg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Hg
+            mkPtTest :: SitRep Hg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Hg
             mkPtTest a b c d = PtTest (a, b, c, d)
 
             mkParts
@@ -361,7 +361,7 @@ instance Monad m => SC.Serial m (PtTest Hg) where
 
 
             penalty =
-                cons0 NoPenaltyHg
+                cons0 NominalHg
                 \/ cons0 NoGoalHg
                 \/ cons1 (\(SC.Positive mdp) ->
                         JumpedTooEarly (TooEarlyPoints mdp))
@@ -373,7 +373,7 @@ instance Monad m => SC.Serial m (PtTest Hg) where
 instance Monad m => SC.Serial m (PtTest Pg) where
     series = decDepth $ mkPtTest <$> penalty <~> jumps <~> others <~> cons4 mkParts
         where
-            mkPtTest :: Penalty Pg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Pg
+            mkPtTest :: SitRep Pg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Pg
             mkPtTest a b c d = PtTest (a, b, c, d)
 
             mkParts
@@ -402,7 +402,7 @@ instance Monad m => SC.Serial m (PtTest Pg) where
                 \/ cons1 (pure . PenaltyReset)
 
             penalty =
-                cons0 NoPenaltyPg
+                cons0 NominalPg
                 \/ cons0 NoGoalPg
                 \/ cons1 (\(SC.Positive lts) -> Early (LaunchToStartPoints lts))
 
@@ -427,7 +427,7 @@ instance QC.Arbitrary (PtTest Hg) where
     arbitrary = do
         penalty <-
             QC.oneof
-                [ return NoPenaltyHg
+                [ return NominalHg
                 , return NoGoalHg
                 , do
                     (QC.Positive mdp) <- arbitrary
@@ -463,7 +463,7 @@ instance QC.Arbitrary (PtTest Pg) where
     arbitrary = do
         penalty <-
             QC.oneof
-                [ return NoPenaltyPg
+                [ return NominalPg
                 , return NoGoalPg
                 , do
                     (QC.Positive lts) <- arbitrary
