@@ -15,16 +15,19 @@ module Flight.Gap.Points
     , PointsReduced(..)
     , zeroPoints
     , taskPoints
-    , taskPointsSubtotal
-    , availablePoints
+    , tallySubtotal
+    , availablePointsPg
+    , availablePointsHg
     , jumpTheGunPenaltyHg
     , jumpTheGunPenaltyPg
     ) where
 
+import Text.Printf (printf)
 import Data.Ratio ((%))
+import Data.List (sort)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure ((/:), u, toRational')
+import Data.UnitsOfMeasure ((/:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Points.Distance
@@ -59,21 +62,15 @@ data Hg = Hg deriving (Show)
 data Pg = Pg deriving (Show)
 
 data Penalty a where
-    JumpedTooEarly :: TooEarlyPoints -> Penalty Hg
-
-    Jumped
-        :: SecondsPerPoint (Quantity Double [u| s |])
-        -> JumpedTheGun (Quantity Double [u| s |])
-        -> Penalty Hg
-
-    JumpedNoGoal
-        :: SecondsPerPoint (Quantity Double [u| s |])
-        -> JumpedTheGun (Quantity Double [u| s |])
-        -> Penalty Hg
-
+    NoPenaltyHg :: Penalty Hg
     NoGoalHg :: Penalty Hg
-    Early :: LaunchToStartPoints -> Penalty Pg
+    JumpedTooEarly :: TooEarlyPoints -> Penalty Hg
+    Jumped :: SecondsPerPoint (Quantity Double [u| s |]) -> JumpedTheGun (Quantity Double [u| s |]) -> Penalty Hg
+    JumpedNoGoal :: SecondsPerPoint (Quantity Double [u| s |]) -> JumpedTheGun (Quantity Double [u| s |]) -> Penalty Hg
+
+    NoPenaltyPg :: Penalty Pg
     NoGoalPg :: Penalty Pg
+    Early :: LaunchToStartPoints -> Penalty Pg
 
 deriving instance Eq (Penalty a)
 deriving instance Show (Penalty a)
@@ -89,8 +86,6 @@ data Points =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-type TaskPointTally = Points -> TaskPoints
-
 zeroPoints :: Points
 zeroPoints =
     Points
@@ -101,70 +96,6 @@ zeroPoints =
         , time = TimePoints 0
         , arrival = ArrivalPoints 0
         }
-
-tallyPoints :: forall a. Maybe (Penalty a) -> TaskPointTally
-
-tallyPoints Nothing =
-    \Points
-        { reach = LinearPoints linear
-        , effort = DifficultyPoints diff
-        , leading = LeadingPoints l
-        , time = TimePoints t
-        , arrival = ArrivalPoints a
-        } ->
-        TaskPoints . fromRational $ linear + diff + l + t + a
-
-tallyPoints (Just (JumpedTooEarly (TooEarlyPoints p))) =
-    const . TaskPoints $ fromIntegral p
-
-tallyPoints (Just (JumpedNoGoal secs jump)) =
-    \Points
-        { reach = LinearPoints linear
-        , effort = DifficultyPoints diff
-        , leading = LeadingPoints l
-        , time = TimePoints t
-        , arrival = ArrivalPoints a
-        } ->
-        jumpTheGun secs jump
-        . TaskPoints
-        . fromRational
-        $ linear + diff + l + (8 % 10) * (t + a)
-
-tallyPoints (Just (Jumped secs jump)) =
-    \Points
-        { reach = LinearPoints linear
-        , effort = DifficultyPoints diff
-        , leading = LeadingPoints l
-        , time = TimePoints t
-        , arrival = ArrivalPoints a
-        } ->
-        jumpTheGun secs jump
-        . TaskPoints
-        . fromRational
-        $ linear + diff + l + t + a
-
-tallyPoints (Just NoGoalHg) =
-    \Points
-        { reach = LinearPoints linear
-        , effort = DifficultyPoints diff
-        , leading = LeadingPoints l
-        , time = TimePoints t
-        , arrival = ArrivalPoints a
-        } ->
-        TaskPoints
-        . fromRational
-        $ linear + diff + l + (8 % 10) * (t + a)
-
-tallyPoints (Just (Early (LaunchToStartPoints d))) =
-    const . TaskPoints $ fromIntegral d
-
-tallyPoints (Just NoGoalPg) =
-    \Points
-        { reach = LinearPoints linear
-        , effort = DifficultyPoints diff
-        , leading = LeadingPoints l
-        } ->
-        TaskPoints . fromRational $ linear + diff + l
 
 jumpTheGunPenaltyHg
     :: TooEarlyPoints
@@ -184,15 +115,6 @@ jumpTheGunPenaltyPg pts (JumpedTheGun jump)
     | jump > [u| 0 s |] = Just $ Early pts
     | otherwise = Nothing
 
-jumpTheGun
-    :: SecondsPerPoint (Quantity Double [u| s |])
-    -> JumpedTheGun (Quantity Double [u| s |])
-    -> TaskPoints
-    -> TaskPoints
-jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
-    let (MkQuantity penalty) = toRational' $ jump /: secs in
-    TaskPoints $ max 0 (pts - fromRational penalty)
-
 data PointsReduced =
     PointsReduced
         { subtotal :: TaskPoints
@@ -205,81 +127,200 @@ data PointsReduced =
         }
         deriving (Eq, Show)
 
-taskPoints
-    :: forall a. Maybe (Penalty a) -- ^ Only applied if @isReset@ and @isTooEarly@.
+reconcileEarlyHg
+    :: forall a. Penalty a
     -> [PointPenalty] -- ^ Penalties for jumping the gun.
     -> [PointPenalty] -- ^ Other penalties.
     -> Points
-    -> PointsReduced
-taskPoints p psJump ps points =
-    PointsReduced
-        { subtotal = subtotal
-        , fracApplied =
-            TaskPoints $ s - pointsF
-        , pointApplied =
-            TaskPoints $ pointsF - pointsFP
-        , resetApplied =
-            TaskPoints $ pointsFP - pointsR
-        , total = total
-        , effectivePenalties = qs'
-        , effectivePenaltiesJump = psJump'
-        }
-    where
-        subtotal@(TaskPoints s) = taskPointsSubtotal points
-        TaskPoints reset = tallyPoints p points
+    -> Either String PointsReduced
+reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) [] ps points =
+    reconcileEarlyHg p [PenaltyReset tep] ps points
+reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) psJump@[PenaltyReset r] ps points =
+    if tep /= r then
+        Left $ printf "Early HG with launch to start points /= reset but got %s" (show (p, psJump))
+    else
+        let subtotal@(TaskPoints s) = tallySubtotal p points
+
+            withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
+            (TaskPoints pointsFP) = applyPointPenalties ps withF
+
+            total@(TaskPoints pointsR) = applyPenalties psJump subtotal
+        in
+            Right
+            PointsReduced
+                { subtotal = subtotal
+                , fracApplied =
+                    TaskPoints $ s - pointsF
+                , pointApplied =
+                    TaskPoints $ pointsF - pointsFP
+                , resetApplied =
+                    TaskPoints $ pointsFP - pointsR
+                , total = total
+                , effectivePenalties = ps ++ psJump
+                , effectivePenaltiesJump = psJump
+                }
+reconcileEarlyHg p psJump ps _ =
+    Left $ printf "Early HG with unexpected reconciliation of %s" (show (p, psJump, ps))
+
+reconcileEarlyPg
+    :: forall a. Penalty a
+    -> [PointPenalty] -- ^ Penalties for jumping the gun.
+    -> [PointPenalty] -- ^ Other penalties.
+    -> Points
+    -> Either String PointsReduced
+reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) [] ps points =
+    reconcileEarlyPg p [PenaltyReset lsp] ps points
+reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) psJump@[PenaltyReset r] ps points =
+    if lsp /= r then
+        Left $ printf "Early PG with launch to start points /= reset but got %s" (show (p, psJump))
+    else
+        let subtotal@(TaskPoints s) = tallySubtotal p points
+
+            -- NOTE: Take the smallest reset.
+            qs = take 1 . sort $ psJump ++ filter (\case PenaltyReset{} -> True; _ -> False) ps
+            withF@(TaskPoints pointsF) = applyFractionalPenalties qs subtotal
+            (TaskPoints pointsFP) = applyPointPenalties qs withF
+
+            TaskPoints pointsR = applyPenalties qs subtotal
+            total = applyPenalties qs subtotal
+        in
+            Right
+            PointsReduced
+                { subtotal = subtotal
+                , fracApplied =
+                    TaskPoints $ s - pointsF
+                , pointApplied =
+                    TaskPoints $ pointsF - pointsFP
+                , resetApplied =
+                    TaskPoints $ pointsFP - pointsR
+                , total = total
+                , effectivePenalties = qs
+                , effectivePenaltiesJump = psJump
+                }
+reconcileEarlyPg p@Early{} psJump _ _ =
+    Left $ printf "Early PG with unexpected jump penalties %s" (show (p, psJump))
+reconcileEarlyPg p psJump ps _ =
+    Left $ printf "Early PG with unexpected reconciliation of %s" (show (p, psJump, ps))
+
+reconcileNoPenalties
+    :: forall a. Penalty a
+    -> [PointPenalty] -- ^ Penalties for jumping the gun.
+    -> [PointPenalty] -- ^ Other penalties.
+    -> Points
+    -> Either String PointsReduced
+reconcileNoPenalties p [] [] points =
+    let subtotal = tallySubtotal p points
+    in
+        Right
+        PointsReduced
+            { subtotal = subtotal
+            , fracApplied =
+                TaskPoints 0
+            , pointApplied =
+                TaskPoints 0
+            , resetApplied =
+                TaskPoints 0
+            , total = subtotal
+            , effectivePenalties = []
+            , effectivePenaltiesJump = []
+            }
+reconcileNoPenalties p psJump ps _ =
+    Left $ printf "Not no penalties %s" (show (p, psJump, ps))
+
+reconcile
+    :: forall a. Penalty a
+    -> [PointPenalty] -- ^ Penalties for jumping the gun.
+    -> [PointPenalty] -- ^ Other penalties.
+    -> Points
+    -> Either String PointsReduced
+reconcile p psJump ps points =
+    let subtotal@(TaskPoints s) = tallySubtotal p points
 
         qs = psJump ++ ps
         withF@(TaskPoints pointsF) = applyFractionalPenalties qs subtotal
         (TaskPoints pointsFP) = applyPointPenalties qs withF
 
-        (qs', psJump') =
-            -- NOTE: If the penalty was a reset, change the penalties.
-            maybe
-                (qs, psJump)
-                (\p' ->
-                    if isReset p' && maybe False isTooEarly p
-                        then
-                            let pReset = PenaltyReset $ round reset in
-                            (pReset : qs, pReset : psJump)
-                        else
-                            (qs, psJump))
-                p
+        TaskPoints pointsR = applyPenalties qs subtotal
+        total = applyPenalties qs subtotal
+    in
+        Right
+        PointsReduced
+            { subtotal = subtotal
+            , fracApplied =
+                TaskPoints $ s - pointsF
+            , pointApplied =
+                TaskPoints $ pointsF - pointsFP
+            , resetApplied =
+                TaskPoints $ pointsFP - pointsR
+            , total = total
+            , effectivePenalties = qs
+            , effectivePenaltiesJump = psJump
+            }
 
-        TaskPoints pointsR = applyPenalties qs' subtotal
-        total = applyPenalties qs' subtotal
+taskPoints
+    :: forall a. Penalty a
+    -> [PointPenalty] -- ^ Penalties for jumping the gun.
+    -> [PointPenalty] -- ^ Other penalties.
+    -> Points
+    -> Either String PointsReduced
+taskPoints p psJump ps points
+    | JumpedTooEarly{} <- p = reconcileEarlyHg p psJump ps points
+    | Early{} <- p = reconcileEarlyPg p psJump ps points
+    | NoPenaltyHg <- p = reconcileNoPenalties p psJump ps points
+    | NoPenaltyPg <- p = reconcileNoPenalties p psJump ps points
+    | otherwise = reconcile p psJump ps points
 
-isReset :: Penalty a -> Bool
-isReset = \case
-    JumpedTooEarly _ -> True
+isPg :: Penalty a -> Bool
+isPg = \case
+    NoPenaltyPg -> True
+    Early _ -> True
+    NoGoalPg -> True
+
+    NoPenaltyHg -> False
+    JumpedTooEarly _ -> False
     Jumped _ _ -> False
     JumpedNoGoal _ _ -> False
     NoGoalHg -> False
-    Early _ -> True
-    NoGoalPg -> False
 
-isTooEarly :: Penalty a -> Bool
-isTooEarly = \case
-    JumpedTooEarly _ -> True
-    Jumped _ _ -> False
-    JumpedNoGoal _ _ -> False
-    NoGoalHg -> False
-    Early _ -> True
-    NoGoalPg -> False
-
-taskPointsSubtotal :: Points -> TaskPoints
-taskPointsSubtotal
+tallySubtotal :: Penalty a -> Points -> TaskPoints
+tallySubtotal
+    penalty
     Points
         { reach = LinearPoints r
         , effort = DifficultyPoints e
         , leading = LeadingPoints l
         , time = TimePoints t
         , arrival = ArrivalPoints a
-        } =
-    TaskPoints . fromRational $ r + e + l + t + a
+        }
+    | NoGoalPg <- penalty = TaskPoints . fromRational $ l + r
+    | NoGoalHg <- penalty = TaskPoints . fromRational $ l + r + ((8 % 10) * (t + a))
+    | JumpedNoGoal{} <- penalty = TaskPoints . fromRational $ l + r + ((8 % 10) * (t + a))
+    | isPg penalty = TaskPoints . fromRational $ l + t + r
+    | otherwise = TaskPoints . fromRational $ l + t + a + r + e
 
-availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)
-availablePoints (TaskValidity tv) Weights{..} =
-    (pts, tallyPoints Nothing pts)
+availablePointsPg :: TaskValidity -> Weights -> (Points, TaskPoints)
+availablePointsPg (TaskValidity tv) Weights{..} =
+    (pts, tallySubtotal NoPenaltyPg pts)
+    where
+        DistanceWeight dw = distance
+        ReachWeight rw = reach
+        LeadingWeight lw = leading
+        TimeWeight tw = time
+        k x = 1000 * tv * x
+
+        pts =
+            Points
+                { reach = LinearPoints . k $ rw
+                , effort = DifficultyPoints 0
+                , distance = DistancePoints . k $ dw
+                , leading = LeadingPoints . k $ lw
+                , arrival = ArrivalPoints 0
+                , time = TimePoints . k $ tw
+                }
+
+availablePointsHg :: TaskValidity -> Weights -> (Points, TaskPoints)
+availablePointsHg (TaskValidity tv) Weights{..} =
+    (pts, tallySubtotal NoPenaltyHg pts)
     where
         DistanceWeight dw = distance
         ReachWeight rw = reach

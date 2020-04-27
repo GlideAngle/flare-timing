@@ -48,6 +48,7 @@ import Flight.Score
     , Hg
     , Pg
     , Penalty(..)
+    , PointPenalty(..)
     , LinearPoints(..)
     , DifficultyPoints(..)
     , DistancePoints(..)
@@ -325,13 +326,13 @@ instance QC.Arbitrary LcTest where
         return $ mkLcTest deadline len xs
 
 -- | Task points, tally and penalties.
-newtype PtTest a = PtTest (Maybe (Penalty a), Points) deriving Show
+newtype PtTest a = PtTest (Penalty a, [PointPenalty], [PointPenalty], Points) deriving Show
 
 instance Monad m => SC.Serial m (PtTest Hg) where
-    series = decDepth $ mkPtTest <$> penalty <~> cons4 mkParts
+    series = decDepth $ mkPtTest <$> penalty <~> jumps <~> others <~> cons4 mkParts
         where
-            mkPtTest :: Maybe (Penalty Hg) -> Points -> PtTest Hg
-            mkPtTest a b = PtTest (a, b)
+            mkPtTest :: Penalty Hg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Hg
+            mkPtTest a b c d = PtTest (a, b, c, d)
 
             mkParts
                 (SC.Positive d)
@@ -348,21 +349,32 @@ instance Monad m => SC.Serial m (PtTest Hg) where
                     , arrival = ArrivalPoints a
                     }
 
+            jumps =
+                cons1 (pure . PenaltyPoints)
+                \/ cons1 (pure . PenaltyFraction)
+                \/ cons1 (pure . PenaltyReset)
+
+            others =
+                cons1 (pure . PenaltyPoints)
+                \/ cons1 (pure . PenaltyFraction)
+                \/ cons1 (pure . PenaltyReset)
+
+
             penalty =
-                cons0 Nothing
+                cons0 NoPenaltyHg
+                \/ cons0 NoGoalHg
                 \/ cons1 (\(SC.Positive mdp) ->
-                        Just $ JumpedTooEarly (TooEarlyPoints mdp))
+                        JumpedTooEarly (TooEarlyPoints mdp))
                 \/ cons2 (\(SC.Positive spp) (SC.Positive jtg) ->
-                        Just $ Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
+                        Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
                 \/ cons2 (\(SC.Positive spp) (SC.Positive jtg) ->
-                        Just $ JumpedNoGoal (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
-                \/ cons0 (Just NoGoalHg)
+                        JumpedNoGoal (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
 
 instance Monad m => SC.Serial m (PtTest Pg) where
-    series = decDepth $ mkPtTest <$> penalty <~> cons4 mkParts
+    series = decDepth $ mkPtTest <$> penalty <~> jumps <~> others <~> cons4 mkParts
         where
-            mkPtTest :: Maybe (Penalty Pg) -> Points -> PtTest Pg
-            mkPtTest a b = PtTest (a, b)
+            mkPtTest :: Penalty Pg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Pg
+            mkPtTest a b c d = PtTest (a, b, c, d)
 
             mkParts
                 (SC.Positive d)
@@ -376,12 +388,23 @@ instance Monad m => SC.Serial m (PtTest Pg) where
                     , distance = DistancePoints d
                     , leading = LeadingPoints l
                     , time = TimePoints t
-                    , arrival = ArrivalPoints a 
+                    , arrival = ArrivalPoints a
                     }
 
+            jumps =
+                cons1 (pure . PenaltyPoints)
+                \/ cons1 (pure . PenaltyFraction)
+                \/ cons1 (pure . PenaltyReset)
+
+            others =
+                cons1 (pure . PenaltyPoints)
+                \/ cons1 (pure . PenaltyFraction)
+                \/ cons1 (pure . PenaltyReset)
+
             penalty =
-                cons0 Nothing
-                \/ cons1 (\(SC.Positive lts) -> Just $ Early (LaunchToStartPoints lts))
+                cons0 NoPenaltyPg
+                \/ cons0 NoGoalPg
+                \/ cons1 (\(SC.Positive lts) -> Early (LaunchToStartPoints lts))
 
 newtype PointParts = PointParts Points deriving Show
 
@@ -404,50 +427,66 @@ instance QC.Arbitrary (PtTest Hg) where
     arbitrary = do
         penalty <-
             QC.oneof
-                [ return Nothing
+                [ return NoPenaltyHg
+                , return NoGoalHg
                 , do
-                    x <-
-                        QC.oneof
-                            [ do
-                                (QC.Positive mdp) <- arbitrary
-                                return $ JumpedTooEarly (TooEarlyPoints mdp)
-                            , do
-                                (QC.Positive spp) <- arbitrary
-                                (QC.Positive jtg) <- arbitrary
-                                return $ Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg)
-                            , do
-                                (QC.Positive spp) <- arbitrary
-                                (QC.Positive jtg) <- arbitrary
-                                return $ JumpedNoGoal (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg)
-                            , return NoGoalHg
-                            ]
-
-                    return $ Just x
+                    (QC.Positive mdp) <- arbitrary
+                    return $ JumpedTooEarly (TooEarlyPoints mdp)
+                , do
+                    (QC.Positive spp) <- arbitrary
+                    (QC.Positive jtg) <- arbitrary
+                    return $ Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg)
+                , do
+                    (QC.Positive spp) <- arbitrary
+                    (QC.Positive jtg) <- arbitrary
+                    return $ JumpedNoGoal (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg)
                 ]
 
         (PointParts parts) <- arbitrary
+        jumps <-
+            QC.oneof
+                [ PenaltyPoints <$> arbitrary
+                , PenaltyFraction <$> arbitrary
+                , PenaltyReset <$> arbitrary
+                ]
 
-        return $ PtTest (penalty, parts)
+        others <-
+            QC.oneof
+                [ PenaltyPoints <$> arbitrary
+                , PenaltyFraction <$> arbitrary
+                , PenaltyReset <$> arbitrary
+                ]
+
+        return $ PtTest (penalty, [jumps], [others], parts)
 
 instance QC.Arbitrary (PtTest Pg) where
     arbitrary = do
         penalty <-
             QC.oneof
-                [ return Nothing
+                [ return NoPenaltyPg
+                , return NoGoalPg
                 , do
-                    x <- QC.oneof
-                            [ do
-                                (QC.Positive lts) <- arbitrary
-                                return $ Early (LaunchToStartPoints lts)
-                            , return NoGoalPg
-                            ]
-
-                    return $ Just x
-                ] 
+                    (QC.Positive lts) <- arbitrary
+                    return $ Early (LaunchToStartPoints lts)
+                ]
 
         (PointParts parts) <- arbitrary
 
-        return $ PtTest (penalty, parts)
+        jumps <-
+            QC.oneof
+                [ PenaltyPoints <$> arbitrary
+                , PenaltyFraction <$> arbitrary
+                , PenaltyReset <$> arbitrary
+                ]
+
+        others <-
+            QC.oneof
+                [ PenaltyPoints <$> arbitrary
+                , PenaltyFraction <$> arbitrary
+                , PenaltyReset <$> arbitrary
+                ]
+
+        return $ PtTest (penalty, [jumps], [others], parts)
 
 -- | Stopped time from announced time.
 newtype StopTimeTest a = StopTimeTest (StopTime a) deriving Show

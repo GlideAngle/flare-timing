@@ -1,6 +1,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+{-# OPTIONS_GHC -fno-warn-incomplete-uni-patterns #-}
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
@@ -137,12 +138,12 @@ import Flight.Score
     , IxChunk(..), ChunkDifficulty(..)
     , FlownMax(..)
     , JumpedTheGun(..), TooEarlyPoints(..), LaunchToStartPoints(..)
-    , Penalty(..), Hg, Pg
+    , Penalty(..), Hg
     , unFlownMaxAsKm
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
-    , availablePoints
+    , availablePointsHg, availablePointsPg
     , toIxChunk
     , jumpTheGunPenaltyHg, jumpTheGunPenaltyPg
     )
@@ -150,6 +151,10 @@ import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import GapPointOptions (description)
 
 type StartEndTags = StartEnd (Maybe ZoneTag) ZoneTag
+
+availablePoints :: Discipline -> _
+availablePoints HangGliding = availablePointsHg
+availablePoints Paragliding = availablePointsPg
 
 main :: IO ()
 main = do
@@ -573,7 +578,7 @@ points'
         allocs :: [Maybe Allocation]=
             [ do
                 v' <- v
-                let (pts, taskPoints) = availablePoints v' w
+                let (pts, taskPoints) = availablePoints discipline v' w
                 return $ Allocation gr w pts taskPoints
             | gr <- grs
             | w <- ws
@@ -882,7 +887,7 @@ points'
 
         scoreDfNoTrack :: [[(Pilot, Breakdown)]] =
             [ rankByTotal . sortScores
-              $ fmap (tallyDfNoTrack gates lSpeedTask lWholeTask)
+              $ fmap (tallyDfNoTrack discipline gates lSpeedTask lWholeTask)
               A.<$> collateDfNoTrack diffs linears as ts penals dsAward
             | diffs <- difficultyDistancePointsDfNoTrack
             | linears <- nighDistancePointsDfNoTrackE
@@ -1300,27 +1305,31 @@ tallyDf
                             $ jumpTheGunPenaltyHg tooEarlyPoints earliest earlyPenalty <$> jump
 
                         jumpDemerits = lefts eitherPenalties
-                        jumpReset = listToMaybe $ rights eitherPenalties
+
+                        -- WARNING: Irrefutible pattern, allowing error if unmatched.
+                        Just jumpReset = listToMaybe $ rights eitherPenalties
 
                      in Gap.taskPoints jumpReset jumpDemerits penalties x
 
                 Paragliding ->
-                    let jumpReset :: Maybe (Penalty Pg)
-                        jumpReset =
+                    -- WARNING: Irrefutible pattern, allowing error if unmatched.
+                    let Just jumpReset =
                             join
                             $ jumpTheGunPenaltyPg launchToStartPoints <$> jump
 
                      in Gap.taskPoints jumpReset [] penalties x
 
-        PointsReduced
-            { subtotal
-            , fracApplied
-            , pointApplied
-            , resetApplied
-            , total
-            , effectivePenalties
-            , effectivePenaltiesJump
-            } = ptsReduced
+        -- WARNING: Irrefutible pattern, allowing error if unmatched.
+        Right
+            PointsReduced
+                { subtotal
+                , fracApplied
+                , pointApplied
+                , resetApplied
+                , total
+                , effectivePenalties
+                , effectivePenaltiesJump
+                } = ptsReduced
 
         ss' = getTagTime unStart
         es' = getTagTime unEnd
@@ -1329,7 +1338,8 @@ tallyDf
             <$> (accessor =<< g)
 
 tallyDfNoTrack
-    :: [StartGate]
+    :: Discipline
+    -> [StartGate]
     -> Maybe (QTaskDistance Double [u| m |]) -- ^ Speed section distance
     -> Maybe (QTaskDistance Double [u| m |]) -- ^ Whole task distance
     ->
@@ -1344,6 +1354,7 @@ tallyDfNoTrack
         )
     -> Breakdown
 tallyDfNoTrack
+    hgOrPg
     startGates
     dS'
     dT'
@@ -1398,14 +1409,19 @@ tallyDfNoTrack
                 gs' <- nonEmpty startGates
                 return $ startGateTaken gs' ss'
 
-        PointsReduced
-            { subtotal
-            , fracApplied
-            , pointApplied
-            , resetApplied
-            , total
-            , effectivePenalties
-            } = Gap.taskPoints Nothing [] penalties x
+        -- WARNING: Irrefutible pattern, allowing error if unmatched.
+        Right
+            PointsReduced
+                { subtotal
+                , fracApplied
+                , pointApplied
+                , resetApplied
+                , total
+                , effectivePenalties
+                } =
+                    case hgOrPg of
+                        HangGliding -> Gap.taskPoints NoPenaltyHg [] penalties x
+                        Paragliding -> Gap.taskPoints NoPenaltyPg [] penalties x
 
         dE = PilotDistance <$> do
                 dT <- dT'

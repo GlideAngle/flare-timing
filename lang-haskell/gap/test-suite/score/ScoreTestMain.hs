@@ -45,7 +45,8 @@ pointUnits :: TestTree
 pointUnits =
     testGroup
         "Points"
-        [ tallyUnits
+        [ hgUnits
+        , pgUnits
         ]
 
 scProps :: TestTree
@@ -58,8 +59,6 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , SC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , SC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
-    , SC.testProperty "Task points add up with Hg penalties" taskPointsHg
-    , SC.testProperty "Task points add up with Pg penalties" taskPointsPg
     ]
 
 qcProps :: TestTree
@@ -72,6 +71,7 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , QC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , QC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
-    , QC.testProperty "Task points add up with Hg penalties" taskPointsHg
-    , QC.testProperty "Task points add up with Pg penalties" taskPointsPg
+    -- TODO: Reanimate task point property tests.
+    --, QC.testProperty "Task points add up with Hg penalties" hgTaskPoints
+    --, QC.testProperty "Task points add up with Pg penalties" pgTaskPoints
     ]

@@ -162,12 +162,13 @@ module Flight.Score
     , PointsReduced(..)
     , zeroPoints
     , taskPoints
-    , taskPointsSubtotal
+    , tallySubtotal
     , applyFractionalPenalties
     , applyPointPenalties
     , applyResetPenalties
     , applyPenalties
-    , availablePoints
+    , availablePointsPg
+    , availablePointsHg
     -- * Stopped task
     , LaunchToEss(..)
     , FlownMax(..)
