@@ -191,7 +191,8 @@ reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) psJump@[PenaltyReset r]
                 withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
                 withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
 
-                total@(TaskPoints pointsR) = applyPenalties psJump withFP
+                resets = take 1 . sort $ psJump ++ filter (\case PenaltyReset{} -> True; _ -> False) ps
+                total@(TaskPoints pointsR) = applyPenalties resets withFP
             in
                 Right
                 PointsReduced

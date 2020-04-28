@@ -120,6 +120,24 @@ hgUnits = testGroup "HG Points"
                     , effectivePenaltiesJump = [PenaltyReset posint1]
                     }
 
+    , HU.testCase "Way too early start with smaller reset other" $
+        (FS.taskPoints
+            (JumpedTooEarly $ TooEarlyPoints (assumeProp $ refined 2))
+            [PenaltyReset (assumeProp $ refined 2)]
+            [PenaltyReset posint1]
+            ptsAllOne)
+            @?=
+                Right
+                PointsReduced
+                    { subtotal = TaskPoints 5
+                    , fracApplied = TaskPoints 0
+                    , pointApplied = TaskPoints 0
+                    , resetApplied = TaskPoints 4
+                    , total = TaskPoints 1
+                    , effectivePenalties = [PenaltyReset posint1, PenaltyReset (assumeProp $ refined 2)]
+                    , effectivePenaltiesJump = [PenaltyReset (assumeProp $ refined 2)]
+                    }
+
     , HU.testCase "Early start, ESS but no goal = ESS no goal points minus jump the gun penalty" $
         let jump = JumpedTheGun [u| 2 s |]
             secs = SecondsPerPoint [u| 1 s |]
