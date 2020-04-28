@@ -325,8 +325,7 @@ _reconcileJumped p pJump ps points =
                 TaskPoints $ s - pointsF
             , pointApplied =
                 TaskPoints $ pointsF - pointsFP
-            , resetApplied =
-                TaskPoints 0
+            , resetApplied = 0
             , total = total
             , effectivePenalties = ps ++ psJump
             , effectivePenaltiesJump = psJump
