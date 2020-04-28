@@ -1,11 +1,14 @@
 module Flight.Gap.Penalty
     ( PointPenalty(..)
+    , TooEarlyPoints(..)
+    , LaunchToStartPoints(..)
     , applyPenalties
     , applyFractionalPenalties
     , applyPointPenalties
     , applyResetPenalties
     ) where
 
+import Numeric.Natural (Natural)
 import Data.List (partition, foldl')
 import GHC.Generics (Generic)
 import Data.Aeson
@@ -15,10 +18,22 @@ import Data.Aeson
 
 import Flight.Gap.Points.Task (TaskPoints(..))
 
+-- NOTE: Reset points are the final points awarded and so can be ints.
+data LaunchToStartPoints = LaunchToStartPoints !Natural
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data TooEarlyPoints = TooEarlyPoints !Natural
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 data PointPenalty
     = PenaltyPoints Double
+    -- ^ If positive then remove this number of points and if negative add this
+    -- number of points.
     | PenaltyFraction Double
-    | PenaltyReset Int
+    -- ^ If positive then remove this fraction of points and if negative add this
+    -- fraction of points.
+    | PenaltyReset Natural
+    -- ^ Reset points down to this natural number.
     deriving (Eq, Ord, Show, Generic)
 
 -- | Applies the penalties, fractionals then absolutes and finally the resets.
@@ -38,10 +53,6 @@ zF :: PointPenalty -> Maybe (Ordering, TaskPoints)
 zF (PenaltyFraction n) = Just (n `compare` 0, TaskPoints $ abs n)
 zF _ = Nothing
 
-zR :: PointPenalty -> Maybe (Ordering, TaskPoints)
-zR (PenaltyReset n) = Just (n `compare` 0, TaskPoints . fromIntegral $ abs n)
-zR _ = Nothing
-
 applyPenalty :: TaskPoints -> PointPenalty -> TaskPoints
 applyPenalty p pp
 
@@ -53,9 +64,9 @@ applyPenalty p pp
     | Just (GT, n) <- zF pp = max 0 $ p * (1.0 - n)
     | Just (LT, n) <- zF pp = p * (1.0 + n)
 
-    | Just (EQ, _) <- zR pp = 0
-    | Just (GT, n) <- zR pp = max 0 $ min p n
-    | Just (LT, n) <- zR pp = max p n
+    | PenaltyReset n <- pp =
+        -- NOTE: Resets can only be used as penalties, not bonuses.
+        min p (TaskPoints $ fromIntegral n)
 
     | otherwise = p
 

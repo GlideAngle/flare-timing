@@ -8,7 +8,9 @@ import Weighting
 import ArrivalFraction
 import SpeedFraction
 import LinearFraction
-import Points
+import Points.Hg
+import Points.Pg
+import Points.Props
 
 main :: IO ()
 main = defaultMain tests

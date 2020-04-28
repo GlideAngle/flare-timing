@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ac9565f91dc3810475a0c298d4861098f4b7c00daf461ddb1770d13fdd6a20f2
+-- hash: dfb4712b6b61d1734b1abc5b1c3b04ab912fadbffd64bd4227bb751cf7ec81f6
 
 name:           flight-gap
 version:        0.1.0
@@ -467,7 +467,9 @@ test-suite score
       TestNewtypes
       ArrivalFraction
       LinearFraction
-      Points
+      Points.Hg
+      Points.Pg
+      Points.Props
       SpeedFraction
       Weighting
       Paths_flight_gap
@@ -486,6 +488,7 @@ test-suite score
     , detour-via-uom
     , flight-units
     , newtype
+    , quickcheck-instances
     , scientific
     , siggy-chardust
     , smallcheck

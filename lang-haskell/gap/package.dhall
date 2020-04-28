@@ -97,7 +97,7 @@ in    defs
                 }
             , score =
                 { dependencies =
-                    testdeps
+                    testdeps # [ "quickcheck-instances" ]
                 , ghc-options =
                     testopts
                 , main =

@@ -12,6 +12,7 @@ import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList)
 import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Test.QuickCheck.Instances ()
 
 import Flight.Ratio (pattern (:%))
 import Flight.Score
@@ -326,13 +327,20 @@ instance QC.Arbitrary LcTest where
         return $ mkLcTest deadline len xs
 
 -- | Task points, tally and penalties.
-newtype PtTest a = PtTest (SitRep a, [PointPenalty], [PointPenalty], Points) deriving Show
+data PtTest a =
+    PtTest
+        { ptSitrep :: SitRep a
+        , ptJumps :: [PointPenalty]
+        , ptOthers :: [PointPenalty]
+        , ptPoints :: Points
+        }
+    deriving Show
 
 instance Monad m => SC.Serial m (PtTest Hg) where
     series = decDepth $ mkPtTest <$> penalty <~> jumps <~> others <~> cons4 mkParts
         where
             mkPtTest :: SitRep Hg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Hg
-            mkPtTest a b c d = PtTest (a, b, c, d)
+            mkPtTest a b c d = PtTest a b c d
 
             mkParts
                 (SC.Positive d)
@@ -374,7 +382,7 @@ instance Monad m => SC.Serial m (PtTest Pg) where
     series = decDepth $ mkPtTest <$> penalty <~> jumps <~> others <~> cons4 mkParts
         where
             mkPtTest :: SitRep Pg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Pg
-            mkPtTest a b c d = PtTest (a, b, c, d)
+            mkPtTest a b c d = PtTest a b c d
 
             mkParts
                 (SC.Positive d)
@@ -431,7 +439,7 @@ instance QC.Arbitrary (PtTest Hg) where
                 , return NoGoalHg
                 , do
                     (QC.Positive mdp) <- arbitrary
-                    return $ JumpedTooEarly (TooEarlyPoints mdp)
+                    return $ JumpedTooEarly (TooEarlyPoints $ fromInteger mdp)
                 , do
                     (QC.Positive spp) <- arbitrary
                     (QC.Positive jtg) <- arbitrary
@@ -457,7 +465,7 @@ instance QC.Arbitrary (PtTest Hg) where
                 , PenaltyReset <$> arbitrary
                 ]
 
-        return $ PtTest (penalty, [jumps], [others], parts)
+        return $ PtTest penalty [jumps] [others] parts
 
 instance QC.Arbitrary (PtTest Pg) where
     arbitrary = do
@@ -467,7 +475,7 @@ instance QC.Arbitrary (PtTest Pg) where
                 , return NoGoalPg
                 , do
                     (QC.Positive lts) <- arbitrary
-                    return $ Early (LaunchToStartPoints lts)
+                    return $ Early (LaunchToStartPoints $ fromInteger lts)
                 ]
 
         (PointParts parts) <- arbitrary
@@ -486,7 +494,7 @@ instance QC.Arbitrary (PtTest Pg) where
                 , PenaltyReset <$> arbitrary
                 ]
 
-        return $ PtTest (penalty, [jumps], [others], parts)
+        return $ PtTest penalty [jumps] [others] parts
 
 -- | Stopped time from announced time.
 newtype StopTimeTest a = StopTimeTest (StopTime a) deriving Show

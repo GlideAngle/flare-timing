@@ -47,16 +47,9 @@ import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
 import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerPoint(..))
 import Flight.Gap.Penalty
-    (PointPenalty(..), applyFractionalPenalties, applyPointPenalties, applyPenalties)
-
--- NOTE: Reset points are the final points awarded and so can be ints.
-newtype LaunchToStartPoints = LaunchToStartPoints Int
-    deriving (Eq, Ord, Show)
-    deriving newtype (ToJSON, FromJSON)
-
-newtype TooEarlyPoints = TooEarlyPoints Int
-    deriving (Eq, Ord, Show, Generic)
-    deriving newtype (ToJSON, FromJSON)
+    ( PointPenalty(..), TooEarlyPoints(..), LaunchToStartPoints(..)
+    , applyFractionalPenalties, applyPointPenalties, applyPenalties
+    )
 
 newtype NoGoal = NoGoal Bool deriving (Eq, Show)
 
@@ -148,6 +141,8 @@ data ReconcilePointErrors
     | WAT_NoGoal_Pg (SitRep Pg, [PointPenalty])
     | WAT_Jumped (SitRep Hg, [PointPenalty], [PointPenalty])
     | EQ_Jumped_Point (SitRep Hg, [PointPenalty])
+    | NEG_Reset_Hg (SitRep Hg, [PointPenalty], [PointPenalty])
+    | NEG_Reset_Pg (SitRep Pg, [PointPenalty], [PointPenalty])
     deriving Eq
 
 instance Show ReconcilePointErrors where
@@ -173,6 +168,10 @@ instance Show ReconcilePointErrors where
         printf "Early HG with unexpected jump penalties of %s" (show e)
     show (EQ_Jumped_Point e) =
         printf "Early HG with jump points /= seconds per point * seconds from %s" (show e)
+    show (NEG_Reset_Hg e) =
+        printf "Negative reset %s" (show e)
+    show (NEG_Reset_Pg e) =
+        printf "Negative reset %s" (show e)
 
 reconcileEarlyHg
     :: SitRep Hg
@@ -182,30 +181,30 @@ reconcileEarlyHg
     -> Either ReconcilePointErrors PointsReduced
 reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) [] ps points =
     reconcileEarlyHg p [PenaltyReset tep] ps points
-reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) psJump@[PenaltyReset r] ps points =
-    if tep /= r then
-        Left $ EQ_JumpedTooEarly_Reset (p, psJump)
-    else
-        let subtotal@(TaskPoints s) = tallySubtotal p points
+reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) !psJump@[PenaltyReset !r] ps points =
+    if | r < 0 -> Left $ NEG_Reset_Hg (p, psJump, ps)
+       | tep /= r -> Left $ EQ_JumpedTooEarly_Reset (p, psJump)
+       | otherwise ->
+            let subtotal@(TaskPoints s) = tallySubtotal p points
 
-            withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
-            (TaskPoints pointsFP) = applyPointPenalties ps withF
+                withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
+                withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
 
-            total@(TaskPoints pointsR) = applyPenalties psJump subtotal
-        in
-            Right
-            PointsReduced
-                { subtotal = subtotal
-                , fracApplied =
-                    TaskPoints $ s - pointsF
-                , pointApplied =
-                    TaskPoints $ pointsF - pointsFP
-                , resetApplied =
-                    TaskPoints $ pointsFP - pointsR
-                , total = total
-                , effectivePenalties = ps ++ psJump
-                , effectivePenaltiesJump = psJump
-                }
+                total@(TaskPoints pointsR) = applyPenalties psJump withFP
+            in
+                Right
+                PointsReduced
+                    { subtotal = subtotal
+                    , fracApplied =
+                        TaskPoints $ s - pointsF
+                    , pointApplied =
+                        TaskPoints $ pointsF - pointsFP
+                    , resetApplied =
+                        TaskPoints $ pointsFP - pointsR
+                    , total = total
+                    , effectivePenalties = ps ++ psJump
+                    , effectivePenaltiesJump = psJump
+                    }
 reconcileEarlyHg p psJump ps _ =
     Left $ WAT_JumpedTooEarly (p, psJump, ps)
 
@@ -218,30 +217,30 @@ reconcileEarlyPg
 reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) [] ps points =
     reconcileEarlyPg p [PenaltyReset lsp] ps points
 reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) psJump@[PenaltyReset r] ps points =
-    if lsp /= r then
-        Left $ EQ_Early_Reset (p, psJump)
-    else
-        let subtotal@(TaskPoints s) = tallySubtotal p points
+    if | r < 0 -> Left $ NEG_Reset_Pg (p, psJump, ps)
+       | lsp /= fromIntegral r -> Left $ EQ_Early_Reset (p, psJump)
+       | otherwise ->
+            let subtotal@(TaskPoints s) = tallySubtotal p points
 
-            withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
-            withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
+                withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
+                withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
 
-            resets = take 1 . sort $ psJump ++ filter (\case PenaltyReset{} -> True; _ -> False) ps
-            total@(TaskPoints pointsR) = applyPenalties resets withFP
-        in
-            Right
-            PointsReduced
-                { subtotal = subtotal
-                , fracApplied =
-                    TaskPoints $ s - pointsF
-                , pointApplied =
-                    TaskPoints $ pointsF - pointsFP
-                , resetApplied =
-                    TaskPoints $ pointsFP - pointsR
-                , total = total
-                , effectivePenalties = resets
-                , effectivePenaltiesJump = psJump
-                }
+                resets = take 1 . sort $ psJump ++ filter (\case PenaltyReset{} -> True; _ -> False) ps
+                total@(TaskPoints pointsR) = applyPenalties resets withFP
+            in
+                Right
+                PointsReduced
+                    { subtotal = subtotal
+                    , fracApplied =
+                        TaskPoints $ s - pointsF
+                    , pointApplied =
+                        TaskPoints $ pointsF - pointsFP
+                    , resetApplied =
+                        TaskPoints $ pointsFP - pointsR
+                    , total = total
+                    , effectivePenalties = resets
+                    , effectivePenaltiesJump = psJump
+                    }
 reconcileEarlyPg p@Early{} psJump _ _ =
     Left $ WAT_Early_Jump (p, psJump)
 reconcileEarlyPg p psJump ps _ =
