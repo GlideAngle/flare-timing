@@ -177,28 +177,7 @@ reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) [] ps points =
     reconcileEarlyHg p [PenaltyReset tep] ps points
 reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) psJump@[PenaltyReset r] ps points =
     if | tep /= r -> Left $ EQ_JumpedTooEarly_Reset (p, psJump)
-       | otherwise ->
-            let subtotal@(TaskPoints s) = tallySubtotal p points
-
-                withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
-                withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
-
-                resets = take 1 . sort $ psJump ++ filter (\case PenaltyReset{} -> True; _ -> False) ps
-                total@(TaskPoints pointsR) = applyPenalties resets withFP
-            in
-                Right
-                PointsReduced
-                    { subtotal = subtotal
-                    , fracApplied =
-                        TaskPoints $ s - pointsF
-                    , pointApplied =
-                        TaskPoints $ pointsF - pointsFP
-                    , resetApplied =
-                        TaskPoints $ pointsFP - pointsR
-                    , total = total
-                    , effectivePenalties = ps ++ psJump
-                    , effectivePenaltiesJump = psJump
-                    }
+       | otherwise -> Right $ reconcile p psJump ps points
 reconcileEarlyHg p psJump ps _ =
     Left $ WAT_JumpedTooEarly (p, psJump, ps)
 
@@ -247,44 +226,9 @@ reconcileNominal
     -> Points
     -> Either ReconcilePointErrors PointsReduced
 reconcileNominal _ p [] [] points =
-    let subtotal = tallySubtotal p points
-    in
-        Right
-        PointsReduced
-            { subtotal = subtotal
-            , fracApplied =
-                TaskPoints 0
-            , pointApplied =
-                TaskPoints 0
-            , resetApplied =
-                TaskPoints 0
-            , total = subtotal
-            , effectivePenalties = []
-            , effectivePenaltiesJump = []
-            }
+    Right $ reconcile p [] [] points
 reconcileNominal _ p [] ps points =
-    let subtotal@(TaskPoints s) = tallySubtotal p points
-
-        withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
-        withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
-
-        resets = take 1 . sort $ filter (\case PenaltyReset{} -> True; _ -> False) ps
-        total@(TaskPoints pointsR) = applyPenalties resets withFP
-    in
-        Right
-        PointsReduced
-            { subtotal = subtotal
-            , fracApplied =
-                TaskPoints $ s - pointsF
-            , pointApplied =
-                TaskPoints $ pointsF - pointsFP
-            , resetApplied =
-                if null resets then 0 else
-                TaskPoints $ pointsFP - pointsR
-            , total = total
-            , effectivePenalties = ps
-            , effectivePenaltiesJump = []
-            }
+    Right $ reconcile p [] ps points
 reconcileNominal wat p psJump ps _ =
     Left $ wat (p, psJump, ps)
 
@@ -296,44 +240,9 @@ reconcileNoGoal
     -> Points
     -> Either ReconcilePointErrors PointsReduced
 reconcileNoGoal _ p [] [] points =
-    let subtotal = tallySubtotal p points
-    in
-        Right
-        PointsReduced
-            { subtotal = subtotal
-            , fracApplied =
-                TaskPoints 0
-            , pointApplied =
-                TaskPoints 0
-            , resetApplied =
-                TaskPoints 0
-            , total = subtotal
-            , effectivePenalties = []
-            , effectivePenaltiesJump = []
-            }
+    Right $ reconcile p [] [] points
 reconcileNoGoal _ p [] ps points =
-    let subtotal@(TaskPoints s) = tallySubtotal p points
-
-        withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
-        withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
-
-        resets = take 1 . sort $ filter (\case PenaltyReset{} -> True; _ -> False) ps
-        total@(TaskPoints pointsR) = applyPenalties resets withFP
-    in
-        Right
-        PointsReduced
-            { subtotal = subtotal
-            , fracApplied =
-                TaskPoints $ s - pointsF
-            , pointApplied =
-                TaskPoints $ pointsF - pointsFP
-            , resetApplied =
-                if null resets then 0 else
-                TaskPoints $ pointsFP - pointsR
-            , total = total
-            , effectivePenalties = ps
-            , effectivePenaltiesJump = []
-            }
+    Right $ reconcile p [] ps points
 reconcileNoGoal wat p psJump _ _ =
     Left $ wat (p, psJump)
 
@@ -363,7 +272,18 @@ reconcile
     -> [PointPenalty] -- ^ Penalties for jumping the gun.
     -> [PointPenalty] -- ^ Other penalties.
     -> Points
-    -> Either ReconcilePointErrors PointsReduced
+    -> PointsReduced
+reconcile p [] [] points =
+    let x = tallySubtotal p points in
+        PointsReduced
+            { subtotal = x
+            , fracApplied = 0
+            , pointApplied = 0
+            , resetApplied = 0
+            , total = x
+            , effectivePenalties = []
+            , effectivePenaltiesJump = []
+            }
 reconcile p psJump ps points =
     let subtotal@(TaskPoints s) = tallySubtotal p points
 
@@ -373,7 +293,6 @@ reconcile p psJump ps points =
         resets = take 1 . sort $ psJump ++ filter (\case PenaltyReset{} -> True; _ -> False) ps
         total@(TaskPoints pointsR) = applyPenalties resets withFP
     in
-        Right
         PointsReduced
             { subtotal = subtotal
             , fracApplied =
@@ -428,7 +347,7 @@ taskPoints s psJump ps points
     | NoGoalPg <- s = reconcileNoGoal WAT_NoGoal_Pg NoGoalPg psJump ps points
     | Jumped{} <- s = reconcileJumped s psJump ps points
     | JumpedNoGoal{} <- s = reconcileJumped s psJump ps points
-    | otherwise = reconcile s psJump ps points
+    | otherwise = Right $ reconcile s psJump ps points
 
 isPg :: SitRep a -> Bool
 isPg = \case
