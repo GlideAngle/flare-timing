@@ -1,42 +1,43 @@
 name: stack
 
 on:
-  pull_request: { "branches": [ "master" ] }
-  push: { "branches": [ "master", "fix/test-suite-score-393" ] }
+  push:
+    branches: [ master, fix/test-suite-score-393 ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
 
-    runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Install OS Packages
-      uses: mstksg/get-package@v1
+    - uses: mstksg/get-package@v1
+      name: Install OS Packages
       with:
         apt-get: libgmp-dev
 
-    - name: Checkout repository
-      uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
 
-    - name: Setup Stack
-      uses: mstksg/setup-stack@v1
+    - uses: mstksg/setup-stack@v1
+      name: Setup Stack
 
     - name: Cache Key
       id: cache_key
       run: echo ::set-output name=key::$(md5sum lang-haskell/stack.yaml | awk '{print $1}')
 
-    - name: Cache Dependencies
+    - uses: actions/cache@v1
+      name: Cache ~/.stack
       id: cache
-      uses: actions/cache@v1
       with:
         path: ~/.stack
         key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
 
-    - name: Build & Test
+    - name: Unit and property tests
       run: |
-        stack test --no-terminal --stack-yaml=lang-haskell/stack.yaml
+        stack test --no-terminal --stack-yaml=lang-haskell/stack.yaml --test-arguments "--color=always"
