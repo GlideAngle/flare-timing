@@ -24,7 +24,6 @@ module Flight.Gap.Points
     , jumpTheGunPenalty
     ) where
 
-import Data.Refined (assumeProp, refined)
 import Text.Printf (printf)
 import Data.Ratio ((%))
 import Data.List (sort)
@@ -48,7 +47,7 @@ import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
 import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerPoint(..))
 import Flight.Gap.Penalty
-    ( GE, PointPenalty(..), TooEarlyPoints(..), LaunchToStartPoints(..)
+    ( PointPenalty(..), TooEarlyPoints(..), LaunchToStartPoints(..)
     , applyFractionalPenalties, applyPointPenalties, applyPenalties
     )
 
@@ -142,8 +141,6 @@ data ReconcilePointErrors
     | WAT_NoGoal_Pg (SitRep Pg, [PointPenalty])
     | WAT_Jumped (SitRep Hg, [PointPenalty], [PointPenalty])
     | EQ_Jumped_Point (SitRep Hg, [PointPenalty])
-    | NEG_Reset_Hg (SitRep Hg, [PointPenalty], [PointPenalty])
-    | NEG_Reset_Pg (SitRep Pg, [PointPenalty], [PointPenalty])
     deriving Eq
 
 instance Show ReconcilePointErrors where
@@ -169,10 +166,6 @@ instance Show ReconcilePointErrors where
         printf "Early HG with unexpected jump penalties of %s" (show e)
     show (EQ_Jumped_Point e) =
         printf "Early HG with jump points /= seconds per point * seconds from %s" (show e)
-    show (NEG_Reset_Hg e) =
-        printf "Negative reset %s" (show e)
-    show (NEG_Reset_Pg e) =
-        printf "Negative reset %s" (show e)
 
 reconcileEarlyHg
     :: SitRep Hg
@@ -183,8 +176,7 @@ reconcileEarlyHg
 reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) [] ps points =
     reconcileEarlyHg p [PenaltyReset tep] ps points
 reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) psJump@[PenaltyReset r] ps points =
-    if | r < (assumeProp @(GE 0) $ refined 0) -> Left $ NEG_Reset_Hg (p, psJump, ps)
-       | tep /= r -> Left $ EQ_JumpedTooEarly_Reset (p, psJump)
+    if | tep /= r -> Left $ EQ_JumpedTooEarly_Reset (p, psJump)
        | otherwise ->
             let subtotal@(TaskPoints s) = tallySubtotal p points
 
@@ -219,8 +211,7 @@ reconcileEarlyPg
 reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) [] ps points =
     reconcileEarlyPg p [PenaltyReset lsp] ps points
 reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) psJump@[PenaltyReset r] ps points =
-    if | r < (assumeProp @(GE 0) $ refined 0) -> Left $ NEG_Reset_Pg (p, psJump, ps)
-       | lsp /= r -> Left $ EQ_Early_Reset (p, psJump)
+    if | lsp /= r -> Left $ EQ_Early_Reset (p, psJump)
        | otherwise ->
             let subtotal@(TaskPoints s) = tallySubtotal p points
 
