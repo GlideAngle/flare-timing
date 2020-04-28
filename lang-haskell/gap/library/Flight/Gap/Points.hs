@@ -367,12 +367,11 @@ reconcile
 reconcile p psJump ps points =
     let subtotal@(TaskPoints s) = tallySubtotal p points
 
-        qs = psJump ++ ps
-        withF@(TaskPoints pointsF) = applyFractionalPenalties qs subtotal
-        (TaskPoints pointsFP) = applyPointPenalties qs withF
+        withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
+        withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
 
-        TaskPoints pointsR = applyPenalties qs subtotal
-        total = applyPenalties qs subtotal
+        resets = take 1 . sort $ psJump ++ filter (\case PenaltyReset{} -> True; _ -> False) ps
+        total@(TaskPoints pointsR) = applyPenalties resets withFP
     in
         Right
         PointsReduced
@@ -384,7 +383,7 @@ reconcile p psJump ps points =
             , resetApplied =
                 TaskPoints $ pointsFP - pointsR
             , total = total
-            , effectivePenalties = qs
+            , effectivePenalties = ps ++ psJump
             , effectivePenaltiesJump = psJump
             }
 
