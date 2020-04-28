@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dfb4712b6b61d1734b1abc5b1c3b04ab912fadbffd64bd4227bb751cf7ec81f6
+-- hash: 19ed6fbe32fd777d82e3b2c026114d13ec09030326bb15826b07eebf166482cb
 
 name:           flight-gap
 version:        0.1.0
@@ -108,6 +108,7 @@ library
     , containers
     , detour-via-sci
     , detour-via-uom
+    , facts
     , flight-units
     , newtype
     , scientific
@@ -195,6 +196,7 @@ test-suite doctest
     , detour-via-sci
     , detour-via-uom
     , doctest
+    , facts
     , flight-units
     , newtype
     , scientific
@@ -286,6 +288,7 @@ test-suite effort
     , containers
     , detour-via-sci
     , detour-via-uom
+    , facts
     , flight-units
     , newtype
     , scientific
@@ -384,6 +387,7 @@ test-suite leading
     , containers
     , detour-via-sci
     , detour-via-uom
+    , facts
     , flight-units
     , newtype
     , scientific
@@ -486,6 +490,7 @@ test-suite score
     , containers
     , detour-via-sci
     , detour-via-uom
+    , facts
     , flight-units
     , newtype
     , quickcheck-instances
@@ -583,6 +588,7 @@ test-suite stop
     , containers
     , detour-via-sci
     , detour-via-uom
+    , facts
     , flight-units
     , newtype
     , scientific
@@ -683,6 +689,7 @@ test-suite validity
     , containers
     , detour-via-sci
     , detour-via-uom
+    , facts
     , flight-units
     , newtype
     , scientific

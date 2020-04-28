@@ -64,4 +64,14 @@ packages:
     pantry-tree:
       size: 878
       sha256: c6d3549f14a2156953f09fa1ea3294a269cdba49085df973f37a441ec773eb5f
+- completed:
+    hackage: facts-0.0.1.0@sha256:97fe2f20dd9da98b19d42946d9431d9d45ccc2c8836fdacbdce6d348f7b8660f,1507
+    pantry-tree:
+      size: 310
+      sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
+  original:
+    hackage: facts-0.0.1.0@sha256:97fe2f20dd9da98b19d42946d9431d9d45ccc2c8836fdacbdce6d348f7b8660f,1507
+    pantry-tree:
+      size: 310
+      sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
 snapshots: []

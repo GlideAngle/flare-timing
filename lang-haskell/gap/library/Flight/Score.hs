@@ -161,6 +161,8 @@ module Flight.Score
     , Points(..)
     , PointsReduced(..)
     , ReconcilePointErrors(..)
+    , PosInt
+    , GE
     , zeroPoints
     , taskPoints
     , tallySubtotal

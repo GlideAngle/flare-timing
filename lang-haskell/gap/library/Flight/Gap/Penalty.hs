@@ -2,13 +2,21 @@ module Flight.Gap.Penalty
     ( PointPenalty(..)
     , TooEarlyPoints(..)
     , LaunchToStartPoints(..)
+    , PosInt
+    , GE
     , applyPenalties
     , applyFractionalPenalties
     , applyPointPenalties
     , applyResetPenalties
     ) where
 
-import Numeric.Natural (Natural)
+import GHC.TypeLits (Nat, KnownNat, natVal)
+import Data.Proxy (Proxy(..))
+import Text.Printf (printf)
+import Data.Refined
+    ( Prop, PropProjection, Refined
+    , checkProp, assumeProp, refined, unrefined
+    )
 import Data.List (partition, foldl')
 import GHC.Generics (Generic)
 import Data.Aeson
@@ -18,11 +26,28 @@ import Data.Aeson
 
 import Flight.Gap.Points.Task (TaskPoints(..))
 
+data GE (n :: Nat) deriving Generic
+
+instance (Integral a, KnownNat n, Show a, Generic (GE n)) => Prop a (GE n) where
+  type PropProjection a (GE n) = a
+  checkProp Proxy n =
+    let expected = fromIntegral (natVal (Proxy :: Proxy n)) in
+    if n >= expected
+        then Right n
+        else Left $ printf "Not %s >= %s" (show n) (show expected)
+
+type PosInt = Refined '[GE 0] Int
+
+instance ToJSON (Refined '[GE 0] Int) where
+    toJSON = toJSON . unrefined
+instance FromJSON (Refined '[GE 0] Int) where
+    parseJSON o = assumeProp @(GE 0) . refined <$> parseJSON o
+
 -- NOTE: Reset points are the final points awarded and so can be ints.
-data LaunchToStartPoints = LaunchToStartPoints !Natural
+data LaunchToStartPoints = LaunchToStartPoints PosInt
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-data TooEarlyPoints = TooEarlyPoints !Natural
+data TooEarlyPoints = TooEarlyPoints PosInt
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data PointPenalty
@@ -32,7 +57,7 @@ data PointPenalty
     | PenaltyFraction Double
     -- ^ If positive then remove this fraction of points and if negative add this
     -- fraction of points.
-    | PenaltyReset Natural
+    | PenaltyReset PosInt
     -- ^ Reset points down to this natural number.
     deriving (Eq, Ord, Show, Generic)
 
@@ -66,7 +91,7 @@ applyPenalty p pp
 
     | PenaltyReset n <- pp =
         -- NOTE: Resets can only be used as penalties, not bonuses.
-        min p (TaskPoints $ fromIntegral n)
+        min p (TaskPoints . fromIntegral $ unrefined n)
 
     | otherwise = p
 

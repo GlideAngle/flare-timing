@@ -4,6 +4,7 @@ module TestNewtypes where
 
 import Prelude hiding (max)
 import qualified Prelude (max)
+import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
 import Data.List (sortBy)
 import Test.SmallCheck.Series as SC
@@ -360,19 +361,18 @@ instance Monad m => SC.Serial m (PtTest Hg) where
             jumps =
                 cons1 (pure . PenaltyPoints)
                 \/ cons1 (pure . PenaltyFraction)
-                \/ cons1 (pure . PenaltyReset)
+                \/ cons1 (\(SC.Positive x) -> return $ PenaltyReset (assumeProp $ refined x))
 
             others =
                 cons1 (pure . PenaltyPoints)
                 \/ cons1 (pure . PenaltyFraction)
-                \/ cons1 (pure . PenaltyReset)
-
+                \/ cons1 (\(SC.Positive x) -> return $ PenaltyReset (assumeProp $ refined x))
 
             penalty =
                 cons0 NominalHg
                 \/ cons0 NoGoalHg
-                \/ cons1 (\(SC.Positive mdp) ->
-                        JumpedTooEarly (TooEarlyPoints mdp))
+                \/ cons1 (\(SC.Positive x) ->
+                        JumpedTooEarly (TooEarlyPoints (assumeProp $ refined x)))
                 \/ cons2 (\(SC.Positive spp) (SC.Positive jtg) ->
                         Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
                 \/ cons2 (\(SC.Positive spp) (SC.Positive jtg) ->
@@ -402,17 +402,17 @@ instance Monad m => SC.Serial m (PtTest Pg) where
             jumps =
                 cons1 (pure . PenaltyPoints)
                 \/ cons1 (pure . PenaltyFraction)
-                \/ cons1 (pure . PenaltyReset)
+                \/ cons1 (\(SC.Positive x) -> return $ PenaltyReset (assumeProp $ refined x))
 
             others =
                 cons1 (pure . PenaltyPoints)
                 \/ cons1 (pure . PenaltyFraction)
-                \/ cons1 (pure . PenaltyReset)
+                \/ cons1 (\(SC.Positive x) -> return $ PenaltyReset (assumeProp $ refined x))
 
             penalty =
                 cons0 NominalPg
                 \/ cons0 NoGoalPg
-                \/ cons1 (\(SC.Positive lts) -> Early (LaunchToStartPoints lts))
+                \/ cons1 (\(SC.Positive x) -> Early (LaunchToStartPoints (assumeProp $ refined x)))
 
 newtype PointParts = PointParts Points deriving Show
 
@@ -438,8 +438,8 @@ instance QC.Arbitrary (PtTest Hg) where
                 [ return NominalHg
                 , return NoGoalHg
                 , do
-                    (QC.Positive mdp) <- arbitrary
-                    return $ JumpedTooEarly (TooEarlyPoints $ fromInteger mdp)
+                    (QC.Positive x) <- arbitrary
+                    return $ JumpedTooEarly (TooEarlyPoints (assumeProp $ refined x))
                 , do
                     (QC.Positive spp) <- arbitrary
                     (QC.Positive jtg) <- arbitrary
@@ -455,14 +455,18 @@ instance QC.Arbitrary (PtTest Hg) where
             QC.oneof
                 [ PenaltyPoints <$> arbitrary
                 , PenaltyFraction <$> arbitrary
-                , PenaltyReset <$> arbitrary
+                , do
+                    (QC.Positive x) <- arbitrary
+                    return $ PenaltyReset (assumeProp $ refined x)
                 ]
 
         others <-
             QC.oneof
                 [ PenaltyPoints <$> arbitrary
                 , PenaltyFraction <$> arbitrary
-                , PenaltyReset <$> arbitrary
+                , do
+                    (QC.Positive x) <- arbitrary
+                    return $ PenaltyReset (assumeProp $ refined x)
                 ]
 
         return $ PtTest penalty [jumps] [others] parts
@@ -474,8 +478,8 @@ instance QC.Arbitrary (PtTest Pg) where
                 [ return NominalPg
                 , return NoGoalPg
                 , do
-                    (QC.Positive lts) <- arbitrary
-                    return $ Early (LaunchToStartPoints $ fromInteger lts)
+                    (QC.Positive x) <- arbitrary
+                    return $ Early (LaunchToStartPoints (assumeProp $ refined x))
                 ]
 
         (PointParts parts) <- arbitrary
@@ -484,14 +488,18 @@ instance QC.Arbitrary (PtTest Pg) where
             QC.oneof
                 [ PenaltyPoints <$> arbitrary
                 , PenaltyFraction <$> arbitrary
-                , PenaltyReset <$> arbitrary
+                , do
+                    (QC.Positive x) <- arbitrary
+                    return $ PenaltyReset (assumeProp $ refined x)
                 ]
 
         others <-
             QC.oneof
                 [ PenaltyPoints <$> arbitrary
                 , PenaltyFraction <$> arbitrary
-                , PenaltyReset <$> arbitrary
+                , do
+                    (QC.Positive x) <- arbitrary
+                    return $ PenaltyReset (assumeProp $ refined x)
                 ]
 
         return $ PtTest penalty [jumps] [others] parts

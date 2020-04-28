@@ -1,8 +1,8 @@
 module Points.Pg (pgUnits) where
 
+import Data.Refined (assumeProp, refined)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Numeric.Natural (Natural)
 
 import qualified Flight.Score as FS
 import Flight.Score
@@ -19,6 +19,7 @@ import Flight.Score
     , PointsReduced(..)
     , PointPenalty(..)
     , ReconcilePointErrors(..)
+    , PosInt
     , zeroPoints
     )
 
@@ -36,6 +37,9 @@ ptsAllOne =
         , arrival = ArrivalPoints 1
         , time = TimePoints 1
         }
+
+posint1 :: PosInt
+posint1 = assumeProp $ refined 1
 
 pgUnits :: TestTree
 pgUnits = testGroup "PG Points"
@@ -133,7 +137,7 @@ pgUnits = testGroup "PG Points"
                 (Left $ WAT_Nominal_Pg (NominalPg,[PenaltyFraction 0.0],[]))
 
     , HU.testCase "Early start = distance to start points only, ignoring effort and arrival, jump reset generated" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [] [] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [] [] ptsAllOne)
             @?=
                 Right
                 PointsReduced
@@ -142,12 +146,12 @@ pgUnits = testGroup "PG Points"
                     , pointApplied = TaskPoints 0
                     , resetApplied = TaskPoints 2
                     , total = TaskPoints 1
-                    , effectivePenalties = [PenaltyReset 1]
-                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    , effectivePenalties = [PenaltyReset posint1]
+                    , effectivePenaltiesJump = [PenaltyReset posint1]
                     }
 
     , HU.testCase "Early start = distance to start points only, ignoring effort and arrival, jump reset applied" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyReset 1] [] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [PenaltyReset posint1] [] ptsAllOne)
             @?=
                 Right
                 PointsReduced
@@ -156,12 +160,12 @@ pgUnits = testGroup "PG Points"
                     , pointApplied = TaskPoints 0
                     , resetApplied = TaskPoints 2
                     , total = TaskPoints 1
-                    , effectivePenalties = [PenaltyReset 1]
-                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    , effectivePenalties = [PenaltyReset posint1]
+                    , effectivePenaltiesJump = [PenaltyReset posint1]
                     }
 
     , HU.testCase "Early start = other score-lowering reset can't raise the total" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyReset 1] [PenaltyPoints 1, PenaltyFraction 0.5] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [PenaltyReset posint1] [PenaltyPoints 1, PenaltyFraction 0.5] ptsAllOne)
             @?=
                 Right
                 PointsReduced
@@ -170,12 +174,12 @@ pgUnits = testGroup "PG Points"
                     , pointApplied = TaskPoints 1
                     , resetApplied = TaskPoints 0
                     , total = TaskPoints 0.5
-                    , effectivePenalties = [PenaltyReset 1]
-                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    , effectivePenalties = [PenaltyReset posint1]
+                    , effectivePenaltiesJump = [PenaltyReset posint1]
                     }
 
     , HU.testCase "Early start = other non-reset score-raising penalties don't change total" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyReset 1] [PenaltyPoints (-1), PenaltyFraction (-1)] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [PenaltyReset posint1] [PenaltyPoints (-1), PenaltyFraction (-1)] ptsAllOne)
             @?=
                 Right
                 PointsReduced
@@ -184,12 +188,12 @@ pgUnits = testGroup "PG Points"
                     , pointApplied = TaskPoints (- 1)
                     , resetApplied = TaskPoints 6
                     , total = TaskPoints 1
-                    , effectivePenalties = [PenaltyReset 1]
-                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    , effectivePenalties = [PenaltyReset posint1]
+                    , effectivePenaltiesJump = [PenaltyReset posint1]
                     }
 
     , HU.testCase "Early start = taking the smallest reset penalty from jump and other sets" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 2) [PenaltyReset 2] [PenaltyReset 1] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints (assumeProp $ refined 2)) [PenaltyReset (assumeProp $ refined 2)] [PenaltyReset posint1] ptsAllOne)
             @?=
                 Right
                 PointsReduced
@@ -198,52 +202,37 @@ pgUnits = testGroup "PG Points"
                     , pointApplied = TaskPoints 0
                     , resetApplied = TaskPoints 2
                     , total = TaskPoints 1
-                    , effectivePenalties = [PenaltyReset 1]
-                    , effectivePenaltiesJump = [PenaltyReset 2]
-                    }
-
-    , HU.testCase "Early start but with other negative reset" $
-        -- TODO: Exclude construction of negative resets.
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyReset 1] [PenaltyReset (-2 :: Natural)] ptsAllOne)
-            @?=
-                Right
-                PointsReduced
-                    { subtotal = TaskPoints 3
-                    , fracApplied = TaskPoints 0
-                    , pointApplied = TaskPoints 0
-                    , resetApplied = TaskPoints 2
-                    , total = TaskPoints 1
-                    , effectivePenalties = [PenaltyReset 1]
-                    , effectivePenaltiesJump = [PenaltyReset 2]
+                    , effectivePenalties = [PenaltyReset posint1]
+                    , effectivePenaltiesJump = [PenaltyReset (assumeProp $ refined 2)]
                     }
 
     , HU.testCase "Early start = error on wrong reset applied" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyReset 2] [] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [PenaltyReset (assumeProp $ refined 2)] [] ptsAllOne)
             @?=
-                (Left $ EQ_Early_Reset (Early (LaunchToStartPoints 1),[PenaltyReset 2]))
+                (Left $ EQ_Early_Reset (Early (LaunchToStartPoints posint1),[PenaltyReset (assumeProp $ refined 2)]))
 
     , HU.testCase "Early start = error on wrong type of jump penalty, a point penalty, applied" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyPoints 1] [] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [PenaltyPoints 1] [] ptsAllOne)
             @?=
-                (Left $ WAT_Early_Jump (Early (LaunchToStartPoints 1),[PenaltyPoints 1.0]))
+                (Left $ WAT_Early_Jump (Early (LaunchToStartPoints posint1),[PenaltyPoints 1.0]))
 
     , HU.testCase "Early start = error on wrong type of penalty, a fraction penalty, applied" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyFraction 0.5] [] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [PenaltyFraction 0.5] [] ptsAllOne)
             @?=
-                (Left $ WAT_Early_Jump (Early (LaunchToStartPoints 1),[PenaltyFraction 0.5]))
+                (Left $ WAT_Early_Jump (Early (LaunchToStartPoints posint1),[PenaltyFraction 0.5]))
 
     , HU.testCase "Early start = error on wrong type of jump penalty, a point penalty, applied, with other reset" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyPoints 0] [PenaltyReset 0] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [PenaltyPoints 0] [PenaltyReset (assumeProp $ refined 0)] ptsAllOne)
             @?=
-                (Left $ WAT_Early_Jump (Early (LaunchToStartPoints 1),[PenaltyPoints 0]))
+                (Left $ WAT_Early_Jump (Early (LaunchToStartPoints posint1),[PenaltyPoints 0]))
 
     , HU.testCase "Early start = error on wrong type of penalty, a fraction penalty, applied, with other resete" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [PenaltyFraction 0.5] [PenaltyReset 0] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [PenaltyFraction 0.5] [PenaltyReset (assumeProp $ refined 0)] ptsAllOne)
             @?=
-                (Left $ WAT_Early_Jump (Early (LaunchToStartPoints 1),[PenaltyFraction 0.5]))
+                (Left $ WAT_Early_Jump (Early (LaunchToStartPoints posint1),[PenaltyFraction 0.5]))
 
     , HU.testCase "Early start tolerates no explicit jump penalty" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [] [] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [] [] ptsAllOne)
             @?=
                 Right
                 PointsReduced
@@ -252,12 +241,12 @@ pgUnits = testGroup "PG Points"
                     , pointApplied = TaskPoints 0
                     , resetApplied = TaskPoints 2
                     , total = TaskPoints 1
-                    , effectivePenalties = [PenaltyReset 1]
-                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    , effectivePenalties = [PenaltyReset posint1]
+                    , effectivePenaltiesJump = [PenaltyReset posint1]
                     }
 
     , HU.testCase "Early start tolerates other reset to zero" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [] [PenaltyReset 0] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [] [PenaltyReset (assumeProp $ refined 0)] ptsAllOne)
             @?=
                 Right
                 PointsReduced
@@ -266,12 +255,12 @@ pgUnits = testGroup "PG Points"
                     , pointApplied = TaskPoints 0
                     , resetApplied = TaskPoints 3
                     , total = TaskPoints 0
-                    , effectivePenalties = [PenaltyReset 0]
-                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    , effectivePenalties = [PenaltyReset (assumeProp $ refined 0)]
+                    , effectivePenaltiesJump = [PenaltyReset posint1]
                     }
 
     , HU.testCase "Early start still applies other penalty of fraction 1" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 1) [] [PenaltyFraction 1] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints posint1) [] [PenaltyFraction 1] ptsAllOne)
             @?=
                 Right
                 PointsReduced
@@ -280,12 +269,12 @@ pgUnits = testGroup "PG Points"
                     , pointApplied = TaskPoints 0
                     , resetApplied = TaskPoints 0
                     , total = TaskPoints 0
-                    , effectivePenalties = [PenaltyReset 1]
-                    , effectivePenaltiesJump = [PenaltyReset 1]
+                    , effectivePenalties = [PenaltyReset posint1]
+                    , effectivePenaltiesJump = [PenaltyReset posint1]
                     }
 
     , HU.testCase "Early start still applies other penalty of fraction 1" $
-        (FS.taskPoints (Early $ LaunchToStartPoints 7) [PenaltyReset 11] [PenaltyReset 1] ptsAllOne)
+        (FS.taskPoints (Early $ LaunchToStartPoints (assumeProp $ refined 7)) [PenaltyReset (assumeProp $ refined 11)] [PenaltyReset posint1] ptsAllOne)
             @?=
-                (Left $ EQ_Early_Reset (Early (LaunchToStartPoints 7),[PenaltyReset 11]))
+                (Left $ EQ_Early_Reset (Early (LaunchToStartPoints (assumeProp $ refined 7)),[PenaltyReset (assumeProp $ refined 11)]))
     ]

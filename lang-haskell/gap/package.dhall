@@ -51,6 +51,7 @@ in    defs
           # [ "aeson"
             , "cassava"
             , "containers"
+            , "facts"
             , "newtype"
             , "scientific"
             , "template-haskell"
@@ -97,7 +98,7 @@ in    defs
                 }
             , score =
                 { dependencies =
-                    testdeps # [ "quickcheck-instances" ]
+                    testdeps # [ "quickcheck-instances", "facts" ]
                 , ghc-options =
                     testopts
                 , main =
