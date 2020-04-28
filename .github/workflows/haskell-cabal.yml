@@ -22,7 +22,7 @@ jobs:
         submodules: true
 
     - uses: actions/setup-haskell@v1
-      name: Setup GHC and Cabal
+      name: Setup GHC and cabal-install
       with:
         ghc-version: ${{ matrix.ghc }}
         cabal-version: ${{ matrix.cabal }}
@@ -40,4 +40,4 @@ jobs:
 
     - name: Unit and property tests
       run: |
-        cabal v2-test all
+        cabal v2-test all --test-show-details=direct --test-option="--color=always"
