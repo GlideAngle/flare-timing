@@ -19,8 +19,9 @@ module Flight.Gap.Points
     , tallySubtotal
     , availablePointsPg
     , availablePointsHg
-    , jumpTheGunPenaltyHg
-    , jumpTheGunPenaltyPg
+    , jumpTheGunSitRepHg
+    , jumpTheGunSitRepPg
+    , jumpTheGunPenalty
     ) where
 
 import Text.Printf (printf)
@@ -98,21 +99,28 @@ zeroPoints =
         , arrival = ArrivalPoints 0
         }
 
-jumpTheGunPenaltyHg
+jumpTheGunPenalty
+    :: SecondsPerPoint (Quantity Double [u| s |])
+    -> JumpedTheGun (Quantity Double [u| s |])
+    -> Double
+jumpTheGunPenalty (SecondsPerPoint secs) (JumpedTheGun jump) =
+    let (MkQuantity penalty) = jump /: secs in penalty
+
+jumpTheGunSitRepHg
     :: TooEarlyPoints
     -> JumpTheGunLimit (Quantity Double [u| s |])
     -> SecondsPerPoint (Quantity Double [u| s |])
     -> JumpedTheGun (Quantity Double [u| s |])
     -> Either PointPenalty (SitRep Hg)
-jumpTheGunPenaltyHg pts (JumpTheGunLimit secsMax) (SecondsPerPoint secs) (JumpedTheGun jump)
+jumpTheGunSitRepHg pts (JumpTheGunLimit secsMax) spp jtg@(JumpedTheGun jump)
     | jump > secsMax = Right (JumpedTooEarly pts)
-    | otherwise = Left $ let (MkQuantity penalty) = jump /: secs in PenaltyPoints penalty
+    | otherwise = Left . PenaltyPoints $ jumpTheGunPenalty spp jtg
 
-jumpTheGunPenaltyPg
+jumpTheGunSitRepPg
     :: LaunchToStartPoints
     -> JumpedTheGun (Quantity Double [u| s |])
     -> Maybe (SitRep Pg)
-jumpTheGunPenaltyPg pts (JumpedTheGun jump)
+jumpTheGunSitRepPg pts (JumpedTheGun jump)
     | jump > [u| 0 s |] = Just $ Early pts
     | otherwise = Nothing
 
@@ -136,13 +144,17 @@ data ReconcilePointErrors
     | WAT_Early (SitRep Pg, [PointPenalty], [PointPenalty])
     | WAT_Nominal_Hg (SitRep Hg, [PointPenalty], [PointPenalty])
     | WAT_Nominal_Pg (SitRep Pg, [PointPenalty], [PointPenalty])
+    | WAT_NoGoal_Hg (SitRep Hg, [PointPenalty])
+    | WAT_NoGoal_Pg (SitRep Pg, [PointPenalty])
+    | WAT_Jumped (SitRep Hg, [PointPenalty], [PointPenalty])
+    | EQ_Jumped_Point (SitRep Hg, [PointPenalty])
     deriving Eq
 
 instance Show ReconcilePointErrors where
     show (EQ_JumpedTooEarly_Reset e) =
-        printf "Early HG with launch to start points /= reset but got %s" (show e)
+        printf "Too early HG with launch to start points /= reset but got %s" (show e)
     show (WAT_JumpedTooEarly e) =
-        printf "Early HG with unexpected reconciliation of %s" (show e)
+        printf "Too early HG with unexpected reconciliation of %s" (show e)
     show (EQ_Early_Reset e) =
         printf "Early PG with launch to start points /= reset but got %s" (show e)
     show (WAT_Early_Jump e) =
@@ -153,6 +165,14 @@ instance Show ReconcilePointErrors where
         printf "Not no HG penalties %s" (show e)
     show (WAT_Nominal_Pg e) =
         printf "Not no PG penalties %s" (show e)
+    show (WAT_NoGoal_Hg e) =
+        printf "ESS but no goal HG with unexpected jump penalties %s" (show e)
+    show (WAT_NoGoal_Pg e) =
+        printf "ESS but no goal PG with unexpected jump penalties %s" (show e)
+    show (WAT_Jumped e) =
+        printf "Early HG with unexpected jump penalties of %s" (show e)
+    show (EQ_Jumped_Point e) =
+        printf "Early HG with jump points /= seconds per point * seconds from %s" (show e)
 
 reconcileEarlyHg
     :: SitRep Hg
@@ -276,6 +296,76 @@ reconcileNominal _ p [] ps points =
 reconcileNominal wat p psJump ps _ =
     Left $ wat (p, psJump, ps)
 
+reconcileNoGoal
+    :: forall a. _
+    -> SitRep a
+    -> [PointPenalty] -- ^ Penalties for jumping the gun.
+    -> [PointPenalty] -- ^ Other penalties.
+    -> Points
+    -> Either ReconcilePointErrors PointsReduced
+reconcileNoGoal _ p [] [] points =
+    let subtotal = tallySubtotal p points
+    in
+        Right
+        PointsReduced
+            { subtotal = subtotal
+            , fracApplied =
+                TaskPoints 0
+            , pointApplied =
+                TaskPoints 0
+            , resetApplied =
+                TaskPoints 0
+            , total = subtotal
+            , effectivePenalties = []
+            , effectivePenaltiesJump = []
+            }
+reconcileNoGoal _ p [] ps points =
+    let subtotal@(TaskPoints s) = tallySubtotal p points
+
+        withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
+        withFP@(TaskPoints pointsFP) = applyPointPenalties ps withF
+
+        resets = take 1 . sort $ filter (\case PenaltyReset{} -> True; _ -> False) ps
+        total@(TaskPoints pointsR) = applyPenalties resets withFP
+    in
+        Right
+        PointsReduced
+            { subtotal = subtotal
+            , fracApplied =
+                TaskPoints $ s - pointsF
+            , pointApplied =
+                TaskPoints $ pointsF - pointsFP
+            , resetApplied =
+                if null resets then 0 else
+                TaskPoints $ pointsFP - pointsR
+            , total = total
+            , effectivePenalties = ps
+            , effectivePenaltiesJump = []
+            }
+reconcileNoGoal wat p psJump _ _ =
+    Left $ wat (p, psJump)
+
+reconcileJumped
+    :: SitRep Hg
+    -> [PointPenalty] -- ^ Penalties for jumping the gun.
+    -> [PointPenalty] -- ^ Other penalties.
+    -> Points
+    -> Either ReconcilePointErrors PointsReduced
+reconcileJumped p@(Jumped spp jtg) [] ps points =
+    reconcileJumped p [PenaltyPoints $ jumpTheGunPenalty spp jtg] ps points
+reconcileJumped p@(JumpedNoGoal spp jtg) [] ps points =
+    reconcileJumped p [PenaltyPoints $ jumpTheGunPenalty spp jtg] ps points
+reconcileJumped p@(Jumped spp jtg) psJump@[PenaltyPoints pJump] ps points =
+    if jumpTheGunPenalty spp jtg /= pJump then
+        Left $ EQ_Jumped_Point (p, psJump)
+    else _reconcileJumped p pJump ps points
+reconcileJumped p@(JumpedNoGoal spp jtg) psJump@[PenaltyPoints pJump] ps points =
+    if jumpTheGunPenalty spp jtg /= pJump then
+        Left $ EQ_Jumped_Point (p, psJump)
+    else _reconcileJumped p pJump ps points
+reconcileJumped p psJump ps _ =
+    Left $ WAT_Jumped (p, psJump, ps)
+
 reconcile
     :: forall a. SitRep a
     -> [PointPenalty] -- ^ Penalties for jumping the gun.
@@ -306,18 +396,48 @@ reconcile p psJump ps points =
             , effectivePenaltiesJump = psJump
             }
 
+_reconcileJumped
+    :: SitRep Hg
+    -> Double
+    -> [PointPenalty] -- ^ Other penalties.
+    -> Points
+    -> Either ReconcilePointErrors PointsReduced
+_reconcileJumped p pJump ps points =
+    let subtotal@(TaskPoints s) = tallySubtotal p points
+        psJump = [PenaltyPoints pJump]
+        withF@(TaskPoints pointsF) = applyFractionalPenalties ps subtotal
+        total@(TaskPoints pointsFP) = applyPointPenalties (psJump ++ ps) withF
+    in
+        Right
+        PointsReduced
+            { subtotal = subtotal
+            , fracApplied =
+                TaskPoints $ s - pointsF
+            , pointApplied =
+                TaskPoints $ pointsF - pointsFP
+            , resetApplied =
+                TaskPoints 0
+            , total = total
+            , effectivePenalties = ps ++ psJump
+            , effectivePenaltiesJump = psJump
+            }
+
 taskPoints
     :: forall a. SitRep a
     -> [PointPenalty] -- ^ Penalties for jumping the gun.
     -> [PointPenalty] -- ^ Other penalties.
     -> Points
     -> Either ReconcilePointErrors PointsReduced
-taskPoints p psJump ps points
-    | JumpedTooEarly{} <- p = reconcileEarlyHg p psJump ps points
-    | Early{} <- p = reconcileEarlyPg p psJump ps points
-    | NominalHg <- p = reconcileNominal WAT_Nominal_Hg NominalHg psJump ps points
-    | NominalPg <- p = reconcileNominal WAT_Nominal_Pg NominalPg psJump ps points
-    | otherwise = reconcile p psJump ps points
+taskPoints s psJump ps points
+    | JumpedTooEarly{} <- s = reconcileEarlyHg s psJump ps points
+    | Early{} <- s = reconcileEarlyPg s psJump ps points
+    | NominalHg <- s = reconcileNominal WAT_Nominal_Hg NominalHg psJump ps points
+    | NominalPg <- s = reconcileNominal WAT_Nominal_Pg NominalPg psJump ps points
+    | NoGoalHg <- s = reconcileNoGoal WAT_NoGoal_Hg NoGoalHg psJump ps points
+    | NoGoalPg <- s = reconcileNoGoal WAT_NoGoal_Pg NoGoalPg psJump ps points
+    | Jumped{} <- s = reconcileJumped s psJump ps points
+    | JumpedNoGoal{} <- s = reconcileJumped s psJump ps points
+    | otherwise = reconcile s psJump ps points
 
 isPg :: SitRep a -> Bool
 isPg = \case

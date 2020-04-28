@@ -209,8 +209,9 @@ module Flight.Score
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
     , LaunchToSss(..)
-    , jumpTheGunPenaltyHg
-    , jumpTheGunPenaltyPg
+    , jumpTheGunSitRepHg
+    , jumpTheGunSitRepPg
+    , jumpTheGunPenalty
     ) where
 
 import Flight.Gap.Leading.Area

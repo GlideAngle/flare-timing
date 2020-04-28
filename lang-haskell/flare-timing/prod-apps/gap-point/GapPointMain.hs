@@ -145,7 +145,7 @@ import Flight.Score
     , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
     , availablePointsHg, availablePointsPg
     , toIxChunk
-    , jumpTheGunPenaltyHg, jumpTheGunPenaltyPg
+    , jumpTheGunSitRepHg, jumpTheGunSitRepPg
     )
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import GapPointOptions (description)
@@ -1302,7 +1302,7 @@ tallyDf
                     let eitherPenalties :: [Either PointPenalty (SitRep Hg)]
                         eitherPenalties =
                             maybeToList
-                            $ jumpTheGunPenaltyHg tooEarlyPoints earliest earlyPenalty <$> jump
+                            $ jumpTheGunSitRepHg tooEarlyPoints earliest earlyPenalty <$> jump
 
                         jumpDemerits = lefts eitherPenalties
 
@@ -1315,7 +1315,7 @@ tallyDf
                     -- WARNING: Irrefutible pattern, allowing error if unmatched.
                     let Just jumpReset =
                             join
-                            $ jumpTheGunPenaltyPg launchToStartPoints <$> jump
+                            $ jumpTheGunSitRepPg launchToStartPoints <$> jump
 
                      in Gap.taskPoints jumpReset [] penalties x
 

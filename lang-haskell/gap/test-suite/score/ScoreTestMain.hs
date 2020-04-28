@@ -71,7 +71,6 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , QC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , QC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
-    -- TODO: Reanimate task point property tests.
-    --, QC.testProperty "Task points add up with Hg penalties" hgTaskPoints
+    , QC.testProperty "Task points add up with Hg penalties" hgTaskPoints
     , QC.testProperty "Task points add up with Pg penalties" pgTaskPoints
     ]

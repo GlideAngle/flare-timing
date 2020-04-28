@@ -30,6 +30,7 @@ import Flight.Score
     , PointPenalty(..)
     , ReconcilePointErrors(..)
     , zeroPoints
+    , jumpTheGunPenalty
     )
 
 import TestNewtypes
@@ -68,6 +69,29 @@ hgUnits = testGroup "HG Points"
                     , effectivePenaltiesJump = []
                     }
 
+    , HU.testCase "No penalties, ESS but no goal = sum of reach, effort, leading, 80% of time & arrival points" $
+        (FS.taskPoints NoGoalHg [] [] ptsAllOne)
+            @?=
+                Right
+                PointsReduced
+                    { subtotal = TaskPoints 3.6
+                    , fracApplied = TaskPoints 0
+                    , pointApplied = TaskPoints 0
+                    , resetApplied = TaskPoints 0
+                    , total = TaskPoints 3.6
+                    , effectivePenalties = []
+                    , effectivePenaltiesJump = []
+                    }
+
+    , HU.testCase "No penalties, ESS but no goal with jump penalty points" $
+        (FS.taskPoints NoGoalHg [PenaltyPoints 0] [] ptsAllOne)
+            @?=
+                (Left $ WAT_NoGoal_Hg (NoGoalHg,[PenaltyPoints 0]))
+
+    , HU.testCase "No penalties, ESS but no goal with jump penalty fraction" $
+        (FS.taskPoints NoGoalHg [PenaltyFraction 0] [] ptsAllOne)
+            @?=
+                (Left $ WAT_NoGoal_Hg (NoGoalHg,[PenaltyFraction 0]))
 
     , HU.testCase "Way too early start = minimum distance points only" $
         (FS.taskPoints (JumpedTooEarly $ TooEarlyPoints 1) [] [] ptsAllOne)
@@ -83,12 +107,40 @@ hgUnits = testGroup "HG Points"
                     , effectivePenaltiesJump = [PenaltyReset 1]
                     }
 
+    , HU.testCase "Early start, ESS but no goal = ESS no goal points minus jump the gun penalty" $
+        let jump = JumpedTheGun [u| 2 s |]
+            secs = SecondsPerPoint [u| 1 s |]
+            limit = JumpTheGunLimit [u| 3 s |]
+
+            jumps = let Left x = FS.jumpTheGunSitRepHg (TooEarlyPoints 1) limit secs jump in [x]
+        in
+            (FS.taskPoints (JumpedNoGoal secs jump) jumps [] ptsAllOne)
+                @?=
+                    Right
+                    PointsReduced
+                        { subtotal = TaskPoints 3.6
+                        , fracApplied = TaskPoints 0
+                        , pointApplied = TaskPoints 2
+                        , resetApplied = TaskPoints 0
+                        , total = TaskPoints 1.6
+                        , effectivePenalties = [PenaltyPoints 2]
+                        , effectivePenaltiesJump = [PenaltyPoints 2]
+                        }
+
+    , HU.testCase "Early start, ESS but no goal with zero jump penalty" $
+        let jump = JumpedTheGun [u| 2 s |]
+            secs = SecondsPerPoint [u| 1 s |]
+        in
+            (FS.taskPoints (JumpedNoGoal secs jump) [PenaltyPoints 0] [] ptsAllOne)
+                @?=
+                    (Left $ EQ_Jumped_Point (JumpedNoGoal (SecondsPerPoint [u| 1.0 s |]) (JumpedTheGun [u| 2.0 s |]),[PenaltyPoints 0.0]))
+
     , HU.testCase "Early start = full points minus jump the gun penalty" $
         let jump = JumpedTheGun [u| 2 s |]
             secs = SecondsPerPoint [u| 1 s |]
             limit = JumpTheGunLimit [u| 3 s |]
 
-            jumps = let Left x = FS.jumpTheGunPenaltyHg (TooEarlyPoints 1) limit secs jump in [x]
+            jumps = let Left x = FS.jumpTheGunSitRepHg (TooEarlyPoints 1) limit secs jump in [x]
         in
             (FS.taskPoints (Jumped secs jump) jumps [] ptsAllOne)
                 @?=
@@ -103,12 +155,32 @@ hgUnits = testGroup "HG Points"
                         , effectivePenaltiesJump = [PenaltyPoints 2]
                         }
 
+    , HU.testCase "Early start and no goal = full points minus jump the gun penalty" $
+        let jump = JumpedTheGun [u| 2 s |]
+            secs = SecondsPerPoint [u| 1 s |]
+            limit = JumpTheGunLimit [u| 3 s |]
+
+            jumps = let Left x = FS.jumpTheGunSitRepHg (TooEarlyPoints 1) limit secs jump in [x]
+        in
+            (FS.taskPoints (JumpedNoGoal secs jump) jumps [] ptsAllOne)
+                @?=
+                    Right
+                    PointsReduced
+                        { subtotal = TaskPoints 3.6
+                        , fracApplied = TaskPoints 0
+                        , pointApplied = TaskPoints 2
+                        , resetApplied = TaskPoints 0
+                        , total = TaskPoints 1.6
+                        , effectivePenalties = [PenaltyPoints 2]
+                        , effectivePenaltiesJump = [PenaltyPoints 2]
+                        }
+
     , HU.testCase "Very early start = full points minus jump the gun penalty resulting in no less than zero" $
         let jump = JumpedTheGun [u| 3 s |]
             secs = SecondsPerPoint [u| 1 s |]
             limit = JumpTheGunLimit [u| 3 s |]
 
-            jumps = let Left x = FS.jumpTheGunPenaltyHg (TooEarlyPoints 1) limit secs jump in [x]
+            jumps = let Left x = FS.jumpTheGunSitRepHg (TooEarlyPoints 1) limit secs jump in [x]
         in
             (FS.taskPoints (Jumped secs jump) jumps [] ptsAllOne)
                 @?=
@@ -130,7 +202,7 @@ hgUnits = testGroup "HG Points"
 
             eitherPenalties :: [Either PointPenalty (SitRep Hg)]
             eitherPenalties =
-                return $ FS.jumpTheGunPenaltyHg (TooEarlyPoints 1) limit secs jump
+                return $ FS.jumpTheGunSitRepHg (TooEarlyPoints 1) limit secs jump
 
             jumpDemerits = lefts eitherPenalties
             jumpReset = fromMaybe NominalHg . listToMaybe $ rights eitherPenalties
@@ -186,6 +258,30 @@ pgUnits = testGroup "PG Points"
                     , effectivePenalties = []
                     , effectivePenaltiesJump = []
                     }
+
+    , HU.testCase "No penalties, ESS but no goal = sum of reach, effort, leading, 80% of time & arrival points" $
+        (FS.taskPoints NoGoalPg [] [] ptsAllOne)
+            @?=
+                Right
+                PointsReduced
+                    { subtotal = TaskPoints 2
+                    , fracApplied = TaskPoints 0
+                    , pointApplied = TaskPoints 0
+                    , resetApplied = TaskPoints 0
+                    , total = TaskPoints 2
+                    , effectivePenalties = []
+                    , effectivePenaltiesJump = []
+                    }
+
+    , HU.testCase "No penalties, ESS but no goal with jump penalty points" $
+        (FS.taskPoints NoGoalPg [PenaltyPoints 0] [] ptsAllOne)
+            @?=
+                (Left $ WAT_NoGoal_Pg (NoGoalPg,[PenaltyPoints 0]))
+
+    , HU.testCase "No penalties, ESS but no goal with jump penalty fraction" $
+        (FS.taskPoints NoGoalPg [PenaltyFraction 0] [] ptsAllOne)
+            @?=
+                (Left $ WAT_NoGoal_Pg (NoGoalPg,[PenaltyFraction 0]))
 
     , HU.testCase "Applying too many penalty points = zero" $
         (FS.taskPoints NominalPg [] [PenaltyPoints 4] ptsAllOne)
@@ -391,7 +487,7 @@ correct
 
 correct
     NominalHg
-    jumps
+    []
     others
     Points
         { reach = LinearPoints r
@@ -403,11 +499,14 @@ correct
     = Right p
     where
         x = TaskPoints (fromRational $ r + e + l + t + a)
-        p = FS.applyPenalties (jumps ++ others) x
+        p = FS.applyPenalties others x
+
+correct p@NominalHg jumps others _ =
+    Left $ WAT_Nominal_Hg (p, jumps, others)
 
 correct
     NoGoalHg
-    jumps
+    []
     others
     Points
         { reach = LinearPoints r
@@ -419,11 +518,23 @@ correct
     = Right p
     where
         x = TaskPoints (fromRational $ r + e + l + ((8 % 10) * (a + t)))
-        p = FS.applyPenalties (jumps ++ others) x
+        p = FS.applyPenalties others x
+
+correct p@NoGoalHg jumps _ _ =
+    Left $ WAT_NoGoal_Hg (p, jumps)
+
+correct p@(JumpedTooEarly (TooEarlyPoints ep)) [] others pts =
+    correct p [PenaltyReset ep] others pts
+
+correct p@JumpedTooEarly{} jumps@[PenaltyFraction{}] others _ =
+    Left $ WAT_JumpedTooEarly (p, jumps, others)
+
+correct p@JumpedTooEarly{} jumps@[PenaltyPoints{}] others _ =
+    Left $ WAT_JumpedTooEarly (p, jumps, others)
 
 correct
-    JumpedTooEarly{}
-    jumps
+    p@(JumpedTooEarly (TooEarlyPoints ep))
+    jumps@[PenaltyReset pr]
     others
     Points
         { reach = LinearPoints r
@@ -432,14 +543,26 @@ correct
         , arrival = ArrivalPoints a
         , time = TimePoints t
         }
-    = Right p
+    =
+        if ep /= pr
+           then Left $ EQ_JumpedTooEarly_Reset (p, jumps)
+           else Right tp
     where
         x = TaskPoints (fromRational $ r + e + l + t + a)
-        p = FS.applyPenalties (jumps ++ others) x
+        tp = FS.applyPenalties (jumps ++ others) x
+
+correct p@JumpedTooEarly{} jumps others _ =
+    Left $ WAT_JumpedTooEarly (p, jumps, others)
+
+correct p@(Jumped spp jtg) [] others pts =
+    correct p [PenaltyPoints $ jumpTheGunPenalty spp jtg] others pts
+
+correct p@(JumpedNoGoal spp jtg) [] others pts =
+    correct p [PenaltyPoints $ jumpTheGunPenalty spp jtg] others pts
 
 correct
-    Jumped{}
-    jumps
+    p@(Jumped spp jtg)
+    jumps@[PenaltyPoints pJump]
     others
     Points
         { reach = LinearPoints r
@@ -448,14 +571,17 @@ correct
         , arrival = ArrivalPoints a
         , time = TimePoints t
         }
-    = Right p
+    =
+        if jumpTheGunPenalty spp jtg /= pJump
+           then Left $ EQ_Jumped_Point (p, jumps)
+           else Right tp
     where
         x = TaskPoints (fromRational $ r + e + l + t + a)
-        p = FS.applyPenalties (jumps ++ others) x
+        tp = FS.applyPenalties (jumps ++ others) x
 
 correct
-    JumpedNoGoal{}
-    jumps
+    p@(JumpedNoGoal spp jtg)
+    jumps@[PenaltyPoints pJump]
     others
     Points
         { reach = LinearPoints r
@@ -464,10 +590,19 @@ correct
         , arrival = ArrivalPoints a
         , time = TimePoints t
         }
-    = Right p
+    =
+        if jumpTheGunPenalty spp jtg /= pJump
+           then Left $ EQ_Jumped_Point (p, jumps)
+           else Right tp
     where
-        x = TaskPoints (fromRational $ r + e + l + t + a)
-        p = FS.applyPenalties (jumps ++ others) x
+        x = TaskPoints (fromRational $ r + e + l + ((8 % 10) * (t + a)))
+        tp = FS.applyPenalties (jumps ++ others) x
+
+correct p@Jumped{} jumps others _ =
+    Left $ WAT_Jumped (p, jumps, others)
+
+correct p@JumpedNoGoal{} jumps others _ =
+    Left $ WAT_Jumped (p, jumps, others)
 
 correct
     NominalPg
@@ -488,7 +623,7 @@ correct p@NominalPg jumps others _ =
 
 correct
     NoGoalPg
-    jumps
+    []
     others
     Points
         { reach = LinearPoints r
@@ -497,7 +632,10 @@ correct
     = Right p
     where
         x = TaskPoints (fromRational $ r + l)
-        p = FS.applyPenalties (jumps ++ others) x
+        p = FS.applyPenalties others x
+
+correct p@NoGoalPg jumps _ _ =
+    Left $ WAT_NoGoal_Pg (p, jumps)
 
 correct p@(Early (LaunchToStartPoints lsp)) [] others pts =
     correct p [PenaltyReset lsp] others pts
