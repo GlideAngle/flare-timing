@@ -181,7 +181,7 @@ reconcileEarlyHg
     -> Either ReconcilePointErrors PointsReduced
 reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) [] ps points =
     reconcileEarlyHg p [PenaltyReset tep] ps points
-reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) !psJump@[PenaltyReset !r] ps points =
+reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) psJump@[PenaltyReset r] ps points =
     if | r < 0 -> Left $ NEG_Reset_Hg (p, psJump, ps)
        | tep /= r -> Left $ EQ_JumpedTooEarly_Reset (p, psJump)
        | otherwise ->
