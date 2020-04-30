@@ -19,6 +19,8 @@ module Flight.Gap.Penalty
     , seqOnlyMuls, seqOnlyAdds, seqOnlyResets
     ) where
 
+import Test.QuickCheck (Arbitrary(..))
+import Data.Semigroup
 import Data.Typeable
 import GHC.TypeLits (Nat, KnownNat, natVal)
 import Data.Proxy (Proxy(..))
@@ -98,6 +100,37 @@ instance Show (PointPenalty a) where
     show (PenaltyPoints x) = printf "(+ %f)" x
     show (PenaltyReset (Just x)) = printf "(= %d)" $ unrefined x
 
+instance Semigroup (PointPenalty Mul) where
+    (<>) (PenaltyFraction a) (PenaltyFraction b) = PenaltyFraction $ a * b
+instance Semigroup (PointPenalty Add) where
+    (<>) (PenaltyPoints a) (PenaltyPoints b) = PenaltyPoints $ a + b
+instance Semigroup (PointPenalty Reset) where
+    (<>) a (PenaltyReset Nothing) = a
+    (<>) (PenaltyReset Nothing) b = b
+    (<>) (PenaltyReset (Just a)) (PenaltyReset (Just b)) =
+        PenaltyReset . Just $ min a b
+
+instance Arbitrary (PointPenalty Mul) where
+    arbitrary = PenaltyFraction <$> arbitrary
+instance Arbitrary (PointPenalty Add) where
+    arbitrary = PenaltyPoints <$> arbitrary
+instance Arbitrary (PointPenalty Reset) where
+    arbitrary = do
+        x <- arbitrary
+        return . PenaltyReset $ assumeProp . refined <$> x
+
+-- |
+-- >>> lawsCheck (monoidLaws (Proxy :: Proxy (PointPenalty Mul)))
+instance Semigroup (PointPenalty Mul) => Monoid (PointPenalty Mul) where
+    mempty = identityOfMul
+    mappend = (<>)
+instance Semigroup (PointPenalty Add) => Monoid (PointPenalty Add) where
+    mempty = identityOfAdd
+    mappend = (<>)
+instance Semigroup (PointPenalty Reset) => Monoid (PointPenalty Reset) where
+    mempty = identityOfReset
+    mappend = (<>)
+
 instance Num (PointPenalty Mul) where
     (+) _ _ = error "(+) is not defined for PointPenalty Mul."
     (*) (PenaltyFraction a) (PenaltyFraction b) = PenaltyFraction $ a * b
@@ -108,7 +141,7 @@ instance Num (PointPenalty Mul) where
 
 instance Num (PointPenalty Add) where
     (+) (PenaltyPoints a) (PenaltyPoints b) = PenaltyPoints $ a + b
-    (*) _ _ = error "(+) is not defined for PointPenalty Add."
+    (*) _ _ = error "(*) is not defined for PointPenalty Add."
     negate (PenaltyPoints x) = PenaltyPoints $ negate x
     abs (PenaltyPoints x) = PenaltyPoints $ abs x
     signum (PenaltyPoints x) = PenaltyPoints $ signum x
@@ -168,40 +201,86 @@ data PointsReduced =
         }
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
+identityOfMul :: PointPenalty Mul
+identityOfMul = PenaltyFraction 1
+
+identityOfAdd :: PointPenalty Add
+identityOfAdd = PenaltyPoints 0
+
+identityOfReset :: PointPenalty Reset
+identityOfReset = PenaltyReset Nothing
+
 idMul :: PointPenalty Mul -> Bool
-idMul = \case PenaltyFraction 1 -> True; _ -> False
+idMul = (==) identityOfMul
 
 idAdd :: PointPenalty Add -> Bool
-idAdd = \case PenaltyPoints 0 -> True; _ -> False
+idAdd = (==) identityOfAdd
 
 idReset :: PointPenalty Reset -> Bool
-idReset = \case PenaltyReset Nothing -> True; PenaltyReset (Just _) -> False
+idReset = (==) identityOfReset
 
+-- | The units of each kind of penalty that will not change the points when
+-- applied.
+--
+-- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0)
+-- TaskPoints 0.000
+--
+-- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 1)
+-- TaskPoints 1.000
+--
+-- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints (-1))
+-- TaskPoints 0.000
+--
+-- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0.5)
+-- TaskPoints 0.500
+--
+-- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0.8584411845461164)
+-- TaskPoints 0.8584411845461164
+--
+-- prop> \x -> let pts = TaskPoints x in pts == total (applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) pts)
 idSeq :: PenaltySeq
 idSeq =
     PenaltySeq
-        { mul = PenaltyFraction 0
+        { mul = PenaltyFraction 1
         , add = PenaltyPoints 0
         , reset = PenaltyReset Nothing
         }
 
+-- | Construct a seq with only the given @Mul@ penalty.
+--
+-- prop> \x -> x /= 1 ==> seqOnlyMuls (mulSeq x) == Just (PenaltyFraction x)
 mulSeq :: Double -> PenaltySeq
 mulSeq x = idSeq{mul = PenaltyFraction x}
 
+-- | Construct a seq with only the given @Add@ penalty.
+--
+-- prop> \x -> x /= 0 ==> seqOnlyAdds (addSeq x) == Just (PenaltyPoints x)
 addSeq :: Double -> PenaltySeq
 addSeq x = idSeq{add = PenaltyPoints x}
 
+-- | Construct a seq with only the given @Reset@ penalty.
 resetSeq :: Maybe PosInt -> PenaltySeq
 resetSeq x = idSeq{reset = PenaltyReset x}
 
+-- | Construct empty sequences.
+--
+-- >>> idMul (effectiveMul (muls nullSeqs))
+-- True
+--
+-- >>> idAdd (effectiveAdd (adds nullSeqs))
+-- True
+--
+-- >>> idReset (effectiveReset (resets nullSeqs))
+-- True
 nullSeqs :: PenaltySeqs
-nullSeqs =
-    PenaltySeqs
-        { muls = []
-        , adds = []
-        , resets = []
-        }
+nullSeqs = PenaltySeqs{muls = [], adds = [], resets = []}
 
+-- | Each operation is put in a singleton list of its kind of operation unless
+-- it is the unit of that operation in which case the list for that operation
+-- is empty.
+--
+-- >>> toSeqs idSeq == nullSeqs
+-- True
 toSeqs :: PenaltySeq -> PenaltySeqs
 toSeqs PenaltySeq{mul, add, reset} =
     PenaltySeqs
@@ -210,6 +289,28 @@ toSeqs PenaltySeq{mul, add, reset} =
         , resets = if idReset reset then [] else [reset]
         }
 
+-- | If only non-unit value is the @Mul@ then extract that.
+--
+-- >>> seqOnlyMuls idSeq
+-- Nothing
+--
+-- >>> seqOnlyMuls (mulSeq 1)
+-- Nothing
+--
+-- >>> seqOnlyMuls (mulSeq 0.9)
+-- Just (* 0.9)
+--
+-- >>> seqOnlyMuls (addSeq 0)
+-- Nothing
+--
+-- >>> seqOnlyMuls (addSeq 1)
+-- Nothing
+--
+-- >>> seqOnlyMuls (resetSeq Nothing)
+-- Nothing
+--
+-- >>> seqOnlyMuls (resetSeq (Just (assumeProp $ refined 0)))
+-- Nothing
 seqOnlyMuls :: PenaltySeq -> Maybe (PointPenalty Mul)
 seqOnlyMuls x
     | idAdd (add x) && idReset (reset x) =
@@ -218,6 +319,28 @@ seqOnlyMuls x
            y -> Just y
     | otherwise = Nothing
 
+-- | If only non-unit value is the @Add@ then extract that.
+--
+-- >>> seqOnlyAdds idSeq
+-- Nothing
+--
+-- >>> seqOnlyAdds (mulSeq 1)
+-- Nothing
+--
+-- >>> seqOnlyAdds (mulSeq 0.9)
+-- Nothing
+--
+-- >>> seqOnlyAdds (addSeq 0)
+-- Nothing
+--
+-- >>> seqOnlyAdds (addSeq 1)
+-- Just (+ 1.0)
+--
+-- >>> seqOnlyAdds (resetSeq Nothing)
+-- Nothing
+--
+-- >>> seqOnlyAdds (resetSeq (Just (assumeProp $ refined 0)))
+-- Nothing
 seqOnlyAdds :: PenaltySeq -> Maybe (PointPenalty Add)
 seqOnlyAdds x
     | idMul (mul x) && idReset (reset x) =
@@ -226,6 +349,28 @@ seqOnlyAdds x
            y -> Just y
     | otherwise = Nothing
 
+-- | If only non-unit value is the @Reset@ then extract that.
+--
+-- >>> seqOnlyResets idSeq
+-- Nothing
+--
+-- >>> seqOnlyResets (mulSeq 1)
+-- Nothing
+--
+-- >>> seqOnlyResets (mulSeq 0.9)
+-- Nothing
+--
+-- >>> seqOnlyResets (addSeq 0)
+-- Nothing
+--
+-- >>> seqOnlyResets (addSeq 1)
+-- Nothing
+--
+-- >>> seqOnlyResets (resetSeq Nothing)
+-- Nothing
+--
+-- >>> seqOnlyResets (resetSeq (Just (assumeProp $ refined 0)))
+-- Just (= 0)
 seqOnlyResets :: PenaltySeq -> Maybe (PointPenalty Reset)
 seqOnlyResets x
     | idMul (mul x) && idAdd (add x) =
@@ -336,14 +481,23 @@ instance Show (Hide PointPenalty) where
     show (Hide x) = show x
 
 -- | The effective fraction is the sum of the list.
+--
+-- >>> effectiveMul [] == identityOfMul
+-- True
 effectiveMul :: [PointPenalty Mul] -> PointPenalty Mul
 effectiveMul = product . filter isPenaltyFraction
 
 -- | The effective point is the sum of the list.
+--
+-- >>> effectiveAdd [] == identityOfAdd
+-- True
 effectiveAdd :: [PointPenalty Add] -> PointPenalty Add
 effectiveAdd = sum . filter isPenaltyPoints
 
 -- | The effective reset is the minimum of the list.
+--
+-- >>> effectiveReset [] == identityOfReset
+-- True
 effectiveReset :: [PointPenalty Reset] -> PointPenalty Reset
 effectiveReset =
     maybe (PenaltyReset Nothing) id
@@ -366,3 +520,7 @@ applyAdd points p =
 applyReset :: [PointPenalty Reset] -> TaskPoints -> TaskPoints
 applyReset resets p =
     applyPenalty p (effectiveReset resets)
+
+-- $setup
+-- >>> import Test.QuickCheck.Classes
+-- >>> import Data.Proxy

@@ -53,6 +53,7 @@ in    defs
             , "containers"
             , "facts"
             , "newtype"
+            , "QuickCheck"
             , "scientific"
             , "template-haskell"
             , "text"
@@ -128,7 +129,13 @@ in    defs
                 }
             , doctest =
                 { dependencies =
-                    defs.dependencies # [ "QuickCheck", "doctest" ]
+                      defs.dependencies
+                    # [ "QuickCheck"
+                      , "quickcheck-classes"
+                      , "doctest"
+                      , "facts"
+                      , "flight-units"
+                      ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
