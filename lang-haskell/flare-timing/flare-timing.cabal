@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 367627e9b868a8fd6ada4d6bd89b43411f135d28badc5c68c7da2ac29b5405a5
+-- hash: 4059e3d35f3d20643e4e8c74c14ff93d11a5dd70725fac683a76d6cf0957df03
 
 name:           flare-timing
 version:        0.1.0
@@ -431,6 +431,7 @@ executable gap-point
     , cmdargs
     , containers
     , directory
+    , facts
     , filemanip
     , filepath
     , flight-cmd

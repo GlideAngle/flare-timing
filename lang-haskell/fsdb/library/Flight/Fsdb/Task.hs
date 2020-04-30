@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
@@ -11,9 +12,10 @@ module Flight.Fsdb.Task
     , asAward
     ) where
 
+import Data.Refined (assumeProp, refined)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.Maybe (catMaybes, fromMaybe)
-import Data.List (sort, sortOn, nub, find)
+import Data.List (sort, sortOn, nub)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
@@ -71,6 +73,8 @@ import Flight.Comp
 import Flight.Score
     ( ScoreBackTime(..), PointPenalty(..), ReachToggle(..)
     , SecondsPerPoint(..), JumpTheGunLimit(..), TooEarlyPoints(..)
+    , PenaltySeq(..)
+    , idMul, idSeq, addSeq, mulSeq
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)
@@ -91,7 +95,7 @@ instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
 instance (u ~ Quantity Double [u| km |]) => XmlPickler (TaskDistance u) where
     xpickle = xpNewtypeQuantity
 
-xpPointPenaltyAuto :: PU ([PointPenalty], String)
+xpPointPenaltyAuto :: PU (PenaltySeq, String)
 xpPointPenaltyAuto =
     xpElem "FsResult"
     $ xpFilterAttr
@@ -100,29 +104,15 @@ xpPointPenaltyAuto =
         )
     $ xpWrap
         ( \case
-            (0.0, s) -> ([], s)
-            (pts, s) -> ([PenaltyPoints pts], s)
-        , \(xs, s) ->
-            let pp =
-                    find
-                        (\case
-                            PenaltyFraction _ -> False
-                            PenaltyPoints _ -> True
-                            PenaltyReset _ -> False)
-                        xs
-
-            in
-                case pp of
-                    Nothing -> (0.0, s)
-                    (Just (PenaltyPoints y)) -> (y, s)
-                    (Just (PenaltyFraction _)) -> (0.0, s)
-                    (Just (PenaltyReset _)) -> (0.0, s)
+            (0.0, s) -> (idSeq, s)
+            (pts, s) -> (addSeq pts, s)
+        , \(PenaltySeq{add = PenaltyPoints p}, s) -> (p, s)
         )
     $ xpPair
         (xpAttr "penalty_points_auto" xpPrim)
         (xpTextAttr "penalty_reason_auto")
 
-xpPointPenalty :: PU ([PointPenalty], String)
+xpPointPenalty :: PU (PenaltySeq, String)
 xpPointPenalty =
     xpElem "FsResultPenalty"
     $ xpFilterAttr
@@ -132,39 +122,17 @@ xpPointPenalty =
         )
     $ xpWrap
         ( \case
-            (0.0, 0.0, s) -> ([], s)
-            (frac, 0.0, s) -> ([PenaltyFraction frac], s)
-            (0.0, pts, s) -> ([PenaltyPoints pts], s)
+            -- WARNING: Zero for the penalty fraction means don't apply
+            -- a fraction. If this were a fraction we'd be multiplying by one.
+            (0.0, 0.0, s) -> (idSeq, s)
+            (frac, 0.0, s) -> (mulSeq frac, s)
+            (0.0, pts, s) -> (addSeq pts, s)
             (frac, pts, s) ->
-                (
-                    [ PenaltyFraction frac
-                    , PenaltyPoints pts
-                    ]
-                , s
-                )
-        , \(xs, s) ->
-            let p =
-                    find
-                        (\case
-                            PenaltyFraction _ -> True
-                            PenaltyPoints _ -> False
-                            PenaltyReset _ -> False)
-                        xs
-
-                pp =
-                    find
-                        (\case
-                            PenaltyFraction _ -> False
-                            PenaltyPoints _ -> True
-                            PenaltyReset _ -> False)
-                        xs
-
-            in
-                case (p, pp) of
-                    (Just (PenaltyFraction x), Nothing) -> (x, 0.0, s)
-                    (Nothing, Just (PenaltyPoints y)) -> (0.0, y, s)
-                    (Just (PenaltyFraction x), Just (PenaltyPoints y)) -> (x, y, s)
-                    _ -> (0.0, 0.0, s)
+                (idSeq{mul = PenaltyFraction frac, add = PenaltyPoints pts}, s)
+        , \(PenaltySeq{mul, add = PenaltyPoints y}, s) ->
+                case mul of
+                    (idMul -> True) -> (0.0, y, s)
+                    PenaltyFraction x -> (x, y, s)
         )
     $ xpTriple
         (xpAttr "penalty" xpPrim)
@@ -184,7 +152,7 @@ xpEarlyStart =
             EarlyStart
                 (JumpTheGunLimit . MkQuantity $ fromIntegral limit)
                 (SecondsPerPoint . MkQuantity $ fromIntegral rate)
-                (TooEarlyPoints 0)
+                (TooEarlyPoints (assumeProp $ refined 0))
         , \EarlyStart
             { earliest = JumpTheGunLimit (MkQuantity limit)
             , earlyPenalty = SecondsPerPoint (MkQuantity rate)
@@ -718,7 +686,7 @@ getTask discipline compTweak sb =
 getTaskPilotPenaltiesAuto
     :: ArrowXml a
     => [Pilot]
-    -> a XmlTree [(Pilot, [PointPenalty], String)]
+    -> a XmlTree [(Pilot, PenaltySeq, String)]
 getTaskPilotPenaltiesAuto pilots =
     getChildren
     >>> deep (hasName "FsTask")
@@ -751,7 +719,7 @@ getTaskPilotPenaltiesAuto pilots =
                     >>> getAttrValue "id"
                     &&& getResultPenaltyAuto
                     >>> arr (\(pid, x) ->
-                        let (ps, s) = fromMaybe ([], "") x in
+                        let (ps, s) = fromMaybe (idSeq, "") x in
                         (unKeyPilot (keyMap kps) . PilotId $ pid, ps, s))
 
                 getResultPenaltyAuto =
@@ -762,7 +730,7 @@ getTaskPilotPenaltiesAuto pilots =
 getTaskPilotPenalties
     :: ArrowXml a
     => [Pilot]
-    -> a XmlTree [(Pilot, [PointPenalty], String)]
+    -> a XmlTree [(Pilot, PenaltySeq, String)]
 getTaskPilotPenalties pilots =
     getChildren
     >>> deep (hasName "FsTask")
@@ -803,7 +771,7 @@ getTaskPilotPenalties pilots =
                     >>> getAttrValue "id"
                     &&& getResultPenalty
                     >>> arr (\(pid, x) ->
-                        let (ps, s) = fromMaybe ([], "") x in
+                        let (ps, s) = fromMaybe (idSeq, "") x in
                         (unKeyPilot (keyMap kps) . PilotId $ pid, ps, s))
 
                 getResultPenalty =
@@ -831,7 +799,7 @@ parseTaskPilotGroups contents = do
 
 parseTaskPilotPenaltiesAuto
     :: String
-    -> IO (Either String [[(Pilot, [PointPenalty], String)]])
+    -> IO (Either String [[(Pilot, PenaltySeq, String)]])
 parseTaskPilotPenaltiesAuto contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot
@@ -840,7 +808,7 @@ parseTaskPilotPenaltiesAuto contents = do
 
 parseTaskPilotPenalties
     :: String
-    -> IO (Either String [[(Pilot, [PointPenalty], String)]])
+    -> IO (Either String [[(Pilot, PenaltySeq, String)]])
 parseTaskPilotPenalties contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot

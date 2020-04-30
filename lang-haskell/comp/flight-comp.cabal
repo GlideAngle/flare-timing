@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4ca1e199575ff03840917176679055a0255c9c771cbd6a9124576ca40b526773
+-- hash: 86af361f973d9af23896a3e01a4982f2d4b846598a93c197465cba8cdabc2d0a
 
 name:           flight-comp
 version:        0.1.0
@@ -72,6 +72,7 @@ library
     , detour-via-sci
     , detour-via-uom
     , directory
+    , facts
     , filemanip
     , filepath
     , flight-clip
@@ -135,6 +136,7 @@ test-suite comp
     , detour-via-sci
     , detour-via-uom
     , directory
+    , facts
     , filemanip
     , filepath
     , flight-clip
@@ -206,6 +208,7 @@ test-suite doctest
     , detour-via-uom
     , directory
     , doctest
+    , facts
     , filemanip
     , filepath
     , flight-clip

@@ -45,9 +45,13 @@ import qualified Flight.Comp as C (Comp(earth, earthMath))
 import Flight.Zone (Radius(..))
 import qualified Flight.Zone.Raw as Raw (Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
-import Flight.Score (ScoreBackTime(..), PointPenalty)
+import Flight.Score (ScoreBackTime(..), PenaltySeq, toSeqs)
 import Flight.Scribe (writeComp)
 import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
+
+-- NOTE: Util.snd3 from https://hackage.haskell.org/package/ghc
+snd3 :: (b -> d) -> (a, b, c) -> (a, d, c)
+snd3 f (a, b, c) = (a, f b, c)
 
 main :: IO ()
 main = do
@@ -165,14 +169,14 @@ fsdbTaskPilotGroups (FsdbXml contents) = do
 
 fsdbTaskPilotPenaltiesAuto
     :: FsdbXml
-    -> ExceptT String IO [[(Pilot, [PointPenalty], String)]]
+    -> ExceptT String IO [[(Pilot, PenaltySeq, String)]]
 fsdbTaskPilotPenaltiesAuto (FsdbXml contents) = do
     ts <- lift $ parseTaskPilotPenaltiesAuto contents
     ExceptT $ return ts
 
 fsdbTaskPilotPenalties
     :: FsdbXml
-    -> ExceptT String IO [[(Pilot, [PointPenalty], String)]]
+    -> ExceptT String IO [[(Pilot, PenaltySeq, String)]]
 fsdbTaskPilotPenalties (FsdbXml contents) = do
     ts <- lift $ parseTaskPilotPenalties contents
     ExceptT $ return ts
@@ -207,8 +211,8 @@ fsdbSettings earthMath zg fsdbXml = do
     let ts' =
             [ t
                 { zones = z{raw = Raw.zoneGive (const $ const True) zg rz}
-                , penalsAuto = pnAuto
-                , penals = pn
+                , penalsAuto = snd3 toSeqs <$> pnAuto
+                , penals = snd3 toSeqs <$> pn
                 }
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             | pnAuto <- pnsAuto

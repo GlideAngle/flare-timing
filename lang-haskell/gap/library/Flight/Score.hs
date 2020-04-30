@@ -151,6 +151,7 @@ module Flight.Score
     , Pg
     , SitRep(..)
     , PointPenalty(..)
+    , Hide(..)
     , DistancePoints(..)
     , LinearPoints(..)
     , DifficultyPoints(..)
@@ -161,15 +162,18 @@ module Flight.Score
     , Points(..)
     , PointsReduced(..)
     , ReconcilePointErrors(..)
-    , PosInt
-    , GE
+    , PosInt, GE
+    , PenaltySeq(..), PenaltySeqs(..)
+    , Mul, Add, Reset
     , zeroPoints
     , taskPoints
     , tallySubtotal
-    , applyFractionalPenalties
-    , applyPointPenalties
-    , applyResetPenalties
     , applyPenalties
+    , idSeq, nullSeqs, toSeqs
+    , seqOnlyMuls, seqOnlyAdds, seqOnlyResets
+    , mulSeq, addSeq, resetSeq
+    , idMul, idAdd, idReset
+    , applyMul, applyAdd, applyReset
     , availablePointsPg
     , availablePointsHg
     -- * Stopped task

@@ -21,6 +21,7 @@ in    defs
             , "cassava"
             , "containers"
             , "directory"
+            , "facts"
             , "filepath"
             , "filemanip"
             , "microlens"

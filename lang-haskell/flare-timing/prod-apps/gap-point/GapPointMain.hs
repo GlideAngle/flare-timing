@@ -5,10 +5,10 @@
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
+import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
-import Data.Maybe (maybeToList, listToMaybe, fromMaybe, catMaybes)
-import Data.Either (lefts, rights)
+import Data.Maybe (fromMaybe, catMaybes)
 import Data.Function ((&))
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -133,12 +133,14 @@ import Flight.Score
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
     , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
-    , PointPenalty, PointsReduced(..)
+    , PenaltySeqs, PointPenalty(..), PointsReduced(..)
     , TaskPlacing(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
     , FlownMax(..)
-    , JumpedTheGun(..), TooEarlyPoints(..), LaunchToStartPoints(..)
-    , SitRep(..), Hg
+    , JumpedTheGun(..)
+    , TooEarlyPoints(..), LaunchToStartPoints(..)
+    , SitRep(..)
+    , idSeq, addSeq, nullSeqs, toSeqs
     , unFlownMaxAsKm
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
@@ -712,7 +714,7 @@ points'
         tooEarlyPoints :: [TooEarlyPoints]
         tooEarlyPoints =
             [
-                TooEarlyPoints . round . unpack
+                TooEarlyPoints . assumeProp . refined . round . unpack
                 $ maybe
                     (LinearPoints 0)
                     (\ps' ->
@@ -726,7 +728,7 @@ points'
         launchToStartPoints :: [LaunchToStartPoints]
         launchToStartPoints =
             [
-                LaunchToStartPoints . round . unpack
+                LaunchToStartPoints . assumeProp . refined . round . unpack
                 $ maybe
                     (LinearPoints 0)
                     (\ps' ->
@@ -1030,7 +1032,7 @@ collateDf
     -> [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
-    -> [(Pilot, [PointPenalty], String)]
+    -> [(Pilot, PenaltySeqs, String)]
     -> [(Pilot, Maybe alt)]
     -> [(Pilot, (Maybe a, Maybe a, Maybe a, Maybe a))]
     -> [(Pilot, Maybe b)]
@@ -1049,7 +1051,7 @@ collateDf
                             ,
                                 ( (Maybe a, Maybe a, Maybe a, Maybe a)
                                 ,
-                                    ( ([PointPenalty], String)
+                                    ( (PenaltySeqs, String)
                                     , Gap.Points
                                     )
                                 )
@@ -1095,14 +1097,14 @@ collateDfNoTrack
     -> [(Pilot, LinearPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
-    -> [(Pilot, [PointPenalty], String)]
+    -> [(Pilot, PenaltySeqs, String)]
     -> DfNoTrack
     -> [
             (Pilot
             ,
                 ( (Maybe (ReachToggle AwardedDistance), AwardedVelocity)
                 ,
-                    ( ([PointPenalty], String)
+                    ( (PenaltySeqs, String)
                     , Gap.Points
                     )
                 )
@@ -1140,11 +1142,11 @@ tuplePenalty (a, b, c) = (a, (b, c))
 -- | Merge maps so that each pilot has a list of penalties, possibly an empty one.
 mergePenalties
     :: Map Pilot a
-    -> Map Pilot ([PointPenalty], String)
-    -> Map Pilot ([PointPenalty], String)
+    -> Map Pilot (PenaltySeqs, String)
+    -> Map Pilot (PenaltySeqs, String)
 mergePenalties =
     Map.merge
-        (Map.mapMissing (\_ _ -> ([], "")))
+        (Map.mapMissing (\_ _ -> (nullSeqs, "")))
         (Map.preserveMissing)
         (Map.zipWithMatched (\_ _ y -> y))
 
@@ -1222,7 +1224,7 @@ tallyDf
                             , Maybe (PilotDistance (Quantity Double [u| km |]))
                             )
                         ,
-                            ( ([PointPenalty], String)
+                            ( (PenaltySeqs, String)
                             , Gap.Points
                             )
                         )
@@ -1236,7 +1238,7 @@ tallyDf
     startGates
     tooEarlyPoints
     launchToStartPoints
-    EarlyStart{earliest, earlyPenalty}
+    EarlyStart{earliest, earlyPenalty = spp}
     ( alt
     ,
         ( g
@@ -1256,13 +1258,13 @@ tallyDf
     Breakdown
         { place = TaskPlacing 0
         , subtotal = subtotal
-        , demeritFrac = fracApplied
-        , demeritPoint = pointApplied
+        , demeritFrac = mulApplied
+        , demeritPoint = addApplied
         , demeritReset = resetApplied
         , total = total
         , jump = jump
-        , penaltiesJump = effectivePenaltiesJump
-        , penalties = effectivePenalties
+        , penaltiesJump = toSeqs effj
+        , penalties = toSeqs effp
         , penaltyReason = penaltyReason
         , breakdown = x
         , velocity =
@@ -1298,38 +1300,39 @@ tallyDf
 
         ptsReduced =
             case hgOrPg of
-                HangGliding ->
-                    let eitherPenalties :: [Either PointPenalty (SitRep Hg)]
-                        eitherPenalties =
-                            maybeToList
-                            $ jumpTheGunSitRepHg tooEarlyPoints earliest earlyPenalty <$> jump
+                HangGliding -> fromMaybe (Gap.taskPoints NominalHg idSeq penalties x) $ do
+                    jtg@(JumpedTheGun jSecs) <- jump
+                    return $
+                        case jumpTheGunSitRepHg tooEarlyPoints earliest spp jtg of
+                            Left (PenaltyPoints j) ->
+                                Gap.taskPoints
+                                    (Jumped spp (JumpedTheGun jSecs))
+                                    (addSeq j)
+                                    penalties
+                                    x
 
-                        jumpDemerits = lefts eitherPenalties
+                            Right sitrep ->
+                                Gap.taskPoints sitrep idSeq penalties x
 
-                        -- WARNING: Irrefutible pattern, allowing error if unmatched.
-                        Just jumpReset = listToMaybe $ rights eitherPenalties
+                Paragliding -> fromMaybe (Gap.taskPoints NominalPg idSeq penalties x) $ do
+                    jtg <- jump
+                    sitrep <- jumpTheGunSitRepPg launchToStartPoints jtg
+                    return $ Gap.taskPoints sitrep idSeq penalties x
 
-                     in Gap.taskPoints jumpReset jumpDemerits penalties x
+        ptsReduced' =
+            case ptsReduced of
+                Left e -> error $ show e
+                Right y -> y
 
-                Paragliding ->
-                    -- WARNING: Irrefutible pattern, allowing error if unmatched.
-                    let Just jumpReset =
-                            join
-                            $ jumpTheGunSitRepPg launchToStartPoints <$> jump
-
-                     in Gap.taskPoints jumpReset [] penalties x
-
-        -- WARNING: Irrefutible pattern, allowing error if unmatched.
-        Right
-            PointsReduced
+        PointsReduced
                 { subtotal
-                , fracApplied
-                , pointApplied
+                , mulApplied
+                , addApplied
                 , resetApplied
                 , total
-                , effectivePenalties
-                , effectivePenaltiesJump
-                } = ptsReduced
+                , effp
+                , effj
+                } = ptsReduced'
 
         ss' = getTagTime unStart
         es' = getTagTime unEnd
@@ -1348,7 +1351,7 @@ tallyDfNoTrack
             , AwardedVelocity
             )
         ,
-            ( ([PointPenalty], String)
+            ( (PenaltySeqs, String)
             , Gap.Points
             )
         )
@@ -1365,13 +1368,13 @@ tallyDfNoTrack
     Breakdown
         { place = TaskPlacing 0
         , subtotal = subtotal
-        , demeritFrac = fracApplied
-        , demeritPoint = pointApplied
+        , demeritFrac = mulApplied
+        , demeritPoint = addApplied
         , demeritReset = resetApplied
         , total = total
         , jump = Nothing
-        , penaltiesJump = []
-        , penalties = effectivePenalties
+        , penaltiesJump = nullSeqs
+        , penalties = toSeqs effp
         , penaltyReason = penaltyReason
         , breakdown = x
 
@@ -1413,15 +1416,15 @@ tallyDfNoTrack
         Right
             PointsReduced
                 { subtotal
-                , fracApplied
-                , pointApplied
+                , mulApplied
+                , addApplied
                 , resetApplied
                 , total
-                , effectivePenalties
+                , effp
                 } =
                     case hgOrPg of
-                        HangGliding -> Gap.taskPoints NominalHg [] penalties x
-                        Paragliding -> Gap.taskPoints NominalPg [] penalties x
+                        HangGliding -> Gap.taskPoints NominalHg idSeq penalties x
+                        Paragliding -> Gap.taskPoints NominalPg idSeq penalties x
 
         dE = PilotDistance <$> do
                 dT <- dT'

@@ -1,3 +1,5 @@
+{-# LANGUAGE ViewPatterns #-}
+
 module Points.Props (hgTaskPoints, pgTaskPoints) where
 
 import Data.Ratio ((%))
@@ -20,21 +22,25 @@ import Flight.Score
     , PointsReduced(..)
     , PointPenalty(..)
     , ReconcilePointErrors(..)
+    , PenaltySeq(..), PenaltySeqs(..)
     , jumpTheGunPenalty
+    , idSeq
+    , addSeq, resetSeq
+    , seqOnlyMuls, seqOnlyAdds, seqOnlyResets
     )
 
 import TestNewtypes
 
 hgTaskPoints :: PtTest Hg -> Bool
-hgTaskPoints (PtTest sitrep jumps others parts) =
-    let expected = correct sitrep jumps others parts
-        actual = (FS.taskPoints sitrep jumps others parts) <&> total
+hgTaskPoints (PtTest sitrep js others parts) =
+    let expected = correct sitrep js others parts
+        actual = (FS.taskPoints sitrep js others parts) <&> total
     in actual == expected
 
 pgTaskPoints :: PtTest Pg -> Bool
-pgTaskPoints (PtTest sitrep jumps others parts) =
-    let expected = correct sitrep jumps others parts
-        actual = (FS.taskPoints sitrep jumps others parts) <&> total
+pgTaskPoints (PtTest sitrep js others parts) =
+    let expected = correct sitrep js others parts
+        actual = (FS.taskPoints sitrep js others parts) <&> total
     in actual == expected
 
 -- TODO: When base >= 4.11 use Data.Functor ((<&>))
@@ -43,15 +49,15 @@ pgTaskPoints (PtTest sitrep jumps others parts) =
 
 correct
     :: forall a. (SitRep a)
-    -> [PointPenalty]
-    -> [PointPenalty]
+    -> PenaltySeq
+    -> PenaltySeqs
     -> Points
     -> Either ReconcilePointErrors TaskPoints
 
 correct
     NominalHg
-    []
-    others
+    ((==) idSeq -> True)
+    PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
         , effort = DifficultyPoints e
@@ -59,18 +65,17 @@ correct
         , arrival = ArrivalPoints a
         , time = TimePoints t
         }
-    = Right p
+    = Right $ total p
     where
         x = TaskPoints (fromRational $ r + e + l + t + a)
-        p = FS.applyPenalties others x
-
-correct p@NominalHg jumps others _ =
-    Left $ WAT_Nominal_Hg (p, jumps, others)
+        p = FS.applyPenalties muls adds resets x
+correct p@NominalHg js others _ =
+    Left $ WAT_Nominal_Hg (p, js, others)
 
 correct
     NoGoalHg
-    []
-    others
+    ((==) idSeq -> True)
+    PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
         , effort = DifficultyPoints e
@@ -78,27 +83,27 @@ correct
         , arrival = ArrivalPoints a
         , time = TimePoints t
         }
-    = Right p
+    = Right $ total p
     where
         x = TaskPoints (fromRational $ r + e + l + ((8 % 10) * (a + t)))
-        p = FS.applyPenalties others x
+        p = FS.applyPenalties muls adds resets x
 
-correct p@NoGoalHg jumps _ _ =
-    Left $ WAT_NoGoal_Hg (p, jumps)
+correct p@NoGoalHg js _ _ =
+    Left $ WAT_NoGoal_Hg (p, js)
 
-correct p@(JumpedTooEarly (TooEarlyPoints ep)) [] others pts =
-    correct p [PenaltyReset ep] others pts
+correct p@(JumpedTooEarly (TooEarlyPoints ep)) ((==) idSeq -> True) others pts =
+    correct p (resetSeq $ Just ep) others pts
 
-correct p@JumpedTooEarly{} jumps@[PenaltyFraction{}] others _ =
-    Left $ WAT_JumpedTooEarly (p, jumps, others)
+correct p@JumpedTooEarly{} js@(seqOnlyMuls -> Just (PenaltyFraction{})) others _ =
+    Left $ WAT_JumpedTooEarly (p, js, others)
 
-correct p@JumpedTooEarly{} jumps@[PenaltyPoints{}] others _ =
-    Left $ WAT_JumpedTooEarly (p, jumps, others)
+correct p@JumpedTooEarly{} js@(seqOnlyAdds -> Just PenaltyPoints{}) others _ =
+    Left $ WAT_JumpedTooEarly (p, js, others)
 
 correct
     p@(JumpedTooEarly (TooEarlyPoints ep))
-    jumps@[PenaltyReset pr]
-    others
+    (seqOnlyResets -> Just j@(PenaltyReset (Just pr)))
+    PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
         , effort = DifficultyPoints e
@@ -108,25 +113,25 @@ correct
         }
     =
         if ep /= pr
-           then Left $ EQ_JumpedTooEarly_Reset (p, jumps)
-           else Right tp
+           then Left $ EQ_JumpedTooEarly_Reset (p, j)
+           else Right $ total tp
     where
         x = TaskPoints (fromRational $ r + e + l + t + a)
-        tp = FS.applyPenalties (jumps ++ others) x
+        tp = FS.applyPenalties muls adds (j : resets) x
 
-correct p@JumpedTooEarly{} jumps others _ =
-    Left $ WAT_JumpedTooEarly (p, jumps, others)
+correct p@JumpedTooEarly{} js others _ =
+    Left $ WAT_JumpedTooEarly (p, js, others)
 
-correct p@(Jumped spp jtg) [] others pts =
-    correct p [PenaltyPoints $ jumpTheGunPenalty spp jtg] others pts
+correct p@(Jumped spp jtg) ((==) idSeq -> True) others pts =
+    correct p (addSeq $ jumpTheGunPenalty spp jtg) others pts
 
-correct p@(JumpedNoGoal spp jtg) [] others pts =
-    correct p [PenaltyPoints $ jumpTheGunPenalty spp jtg] others pts
+correct p@(JumpedNoGoal spp jtg) ((==) idSeq -> True) others pts =
+    correct p (addSeq $ jumpTheGunPenalty spp jtg) others pts
 
 correct
     p@(Jumped spp jtg)
-    jumps@[PenaltyPoints pJump]
-    others
+    (seqOnlyAdds -> Just j@(PenaltyPoints pJump))
+    PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
         , effort = DifficultyPoints e
@@ -136,16 +141,16 @@ correct
         }
     =
         if jumpTheGunPenalty spp jtg /= pJump
-           then Left $ EQ_Jumped_Point (p, jumps)
-           else Right tp
+           then Left $ EQ_Jumped_Point (p, j)
+           else Right $ total tp
     where
         x = TaskPoints (fromRational $ r + e + l + t + a)
-        tp = FS.applyPenalties (jumps ++ others) x
+        tp = FS.applyPenalties muls (j : adds) resets x
 
 correct
     p@(JumpedNoGoal spp jtg)
-    jumps@[PenaltyPoints pJump]
-    others
+    (seqOnlyAdds -> Just j@(PenaltyPoints pJump))
+    PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
         , effort = DifficultyPoints e
@@ -155,64 +160,64 @@ correct
         }
     =
         if jumpTheGunPenalty spp jtg /= pJump
-           then Left $ EQ_Jumped_Point (p, jumps)
-           else Right tp
+           then Left $ EQ_Jumped_Point (p, j)
+           else Right $ total tp
     where
         x = TaskPoints (fromRational $ r + e + l + ((8 % 10) * (t + a)))
-        tp = FS.applyPenalties (jumps ++ others) x
+        tp = FS.applyPenalties muls (j : adds) resets x
 
-correct p@Jumped{} jumps others _ =
-    Left $ WAT_Jumped (p, jumps, others)
+correct p@Jumped{} js others _ =
+    Left $ WAT_Jumped (p, js, others)
 
-correct p@JumpedNoGoal{} jumps others _ =
-    Left $ WAT_Jumped (p, jumps, others)
+correct p@JumpedNoGoal{} js others _ =
+    Left $ WAT_Jumped (p, js, others)
 
 correct
     NominalPg
-    []
-    others
+    ((==) idSeq -> True)
+    PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
         , leading = LeadingPoints l
         , time = TimePoints t
         }
-    = Right p
+    = Right $ total p
     where
         x = TaskPoints (fromRational $ r + l + t)
-        p = FS.applyPenalties others x
+        p = FS.applyPenalties muls adds resets x
 
-correct p@NominalPg jumps others _ =
-    Left $ WAT_Nominal_Pg (p, jumps, others)
+correct p@NominalPg js others _ =
+    Left $ WAT_Nominal_Pg (p, js, others)
 
 correct
     NoGoalPg
-    []
-    others
+    ((==) idSeq -> True)
+    PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
         , leading = LeadingPoints l
         }
-    = Right p
+    = Right $ total p
     where
         x = TaskPoints (fromRational $ r + l)
-        p = FS.applyPenalties others x
+        p = FS.applyPenalties muls adds resets x
 
-correct p@NoGoalPg jumps _ _ =
-    Left $ WAT_NoGoal_Pg (p, jumps)
+correct p@NoGoalPg js _ _ =
+    Left $ WAT_NoGoal_Pg (p, js)
 
-correct p@(Early (LaunchToStartPoints lsp)) [] others pts =
-    correct p [PenaltyReset lsp] others pts
+correct p@(Early (LaunchToStartPoints lsp)) ((==) idSeq -> True) others pts =
+    correct p (resetSeq $ Just lsp) others pts
 
-correct p@Early{} jumps@[PenaltyFraction{}] _ _ =
-    Left $ WAT_Early_Jump (p, jumps)
+correct p@Early{} js@(seqOnlyMuls -> Just _) _ _ =
+    Left $ WAT_Early_Jump (p, js)
 
-correct p@Early{} jumps@[PenaltyPoints{}] _ _ =
-    Left $ WAT_Early_Jump (p, jumps)
+correct p@Early{} js@(seqOnlyAdds -> Just _) _ _ =
+    Left $ WAT_Early_Jump (p, js)
 
 correct
     p@(Early (LaunchToStartPoints lsp))
-    jumps@[PenaltyReset pr]
-    others
+    (seqOnlyResets -> Just j@(PenaltyReset (Just pr)))
+    PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
         , leading = LeadingPoints l
@@ -220,11 +225,11 @@ correct
         }
     =
         if lsp /= pr
-           then Left $ EQ_Early_Reset (p, jumps)
-           else Right tp
+           then Left $ EQ_Early_Reset (p, j)
+           else Right $ total tp
     where
         x = TaskPoints (fromRational $ r + l + t)
-        tp = FS.applyPenalties (jumps ++ others) x
+        tp = FS.applyPenalties muls adds (j : resets) x
 
-correct p@Early{} jumps others _ =
-    Left $ WAT_Early (p, jumps, others)
+correct p@Early{} js others _ =
+    Left $ WAT_Early (p, js, others)

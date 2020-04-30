@@ -70,6 +70,7 @@ module Flight.Comp
     , module Flight.Path
     ) where
 
+import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
 import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
@@ -101,7 +102,7 @@ import Flight.Score
     , PilotName(..)
     , Pilot(..)
     , LwScaling(..)
-    , PointPenalty(..)
+    , PenaltySeqs(..)
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
     , TooEarlyPoints(..)
@@ -217,7 +218,7 @@ nullEarlyStart =
     EarlyStart
         (JumpTheGunLimit [u| 0 s |])
         (SecondsPerPoint [u| 0 s |])
-        (TooEarlyPoints 0)
+        (TooEarlyPoints (assumeProp $ refined 0))
 
 -- | If all the zone open and close times are the same then we may only be
 -- given a singleton list. This function retrieves the open close time
@@ -376,8 +377,8 @@ data Task k =
         , stopped :: Maybe TaskStop
         , taskTweak :: Maybe Tweak
         , earlyStart :: EarlyStart
-        , penalsAuto :: [(Pilot, [PointPenalty], String)]
-        , penals :: [(Pilot, [PointPenalty], String)]
+        , penalsAuto :: [(Pilot, PenaltySeqs, String)]
+        , penals :: [(Pilot, PenaltySeqs, String)]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -392,7 +393,7 @@ showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
             , ", zone times"
             , show zoneTimes
             , ", start gates "
-            , intercalate ", " $ show <$> startGates 
+            , intercalate ", " $ show <$> startGates
             ]
 
 instance FieldOrdering (CompSettings k) where

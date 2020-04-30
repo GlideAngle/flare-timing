@@ -79,6 +79,8 @@ import Flight.Score
     , ReachStats(..)
     , FlownMean(..)
     , FlownStdDev(..)
+    , PenaltySeq(..), PenaltySeqs(..)
+    , mulSeq, addSeq, resetSeq
     )
 
 import Normal (Normal(..), NormalSum(..))
@@ -331,88 +333,11 @@ instance QC.Arbitrary LcTest where
 data PtTest a =
     PtTest
         { ptSitrep :: SitRep a
-        , ptJumps :: [PointPenalty]
-        , ptOthers :: [PointPenalty]
+        , ptJumps :: PenaltySeq
+        , ptOthers :: PenaltySeqs
         , ptPoints :: Points
         }
     deriving Show
-
-instance Monad m => SC.Serial m (PtTest Hg) where
-    series = decDepth $ mkPtTest <$> penalty <~> jumps <~> others <~> cons4 mkParts
-        where
-            mkPtTest :: SitRep Hg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Hg
-            mkPtTest a b c d = PtTest a b c d
-
-            mkParts
-                (SC.Positive d)
-                (SC.Positive l)
-                (SC.Positive t)
-                (SC.Positive a) =
-
-                Points
-                    { reach = LinearPoints $ d / 2
-                    , effort = DifficultyPoints $ d / 2
-                    , distance = DistancePoints d
-                    , leading = LeadingPoints l
-                    , time = TimePoints t
-                    , arrival = ArrivalPoints a
-                    }
-
-            jumps =
-                cons1 (pure . PenaltyPoints)
-                \/ cons1 (pure . PenaltyFraction)
-                \/ cons1 (\(SC.Positive x) -> return $ PenaltyReset (assumeProp $ refined x))
-
-            others =
-                cons1 (pure . PenaltyPoints)
-                \/ cons1 (pure . PenaltyFraction)
-                \/ cons1 (\(SC.Positive x) -> return $ PenaltyReset (assumeProp $ refined x))
-
-            penalty =
-                cons0 NominalHg
-                \/ cons0 NoGoalHg
-                \/ cons1 (\(SC.Positive x) ->
-                        JumpedTooEarly (TooEarlyPoints (assumeProp $ refined x)))
-                \/ cons2 (\(SC.Positive spp) (SC.Positive jtg) ->
-                        Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
-                \/ cons2 (\(SC.Positive spp) (SC.Positive jtg) ->
-                        JumpedNoGoal (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg))
-
-instance Monad m => SC.Serial m (PtTest Pg) where
-    series = decDepth $ mkPtTest <$> penalty <~> jumps <~> others <~> cons4 mkParts
-        where
-            mkPtTest :: SitRep Pg -> [PointPenalty] -> [PointPenalty] -> Points -> PtTest Pg
-            mkPtTest a b c d = PtTest a b c d
-
-            mkParts
-                (SC.Positive d)
-                (SC.Positive l)
-                (SC.Positive t)
-                (SC.Positive a) =
-
-                Points
-                    { reach = LinearPoints $ d / 2
-                    , effort = DifficultyPoints $ d / 2
-                    , distance = DistancePoints d
-                    , leading = LeadingPoints l
-                    , time = TimePoints t
-                    , arrival = ArrivalPoints a
-                    }
-
-            jumps =
-                cons1 (pure . PenaltyPoints)
-                \/ cons1 (pure . PenaltyFraction)
-                \/ cons1 (\(SC.Positive x) -> return $ PenaltyReset (assumeProp $ refined x))
-
-            others =
-                cons1 (pure . PenaltyPoints)
-                \/ cons1 (pure . PenaltyFraction)
-                \/ cons1 (\(SC.Positive x) -> return $ PenaltyReset (assumeProp $ refined x))
-
-            penalty =
-                cons0 NominalPg
-                \/ cons0 NoGoalPg
-                \/ cons1 (\(SC.Positive x) -> Early (LaunchToStartPoints (assumeProp $ refined x)))
 
 newtype PointParts = PointParts Points deriving Show
 
@@ -451,25 +376,27 @@ instance QC.Arbitrary (PtTest Hg) where
                 ]
 
         (PointParts parts) <- arbitrary
-        jumps <-
+
+        jumps :: PenaltySeq <-
             QC.oneof
-                [ PenaltyPoints <$> arbitrary
-                , PenaltyFraction <$> arbitrary
-                , do
-                    (QC.Positive x) <- arbitrary
-                    return $ PenaltyReset (assumeProp $ refined x)
+                [ addSeq <$> arbitrary
+                , mulSeq <$> arbitrary
+                , (\x -> resetSeq $ ((\(QC.Positive y) -> assumeProp $ refined y) <$> x)) <$> arbitrary
                 ]
 
-        others <-
-            QC.oneof
-                [ PenaltyPoints <$> arbitrary
-                , PenaltyFraction <$> arbitrary
-                , do
-                    (QC.Positive x) <- arbitrary
-                    return $ PenaltyReset (assumeProp $ refined x)
-                ]
+        let genOthers = do
+                muls <- arbitrary :: Gen [Double]
+                adds <- arbitrary :: Gen [Double]
+                resets <- arbitrary :: Gen [Maybe (QC.Positive Int)]
+                return $
+                    PenaltySeqs
+                        (PenaltyFraction <$> muls)
+                        (PenaltyPoints <$> adds)
+                        ((PenaltyReset . fmap (\(QC.Positive y) -> assumeProp $ refined y)) <$> resets)
 
-        return $ PtTest penalty [jumps] [others] parts
+        others <- genOthers
+
+        return $ PtTest penalty jumps others parts
 
 instance QC.Arbitrary (PtTest Pg) where
     arbitrary = do
@@ -484,25 +411,26 @@ instance QC.Arbitrary (PtTest Pg) where
 
         (PointParts parts) <- arbitrary
 
-        jumps <-
+        jumps :: PenaltySeq <-
             QC.oneof
-                [ PenaltyPoints <$> arbitrary
-                , PenaltyFraction <$> arbitrary
-                , do
-                    (QC.Positive x) <- arbitrary
-                    return $ PenaltyReset (assumeProp $ refined x)
+                [ addSeq <$> arbitrary
+                , mulSeq <$> arbitrary
+                , (\x -> resetSeq $ ((\(QC.Positive y) -> assumeProp $ refined y) <$> x)) <$> arbitrary
                 ]
 
-        others <-
-            QC.oneof
-                [ PenaltyPoints <$> arbitrary
-                , PenaltyFraction <$> arbitrary
-                , do
-                    (QC.Positive x) <- arbitrary
-                    return $ PenaltyReset (assumeProp $ refined x)
-                ]
+        let genOthers = do
+                muls <- arbitrary :: Gen [Double]
+                adds <- arbitrary :: Gen [Double]
+                resets <- arbitrary :: Gen [Maybe (QC.Positive Int)]
+                return $
+                    PenaltySeqs
+                        (PenaltyFraction <$> muls)
+                        (PenaltyPoints <$> adds)
+                        ((PenaltyReset . fmap (\(QC.Positive y) -> assumeProp $ refined y)) <$> resets)
 
-        return $ PtTest penalty [jumps] [others] parts
+        others <- genOthers
+
+        return $ PtTest penalty jumps others parts
 
 -- | Stopped time from announced time.
 newtype StopTimeTest a = StopTimeTest (StopTime a) deriving Show

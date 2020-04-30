@@ -38,7 +38,7 @@ import Flight.Score
     , DistanceValidityWorking
     , StopValidityWorking
     , Pilot, BestTime, PilotTime, PilotDistance, PilotVelocity
-    , PointPenalty
+    , PenaltySeqs
     , LeadingArea(..), LeadingCoef(..)
     , ReachToggle(..)
     , JumpedTheGun(..)
@@ -107,8 +107,8 @@ data Breakdown =
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.
         , jump :: Maybe (JumpedTheGun (Quantity Double [u| s |]))
-        , penaltiesJump :: [PointPenalty]
-        , penalties :: [PointPenalty]
+        , penaltiesJump :: PenaltySeqs
+        , penalties :: PenaltySeqs
         , penaltyReason :: String
         , breakdown :: Points
         , velocity :: Maybe Velocity

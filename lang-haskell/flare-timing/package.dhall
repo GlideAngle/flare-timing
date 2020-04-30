@@ -384,6 +384,7 @@ in    defs
               { dependencies =
                     deps
                   # [ "containers"
+                    , "facts"
                     , "newtype"
                     , "safe-exceptions"
                     , "time"

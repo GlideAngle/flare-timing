@@ -51,6 +51,18 @@ import ServeArea (RawLeadingArea(..))
 
 type SwagUiApi = SwaggerSchemaUI "swagger-ui" "swagger.json"
 
+instance ToSchema (PointPenalty Mul) where
+    declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy Double)
+
+instance ToSchema (PointPenalty Add) where
+    declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy Double)
+
+instance ToSchema (PointPenalty Reset) where
+    declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy (Maybe Double))
+
+instance ToSchema TooEarlyPoints where
+    declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy Int)
+
 instance ToSchema (Ratio Integer) where
     declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy Double)
 
@@ -366,31 +378,31 @@ instance ToSchema UtmZone where
                     , latZone = 'H'
                     }
 
-instance {-# OVERLAPPING #-} ToSchema [(Pilot, [PointPenalty], String)] where
+instance {-# OVERLAPPING #-} ToSchema [(Pilot, PenaltySeq, String)] where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & example ?~
             toJSON
                 ([
                     ( Pilot (PilotId "24", PilotName "Brodrick Osborne")
-                    , [PenaltyPoints 5.7]
+                    , addSeq 5.7
                     , "Jumped the gun by 0:57"
                     )
                 ,
                     ( Pilot (PilotId "34", PilotName "Petr Polach")
-                    , [PenaltyFraction 1]
+                    , mulSeq 0
                     , "Airspace Infringement"
                     )
                 ,
                     ( Pilot (PilotId "75", PilotName "Josh Woods")
-                    , [PenaltyFraction 0.1]
+                    , mulSeq 0.1
                     , "Altitude violation of 01:41 - 10%"
                     )
                 ,
                     ( Pilot (PilotId "105", PilotName "Alan Arcos")
-                    , [PenaltyFraction $ negate 0.2]
+                    , mulSeq (negate 0.2)
                     , "Handicap"
                     )
-                ] :: [(Pilot, [PointPenalty], String)])
+                ] :: [(Pilot, PenaltySeq, String)])
 
 instance {-# OVERLAPPING #-} ToSchema (Pilot, Breakdown) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
@@ -406,8 +418,8 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, Breakdown) where
                        , demeritReset = TaskPoints 0
                        , total = TaskPoints 1000
                        , jump = Nothing
-                       , penaltiesJump = []
-                       , penalties = []
+                       , penaltiesJump = nullSeqs
+                       , penalties = nullSeqs
                        , penaltyReason = ""
                        , breakdown =
                            Points
@@ -520,8 +532,8 @@ instance ToSchema Discipline
 instance ToSchema UtcOffset
 instance ToSchema Give
 instance ToSchema LwScaling
-instance ToSchema PointPenalty
-instance ToSchema TooEarlyPoints
+instance ToSchema PenaltySeq
+instance ToSchema PenaltySeqs
 instance ToSchema EarlyStart
 instance ToSchema OpenClose
 instance ToSchema StartGate
