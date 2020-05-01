@@ -71,10 +71,11 @@ import Flight.Comp
     , EarlyStart(..), nullEarlyStart
     )
 import Flight.Score
-    ( ScoreBackTime(..), PointPenalty(..), ReachToggle(..)
+    ( ScoreBackTime(..), ReachToggle(..)
     , SecondsPerPoint(..), JumpTheGunLimit(..), TooEarlyPoints(..)
     , PenaltySeq(..)
     , idMul, idSeq, addSeq, mulSeq
+    , mkMul, mkAdd, exMul, exAdd
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)
@@ -106,7 +107,7 @@ xpPointPenaltyAuto =
         ( \case
             (0.0, s) -> (idSeq, s)
             (pts, s) -> (addSeq pts, s)
-        , \(PenaltySeq{add = PenaltyPoints p}, s) -> (p, s)
+        , \(PenaltySeq{add}, s) -> (exAdd add, s)
         )
     $ xpPair
         (xpAttr "penalty_points_auto" xpPrim)
@@ -128,11 +129,11 @@ xpPointPenalty =
             (frac, 0.0, s) -> (mulSeq frac, s)
             (0.0, pts, s) -> (addSeq pts, s)
             (frac, pts, s) ->
-                (idSeq{mul = PenaltyFraction frac, add = PenaltyPoints pts}, s)
-        , \(PenaltySeq{mul, add = PenaltyPoints y}, s) ->
+                (idSeq{mul = mkMul frac, add = mkAdd pts}, s)
+        , \(PenaltySeq{mul, add = y}, s) ->
                 case mul of
-                    (idMul -> True) -> (0.0, y, s)
-                    PenaltyFraction x -> (x, y, s)
+                    (idMul -> True) -> (0.0, exAdd y, s)
+                    x -> (exMul x, exAdd y, s)
         )
     $ xpTriple
         (xpAttr "penalty" xpPrim)

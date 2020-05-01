@@ -150,7 +150,7 @@ module Flight.Score
     , Hg
     , Pg
     , SitRep(..)
-    , PointPenalty(..)
+    , PointPenalty
     , Hide(..)
     , DistancePoints(..)
     , LinearPoints(..)
@@ -173,6 +173,9 @@ module Flight.Score
     , seqOnlyMuls, seqOnlyAdds, seqOnlyResets
     , mulSeq, addSeq, resetSeq
     , idMul, idAdd, idReset
+    , mkMul, mkAdd, mkReset
+    , exMul, exAdd, exReset
+    , identityOfMul, identityOfAdd, identityOfReset
     , applyMul, applyAdd, applyReset
     , availablePointsPg
     , availablePointsHg

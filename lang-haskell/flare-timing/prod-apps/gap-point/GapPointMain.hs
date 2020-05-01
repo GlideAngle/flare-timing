@@ -133,14 +133,14 @@ import Flight.Score
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
     , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
-    , PenaltySeqs, PointPenalty(..), PointsReduced(..)
+    , PenaltySeqs, PointsReduced(..)
     , TaskPlacing(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
     , FlownMax(..)
     , JumpedTheGun(..)
     , TooEarlyPoints(..), LaunchToStartPoints(..)
     , SitRep(..)
-    , idSeq, addSeq, nullSeqs, toSeqs
+    , idSeq, addSeq, nullSeqs, toSeqs, exAdd
     , unFlownMaxAsKm
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
@@ -1304,10 +1304,10 @@ tallyDf
                     jtg@(JumpedTheGun jSecs) <- jump
                     return $
                         case jumpTheGunSitRepHg tooEarlyPoints earliest spp jtg of
-                            Left (PenaltyPoints j) ->
+                            Left j ->
                                 Gap.taskPoints
                                     (Jumped spp (JumpedTheGun jSecs))
-                                    (addSeq j)
+                                    (addSeq $ exAdd j)
                                     penalties
                                     x
 

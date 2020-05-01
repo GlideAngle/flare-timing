@@ -224,7 +224,7 @@ deriveShowViaSci name =
 -- | Derives an instance of 'ToJSON' wrapping the value with 'ViaSci' before
 -- encoding. Similarly the value is decoded as 'ViaSci' and then unwrapped in
 -- the derived instance of 'FromJSON'.
--- 
+--
 -- >>> deriveJsonViaSci ''Lat
 -- ...
 deriveJsonViaSci :: Name -> Q [Dec]

@@ -24,6 +24,7 @@ module Flight.Gap.Points
     , jumpTheGunPenalty
     ) where
 
+import Data.Refined (unrefined)
 import Text.Printf (printf)
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
@@ -47,8 +48,10 @@ import Flight.Gap.Weight.Time (TimeWeight(..))
 import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerPoint(..))
 import Flight.Gap.Penalty
     ( Add, Reset, PointsReduced(..), PenaltySeq(..), PenaltySeqs(..)
-    , PointPenalty(..), TooEarlyPoints(..), LaunchToStartPoints(..)
+    , PointPenalty, TooEarlyPoints(..), LaunchToStartPoints(..)
     , applyPenalties, idSeq, nullSeqs, seqOnlyAdds, seqOnlyResets
+    , mkAdd, mkReset
+    , exAdd, exReset
     )
 
 newtype NoGoal = NoGoal Bool deriving (Eq, Show)
@@ -107,7 +110,7 @@ jumpTheGunSitRepHg
     -> Either (PointPenalty Add) (SitRep Hg)
 jumpTheGunSitRepHg pts (JumpTheGunLimit secsMax) spp jtg@(JumpedTheGun jump)
     | jump > secsMax = Right (JumpedTooEarly pts)
-    | otherwise = Left . PenaltyPoints $ jumpTheGunPenalty spp jtg
+    | otherwise = Left . mkAdd $ jumpTheGunPenalty spp jtg
 
 jumpTheGunSitRepPg
     :: LaunchToStartPoints
@@ -162,9 +165,9 @@ reconcileEarlyHg
     -> Points
     -> Either ReconcilePointErrors PointsReduced
 reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) j@((==) idSeq -> True) ps points =
-    reconcileEarlyHg p j{reset = PenaltyReset (Just tep)} ps points
-reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) js@(seqOnlyResets -> Just j@(PenaltyReset (Just r))) ps points =
-    if | tep /= r -> Left $ EQ_JumpedTooEarly_Reset (p, j)
+    reconcileEarlyHg p j{reset = mkReset (Just $ unrefined tep)} ps points
+reconcileEarlyHg p@(JumpedTooEarly (TooEarlyPoints tep)) js@(seqOnlyResets -> Just j) ps points =
+    if | (Just $ unrefined tep) /= exReset j -> Left $ EQ_JumpedTooEarly_Reset (p, j)
        | otherwise -> Right $ reconcile p js ps points
 reconcileEarlyHg p js ps _ =
     Left $ WAT_JumpedTooEarly (p, js, ps)
@@ -176,9 +179,9 @@ reconcileEarlyPg
     -> Points
     -> Either ReconcilePointErrors PointsReduced
 reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) j@((==) idSeq -> True) ps points =
-    reconcileEarlyPg p j{reset = PenaltyReset (Just lsp)} ps points
-reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) js@(seqOnlyResets -> Just j@(PenaltyReset (Just r))) ps points =
-    if | lsp /= r -> Left $ EQ_Early_Reset (p, j)
+    reconcileEarlyPg p j{reset = mkReset (Just $ unrefined lsp)} ps points
+reconcileEarlyPg p@(Early (LaunchToStartPoints lsp)) js@(seqOnlyResets -> Just j) ps points =
+    if | (Just $ unrefined lsp) /= exReset j -> Left $ EQ_Early_Reset (p, j)
        | otherwise -> Right $ reconcile p js ps points
 reconcileEarlyPg p@Early{} js _ _ =
     Left $ WAT_Early_Jump (p, js)
@@ -220,17 +223,17 @@ reconcileJumped
     -> Points
     -> Either ReconcilePointErrors PointsReduced
 reconcileJumped p@(Jumped spp jtg) j@((==) idSeq -> True) ps points =
-    reconcileJumped p j{add = PenaltyPoints $ jumpTheGunPenalty spp jtg} ps points
+    reconcileJumped p j{add = mkAdd $ jumpTheGunPenalty spp jtg} ps points
 reconcileJumped p@(JumpedNoGoal spp jtg) j@((==) idSeq -> True) ps points =
-    reconcileJumped p j{add = PenaltyPoints $ jumpTheGunPenalty spp jtg} ps points
-reconcileJumped p@(Jumped spp jtg) (seqOnlyAdds -> Just j@(PenaltyPoints pJump)) ps points =
-    if jumpTheGunPenalty spp jtg /= pJump then
+    reconcileJumped p j{add = mkAdd $ jumpTheGunPenalty spp jtg} ps points
+reconcileJumped p@(Jumped spp jtg) (seqOnlyAdds -> Just j) ps points =
+    if jumpTheGunPenalty spp jtg /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
-    else _reconcileJumped p pJump ps points
-reconcileJumped p@(JumpedNoGoal spp jtg) (seqOnlyAdds -> Just j@(PenaltyPoints pJump)) ps points =
-    if jumpTheGunPenalty spp jtg /= pJump then
+    else _reconcileJumped p (exAdd j) ps points
+reconcileJumped p@(JumpedNoGoal spp jtg) (seqOnlyAdds -> Just j) ps points =
+    if jumpTheGunPenalty spp jtg /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
-    else _reconcileJumped p pJump ps points
+    else _reconcileJumped p (exAdd j) ps points
 reconcileJumped p j ps _ =
     Left $ WAT_Jumped (p, j, ps)
 
@@ -274,7 +277,7 @@ _reconcileJumped
     -> Either ReconcilePointErrors PointsReduced
 _reconcileJumped p pJump ps points =
     let subtotal = tallySubtotal p points
-        j = PenaltyPoints pJump
+        j = mkAdd pJump
         e = applyPenalties (muls ps) (j : adds ps) (resets ps) subtotal
     in
         Right $ e{ effj = (effj e){ add = j }}

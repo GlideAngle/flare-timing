@@ -50,7 +50,6 @@ import Flight.Score
     , Hg
     , Pg
     , SitRep(..)
-    , PointPenalty(..)
     , LinearPoints(..)
     , DifficultyPoints(..)
     , DistancePoints(..)
@@ -81,6 +80,7 @@ import Flight.Score
     , FlownStdDev(..)
     , PenaltySeq(..), PenaltySeqs(..)
     , mulSeq, addSeq, resetSeq
+    , mkMul, mkAdd, mkReset
     )
 
 import Normal (Normal(..), NormalSum(..))
@@ -381,7 +381,7 @@ instance QC.Arbitrary (PtTest Hg) where
             QC.oneof
                 [ addSeq <$> arbitrary
                 , mulSeq <$> arbitrary
-                , (\x -> resetSeq $ ((\(QC.Positive y) -> assumeProp $ refined y) <$> x)) <$> arbitrary
+                , (\x -> resetSeq $ ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
                 ]
 
         let genOthers = do
@@ -390,9 +390,9 @@ instance QC.Arbitrary (PtTest Hg) where
                 resets <- arbitrary :: Gen [Maybe (QC.Positive Int)]
                 return $
                     PenaltySeqs
-                        (PenaltyFraction <$> muls)
-                        (PenaltyPoints <$> adds)
-                        ((PenaltyReset . fmap (\(QC.Positive y) -> assumeProp $ refined y)) <$> resets)
+                        (mkMul <$> muls)
+                        (mkAdd <$> adds)
+                        ((mkReset . fmap (\(QC.Positive y) -> y)) <$> resets)
 
         others <- genOthers
 
@@ -415,7 +415,7 @@ instance QC.Arbitrary (PtTest Pg) where
             QC.oneof
                 [ addSeq <$> arbitrary
                 , mulSeq <$> arbitrary
-                , (\x -> resetSeq $ ((\(QC.Positive y) -> assumeProp $ refined y) <$> x)) <$> arbitrary
+                , (\x -> resetSeq $ ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
                 ]
 
         let genOthers = do
@@ -424,9 +424,9 @@ instance QC.Arbitrary (PtTest Pg) where
                 resets <- arbitrary :: Gen [Maybe (QC.Positive Int)]
                 return $
                     PenaltySeqs
-                        (PenaltyFraction <$> muls)
-                        (PenaltyPoints <$> adds)
-                        ((PenaltyReset . fmap (\(QC.Positive y) -> assumeProp $ refined y)) <$> resets)
+                        (mkMul <$> muls)
+                        (mkAdd <$> adds)
+                        ((mkReset . fmap (\(QC.Positive y) -> y)) <$> resets)
 
         others <- genOthers
 

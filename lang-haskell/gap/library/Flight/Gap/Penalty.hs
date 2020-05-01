@@ -1,7 +1,8 @@
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Flight.Gap.Penalty
-    ( PointPenalty(..)
+    ( PointPenalty
     , TooEarlyPoints(..)
     , LaunchToStartPoints(..)
     , PosInt, GE
@@ -9,17 +10,21 @@ module Flight.Gap.Penalty
     , PointsReduced(..)
     , PenaltySeq(..)
     , PenaltySeqs(..)
-    , applyPenalties
     , Hide(..)
+    , applyPenalties
     , applyMul, applyAdd, applyReset
     , effectiveMul, effectiveAdd, effectiveReset
     , idSeq, nullSeqs, toSeqs
     , idMul, idAdd, idReset
     , mulSeq, addSeq, resetSeq
     , seqOnlyMuls, seqOnlyAdds, seqOnlyResets
+    , mkMul, mkAdd, mkReset
+    , exMul, exAdd, exReset
+    , identityOfMul, identityOfAdd, identityOfReset
     ) where
 
-import Test.QuickCheck (Arbitrary(..))
+import Data.Number.CReal
+import Test.QuickCheck (Arbitrary(..), Gen, NonNegative(..))
 import Data.Semigroup
 import Data.Typeable
 import GHC.TypeLits (Nat, KnownNat, natVal)
@@ -72,11 +77,11 @@ data PointPenalty a where
 
     -- | If positive then remove this fraction of points and if negative add this
     -- fraction of points.
-    PenaltyFraction :: Double -> PointPenalty Mul
+    PenaltyFraction :: CReal -> PointPenalty Mul
 
     -- | If positive then remove this number of points and if negative add this
     -- number of points.
-    PenaltyPoints :: Double -> PointPenalty Add
+    PenaltyPoints :: CReal -> PointPenalty Add
 
     -- | Reset points down to this natural number.
     PenaltyReset :: Maybe PosInt -> PointPenalty Reset
@@ -96,8 +101,8 @@ instance Show (PointPenalty a) where
     show (PenaltyPoints 0) = "(+ id)"
     show (PenaltyReset Nothing) = "(= id)"
 
-    show (PenaltyFraction x) = printf "(* %f)" x
-    show (PenaltyPoints x) = printf "(+ %f)" x
+    show (PenaltyFraction x) = printf "(* %s)" (showCReal 3 x)
+    show (PenaltyPoints x) = printf "(+ %s)" (showCReal 3 x)
     show (PenaltyReset (Just x)) = printf "(= %d)" $ unrefined x
 
 instance Semigroup (PointPenalty Mul) where
@@ -111,16 +116,20 @@ instance Semigroup (PointPenalty Reset) where
         PenaltyReset . Just $ min a b
 
 instance Arbitrary (PointPenalty Mul) where
-    arbitrary = PenaltyFraction <$> arbitrary
+    arbitrary = PenaltyFraction . fromRational . toRational <$> (arbitrary :: Gen Double)
 instance Arbitrary (PointPenalty Add) where
-    arbitrary = PenaltyPoints <$> arbitrary
+    arbitrary = PenaltyPoints . fromRational . toRational <$> (arbitrary :: Gen Double)
 instance Arbitrary (PointPenalty Reset) where
     arbitrary = do
-        x <- arbitrary
-        return . PenaltyReset $ assumeProp . refined <$> x
+        x <- arbitrary :: Gen (Maybe (NonNegative Int))
+        return . PenaltyReset $ (\(NonNegative y) -> assumeProp $ refined y) <$> x
 
 -- |
 -- >>> lawsCheck (monoidLaws (Proxy :: Proxy (PointPenalty Mul)))
+-- Monoid: Associative +++ OK, passed 100 tests.
+-- Monoid: Left Identity +++ OK, passed 100 tests.
+-- Monoid: Right Identity +++ OK, passed 100 tests.
+-- Monoid: Concatenation +++ OK, passed 100 tests.
 instance Semigroup (PointPenalty Mul) => Monoid (PointPenalty Mul) where
     mempty = identityOfMul
     mappend = (<>)
@@ -246,21 +255,51 @@ idSeq =
         , reset = PenaltyReset Nothing
         }
 
+mkMul :: Double -> PointPenalty Mul
+mkMul 0 = PenaltyFraction 0
+mkMul 1 = PenaltyFraction 1
+mkMul x = PenaltyFraction . fromRational $ toRational x
+
+mkAdd :: Double -> PointPenalty Add
+mkAdd 0 = PenaltyPoints 0
+mkAdd x = PenaltyPoints . fromRational $ toRational x
+
+mkReset :: Maybe Int -> PointPenalty Reset
+mkReset Nothing = PenaltyReset Nothing
+mkReset (Just x) =
+    if | x < 0 -> error "Points cannot be reset to less than zero"
+       | x > 1000 -> error "Points cannot be reset to greater than 1000"
+       | otherwise -> PenaltyReset . Just . assumeProp $ refined x
+
+exMul :: PointPenalty Mul -> Double
+-- WARNING: toRational (fromIntegral 0 :: CReal) throws Exception
+exMul (PenaltyFraction 0) = 0
+exMul (PenaltyFraction 1) = 1
+exMul (PenaltyFraction x) = fromRational $ toRational x
+
+exAdd :: PointPenalty Add -> Double
+-- WARNING: toRational (fromIntegral 0 :: CReal) throws Exception
+exAdd (PenaltyPoints 0) = 0
+exAdd (PenaltyPoints x) = fromRational $ toRational x
+
+exReset :: PointPenalty Reset -> Maybe Int
+exReset (PenaltyReset x) = unrefined <$> x
+
 -- | Construct a seq with only the given @Mul@ penalty.
 --
--- prop> \x -> x /= 1 ==> seqOnlyMuls (mulSeq x) == Just (PenaltyFraction x)
+-- prop> \x -> x /= 1 ==> seqOnlyMuls (mulSeq x) == Just (mkMul x)
 mulSeq :: Double -> PenaltySeq
-mulSeq x = idSeq{mul = PenaltyFraction x}
+mulSeq x = idSeq{mul = mkMul x}
 
 -- | Construct a seq with only the given @Add@ penalty.
 --
--- prop> \x -> x /= 0 ==> seqOnlyAdds (addSeq x) == Just (PenaltyPoints x)
+-- prop> \x -> x /= 0 ==> seqOnlyAdds (addSeq x) == Just (mkAdd x)
 addSeq :: Double -> PenaltySeq
-addSeq x = idSeq{add = PenaltyPoints x}
+addSeq x = idSeq{add = mkAdd x}
 
 -- | Construct a seq with only the given @Reset@ penalty.
-resetSeq :: Maybe PosInt -> PenaltySeq
-resetSeq x = idSeq{reset = PenaltyReset x}
+resetSeq :: Maybe Int -> PenaltySeq
+resetSeq x = idSeq{reset = mkReset x}
 
 -- | Construct empty sequences.
 --
@@ -406,11 +445,15 @@ applyPenalties fracs points resets p =
             }
 
 zP :: PointPenalty a -> Maybe (Ordering, TaskPoints)
-zP (PenaltyPoints n) = Just (n `compare` 0, TaskPoints $ abs n)
+-- WARNING: toRational (fromIntegral 0 :: CReal) throws Exception
+zP (PenaltyPoints 0) = Just (EQ, TaskPoints 0)
+zP (PenaltyPoints n) = Just (n `compare` 0, TaskPoints . fromRational . toRational $ abs n)
 zP _ = Nothing
 
 zF :: PointPenalty a -> Maybe (Ordering, TaskPoints)
-zF (PenaltyFraction n) = Just (n `compare` 0, TaskPoints $ abs n)
+-- WARNING: toRational (fromIntegral 0 :: CReal) throws Exception
+zF (PenaltyFraction 0) = Just (EQ, TaskPoints 0)
+zF (PenaltyFraction n) = Just (n `compare` 0, TaskPoints . fromRational . toRational $ abs n)
 zF _ = Nothing
 
 applyPenalty :: TaskPoints -> PointPenalty a -> TaskPoints
@@ -434,6 +477,16 @@ isPenaltyPoints, isPenaltyFraction, isPenaltyReset :: PointPenalty a -> Bool
 isPenaltyPoints = \case PenaltyPoints{} -> True; _ -> False
 isPenaltyFraction = \case PenaltyFraction{} -> True; _ -> False
 isPenaltyReset = \case PenaltyReset{} -> True; _ -> False
+
+instance ToJSON CReal where
+    -- WARNING: toRational (fromIntegral 0 :: CReal) throws Exception
+    toJSON 0 = toJSON (0 :: Double)
+    toJSON x = toJSON ((fromRational $ toRational x) :: Double)
+
+instance FromJSON CReal where
+    parseJSON o = do
+        x :: Double <- parseJSON o
+        return . fromRational $ toRational x
 
 -- SEE: https://www.reddit.com/r/haskell/comments/5acj3g/derive_fromjson_for_gadts
 data Hide f = forall a. Hide (f a)

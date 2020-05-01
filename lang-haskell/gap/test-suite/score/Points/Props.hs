@@ -2,6 +2,7 @@
 
 module Points.Props (hgTaskPoints, pgTaskPoints) where
 
+import Data.Refined (unrefined)
 import Data.Ratio ((%))
 
 import qualified Flight.Score as FS
@@ -20,13 +21,13 @@ import Flight.Score
     , TooEarlyPoints(..)
     , Points(..)
     , PointsReduced(..)
-    , PointPenalty(..)
     , ReconcilePointErrors(..)
     , PenaltySeq(..), PenaltySeqs(..)
     , jumpTheGunPenalty
     , idSeq
     , addSeq, resetSeq
     , seqOnlyMuls, seqOnlyAdds, seqOnlyResets
+    , exAdd, exReset
     )
 
 import TestNewtypes
@@ -92,17 +93,17 @@ correct p@NoGoalHg js _ _ =
     Left $ WAT_NoGoal_Hg (p, js)
 
 correct p@(JumpedTooEarly (TooEarlyPoints ep)) ((==) idSeq -> True) others pts =
-    correct p (resetSeq $ Just ep) others pts
+    correct p (resetSeq (Just $ unrefined ep)) others pts
 
-correct p@JumpedTooEarly{} js@(seqOnlyMuls -> Just (PenaltyFraction{})) others _ =
+correct p@JumpedTooEarly{} js@(seqOnlyMuls -> Just _) others _ =
     Left $ WAT_JumpedTooEarly (p, js, others)
 
-correct p@JumpedTooEarly{} js@(seqOnlyAdds -> Just PenaltyPoints{}) others _ =
+correct p@JumpedTooEarly{} js@(seqOnlyAdds -> Just _) others _ =
     Left $ WAT_JumpedTooEarly (p, js, others)
 
 correct
     p@(JumpedTooEarly (TooEarlyPoints ep))
-    (seqOnlyResets -> Just j@(PenaltyReset (Just pr)))
+    (seqOnlyResets -> Just j)
     PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
@@ -112,7 +113,7 @@ correct
         , time = TimePoints t
         }
     =
-        if ep /= pr
+        if (Just $ unrefined ep) /= exReset j
            then Left $ EQ_JumpedTooEarly_Reset (p, j)
            else Right $ total tp
     where
@@ -130,7 +131,7 @@ correct p@(JumpedNoGoal spp jtg) ((==) idSeq -> True) others pts =
 
 correct
     p@(Jumped spp jtg)
-    (seqOnlyAdds -> Just j@(PenaltyPoints pJump))
+    (seqOnlyAdds -> Just j)
     PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
@@ -140,7 +141,7 @@ correct
         , time = TimePoints t
         }
     =
-        if jumpTheGunPenalty spp jtg /= pJump
+        if jumpTheGunPenalty spp jtg /= exAdd j
            then Left $ EQ_Jumped_Point (p, j)
            else Right $ total tp
     where
@@ -149,7 +150,7 @@ correct
 
 correct
     p@(JumpedNoGoal spp jtg)
-    (seqOnlyAdds -> Just j@(PenaltyPoints pJump))
+    (seqOnlyAdds -> Just j)
     PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
@@ -159,7 +160,7 @@ correct
         , time = TimePoints t
         }
     =
-        if jumpTheGunPenalty spp jtg /= pJump
+        if jumpTheGunPenalty spp jtg /= exAdd j
            then Left $ EQ_Jumped_Point (p, j)
            else Right $ total tp
     where
@@ -206,7 +207,7 @@ correct p@NoGoalPg js _ _ =
     Left $ WAT_NoGoal_Pg (p, js)
 
 correct p@(Early (LaunchToStartPoints lsp)) ((==) idSeq -> True) others pts =
-    correct p (resetSeq $ Just lsp) others pts
+    correct p (resetSeq (Just $ unrefined lsp)) others pts
 
 correct p@Early{} js@(seqOnlyMuls -> Just _) _ _ =
     Left $ WAT_Early_Jump (p, js)
@@ -216,7 +217,7 @@ correct p@Early{} js@(seqOnlyAdds -> Just _) _ _ =
 
 correct
     p@(Early (LaunchToStartPoints lsp))
-    (seqOnlyResets -> Just j@(PenaltyReset (Just pr)))
+    (seqOnlyResets -> Just j)
     PenaltySeqs{muls, adds, resets}
     Points
         { reach = LinearPoints r
@@ -224,7 +225,7 @@ correct
         , time = TimePoints t
         }
     =
-        if lsp /= pr
+        if (Just $ unrefined lsp) /= exReset j
            then Left $ EQ_Early_Reset (p, j)
            else Right $ total tp
     where

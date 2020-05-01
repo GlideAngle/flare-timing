@@ -53,6 +53,7 @@ in    defs
             , "containers"
             , "facts"
             , "newtype"
+            , "numbers"
             , "QuickCheck"
             , "scientific"
             , "template-haskell"
@@ -99,7 +100,7 @@ in    defs
                 }
             , score =
                 { dependencies =
-                    testdeps # [ "quickcheck-instances", "facts" ]
+                    testdeps # [ "QuickCheck", "quickcheck-instances", "facts" ]
                 , ghc-options =
                     testopts
                 , main =
@@ -132,6 +133,7 @@ in    defs
                       defs.dependencies
                     # [ "QuickCheck"
                       , "quickcheck-classes"
+                      , "numbers"
                       , "doctest"
                       , "facts"
                       , "flight-units"
