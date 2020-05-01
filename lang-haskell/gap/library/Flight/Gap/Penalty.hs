@@ -477,8 +477,9 @@ applyPenalty p pp
     | Just (LT, n) <- zF pp = max 0 $ p * n
 
     | PenaltyReset (Just n) <- pp =
-        -- NOTE: Resets can only be used as penalties, not bonuses.
-        max 0 $ min p (TaskPoints . fromIntegral $ unrefined n)
+        -- NOTE: Resets can only be used as penalties and not bonuses so
+        -- we can assume the value is not negative.
+        min p (TaskPoints . fromIntegral $ unrefined n)
 
     | otherwise = max 0 p
 
