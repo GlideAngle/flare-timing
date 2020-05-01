@@ -47,10 +47,10 @@ ptsAllOne =
 
 pgUnits :: TestTree
 pgUnits = testGroup "PG Points"
-    [ HU.testCase "No penalties and no points = zero task points" $
+    [ HU.testCase "✓ No penalties and no points = zero task points" $
         ((FS.taskPoints NominalPg idSeq nullSeqs zeroPoints) <&> total) @?= Right (TaskPoints 0)
 
-    , HU.testCase "No penalties = sum of reach, leading, time points, ignoring effort and arrival" $
+    , HU.testCase "✓ No penalties = sum of reach, leading, time points, ignoring effort and arrival" $
         (FS.taskPoints NominalPg idSeq nullSeqs ptsAllOne)
             @?=
                 Right
@@ -64,7 +64,7 @@ pgUnits = testGroup "PG Points"
                     , effj = idSeq
                     }
 
-    , HU.testCase "No penalties, ESS but no goal = sum of reach, effort, leading, 80% of time & arrival points" $
+    , HU.testCase "✓ No penalties, ESS but no goal = sum of reach, effort, leading, 80% of time & arrival points" $
         (FS.taskPoints NoGoalPg idSeq nullSeqs ptsAllOne)
             @?=
                 Right
@@ -78,17 +78,17 @@ pgUnits = testGroup "PG Points"
                     , effj = idSeq
                     }
 
-    , HU.testCase "No penalties, ESS but no goal with jump penalty points == 0" $
+    , HU.testCase "✘ No penalties, ESS but no goal with jump penalty points == 0" $
         (FS.taskPoints NoGoalPg (addSeq 0) nullSeqs ptsAllOne)
             @?=
                 (Left $ WAT_NoGoal_Pg (NoGoalPg, idSeq))
 
-    , HU.testCase "No penalties, ESS but no goal with jump penalty fraction == 1" $
+    , HU.testCase "✘ No penalties, ESS but no goal with jump penalty fraction == 1" $
         (FS.taskPoints NoGoalPg (mulSeq 1) nullSeqs ptsAllOne)
             @?=
                 (Left $ WAT_NoGoal_Pg (NoGoalPg, idSeq))
 
-    , HU.testCase "Applying too many penalty points = zero" $
+    , HU.testCase "✓ Applying too many penalty points = zero" $
         (FS.taskPoints NominalPg idSeq nullSeqs{adds = [mkAdd 4]} ptsAllOne)
             @?=
                 Right
@@ -102,7 +102,7 @@ pgUnits = testGroup "PG Points"
                     , effj = idSeq
                     }
 
-    , HU.testCase "Applying too many fraction points = zero" $
+    , HU.testCase "✓ Applying too many fraction points = zero" $
         (FS.taskPoints NominalPg idSeq nullSeqs{muls = [mkMul 2]} ptsAllOne)
             @?=
                 Right
@@ -116,7 +116,7 @@ pgUnits = testGroup "PG Points"
                     , effj = idSeq
                     }
 
-    , HU.testCase "Applying negative fraction points increases score" $
+    , HU.testCase "✓ Applying negative fraction points increases score" $
         (FS.taskPoints NominalPg idSeq nullSeqs{muls = [mkMul (-1)]} ptsAllOne)
             @?=
                 Right
@@ -130,17 +130,17 @@ pgUnits = testGroup "PG Points"
                     , effj = idSeq
                     }
 
-    , HU.testCase "Applying jump penalty points with nominal situation report" $
+    , HU.testCase "✘ Applying jump penalty points with nominal situation report" $
         (FS.taskPoints NominalPg (mulSeq 0) nullSeqs ptsAllOne)
             @?=
                 (Left $ WAT_Nominal_Pg (NominalPg, idSeq, nullSeqs))
 
-    , HU.testCase "Applying jump penalty fraction with nominal situation report" $
+    , HU.testCase "✘ Applying jump penalty fraction with nominal situation report" $
         (FS.taskPoints NominalPg (mulSeq 0) nullSeqs ptsAllOne)
             @?=
                 (Left $ WAT_Nominal_Pg (NominalPg, idSeq, nullSeqs))
 
-    , HU.testCase "Early start = distance to start points only, ignoring effort and arrival, jump reset generated" $
+    , HU.testCase "✓ Early start = distance to start points only, ignoring effort and arrival, jump reset generated" $
         (FS.taskPoints (Early launchToStart1) idSeq nullSeqs ptsAllOne)
             @?=
                 Right
@@ -154,7 +154,7 @@ pgUnits = testGroup "PG Points"
                     , effj = resetSeq $ Just 1
                     }
 
-    , HU.testCase "Early start = distance to start points only, ignoring effort and arrival, jump reset applied" $
+    , HU.testCase "✓ Early start = distance to start points only, ignoring effort and arrival, jump reset applied" $
         (FS.taskPoints
             (Early launchToStart1)
             (resetSeq $ Just 1)
@@ -172,7 +172,7 @@ pgUnits = testGroup "PG Points"
                     , effj = resetSeq $ Just 1
                     }
 
-    , HU.testCase "Early start = other score-lowering reset can't raise the total" $
+    , HU.testCase "✓ Early start = other score-lowering reset can't raise the total" $
         (FS.taskPoints (Early launchToStart1)
             (resetSeq $ Just 1)
             nullSeqs{adds = [mkAdd 1], muls = [mkMul 0.5]}
@@ -189,7 +189,7 @@ pgUnits = testGroup "PG Points"
                     , effj = resetSeq $ Just 1
                     }
 
-    , HU.testCase "Early start = other non-reset score-raising penalties don't change total" $
+    , HU.testCase "✓ Early start = other non-reset score-raising penalties don't change total" $
         (FS.taskPoints
             (Early launchToStart1)
             (resetSeq (Just 1))
@@ -207,7 +207,7 @@ pgUnits = testGroup "PG Points"
                     , effj = resetSeq $ Just 1
                     }
 
-    , HU.testCase "Early start = taking the smallest reset penalty from jump and other sets" $
+    , HU.testCase "✓ Early start = taking the smallest reset penalty from jump and other sets" $
         (FS.taskPoints
             (Early launchToStart2)
             (resetSeq $ Just 2)
@@ -225,22 +225,22 @@ pgUnits = testGroup "PG Points"
                     , effj = resetSeq $ Just 2
                     }
 
-    , HU.testCase "Early start = error on wrong reset applied" $
+    , HU.testCase "✘ Early start = error on wrong reset applied" $
         (FS.taskPoints (Early launchToStart1) (resetSeq $ Just 2) nullSeqs ptsAllOne)
             @?=
                 (Left $ EQ_Early_Reset (Early launchToStart1, mkReset $ Just 2))
 
-    , HU.testCase "Early start = error on wrong type of jump penalty, a point penalty, applied" $
+    , HU.testCase "✘ Early start = error on wrong type of jump penalty, a point penalty, applied" $
         (FS.taskPoints (Early launchToStart1) (addSeq 1) nullSeqs ptsAllOne)
             @?=
                 (Left $ WAT_Early_Jump (Early launchToStart1, addSeq 1))
 
-    , HU.testCase "Early start = error on wrong type of penalty, a fraction penalty, applied" $
+    , HU.testCase "✘ Early start = error on wrong type of penalty, a fraction penalty, applied" $
         (FS.taskPoints (Early launchToStart1) (mulSeq 0.5) nullSeqs ptsAllOne)
             @?=
                 (Left $ WAT_Early_Jump (Early launchToStart1, mulSeq 0.5))
 
-    , HU.testCase "Early start = error on wrong type of jump penalty, a point penalty, applied, with other reset" $
+    , HU.testCase "✘ Early start = error on wrong type of jump penalty, a point penalty, applied, with other reset" $
         (FS.taskPoints
             (Early launchToStart1)
             (addSeq 0)
@@ -249,7 +249,7 @@ pgUnits = testGroup "PG Points"
             @?=
                 (Left $ WAT_Early_Jump (Early launchToStart1, idSeq))
 
-    , HU.testCase "Early start = error on wrong type of penalty, a fraction penalty, applied, with other resete" $
+    , HU.testCase "✘ Early start = error on wrong type of penalty, a fraction penalty, applied, with other resete" $
         (FS.taskPoints
             (Early launchToStart1)
             (mulSeq 0.5)
@@ -258,7 +258,7 @@ pgUnits = testGroup "PG Points"
             @?=
                 (Left $ WAT_Early_Jump (Early launchToStart1, mulSeq 0.5))
 
-    , HU.testCase "Early start tolerates no explicit jump penalty" $
+    , HU.testCase "✓ Early start tolerates no explicit jump penalty" $
         (FS.taskPoints (Early launchToStart1) idSeq nullSeqs ptsAllOne)
             @?=
                 Right
@@ -272,7 +272,7 @@ pgUnits = testGroup "PG Points"
                     , effj = resetSeq $ Just 1
                     }
 
-    , HU.testCase "Early start tolerates other reset to zero" $
+    , HU.testCase "✓ Early start tolerates other reset to zero" $
         (FS.taskPoints
             (Early launchToStart1)
             idSeq
@@ -290,7 +290,7 @@ pgUnits = testGroup "PG Points"
                     , effj = resetSeq $ Just 1
                     }
 
-    , HU.testCase "Early start still applies other penalty of fraction 1" $
+    , HU.testCase "✓ Early start still applies other penalty of fraction 1" $
         (FS.taskPoints (Early launchToStart1) idSeq nullSeqs{muls = [mkMul 1]} ptsAllOne)
             @?=
                 Right
@@ -304,7 +304,7 @@ pgUnits = testGroup "PG Points"
                     , effj = resetSeq $ Just 1
                     }
 
-    , HU.testCase "Early start still applies other penalty of fraction 1" $
+    , HU.testCase "✘ Early start still applies other penalty of fraction 1" $
         (FS.taskPoints
             (Early launchToStart7)
             (resetSeq $ Just 11)
