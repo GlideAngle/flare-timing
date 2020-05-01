@@ -84,7 +84,9 @@ data Reset
 data PointPenalty a where
 
     -- | If positive then remove this fraction of points and if negative add this
-    -- fraction of points.
+    -- fraction of points. Unlike FS that uses 0 as a sentinel value meaning no
+    -- penalty in all penalty applications, for a fraction we're using the
+    -- identity of multiplication here for that purpose.
     PenaltyFraction :: CReal -> PointPenalty Mul
 
     -- | If positive then remove this number of points and if negative add this
@@ -252,9 +254,11 @@ idReset = (==) identityOfReset
 -- TaskPoints 0.500
 --
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0.8584411845461164)
--- TaskPoints 0.8584411845461164
+-- TaskPoints 0.858
 --
--- prop> \x -> let pts = TaskPoints x in pts == total (applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) pts)
+-- prop> \x -> x >= 0 ==> let pts = TaskPoints x in pts == total (applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) pts)
+--
+-- prop> \x -> x < 0 ==> let pts = TaskPoints x in (TaskPoints 0) == total (applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) pts)
 idSeq :: PenaltySeq
 idSeq =
     PenaltySeq
@@ -460,22 +464,23 @@ zF (PenaltyFraction 0) = Just (EQ, TaskPoints 0)
 zF (PenaltyFraction n) = Just (n `compare` 0, TaskPoints . realToFrac $ abs n)
 zF _ = Nothing
 
+-- | Applies a penalty and ensures the resulting points are not less than zero.
 applyPenalty :: TaskPoints -> PointPenalty a -> TaskPoints
 applyPenalty p pp
 
-    | Just (EQ, _) <- zP pp = p
+    | Just (EQ, _) <- zP pp = max 0 $ p
     | Just (GT, n) <- zP pp = max 0 $ p - n
-    | Just (LT, n) <- zP pp = p + n
+    | Just (LT, n) <- zP pp = max 0 $ p + n
 
-    | Just (EQ, _) <- zF pp = p
-    | Just (GT, n) <- zF pp = max 0 $ p * (1.0 - n)
-    | Just (LT, n) <- zF pp = p * (1.0 + n)
+    | Just (EQ, _) <- zF pp = max 0 $ p
+    | Just (GT, n) <- zF pp = max 0 $ p * n
+    | Just (LT, n) <- zF pp = max 0 $ p * n
 
     | PenaltyReset (Just n) <- pp =
         -- NOTE: Resets can only be used as penalties, not bonuses.
-        min p (TaskPoints . fromIntegral $ unrefined n)
+        max 0 $ min p (TaskPoints . fromIntegral $ unrefined n)
 
-    | otherwise = p
+    | otherwise = max 0 p
 
 isPenaltyPoints, isPenaltyFraction, isPenaltyReset :: PointPenalty a -> Bool
 isPenaltyPoints = \case PenaltyPoints{} -> True; _ -> False
