@@ -64,198 +64,150 @@ essNoGoalHg =
 
 hgUnits :: TestTree
 hgUnits = testGroup "HG Points"
-    [ HU.testCase "✓ No penalties and no points = zero task points" $
-        ((FS.taskPoints NominalHg idSeq nullSeqs zeroPoints) <&> total) @?= Right (TaskPoints 0)
+    [ testGroup "No penalties"
+        [ HU.testCase "✓ Zero for each component sum to zero task points" $
+            ((FS.taskPoints NominalHg idSeq nullSeqs zeroPoints) <&> total) @?= Right (TaskPoints 0)
 
-    , HU.testCase "✓ No penalties = sum of reach, effort, leading, time & arrival points" $
-        (FS.taskPoints NominalHg idSeq nullSeqs ptsAllOne)
-            @?=
-                Right
-                PointsReduced
-                    { subtotal = TaskPoints 5
-                    , mulApplied = TaskPoints 0
-                    , addApplied = TaskPoints 0
-                    , resetApplied = TaskPoints 0
-                    , total = TaskPoints 5
-                    , effp = idSeq
-                    , effj = idSeq
-                    }
-
-    , HU.testCase "✓ ESS but no goal = sum of reach, effort, leading, 80% of time & arrival points" $
-        (FS.taskPoints NoGoalHg idSeq nullSeqs ptsAllOne)
-            @?=
-                Right essNoGoalHg
-
-    , HU.testCase "✓ ESS but no goal with jump penalty fraction = 1 (the identity of multiplication)" $
-        (FS.taskPoints NoGoalHg (mulSeq 1) nullSeqs ptsAllOne)
-            @?=
-                Right essNoGoalHg
-
-    , HU.testCase "✘ ESS but no goal with jump penalty points = 0 (the identity of addition)" $
-        (FS.taskPoints NoGoalHg (addSeq 0) nullSeqs ptsAllOne)
-            @?=
-                Right essNoGoalHg
-
-    , HU.testCase "✘ ESS but no goal with jump reset = ∅ (the identity of reset)" $
-        (FS.taskPoints NoGoalHg (addSeq 0) nullSeqs ptsAllOne)
-            @?=
-                Right essNoGoalHg
-
-    , HU.testCase "✘ ESS but no goal with jump penalty fraction = 0 (scale to zero)" $
-        (FS.taskPoints NoGoalHg (mulSeq 0) nullSeqs ptsAllOne)
-            @?=
-                (Left $ WAT_NoGoal_Hg (NoGoalHg, idSeq))
-
-    , HU.testCase "✓ Way too early start = minimum distance points only" $
-        (FS.taskPoints (JumpedTooEarly tooEarly1) idSeq nullSeqs ptsAllOne)
-            @?=
-                Right
-                PointsReduced
-                    { subtotal = TaskPoints 5
-                    , mulApplied = TaskPoints 0
-                    , addApplied = TaskPoints 0
-                    , resetApplied = TaskPoints 4
-                    , total = TaskPoints 1
-                    , effp = resetSeq $ Just 1
-                    , effj = resetSeq $ Just 1
-                    }
-
-    , HU.testCase "✓ Way too early start with fraction other > 1" $
-        (FS.taskPoints (JumpedTooEarly tooEarly1) (resetSeq $ Just 1) nullSeqs{muls = [mkMul 2]} ptsAllOne)
-            @?=
-                Right
-                PointsReduced
-                    { subtotal = TaskPoints 5
-                    , mulApplied = TaskPoints 5
-                    , addApplied = TaskPoints 0
-                    , resetApplied = TaskPoints 0
-                    , total = TaskPoints 0
-                    , effp = mulSeq 2
-                    , effj = resetSeq $ Just 1
-                    }
-
-    , HU.testCase "✓ Way too early start with smaller reset other" $
-        (FS.taskPoints
-            (JumpedTooEarly tooEarly2)
-            (resetSeq (Just 2))
-            nullSeqs{resets = [mkReset $ Just 1]}
-            ptsAllOne)
-            @?=
-                Right
-                PointsReduced
-                    { subtotal = TaskPoints 5
-                    , mulApplied = TaskPoints 0
-                    , addApplied = TaskPoints 0
-                    , resetApplied = TaskPoints 4
-                    , total = TaskPoints 1
-                    , effp = resetSeq $ Just 2
-                    , effj = resetSeq $ Just 2
-                    }
-
-    , HU.testCase "✓ Early start, ESS but no goal = ESS no goal points minus jump the gun penalty" $
-        let jump = JumpedTheGun [u| 2 s |]
-            secs = SecondsPerPoint [u| 1 s |]
-            limit = JumpTheGunLimit [u| 3 s |]
-
-            Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
-        in
-            (FS.taskPoints (JumpedNoGoal secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
-                @?=
-                    Right
-                    PointsReduced
-                        { subtotal = TaskPoints 3.6
-                        , mulApplied = TaskPoints 0
-                        , addApplied = TaskPoints 2
-                        , resetApplied = TaskPoints 0
-                        , total = TaskPoints 1.6
-                        , effp = addSeq 2
-                        , effj = addSeq 2
-                        }
-
-    , HU.testCase "✘ Early start, ESS but no goal with zero jump penalty" $
-        let jump = JumpedTheGun [u| 2 s |]
-            secs = SecondsPerPoint [u| 1 s |]
-        in
-            (FS.taskPoints (JumpedNoGoal secs jump) (addSeq 0) nullSeqs ptsAllOne)
-                @?=
-                    (Left $ EQ_Jumped_Point (JumpedNoGoal (SecondsPerPoint [u| 1.0 s |]) (JumpedTheGun [u| 2.0 s |]), identityOfAdd))
-
-    , HU.testCase "✓ Early start = full points minus jump the gun penalty" $
-        let jump = JumpedTheGun [u| 2 s |]
-            secs = SecondsPerPoint [u| 1 s |]
-            limit = JumpTheGunLimit [u| 3 s |]
-
-            Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
-        in
-            (FS.taskPoints (Jumped secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
+        , HU.testCase "✓ Task points are the sum of reach, effort, leading, time & arrival points" $
+            (FS.taskPoints NominalHg idSeq nullSeqs ptsAllOne)
                 @?=
                     Right
                     PointsReduced
                         { subtotal = TaskPoints 5
                         , mulApplied = TaskPoints 0
-                        , addApplied = TaskPoints 2
+                        , addApplied = TaskPoints 0
                         , resetApplied = TaskPoints 0
-                        , total = TaskPoints 3
-                        , effp = addSeq 2
-                        , effj = addSeq 2
+                        , total = TaskPoints 5
+                        , effp = idSeq
+                        , effj = idSeq
                         }
+        ]
 
-    , HU.testCase "✓ Early start and no goal = full points minus jump the gun penalty" $
-        let jump = JumpedTheGun [u| 2 s |]
-            secs = SecondsPerPoint [u| 1 s |]
-            limit = JumpTheGunLimit [u| 3 s |]
-
-            Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
-        in
-            (FS.taskPoints (JumpedNoGoal secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
+    , testGroup "ESS but no goal"
+        [ HU.testCase "✓ Sum of reach, effort, leading, 80% of time & arrival points" $
+            (FS.taskPoints NoGoalHg idSeq nullSeqs ptsAllOne)
                 @?=
-                    Right
-                    PointsReduced
-                        { subtotal = TaskPoints 3.6
-                        , mulApplied = TaskPoints 0
-                        , addApplied = TaskPoints 2
-                        , resetApplied = TaskPoints 0
-                        , total = TaskPoints 1.6
-                        , effp = addSeq 2
-                        , effj = addSeq 2
-                        }
+                    Right essNoGoalHg
 
-    , HU.testCase "✓ Very early start = full points minus jump the gun penalty resulting in no less than zero" $
-        let jump = JumpedTheGun [u| 3 s |]
-            secs = SecondsPerPoint [u| 1 s |]
-            limit = JumpTheGunLimit [u| 3 s |]
-
-            Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
-        in
-            (FS.taskPoints (Jumped secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
+        , HU.testCase "✓ With jump penalty fraction = 1 (the identity of multiplication)" $
+            (FS.taskPoints NoGoalHg (mulSeq 1) nullSeqs ptsAllOne)
                 @?=
-                    Right
-                    PointsReduced
-                        { subtotal = TaskPoints 5
-                        , mulApplied = TaskPoints 0
-                        , addApplied = TaskPoints 3
-                        , resetApplied = TaskPoints 0
-                        , total = TaskPoints 2
-                        , effp = addSeq 3
-                        , effj = addSeq 3
-                        }
+                    Right essNoGoalHg
 
-    , HU.testCase "✓ Too early start = points for minimum distance" $
-        let jump = JumpedTheGun [u| 4 s |]
-            secs = SecondsPerPoint [u| 1 s |]
-            limit = JumpTheGunLimit [u| 3 s |]
+        , HU.testCase "✘ With jump penalty points = 0 (the identity of addition)" $
+            (FS.taskPoints NoGoalHg (addSeq 0) nullSeqs ptsAllOne)
+                @?=
+                    Right essNoGoalHg
 
-            (sitrep, js) =
-                case FS.jumpTheGunSitRepHg tooEarly1 limit secs jump of
-                    Left j -> (Jumped secs jump, addSeq $ exAdd j)
-                    Right p@(JumpedTooEarly _) -> (p, resetSeq (Just 1))
-                    Right _ -> error "Unexpected jump the gun situation."
-        in
-            (FS.taskPoints
-                sitrep
-                js
-                nullSeqs
-                ptsAllOne)
+        , HU.testCase "✘ With jump reset = ∅ (the identity of reset)" $
+            (FS.taskPoints NoGoalHg (addSeq 0) nullSeqs ptsAllOne)
+                @?=
+                    Right essNoGoalHg
+
+        , HU.testCase "✘ With jump penalty fraction = 0 (scale to zero)" $
+            (FS.taskPoints NoGoalHg (mulSeq 0) nullSeqs ptsAllOne)
+                @?=
+                    (Left $ WAT_NoGoal_Hg (NoGoalHg, mulSeq 0))
+
+        , HU.testCase "✘ With other penalty fraction = 0 (scale to zero)" $
+            (FS.taskPoints NoGoalHg (mulSeq 0) nullSeqs ptsAllOne)
+                @?=
+                    (Left $ WAT_NoGoal_Hg (NoGoalHg, mulSeq 0))
+        ]
+
+    , testGroup "Early start"
+        [ HU.testCase "✓ ESS but no goal = ESS no goal points minus jump the gun penalty" $
+            let jump = JumpedTheGun [u| 2 s |]
+                secs = SecondsPerPoint [u| 1 s |]
+                limit = JumpTheGunLimit [u| 3 s |]
+
+                Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
+            in
+                (FS.taskPoints (JumpedNoGoal secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
+                    @?=
+                        Right
+                        PointsReduced
+                            { subtotal = TaskPoints 3.6
+                            , mulApplied = TaskPoints 0
+                            , addApplied = TaskPoints 2
+                            , resetApplied = TaskPoints 0
+                            , total = TaskPoints 1.6
+                            , effp = addSeq 2
+                            , effj = addSeq 2
+                            }
+
+        , HU.testCase "✘ ESS but no goal with zero jump penalty" $
+            let jump = JumpedTheGun [u| 2 s |]
+                secs = SecondsPerPoint [u| 1 s |]
+            in
+                (FS.taskPoints (JumpedNoGoal secs jump) (addSeq 0) nullSeqs ptsAllOne)
+                    @?=
+                        (Left $ EQ_Jumped_Point (JumpedNoGoal (SecondsPerPoint [u| 1.0 s |]) (JumpedTheGun [u| 2.0 s |]), identityOfAdd))
+
+        , HU.testCase "✓ Full points minus jump the gun penalty" $
+            let jump = JumpedTheGun [u| 2 s |]
+                secs = SecondsPerPoint [u| 1 s |]
+                limit = JumpTheGunLimit [u| 3 s |]
+
+                Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
+            in
+                (FS.taskPoints (Jumped secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
+                    @?=
+                        Right
+                        PointsReduced
+                            { subtotal = TaskPoints 5
+                            , mulApplied = TaskPoints 0
+                            , addApplied = TaskPoints 2
+                            , resetApplied = TaskPoints 0
+                            , total = TaskPoints 3
+                            , effp = addSeq 2
+                            , effj = addSeq 2
+                            }
+
+        , HU.testCase "✓ ESS and no goal = full points minus jump the gun penalty" $
+            let jump = JumpedTheGun [u| 2 s |]
+                secs = SecondsPerPoint [u| 1 s |]
+                limit = JumpTheGunLimit [u| 3 s |]
+
+                Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
+            in
+                (FS.taskPoints (JumpedNoGoal secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
+                    @?=
+                        Right
+                        PointsReduced
+                            { subtotal = TaskPoints 3.6
+                            , mulApplied = TaskPoints 0
+                            , addApplied = TaskPoints 2
+                            , resetApplied = TaskPoints 0
+                            , total = TaskPoints 1.6
+                            , effp = addSeq 2
+                            , effj = addSeq 2
+                            }
+
+        , HU.testCase "✓ Very early start = full points minus jump the gun penalty resulting in no less than zero" $
+            let jump = JumpedTheGun [u| 3 s |]
+                secs = SecondsPerPoint [u| 1 s |]
+                limit = JumpTheGunLimit [u| 3 s |]
+
+                Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
+            in
+                (FS.taskPoints (Jumped secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
+                    @?=
+                        Right
+                        PointsReduced
+                            { subtotal = TaskPoints 5
+                            , mulApplied = TaskPoints 0
+                            , addApplied = TaskPoints 3
+                            , resetApplied = TaskPoints 0
+                            , total = TaskPoints 2
+                            , effp = addSeq 3
+                            , effj = addSeq 3
+                            }
+        ]
+
+    , testGroup "Too early start"
+        [ HU.testCase "✓ Task points of minimum distance points only" $
+            (FS.taskPoints (JumpedTooEarly tooEarly1) idSeq nullSeqs ptsAllOne)
                 @?=
                     Right
                     PointsReduced
@@ -268,18 +220,79 @@ hgUnits = testGroup "HG Points"
                         , effj = resetSeq $ Just 1
                         }
 
-    , HU.testCase "✘ Early start = error on wrong reset applied" $
-        (FS.taskPoints (JumpedTooEarly tooEarly1) (resetSeq (Just 2)) nullSeqs ptsAllOne)
-            @?=
-                (Left $ EQ_JumpedTooEarly_Reset (JumpedTooEarly tooEarly1, mkReset (Just 2)))
+        , HU.testCase "✓ With fraction other > 1 zeroes out task points" $
+            (FS.taskPoints (JumpedTooEarly tooEarly1) (resetSeq $ Just 1) nullSeqs{muls = [mkMul 2]} ptsAllOne)
+                @?=
+                    Right
+                    PointsReduced
+                        { subtotal = TaskPoints 5
+                        , mulApplied = TaskPoints 5
+                        , addApplied = TaskPoints 0
+                        , resetApplied = TaskPoints 0
+                        , total = TaskPoints 0
+                        , effp = mulSeq 2
+                        , effj = resetSeq $ Just 1
+                        }
 
-    , HU.testCase "✘ Early start = error on wrong type of penalty, a point penalty, applied" $
-        (FS.taskPoints (JumpedTooEarly tooEarly1) (addSeq 1) nullSeqs ptsAllOne)
-            @?=
-                (Left $ WAT_JumpedTooEarly (JumpedTooEarly tooEarly1, addSeq 1.0, nullSeqs))
+        , HU.testCase "✓ With smaller other penalty, a reset" $
+            (FS.taskPoints
+                (JumpedTooEarly tooEarly2)
+                (resetSeq (Just 2))
+                nullSeqs{resets = [mkReset $ Just 1]}
+                ptsAllOne)
+                @?=
+                    Right
+                    PointsReduced
+                        { subtotal = TaskPoints 5
+                        , mulApplied = TaskPoints 0
+                        , addApplied = TaskPoints 0
+                        , resetApplied = TaskPoints 4
+                        , total = TaskPoints 1
+                        , effp = resetSeq $ Just 2
+                        , effj = resetSeq $ Just 2
+                        }
 
-    , HU.testCase "✘ Early start = error on wrong type of penalty, a fraction penalty, applied" $
-        (FS.taskPoints (JumpedTooEarly tooEarly1) (mulSeq 0.5) nullSeqs ptsAllOne)
-            @?=
-                (Left $ WAT_JumpedTooEarly (JumpedTooEarly tooEarly1, mulSeq 0.5, nullSeqs))
+        , HU.testCase "✓ Points for minimum distance" $
+            let jump = JumpedTheGun [u| 4 s |]
+                secs = SecondsPerPoint [u| 1 s |]
+                limit = JumpTheGunLimit [u| 3 s |]
+
+                (sitrep, js) =
+                    case FS.jumpTheGunSitRepHg tooEarly1 limit secs jump of
+                        Left j -> (Jumped secs jump, addSeq $ exAdd j)
+                        Right p@(JumpedTooEarly _) -> (p, resetSeq (Just 1))
+                        Right _ -> error "Unexpected jump the gun situation."
+            in
+                (FS.taskPoints
+                    sitrep
+                    js
+                    nullSeqs
+                    ptsAllOne)
+                    @?=
+                        Right
+                        PointsReduced
+                            { subtotal = TaskPoints 5
+                            , mulApplied = TaskPoints 0
+                            , addApplied = TaskPoints 0
+                            , resetApplied = TaskPoints 4
+                            , total = TaskPoints 1
+                            , effp = resetSeq $ Just 1
+                            , effj = resetSeq $ Just 1
+                            }
+
+        , HU.testCase "✘ Error on wrong reset applied" $
+            (FS.taskPoints (JumpedTooEarly tooEarly1) (resetSeq (Just 2)) nullSeqs ptsAllOne)
+                @?=
+                    (Left $ EQ_JumpedTooEarly_Reset (JumpedTooEarly tooEarly1, mkReset (Just 2)))
+
+        , HU.testCase "✘ Error on wrong type of penalty, a point penalty, applied" $
+            (FS.taskPoints (JumpedTooEarly tooEarly1) (addSeq 1) nullSeqs ptsAllOne)
+                @?=
+                    (Left $ WAT_JumpedTooEarly (JumpedTooEarly tooEarly1, addSeq 1.0, nullSeqs))
+
+        , HU.testCase "✘ Error on wrong type of penalty, a fraction penalty, applied" $
+            (FS.taskPoints (JumpedTooEarly tooEarly1) (mulSeq 0.5) nullSeqs ptsAllOne)
+                @?=
+                    (Left $ WAT_JumpedTooEarly (JumpedTooEarly tooEarly1, mulSeq 0.5, nullSeqs))
+        ]
     ]
