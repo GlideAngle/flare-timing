@@ -17,7 +17,7 @@ instance Show PilotName where show (PilotName x) = show x
 instance Show Pilot where show (Pilot x) = show x
 
 newtype PilotId =
-    PilotId String 
+    PilotId String
     deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
