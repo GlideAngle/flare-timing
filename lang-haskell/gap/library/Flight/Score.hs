@@ -224,6 +224,7 @@ module Flight.Score
     ) where
 
 import "flight-gap-base" Flight.Score
+import "flight-gap-effort" Flight.Score
 import "flight-gap-valid" Flight.Score
 import Flight.Gap.Time.Early
 import Flight.Gap.Distance.Early

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b9f37162f68af3ba5eee49a0eafcafb6d2116123356c40a536788bcab89816e4
+-- hash: 30f80cae3d568539183811e861339dc2f2d7f1c586119ec0ab641ef1f2b76638
 
 name:           flight-gap-base
 version:        0.1.0
@@ -40,12 +40,9 @@ library
       Flight.Gap.Fraction
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Min
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
@@ -107,12 +104,9 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Min
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
@@ -181,12 +175,9 @@ test-suite effort
   main-is: EffortTestMain.hs
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Min
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
@@ -265,12 +256,9 @@ test-suite leading
   main-is: LeadingTestMain.hs
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Min
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
@@ -347,12 +335,9 @@ test-suite score
   main-is: ScoreTestMain.hs
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Min
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
@@ -435,12 +420,9 @@ test-suite stop
   main-is: StopTestMain.hs
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Min
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
@@ -517,12 +499,9 @@ test-suite validity
   main-is: ValidityTestMain.hs
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Min
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation

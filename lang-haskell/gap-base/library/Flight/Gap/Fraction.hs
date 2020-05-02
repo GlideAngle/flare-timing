@@ -1,4 +1,12 @@
-module Flight.Gap.Fraction (Fractions(..)) where
+module Flight.Gap.Fraction
+    ( Fractions(..)
+    , LinearFraction(..)
+    , DifficultyFraction(..)
+    , DistanceFraction(..)
+    , LeadingFraction(..)
+    , ArrivalFraction(..)
+    , SpeedFraction(..)
+    ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))

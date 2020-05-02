@@ -9,6 +9,7 @@ packages:
     , lang-haskell/flare-timing
     , lang-haskell/fsdb
     , lang-haskell/gap-base
+    , lang-haskell/gap-effort
     , lang-haskell/gap-valid
     , lang-haskell/gap
     , lang-haskell/igc
@@ -45,6 +46,8 @@ package flight-flare-timing
 package flight-fsdb
     tests: true
 package flight-gap-base
+    tests: true
+package flight-gap-effort
     tests: true
 package flight-gap-valid
     tests: true

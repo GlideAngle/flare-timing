@@ -46,6 +46,8 @@ flags:
         suppress-failing-tests: true
     flight-gap-base:
         suppress-failing-tests: true
+    flight-gap-effort:
+        suppress-failing-tests: true
     flight-gap-valid:
         suppress-failing-tests: true
     flight-gap:
@@ -79,6 +81,7 @@ packages:
 - earth
 - fsdb
 - gap-base
+- gap-effort
 - gap-valid
 - gap
 - igc

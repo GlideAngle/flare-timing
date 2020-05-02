@@ -60,28 +60,7 @@ module Flight.Score
     , DistanceFraction(..)
     , linearFraction
     , bestDistance'
-    -- * Fractional allotment of difficulty distance points
-    , Lookahead(..)
-    , Chunk(..)
-    , Chunks(..)
-    , IxChunk(..)
-    , lookahead
-    , toIxChunk
-    , toChunk
-    , chunks
-    , landouts
-    , mergeChunks
-    , SumOfDifficulty(..)
-    , RelativeDifficulty(..)
-    , DifficultyFraction(..)
-    , ChunkRelativeDifficulty(..)
-    , ChunkDifficultyFraction(..)
-    , ChunkLandings(..)
-    , ChunkDifficulty(..)
-    , Chunking(..)
-    , Difficulty(..)
-    , gradeDifficulty
-    -- * Fractional allotment of leading points 
+    -- * Fractional allotment of leading points
     , TaskTime(..)
     , DistanceToEss(..)
     , Leg(..)
@@ -150,25 +129,20 @@ import Flight.Gap.Allot
 import Flight.Gap.Pilots
 import Flight.Gap.Fraction.Launch
 import Flight.Gap.Fraction.Linear
-import Flight.Gap.Fraction.Difficulty
+--import Flight.Gap.Fraction.Difficulty
 import Flight.Gap.Fraction.Distance
 import Flight.Gap.Fraction.Leading
 import Flight.Gap.Fraction.Goal
 import Flight.Gap.Time.Arrival
--- import Flight.Gap.Time.Early
 import Flight.Gap.Time.Nominal
 import Flight.Gap.Time.Best
 import Flight.Gap.Time.Velocity
--- import Flight.Gap.Time.ScoreBack
 import Flight.Gap.Distance.Pilot
 import Flight.Gap.Distance.Nominal
 import Flight.Gap.Distance.Min
 import Flight.Gap.Distance.Sum
-import Flight.Gap.Distance.Relative
-import Flight.Gap.Distance.Chunk
-import Flight.Gap.Distance.Difficulty
+--import Flight.Gap.Distance.Relative
 import Flight.Gap.Distance.Stop
--- import Flight.Gap.Distance.Early
 import Flight.Gap.Leading
 import Flight.Gap.Leading1Area
 import Flight.Gap.Leading2Area

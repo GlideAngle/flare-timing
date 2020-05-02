@@ -17,10 +17,11 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 
 import Flight.Units ()
-import Flight.Gap.Distance.Pilot (PilotDistance(..))
-import Flight.Gap.Distance.Stop (FlownMax(..))
+import "flight-gap-base" Flight.Score (PilotDistance(..))
+import "flight-gap-base" Flight.Score (FlownMax(..))
+import "flight-gap-base" Flight.Score (Pilot)
+import "flight-gap-base" Flight.Gap.Fraction (DifficultyFraction(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
-import Flight.Gap.Fraction.Difficulty (DifficultyFraction(..))
 import Flight.Gap.Distance.Chunk
     ( IxChunk(..)
     , Lookahead(..)
@@ -35,7 +36,6 @@ import Flight.Gap.Distance.Chunk
     , sumLandouts
     , collectDowns
     )
-import Flight.Gap.Pilots (Pilot)
 
 -- | The sum of all chunk difficulties.
 newtype SumOfDifficulty = SumOfDifficulty Integer
