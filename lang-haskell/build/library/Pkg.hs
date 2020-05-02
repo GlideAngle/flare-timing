@@ -36,6 +36,7 @@ dhallCabal =
     , ("gap-effort", "flight-gap-effort")
     , ("gap-lead", "flight-gap-lead")
     , ("gap-valid", "flight-gap-valid")
+    , ("gap-weight", "flight-gap-weight")
     , ("gap", "flight-gap")
     , ("igc", "flight-igc")
     , ("kml", "flight-kml")

@@ -12,6 +12,7 @@ packages:
     , lang-haskell/gap-effort
     , lang-haskell/gap-lead
     , lang-haskell/gap-valid
+    , lang-haskell/weight
     , lang-haskell/gap
     , lang-haskell/igc
     , lang-haskell/kml
@@ -53,6 +54,8 @@ package flight-gap-effort
 package flight-gap-lead
     tests: true
 package flight-gap-valid
+    tests: true
+package flight-gap-weight
     tests: true
 package flight-gap
     tests: true

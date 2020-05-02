@@ -4,15 +4,15 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 43ad939d5e8c8677d536e7b89124dfe551e9ada414992addba31103892d15341
+-- hash: 456f350be04fa4c97d544d5e2269d12ce90717b1a8dd9d232c5daf2b51b516f8
 
-name:           flight-gap
+name:           flight-gap-weight
 version:        0.1.0
-synopsis:       GAP Scoring.
-description:    GAP scoring for hang gliding and paragliding competitons.
+synopsis:       GAP Scoring, Weights
+description:    GAP scoring for hang gliding and paragliding competitons, the weighting parts.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing#readme
-bug-reports:    https://github.com/blockscope/flare-timing/issues
+homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-lead#readme
+bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-lead/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: gap
+  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-lead
 
 flag suppress-failing-tests
   manual: False
@@ -37,20 +36,14 @@ flag suppress-failing-tests
 library
   exposed-modules:
       Flight.Score
-      Flight.Gap.Fraction
   other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Stopped
-      Flight.Gap.Time.Early
-      Flight.Gap.Time.ScoreBack
-      Paths_flight_gap
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Paths_flight_gap_weight
   hs-source-dirs:
       library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
@@ -65,10 +58,6 @@ library
     , detour-via-uom
     , facts
     , flight-gap-base
-    , flight-gap-effort
-    , flight-gap-lead
-    , flight-gap-valid
-    , flight-gap-weight
     , flight-units
     , newtype
     , numbers
@@ -83,20 +72,14 @@ test-suite doctest
   type: exitcode-stdio-1.0
   main-is: DocTest.hs
   other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Fraction
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Stopped
-      Flight.Gap.Time.Early
-      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
       Flight.Score
-      Paths_flight_gap
+      Paths_flight_gap_weight
   hs-source-dirs:
       library
       test-suite-doctest
@@ -113,10 +96,6 @@ test-suite doctest
     , doctest
     , facts
     , flight-gap-base
-    , flight-gap-effort
-    , flight-gap-lead
-    , flight-gap-valid
-    , flight-gap-weight
     , flight-units
     , newtype
     , numbers
@@ -134,23 +113,17 @@ test-suite effort
   type: exitcode-stdio-1.0
   main-is: EffortTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Fraction
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Stopped
-      Flight.Gap.Time.Early
-      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
       DifficultyFraction
-      Paths_flight_gap
+      Paths_flight_gap_weight
   hs-source-dirs:
       library
       test-suite/test
@@ -167,10 +140,6 @@ test-suite effort
     , detour-via-uom
     , facts
     , flight-gap-base
-    , flight-gap-effort
-    , flight-gap-lead
-    , flight-gap-valid
-    , flight-gap-weight
     , flight-units
     , newtype
     , numbers
@@ -195,23 +164,17 @@ test-suite leading
   type: exitcode-stdio-1.0
   main-is: LeadingTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Fraction
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Stopped
-      Flight.Gap.Time.Early
-      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
       LeadingCoefficient
-      Paths_flight_gap
+      Paths_flight_gap_weight
   hs-source-dirs:
       library
       test-suite/test
@@ -228,10 +191,6 @@ test-suite leading
     , detour-via-uom
     , facts
     , flight-gap-base
-    , flight-gap-effort
-    , flight-gap-lead
-    , flight-gap-valid
-    , flight-gap-weight
     , flight-units
     , newtype
     , numbers
@@ -254,18 +213,12 @@ test-suite score
   type: exitcode-stdio-1.0
   main-is: ScoreTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Fraction
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Stopped
-      Flight.Gap.Time.Early
-      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -276,7 +229,7 @@ test-suite score
       Points.Props
       SpeedFraction
       Weighting
-      Paths_flight_gap
+      Paths_flight_gap_weight
   hs-source-dirs:
       library
       test-suite/test
@@ -293,10 +246,6 @@ test-suite score
     , detour-via-uom
     , facts
     , flight-gap-base
-    , flight-gap-effort
-    , flight-gap-lead
-    , flight-gap-valid
-    , flight-gap-weight
     , flight-units
     , newtype
     , numbers
@@ -319,23 +268,17 @@ test-suite stop
   type: exitcode-stdio-1.0
   main-is: StopTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Fraction
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Stopped
-      Flight.Gap.Time.Early
-      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
       Stopped
-      Paths_flight_gap
+      Paths_flight_gap_weight
   hs-source-dirs:
       library
       test-suite/test
@@ -352,10 +295,6 @@ test-suite stop
     , detour-via-uom
     , facts
     , flight-gap-base
-    , flight-gap-effort
-    , flight-gap-lead
-    , flight-gap-valid
-    , flight-gap-weight
     , flight-units
     , newtype
     , numbers
@@ -378,18 +317,12 @@ test-suite validity
   type: exitcode-stdio-1.0
   main-is: ValidityTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Fraction
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Stopped
-      Flight.Gap.Time.Early
-      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -398,7 +331,7 @@ test-suite validity
       StopValidity
       TaskValidity
       TimeValidity
-      Paths_flight_gap
+      Paths_flight_gap_weight
   hs-source-dirs:
       library
       test-suite/test
@@ -415,10 +348,6 @@ test-suite validity
     , detour-via-uom
     , facts
     , flight-gap-base
-    , flight-gap-effort
-    , flight-gap-lead
-    , flight-gap-valid
-    , flight-gap-weight
     , flight-units
     , newtype
     , numbers

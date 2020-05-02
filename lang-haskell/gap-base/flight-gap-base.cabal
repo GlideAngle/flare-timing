@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e50b5275b32da3325553ff481b41373066277744a863fe47d59f61ebb5a1cd3f
+-- hash: 7f27dace8d73fa911b4430a5a786fb151dcc3ddf487125ffc0a53b5b0a7ddfc4
 
 name:           flight-gap-base
 version:        0.1.0
@@ -62,12 +62,6 @@ library
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Paths_flight_gap_base
   hs-source-dirs:
       library
@@ -121,12 +115,6 @@ test-suite doctest
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Paths_flight_gap_base
   hs-source-dirs:
@@ -186,12 +174,6 @@ test-suite effort
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -261,12 +243,6 @@ test-suite leading
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -334,12 +310,6 @@ test-suite score
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -413,12 +383,6 @@ test-suite stop
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -486,12 +450,6 @@ test-suite validity
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes

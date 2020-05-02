@@ -25,10 +25,9 @@ import Flight.Ratio (pattern (:%))
 import Flight.Gap.Weight.GoalRatio (GoalRatio(..))
 import Flight.Gap.Weight.Distance
     (DistanceWeight(..), ReachWeight(..), EffortWeight(..))
-import Flight.Gap.Weight.Leading (LeadingWeight(..))
+import Flight.Gap.Weight.Leading (LeadingWeight(..), LwScaling(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
-import Flight.Gap.Fraction.Leading (LwScaling(..))
 
 data Weights =
     Weights

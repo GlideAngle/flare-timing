@@ -52,6 +52,8 @@ flags:
         suppress-failing-tests: true
     flight-gap-valid:
         suppress-failing-tests: true
+    flight-gap-weight:
+        suppress-failing-tests: true
     flight-gap:
         suppress-failing-tests: true
     flight-igc:
@@ -86,6 +88,7 @@ packages:
 - gap-effort
 - gap-lead
 - gap-valid
+- gap-weight
 - gap
 - igc
 - kml

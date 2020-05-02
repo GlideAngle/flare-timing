@@ -227,6 +227,7 @@ import "flight-gap-base" Flight.Score
 import "flight-gap-effort" Flight.Score
 import "flight-gap-lead" Flight.Score
 import "flight-gap-valid" Flight.Score
+import "flight-gap-weight" Flight.Score
 import Flight.Gap.Time.Early
 import Flight.Gap.Distance.Early
 import Flight.Gap.Points.Arrival

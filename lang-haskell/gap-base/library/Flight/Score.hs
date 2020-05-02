@@ -19,28 +19,6 @@ module Flight.Score
     -- * Ratio
     , isNormal
     , isFoldNormal
-    -- * Weighting
-    , GoalRatio(..)
-    , DistanceRatio(..)
-    , DistanceWeight(..)
-    , ReachWeight(..)
-    , EffortWeight(..)
-    , LeadingWeight(..)
-    , ArrivalWeight(..)
-    , TimeWeight(..)
-    , Lw(..)
-    , LwScaling(..)
-    , Aw(..)
-    , Rw(..)
-    , Ew(..)
-    , Weights(..)
-    , distanceRatio
-    , distanceWeight
-    , reachWeight
-    , effortWeight
-    , leadingWeight
-    , arrivalWeight
-    , timeWeight
     -- * Fractional allotment of arrival points
     , ArrivalFraction(..)
     , ArrivalTime(..)
@@ -84,20 +62,12 @@ module Flight.Score
     , powerFraction
     ) where
 
---import Flight.Gap.Leading.Area
---import Flight.Gap.Leading.Coef
---import Flight.Gap.Leading.Scaling
---import Flight.Gap.Leading
---import Flight.Gap.Leading1Area
---import Flight.Gap.Leading2Area
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
 import Flight.Gap.Pilots
 import Flight.Gap.Fraction.Launch
 import Flight.Gap.Fraction.Linear
---import Flight.Gap.Fraction.Difficulty
 import Flight.Gap.Fraction.Distance
-import Flight.Gap.Fraction.Leading
 import Flight.Gap.Fraction.Goal
 import Flight.Gap.Time.Arrival
 import Flight.Gap.Time.Nominal
@@ -107,14 +77,7 @@ import Flight.Gap.Distance.Pilot
 import Flight.Gap.Distance.Nominal
 import Flight.Gap.Distance.Min
 import Flight.Gap.Distance.Sum
---import Flight.Gap.Distance.Relative
 import Flight.Gap.Distance.Stop
 import Flight.Gap.Place.Arrival
 import Flight.Gap.Place.Task
-import Flight.Gap.Weight.GoalRatio
-import Flight.Gap.Weight.Distance
-import Flight.Gap.Weight.Leading
-import Flight.Gap.Weight.Arrival
-import Flight.Gap.Weight.Time
-import Flight.Gap.Weighting
 import Flight.Gap.Equation

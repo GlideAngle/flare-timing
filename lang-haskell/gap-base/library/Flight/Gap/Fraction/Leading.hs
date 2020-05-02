@@ -1,7 +1,4 @@
-module Flight.Gap.Fraction.Leading
-    ( LeadingFraction(..)
-    , LwScaling(..)
-    ) where
+module Flight.Gap.Fraction.Leading (LeadingFraction(..)) where
 
 import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
@@ -20,14 +17,3 @@ instance Newtype LeadingFraction Rational where
 deriveDecimalPlaces (DecimalPlaces 8) ''LeadingFraction
 deriveJsonViaSci ''LeadingFraction
 deriveCsvViaSci ''LeadingFraction
-
-newtype LwScaling = LwScaling Rational
-    deriving (Eq, Ord, Show, Generic)
-
-instance Newtype LwScaling Rational where
-    pack = LwScaling
-    unpack (LwScaling a) = a
-
-deriveDecimalPlaces (DecimalPlaces 0) ''LwScaling
-deriveJsonViaSci ''LwScaling
-deriveCsvViaSci ''LwScaling

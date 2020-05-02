@@ -39,12 +39,12 @@ import Flight.Gap.Points.Leading (LeadingPoints(..))
 import Flight.Gap.Points.Arrival (ArrivalPoints(..))
 import Flight.Gap.Points.Task (TaskPoints(..))
 import "flight-gap-valid" Flight.Score (TaskValidity(..))
-import "flight-gap-base" Flight.Score (Weights(..))
-import "flight-gap-base" Flight.Score
+import "flight-gap-weight" Flight.Score (Weights(..))
+import "flight-gap-weight" Flight.Score
     (DistanceWeight(..), ReachWeight(..), EffortWeight(..))
-import "flight-gap-base" Flight.Score (LeadingWeight(..))
-import "flight-gap-base" Flight.Score (ArrivalWeight(..))
-import "flight-gap-base" Flight.Score (TimeWeight(..))
+import "flight-gap-weight" Flight.Score (LeadingWeight(..))
+import "flight-gap-weight" Flight.Score (ArrivalWeight(..))
+import "flight-gap-weight" Flight.Score (TimeWeight(..))
 import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerPoint(..))
 import Flight.Gap.Penalty
     ( Add, Reset, PointsReduced(..), PenaltySeq(..), PenaltySeqs(..)
