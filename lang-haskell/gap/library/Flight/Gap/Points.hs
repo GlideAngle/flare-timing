@@ -223,15 +223,15 @@ reconcileJumped
     -> Points
     -> Either ReconcilePointErrors PointsReduced
 reconcileJumped p@(Jumped spp jtg) j@((==) idSeq -> True) ps points =
-    reconcileJumped p j{add = mkAdd $ jumpTheGunPenalty spp jtg} ps points
+    reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 reconcileJumped p@(JumpedNoGoal spp jtg) j@((==) idSeq -> True) ps points =
-    reconcileJumped p j{add = mkAdd $ jumpTheGunPenalty spp jtg} ps points
+    reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 reconcileJumped p@(Jumped spp jtg) (seqOnlyAdds -> Just j) ps points =
-    if jumpTheGunPenalty spp jtg /= exAdd j then
+    if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
 reconcileJumped p@(JumpedNoGoal spp jtg) (seqOnlyAdds -> Just j) ps points =
-    if jumpTheGunPenalty spp jtg /= exAdd j then
+    if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
 reconcileJumped p j ps _ =

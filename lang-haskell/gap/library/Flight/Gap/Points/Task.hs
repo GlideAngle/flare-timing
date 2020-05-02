@@ -10,7 +10,7 @@ newtype TaskPoints = TaskPoints Double
     deriving newtype (Num, Fractional)
 
 instance Show TaskPoints where
-    show (TaskPoints x) = printf "TaskPoints %.3f" x
+    show (TaskPoints x) = printf "%.3f" x
 
 instance Newtype TaskPoints Double where
     pack = TaskPoints

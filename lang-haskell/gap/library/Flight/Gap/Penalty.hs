@@ -112,7 +112,10 @@ instance Show (PointPenalty a) where
     show (PenaltyReset Nothing) = "(= id)"
 
     show (PenaltyFraction x) = printf "(* %s)" (showCReal dp x)
-    show (PenaltyPoints x) = printf "(+ %s)" (showCReal dp x)
+    show (PenaltyPoints x) =
+        if x < 0
+           then printf "(- %s)" (showCReal dp $ abs x)
+           else printf "(+ %s)" (showCReal dp x)
     show (PenaltyReset (Just x)) = printf "(= %d)" $ unrefined x
 
 instance Semigroup (PointPenalty Mul) where
@@ -124,6 +127,9 @@ instance Semigroup (PointPenalty Reset) where
     (<>) (PenaltyReset Nothing) b = b
     (<>) (PenaltyReset (Just a)) (PenaltyReset (Just b)) =
         PenaltyReset . Just $ min a b
+
+instance Arbitrary CReal where
+    arbitrary = P.realToFrac <$> (arbitrary :: Gen Double)
 
 instance Arbitrary (PointPenalty Mul) where
     arbitrary = PenaltyFraction . P.realToFrac <$> (arbitrary :: Gen Double)
@@ -242,19 +248,19 @@ idReset = (==) identityOfReset
 -- applied.
 --
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0)
--- TaskPoints 0.000
+-- 0.000
 --
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 1)
--- TaskPoints 1.000
+-- 1.000
 --
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints (-1))
--- TaskPoints 0.000
+-- 0.000
 --
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0.5)
--- TaskPoints 0.500
+-- 0.500
 --
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0.8584411845461164)
--- TaskPoints 0.858
+-- 0.858
 --
 -- prop> \x -> x >= 0 ==> let pts = TaskPoints x in pts == total (applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) pts)
 --
@@ -279,7 +285,7 @@ mkAdd x = PenaltyPoints $ P.realToFrac x
 mkReset :: Maybe Int -> PointPenalty Reset
 mkReset Nothing = PenaltyReset Nothing
 mkReset (Just x) =
-    if | x < 0 -> error "Points cannot be reset to less than zero"
+    if | x < 0 -> 0
        | x > 1000 -> error "Points cannot be reset to greater than 1000"
        | otherwise -> PenaltyReset . Just . assumeProp $ refined x
 
@@ -454,34 +460,96 @@ applyPenalties fracs points resets p =
             , effj = idSeq
             }
 
-zP :: PointPenalty a -> Maybe (Ordering, TaskPoints)
-zP (PenaltyPoints 0) = Just (EQ, TaskPoints 0)
-zP (PenaltyPoints n) = Just (n `compare` 0, TaskPoints . realToFrac $ abs n)
-zP _ = Nothing
+-- | Compares a @Mul@ operation against the identity of multiplication.
+--
+-- >>> cmpMul identityOfMul
+-- Just (EQ,1.0)
+--
+-- prop> \x -> let y = realToFrac x in (P.realToFrac . snd <$> cmpMul (mkMul y)) == Just y
+-- prop> \x -> let y = realToFrac x in (P.realToFrac . snd <$> cmpMul (mkAdd y)) == Nothing
+-- prop> \x -> (snd <$> cmpMul (mkReset y)) == Nothing
+cmpMul :: PointPenalty a -> Maybe (Ordering, Double)
+cmpMul (PenaltyFraction 1) = Just (EQ, 1)
+cmpMul (PenaltyFraction x) = let y = realToFrac x in Just (y `compare` 1, y)
+cmpMul _ = Nothing
 
-zF :: PointPenalty a -> Maybe (Ordering, TaskPoints)
-zF (PenaltyFraction 0) = Just (EQ, TaskPoints 0)
-zF (PenaltyFraction n) = Just (n `compare` 0, TaskPoints . realToFrac $ abs n)
-zF _ = Nothing
+-- | Compares an @Add@ operation against the identity of addition.
+--
+-- >>> cmpAdd identityOfAdd
+-- Just (EQ,0.0)
+--
+-- prop> \x -> let y = realToFrac x in (P.realToFrac . snd <$> cmpAdd (mkMul y)) == Nothing
+-- prop> \x -> let y = realToFrac x in (P.realToFrac . snd <$> cmpAdd (mkAdd y)) == Just y
+-- prop> \x -> (snd <$> cmpAdd (mkReset y)) == Nothing
+cmpAdd :: PointPenalty a -> Maybe (Ordering, Double)
+cmpAdd (PenaltyPoints 0) = Just (EQ, 0)
+cmpAdd (PenaltyPoints x) = let y = realToFrac x in Just (y `compare` 0, y)
+cmpAdd _ = Nothing
 
 -- | Applies a penalty and ensures the resulting points are not less than zero.
+--
+-- >>> applyPenalty 2 identityOfMul
+-- 2.000
+--
+-- >>> applyPenalty 2 identityOfAdd
+-- 2.000
+--
+-- >>> applyPenalty 2 identityOfReset
+-- 2.000
+--
+-- >>> applyPenalty 2 (mkMul (-1))
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkAdd (-3))
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkReset $ Just (-1))
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkMul 0)
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkAdd (-2))
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkReset $ Just 0)
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkMul 1.5)
+-- 3.000
+--
+-- >>> applyPenalty 2 (mkAdd 1)
+-- 3.000
+--
+-- >>> applyPenalty 2 (mkReset $ Just 3)
+-- 2.000
 applyPenalty :: TaskPoints -> PointPenalty a -> TaskPoints
-applyPenalty p pp
+applyPenalty (TaskPoints p) pp = TaskPoints p'
+    where
+        notNeg = max 0 p
 
-    | Just (EQ, _) <- zP pp = max 0 $ p
-    | Just (GT, n) <- zP pp = max 0 $ p - n
-    | Just (LT, n) <- zP pp = max 0 $ p + n
+        p'
 
-    | Just (EQ, _) <- zF pp = max 0 $ p
-    | Just (GT, n) <- zF pp = max 0 $ p * n
-    | Just (LT, n) <- zF pp = max 0 $ p * n
+            -- NOTE: When positive @Add@ penalties are bonuses. A true penalty is
+            -- subtraction, adding a negative number. A bonus adds a positive
+            -- number.
+            | Just (_, n) <- cmpAdd pp = max 0 $ p + n
 
-    | PenaltyReset (Just n) <- pp =
-        -- NOTE: Resets can only be used as penalties and not bonuses so
-        -- we can assume the value is not negative.
-        min p (TaskPoints . fromIntegral $ unrefined n)
+            -- NOTE: It doesn't matter the magnitude or the sign of the scaling
+            -- as we're going to multiply by it anyway.
+            | Just (_, n) <- cmpMul pp = max 0 $ p * n
 
-    | otherwise = max 0 p
+            | PenaltyReset (Just n) <- pp =
+                -- NOTE: Resets can only be used as penalties and not bonuses so
+                -- we can assume the value is not negative.
+                min p (fromIntegral $ unrefined n)
+
+            | Just (EQ, _) <- cmpMul pp = notNeg
+            | Just (EQ, _) <- cmpAdd pp = notNeg
+            | PenaltyReset Nothing <- pp = notNeg
+            | otherwise = notNeg
+
+
 
 isPenaltyPoints, isPenaltyFraction, isPenaltyReset :: PointPenalty a -> Bool
 isPenaltyPoints = \case PenaltyPoints{} -> True; _ -> False
