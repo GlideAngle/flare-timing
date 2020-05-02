@@ -226,15 +226,7 @@ module Flight.Score
 import "flight-gap-base" Flight.Score
 import "flight-gap-effort" Flight.Score
 import "flight-gap-lead" Flight.Score
+import "flight-gap-math" Flight.Score
 import "flight-gap-valid" Flight.Score
 import "flight-gap-weight" Flight.Score
-import Flight.Gap.Time.Early
-import Flight.Gap.Distance.Early
-import Flight.Gap.Points.Arrival
-import Flight.Gap.Points.Distance
-import Flight.Gap.Points.Leading
-import Flight.Gap.Points.Time
-import Flight.Gap.Points.Task
-import Flight.Gap.Points
-import Flight.Gap.Penalty
 import Flight.Gap.Stopped
