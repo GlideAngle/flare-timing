@@ -26,10 +26,6 @@ import Flight.Score
     , TaskStopTime(..)
     , CanScoreStopped(..)
     , PilotsAtEss(..)
-    , PilotsLanded(..)
-    , PilotsFlying(..)
-    , LaunchToEss(..)
-    , StopValidity(..)
     , TaskType(..)
     , StartGates(..)
     , ScoreTimeWindow(..)
@@ -37,9 +33,7 @@ import Flight.Score
     , DistanceToGoal(..)
     , GlideRatio(..)
     , StoppedTrack(..)
-    , Hg
-    , Pg
-    , isNormal
+    , Hg, Pg
     )
 
 import TestNewtypes
