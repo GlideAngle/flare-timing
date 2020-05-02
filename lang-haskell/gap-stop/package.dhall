@@ -34,15 +34,15 @@ in    defs
     ⫽ { flags =
           { suppress-failing-tests = { manual = False, default = True } }
       , name =
-          "flight-gap"
+          "flight-gap-stop"
       , synopsis =
-          "GAP Scoring."
+          "GAP Scoring, Stopped"
       , description =
-          "GAP scoring for hang gliding and paragliding competitons."
+          "GAP scoring for hang gliding and paragliding competitons, stopped tasks."
       , category =
           "Flight"
       , github =
-          "blockscope/flare-timing/gap"
+          "blockscope/flare-timing/lang-haskell/gap-lead"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"
@@ -66,19 +66,11 @@ in    defs
             , "siggy-chardust"
             , "flight-units"
             , "flight-gap-base"
-            , "flight-gap-effort"
             , "flight-gap-lead"
             , "flight-gap-math"
-            , "flight-gap-stop"
-            , "flight-gap-valid"
-            , "flight-gap-weight"
             ]
       , library =
-          { source-dirs =
-              "library"
-          , exposed-modules =
-              [ "Flight.Score", "Flight.Gap.Fraction" ]
-          }
+          { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
       , tests =
             ./../default-tests.dhall
           ⫽ { effort =

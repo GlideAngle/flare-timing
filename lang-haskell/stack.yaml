@@ -52,6 +52,8 @@ flags:
         suppress-failing-tests: true
     flight-gap-math:
         suppress-failing-tests: true
+    flight-gap-stop:
+        suppress-failing-tests: true
     flight-gap-valid:
         suppress-failing-tests: true
     flight-gap-weight:
@@ -90,6 +92,7 @@ packages:
 - gap-effort
 - gap-lead
 - gap-math
+- gap-stop
 - gap-valid
 - gap-weight
 - gap
