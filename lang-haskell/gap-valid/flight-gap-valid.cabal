@@ -1,0 +1,725 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 4b7736fc6cc00b15cda32c77ed3e579dafedabc5f17085e7afc4189d6fb01dfa
+
+name:           flight-gap-valid
+version:        0.1.0
+synopsis:       GAP Scoring Validities
+description:    GAP scoring for hang gliding and paragliding competitons, the validity parts.
+category:       Flight
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
+license:        MPL-2.0
+license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
+build-type:     Simple
+extra-source-files:
+    package.dhall
+    changelog.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/blockscope/flare-timing
+  subdir: gap-validity
+
+flag suppress-failing-tests
+  manual: False
+  default: True
+
+library
+  exposed-modules:
+      Flight.Score
+      Flight.Gap.Fraction
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Early
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Equation
+      Flight.Gap.Fraction.Arrival
+      Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
+      Flight.Gap.Fraction.Goal
+      Flight.Gap.Fraction.Launch
+      Flight.Gap.Fraction.Leading
+      Flight.Gap.Fraction.Linear
+      Flight.Gap.Fraction.Speed
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Arrival
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Paths_flight_gap_valid
+  hs-source-dirs:
+      library
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures
+  build-depends:
+      QuickCheck
+    , aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-units
+    , newtype
+    , numbers
+    , scientific
+    , siggy-chardust
+    , template-haskell
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Early
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Equation
+      Flight.Gap.Fraction
+      Flight.Gap.Fraction.Arrival
+      Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
+      Flight.Gap.Fraction.Goal
+      Flight.Gap.Fraction.Launch
+      Flight.Gap.Fraction.Leading
+      Flight.Gap.Fraction.Linear
+      Flight.Gap.Fraction.Speed
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Arrival
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Paths_flight_gap_valid
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , doctest
+    , facts
+    , flight-units
+    , newtype
+    , numbers
+    , quickcheck-classes
+    , scientific
+    , siggy-chardust
+    , template-haskell
+    , text
+    , uom-plugin
+  if flag(suppress-failing-tests)
+    buildable: False
+  default-language: Haskell2010
+
+test-suite effort
+  type: exitcode-stdio-1.0
+  main-is: EffortTestMain.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Early
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Equation
+      Flight.Gap.Fraction
+      Flight.Gap.Fraction.Arrival
+      Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
+      Flight.Gap.Fraction.Goal
+      Flight.Gap.Fraction.Launch
+      Flight.Gap.Fraction.Leading
+      Flight.Gap.Fraction.Linear
+      Flight.Gap.Fraction.Speed
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Arrival
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Normal
+      TestNewtypes
+      DifficultyFraction
+      Paths_flight_gap_valid
+  hs-source-dirs:
+      library
+      test-suite/test
+      test-suite/effort
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      QuickCheck
+    , aeson
+    , base
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-units
+    , newtype
+    , numbers
+    , quickcheck-instances
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , statistics
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , template-haskell
+    , text
+    , uom-plugin
+    , vector
+  if flag(suppress-failing-tests)
+    buildable: False
+  default-language: Haskell2010
+
+test-suite leading
+  type: exitcode-stdio-1.0
+  main-is: LeadingTestMain.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Early
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Equation
+      Flight.Gap.Fraction
+      Flight.Gap.Fraction.Arrival
+      Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
+      Flight.Gap.Fraction.Goal
+      Flight.Gap.Fraction.Launch
+      Flight.Gap.Fraction.Leading
+      Flight.Gap.Fraction.Linear
+      Flight.Gap.Fraction.Speed
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Arrival
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Normal
+      TestNewtypes
+      LeadingCoefficient
+      Paths_flight_gap_valid
+  hs-source-dirs:
+      library
+      test-suite/test
+      test-suite/leading
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      QuickCheck
+    , aeson
+    , base
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-units
+    , newtype
+    , numbers
+    , quickcheck-instances
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , statistics
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , template-haskell
+    , text
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
+test-suite score
+  type: exitcode-stdio-1.0
+  main-is: ScoreTestMain.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Early
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Equation
+      Flight.Gap.Fraction
+      Flight.Gap.Fraction.Arrival
+      Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
+      Flight.Gap.Fraction.Goal
+      Flight.Gap.Fraction.Launch
+      Flight.Gap.Fraction.Leading
+      Flight.Gap.Fraction.Linear
+      Flight.Gap.Fraction.Speed
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Arrival
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Normal
+      TestNewtypes
+      ArrivalFraction
+      LinearFraction
+      Points.Hg
+      Points.Pg
+      Points.Props
+      SpeedFraction
+      Weighting
+      Paths_flight_gap_valid
+  hs-source-dirs:
+      library
+      test-suite/test
+      test-suite/score
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      QuickCheck
+    , aeson
+    , base
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-units
+    , newtype
+    , numbers
+    , quickcheck-instances
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , statistics
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , template-haskell
+    , text
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
+test-suite stop
+  type: exitcode-stdio-1.0
+  main-is: StopTestMain.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Early
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Equation
+      Flight.Gap.Fraction
+      Flight.Gap.Fraction.Arrival
+      Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
+      Flight.Gap.Fraction.Goal
+      Flight.Gap.Fraction.Launch
+      Flight.Gap.Fraction.Leading
+      Flight.Gap.Fraction.Linear
+      Flight.Gap.Fraction.Speed
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Arrival
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Normal
+      TestNewtypes
+      Stopped
+      Paths_flight_gap_valid
+  hs-source-dirs:
+      library
+      test-suite/test
+      test-suite/stop
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      QuickCheck
+    , aeson
+    , base
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-units
+    , newtype
+    , numbers
+    , quickcheck-instances
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , statistics
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , template-haskell
+    , text
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
+test-suite validity
+  type: exitcode-stdio-1.0
+  main-is: ValidityTestMain.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Early
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Equation
+      Flight.Gap.Fraction
+      Flight.Gap.Fraction.Arrival
+      Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
+      Flight.Gap.Fraction.Goal
+      Flight.Gap.Fraction.Launch
+      Flight.Gap.Fraction.Leading
+      Flight.Gap.Fraction.Linear
+      Flight.Gap.Fraction.Speed
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Penalty
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Arrival
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Normal
+      TestNewtypes
+      DistanceValidity
+      LaunchValidity
+      StopValidity
+      TaskValidity
+      TimeValidity
+      Paths_flight_gap_valid
+  hs-source-dirs:
+      library
+      test-suite/test
+      test-suite/validity
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      QuickCheck
+    , aeson
+    , base
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-units
+    , newtype
+    , numbers
+    , quickcheck-instances
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , statistics
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , template-haskell
+    , text
+    , uom-plugin
+    , vector
+  default-language: Haskell2010

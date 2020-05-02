@@ -33,6 +33,7 @@ dhallCabal =
     , ("flare-timing", "flare-timing")
     , ("fsdb", "flight-fsdb")
     , ("gap", "flight-gap")
+    , ("gap-valid", "flight-gap-valid")
     , ("igc", "flight-igc")
     , ("kml", "flight-kml")
     , ("latlng", "flight-latlng")

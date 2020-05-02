@@ -46,6 +46,8 @@ flags:
         suppress-failing-tests: true
     flight-gap:
         suppress-failing-tests: true
+    flight-gap-valid:
+        suppress-failing-tests: true
     flight-igc:
         suppress-failing-tests: true
     flight-kml:
@@ -75,6 +77,7 @@ packages:
 - earth
 - fsdb
 - gap
+- gap-valid
 - igc
 - kml
 - latlng
