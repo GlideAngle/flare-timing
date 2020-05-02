@@ -74,7 +74,7 @@ essNoGoalEarlyHg =
 
 hgUnits :: TestTree
 hgUnits = testGroup "HG Points"
-    [ testGroup "No penalties"
+    [ testGroup "Nominal"
         [ HU.testCase "✓ Zero for each component sum to zero task points" $
             ((FS.taskPoints NominalHg idSeq nullSeqs zeroPoints) <&> total) @?= Right (TaskPoints 0)
 
