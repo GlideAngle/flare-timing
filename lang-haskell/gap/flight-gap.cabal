@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e46b927c20657d28cdd867bc843bb53f27beaef4c4e231c51905c49e497192cd
+-- hash: af530d6eafe1c5a3a97c4a15953a683a07374ead368470678bd5621b831187e3
 
 name:           flight-gap
 version:        0.1.0
@@ -66,6 +66,7 @@ library
     , facts
     , flight-gap-base
     , flight-gap-effort
+    , flight-gap-lead
     , flight-gap-valid
     , flight-units
     , newtype
@@ -112,6 +113,7 @@ test-suite doctest
     , facts
     , flight-gap-base
     , flight-gap-effort
+    , flight-gap-lead
     , flight-gap-valid
     , flight-units
     , newtype
@@ -164,6 +166,7 @@ test-suite effort
     , facts
     , flight-gap-base
     , flight-gap-effort
+    , flight-gap-lead
     , flight-gap-valid
     , flight-units
     , newtype
@@ -223,6 +226,7 @@ test-suite leading
     , facts
     , flight-gap-base
     , flight-gap-effort
+    , flight-gap-lead
     , flight-gap-valid
     , flight-units
     , newtype
@@ -286,6 +290,7 @@ test-suite score
     , facts
     , flight-gap-base
     , flight-gap-effort
+    , flight-gap-lead
     , flight-gap-valid
     , flight-units
     , newtype
@@ -343,6 +348,7 @@ test-suite stop
     , facts
     , flight-gap-base
     , flight-gap-effort
+    , flight-gap-lead
     , flight-gap-valid
     , flight-units
     , newtype
@@ -404,6 +410,7 @@ test-suite validity
     , facts
     , flight-gap-base
     , flight-gap-effort
+    , flight-gap-lead
     , flight-gap-valid
     , flight-units
     , newtype

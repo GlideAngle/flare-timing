@@ -34,6 +34,7 @@ dhallCabal =
     , ("fsdb", "flight-fsdb")
     , ("gap-base", "flight-gap-base")
     , ("gap-effort", "flight-gap-effort")
+    , ("gap-lead", "flight-gap-lead")
     , ("gap-valid", "flight-gap-valid")
     , ("gap", "flight-gap")
     , ("igc", "flight-igc")

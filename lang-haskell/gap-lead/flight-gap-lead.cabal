@@ -4,15 +4,15 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 67cc9cd609e5b747da4172b927d8e3b7338c649e0c85b61d5ab40cdfd7653ae5
+-- hash: 3b7f5e91bb0b9f5cf209bfb121499c1b5b5c1a83badb93decd0ddbab9cb320b1
 
-name:           flight-gap-effort
+name:           flight-gap-lead
 version:        0.1.0
-synopsis:       GAP Scoring, Effort
-description:    GAP scoring for hang gliding and paragliding competitons, the effort (distance difficulty) parts.
+synopsis:       GAP Scoring, Leading
+description:    GAP scoring for hang gliding and paragliding competitons, the leading parts.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-validity#readme
-bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-validity/issues
+homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-lead#readme
+bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-lead/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
@@ -27,7 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-validity
+  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-lead
 
 flag suppress-failing-tests
   manual: False
@@ -37,10 +37,14 @@ library
   exposed-modules:
       Flight.Score
   other-modules:
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
-      Flight.Gap.Distance.Relative
-      Paths_flight_gap_effort
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Time.Leading
+      Paths_flight_gap_lead
   hs-source-dirs:
       library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
@@ -69,11 +73,15 @@ test-suite doctest
   type: exitcode-stdio-1.0
   main-is: DocTest.hs
   other-modules:
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
-      Flight.Gap.Distance.Relative
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Time.Leading
       Flight.Score
-      Paths_flight_gap_effort
+      Paths_flight_gap_lead
   hs-source-dirs:
       library
       test-suite-doctest
@@ -107,14 +115,18 @@ test-suite effort
   type: exitcode-stdio-1.0
   main-is: EffortTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
-      Flight.Gap.Distance.Relative
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Time.Leading
       Flight.Score
       Normal
       TestNewtypes
       DifficultyFraction
-      Paths_flight_gap_effort
+      Paths_flight_gap_lead
   hs-source-dirs:
       library
       test-suite/test
@@ -155,14 +167,18 @@ test-suite leading
   type: exitcode-stdio-1.0
   main-is: LeadingTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
-      Flight.Gap.Distance.Relative
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Time.Leading
       Flight.Score
       Normal
       TestNewtypes
       LeadingCoefficient
-      Paths_flight_gap_effort
+      Paths_flight_gap_lead
   hs-source-dirs:
       library
       test-suite/test
@@ -201,9 +217,13 @@ test-suite score
   type: exitcode-stdio-1.0
   main-is: ScoreTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
-      Flight.Gap.Distance.Relative
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Time.Leading
       Flight.Score
       Normal
       TestNewtypes
@@ -214,7 +234,7 @@ test-suite score
       Points.Props
       SpeedFraction
       Weighting
-      Paths_flight_gap_effort
+      Paths_flight_gap_lead
   hs-source-dirs:
       library
       test-suite/test
@@ -253,14 +273,18 @@ test-suite stop
   type: exitcode-stdio-1.0
   main-is: StopTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
-      Flight.Gap.Distance.Relative
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Time.Leading
       Flight.Score
       Normal
       TestNewtypes
       Stopped
-      Paths_flight_gap_effort
+      Paths_flight_gap_lead
   hs-source-dirs:
       library
       test-suite/test
@@ -299,9 +323,13 @@ test-suite validity
   type: exitcode-stdio-1.0
   main-is: ValidityTestMain.hs
   other-modules:
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
-      Flight.Gap.Distance.Relative
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Time.Leading
       Flight.Score
       Normal
       TestNewtypes
@@ -310,7 +338,7 @@ test-suite validity
       StopValidity
       TaskValidity
       TimeValidity
-      Paths_flight_gap_effort
+      Paths_flight_gap_lead
   hs-source-dirs:
       library
       test-suite/test

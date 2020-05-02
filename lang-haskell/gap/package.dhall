@@ -67,6 +67,7 @@ in    defs
             , "flight-units"
             , "flight-gap-base"
             , "flight-gap-effort"
+            , "flight-gap-lead"
             , "flight-gap-valid"
             ]
       , library =

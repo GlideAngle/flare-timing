@@ -27,10 +27,10 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces)
 import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Units ()
-import Flight.Gap.Fraction.Leading (LeadingFraction(..))
+import "flight-gap-base" Flight.Gap.Fraction (LeadingFraction(..))
+import "flight-gap-base" Flight.Score (powerFraction)
 import Flight.Gap.Leading.Area (LeadingAreas(..), LeadingArea(..))
 import Flight.Gap.Leading.Coef (LeadingCoef(..), LeadingCoefUnits)
-import Flight.Gap.Equation (powerFraction)
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.

@@ -42,7 +42,7 @@ in    defs
       , category =
           "Flight"
       , github =
-          "blockscope/flare-timing/gap"
+          "blockscope/flare-timing/lang-haskell/gap-base"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"

@@ -34,15 +34,15 @@ in    defs
     ⫽ { flags =
           { suppress-failing-tests = { manual = False, default = True } }
       , name =
-          "flight-gap-effort"
+          "flight-gap-lead"
       , synopsis =
-          "GAP Scoring, Effort"
+          "GAP Scoring, Leading"
       , description =
-          "GAP scoring for hang gliding and paragliding competitons, the effort (distance difficulty) parts."
+          "GAP scoring for hang gliding and paragliding competitons, the leading parts."
       , category =
           "Flight"
       , github =
-          "blockscope/flare-timing/lang-haskell/gap-validity"
+          "blockscope/flare-timing/lang-haskell/gap-lead"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"

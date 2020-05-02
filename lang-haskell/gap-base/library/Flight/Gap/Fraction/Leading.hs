@@ -1,8 +1,6 @@
 module Flight.Gap.Fraction.Leading
     ( LeadingFraction(..)
-    , EssTime(..)
     , LwScaling(..)
-    , LeadAllDown(..)
     ) where
 
 import GHC.Generics (Generic)
@@ -23,18 +21,6 @@ deriveDecimalPlaces (DecimalPlaces 8) ''LeadingFraction
 deriveJsonViaSci ''LeadingFraction
 deriveCsvViaSci ''LeadingFraction
 
--- | Task time when the last pilot made the end of the speed section.
-newtype EssTime = EssTime Rational
-    deriving (Eq, Ord, Show, Generic)
-
-instance Newtype EssTime Rational where
-    pack = EssTime
-    unpack (EssTime a) = a
-
-deriveDecimalPlaces (DecimalPlaces 3) ''EssTime
-deriveJsonViaSci ''EssTime
-deriveCsvViaSci ''EssTime
-
 newtype LwScaling = LwScaling Rational
     deriving (Eq, Ord, Show, Generic)
 
@@ -45,6 +31,3 @@ instance Newtype LwScaling Rational where
 deriveDecimalPlaces (DecimalPlaces 0) ''LwScaling
 deriveJsonViaSci ''LwScaling
 deriveCsvViaSci ''LwScaling
-
--- | The time of last landing among all pilots, in seconds from first lead.
-newtype LeadAllDown = LeadAllDown EssTime

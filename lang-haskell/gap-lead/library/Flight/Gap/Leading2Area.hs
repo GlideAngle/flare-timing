@@ -9,7 +9,7 @@ import Data.UnitsOfMeasure ((-:), (*:), u, zero, fromRational', recip')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Gap.Fraction.Leading (EssTime(..), LeadAllDown(..))
+import Flight.Gap.Time.Leading (EssTime(..), LeadAllDown(..))
 import Flight.Gap.Leading.Area
     ( LeadingAreas(..), LeadingArea(..)
     , LeadingArea2Units, zeroLeadingArea2Units

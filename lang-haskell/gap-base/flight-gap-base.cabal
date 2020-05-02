@@ -4,15 +4,15 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 30f80cae3d568539183811e861339dc2f2d7f1c586119ec0ab641ef1f2b76638
+-- hash: e50b5275b32da3325553ff481b41373066277744a863fe47d59f61ebb5a1cd3f
 
 name:           flight-gap-base
 version:        0.1.0
 synopsis:       Base types for GAP Scoring.
 description:    GAP scoring for hang gliding and paragliding competitons, the base types.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing#readme
-bug-reports:    https://github.com/blockscope/flare-timing/issues
+homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-base#readme
+bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-base/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: gap
+  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-base
 
 flag suppress-failing-tests
   manual: False
@@ -54,12 +53,6 @@ library
       Flight.Gap.Fraction.Leading
       Flight.Gap.Fraction.Linear
       Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -119,12 +112,6 @@ test-suite doctest
       Flight.Gap.Fraction.Leading
       Flight.Gap.Fraction.Linear
       Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -190,12 +177,6 @@ test-suite effort
       Flight.Gap.Fraction.Leading
       Flight.Gap.Fraction.Linear
       Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -271,12 +252,6 @@ test-suite leading
       Flight.Gap.Fraction.Leading
       Flight.Gap.Fraction.Linear
       Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -350,12 +325,6 @@ test-suite score
       Flight.Gap.Fraction.Leading
       Flight.Gap.Fraction.Linear
       Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -435,12 +404,6 @@ test-suite stop
       Flight.Gap.Fraction.Leading
       Flight.Gap.Fraction.Linear
       Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -514,12 +477,6 @@ test-suite validity
       Flight.Gap.Fraction.Leading
       Flight.Gap.Fraction.Linear
       Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task

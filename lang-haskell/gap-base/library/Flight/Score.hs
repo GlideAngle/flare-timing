@@ -60,45 +60,6 @@ module Flight.Score
     , DistanceFraction(..)
     , linearFraction
     , bestDistance'
-    -- * Fractional allotment of leading points
-    , TaskTime(..)
-    , DistanceToEss(..)
-    , Leg(..)
-    , LcPoint(..)
-    , LcSeq(..)
-    , LcTrack
-    , LcArea
-    , LcCoef
-    , TaskDeadline(..)
-    , LengthOfSs(..)
-    , LeadingAreaScaling(..)
-    , LeadingAreas(..)
-    , LeadingArea(..)
-    , LeadingAreaUnits
-    , LeadingArea1Units
-    , LeadingArea2Units
-    , LeadingAreaToCoefUnits
-    , LeadingArea1ToCoefUnits
-    , LeadingArea2ToCoefUnits
-    , LeadingCoef(..)
-    , AreaToCoef(..)
-    , LeadingFraction(..)
-    , EssTime(..)
-    , LeadAllDown(..)
-    , clampToEss
-    , clampToDeadline
-    , area1Steps
-    , area2Steps
-    , area1toCoef
-    , area2toCoef
-    , mk1Coef
-    , mk2Coef
-    , leadingFraction
-    , madeGoal
-    , cleanTrack
-    , showSecs
-    , zeroLeadingArea1Units
-    , zeroLeadingArea2Units
     -- * Places
     , ArrivalPlacing(..)
     , TaskPlacing(..)
@@ -119,11 +80,16 @@ module Flight.Score
     , FlownStdDev(..)
     , SumOfDistance(..)
     , unFlownMaxAsKm
+    -- * Math
+    , powerFraction
     ) where
 
-import Flight.Gap.Leading.Area
-import Flight.Gap.Leading.Coef
-import Flight.Gap.Leading.Scaling
+--import Flight.Gap.Leading.Area
+--import Flight.Gap.Leading.Coef
+--import Flight.Gap.Leading.Scaling
+--import Flight.Gap.Leading
+--import Flight.Gap.Leading1Area
+--import Flight.Gap.Leading2Area
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
 import Flight.Gap.Pilots
@@ -143,9 +109,6 @@ import Flight.Gap.Distance.Min
 import Flight.Gap.Distance.Sum
 --import Flight.Gap.Distance.Relative
 import Flight.Gap.Distance.Stop
-import Flight.Gap.Leading
-import Flight.Gap.Leading1Area
-import Flight.Gap.Leading2Area
 import Flight.Gap.Place.Arrival
 import Flight.Gap.Place.Task
 import Flight.Gap.Weight.GoalRatio
@@ -154,3 +117,4 @@ import Flight.Gap.Weight.Leading
 import Flight.Gap.Weight.Arrival
 import Flight.Gap.Weight.Time
 import Flight.Gap.Weighting
+import Flight.Gap.Equation
