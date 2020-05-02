@@ -139,7 +139,7 @@ pgUnits = testGroup "PG Points"
                         , addApplied = TaskPoints 0
                         , resetApplied = TaskPoints 0
                         , total = TaskPoints 0
-                        , effp = mulSeq $ negate 2
+                        , effp = mulSeq 0
                         , effj = idSeq
                         }
 

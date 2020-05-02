@@ -615,7 +615,18 @@ instance Show (Hide PointPenalty) where
 -- >>> effectiveMul [] == identityOfMul
 -- True
 effectiveMul :: [PointPenalty Mul] -> PointPenalty Mul
-effectiveMul = product . filter isPenaltyFraction
+effectiveMul xs =
+    -- NOTE: As soon as zero is reached we're stuck with it.
+    if any (\case (PenaltyFraction n) | n <= 0 -> True; _ -> False) xs
+        then PenaltyFraction 0.0
+        else
+            product
+            . filter isPenaltyFraction
+            $ fmap
+                (\case
+                    (PenaltyFraction n) | n <= 0 -> PenaltyFraction 0.0
+                    x -> x)
+                xs
 
 -- | The effective point is the sum of the list.
 --

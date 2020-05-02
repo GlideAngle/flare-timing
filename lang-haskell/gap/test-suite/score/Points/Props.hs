@@ -124,10 +124,10 @@ correct p@JumpedTooEarly{} js others _ =
     Left $ WAT_JumpedTooEarly (p, js, others)
 
 correct p@(Jumped spp jtg) ((==) idSeq -> True) others pts =
-    correct p (addSeq $ jumpTheGunPenalty spp jtg) others pts
+    correct p (addSeq . negate $ jumpTheGunPenalty spp jtg) others pts
 
 correct p@(JumpedNoGoal spp jtg) ((==) idSeq -> True) others pts =
-    correct p (addSeq $ jumpTheGunPenalty spp jtg) others pts
+    correct p (addSeq . negate $ jumpTheGunPenalty spp jtg) others pts
 
 correct
     p@(Jumped spp jtg)
