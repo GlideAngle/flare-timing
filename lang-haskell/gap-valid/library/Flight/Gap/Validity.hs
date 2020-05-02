@@ -35,23 +35,23 @@ import Data.UnitsOfMeasure
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Ratio (pattern (:%))
-import Flight.Gap.Distance.Stop
+import "flight-gap-base" Flight.Score
     (FlownMax(..), FlownMean(..), FlownStdDev(..), LaunchToEss(..))
-import Flight.Gap.Distance.Nominal (NominalDistance(..))
-import Flight.Gap.Distance.Min (MinimumDistance(..))
-import Flight.Gap.Distance.Sum (SumOfDistance(..))
+import "flight-gap-base" Flight.Score (NominalDistance(..))
+import "flight-gap-base" Flight.Score (MinimumDistance(..))
+import "flight-gap-base" Flight.Score (SumOfDistance(..))
+import "flight-gap-base" Flight.Score (NominalLaunch(..))
+import "flight-gap-base" Flight.Score (NominalGoal(..))
+import "flight-gap-base" Flight.Score (NominalTime(..))
+import "flight-gap-base" Flight.Score (BestTime(..))
+import "flight-gap-base" Flight.Score
+    (PilotsPresent(..), PilotsFlying(..), PilotsAtEss(..), PilotsLanded(..))
 import Flight.Gap.Validity.Area (NominalDistanceArea(..))
 import Flight.Gap.Validity.Launch (LaunchValidity(..))
 import Flight.Gap.Validity.Distance (DistanceValidity(..))
 import Flight.Gap.Validity.Time (TimeValidity(..))
 import Flight.Gap.Validity.Task (TaskValidity(..))
 import Flight.Gap.Validity.Stop (StopValidity(..))
-import Flight.Gap.Fraction.Launch (NominalLaunch(..))
-import Flight.Gap.Fraction.Goal (NominalGoal(..))
-import Flight.Gap.Time.Nominal (NominalTime(..))
-import Flight.Gap.Time.Best (BestTime(..))
-import Flight.Gap.Pilots
-    (PilotsPresent(..), PilotsFlying(..), PilotsAtEss(..), PilotsLanded(..))
 
 data Validity =
     Validity

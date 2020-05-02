@@ -65,6 +65,8 @@ in    defs
             , "detour-via-uom"
             , "siggy-chardust"
             , "flight-units"
+            , "flight-gap-base"
+            , "flight-gap-valid"
             ]
       , library =
           { source-dirs =

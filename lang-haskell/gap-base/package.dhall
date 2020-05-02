@@ -34,15 +34,15 @@ in    defs
     ⫽ { flags =
           { suppress-failing-tests = { manual = False, default = True } }
       , name =
-          "flight-gap-valid"
+          "flight-gap-base"
       , synopsis =
-          "GAP Scoring Validities"
+          "Base types for GAP Scoring."
       , description =
-          "GAP scoring for hang gliding and paragliding competitons, the validity parts."
+          "GAP scoring for hang gliding and paragliding competitons, the base types."
       , category =
           "Flight"
       , github =
-          "blockscope/flare-timing/gap-validity"
+          "blockscope/flare-timing/gap"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"
@@ -65,10 +65,13 @@ in    defs
             , "detour-via-uom"
             , "siggy-chardust"
             , "flight-units"
-            , "flight-gap-base"
             ]
       , library =
-          { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
+          { source-dirs =
+              "library"
+          , exposed-modules =
+              [ "Flight.Score", "Flight.Gap.Fraction" ]
+          }
       , tests =
             ./../default-tests.dhall
           ⫽ { effort =

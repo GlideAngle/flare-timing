@@ -27,8 +27,8 @@ import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Points (Hg, Pg)
-import Flight.Gap.Leading (TaskTime(..))
-import Flight.Gap.Pilots (PilotsAtEss(..))
+import "flight-gap-base" Flight.Score (TaskTime(..))
+import "flight-gap-base" Flight.Score (PilotsAtEss(..))
 import Flight.Gap.Time.ScoreBack (ScoreBackTime(..))
 
 newtype TaskStopTime = TaskStopTime Rational deriving (Eq, Ord, Show)

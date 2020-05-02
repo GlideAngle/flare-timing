@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ef795970159d1b57bacb0dd964b2704fafcb90504fd3e3b566d7fbb29cc3e637
+-- hash: 00e157ed2043847c93d4c626d13e5083038350bc4d38afb550a46e0820334788
 
 name:           flight-gap
 version:        0.1.0
@@ -39,63 +39,17 @@ library
       Flight.Score
       Flight.Gap.Fraction
   other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Early
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Penalty
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival
       Flight.Gap.Points.Distance
       Flight.Gap.Points.Leading
       Flight.Gap.Points.Task
       Flight.Gap.Points.Time
-      Flight.Gap.Ratio
       Flight.Gap.Stopped
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
       Flight.Gap.Time.Early
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
-      Flight.Gap.Time.Velocity
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Paths_flight_gap
   hs-source-dirs:
       library
@@ -110,6 +64,8 @@ library
     , detour-via-sci
     , detour-via-uom
     , facts
+    , flight-gap-base
+    , flight-gap-valid
     , flight-units
     , newtype
     , numbers
@@ -124,64 +80,18 @@ test-suite doctest
   type: exitcode-stdio-1.0
   main-is: DocTest.hs
   other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Early
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
       Flight.Gap.Fraction
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Penalty
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival
       Flight.Gap.Points.Distance
       Flight.Gap.Points.Leading
       Flight.Gap.Points.Task
       Flight.Gap.Points.Time
-      Flight.Gap.Ratio
       Flight.Gap.Stopped
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
       Flight.Gap.Time.Early
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
-      Flight.Gap.Time.Velocity
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Paths_flight_gap
   hs-source-dirs:
@@ -199,6 +109,8 @@ test-suite doctest
     , detour-via-uom
     , doctest
     , facts
+    , flight-gap-base
+    , flight-gap-valid
     , flight-units
     , newtype
     , numbers
@@ -216,64 +128,18 @@ test-suite effort
   type: exitcode-stdio-1.0
   main-is: EffortTestMain.hs
   other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Early
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
       Flight.Gap.Fraction
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Penalty
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival
       Flight.Gap.Points.Distance
       Flight.Gap.Points.Leading
       Flight.Gap.Points.Task
       Flight.Gap.Points.Time
-      Flight.Gap.Ratio
       Flight.Gap.Stopped
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
       Flight.Gap.Time.Early
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
-      Flight.Gap.Time.Velocity
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -294,6 +160,8 @@ test-suite effort
     , detour-via-sci
     , detour-via-uom
     , facts
+    , flight-gap-base
+    , flight-gap-valid
     , flight-units
     , newtype
     , numbers
@@ -318,64 +186,18 @@ test-suite leading
   type: exitcode-stdio-1.0
   main-is: LeadingTestMain.hs
   other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Early
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
       Flight.Gap.Fraction
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Penalty
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival
       Flight.Gap.Points.Distance
       Flight.Gap.Points.Leading
       Flight.Gap.Points.Task
       Flight.Gap.Points.Time
-      Flight.Gap.Ratio
       Flight.Gap.Stopped
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
       Flight.Gap.Time.Early
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
-      Flight.Gap.Time.Velocity
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -396,6 +218,8 @@ test-suite leading
     , detour-via-sci
     , detour-via-uom
     , facts
+    , flight-gap-base
+    , flight-gap-valid
     , flight-units
     , newtype
     , numbers
@@ -418,64 +242,18 @@ test-suite score
   type: exitcode-stdio-1.0
   main-is: ScoreTestMain.hs
   other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Early
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
       Flight.Gap.Fraction
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Penalty
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival
       Flight.Gap.Points.Distance
       Flight.Gap.Points.Leading
       Flight.Gap.Points.Task
       Flight.Gap.Points.Time
-      Flight.Gap.Ratio
       Flight.Gap.Stopped
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
       Flight.Gap.Time.Early
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
-      Flight.Gap.Time.Velocity
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -502,6 +280,8 @@ test-suite score
     , detour-via-sci
     , detour-via-uom
     , facts
+    , flight-gap-base
+    , flight-gap-valid
     , flight-units
     , newtype
     , numbers
@@ -524,64 +304,18 @@ test-suite stop
   type: exitcode-stdio-1.0
   main-is: StopTestMain.hs
   other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Early
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
       Flight.Gap.Fraction
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Penalty
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival
       Flight.Gap.Points.Distance
       Flight.Gap.Points.Leading
       Flight.Gap.Points.Task
       Flight.Gap.Points.Time
-      Flight.Gap.Ratio
       Flight.Gap.Stopped
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
       Flight.Gap.Time.Early
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
-      Flight.Gap.Time.Velocity
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -602,6 +336,8 @@ test-suite stop
     , detour-via-sci
     , detour-via-uom
     , facts
+    , flight-gap-base
+    , flight-gap-valid
     , flight-units
     , newtype
     , numbers
@@ -624,64 +360,18 @@ test-suite validity
   type: exitcode-stdio-1.0
   main-is: ValidityTestMain.hs
   other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
       Flight.Gap.Distance.Early
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Relative
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
       Flight.Gap.Fraction
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
       Flight.Gap.Penalty
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival
       Flight.Gap.Points.Distance
       Flight.Gap.Points.Leading
       Flight.Gap.Points.Task
       Flight.Gap.Points.Time
-      Flight.Gap.Ratio
       Flight.Gap.Stopped
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
       Flight.Gap.Time.Early
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
-      Flight.Gap.Time.Velocity
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
       Flight.Score
       Normal
       TestNewtypes
@@ -706,6 +396,8 @@ test-suite validity
     , detour-via-sci
     , detour-via-uom
     , facts
+    , flight-gap-base
+    , flight-gap-valid
     , flight-units
     , newtype
     , numbers

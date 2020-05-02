@@ -19,26 +19,6 @@ module Flight.Score
     -- * Ratio
     , isNormal
     , isFoldNormal
-    -- * Validity
-    , LaunchValidity(..)
-    , LaunchValidityWorking(..)
-    , TimeValidity(..)
-    , TimeValidityWorking(..)
-    , DistanceValidity(..)
-    , DistanceValidityWorking(..)
-    , StopValidity(..)
-    , ReachToggle(..)
-    , ReachStats(..)
-    , StopValidityWorking(..)
-    , TaskValidity(..)
-    , Validity(..)
-    , ValidityWorking(..)
-    , NominalDistanceArea(..)
-    , launchValidity
-    , distanceValidity
-    , timeValidity
-    , stopValidity
-    , taskValidity
     -- * Weighting
     , GoalRatio(..)
     , DistanceRatio(..)
@@ -143,67 +123,6 @@ module Flight.Score
     -- * Places
     , ArrivalPlacing(..)
     , TaskPlacing(..)
-    -- * Tallying points
-    , LaunchToStartPoints(..)
-    , TooEarlyPoints(..)
-    , JumpedTheGun(..)
-    , Hg
-    , Pg
-    , SitRep(..)
-    , PointPenalty
-    , Hide(..)
-    , DistancePoints(..)
-    , LinearPoints(..)
-    , DifficultyPoints(..)
-    , LeadingPoints(..)
-    , ArrivalPoints(..)
-    , TimePoints(..)
-    , TaskPoints(..)
-    , Points(..)
-    , PointsReduced(..)
-    , ReconcilePointErrors(..)
-    , PosInt, GE
-    , PenaltySeq(..), PenaltySeqs(..)
-    , Mul, Add, Reset
-    , zeroPoints
-    , taskPoints
-    , tallySubtotal
-    , applyPenalties
-    , idSeq, nullSeqs, toSeqs
-    , seqOnlyMuls, seqOnlyAdds, seqOnlyResets
-    , mulSeq, addSeq, resetSeq
-    , idMul, idAdd, idReset
-    , mkMul, mkAdd, mkReset
-    , exMul, exAdd, exReset
-    , identityOfMul, identityOfAdd, identityOfReset
-    , applyMul, applyAdd, applyReset
-    , availablePointsPg
-    , availablePointsHg
-    -- * Stopped task
-    , LaunchToEss(..)
-    , FlownMax(..)
-    , FlownMean(..)
-    , FlownStdDev(..)
-    , TaskStopTime(..)
-    , AnnouncedTime(..)
-    , ScoreBackTime(..)
-    , StartGateInterval(..)
-    , StopTime(..)
-    , CanScoreStopped(..)
-    , unFlownMaxAsKm
-    , stopTaskTime
-    , canScoreStopped
-    , SumOfDistance(..)
-    , TaskType(..)
-    , StartGates(..)
-    , ScoreTimeWindow(..)
-    , scoreTimeWindow
-    , AltitudeAboveGoal(..)
-    , DistanceToGoal(..)
-    , GlideRatio(..)
-    , StoppedTrack(..)
-    , applyGlide
-    , applyGlides
     -- * Pilots
     , PilotId(..)
     , PilotName(..)
@@ -214,24 +133,50 @@ module Flight.Score
     , PilotsPresent(..)
     , PilotsFlying(..)
     , PilotsLanded(..)
-    -- * Early start
-    , SecondsPerPoint(..)
-    , JumpTheGunLimit(..)
-    , LaunchToSss(..)
-    , jumpTheGunSitRepHg
-    , jumpTheGunSitRepPg
-    , jumpTheGunPenalty
+    -- * Validity
+    , LaunchToEss(..)
+    , FlownMax(..)
+    , FlownMean(..)
+    , FlownStdDev(..)
+    , SumOfDistance(..)
+    , unFlownMaxAsKm
     ) where
 
-import "flight-gap-base" Flight.Score
-import "flight-gap-valid" Flight.Score
-import Flight.Gap.Time.Early
-import Flight.Gap.Distance.Early
-import Flight.Gap.Points.Arrival
-import Flight.Gap.Points.Distance
-import Flight.Gap.Points.Leading
-import Flight.Gap.Points.Time
-import Flight.Gap.Points.Task
-import Flight.Gap.Points
-import Flight.Gap.Penalty
-import Flight.Gap.Stopped
+import Flight.Gap.Leading.Area
+import Flight.Gap.Leading.Coef
+import Flight.Gap.Leading.Scaling
+import Flight.Gap.Ratio
+import Flight.Gap.Allot
+import Flight.Gap.Pilots
+import Flight.Gap.Fraction.Launch
+import Flight.Gap.Fraction.Linear
+import Flight.Gap.Fraction.Difficulty
+import Flight.Gap.Fraction.Distance
+import Flight.Gap.Fraction.Leading
+import Flight.Gap.Fraction.Goal
+import Flight.Gap.Time.Arrival
+-- import Flight.Gap.Time.Early
+import Flight.Gap.Time.Nominal
+import Flight.Gap.Time.Best
+import Flight.Gap.Time.Velocity
+-- import Flight.Gap.Time.ScoreBack
+import Flight.Gap.Distance.Pilot
+import Flight.Gap.Distance.Nominal
+import Flight.Gap.Distance.Min
+import Flight.Gap.Distance.Sum
+import Flight.Gap.Distance.Relative
+import Flight.Gap.Distance.Chunk
+import Flight.Gap.Distance.Difficulty
+import Flight.Gap.Distance.Stop
+-- import Flight.Gap.Distance.Early
+import Flight.Gap.Leading
+import Flight.Gap.Leading1Area
+import Flight.Gap.Leading2Area
+import Flight.Gap.Place.Arrival
+import Flight.Gap.Place.Task
+import Flight.Gap.Weight.GoalRatio
+import Flight.Gap.Weight.Distance
+import Flight.Gap.Weight.Leading
+import Flight.Gap.Weight.Arrival
+import Flight.Gap.Weight.Time
+import Flight.Gap.Weighting

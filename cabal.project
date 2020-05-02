@@ -8,8 +8,9 @@ packages:
     , lang-haskell/earth
     , lang-haskell/flare-timing
     , lang-haskell/fsdb
-    , lang-haskell/gap
+    , lang-haskell/gap-base
     , lang-haskell/gap-valid
+    , lang-haskell/gap
     , lang-haskell/igc
     , lang-haskell/kml
     , lang-haskell/latlng
@@ -42,6 +43,10 @@ package flight-earth
 package flight-flare-timing
     tests: true
 package flight-fsdb
+    tests: true
+package flight-gap-base
+    tests: true
+package flight-gap-valid
     tests: true
 package flight-gap
     tests: true
