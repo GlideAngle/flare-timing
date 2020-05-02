@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aba1bcc11074131e125b75120f88e26e81e9af78578ea66b62778650445d6516
+-- hash: ef795970159d1b57bacb0dd964b2704fafcb90504fd3e3b566d7fbb29cc3e637
 
 name:           flight-gap
 version:        0.1.0
@@ -297,6 +297,7 @@ test-suite effort
     , flight-units
     , newtype
     , numbers
+    , quickcheck-instances
     , scientific
     , siggy-chardust
     , smallcheck
@@ -398,6 +399,7 @@ test-suite leading
     , flight-units
     , newtype
     , numbers
+    , quickcheck-instances
     , scientific
     , siggy-chardust
     , smallcheck
@@ -603,6 +605,7 @@ test-suite stop
     , flight-units
     , newtype
     , numbers
+    , quickcheck-instances
     , scientific
     , siggy-chardust
     , smallcheck
@@ -706,6 +709,7 @@ test-suite validity
     , flight-units
     , newtype
     , numbers
+    , quickcheck-instances
     , scientific
     , siggy-chardust
     , smallcheck

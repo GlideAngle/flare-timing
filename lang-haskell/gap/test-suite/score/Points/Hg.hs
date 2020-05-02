@@ -29,7 +29,6 @@ import Flight.Score
     , mulSeq, addSeq, resetSeq
     , mkMul, mkReset
     , exAdd
-    , identityOfAdd
     )
 
 -- TODO: When base >= 4.11 use Data.Functor ((<&>))

@@ -11,7 +11,6 @@ module Stopped
     , applyGlide
     ) where
 
-import Data.Function ((&))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert, toRational')

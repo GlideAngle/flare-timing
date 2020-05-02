@@ -45,7 +45,7 @@ flags:
     flight-fsdb:
         suppress-failing-tests: true
     flight-gap:
-        suppress-failing-tests: false
+        suppress-failing-tests: true
     flight-igc:
         suppress-failing-tests: true
     flight-kml:

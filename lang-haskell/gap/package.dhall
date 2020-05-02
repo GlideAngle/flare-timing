@@ -18,6 +18,8 @@ in  let testdeps =
           , "tasty-quickcheck"
           , "tasty-smallcheck"
           , "smallcheck"
+          , "QuickCheck"
+          , "quickcheck-instances"
           ]
 
 in  let testopts =
@@ -100,7 +102,7 @@ in    defs
                 }
             , score =
                 { dependencies =
-                    testdeps # [ "QuickCheck", "quickcheck-instances", "facts" ]
+                    testdeps # [ "facts" ]
                 , ghc-options =
                     testopts
                 , main =
@@ -131,8 +133,7 @@ in    defs
             , doctest =
                 { dependencies =
                       defs.dependencies
-                    # [ "QuickCheck"
-                      , "quickcheck-classes"
+                    # [ "quickcheck-classes"
                       , "numbers"
                       , "doctest"
                       , "facts"
