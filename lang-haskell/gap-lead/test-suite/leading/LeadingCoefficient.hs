@@ -29,6 +29,7 @@ import TestNewtypes
 leadingCoefficientUnits :: TestTree
 leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
     [ madeGoalUnits
+    , cleanTrackUnits
     ]
 
 pt :: (Rational, Rational) -> LcPoint
@@ -66,6 +67,62 @@ madeGoalUnits = testGroup "Made goal unit tests"
                          ]) @?= True
     ]
 
+cleanTrackUnits :: TestTree
+cleanTrackUnits = testGroup "Clean track unit tests"
+    [ HU.testCase "Single point = no points removed" $
+        FS.cleanTrack (LengthOfSs [u| 1 km |]) (pts [ (1, 0) ])
+        @?= pts [ (1, 0) ]
+
+    , HU.testCase "Two points, each one closer to goal = no points removed" $
+        FS.cleanTrack(LengthOfSs [u| 2 km |]) (pts [ (1, 2)
+                                         , (2, 1)
+                                         ])
+        @?= pts [ (1, 2) 
+                , (2, 1)
+                ]
+
+    , HU.testCase "Two points, each one further from goal = all but one point removed" $
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [ (1, 1)
+                                          , (2, 2)
+                                          ])
+        @?= pts [ (1, 1) ]
+
+    , HU.testCase "Three points, each one closer to goal = no points removed" $
+        FS.cleanTrack (LengthOfSs [u| 3 km |]) (pts [ (1, 3)
+                                          , (2, 2)
+                                          , (3, 1)
+                                          ])
+        @?= pts [ (1, 3) 
+                , (2, 2)
+                , (3, 1)
+                ]
+
+    , HU.testCase "Three points, each one further from goal = all but one point removed" $
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [ (1, 1)
+                                          , (2, 2)
+                                          , (3, 3)
+                                          ])
+        @?= pts [ (1, 1) ]
+
+    , HU.testCase "Three points, only 2nd moves further from goal = that point removed" $
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [ (1, 2)
+                                          , (2, 3)
+                                          , (3, 1)
+                                          ])
+        @?= pts [ (1, 2)
+                , (3, 1)
+                ]
+
+    , HU.testCase "Three points, only 3rd moves further from goal = that point removed" $
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [ (1, 2)
+                                          , (2, 1)
+                                          , (3, 2)
+                                          ])
+        @?= pts [ (1, 2)
+                , (2, 1)
+                ]
+    ]
+
 {-
 WARNING: Leading has changed since these tests were last run.
 
@@ -76,62 +133,6 @@ import Data.Ratio ((%))
     , cleanTrackUnits
     , coefficientUnits
     , leadingFractionsUnits
-    ]
-
-cleanTrackUnits :: TestTree
-cleanTrackUnits = testGroup "Clean track unit tests"
-    [ HU.testCase "Single point = no points removed" $
-        FS.cleanTrack (LengthOfSs 1) (pts [ (1, 0) ])
-        @?= pts [ (1, 0) ]
-
-    , HU.testCase "Two points, each one closer to goal = no points removed" $
-        FS.cleanTrack(LengthOfSs 2) (pts [ (1, 2)
-                                         , (2, 1)
-                                         ])
-        @?= pts [ (1, 2) 
-                , (2, 1)
-                ]
-
-    , HU.testCase "Two points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (LengthOfSs 2) (pts [ (1, 1)
-                                          , (2, 2)
-                                          ])
-        @?= pts [ (1, 1) ]
-
-    , HU.testCase "Three points, each one closer to goal = no points removed" $
-        FS.cleanTrack (LengthOfSs 3) (pts [ (1, 3)
-                                          , (2, 2)
-                                          , (3, 1)
-                                          ])
-        @?= pts [ (1, 3) 
-                , (2, 2)
-                , (3, 1)
-                ]
-
-    , HU.testCase "Three points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (LengthOfSs 2) (pts [ (1, 1)
-                                          , (2, 2)
-                                          , (3, 3)
-                                          ])
-        @?= pts [ (1, 1) ]
-
-    , HU.testCase "Three points, only 2nd moves further from goal = that point removed" $
-        FS.cleanTrack (LengthOfSs 2) (pts [ (1, 2)
-                                          , (2, 3)
-                                          , (3, 1)
-                                          ])
-        @?= pts [ (1, 2)
-                , (3, 1)
-                ]
-
-    , HU.testCase "Three points, only 3rd moves further from goal = that point removed" $
-        FS.cleanTrack (LengthOfSs 2) (pts [ (1, 2)
-                                          , (2, 1)
-                                          , (3, 2)
-                                          ])
-        @?= pts [ (1, 2)
-                , (2, 1)
-                ]
     ]
 
 coefficientUnits :: TestTree
