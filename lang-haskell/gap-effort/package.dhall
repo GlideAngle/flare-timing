@@ -95,6 +95,7 @@ in    defs
                       , "doctest"
                       , "facts"
                       , "flight-units"
+                      , "flight-gap-base"
                       ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
