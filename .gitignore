@@ -39,3 +39,4 @@ bazel-*
 **/bin/**
 **/obj/**
 lang-fsharp/packages
+*.swk
