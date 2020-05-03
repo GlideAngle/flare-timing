@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9f6df71b0b43aef9f9bc29e5444829a41c0a2483c976a99567baa536e48039df
+-- hash: d817328fd7cbb24ae416505e675751b4672c6ae26424fff6a9dcc762d024c4a2
 
 name:           flight-gap-lead
 version:        0.1.0
@@ -69,7 +69,7 @@ library
     , uom-plugin
   default-language: Haskell2010
 
-test-suite leading
+test-suite lead
   type: exitcode-stdio-1.0
   main-is: LeadingTestMain.hs
   other-modules:

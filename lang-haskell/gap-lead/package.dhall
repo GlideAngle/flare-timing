@@ -71,7 +71,7 @@ in    defs
           { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
       , tests =
             ./../default-tests.dhall
-          ⫽ { leading =
+          ⫽ { lead =
                 { dependencies =
                     testdeps # [ "flight-gap-lead" ]
                 , ghc-options =

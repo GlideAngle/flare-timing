@@ -9,8 +9,8 @@ import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.Score as FS
-import Flight.Score
+import qualified "flight-gap-lead" Flight.Score as FS
+import "flight-gap-lead" Flight.Score
     ( TaskTime(..)
     , DistanceToEss(..)
     , LcTrack
