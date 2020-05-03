@@ -65,7 +65,7 @@ in    defs
             , "detour-via-uom"
             , "siggy-chardust"
             , "flight-units"
-            , "flight-gap-base"
+            , "flight-gap-allot"
             ]
       , library =
           { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
@@ -95,7 +95,7 @@ in    defs
                       , "doctest"
                       , "facts"
                       , "flight-units"
-                      , "flight-gap-base"
+                      , "flight-gap-allot"
                       ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

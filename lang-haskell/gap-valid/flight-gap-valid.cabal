@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 53be35d1f5d5dfa067dc73f0d54506ccfaac8c9237f23a1a53bc931c56ea409b
+-- hash: e9c46353f43e53f403d208b27d573e03776944ce3c1f4d12c0c47f695803c4a7
 
 name:           flight-gap-valid
 version:        0.1.0
@@ -57,7 +57,7 @@ library
     , containers
     , detour-via-sci
     , detour-via-uom
-    , flight-gap-base
+    , flight-gap-allot
     , flight-units
     , newtype
     , numbers
@@ -93,7 +93,7 @@ test-suite valid
     , containers
     , detour-via-sci
     , detour-via-uom
-    , flight-gap-base
+    , flight-gap-allot
     , flight-gap-valid
     , flight-units
     , newtype

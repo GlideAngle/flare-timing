@@ -12,7 +12,7 @@ import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import "flight-gap-base" Flight.Score
+import "flight-gap-allot" Flight.Score
     ( NominalGoal(..)
     , NominalDistance(..)
     , MinimumDistance(..)

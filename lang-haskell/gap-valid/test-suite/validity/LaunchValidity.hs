@@ -4,7 +4,7 @@ module LaunchValidity
     , qcLaunchValidity
     ) where
 
-import "flight-gap-base" Flight.Score
+import "flight-gap-allot" Flight.Score
     ( NominalLaunch(..)
     , PilotsPresent(..)
     , PilotsFlying(..)

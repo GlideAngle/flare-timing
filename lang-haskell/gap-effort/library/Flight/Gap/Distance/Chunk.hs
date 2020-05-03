@@ -31,10 +31,10 @@ import qualified Data.Map as Map
 import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
-import "flight-gap-base" Flight.Gap.Fraction (DifficultyFraction(..))
-import "flight-gap-base" Flight.Score (PilotDistance(..))
-import "flight-gap-base" Flight.Score (Pilot)
-import "flight-gap-base" Flight.Score (FlownMax(..))
+import "flight-gap-allot" Flight.Gap.Fraction (DifficultyFraction(..))
+import "flight-gap-allot" Flight.Score (PilotDistance(..))
+import "flight-gap-allot" Flight.Score (Pilot)
+import "flight-gap-allot" Flight.Score (FlownMax(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 
 -- | The index of a 100m chunk. The zeroth chunk is any distance less than or

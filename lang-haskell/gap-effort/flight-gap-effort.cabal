@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f2c8effab31653871dc6d825eac64bf1efcad9490e34da10d4ac25d21d779000
+-- hash: 361978390aaf62ba5a02c976b677cf624c643be121a7ace2cd4914a5764a45b2
 
 name:           flight-gap-effort
 version:        0.1.0
@@ -54,7 +54,7 @@ library
     , detour-via-sci
     , detour-via-uom
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-units
     , newtype
     , numbers
@@ -89,7 +89,7 @@ test-suite doctest
     , detour-via-uom
     , doctest
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-units
     , newtype
     , numbers
@@ -130,7 +130,7 @@ test-suite effort
     , detour-via-sci
     , detour-via-uom
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-gap-effort
     , flight-units
     , newtype

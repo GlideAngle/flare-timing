@@ -4,8 +4,8 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
 
-import qualified "flight-gap-base" Flight.Score as FS
-import "flight-gap-base" Flight.Score
+import qualified "flight-gap-allot" Flight.Score as FS
+import "flight-gap-allot" Flight.Score
     ( PilotsAtEss(..)
     , ArrivalPlacing(..)
     , ArrivalFraction(..)

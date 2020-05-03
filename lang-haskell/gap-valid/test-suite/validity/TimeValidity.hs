@@ -11,7 +11,7 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import "flight-gap-base" Flight.Score
+import "flight-gap-allot" Flight.Score
     ( NominalTime(..)
     , BestTime(..)
     , NominalDistance(..)

@@ -35,16 +35,16 @@ import Data.UnitsOfMeasure
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Ratio (pattern (:%))
-import "flight-gap-base" Flight.Score
+import "flight-gap-allot" Flight.Score
     (FlownMax(..), FlownMean(..), FlownStdDev(..), LaunchToEss(..))
-import "flight-gap-base" Flight.Score (NominalDistance(..))
-import "flight-gap-base" Flight.Score (MinimumDistance(..))
-import "flight-gap-base" Flight.Score (SumOfDistance(..))
-import "flight-gap-base" Flight.Score (NominalLaunch(..))
-import "flight-gap-base" Flight.Score (NominalGoal(..))
-import "flight-gap-base" Flight.Score (NominalTime(..))
-import "flight-gap-base" Flight.Score (BestTime(..))
-import "flight-gap-base" Flight.Score
+import "flight-gap-allot" Flight.Score (NominalDistance(..))
+import "flight-gap-allot" Flight.Score (MinimumDistance(..))
+import "flight-gap-allot" Flight.Score (SumOfDistance(..))
+import "flight-gap-allot" Flight.Score (NominalLaunch(..))
+import "flight-gap-allot" Flight.Score (NominalGoal(..))
+import "flight-gap-allot" Flight.Score (NominalTime(..))
+import "flight-gap-allot" Flight.Score (BestTime(..))
+import "flight-gap-allot" Flight.Score
     (PilotsPresent(..), PilotsFlying(..), PilotsAtEss(..), PilotsLanded(..))
 import Flight.Gap.Validity.Area (NominalDistanceArea(..))
 import Flight.Gap.Validity.Launch (LaunchValidity(..))

@@ -65,7 +65,7 @@ in    defs
             , "detour-via-uom"
             , "siggy-chardust"
             , "flight-units"
-            , "flight-gap-base"
+            , "flight-gap-allot"
             , "flight-gap-weight"
             , "flight-gap-valid"
             ]

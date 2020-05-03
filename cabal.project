@@ -8,7 +8,7 @@ packages:
     , lang-haskell/earth
     , lang-haskell/flare-timing
     , lang-haskell/fsdb
-    , lang-haskell/gap-base
+    , lang-haskell/gap-allot
     , lang-haskell/gap-effort
     , lang-haskell/gap-lead
     , lang-haskell/gap-math
@@ -49,7 +49,7 @@ package flight-flare-timing
     tests: true
 package flight-fsdb
     tests: true
-package flight-gap-base
+package flight-gap-allot
     tests: true
     flags: -suppress-failing-tests
 package flight-gap-effort

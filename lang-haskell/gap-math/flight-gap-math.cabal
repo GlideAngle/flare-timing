@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 269a2cb0ef85c573d5ea559b28d60fd371a451885cb9f4177ed183318ebc5fc5
+-- hash: bbbce75c18fec890e0b66bb333a11f66bf4d6728f79695c9bf8856c1a8c4106f
 
 name:           flight-gap-math
 version:        0.1.0
@@ -60,7 +60,7 @@ library
     , detour-via-sci
     , detour-via-uom
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-gap-valid
     , flight-gap-weight
     , flight-units
@@ -103,7 +103,7 @@ test-suite doctest
     , detour-via-uom
     , doctest
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-gap-valid
     , flight-gap-weight
     , flight-units
@@ -146,7 +146,7 @@ test-suite math
     , detour-via-sci
     , detour-via-uom
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-gap-math
     , flight-gap-valid
     , flight-gap-weight

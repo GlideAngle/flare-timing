@@ -7,7 +7,7 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
 
-import "flight-gap-base" Flight.Score (isNormal)
+import "flight-gap-allot" Flight.Score (isNormal)
 import qualified "flight-gap-valid" Flight.Score as FS
 import "flight-gap-valid" Flight.Score
     ( LaunchValidity(..)

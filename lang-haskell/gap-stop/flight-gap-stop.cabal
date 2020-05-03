@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d8be5026c26acb28c5f0bd95bc1fa6a3a6b5afbf5d93da7994000a658569af57
+-- hash: 71ec39db30ee194ecd78b59d18c1407335e36bb75cc4ef0956baf4d620e6b790
 
 name:           flight-gap-stop
 version:        0.1.0
@@ -53,7 +53,7 @@ library
     , detour-via-sci
     , detour-via-uom
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-gap-lead
     , flight-gap-math
     , flight-units
@@ -88,7 +88,7 @@ test-suite stop
     , detour-via-sci
     , detour-via-uom
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-gap-lead
     , flight-gap-math
     , flight-gap-stop

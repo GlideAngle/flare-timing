@@ -26,7 +26,7 @@ import qualified Data.Map as Map
 import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import "flight-gap-base" Flight.Score (PilotsAtEss(..))
+import "flight-gap-allot" Flight.Score (PilotsAtEss(..))
 import "flight-gap-lead" Flight.Score (TaskTime(..))
 import "flight-gap-math" Flight.Score (Hg, Pg)
 import Flight.Gap.Time.ScoreBack (ScoreBackTime(..))

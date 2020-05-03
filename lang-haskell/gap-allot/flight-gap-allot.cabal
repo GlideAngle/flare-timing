@@ -4,12 +4,12 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ca270b383abb952a828293b06637b8d447cf655b5ea661e23e405b613c92e841
+-- hash: 7c82a1788298d984e6a1d7dd4a5ffb438db4b06264fe0f4111a707e611bef0d7
 
-name:           flight-gap-base
+name:           flight-gap-allot
 version:        0.1.0
-synopsis:       Base types for GAP Scoring.
-description:    GAP scoring for hang gliding and paragliding competitons, the base types.
+synopsis:       GAP Scoring, allotment.
+description:    GAP scoring for hang gliding and paragliding competitons, allot points available for each part.
 category:       Flight
 homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-base#readme
 bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-base/issues
@@ -62,7 +62,7 @@ library
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
-      Paths_flight_gap_base
+      Paths_flight_gap_allot
   hs-source-dirs:
       library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
@@ -116,7 +116,7 @@ test-suite doctest
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.Velocity
       Flight.Score
-      Paths_flight_gap_base
+      Paths_flight_gap_allot
   hs-source-dirs:
       library
       test-suite-doctest

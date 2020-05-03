@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3b9e4a61b0bb665daf10e82a2d0683317f287de97ba708987c970a504b5685f6
+-- hash: 9f6df71b0b43aef9f9bc29e5444829a41c0a2483c976a99567baa536e48039df
 
 name:           flight-gap-lead
 version:        0.1.0
@@ -58,7 +58,7 @@ library
     , detour-via-sci
     , detour-via-uom
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-units
     , newtype
     , numbers
@@ -91,7 +91,7 @@ test-suite leading
     , detour-via-sci
     , detour-via-uom
     , facts
-    , flight-gap-base
+    , flight-gap-allot
     , flight-gap-lead
     , flight-units
     , newtype

@@ -34,11 +34,11 @@ in    defs
     ⫽ { flags =
           { suppress-failing-tests = { manual = False, default = True } }
       , name =
-          "flight-gap-base"
+          "flight-gap-allot"
       , synopsis =
-          "Base types for GAP Scoring."
+          "GAP Scoring, allotment."
       , description =
-          "GAP scoring for hang gliding and paragliding competitons, the base types."
+          "GAP scoring for hang gliding and paragliding competitons, allot points available for each part."
       , category =
           "Flight"
       , github =

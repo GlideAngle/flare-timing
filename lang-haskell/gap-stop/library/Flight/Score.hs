@@ -39,5 +39,5 @@ module Flight.Score
     ) where
 
 
-import "flight-gap-base" Flight.Score
+import "flight-gap-allot" Flight.Score
 import Flight.Gap.Stopped

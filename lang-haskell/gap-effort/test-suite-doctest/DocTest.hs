@@ -45,7 +45,7 @@ arguments =
     , "-fno-warn-partial-type-signatures"
 
     , "-package=flight-units"
-    , "-package=flight-gap-base"
+    , "-package=flight-gap-allot"
 
     , "library/Flight/Gap/Distance/Chunk.hs"
     , "library/Flight/Gap/Distance/Relative.hs"

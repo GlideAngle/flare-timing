@@ -44,7 +44,7 @@ flags:
         suppress-failing-tests: true
     flight-fsdb:
         suppress-failing-tests: true
-    flight-gap-base:
+    flight-gap-allot:
         suppress-failing-tests: false
     flight-gap-effort:
         suppress-failing-tests: false
@@ -88,7 +88,7 @@ packages:
 - comp
 - earth
 - fsdb
-- gap-base
+- gap-allot
 - gap-effort
 - gap-lead
 - gap-math

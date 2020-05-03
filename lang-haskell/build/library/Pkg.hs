@@ -32,7 +32,7 @@ dhallCabal =
     , ("earth", "flight-earth")
     , ("flare-timing", "flare-timing")
     , ("fsdb", "flight-fsdb")
-    , ("gap-base", "flight-gap-base")
+    , ("gap-allot", "flight-gap-allot")
     , ("gap-effort", "flight-gap-effort")
     , ("gap-lead", "flight-gap-lead")
     , ("gap-math", "flight-gap-math")

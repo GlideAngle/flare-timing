@@ -52,7 +52,7 @@ module Flight.Score
     , zeroLeadingArea2Units
     ) where
 
-import "flight-gap-base" Flight.Gap.Fraction (LeadingFraction(..))
+import "flight-gap-allot" Flight.Gap.Fraction (LeadingFraction(..))
 import Flight.Gap.Time.Leading
 import Flight.Gap.Leading.Area
 import Flight.Gap.Leading.Coef

@@ -223,7 +223,7 @@ module Flight.Score
     , jumpTheGunPenalty
     ) where
 
-import "flight-gap-base" Flight.Score
+import "flight-gap-allot" Flight.Score
 import "flight-gap-effort" Flight.Score
 import "flight-gap-lead" Flight.Score
 import "flight-gap-math" Flight.Score

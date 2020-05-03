@@ -64,7 +64,7 @@ in    defs
             , "detour-via-uom"
             , "siggy-chardust"
             , "flight-units"
-            , "flight-gap-base"
+            , "flight-gap-allot"
             ]
       , library =
           { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }

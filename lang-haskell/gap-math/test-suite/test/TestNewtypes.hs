@@ -16,7 +16,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Test.QuickCheck.Instances ()
 
 import Flight.Ratio (pattern (:%))
-import "flight-gap-base" Flight.Score
+import "flight-gap-allot" Flight.Score
 import "flight-gap-math" Flight.Score
 
 import Normal (Normal(..), NormalSum(..))
