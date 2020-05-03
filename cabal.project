@@ -57,8 +57,10 @@ package flight-gap-effort
     flags: -suppress-failing-tests
 package flight-gap-lead
     tests: true
+    flags: -suppress-failing-tests
 package flight-gap-math
     tests: true
+    flags: -suppress-failing-tests
 package flight-gap-stop
     tests: true
 package flight-gap-valid
