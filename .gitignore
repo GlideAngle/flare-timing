@@ -40,3 +40,4 @@ bazel-*
 **/obj/**
 lang-fsharp/packages
 *.swk
+*.swj
