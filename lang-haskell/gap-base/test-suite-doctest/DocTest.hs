@@ -44,11 +44,9 @@ arguments =
     , "-fplugin=Data.UnitsOfMeasure.Plugin"
     , "-fno-warn-partial-type-signatures"
 
-    , "-package=facts"
+    , "-package=flight-units"
 
-    , "library/Flight/Gap/Distance/Chunk.hs"
     , "library/Flight/Gap/Distance/Pilot.hs"
-    , "library/Flight/Gap/Distance/Relative.hs"
     , "library/Flight/Gap/Distance/Stop.hs"
     , "library/Flight/Gap/Fraction/Arrival.hs"
     , "library/Flight/Gap/Fraction/Speed.hs"
@@ -60,8 +58,6 @@ arguments =
     , "library/Flight/Gap/Allot.hs"
     , "library/Flight/Gap/Pilots.hs"
     , "library/Flight/Gap/Equation.hs"
-    , "library/Flight/Gap/Points/Task.hs"
-    , "library/Flight/Gap/Penalty.hs"
     ]
 
 main :: IO ()

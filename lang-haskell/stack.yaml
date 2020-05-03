@@ -45,7 +45,7 @@ flags:
     flight-fsdb:
         suppress-failing-tests: true
     flight-gap-base:
-        suppress-failing-tests: true
+        suppress-failing-tests: false
     flight-gap-effort:
         suppress-failing-tests: true
     flight-gap-lead:

@@ -51,6 +51,7 @@ package flight-fsdb
     tests: true
 package flight-gap-base
     tests: true
+    flags: -suppress-failing-tests
 package flight-gap-effort
     tests: true
 package flight-gap-lead
