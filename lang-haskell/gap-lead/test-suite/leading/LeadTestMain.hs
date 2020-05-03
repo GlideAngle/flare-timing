@@ -13,11 +13,15 @@ tests :: TestTree
 tests =
     testGroup
         "Tests"
-        [ properties
+        [ units
+        , properties
         ]
 
 properties :: TestTree
 properties = testGroup "Properties" [scProps, qcProps]
+
+units :: TestTree
+units = testGroup "Units" [leadingCoefficientUnits]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"

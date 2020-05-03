@@ -6,6 +6,7 @@ module LeadingCoefficient
 
 import Data.List (sortBy)
 import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -15,7 +16,7 @@ import "flight-gap-lead" Flight.Score
     ( TaskTime(..)
     , DistanceToEss(..)
     , LcTrack
-    --, Leg(..)
+    , Leg(..)
     , LcSeq(..)
     , LcPoint(..)
     --, TaskDeadline(..)
@@ -27,30 +28,19 @@ import TestNewtypes
 
 leadingCoefficientUnits :: TestTree
 leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
-    []
-
-{-
-WARNING: Leading has changed since these tests were last run.
-
-import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.Ratio ((%))
-
     [ madeGoalUnits
-    , cleanTrackUnits
-    , coefficientUnits
-    , leadingFractionsUnits
     ]
 
 pt :: (Rational, Rational) -> LcPoint
 pt (t, d) =
     LcPoint
         { leg = RaceLeg 0
-        , mark = TaskTime t
-        , togo = DistanceToEss d
+        , mark = TaskTime $ [u| s |] t
+        , togo = DistanceToEss $ [u| km |] d
         }
 
 pts :: [(Rational, Rational)] -> LcTrack
-pts xs = LcSeq (pt <$> xs) Nothing
+pts xs = LcSeq (pt <$> xs)
 
 madeGoalUnits :: TestTree
 madeGoalUnits = testGroup "Made goal unit tests"
@@ -74,6 +64,18 @@ madeGoalUnits = testGroup "Made goal unit tests"
         FS.madeGoal (pts [ (1, 0)
                          , (2, 1)
                          ]) @?= True
+    ]
+
+{-
+WARNING: Leading has changed since these tests were last run.
+
+import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.Ratio ((%))
+
+    [ madeGoalUnits
+    , cleanTrackUnits
+    , coefficientUnits
+    , leadingFractionsUnits
     ]
 
 cleanTrackUnits :: TestTree
@@ -329,5 +331,3 @@ isClean
 cleanTrack :: LcCleanTest -> Bool
 cleanTrack (LcCleanTest (len, track)) =
     isClean len track $ FS.cleanTrack len track
-
-
