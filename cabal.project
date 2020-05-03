@@ -63,6 +63,7 @@ package flight-gap-math
     flags: -suppress-failing-tests
 package flight-gap-stop
     tests: true
+    flags: -suppress-failing-tests
 package flight-gap-valid
     tests: true
 package flight-gap-weight

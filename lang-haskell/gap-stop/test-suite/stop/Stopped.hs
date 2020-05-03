@@ -16,16 +16,17 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.Score as FS
-import Flight.Score
+import "flight-gap-allot" Flight.Score (PilotsAtEss(..))
+import "flight-gap-math" Flight.Score (Hg, Pg)
+import "flight-gap-lead" Flight.Score (TaskTime(..))
+import qualified "flight-gap-stop" Flight.Score as FS
+import "flight-gap-stop" Flight.Score
     ( StopTime(..)
     , ScoreBackTime(..)
     , AnnouncedTime(..)
     , StartGateInterval(..)
-    , TaskTime(..)
     , TaskStopTime(..)
     , CanScoreStopped(..)
-    , PilotsAtEss(..)
     , TaskType(..)
     , StartGates(..)
     , ScoreTimeWindow(..)
@@ -33,7 +34,6 @@ import Flight.Score
     , DistanceToGoal(..)
     , GlideRatio(..)
     , StoppedTrack(..)
-    , Hg, Pg
     )
 
 import TestNewtypes

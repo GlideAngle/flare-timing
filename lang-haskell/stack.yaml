@@ -53,7 +53,7 @@ flags:
     flight-gap-math:
         suppress-failing-tests: false
     flight-gap-stop:
-        suppress-failing-tests: true
+        suppress-failing-tests: false
     flight-gap-valid:
         suppress-failing-tests: false
     flight-gap-weight:
