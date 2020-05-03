@@ -83,37 +83,5 @@ in    defs
                 , source-dirs =
                     [ "test-suite/test", "test-suite/stop" ]
                 }
-            , validity =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "ValidityTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/validity" ]
-                }
-            , doctest =
-                { dependencies =
-                      defs.dependencies
-                    # [ "quickcheck-classes"
-                      , "numbers"
-                      , "doctest"
-                      , "facts"
-                      , "flight-units"
-                      ]
-                , ghc-options =
-                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-                , main =
-                    "DocTest.hs"
-                , source-dirs =
-                    [ "library", "test-suite-doctest" ]
-                , when =
-                    { condition =
-                        "flag(suppress-failing-tests)"
-                    , buildable =
-                        False
-                    }
-                }
             }
       }

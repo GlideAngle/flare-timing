@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 01592f625faf33f27ea1e5ea51417011cd0e7e0e5b2416c01191ae78c2d67156
+-- hash: d8be5026c26acb28c5f0bd95bc1fa6a3a6b5afbf5d93da7994000a658569af57
 
 name:           flight-gap-stop
 version:        0.1.0
@@ -66,45 +66,6 @@ library
     , uom-plugin
   default-language: Haskell2010
 
-test-suite doctest
-  type: exitcode-stdio-1.0
-  main-is: DocTest.hs
-  other-modules:
-      Flight.Gap.Stopped
-      Flight.Gap.Time.ScoreBack
-      Flight.Score
-      Paths_flight_gap_stop
-  hs-source-dirs:
-      library
-      test-suite-doctest
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      QuickCheck
-    , aeson
-    , base >=4.10.1.0 && <5
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , doctest
-    , facts
-    , flight-gap-base
-    , flight-gap-lead
-    , flight-gap-math
-    , flight-units
-    , newtype
-    , numbers
-    , quickcheck-classes
-    , scientific
-    , siggy-chardust
-    , template-haskell
-    , text
-    , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
-  default-language: Haskell2010
-
 test-suite stop
   type: exitcode-stdio-1.0
   main-is: StopTestMain.hs
@@ -131,52 +92,6 @@ test-suite stop
     , flight-gap-lead
     , flight-gap-math
     , flight-gap-stop
-    , flight-units
-    , newtype
-    , numbers
-    , quickcheck-instances
-    , scientific
-    , siggy-chardust
-    , smallcheck
-    , statistics
-    , tasty
-    , tasty-hunit
-    , tasty-quickcheck
-    , tasty-smallcheck
-    , template-haskell
-    , text
-    , uom-plugin
-    , vector
-  default-language: Haskell2010
-
-test-suite validity
-  type: exitcode-stdio-1.0
-  main-is: ValidityTestMain.hs
-  other-modules:
-      Flight.Gap.Stopped
-      Flight.Gap.Time.ScoreBack
-      Flight.Score
-      Normal
-      TestNewtypes
-      Paths_flight_gap_stop
-  hs-source-dirs:
-      library
-      test-suite/test
-      test-suite/validity
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      QuickCheck
-    , aeson
-    , base
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , facts
-    , flight-gap-base
-    , flight-gap-lead
-    , flight-gap-math
     , flight-units
     , newtype
     , numbers
