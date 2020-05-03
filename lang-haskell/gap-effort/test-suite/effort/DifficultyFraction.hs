@@ -11,19 +11,21 @@ import Data.Maybe (fromMaybe)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.Score as FS (lookahead, gradeDifficulty)
-import Flight.Score
+import qualified "flight-gap-effort" Flight.Score as FS (lookahead, gradeDifficulty)
+import "flight-gap-allot" Flight.Score
     ( PilotDistance(..)
-    , Lookahead(..)
     , FlownMax(..)
-    , DifficultyFraction(..)
-    , ChunkDifficultyFraction(..)
-    , Difficulty(..)
     , Pilot(..)
     , PilotName(..)
     , PilotId(..)
     , isNormal
     , bestDistance'
+    )
+import "flight-gap-effort" Flight.Score
+    ( Lookahead(..)
+    , DifficultyFraction(..)
+    , ChunkDifficultyFraction(..)
+    , Difficulty(..)
     )
 
 import TestNewtypes
