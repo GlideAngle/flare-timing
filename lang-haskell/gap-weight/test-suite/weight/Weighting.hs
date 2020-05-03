@@ -10,8 +10,9 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
 
-import qualified Flight.Score as FS
-import Flight.Score
+import "flight-gap-base" Flight.Score (isNormal)
+import qualified "flight-gap-weight" Flight.Score as FS
+import "flight-gap-weight" Flight.Score
     ( Lw(..)
     , Aw(..)
     , GoalRatio(..)
@@ -20,7 +21,6 @@ import Flight.Score
     , LeadingWeight(..)
     , ArrivalWeight(..)
     , TimeWeight(..)
-    , isNormal
     )
 import TestNewtypes
 

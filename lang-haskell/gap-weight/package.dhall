@@ -69,4 +69,17 @@ in    defs
             ]
       , library =
           { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
+      , tests =
+            ./../default-tests.dhall
+          ⫽ { weight =
+                { dependencies =
+                    testdeps # [ "facts", "flight-gap-weight" ]
+                , ghc-options =
+                    testopts
+                , main =
+                    "WeightTestMain.hs"
+                , source-dirs =
+                    [ "test-suite/test", "test-suite/weight" ]
+                }
+            }
       }

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 095b4c036f8a06f87a2530ef0831c4041a2806edabc43448e5d117f47d459980
+-- hash: bfdc2d22dda3b843c54b4b1f27a8acec5bb903703eca6a0ee63eb50f81bcbc88
 
 name:           flight-gap-weight
 version:        0.1.0
@@ -66,4 +66,46 @@ library
     , template-haskell
     , text
     , uom-plugin
+  default-language: Haskell2010
+
+test-suite weight
+  type: exitcode-stdio-1.0
+  main-is: WeightTestMain.hs
+  other-modules:
+      Normal
+      TestNewtypes
+      Weighting
+      Paths_flight_gap_weight
+  hs-source-dirs:
+      test-suite/test
+      test-suite/weight
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      QuickCheck
+    , aeson
+    , base
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-gap-base
+    , flight-gap-weight
+    , flight-units
+    , newtype
+    , numbers
+    , quickcheck-instances
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , statistics
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , template-haskell
+    , text
+    , uom-plugin
+    , vector
   default-language: Haskell2010

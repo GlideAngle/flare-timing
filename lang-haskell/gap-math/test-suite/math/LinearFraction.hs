@@ -5,8 +5,8 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u)
 
-import qualified Flight.Score as FS
-import Flight.Score
+import qualified "flight-gap-base" Flight.Score as FS
+import "flight-gap-base" Flight.Score
     ( FlownMax(..)
     , PilotDistance(..)
     , LinearFraction(..)

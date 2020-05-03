@@ -5,8 +5,8 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u)
 
-import qualified Flight.Score as FS
-import Flight.Score
+import qualified "flight-gap-math" Flight.Score as FS
+import "flight-gap-math" Flight.Score
     ( TooEarlyPoints(..)
     , SecondsPerPoint(..)
     , JumpedTheGun(..)

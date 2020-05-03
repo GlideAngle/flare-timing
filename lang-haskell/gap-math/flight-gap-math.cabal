@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3f7316f1b45c1eb9d3ccbe112ac426e16a72bcb375c56a01f64671157c6274bc
+-- hash: 269a2cb0ef85c573d5ea559b28d60fd371a451885cb9f4177ed183318ebc5fc5
 
 name:           flight-gap-math
 version:        0.1.0
@@ -119,9 +119,9 @@ test-suite doctest
     buildable: False
   default-language: Haskell2010
 
-test-suite score
+test-suite math
   type: exitcode-stdio-1.0
-  main-is: ScoreTestMain.hs
+  main-is: MathTestMain.hs
   other-modules:
       Normal
       TestNewtypes
@@ -131,11 +131,10 @@ test-suite score
       Points.Pg
       Points.Props
       SpeedFraction
-      Weighting
       Paths_flight_gap_math
   hs-source-dirs:
       test-suite/test
-      test-suite/score
+      test-suite/math
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
@@ -149,60 +148,6 @@ test-suite score
     , facts
     , flight-gap-base
     , flight-gap-math
-    , flight-gap-valid
-    , flight-gap-weight
-    , flight-units
-    , newtype
-    , numbers
-    , quickcheck-instances
-    , scientific
-    , siggy-chardust
-    , smallcheck
-    , statistics
-    , tasty
-    , tasty-hunit
-    , tasty-quickcheck
-    , tasty-smallcheck
-    , template-haskell
-    , text
-    , uom-plugin
-    , vector
-  default-language: Haskell2010
-
-test-suite stop
-  type: exitcode-stdio-1.0
-  main-is: StopTestMain.hs
-  other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Time.Early
-      Flight.Score
-      Normal
-      TestNewtypes
-      Stopped
-      Paths_flight_gap_math
-  hs-source-dirs:
-      library
-      test-suite/test
-      test-suite/stop
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      QuickCheck
-    , aeson
-    , base
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , facts
-    , flight-gap-base
     , flight-gap-valid
     , flight-gap-weight
     , flight-units

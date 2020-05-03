@@ -7,8 +7,9 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import qualified Flight.Score as FS
-import Flight.Score
+import qualified "flight-gap-base" Flight.Score as FS
+import qualified "flight-gap-math" Flight.Score as FS
+import "flight-gap-base" Flight.Score
     ( BestTime(..)
     , PilotTime(..)
     , SpeedFraction(..)

@@ -4,8 +4,8 @@ import Data.Refined (assumeProp, refined)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 
-import qualified Flight.Score as FS
-import Flight.Score
+import qualified "flight-gap-math" Flight.Score as FS
+import "flight-gap-math" Flight.Score
     ( LaunchToStartPoints(..)
     , SitRep(..)
     , LinearPoints(..)

@@ -73,25 +73,15 @@ in    defs
           { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
       , tests =
             ./../default-tests.dhall
-          ⫽ { score =
+          ⫽ { math =
                 { dependencies =
                     testdeps # [ "facts", "flight-gap-math" ]
                 , ghc-options =
                     testopts
                 , main =
-                    "ScoreTestMain.hs"
+                    "MathTestMain.hs"
                 , source-dirs =
-                    [ "test-suite/test", "test-suite/score" ]
-                }
-            , stop =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "StopTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/stop" ]
+                    [ "test-suite/test", "test-suite/math" ]
                 }
             , doctest =
                 { dependencies =

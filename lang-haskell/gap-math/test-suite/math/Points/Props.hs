@@ -5,8 +5,8 @@ module Points.Props (hgTaskPoints, pgTaskPoints) where
 import Data.Refined (unrefined)
 import Data.Ratio ((%))
 
-import qualified Flight.Score as FS
-import Flight.Score
+import qualified "flight-gap-math" Flight.Score as FS
+import "flight-gap-math" Flight.Score
     ( LaunchToStartPoints(..)
     , TooEarlyPoints(..)
     , Hg

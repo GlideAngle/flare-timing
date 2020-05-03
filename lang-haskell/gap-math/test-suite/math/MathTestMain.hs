@@ -4,7 +4,6 @@ import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
-import Weighting
 import ArrivalFraction
 import SpeedFraction
 import LinearFraction
@@ -37,8 +36,7 @@ fractionUnits :: TestTree
 fractionUnits =
     testGroup
         "Fractions"
-        [ weightingUnits
-        , arrivalFractionUnits
+        [ arrivalFractionUnits
         , speedFractionUnits
         , linearFractionUnits
         ]
@@ -53,11 +51,7 @@ pointUnits =
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "Distance weight is in the range of [0, 1]" distanceWeight
-    , SC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
-    , SC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
-    , SC.testProperty "Time weight is in the range of [0, 1]" timeWeight
-    , SC.testProperty "Arrival fraction is in the range of [0.2, 1]" arrivalFraction
+    [ SC.testProperty "Arrival fraction is in the range of [0.2, 1]" arrivalFraction
     , SC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , SC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , SC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
@@ -65,11 +59,7 @@ scProps = testGroup "(checked by SmallCheck)"
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "Distance weight is in the range of [0, 1]" distanceWeight
-    , QC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
-    , QC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
-    , QC.testProperty "Time weight is in the range of [0, 1]" timeWeight
-    , QC.testProperty "Arrival fraction is in the range of [0.2, 1]" arrivalFraction
+    [ QC.testProperty "Arrival fraction is in the range of [0.2, 1]" arrivalFraction
     , QC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , QC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , QC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
