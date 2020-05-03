@@ -8,7 +8,6 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import qualified "flight-gap-allot" Flight.Score as FS
-import qualified "flight-gap-math" Flight.Score as FS
 import "flight-gap-allot" Flight.Score
     ( BestTime(..)
     , PilotTime(..)

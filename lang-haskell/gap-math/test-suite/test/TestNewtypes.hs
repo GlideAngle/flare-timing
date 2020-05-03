@@ -9,9 +9,7 @@ import Data.Ratio ((%))
 import Data.List (sortBy)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
-import qualified Statistics.Sample as Stats (meanVariance)
-import qualified Data.Vector as V (fromList)
-import Data.UnitsOfMeasure (u, zero)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Test.QuickCheck.Instances ()
 
@@ -19,7 +17,7 @@ import Flight.Ratio (pattern (:%))
 import "flight-gap-allot" Flight.Score
 import "flight-gap-math" Flight.Score
 
-import Normal (Normal(..), NormalSum(..))
+import Normal (Normal(..))
 import Flight.Units()
 
 -- | Arrival fraction
