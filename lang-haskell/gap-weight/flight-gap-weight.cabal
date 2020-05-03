@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b017292cae6979a96ec51093deb145974f8dc9c0b3182fda36e538ba88ff2bcd
+-- hash: 095b4c036f8a06f87a2530ef0831c4041a2806edabc43448e5d117f47d459980
 
 name:           flight-gap-weight
 version:        0.1.0
@@ -66,45 +66,4 @@ library
     , template-haskell
     , text
     , uom-plugin
-  default-language: Haskell2010
-
-test-suite doctest
-  type: exitcode-stdio-1.0
-  main-is: DocTest.hs
-  other-modules:
-      Flight.Gap.Weight.Arrival
-      Flight.Gap.Weight.Distance
-      Flight.Gap.Weight.GoalRatio
-      Flight.Gap.Weight.Leading
-      Flight.Gap.Weight.Time
-      Flight.Gap.Weighting
-      Flight.Score
-      Paths_flight_gap_weight
-  hs-source-dirs:
-      library
-      test-suite-doctest
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      QuickCheck
-    , aeson
-    , base >=4.10.1.0 && <5
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , doctest
-    , facts
-    , flight-gap-base
-    , flight-units
-    , newtype
-    , numbers
-    , quickcheck-classes
-    , scientific
-    , siggy-chardust
-    , template-haskell
-    , text
-    , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010

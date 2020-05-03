@@ -69,29 +69,4 @@ in    defs
             ]
       , library =
           { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
-      , tests =
-            ./../default-tests.dhall
-          ⫽ { doctest =
-                { dependencies =
-                      defs.dependencies
-                    # [ "quickcheck-classes"
-                      , "numbers"
-                      , "doctest"
-                      , "facts"
-                      , "flight-units"
-                      ]
-                , ghc-options =
-                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-                , main =
-                    "DocTest.hs"
-                , source-dirs =
-                    [ "library", "test-suite-doctest" ]
-                , when =
-                    { condition =
-                        "flag(suppress-failing-tests)"
-                    , buildable =
-                        False
-                    }
-                }
-            }
       }
