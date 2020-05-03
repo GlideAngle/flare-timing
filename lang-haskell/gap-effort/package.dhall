@@ -73,7 +73,7 @@ in    defs
             ./../default-tests.dhall
           ⫽ { effort =
                 { dependencies =
-                    testdeps
+                    testdeps # [ "flight-gap-effort" ]
                 , ghc-options =
                     testopts
                 , main =
@@ -86,46 +86,6 @@ in    defs
                     , buildable =
                         False
                     }
-                }
-            , leading =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "LeadingTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/leading" ]
-                }
-            , score =
-                { dependencies =
-                    testdeps # [ "facts" ]
-                , ghc-options =
-                    testopts
-                , main =
-                    "ScoreTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/score" ]
-                }
-            , stop =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "StopTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/stop" ]
-                }
-            , validity =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "ValidityTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/validity" ]
                 }
             , doctest =
                 { dependencies =

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 447f59f6820fbbdb71fb3d7e8eb541f6b963a10c811d1829188c040141d933c5
+-- hash: 89d948b0c86c32cd47609a2d99134a20c76c4e8b44c07687b2dd7108d7ce7c1e
 
 name:           flight-gap-valid
 version:        0.1.0
@@ -57,7 +57,6 @@ library
     , containers
     , detour-via-sci
     , detour-via-uom
-    , facts
     , flight-gap-base
     , flight-units
     , newtype
@@ -111,226 +110,10 @@ test-suite doctest
     buildable: False
   default-language: Haskell2010
 
-test-suite effort
-  type: exitcode-stdio-1.0
-  main-is: EffortTestMain.hs
-  other-modules:
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Score
-      Normal
-      TestNewtypes
-      DifficultyFraction
-      Paths_flight_gap_valid
-  hs-source-dirs:
-      library
-      test-suite/test
-      test-suite/effort
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      QuickCheck
-    , aeson
-    , base
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , facts
-    , flight-gap-base
-    , flight-units
-    , newtype
-    , numbers
-    , quickcheck-instances
-    , scientific
-    , siggy-chardust
-    , smallcheck
-    , statistics
-    , tasty
-    , tasty-hunit
-    , tasty-quickcheck
-    , tasty-smallcheck
-    , template-haskell
-    , text
-    , uom-plugin
-    , vector
-  if flag(suppress-failing-tests)
-    buildable: False
-  default-language: Haskell2010
-
-test-suite leading
-  type: exitcode-stdio-1.0
-  main-is: LeadingTestMain.hs
-  other-modules:
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Score
-      Normal
-      TestNewtypes
-      LeadingCoefficient
-      Paths_flight_gap_valid
-  hs-source-dirs:
-      library
-      test-suite/test
-      test-suite/leading
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      QuickCheck
-    , aeson
-    , base
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , facts
-    , flight-gap-base
-    , flight-units
-    , newtype
-    , numbers
-    , quickcheck-instances
-    , scientific
-    , siggy-chardust
-    , smallcheck
-    , statistics
-    , tasty
-    , tasty-hunit
-    , tasty-quickcheck
-    , tasty-smallcheck
-    , template-haskell
-    , text
-    , uom-plugin
-    , vector
-  default-language: Haskell2010
-
-test-suite score
-  type: exitcode-stdio-1.0
-  main-is: ScoreTestMain.hs
-  other-modules:
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Score
-      Normal
-      TestNewtypes
-      ArrivalFraction
-      LinearFraction
-      Points.Hg
-      Points.Pg
-      Points.Props
-      SpeedFraction
-      Weighting
-      Paths_flight_gap_valid
-  hs-source-dirs:
-      library
-      test-suite/test
-      test-suite/score
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      QuickCheck
-    , aeson
-    , base
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , facts
-    , flight-gap-base
-    , flight-units
-    , newtype
-    , numbers
-    , quickcheck-instances
-    , scientific
-    , siggy-chardust
-    , smallcheck
-    , statistics
-    , tasty
-    , tasty-hunit
-    , tasty-quickcheck
-    , tasty-smallcheck
-    , template-haskell
-    , text
-    , uom-plugin
-    , vector
-  default-language: Haskell2010
-
-test-suite stop
-  type: exitcode-stdio-1.0
-  main-is: StopTestMain.hs
-  other-modules:
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Score
-      Normal
-      TestNewtypes
-      Stopped
-      Paths_flight_gap_valid
-  hs-source-dirs:
-      library
-      test-suite/test
-      test-suite/stop
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      QuickCheck
-    , aeson
-    , base
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , facts
-    , flight-gap-base
-    , flight-units
-    , newtype
-    , numbers
-    , quickcheck-instances
-    , scientific
-    , siggy-chardust
-    , smallcheck
-    , statistics
-    , tasty
-    , tasty-hunit
-    , tasty-quickcheck
-    , tasty-smallcheck
-    , template-haskell
-    , text
-    , uom-plugin
-    , vector
-  default-language: Haskell2010
-
-test-suite validity
+test-suite valid
   type: exitcode-stdio-1.0
   main-is: ValidityTestMain.hs
   other-modules:
-      Flight.Gap.Validity
-      Flight.Gap.Validity.Area
-      Flight.Gap.Validity.Distance
-      Flight.Gap.Validity.Launch
-      Flight.Gap.Validity.Stop
-      Flight.Gap.Validity.Task
-      Flight.Gap.Validity.Time
-      Flight.Score
       Normal
       TestNewtypes
       DistanceValidity
@@ -340,7 +123,6 @@ test-suite validity
       TimeValidity
       Paths_flight_gap_valid
   hs-source-dirs:
-      library
       test-suite/test
       test-suite/validity
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
@@ -353,8 +135,8 @@ test-suite validity
     , containers
     , detour-via-sci
     , detour-via-uom
-    , facts
     , flight-gap-base
+    , flight-gap-valid
     , flight-units
     , newtype
     , numbers

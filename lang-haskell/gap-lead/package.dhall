@@ -71,61 +71,15 @@ in    defs
           { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
       , tests =
             ./../default-tests.dhall
-          ⫽ { effort =
+          ⫽ { leading =
                 { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "EffortTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/effort" ]
-                , when =
-                    { condition =
-                        "flag(suppress-failing-tests)"
-                    , buildable =
-                        False
-                    }
-                }
-            , leading =
-                { dependencies =
-                    testdeps
+                    testdeps # [ "flight-gap-lead" ]
                 , ghc-options =
                     testopts
                 , main =
                     "LeadingTestMain.hs"
                 , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/leading" ]
-                }
-            , score =
-                { dependencies =
-                    testdeps # [ "facts" ]
-                , ghc-options =
-                    testopts
-                , main =
-                    "ScoreTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/score" ]
-                }
-            , stop =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "StopTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/stop" ]
-                }
-            , validity =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "ValidityTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/validity" ]
+                    [ "test-suite/test", "test-suite/leading" ]
                 }
             , doctest =
                 { dependencies =

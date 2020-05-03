@@ -74,63 +74,7 @@ in    defs
           }
       , tests =
             ./../default-tests.dhall
-          ⫽ { effort =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "EffortTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/effort" ]
-                , when =
-                    { condition =
-                        "flag(suppress-failing-tests)"
-                    , buildable =
-                        False
-                    }
-                }
-            , leading =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "LeadingTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/leading" ]
-                }
-            , score =
-                { dependencies =
-                    testdeps # [ "facts" ]
-                , ghc-options =
-                    testopts
-                , main =
-                    "ScoreTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/score" ]
-                }
-            , stop =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "StopTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/stop" ]
-                }
-            , validity =
-                { dependencies =
-                    testdeps
-                , ghc-options =
-                    testopts
-                , main =
-                    "ValidityTestMain.hs"
-                , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/validity" ]
-                }
-            , doctest =
+          ⫽ { doctest =
                 { dependencies =
                       defs.dependencies
                     # [ "quickcheck-classes"

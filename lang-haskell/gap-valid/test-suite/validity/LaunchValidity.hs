@@ -4,14 +4,14 @@ module LaunchValidity
     , qcLaunchValidity
     ) where
 
-import qualified Flight.Score as FS
-import Flight.Score
+import "flight-gap-base" Flight.Score
     ( NominalLaunch(..)
-    , LaunchValidity(..)
     , PilotsPresent(..)
     , PilotsFlying(..)
     , isNormal
     )
+import qualified "flight-gap-valid" Flight.Score as FS
+import "flight-gap-valid" Flight.Score (LaunchValidity(..))
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.SmallCheck as SC

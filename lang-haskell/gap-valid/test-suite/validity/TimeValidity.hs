@@ -4,23 +4,22 @@ module TimeValidity
     , qcTimeValidity
     ) where
 
-import qualified Flight.Score as FS
-import Flight.Score
-    ( TimeValidity(..)
-    , NominalTime(..)
-    , BestTime(..)
-    , NominalDistance(..)
-    , FlownMax(..)
-    , ReachToggle(..)
-    , isNormal
-    )
-
 import Test.Tasty (TestTree, testGroup)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+
+import "flight-gap-base" Flight.Score
+    ( NominalTime(..)
+    , BestTime(..)
+    , NominalDistance(..)
+    , FlownMax(..)
+    , isNormal
+    )
+import qualified "flight-gap-valid" Flight.Score as FS
+import "flight-gap-valid" Flight.Score (ReachToggle(..), TimeValidity(..))
 
 timeValidityUnits :: TestTree
 timeValidityUnits = testGroup "Time validity unit tests"

@@ -55,7 +55,7 @@ flags:
     flight-gap-stop:
         suppress-failing-tests: true
     flight-gap-valid:
-        suppress-failing-tests: true
+        suppress-failing-tests: false
     flight-gap-weight:
         suppress-failing-tests: true
     flight-gap:

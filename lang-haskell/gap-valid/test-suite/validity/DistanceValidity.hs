@@ -12,18 +12,17 @@ import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.Score as FS
-import Flight.Score
+import "flight-gap-base" Flight.Score
     ( NominalGoal(..)
     , NominalDistance(..)
-    , DistanceValidity(..)
     , MinimumDistance(..)
     , FlownMax(..)
     , SumOfDistance(..)
     , PilotsFlying(..)
-    , ReachToggle(..)
     , isNormal
     )
+import qualified "flight-gap-valid" Flight.Score as FS
+import "flight-gap-valid" Flight.Score (DistanceValidity(..), ReachToggle(..))
 
 import TestNewtypes
 

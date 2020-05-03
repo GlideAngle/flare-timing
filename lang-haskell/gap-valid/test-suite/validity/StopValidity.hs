@@ -5,15 +5,15 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u)
 
-import qualified Flight.Score as FS
-import Flight.Score
+import "flight-gap-base" Flight.Score
     ( PilotsAtEss(..)
     , PilotsLanded(..)
     , PilotsFlying(..)
     , LaunchToEss(..)
-    , StopValidity(..)
     , isNormal
     )
+import qualified "flight-gap-valid" Flight.Score as FS
+import "flight-gap-valid" Flight.Score (StopValidity(..))
 
 import TestNewtypes
 
