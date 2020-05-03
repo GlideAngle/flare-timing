@@ -77,7 +77,7 @@ in    defs
                 , ghc-options =
                     testopts
                 , main =
-                    "LeadingTestMain.hs"
+                    "LeadTestMain.hs"
                 , source-dirs =
                     [ "test-suite/test", "test-suite/leading" ]
                 }

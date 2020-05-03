@@ -41,3 +41,24 @@ instance QC.Arbitrary LcCleanTest where
         (QC.Positive len) <- arbitrary
         xs <- listOf $ choose (1, 1000000)
         return $ mkLcCleanTest len xs
+
+-- | Leading coefficients.
+newtype LcTest =
+    LcTest
+        ( LeadingCoef LeadingCoefUnits
+        , LeadingCoef LeadingCoefUnits
+        )
+    deriving Show
+
+mkLcTest :: Double -> Double -> LcTest
+mkLcTest lcMin lc =
+    LcTest (LeadingCoef $ MkQuantity lcMin, LeadingCoef $ MkQuantity lc)
+
+instance Monad m => SC.Serial m LcTest where
+    series = cons2 (\(SC.Positive lcMin) (SC.Positive lc) -> mkLcTest lcMin lc)
+
+instance QC.Arbitrary LcTest where
+    arbitrary = do
+        (QC.Positive lcMin) <- arbitrary
+        (QC.Positive lc) <- arbitrary
+        return $ mkLcTest lcMin lc

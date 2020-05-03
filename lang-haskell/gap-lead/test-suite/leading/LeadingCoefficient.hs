@@ -1,7 +1,7 @@
 module LeadingCoefficient
     ( leadingCoefficientUnits
     , cleanTrack
-    -- , leadingFractions
+    , leadingFractions
     ) where
 
 import Data.List (sortBy)
@@ -9,6 +9,7 @@ import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import "flight-gap-allot" Flight.Score (isNormal)
 import qualified "flight-gap-lead" Flight.Score as FS
 import "flight-gap-lead" Flight.Score
     ( TaskTime(..)
@@ -19,8 +20,7 @@ import "flight-gap-lead" Flight.Score
     , LcPoint(..)
     --, TaskDeadline(..)
     , LengthOfSs(..)
-    --, LeadingFraction(..)
-    --, isNormal
+    , LeadingFraction(..)
     )
 
 import TestNewtypes
@@ -295,10 +295,11 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
             ]
     ]
 
-leadingFractions :: LcTest -> Bool
-leadingFractions (LcTest (deadline, lens, tracks)) =
-    all (\(LeadingFraction x) -> isNormal x) $ FS.leadingFractions deadline lens tracks
 -}
+
+leadingFractions :: LcTest -> Bool
+leadingFractions (LcTest (lcMin, lc)) =
+    (\(LeadingFraction x) -> isNormal x) $ FS.leadingFraction lcMin lc
 
 isClean :: LengthOfSs -> LcTrack -> LcTrack-> Bool
 

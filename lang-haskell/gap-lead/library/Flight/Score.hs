@@ -32,6 +32,7 @@ module Flight.Score
     , LeadingAreaToCoefUnits
     , LeadingArea1ToCoefUnits
     , LeadingArea2ToCoefUnits
+    , LeadingCoefUnits
     , LeadingCoef(..)
     , AreaToCoef(..)
     , LeadingFraction(..)

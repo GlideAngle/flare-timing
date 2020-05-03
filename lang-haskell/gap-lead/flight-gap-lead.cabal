@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d817328fd7cbb24ae416505e675751b4672c6ae26424fff6a9dcc762d024c4a2
+-- hash: 3aad3bf8922a5c0de27e8e9c7d8d3dd64f2da7b842f7791d176bc47ade70809a
 
 name:           flight-gap-lead
 version:        0.1.0
@@ -71,7 +71,7 @@ library
 
 test-suite lead
   type: exitcode-stdio-1.0
-  main-is: LeadingTestMain.hs
+  main-is: LeadTestMain.hs
   other-modules:
       Normal
       TestNewtypes

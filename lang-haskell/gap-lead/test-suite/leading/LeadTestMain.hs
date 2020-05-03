@@ -13,24 +13,20 @@ tests :: TestTree
 tests =
     testGroup
         "Tests"
-        [ units
-        , properties
+        [ properties
         ]
 
 properties :: TestTree
 properties = testGroup "Properties" [scProps, qcProps]
 
-units :: TestTree
-units = testGroup "Units" [leadingCoefficientUnits]
-
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
     [ SC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack
-    --, SC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
+    , SC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack
-    --, QC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
+    , QC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
     ]
