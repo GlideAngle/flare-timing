@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 361978390aaf62ba5a02c976b677cf624c643be121a7ace2cd4914a5764a45b2
+-- hash: 37a8db85591de36350da2b0152968ccf8860c35cf0f03f12168a91628cff7102
 
 name:           flight-gap-effort
 version:        0.1.0
@@ -114,6 +114,7 @@ test-suite effort
       Normal
       TestNewtypes
       DifficultyFraction
+      Lookahead
       Paths_flight_gap_effort
   hs-source-dirs:
       library

@@ -5,6 +5,7 @@ import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
 import DifficultyFraction
+import Lookahead
 
 main :: IO ()
 main = defaultMain tests
