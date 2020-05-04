@@ -16,7 +16,7 @@ properties :: TestTree
 properties = testGroup "Properties" [scProps, qcProps]
 
 units :: TestTree
-units = testGroup "Difficulty Fraction Units" [difficultyUnits]
+units = testGroup "Difficulty Fraction Units" [lookaheadUnits]
 
 
 scProps :: TestTree

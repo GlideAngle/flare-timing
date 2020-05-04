@@ -1,14 +1,15 @@
 module DifficultyFraction
-    ( difficultyUnits
-    , difficulty
+    ( difficulty
+    , lookaheadUnits
     , lookahead
     ) where
 
+import Text.Printf (printf)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.Ratio ((%))
 import Data.Maybe (fromMaybe)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, zero, unQuantity)
+import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified "flight-gap-effort" Flight.Score as FS (lookahead, gradeDifficulty)
@@ -30,195 +31,101 @@ import "flight-gap-effort" Flight.Score
 
 import TestNewtypes
 
-dists10 :: Rational -> [PilotDistance (Quantity Double [u| km |])]
-dists10 i =
-    [ PilotDistance . MkQuantity . fromRational $ 10 * x
-    | x <- [i .. 10]
-    ]
+type Km = Quantity Double [u| km |]
 
-best10 :: Rational -> FlownMax (Quantity Double [u| km |])
-best10 i = fromMaybe (FlownMax . MkQuantity $ 0) $ bestDistance' (dists10 i)
+mkKm :: Double -> Quantity Double [u| km |]
+mkKm = [u| km |]
 
-dists100 :: Rational -> [PilotDistance (Quantity Double [u| km |])]
-dists100 i =
-    [ PilotDistance . MkQuantity . fromRational $ x
-    | x <- [i .. 100]
-    ]
+distKms :: [Double] -> [PilotDistance Km]
+distKms = fmap (PilotDistance . mkKm)
 
-best100 :: Rational -> FlownMax (Quantity Double [u| km |])
-best100 i = fromMaybe (FlownMax . MkQuantity $ 0) $ bestDistance' (dists100 i)
+bd :: [PilotDistance Km] -> FlownMax Km
+bd xs = fromMaybe (FlownMax zero) $ bestDistance' xs
 
-expected10 :: [DifficultyFraction]
-expected10 =
-    DifficultyFraction <$>
-    take 7 [ n % 17 | n <- [1 .. ]]
-    ++ [31 % (4 * 17), 33 % (4 * 17), 1 % 2]
+showKm :: Km -> String
+showKm = showQuantity
 
-expected100 :: [DifficultyFraction]
-expected100 =
-    DifficultyFraction <$>
-    take 97 [ n % 197 | n <- [1 .. ]]
-    ++ [391 % (4 * 197), 393 % (4 * 197), 1 % 2]
+showKms :: [PilotDistance Km] -> String
+showKms xs =
+    go $ f <$> xs
+    where
+        f (PilotDistance x) = unQuantity x
 
-expected100_min2 :: [DifficultyFraction]
-expected100_min2 =
-    DifficultyFraction <$>
-    take 96 [ n % 195 | n <- [1 .. ]]
-    ++ [387 % (4 * 195), 389 % (4 * 195), 1 % 2]
+        go ys
+            | length xs > 2
+            , i : j : _ <- ys
+            , k : _ <- reverse ys = printf "[%6.3f, %6.3f, ... %7.3f]" i j k
+            | otherwise = show ys
 
-expected100_min5 :: [DifficultyFraction]
-expected100_min5 =
-    DifficultyFraction <$>
-    take 93 [ n % 189 | n <- [1 .. ]]
-    ++ [375 % (4 * 189), 377 % (4 * 189), 1 % 2]
+laUnit :: [Double] -> Int -> _
+laUnit xs expected =
+    let ds = distKms xs
+        dExpected = [u| km |] $ fromIntegral expected
+    in
+        HU.testCase
+            (printf "%5d pilots @ %s km => look %s" (length ds) (showKms ds) (showKm dExpected))
+            (FS.lookahead (bd ds) ds @?= Lookahead expected)
 
-expected100_min10 :: [DifficultyFraction]
-expected100_min10 =
-    DifficultyFraction <$>
-    take 88 [ n % 179 | n <- [1 .. ]]
-    ++ [355 % (4 * 179), 357 % (4 * 179), 1 % 2]
+lookaheadUnits :: TestTree
+lookaheadUnits = testGroup "Lookahead"
+    [ testGroup "0 pilots" [ laUnit [] 30 ]
 
-expected100_min15 :: [DifficultyFraction]
-expected100_min15 =
-    DifficultyFraction <$>
-    take 83 [ n % 169 | n <- [1 .. ]]
-    ++ [335 % (4 * 169), 337 % (4 * 169), 1 % 2]
-
-expected100_min20 :: [DifficultyFraction]
-expected100_min20 =
-    DifficultyFraction <$>
-    take 78 [ n % 159 | n <- [1 .. ]]
-    ++ [315 % (4 * 159), 317 % (4 * 159), 1 % 2]
-
-difficultyUnits :: TestTree
-difficultyUnits = testGroup "Difficulty fraction unit tests"
-    [ testGroup "Lookahead"
-        [ HU.testCase
-            "10 pilots land out in 100 kms = 300 x 100 hm look ahead chunks or 30 kms"
-            $ FS.lookahead (best10 1) (dists10 1) @?= Lookahead 300
-
-        , HU.testCase
-            "100 pilots land out in 100 kms = 30 x 100 hm look ahead chunks or 3 kms"
-            $ FS.lookahead (best100 1) (dists100 1) @?= Lookahead 30
+    , testGroup "1 pilot"
+        [ laUnit [-2] 30
+        , laUnit [-1] 30
+        , laUnit [0] 30
+        , laUnit [1] 30
+        , laUnit [2] 60
+        , laUnit [3] 90
+        , laUnit [99] 2970
+        , laUnit [100] 3000
         ]
 
-    , testGroup "10 pilots evenly land out"
-        [ HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 0"
-            $ (let d = 0 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 1"
-            $ (let d = 1 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 2"
-            $ (let d = 2 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 3"
-            $ (let d = 3 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 4"
-            $ (let d = 4 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 5"
-            $ (let d = 5 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 6"
-            $ (let d = 6 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 7"
-            $ (let d = 7 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 8"
-            $ (let d = 8 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 9"
-            $ (let d = 9 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 10"
-            $ (let d = 10 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 11"
-            $ (let d = 11 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 12"
-            $ (let d = 12 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 13"
-            $ (let d = 13 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 14"
-            $ (let d = 14 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
-
-        , HU.testCase
-            "10 pilots evenly land out over 100 kms, minimum distance = 15"
-            $ (let d = 15 in diffFracs (FS.gradeDifficulty (best10 d) nullPilots (dists10 d)))
-            @?= expected10
+    , testGroup "2 pilots over 1 km"
+        [ laUnit [0, 0] 30
+        , laUnit [0, 1] 30
+        , laUnit [1, 1] 30
         ]
 
-    , testGroup "100 pilots evenly land out"
-        [ HU.testCase
-            "100 pilots evenly land out over 100 kms, minimum distance = 0"
-            $ (let d = 0 in diffFracs (FS.gradeDifficulty (best100 d) nullPilots (dists100 d)))
-            @?= expected100
+    , testGroup "2 pilots over 2 km"
+        [ laUnit [0, 2] 30
+        , laUnit [1, 2] 30
+        , laUnit [2, 2] 30
+        ]
 
-        , HU.testCase
-            "100 pilots evenly land out over 100 kms, minimum distance = 1"
-            $ (let d = 1 in diffFracs (FS.gradeDifficulty (best100 d) nullPilots (dists100 d)))
-            @?= expected100
+    , testGroup "2 pilots over 3 km"
+        [ laUnit [0, 3] 45
+        , laUnit [1, 3] 45
+        , laUnit [2, 3] 45
+        , laUnit [3, 3] 45
+        ]
 
-        , HU.testCase
-            "100 pilots evenly land out over 100 kms, minimum distance = 2"
-            $ (let d = 2 in diffFracs (FS.gradeDifficulty (best100 d) nullPilots (dists100 d)))
-            @?= expected100_min2
+    , testGroup "2 pilots over 100 km"
+        [ laUnit [0,100] 1500
+        , laUnit [1,100] 1500
+        , laUnit [99, 100] 1500
+        , laUnit [100, 100] 1500
+        ]
 
-        , HU.testCase
-            "100 pilots evenly land out over 100 kms, minimum distance = 5"
-            $ (let d = 5 in diffFracs (FS.gradeDifficulty (best100 d) nullPilots (dists100 d)))
-            @?= expected100_min5
+    , testGroup "2 pilots over 1000 km"
+        [ laUnit [0,1000] 15000
+        , laUnit [1,1000] 15000
+        , laUnit [999, 1000] 15000
+        , laUnit [1000, 1000] 15000
+        ]
 
-        , HU.testCase
-            "100 pilots evenly land out over 100 kms, minimum distance = 10"
-            $ (let d = 10 in diffFracs (FS.gradeDifficulty (best100 d) nullPilots (dists100 d)))
-            @?= expected100_min10
+    , testGroup "100 km (examples from the rules)"
+        [ laUnit [10,20 .. 100] 300
+        , laUnit [91,92 .. 100] 300
+        , laUnit [1,2 .. 100] 30
+        , laUnit [90.1,90.2 .. 100] 30
+        ]
 
-        , HU.testCase
-            "100 pilots evenly land out over 100 kms, minimum distance = 15"
-            $ (let d = 15 in diffFracs (FS.gradeDifficulty (best100 d) nullPilots (dists100 d)))
-            @?= expected100_min15
-
-        , HU.testCase
-            "100 pilots evenly land out over 100 kms, minimum distance = 20"
-            $ (let d = 20 in diffFracs (FS.gradeDifficulty (best100 d) nullPilots (dists100 d)))
-            @?= expected100_min20
+    , testGroup "100 km (many pilots)"
+        [ laUnit [0.1,0.2 .. 100] 30
+        , laUnit [90.01,90.02 .. 100] 30
+        , laUnit [0.01,0.02 .. 100] 30
+        , laUnit [90.001,90.002 .. 100] 30
         ]
     ]
 
@@ -229,13 +136,13 @@ nullPilots :: [Pilot]
 nullPilots = repeat nullPilot
 
 lookahead :: DfTest -> Bool
-lookahead (DfTest (dBest@(FlownMax (MkQuantity best)), xs)) =
+lookahead (DfTest (dBest@(FlownMax (MkQuantity d)), xs)) =
     (\(Lookahead n) -> n >= 30 && n <= max 30 chunks)
     $ FS.lookahead dBest xs
     where
         chunks =
             if null xs then 0
-                       else round $ 30.0 * best / (fromIntegral . length $ xs)
+                       else round $ 30.0 * d / (fromIntegral . length $ xs)
 
 difficulty :: DfTest -> Bool
 difficulty (DfTest (dBest, xs)) =
