@@ -55,7 +55,7 @@ in    defs
             , "containers"
             , "facts"
             , "newtype"
-            , "numbers"
+            , "exact-real"
             , "QuickCheck"
             , "scientific"
             , "template-haskell"
@@ -91,7 +91,7 @@ in    defs
                 { dependencies =
                       defs.dependencies
                     # [ "quickcheck-classes"
-                      , "numbers"
+                      , "exact-real"
                       , "doctest"
                       , "facts"
                       , "flight-units"

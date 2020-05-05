@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bbbce75c18fec890e0b66bb333a11f66bf4d6728f79695c9bf8856c1a8c4106f
+-- hash: f3c782521cf07d0c84599292e0e9a5081e9336d1ee577a399d7a94524f054115
 
 name:           flight-gap-math
 version:        0.1.0
@@ -59,13 +59,13 @@ library
     , containers
     , detour-via-sci
     , detour-via-uom
+    , exact-real
     , facts
     , flight-gap-allot
     , flight-gap-valid
     , flight-gap-weight
     , flight-units
     , newtype
-    , numbers
     , scientific
     , siggy-chardust
     , template-haskell
@@ -102,13 +102,13 @@ test-suite doctest
     , detour-via-sci
     , detour-via-uom
     , doctest
+    , exact-real
     , facts
     , flight-gap-allot
     , flight-gap-valid
     , flight-gap-weight
     , flight-units
     , newtype
-    , numbers
     , quickcheck-classes
     , scientific
     , siggy-chardust
@@ -145,6 +145,7 @@ test-suite math
     , containers
     , detour-via-sci
     , detour-via-uom
+    , exact-real
     , facts
     , flight-gap-allot
     , flight-gap-math
@@ -152,7 +153,6 @@ test-suite math
     , flight-gap-weight
     , flight-units
     , newtype
-    , numbers
     , quickcheck-instances
     , scientific
     , siggy-chardust

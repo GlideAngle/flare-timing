@@ -23,9 +23,7 @@ module Flight.Gap.Penalty
     , identityOfMul, identityOfAdd, identityOfReset
     ) where
 
-import Prelude hiding (realToFrac)
-import qualified Prelude as P (realToFrac)
-import Data.Number.CReal
+import qualified Data.CReal as ExactReal
 import Test.QuickCheck (Arbitrary(..), Gen, NonNegative(..))
 import Data.Semigroup
 import Data.Typeable
@@ -46,12 +44,12 @@ import Data.Aeson
     )
 
 import Flight.Gap.Points.Task (TaskPoints(..))
+import Data.Ratio.Rounding (sdRound)
 
-dp :: Int
-dp = 3
+type CReal = ExactReal.CReal 12
 
-realToFrac :: CReal -> Double
-realToFrac x = let s = showCReal dp x in read s
+roundCReal :: CReal -> Double
+roundCReal = fromRational . sdRound 3 . toRational
 
 data GE (n :: Nat) deriving Generic
 
@@ -111,11 +109,11 @@ instance Show (PointPenalty a) where
     show (PenaltyPoints 0) = "(+ id)"
     show (PenaltyReset Nothing) = "(= id)"
 
-    show (PenaltyFraction x) = printf "(* %s)" (showCReal dp x)
+    show (PenaltyFraction x) = printf "(* %f)" (roundCReal x)
     show (PenaltyPoints x) =
         if x < 0
-           then printf "(- %s)" (showCReal dp $ abs x)
-           else printf "(+ %s)" (showCReal dp x)
+           then printf "(- %f)" (roundCReal $ abs x)
+           else printf "(+ %f)" (roundCReal x)
     show (PenaltyReset (Just x)) = printf "(= %d)" $ unrefined x
 
 instance Semigroup (PointPenalty Mul) where
@@ -129,12 +127,12 @@ instance Semigroup (PointPenalty Reset) where
         PenaltyReset . Just $ min a b
 
 instance Arbitrary CReal where
-    arbitrary = P.realToFrac <$> (arbitrary :: Gen Double)
+    arbitrary = realToFrac <$> (arbitrary :: Gen Double)
 
 instance Arbitrary (PointPenalty Mul) where
-    arbitrary = PenaltyFraction . P.realToFrac <$> (arbitrary :: Gen Double)
+    arbitrary = PenaltyFraction . realToFrac <$> (arbitrary :: Gen Double)
 instance Arbitrary (PointPenalty Add) where
-    arbitrary = PenaltyPoints . P.realToFrac <$> (arbitrary :: Gen Double)
+    arbitrary = PenaltyPoints . realToFrac <$> (arbitrary :: Gen Double)
 instance Arbitrary (PointPenalty Reset) where
     arbitrary = do
         x <- arbitrary :: Gen (Maybe (NonNegative Int))
@@ -276,11 +274,11 @@ idSeq =
 mkMul :: Double -> PointPenalty Mul
 mkMul 0 = PenaltyFraction 0
 mkMul 1 = PenaltyFraction 1
-mkMul x = PenaltyFraction $ P.realToFrac x
+mkMul x = PenaltyFraction $ realToFrac x
 
 mkAdd :: Double -> PointPenalty Add
 mkAdd 0 = PenaltyPoints 0
-mkAdd x = PenaltyPoints $ P.realToFrac x
+mkAdd x = PenaltyPoints $ realToFrac x
 
 mkReset :: Maybe Int -> PointPenalty Reset
 mkReset Nothing = PenaltyReset Nothing
@@ -351,6 +349,9 @@ toSeqs PenaltySeq{mul, add, reset} =
 --
 -- >>> seqOnlyMuls (mulSeq 1)
 -- Nothing
+--
+-- >>> seqOnlyMuls (mulSeq 0.3)
+-- Just (* 0.3)
 --
 -- >>> seqOnlyMuls (mulSeq 0.9)
 -- Just (* 0.9)
@@ -465,8 +466,8 @@ applyPenalties fracs points resets p =
 -- >>> cmpMul identityOfMul
 -- Just (EQ,1.0)
 --
--- prop> \x -> let y = realToFrac x in (P.realToFrac . snd <$> cmpMul (mkMul y)) == Just y
--- prop> \x -> let y = realToFrac x in (P.realToFrac . snd <$> cmpMul (mkAdd y)) == Nothing
+-- prop> \x -> let y = realToFrac x in (realToFrac . snd <$> cmpMul (mkMul y)) == Just y
+-- prop> \x -> let y = realToFrac x in (realToFrac . snd <$> cmpMul (mkAdd y)) == Nothing
 -- prop> \x -> (snd <$> cmpMul (mkReset y)) == Nothing
 cmpMul :: PointPenalty a -> Maybe (Ordering, Double)
 cmpMul (PenaltyFraction 1) = Just (EQ, 1)
@@ -478,8 +479,8 @@ cmpMul _ = Nothing
 -- >>> cmpAdd identityOfAdd
 -- Just (EQ,0.0)
 --
--- prop> \x -> let y = realToFrac x in (P.realToFrac . snd <$> cmpAdd (mkMul y)) == Nothing
--- prop> \x -> let y = realToFrac x in (P.realToFrac . snd <$> cmpAdd (mkAdd y)) == Just y
+-- prop> \x -> let y = realToFrac x in (realToFrac . snd <$> cmpAdd (mkMul y)) == Nothing
+-- prop> \x -> let y = realToFrac x in (realToFrac . snd <$> cmpAdd (mkAdd y)) == Just y
 -- prop> \x -> (snd <$> cmpAdd (mkReset y)) == Nothing
 cmpAdd :: PointPenalty a -> Maybe (Ordering, Double)
 cmpAdd (PenaltyPoints 0) = Just (EQ, 0)
@@ -563,7 +564,7 @@ instance ToJSON CReal where
 instance FromJSON CReal where
     parseJSON o = do
         x :: Double <- parseJSON o
-        return $ P.realToFrac x
+        return $ realToFrac x
 
 -- SEE: https://www.reddit.com/r/haskell/comments/5acj3g/derive_fromjson_for_gadts
 data Hide f = forall a. Hide (f a)

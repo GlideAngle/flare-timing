@@ -11,13 +11,19 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Tests" [units, properties]
+tests = testGroup "Tests"
+    [ units
+    , properties
+    ]
 
 properties :: TestTree
 properties = testGroup "Properties" [scProps, qcProps]
 
 units :: TestTree
-units = testGroup "Difficulty Fraction Units" [lookaheadUnits]
+units = testGroup "Difficulty Fraction Units"
+    [ lookaheadUnits
+    , difficultyUnits
+    ]
 
 
 scProps :: TestTree

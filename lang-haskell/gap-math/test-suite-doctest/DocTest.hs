@@ -44,6 +44,7 @@ arguments =
     , "-fplugin=Data.UnitsOfMeasure.Plugin"
     , "-fno-warn-partial-type-signatures"
 
+    , "-package=exact-real"
     , "-package=facts"
     , "-package=quickcheck-classes"
 

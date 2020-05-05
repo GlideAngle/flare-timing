@@ -110,14 +110,14 @@ gradeDifficulty best@(FlownMax (MkQuantity bd)) pilots landings =
             catMaybes $
             (\y -> do
                 rel <- Map.lookup y relMap
-                let f = uncurry ChunkRelativeDifficulty . fmap (RelativeDifficulty . toRational)
+                let f = uncurry ChunkRelativeDifficulty . fmap (RelativeDifficulty . realToFrac)
                 return $ f (y, rel))
             <$> ys
         , fractional =
             catMaybes $
             (\y -> do
                 frac <- Map.lookup y fracMap
-                let f = uncurry ChunkDifficultyFraction . fmap (DifficultyFraction . toRational)
+                let f = uncurry ChunkDifficultyFraction . fmap (DifficultyFraction . realToFrac)
                 return $ f (y, frac))
             <$> ys
         }

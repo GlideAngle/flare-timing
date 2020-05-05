@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 37a8db85591de36350da2b0152968ccf8860c35cf0f03f12168a91628cff7102
+-- hash: 987986ed5f292acc93bb347a3d7622813a35b2808ce8cd3f89503ae08fd0df5f
 
 name:           flight-gap-effort
 version:        0.1.0
@@ -53,11 +53,11 @@ library
     , containers
     , detour-via-sci
     , detour-via-uom
+    , exact-real
     , facts
     , flight-gap-allot
     , flight-units
     , newtype
-    , numbers
     , scientific
     , siggy-chardust
     , template-haskell
@@ -88,11 +88,11 @@ test-suite doctest
     , detour-via-sci
     , detour-via-uom
     , doctest
+    , exact-real
     , facts
     , flight-gap-allot
     , flight-units
     , newtype
-    , numbers
     , quickcheck-classes
     , scientific
     , siggy-chardust
@@ -114,6 +114,7 @@ test-suite effort
       Normal
       TestNewtypes
       DifficultyFraction
+      Km
       Lookahead
       Paths_flight_gap_effort
   hs-source-dirs:
@@ -130,12 +131,12 @@ test-suite effort
     , containers
     , detour-via-sci
     , detour-via-uom
+    , exact-real
     , facts
     , flight-gap-allot
     , flight-gap-effort
     , flight-units
     , newtype
-    , numbers
     , quickcheck-instances
     , scientific
     , siggy-chardust

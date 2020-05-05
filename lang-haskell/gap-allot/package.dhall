@@ -53,6 +53,7 @@ in    defs
           # [ "aeson"
             , "cassava"
             , "containers"
+            , "exact-real"
             , "facts"
             , "newtype"
             , "numbers"

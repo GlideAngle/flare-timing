@@ -33,6 +33,10 @@ packages:
     , lang-haskell/zone
     , lang-haskell/hcoord/hcoord
     , lang-haskell/hcoord/hcoord-utm
+source-repository-package
+    type: git
+    location: https://github.com/blockscope/exact-real.git
+    tag: e4ed41e5034ee72c3bccddd806b69f7a21f3086b
 package flight-clip
     tests: true
 package flight-cmd

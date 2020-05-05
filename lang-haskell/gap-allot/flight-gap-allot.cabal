@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7c82a1788298d984e6a1d7dd4a5ffb438db4b06264fe0f4111a707e611bef0d7
+-- hash: 3f1243208f38aad99b2d7e4a38466f7ea5b6d42b1c89a2ba1255b5f18d4f81f3
 
 name:           flight-gap-allot
 version:        0.1.0
@@ -75,6 +75,7 @@ library
     , containers
     , detour-via-sci
     , detour-via-uom
+    , exact-real
     , facts
     , flight-units
     , newtype
@@ -131,6 +132,7 @@ test-suite doctest
     , detour-via-sci
     , detour-via-uom
     , doctest
+    , exact-real
     , facts
     , flight-units
     , newtype

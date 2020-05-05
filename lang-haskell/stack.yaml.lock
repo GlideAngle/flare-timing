@@ -74,4 +74,22 @@ packages:
     pantry-tree:
       size: 310
       sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
+- completed:
+    size: 21856
+    url: https://github.com/blockscope/exact-real/archive/e4ed41e5034ee72c3bccddd806b69f7a21f3086b.tar.gz
+    name: exact-real
+    version: 0.12.2
+    sha256: c20353624cb898c78686e4324771ac58d431948b06cedf582014f2c38af91edd
+    pantry-tree:
+      size: 1825
+      sha256: 440253573316e3c8604c81265a82be3a44abb878522ea957ac1315c89f96efa4
+  original:
+    url: https://github.com/blockscope/exact-real/archive/e4ed41e5034ee72c3bccddd806b69f7a21f3086b.tar.gz
+- completed:
+    hackage: memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
+    pantry-tree:
+      size: 473
+      sha256: 598188857937054d2cc4ac91aee580944d750e91120756507891d09e02056066
+  original:
+    hackage: memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
 snapshots: []
