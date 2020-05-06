@@ -191,6 +191,60 @@ instance Num (PointPenalty Reset) where
         PenaltyReset $
         if x < 0 then Nothing else Just . assumeProp . refined $ fromIntegral x
 
+instance ToJSON CReal where
+    toJSON 0 = toJSON (0 :: Double)
+    toJSON x = toJSON ((realToFrac x) :: Double)
+
+instance FromJSON CReal where
+    parseJSON o = do
+        x :: Double <- parseJSON o
+        return $ realToFrac x
+
+-- SEE: https://www.reddit.com/r/haskell/comments/5acj3g/derive_fromjson_for_gadts
+data Hide f = forall a. Hide (f a)
+instance FromJSON (Hide PointPenalty) where
+    parseJSON = withObject "PenaltyPoints" $ \o ->
+        asum
+            [ Hide . PenaltyPoints <$> o .: "penalty-points"
+            , Hide . PenaltyFraction <$> o .: "penalty-fraction"
+            , Hide . PenaltyReset <$> o .: "penalty-reset"
+            ]
+
+instance FromJSON (PointPenalty Mul) where
+    parseJSON = withObject "PenaltyPoints" $ \o ->
+        PenaltyFraction <$> o .: "penalty-fraction"
+
+instance FromJSON (PointPenalty Add) where
+    parseJSON = withObject "PenaltyPoints" $ \o ->
+        PenaltyPoints <$> o .: "penalty-points"
+
+instance FromJSON (PointPenalty Reset) where
+    parseJSON = withObject "PenaltyPoints" $ \o ->
+        PenaltyReset <$> o .: "penalty-reset"
+
+instance ToJSON (PointPenalty a) where
+    toJSON (PenaltyPoints x) = object [ "penalty-points" .= toJSON x ]
+    toJSON (PenaltyFraction x) = object [ "penalty-fraction" .= toJSON x ]
+    toJSON (PenaltyReset x) = object [ "penalty-reset" .= toJSON x ]
+
+instance ToJSON (Hide PointPenalty) where
+    toJSON (Hide x) = toJSON x
+
+instance Eq (Hide PointPenalty) where
+    (==) (Hide x@PenaltyFraction{}) (Hide y@PenaltyFraction{}) = x == y
+    (==) (Hide x@PenaltyPoints{}) (Hide y@PenaltyPoints{}) = x == y
+    (==) (Hide x@PenaltyReset{}) (Hide y@PenaltyReset{}) = x == y
+    (==) _ _ = False
+
+instance Ord (Hide PointPenalty) where
+    compare (Hide x@PenaltyFraction{}) (Hide y@PenaltyFraction{}) = x `compare` y
+    compare (Hide x@PenaltyPoints{}) (Hide y@PenaltyPoints{}) = x `compare` y
+    compare (Hide x@PenaltyReset{}) (Hide y@PenaltyReset{}) = x `compare` y
+    compare x y = error $ printf "Not comparable %s and %s" (show $ typeOf x) (show $ typeOf y)
+
+instance Show (Hide PointPenalty) where
+    show (Hide x) = show x
+
 partialNum :: a
 partialNum = error "(+) and (*) are partial for PointPenalty Reset."
 
@@ -543,60 +597,6 @@ applyPenalty (TaskPoints p) pp = TaskPoints p'
             | Just (EQ, _) <- cmpAdd pp = p
             | PenaltyReset Nothing <- pp = p
             | otherwise = p
-
-instance ToJSON CReal where
-    toJSON 0 = toJSON (0 :: Double)
-    toJSON x = toJSON ((realToFrac x) :: Double)
-
-instance FromJSON CReal where
-    parseJSON o = do
-        x :: Double <- parseJSON o
-        return $ realToFrac x
-
--- SEE: https://www.reddit.com/r/haskell/comments/5acj3g/derive_fromjson_for_gadts
-data Hide f = forall a. Hide (f a)
-instance FromJSON (Hide PointPenalty) where
-    parseJSON = withObject "PenaltyPoints" $ \o ->
-        asum
-            [ Hide . PenaltyPoints <$> o .: "penalty-points"
-            , Hide . PenaltyFraction <$> o .: "penalty-fraction"
-            , Hide . PenaltyReset <$> o .: "penalty-reset"
-            ]
-
-instance FromJSON (PointPenalty Mul) where
-    parseJSON = withObject "PenaltyPoints" $ \o ->
-        PenaltyFraction <$> o .: "penalty-fraction"
-
-instance FromJSON (PointPenalty Add) where
-    parseJSON = withObject "PenaltyPoints" $ \o ->
-        PenaltyPoints <$> o .: "penalty-points"
-
-instance FromJSON (PointPenalty Reset) where
-    parseJSON = withObject "PenaltyPoints" $ \o ->
-        PenaltyReset <$> o .: "penalty-reset"
-
-instance ToJSON (PointPenalty a) where
-    toJSON (PenaltyPoints x) = object [ "penalty-points" .= toJSON x ]
-    toJSON (PenaltyFraction x) = object [ "penalty-fraction" .= toJSON x ]
-    toJSON (PenaltyReset x) = object [ "penalty-reset" .= toJSON x ]
-
-instance ToJSON (Hide PointPenalty) where
-    toJSON (Hide x) = toJSON x
-
-instance Eq (Hide PointPenalty) where
-    (==) (Hide x@PenaltyFraction{}) (Hide y@PenaltyFraction{}) = x == y
-    (==) (Hide x@PenaltyPoints{}) (Hide y@PenaltyPoints{}) = x == y
-    (==) (Hide x@PenaltyReset{}) (Hide y@PenaltyReset{}) = x == y
-    (==) _ _ = False
-
-instance Ord (Hide PointPenalty) where
-    compare (Hide x@PenaltyFraction{}) (Hide y@PenaltyFraction{}) = x `compare` y
-    compare (Hide x@PenaltyPoints{}) (Hide y@PenaltyPoints{}) = x `compare` y
-    compare (Hide x@PenaltyReset{}) (Hide y@PenaltyReset{}) = x `compare` y
-    compare x y = error $ printf "Not comparable %s and %s" (show $ typeOf x) (show $ typeOf y)
-
-instance Show (Hide PointPenalty) where
-    show (Hide x) = show x
 
 -- | The effective fraction is the sum of the list.
 --
