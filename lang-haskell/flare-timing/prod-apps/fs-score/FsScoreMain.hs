@@ -218,7 +218,7 @@ reachFraction (LinearPoints maxPts) (LinearPoints pts)
 effortFraction :: DifficultyPoints -> DifficultyPoints -> DifficultyFraction
 effortFraction (DifficultyPoints maxPts) (DifficultyPoints pts)
     | maxPts == 0 = DifficultyFraction 0
-    | otherwise = DifficultyFraction $ pts / maxPts
+    | otherwise = DifficultyFraction . realToFrac $ pts / maxPts
 
 distanceFraction :: DistancePoints -> DistancePoints -> DistanceFraction
 distanceFraction (DistancePoints maxPts) (DistancePoints pts)

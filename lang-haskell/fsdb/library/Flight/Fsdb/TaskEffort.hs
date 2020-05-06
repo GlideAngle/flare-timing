@@ -125,8 +125,8 @@ xpChunk pidMap =
                         . snd
                         <$> ds
                     , Gap.downers = unKeyPilot pidMap . PilotId . fst <$> ds
-                    , Gap.rel = RelativeDifficulty $ toRational rel
-                    , Gap.frac = DifficultyFraction $ toRational frac
+                    , Gap.rel = RelativeDifficulty $ realToFrac rel
+                    , Gap.frac = DifficultyFraction $ realToFrac frac
                     }
         , \Gap.ChunkDifficulty
                 { Gap.chunk = IxChunk c
@@ -145,7 +145,7 @@ xpChunk pidMap =
                             | PilotDistance (MkQuantity pd) <- dns
                             | Pilot (PilotId pid, _) <- drs
                             ]
-                    in (c, s, e, ea, d, dw, fromRational rel, fromRational frac, ds)
+                    in (c, s, e, ea, d, dw, realToFrac rel, realToFrac frac, ds)
         )
     $ xp9Tuple
         (xpAttr "chunk" xpInt)

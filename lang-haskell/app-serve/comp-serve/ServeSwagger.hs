@@ -51,6 +51,9 @@ import ServeArea (RawLeadingArea(..))
 
 type SwagUiApi = SwaggerSchemaUI "swagger-ui" "swagger.json"
 
+instance ToSchema DifficultyFraction where
+    declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy Double)
+
 instance ToSchema (PointPenalty Mul) where
     declareNamedSchema _ = NamedSchema Nothing <$> declareSchema (Proxy :: Proxy Double)
 
@@ -551,7 +554,6 @@ instance ToSchema Chunking
 instance ToSchema SumOfDifficulty
 instance ToSchema ChunkDifficulty
 instance ToSchema RelativeDifficulty
-instance ToSchema DifficultyFraction
 instance ToSchema IxChunk
 instance ToSchema (OptimalRoute (Maybe TrackLine))
 instance ToSchema Validity

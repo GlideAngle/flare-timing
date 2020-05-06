@@ -936,7 +936,7 @@ applyDifficulty
     -> DifficultyPoints
 applyDifficulty Gap.Points{distance = DistancePoints y} (DifficultyFraction frac) =
     -- NOTE: A fraction of distance points, not a fraction of effort points.
-    DifficultyPoints $ frac * y
+    DifficultyPoints $ realToFrac frac * y
 
 madeDifficultyDf
     :: MinimumDistance (Quantity Double [u| km |])
