@@ -753,6 +753,9 @@ applyPenalty (TaskPoints p) pp = TaskPoints p'
 -- | Applies the penalties, fractionals then absolutes and finally the resets.
 --
 -- prop> \ms as rs x -> (total $ applyPenalties ms as rs x) == applyReset rs (applyAdd as (applyMul ms x))
+-- prop> \x -> (total $ applyPenalties [identityOfMul] [] [] x) == x
+-- prop> \x -> (total $ applyPenalties [] [identityOfAdd] [] x) == x
+-- prop> \x -> (total $ applyPenalties [] [] [identityOfReset] x) == x
 applyPenalties
     :: [PointPenalty Mul]
     -> [PointPenalty Add]
