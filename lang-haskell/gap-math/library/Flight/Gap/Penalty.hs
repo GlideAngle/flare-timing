@@ -46,7 +46,7 @@ import Data.Aeson
 import Flight.Gap.Points.Task (TaskPoints(..))
 import Data.Ratio.Rounding (sdRound)
 
-type CReal = ExactReal.CReal 12
+type CReal = ExactReal.CReal 64
 
 roundCReal :: CReal -> Double
 roundCReal = fromRational . sdRound 3 . toRational
@@ -252,7 +252,7 @@ idReset = (==) identityOfReset
 -- 1.000
 --
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints (-1))
--- 0.000
+-- -1.000
 --
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0.5)
 -- 0.500
@@ -260,9 +260,7 @@ idReset = (==) identityOfReset
 -- >>> total $ applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) (TaskPoints 0.8584411845461164)
 -- 0.858
 --
--- prop> \x -> x >= 0 ==> let pts = TaskPoints x in pts == total (applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) pts)
---
--- prop> \x -> x < 0 ==> let pts = TaskPoints x in (TaskPoints 0) == total (applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) pts)
+-- prop> \x -> let pts = TaskPoints x in pts == total (applyPenalties (muls nullSeqs) (adds nullSeqs) (resets nullSeqs) pts)
 idSeq :: PenaltySeq
 idSeq =
     PenaltySeq
@@ -283,7 +281,7 @@ mkAdd x = PenaltyPoints $ realToFrac x
 mkReset :: Maybe Int -> PointPenalty Reset
 mkReset Nothing = PenaltyReset Nothing
 mkReset (Just x) =
-    if | x < 0 -> 0
+    if | x < 0 -> error "Points cannot be reset to less than 0"
        | x > 1000 -> error "Points cannot be reset to greater than 1000"
        | otherwise -> PenaltyReset . Just . assumeProp $ refined x
 
@@ -468,7 +466,7 @@ applyPenalties fracs points resets p =
 --
 -- prop> \x -> let y = realToFrac x in (realToFrac . snd <$> cmpMul (mkMul y)) == Just y
 -- prop> \x -> let y = realToFrac x in (realToFrac . snd <$> cmpMul (mkAdd y)) == Nothing
--- prop> \x -> (snd <$> cmpMul (mkReset y)) == Nothing
+-- prop> \x -> x >= 0 ==> (snd <$> cmpMul (mkReset $ Just x)) == Nothing
 cmpMul :: PointPenalty a -> Maybe (Ordering, Double)
 cmpMul (PenaltyFraction 1) = Just (EQ, 1)
 cmpMul (PenaltyFraction x) = let y = realToFrac x in Just (y `compare` 1, y)
@@ -481,13 +479,13 @@ cmpMul _ = Nothing
 --
 -- prop> \x -> let y = realToFrac x in (realToFrac . snd <$> cmpAdd (mkMul y)) == Nothing
 -- prop> \x -> let y = realToFrac x in (realToFrac . snd <$> cmpAdd (mkAdd y)) == Just y
--- prop> \x -> (snd <$> cmpAdd (mkReset y)) == Nothing
+-- prop> \x -> x >= 0 ==> (snd <$> cmpAdd (mkReset $ Just x)) == Nothing
 cmpAdd :: PointPenalty a -> Maybe (Ordering, Double)
 cmpAdd (PenaltyPoints 0) = Just (EQ, 0)
 cmpAdd (PenaltyPoints x) = let y = realToFrac x in Just (y `compare` 0, y)
 cmpAdd _ = Nothing
 
--- | Applies a penalty and ensures the resulting points are not less than zero.
+-- | Applies a penalty allowing that the resulting points maybe less than zero.
 --
 -- >>> applyPenalty 2 identityOfMul
 -- 2.000
@@ -499,13 +497,14 @@ cmpAdd _ = Nothing
 -- 2.000
 --
 -- >>> applyPenalty 2 (mkMul (-1))
--- 0.000
+-- -2.000
 --
 -- >>> applyPenalty 2 (mkAdd (-3))
--- 0.000
+-- -1.000
 --
 -- >>> applyPenalty 2 (mkReset $ Just (-1))
--- 0.000
+-- *** Exception: Points cannot be reset to less than 0
+-- ...
 --
 -- >>> applyPenalty 2 (mkMul 0)
 -- 0.000
@@ -523,32 +522,27 @@ cmpAdd _ = Nothing
 -- 3.000
 --
 -- >>> applyPenalty 2 (mkReset $ Just 3)
--- 2.000
+-- 3.000
 applyPenalty :: TaskPoints -> PointPenalty a -> TaskPoints
 applyPenalty (TaskPoints p) pp = TaskPoints p'
     where
-        notNeg = max 0 p
-
         p'
 
             -- NOTE: When positive @Add@ penalties are bonuses. A true penalty is
             -- subtraction, adding a negative number. A bonus adds a positive
             -- number.
-            | Just (_, n) <- cmpAdd pp = max 0 $ p + n
+            | Just (_, n) <- cmpAdd pp = p + n
 
             -- NOTE: It doesn't matter the magnitude or the sign of the scaling
             -- as we're going to multiply by it anyway.
-            | Just (_, n) <- cmpMul pp = max 0 $ p * n
+            | Just (_, n) <- cmpMul pp = p * n
 
-            | PenaltyReset (Just n) <- pp =
-                -- NOTE: Resets can only be used as penalties and not bonuses so
-                -- we can assume the value is not negative.
-                min p (fromIntegral $ unrefined n)
+            | PenaltyReset (Just n) <- pp = fromIntegral $ unrefined n
 
-            | Just (EQ, _) <- cmpMul pp = notNeg
-            | Just (EQ, _) <- cmpAdd pp = notNeg
-            | PenaltyReset Nothing <- pp = notNeg
-            | otherwise = notNeg
+            | Just (EQ, _) <- cmpMul pp = p
+            | Just (EQ, _) <- cmpAdd pp = p
+            | PenaltyReset Nothing <- pp = p
+            | otherwise = p
 
 instance ToJSON CReal where
     toJSON 0 = toJSON (0 :: Double)
@@ -691,16 +685,90 @@ isJustReset :: PointPenalty Reset -> Bool
 isJustReset (PenaltyReset x) = isJust x
 
 -- | Applies only fractional penalties.
+--
+-- >>> toRational 1.1113796712511523 * toRational 0.540
+-- 1521548395930413666912913482589 % 2535301200456458802993406410752
+--
+-- >>> 1.1113796712511523 * 0.540
+-- 0.6001450224756223
+--
+-- 0.600145022475622242 -- SEE: https://www.mathsisfun.com/calculator-precision.html
+-- 0.600145022475622242 -- SEE: https://keisan.casio.com/calculator
+-- 0.600145022475622242 -- SEE: https://www.wolframalpha.com/calculators/equation-solver-calculator
+--
+-- >>> (fromRational (toRational 1.1113796712511523 * toRational 0.540) :: Double)
+-- 0.6001450224756223
+--
+-- >>> (fromRational (toRational 1.1113796712511523 * toRational 0.540) :: CReal)
+-- 0.60014502247562230016
+--
+-- >>> realToFrac 1.1113796712511523 :: NReal
+-- 1.1113796712511523345767727732891216874123
+--
+-- >>> realToFrac 1.1113796712511523 :: CReal
+-- 1.11137967125115233458
+--
+-- >>> realToFrac 0.540 :: NReal
+-- 0.5400000000000000355271367880050092935562
+--
+-- >>> realToFrac 0.540 :: CReal
+-- 0.54000000000000003553
+--
+-- >>> (realToFrac 1.1113796712511523 :: NReal) * (realToFrac 0.540 :: NReal)
+-- 0.6001450224756223001555949015238530313629
+--
+-- >>> (realToFrac 1.1113796712511523 :: CReal) * (realToFrac 0.540 :: CReal)
+-- 0.60014502247562230016
+--
+-- prop> \x -> applyMul [] x == x
+-- prop> \x y -> applyMul [mkMul x] y == (TaskPoints x) * y
 applyMul :: [PointPenalty Mul] -> TaskPoints -> TaskPoints
 applyMul fracs p =
     applyPenalty p (effectiveMul fracs)
 
 -- | Applies only point penalties.
+--
+-- prop> \x -> applyAdd [] x == x
+-- prop> \x y -> applyAdd [mkAdd x] y == (TaskPoints x) + y
 applyAdd :: [PointPenalty Add] -> TaskPoints -> TaskPoints
 applyAdd points p =
     applyPenalty p (effectiveAdd points)
 
 -- | Applies only reset penalties.
+--
+-- >>> 1.9082887384642317 + (-0.645)
+-- 1.2632887384642317
+--
+-- 1.2632887384642317 -- SEE: https://www.mathsisfun.com/calculator-precision.html
+-- 1.2632887384642317 -- SEE: https://keisan.casio.com/calculator
+-- 1.2632887384642317 -- SEE: https://www.wolframalpha.com/calculators/equation-solver-calculator
+--
+-- >>> (fromRational (toRational 1.9082887384642317 + toRational (-0.645)) :: Double)
+-- 1.2632887384642317
+--
+-- >>> (fromRational (toRational 1.9082887384642317 + toRational (-0.645)) :: CReal)
+-- 1.26328873846423173077
+--
+-- >>> realToFrac 1.9082887384642317 :: NReal
+-- 1.9082887384642317485372586816083639860153
+--
+-- >>> realToFrac 1.9082887384642317 :: CReal
+-- 1.90828873846423174854
+--
+-- >>> realToFrac (-0.645) :: NReal
+-- -0.6450000000000000177635683940025046467781
+--
+-- >>> realToFrac (-0.645) :: CReal
+-- -0.64500000000000001776
+--
+-- >>> (realToFrac 1.9082887384642317 :: NReal) + (realToFrac (-0.645) :: NReal)
+-- 1.2632887384642317307736902876058593392372
+--
+-- >>> (realToFrac 1.9082887384642317 :: CReal) + (realToFrac (-0.645) :: CReal)
+-- 1.26328873846423173077
+--
+-- prop> \x -> applyReset [] x == x
+-- prop> \x y -> x >= 0 ==> applyReset [mkReset $ Just x] y == TaskPoints (fromIntegral x)
 applyReset :: [PointPenalty Reset] -> TaskPoints -> TaskPoints
 applyReset resets p =
     applyPenalty p (effectiveReset resets)
@@ -708,3 +776,6 @@ applyReset resets p =
 -- $setup
 -- >>> import Test.QuickCheck.Classes
 -- >>> import Data.Proxy
+-- >>> import qualified Data.Number.CReal as NReal
+--
+-- >>> type NReal = NReal.CReal
