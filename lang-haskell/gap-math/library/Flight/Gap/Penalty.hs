@@ -721,6 +721,7 @@ isJustReset (PenaltyReset x) = isJust x
 -- 0.60014502247562230016
 --
 -- prop> \x -> applyMul [] x == x
+-- prop> \x -> applyMul [identityOfMul] x == x
 -- prop> \x y -> applyMul [mkMul x] y == (TaskPoints x) * y
 applyMul :: [PointPenalty Mul] -> TaskPoints -> TaskPoints
 applyMul fracs p =
@@ -729,6 +730,7 @@ applyMul fracs p =
 -- | Applies only point penalties.
 --
 -- prop> \x -> applyAdd [] x == x
+-- prop> \x -> applyAdd [identityOfAdd] x == x
 -- prop> \x y -> applyAdd [mkAdd x] y == (TaskPoints x) + y
 applyAdd :: [PointPenalty Add] -> TaskPoints -> TaskPoints
 applyAdd points p =
@@ -768,6 +770,7 @@ applyAdd points p =
 -- 1.26328873846423173077
 --
 -- prop> \x -> applyReset [] x == x
+-- prop> \x -> applyReset [identityOfReset] x == x
 -- prop> \x y -> x >= 0 ==> applyReset [mkReset $ Just x] y == TaskPoints (fromIntegral x)
 applyReset :: [PointPenalty Reset] -> TaskPoints -> TaskPoints
 applyReset resets p =
