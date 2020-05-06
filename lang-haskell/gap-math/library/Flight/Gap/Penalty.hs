@@ -35,7 +35,7 @@ import Data.Refined
     , checkProp, assumeProp, refined, unrefined
     )
 import Data.Foldable (asum)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe, isJust)
 import Data.List (sort)
 import GHC.Generics (Generic)
 import Data.Aeson
@@ -550,13 +550,6 @@ applyPenalty (TaskPoints p) pp = TaskPoints p'
             | PenaltyReset Nothing <- pp = notNeg
             | otherwise = notNeg
 
-
-
-isPenaltyPoints, isPenaltyFraction, isPenaltyReset :: PointPenalty a -> Bool
-isPenaltyPoints = \case PenaltyPoints{} -> True; _ -> False
-isPenaltyFraction = \case PenaltyFraction{} -> True; _ -> False
-isPenaltyReset = \case PenaltyReset{} -> True; _ -> False
-
 instance ToJSON CReal where
     toJSON 0 = toJSON (0 :: Double)
     toJSON x = toJSON ((realToFrac x) :: Double)
@@ -615,38 +608,87 @@ instance Show (Hide PointPenalty) where
 --
 -- >>> effectiveMul [] == identityOfMul
 -- True
+--
+-- >>> effectiveMul []
+-- (* id)
+--
+-- >>> effectiveMul [identityOfMul]
+-- (* id)
+--
+-- >>> effectiveMul (replicate 3 identityOfMul)
+-- (* id)
+--
+-- prop> \x -> effectiveMul [x] == x
+-- prop> \x -> effectiveMul [x, identityOfMul] == x
+-- prop> \x -> effectiveMul [identityOfMul, x] == x
+--
+-- >>> effectiveMul [mkMul 2, mkMul 3]
+-- (* 6.0)
+--
+-- >>> effectiveMul [mkMul 2, mkMul 0.5]
+-- (* id)
 effectiveMul :: [PointPenalty Mul] -> PointPenalty Mul
-effectiveMul xs =
-    -- NOTE: As soon as zero is reached we're stuck with it.
-    if any (\case (PenaltyFraction n) | n <= 0 -> True; _ -> False) xs
-        then PenaltyFraction 0.0
-        else
-            product
-            . filter isPenaltyFraction
-            $ fmap
-                (\case
-                    (PenaltyFraction n) | n <= 0 -> PenaltyFraction 0.0
-                    x -> x)
-                xs
+effectiveMul = product
 
 -- | The effective point is the sum of the list.
 --
 -- >>> effectiveAdd [] == identityOfAdd
 -- True
+--
+-- >>> effectiveAdd []
+-- (+ id)
+--
+-- >>> effectiveAdd [identityOfAdd]
+-- (+ id)
+--
+-- >>> effectiveAdd (replicate 3 identityOfAdd)
+-- (+ id)
+--
+-- prop> \x -> effectiveAdd [x] == x
+-- prop> \x -> effectiveAdd [x, identityOfAdd] == x
+-- prop> \x -> effectiveAdd [identityOfAdd, x] == x
+--
+-- >>> effectiveAdd [mkAdd 1, mkAdd 2]
+-- (+ 3.0)
+--
+-- >>> effectiveAdd [mkAdd 1, mkAdd (-1)]
+-- (+ id)
 effectiveAdd :: [PointPenalty Add] -> PointPenalty Add
-effectiveAdd = sum . filter isPenaltyPoints
+effectiveAdd = sum
 
 -- | The effective reset is the minimum of the list.
 --
 -- >>> effectiveReset [] == identityOfReset
 -- True
+--
+-- >>> effectiveReset []
+-- (= id)
+--
+-- >>> effectiveReset [identityOfReset]
+-- (= id)
+--
+-- >>> effectiveReset (replicate 3 identityOfReset)
+-- (= id)
+--
+-- prop> \x -> effectiveReset [x] == x
+-- prop> \x -> effectiveReset [x, identityOfReset] == x
+-- prop> \x -> effectiveReset [identityOfReset, x] == x
+--
+-- >>> effectiveReset [mkReset $ Just 1, mkReset $ Just 2]
+-- (= 1)
+--
+-- >>> effectiveReset [mkReset $ Just 2, mkReset $ Just 1]
+-- (= 1)
 effectiveReset :: [PointPenalty Reset] -> PointPenalty Reset
 effectiveReset =
     maybe (PenaltyReset Nothing) id
     . listToMaybe
     . take 1
     . sort
-    . filter isPenaltyReset
+    . filter isJustReset
+
+isJustReset :: PointPenalty Reset -> Bool
+isJustReset (PenaltyReset x) = isJust x
 
 -- | Applies only fractional penalties.
 applyMul :: [PointPenalty Mul] -> TaskPoints -> TaskPoints
