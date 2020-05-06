@@ -487,32 +487,6 @@ seqOnlyResets x
            _ -> Nothing
     | otherwise = Nothing
 
--- | Applies the penalties, fractionals then absolutes and finally the resets.
-applyPenalties
-    :: [PointPenalty Mul]
-    -> [PointPenalty Add]
-    -> [PointPenalty Reset]
-    -> TaskPoints
-    -> PointsReduced
-applyPenalties fracs points resets p =
-    let eMul = effectiveMul fracs
-        eAdd = effectiveAdd points
-        eReset = effectiveReset resets
-
-        withMul = applyPenalty p eMul
-        withAdd = applyPenalty withMul eAdd
-        withReset = applyPenalty withAdd eReset
-    in
-        PointsReduced
-            { subtotal = p
-            , mulApplied = p - withMul
-            , addApplied = withMul - withAdd
-            , resetApplied = withAdd - withReset
-            , total = withReset
-            , effp = PenaltySeq eMul eAdd eReset
-            , effj = idSeq
-            }
-
 -- | Compares a @Mul@ operation against the identity of multiplication.
 --
 -- >>> cmpMul identityOfMul
@@ -538,65 +512,6 @@ cmpAdd :: PointPenalty a -> Maybe (Ordering, Double)
 cmpAdd (PenaltyPoints 0) = Just (EQ, 0)
 cmpAdd (PenaltyPoints x) = let y = realToFrac x in Just (y `compare` 0, y)
 cmpAdd _ = Nothing
-
--- | Applies a penalty allowing that the resulting points maybe less than zero.
---
--- >>> applyPenalty 2 identityOfMul
--- 2.000
---
--- >>> applyPenalty 2 identityOfAdd
--- 2.000
---
--- >>> applyPenalty 2 identityOfReset
--- 2.000
---
--- >>> applyPenalty 2 (mkMul (-1))
--- -2.000
---
--- >>> applyPenalty 2 (mkAdd (-3))
--- -1.000
---
--- >>> applyPenalty 2 (mkReset $ Just (-1))
--- *** Exception: Points cannot be reset to less than 0
--- ...
---
--- >>> applyPenalty 2 (mkMul 0)
--- 0.000
---
--- >>> applyPenalty 2 (mkAdd (-2))
--- 0.000
---
--- >>> applyPenalty 2 (mkReset $ Just 0)
--- 0.000
---
--- >>> applyPenalty 2 (mkMul 1.5)
--- 3.000
---
--- >>> applyPenalty 2 (mkAdd 1)
--- 3.000
---
--- >>> applyPenalty 2 (mkReset $ Just 3)
--- 3.000
-applyPenalty :: TaskPoints -> PointPenalty a -> TaskPoints
-applyPenalty (TaskPoints p) pp = TaskPoints p'
-    where
-        p'
-
-            -- NOTE: When positive @Add@ penalties are bonuses. A true penalty is
-            -- subtraction, adding a negative number. A bonus adds a positive
-            -- number.
-            | Just (_, n) <- cmpAdd pp = p + n
-
-            -- NOTE: It doesn't matter the magnitude or the sign of the scaling
-            -- as we're going to multiply by it anyway.
-            | Just (_, n) <- cmpMul pp = p * n
-
-            | PenaltyReset (Just n) <- pp = fromIntegral $ unrefined n
-
-            | Just (EQ, _) <- cmpMul pp = p
-            | Just (EQ, _) <- cmpAdd pp = p
-            | PenaltyReset Nothing <- pp = p
-            | otherwise = p
 
 -- | The effective fraction is the sum of the list.
 --
@@ -775,6 +690,91 @@ applyAdd points p =
 applyReset :: [PointPenalty Reset] -> TaskPoints -> TaskPoints
 applyReset resets p =
     applyPenalty p (effectiveReset resets)
+
+-- | Applies a penalty allowing that the resulting points maybe less than zero.
+--
+-- >>> applyPenalty 2 identityOfMul
+-- 2.000
+--
+-- >>> applyPenalty 2 identityOfAdd
+-- 2.000
+--
+-- >>> applyPenalty 2 identityOfReset
+-- 2.000
+--
+-- >>> applyPenalty 2 (mkMul (-1))
+-- -2.000
+--
+-- >>> applyPenalty 2 (mkAdd (-3))
+-- -1.000
+--
+-- >>> applyPenalty 2 (mkReset $ Just (-1))
+-- *** Exception: Points cannot be reset to less than 0
+-- ...
+--
+-- >>> applyPenalty 2 (mkMul 0)
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkAdd (-2))
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkReset $ Just 0)
+-- 0.000
+--
+-- >>> applyPenalty 2 (mkMul 1.5)
+-- 3.000
+--
+-- >>> applyPenalty 2 (mkAdd 1)
+-- 3.000
+--
+-- >>> applyPenalty 2 (mkReset $ Just 3)
+-- 3.000
+applyPenalty :: TaskPoints -> PointPenalty a -> TaskPoints
+applyPenalty (TaskPoints p) pp = TaskPoints p'
+    where
+        p'
+
+            -- NOTE: When positive @Add@ penalties are bonuses. A true penalty is
+            -- subtraction, adding a negative number. A bonus adds a positive
+            -- number.
+            | Just (_, n) <- cmpAdd pp = p + n
+
+            -- NOTE: It doesn't matter the magnitude or the sign of the scaling
+            -- as we're going to multiply by it anyway.
+            | Just (_, n) <- cmpMul pp = p * n
+
+            | PenaltyReset (Just n) <- pp = fromIntegral $ unrefined n
+
+            | Just (EQ, _) <- cmpMul pp = p
+            | Just (EQ, _) <- cmpAdd pp = p
+            | PenaltyReset Nothing <- pp = p
+            | otherwise = p
+
+-- | Applies the penalties, fractionals then absolutes and finally the resets.
+applyPenalties
+    :: [PointPenalty Mul]
+    -> [PointPenalty Add]
+    -> [PointPenalty Reset]
+    -> TaskPoints
+    -> PointsReduced
+applyPenalties fracs points resets p =
+    let eMul = effectiveMul fracs
+        eAdd = effectiveAdd points
+        eReset = effectiveReset resets
+
+        withMul = applyPenalty p eMul
+        withAdd = applyPenalty withMul eAdd
+        withReset = applyPenalty withAdd eReset
+    in
+        PointsReduced
+            { subtotal = p
+            , mulApplied = p - withMul
+            , addApplied = withMul - withAdd
+            , resetApplied = withAdd - withReset
+            , total = withReset
+            , effp = PenaltySeq eMul eAdd eReset
+            , effj = idSeq
+            }
 
 -- $setup
 -- >>> import Test.QuickCheck.Classes
