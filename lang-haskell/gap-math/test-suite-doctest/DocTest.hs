@@ -35,7 +35,6 @@ arguments =
     , "-XTypeSynonymInstances"
     , "-XTupleSections"
     , "-XUndecidableInstances"
-
     , "-XAllowAmbiguousTypes"
     , "-XInstanceSigs"
     , "-XUndecidableSuperClasses"
@@ -47,6 +46,7 @@ arguments =
     , "-package=exact-real"
     , "-package=facts"
     , "-package=quickcheck-classes"
+    , "-package=numbers"
 
     , "library/Flight/Gap/Points/Task.hs"
     , "library/Flight/Gap/Penalty.hs"
