@@ -46,81 +46,50 @@ pts xs = LcSeq (pt <$> xs)
 madeGoalUnits :: TestTree
 madeGoalUnits = testGroup "Made goal unit tests"
     [ HU.testCase "Single point, at goal = made goal" $
-        FS.madeGoal (pts [ (1, 0) ]) @?= True
+        FS.madeGoal (pts [(1, 0)]) @?= True
 
     , HU.testCase "Single point, not at goal = didn't make goal" $
-        FS.madeGoal (pts [ (1, 1) ]) @?= False
+        FS.madeGoal (pts [(1, 1)]) @?= False
 
     , HU.testCase "Two points, not at goal = didn't make goal" $
-        FS.madeGoal (pts [ (1, 2)
-                         , (2, 1)
-                         ]) @?= False
+        FS.madeGoal (pts [(1, 2), (2, 1)]) @?= False
 
     , HU.testCase "Two points, only last point at goal = made goal" $
-        FS.madeGoal (pts [ (1, 1)
-                         , (2, 0)
-                         ]) @?= True
+        FS.madeGoal (pts [(1, 1), (2, 0)]) @?= True
 
     , HU.testCase "Two points, only first point at goal = made goal" $
-        FS.madeGoal (pts [ (1, 0)
-                         , (2, 1)
-                         ]) @?= True
+        FS.madeGoal (pts [(1, 0), (2, 1)]) @?= True
     ]
 
 cleanTrackUnits :: TestTree
 cleanTrackUnits = testGroup "Clean track unit tests"
     [ HU.testCase "Single point = no points removed" $
         FS.cleanTrack (LengthOfSs [u| 1 km |]) (pts [ (1, 0) ])
-        @?= pts [ (1, 0) ]
+        @?= pts [(1, 0)]
 
     , HU.testCase "Two points, each one closer to goal = no points removed" $
-        FS.cleanTrack(LengthOfSs [u| 2 km |]) (pts [ (1, 2)
-                                         , (2, 1)
-                                         ])
-        @?= pts [ (1, 2) 
-                , (2, 1)
-                ]
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [(1, 2), (2, 1)])
+        @?= pts [(1, 2), (2, 1)]
 
     , HU.testCase "Two points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [ (1, 1)
-                                          , (2, 2)
-                                          ])
-        @?= pts [ (1, 1) ]
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [(1, 1), (2, 2)])
+        @?= pts [(1, 1)]
 
     , HU.testCase "Three points, each one closer to goal = no points removed" $
-        FS.cleanTrack (LengthOfSs [u| 3 km |]) (pts [ (1, 3)
-                                          , (2, 2)
-                                          , (3, 1)
-                                          ])
-        @?= pts [ (1, 3) 
-                , (2, 2)
-                , (3, 1)
-                ]
+        FS.cleanTrack (LengthOfSs [u| 3 km |]) (pts [(1, 3), (2, 2), (3, 1)])
+        @?= pts [(1, 3), (2, 2), (3, 1)]
 
     , HU.testCase "Three points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [ (1, 1)
-                                          , (2, 2)
-                                          , (3, 3)
-                                          ])
-        @?= pts [ (1, 1) ]
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [(1, 1), (2, 2), (3, 3)])
+        @?= pts [(1, 1)]
 
     , HU.testCase "Three points, only 2nd moves further from goal = that point removed" $
-        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [ (1, 2)
-                                          , (2, 3)
-                                          , (3, 1)
-                                          ])
-        @?= pts [ (1, 2)
-                , (3, 1)
-                ]
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [(1, 2), (2, 3), (3, 1)])
+        @?= pts [(1, 2), (3, 1)]
 
     , HU.testCase "Three points, only 3rd moves further from goal = that point removed" $
-        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [ (1, 2)
-                                          , (2, 1)
-                                          , (3, 2)
-                                          ])
-        @?= pts [ (1, 2)
-                , (2, 1)
-                ]
+        FS.cleanTrack (LengthOfSs [u| 2 km |]) (pts [(1, 2), (2, 1), (3, 2)])
+        @?= pts [(1, 2), (2, 1)]
     ]
 
 {-
