@@ -4,3 +4,6 @@
 [submodule "lang-haskell/reflex-platform"]
 	path = lang-haskell/reflex-platform
 	url = https://github.com/BlockScope/reflex-platform.git
+[submodule "lang-haskell/exact-real"]
+	path = lang-haskell/exact-real
+	url = https://github.com/BlockScope/exact-real.git

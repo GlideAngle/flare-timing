@@ -81,6 +81,8 @@ flags:
         suppress-failing-tests: true
     app-serve:
         suppress-failing-tests: true
+    flare-timing:
+        suppress-test-parsers: true
 tested-with: GHC == 8.2.2
 packages:
 - build
@@ -118,3 +120,4 @@ packages:
 - app-serve
 - hcoord/hcoord
 - hcoord/hcoord-utm
+- exact-real

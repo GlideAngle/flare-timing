@@ -33,6 +33,7 @@ packages:
     , lang-haskell/zone
     , lang-haskell/hcoord/hcoord
     , lang-haskell/hcoord/hcoord-utm
+    , lang-haskell/exact-real
 source-repository-package
     type: git
     location: https://github.com/blockscope/exact-real.git
@@ -104,9 +105,13 @@ package flight-units
     tests: true
 package flight-zone
     tests: true
+package flare-timing
+    tests: true
 package hcoord
     tests: false
 package hcoord-utm
+    tests: false
+package exact-real
     tests: false
 constraints:
     -- NOTE: The following are taken from stack.yaml extra-deps section.
