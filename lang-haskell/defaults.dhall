@@ -28,5 +28,5 @@
 , dependencies =
     [ "base >=4.10.1.0 && <5" ]
 , flags =
-      { suppress-failing-tests = { manual = False, default = True } }
+    { suppress-failing-tests = { manual = False, default = True } }
 }

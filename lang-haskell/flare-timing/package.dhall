@@ -45,6 +45,12 @@ in    defs
           "Data, Parsing"
       , github =
           "blockscope/flare-timing/flare-timing"
+      , flags =
+          { suppress-failing-tests =
+              { manual = False, default = True }
+          , suppress-test-parsers =
+              { manual = False, default = True }
+          }
       , executables =
           { extract-input =
               { dependencies =
@@ -415,6 +421,12 @@ in    defs
                   "FsdbMain.hs"
               , source-dirs =
                   "test-apps/fsdb-parser"
+              , when =
+                  { condition =
+                      "flag(suppress-test-parsers)"
+                  , buildable =
+                      False
+                  }
               }
           , test-igc-parser =
               { dependencies =
@@ -425,6 +437,12 @@ in    defs
                   "IgcMain.hs"
               , source-dirs =
                   "test-apps/igc-parser"
+              , when =
+                  { condition =
+                      "flag(suppress-test-parsers)"
+                  , buildable =
+                      False
+                  }
               }
           , test-kml-parser =
               { dependencies =
@@ -435,6 +453,12 @@ in    defs
                   "KmlMain.hs"
               , source-dirs =
                   "test-apps/kml-parser"
+              , when =
+                  { condition =
+                      "flag(suppress-test-parsers)"
+                  , buildable =
+                      False
+                  }
               }
           }
       , tests =

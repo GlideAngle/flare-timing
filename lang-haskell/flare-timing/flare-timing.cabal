@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4059e3d35f3d20643e4e8c74c14ff93d11a5dd70725fac683a76d6cf0957df03
+-- hash: 830024969871cfd7ab26b82ad6bc38077560d0063f26e8f061f371fe7ab5a42c
 
 name:           flare-timing
 version:        0.1.0
@@ -31,6 +31,10 @@ source-repository head
   subdir: flare-timing
 
 flag suppress-failing-tests
+  manual: False
+  default: True
+
+flag suppress-test-parsers
   manual: False
   default: True
 
@@ -675,6 +679,8 @@ executable test-fsdb-parser
     , flight-units
     , raw-strings-qq
     , uom-plugin
+  if flag(suppress-test-parsers)
+    buildable: False
   default-language: Haskell2010
 
 executable test-igc-parser
@@ -696,6 +702,8 @@ executable test-igc-parser
     , flight-comp
     , flight-igc
     , raw-strings-qq
+  if flag(suppress-test-parsers)
+    buildable: False
   default-language: Haskell2010
 
 executable test-kml-parser
@@ -717,6 +725,8 @@ executable test-kml-parser
     , flight-comp
     , flight-kml
     , raw-strings-qq
+  if flag(suppress-test-parsers)
+    buildable: False
   default-language: Haskell2010
 
 executable unpack-track
