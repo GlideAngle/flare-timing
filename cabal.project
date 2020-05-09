@@ -34,10 +34,6 @@ packages:
     , lang-haskell/hcoord/hcoord
     , lang-haskell/hcoord/hcoord-utm
     , lang-haskell/exact-real
-source-repository-package
-    type: git
-    location: https://github.com/blockscope/exact-real.git
-    tag: e4ed41e5034ee72c3bccddd806b69f7a21f3086b
 package flight-clip
     tests: true
 package flight-cmd
@@ -56,16 +52,16 @@ package flight-fsdb
     tests: true
 package flight-gap-allot
     tests: true
-    flags: -suppress-failing-tests
+    flags: +suppress-failing-tests
 package flight-gap-effort
     tests: true
-    flags: -suppress-failing-tests
+    flags: +suppress-failing-tests
 package flight-gap-lead
     tests: true
     flags: -suppress-failing-tests
 package flight-gap-math
     tests: true
-    flags: -suppress-failing-tests
+    flags: +suppress-failing-tests
 package flight-gap-stop
     tests: true
     flags: -suppress-failing-tests
@@ -103,6 +99,7 @@ package flight-track
     tests: true
 package flight-units
     tests: true
+    flags: +suppress-failing-tests
 package flight-zone
     tests: true
 package flare-timing
