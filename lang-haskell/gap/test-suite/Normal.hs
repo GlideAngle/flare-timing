@@ -5,7 +5,7 @@ import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Data.Ratio ((%))
 
-import "flight-gap-base" Flight.Score (isNormal, isFoldNormal)
+import "flight-gap-allot" Flight.Score (isNormal, isFoldNormal)
 
 newtype Normal a = Normal a deriving Show
 newtype NormalProduct a = NormalProduct a deriving Show
