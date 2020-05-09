@@ -31,8 +31,6 @@ extra-deps:
   pantry-tree:
     size: 310
     sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
-- github: blockscope/exact-real
-  commit: e4ed41e5034ee72c3bccddd806b69f7a21f3086b
 - memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
 flags:
     detour-via-sci:
@@ -76,7 +74,7 @@ flags:
     flight-track:
         suppress-failing-tests: true
     flight-units:
-        suppress-failing-tests: true
+        suppress-failing-tests: false
     flight-zone:
         suppress-failing-tests: true
     app-serve:
