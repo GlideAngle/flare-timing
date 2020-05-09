@@ -2,9 +2,9 @@ name: stack
 
 on:
   push:
-    branches: [ master, fix/test-suite-score-393 ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
