@@ -81,7 +81,7 @@ in    defs
                 , main =
                     "StopTestMain.hs"
                 , source-dirs =
-                    [ "test-suite/test", "test-suite/stop" ]
+                    "test-suite-stop"
                 }
             }
       }

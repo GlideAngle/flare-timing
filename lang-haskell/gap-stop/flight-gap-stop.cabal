@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 71ec39db30ee194ecd78b59d18c1407335e36bb75cc4ef0956baf4d620e6b790
+-- hash: 28b39275c21df15e0f1a268350f5600f33862a01affb645e79154deb7d8e7036
 
 name:           flight-gap-stop
 version:        0.1.0
@@ -71,12 +71,11 @@ test-suite stop
   main-is: StopTestMain.hs
   other-modules:
       Normal
-      TestNewtypes
       Stopped
+      TestNewtypes
       Paths_flight_gap_stop
   hs-source-dirs:
-      test-suite/test
-      test-suite/stop
+      test-suite-stop
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:

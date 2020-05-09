@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f3c782521cf07d0c84599292e0e9a5081e9336d1ee577a399d7a94524f054115
+-- hash: b7f7bd4e2aff7b7517bf2e0cab6065ebe6392df75bd36bdc12e734ad1b6e40fd
 
 name:           flight-gap-math
 version:        0.1.0
@@ -123,18 +123,17 @@ test-suite math
   type: exitcode-stdio-1.0
   main-is: MathTestMain.hs
   other-modules:
-      Normal
-      TestNewtypes
       ArrivalFraction
       LinearFraction
+      Normal
       Points.Hg
       Points.Pg
       Points.Props
       SpeedFraction
+      TestNewtypes
       Paths_flight_gap_math
   hs-source-dirs:
-      test-suite/test
-      test-suite/math
+      test-suite-math
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b04c435e457ddc860e8d00613e03254beb664eccb58b03b73e7800daf8a763d1
+-- hash: 9eac8a90e060bb513994bef56d1d5413a420cf6d6e60d145b8e0852f40f8949b
 
 name:           flight-gap-weight
 version:        0.1.0
@@ -77,8 +77,7 @@ test-suite weight
       Weighting
       Paths_flight_gap_weight
   hs-source-dirs:
-      test-suite/test
-      test-suite/weight
+      test-suite-weight
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:

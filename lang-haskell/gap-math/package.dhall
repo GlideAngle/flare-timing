@@ -81,7 +81,7 @@ in    defs
                 , main =
                     "MathTestMain.hs"
                 , source-dirs =
-                    [ "test-suite/test", "test-suite/math" ]
+                    "test-suite-math"
                 }
             , doctest =
                 { dependencies =

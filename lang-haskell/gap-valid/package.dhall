@@ -78,7 +78,7 @@ in    defs
                 , main =
                     "ValidityTestMain.hs"
                 , source-dirs =
-                    [ "test-suite/test", "test-suite/validity" ]
+                    "test-suite-valid"
                 }
             }
       }

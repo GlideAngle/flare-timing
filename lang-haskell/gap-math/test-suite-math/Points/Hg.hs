@@ -22,12 +22,11 @@ import "flight-gap-math" Flight.Score
     , Points(..)
     , PointsReduced(..)
     , ReconcilePointErrors(..)
-    , PenaltySeq(..)
     , PenaltySeqs(..)
     , zeroPoints
     , idSeq, nullSeqs
     , mulSeq, addSeq, resetSeq
-    , mkMul, mkReset
+    , mkReset
     , exAdd
     )
 

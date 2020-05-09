@@ -79,7 +79,7 @@ in    defs
                 , main =
                     "EffortTestMain.hs"
                 , source-dirs =
-                    [ "library", "test-suite/test", "test-suite/effort" ]
+                    "test-suite-effort"
                 , when =
                     { condition =
                         "flag(suppress-failing-tests)"

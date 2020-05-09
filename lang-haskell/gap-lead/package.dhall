@@ -79,7 +79,7 @@ in    defs
                 , main =
                     "LeadTestMain.hs"
                 , source-dirs =
-                    [ "test-suite/test", "test-suite/leading" ]
+                    "test-suite-lead"
                 }
             }
       }

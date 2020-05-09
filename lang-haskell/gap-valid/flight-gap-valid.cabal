@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e9c46353f43e53f403d208b27d573e03776944ce3c1f4d12c0c47f695803c4a7
+-- hash: 335b529f9b897831f5f0dc1cf8b8002c7d2edf1df5d208f6b5b29a54f044f877
 
 name:           flight-gap-valid
 version:        0.1.0
@@ -72,17 +72,16 @@ test-suite valid
   type: exitcode-stdio-1.0
   main-is: ValidityTestMain.hs
   other-modules:
-      Normal
-      TestNewtypes
       DistanceValidity
       LaunchValidity
+      Normal
       StopValidity
       TaskValidity
+      TestNewtypes
       TimeValidity
       Paths_flight_gap_valid
   hs-source-dirs:
-      test-suite/test
-      test-suite/validity
+      test-suite-valid
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3aad3bf8922a5c0de27e8e9c7d8d3dd64f2da7b842f7791d176bc47ade70809a
+-- hash: 190bd0000b4895226fd00bd9077d84c2cd451a2a3e5eb70171c3c52573fba500
 
 name:           flight-gap-lead
 version:        0.1.0
@@ -73,13 +73,12 @@ test-suite lead
   type: exitcode-stdio-1.0
   main-is: LeadTestMain.hs
   other-modules:
+      LeadingCoefficient
       Normal
       TestNewtypes
-      LeadingCoefficient
       Paths_flight_gap_lead
   hs-source-dirs:
-      test-suite/test
-      test-suite/leading
+      test-suite-lead
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:

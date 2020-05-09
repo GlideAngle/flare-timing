@@ -79,7 +79,7 @@ in    defs
                 , main =
                     "WeightTestMain.hs"
                 , source-dirs =
-                    [ "test-suite/test", "test-suite/weight" ]
+                    "test-suite-weight"
                 }
             }
       }
