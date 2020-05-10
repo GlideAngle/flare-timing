@@ -38,7 +38,7 @@ jobs:
         key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
 
     - name: install pier
-      run: stack install pier
+      run: stack install pier --stack-yaml=lang-haskell/stack-pier.yaml
 
     - name: siggy-chardust
       run: pier test siggy-chardust:test:digits
