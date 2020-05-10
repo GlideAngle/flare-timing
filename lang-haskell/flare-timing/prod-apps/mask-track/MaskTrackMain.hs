@@ -38,7 +38,7 @@ import Flight.Lookup.Route (routeLength)
 import MaskTrackOptions (description)
 import Mask.Mask (writeMask, check)
 import Flight.Track.Lead (sumAreas)
-import Flight.Score (mk1Coef, mk2Coef, area1toCoef, area2toCoef)
+import "flight-gap-lead" Flight.Score (mk1Coef, mk2Coef, area1toCoef, area2toCoef)
 
 main :: IO ()
 main = do

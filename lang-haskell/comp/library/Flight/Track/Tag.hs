@@ -29,7 +29,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Zone.SpeedSection (SpeedSection)
-import Flight.Score (Pilot(..))
+import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Comp (FirstLead(..), FirstStart(..), LastArrival(..))
 import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
 import Flight.Field (FieldOrdering(..))

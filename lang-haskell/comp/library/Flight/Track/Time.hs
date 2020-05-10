@@ -76,7 +76,9 @@ import Flight.Units ()
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng (QAlt, Alt(..))
 import Flight.LatLng.Raw (RawLat, RawLng, RawAlt(..))
-import Flight.Score
+import "flight-gap-allot" Flight.Score (Pilot)
+import "flight-gap-stop" Flight.Score (GlideRatio(..))
+import "flight-gap-lead" Flight.Score
     ( LeadingAreas(..)
     , LeadingArea(..)
     , LeadingAreaUnits
@@ -92,8 +94,6 @@ import Flight.Score
     , TaskDeadline(..)
     , EssTime(..)
     , LeadAllDown(..)
-    , Pilot
-    , GlideRatio(..)
     , showSecs
     )
 import Flight.Distance (QTaskDistance, TaskDistance(..))

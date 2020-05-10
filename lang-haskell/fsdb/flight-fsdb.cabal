@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 03e1a1c50f030978efb2b8b5c70e74eadd80de3361fc25647cc605a6c9931f3a
+-- hash: 01e21ee9877279f7fa859b962085e8dfbffd69fa3db18035613f89d9cdd0790e
 
 name:           flight-fsdb
 version:        0.1.0
@@ -68,7 +68,13 @@ library
     , facts
     , flight-comp
     , flight-earth
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
     , flight-latlng
     , flight-units
     , flight-zone
@@ -122,7 +128,13 @@ test-suite doctest
     , facts
     , flight-comp
     , flight-earth
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
     , flight-latlng
     , flight-units
     , flight-zone

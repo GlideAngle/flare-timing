@@ -18,10 +18,8 @@ import Flight.Track.Time (LeadTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
-import Flight.Score
-    ( BestTime(..), MinimumDistance(..), LengthOfSs(..)
-    , LeadingAreaUnits
-    )
+import "flight-gap-allot" Flight.Score (BestTime(..), MinimumDistance(..))
+import "flight-gap-lead" Flight.Score (LeadingAreaUnits, LengthOfSs(..))
 
 maskLeadCoef
     :: (KnownUnit (Unpack u))

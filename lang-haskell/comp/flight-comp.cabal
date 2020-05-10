@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 86af361f973d9af23896a3e01a4982f2d4b846598a93c197465cba8cdabc2d0a
+-- hash: e1c32d83f0f13a1f869718bf07490256f1ecef9f411918c7ee3cecef125e679b
 
 name:           flight-comp
 version:        0.1.0
@@ -77,7 +77,13 @@ library
     , filepath
     , flight-clip
     , flight-earth
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
     , flight-latlng
     , flight-route
     , flight-units
@@ -141,7 +147,13 @@ test-suite comp
     , filepath
     , flight-clip
     , flight-earth
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
     , flight-latlng
     , flight-route
     , flight-units
@@ -213,7 +225,13 @@ test-suite doctest
     , filepath
     , flight-clip
     , flight-earth
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
     , flight-latlng
     , flight-route
     , flight-units

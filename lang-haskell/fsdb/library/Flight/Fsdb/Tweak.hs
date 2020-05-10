@@ -31,7 +31,7 @@ import Text.XML.HXT.Core
 
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Comp (Tweak(..))
-import Flight.Score (LwScaling(..))
+import "flight-gap-weight" Flight.Score (LwScaling(..))
 import Flight.Track.Lead (lwScalingDefault)
 import Flight.Fsdb.Internal.XmlPickle (xpBool)
 

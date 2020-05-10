@@ -15,7 +15,7 @@ import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.Raw (Give)
 import Flight.Kml (Fix, Seconds(..), FixMark(..), MarkedFixes(..))
 import Flight.Comp (Task(..), OpenClose(..), StartGate(..))
-import Flight.Score (PilotTime(..))
+import "flight-gap-allot" Flight.Score (PilotTime(..))
 import Flight.Geodesy.Solution
     (Trig, GeodesySolutions(..), GeoZones(..), SeparatedZones)
 

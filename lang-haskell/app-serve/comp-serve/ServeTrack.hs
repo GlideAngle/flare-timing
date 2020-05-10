@@ -12,7 +12,7 @@ import Flight.Kml (MarkedFixes(..), Fix(..), LLA(..), Latitude(..), Longitude(..
 import Flight.Track.Cross (PilotTrackCross(..), TrackCross(..))
 import Flight.Track.Tag (PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Cross (ZoneTag)
-import Flight.Score (ReachStats)
+import "flight-gap-valid" Flight.Score (ReachStats)
 
 newtype RawLatLngTrack = RawLatLngTrack MarkedFixes
     deriving (Eq, Ord, Generic)

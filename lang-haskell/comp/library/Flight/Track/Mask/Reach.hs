@@ -13,12 +13,12 @@ import GHC.Generics (Generic)
 import Data.String (IsString())
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Flight.Score (Pilot(..))
-import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
+import Flight.Field (FieldOrdering(..))
+import "flight-gap-allot" Flight.Score (Pilot(..))
+import "flight-gap-valid" Flight.Score (ReachStats)
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
 import qualified Flight.Track.Mask.Cmp as Cmp (cmp)
-import Flight.Score (ReachStats)
 
 -- | For each task, the masking for reach for that task.
 data MaskingReach =

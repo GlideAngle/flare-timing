@@ -28,15 +28,17 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
-import Flight.Score
+import "flight-gap-allot" Flight.Score
+    ( Pilot(..)
+    , PilotDistance(..)
+    , MinimumDistance(..)
+    , FlownMax(..)
+    )
+import "flight-gap-effort" Flight.Score
     ( Lookahead
     , Chunking(..)
     , ChunkDifficulty(..)
-    , MinimumDistance(..)
-    , FlownMax(..)
-    , PilotDistance(..)
     , DifficultyFraction(..)
-    , Pilot(..)
     )
 import Flight.Comp (IxTask(..))
 

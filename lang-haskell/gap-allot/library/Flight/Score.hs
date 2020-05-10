@@ -60,14 +60,18 @@ module Flight.Score
     , unFlownMaxAsKm
     -- * Math
     , powerFraction
+    -- * Fractions
+    , Fractions(..)
+    , DifficultyFraction(..)
+    , LeadingFraction(..)
     ) where
 
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
 import Flight.Gap.Pilots
+import Flight.Gap.Fraction
 import Flight.Gap.Fraction.Launch
 import Flight.Gap.Fraction.Linear
-import Flight.Gap.Fraction.Distance
 import Flight.Gap.Fraction.Goal
 import Flight.Gap.Time.Arrival
 import Flight.Gap.Time.Nominal

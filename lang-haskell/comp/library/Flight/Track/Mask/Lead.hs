@@ -24,8 +24,9 @@ import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Distance (QTaskDistance)
 import Flight.Comp
     (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..), LastDown(..))
-import Flight.Score
-    ( Pilot(..), LeadingCoef(..), AreaToCoef(..), EssTime(..)
+import "flight-gap-allot" Flight.Score (Pilot(..))
+import "flight-gap-lead" Flight.Score
+    ( LeadingCoef(..), AreaToCoef(..), EssTime(..)
     , LeadingAreaUnits, LeadingAreaToCoefUnits
     )
 import Flight.Field (FieldOrdering(..))

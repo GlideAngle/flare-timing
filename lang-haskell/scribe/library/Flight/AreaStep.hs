@@ -34,7 +34,7 @@ import Flight.Comp
     , routeLengthOfSs
     )
 import Flight.DiscardFurther (readDiscardFurther, readCompBestDistances)
-import Flight.Score (LcPoint, Leg, LeadingAreaUnits)
+import "flight-gap-lead" Flight.Score (LcPoint, Leg, LeadingAreaUnits)
 
 writeAreaStep :: AreaStepFile -> Vector (AreaRow u) -> IO ()
 writeAreaStep (AreaStepFile path) xs =

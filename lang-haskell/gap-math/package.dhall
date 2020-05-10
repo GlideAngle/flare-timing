@@ -70,7 +70,7 @@ in    defs
             , "flight-gap-valid"
             ]
       , library =
-          { source-dirs = "library", exposed-modules = [ "Flight.Score" ] }
+          { source-dirs = "library", exposed-modules = "Flight.Score" }
       , tests =
             ./../default-tests.dhall
           ⫽ { math =

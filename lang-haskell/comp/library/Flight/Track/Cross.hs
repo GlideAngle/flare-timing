@@ -35,7 +35,7 @@ import Flight.Clip (FlyingSection)
 import Flight.Pilot (TrackFileFail(..))
 import Flight.LatLng.Raw (RawLat, RawLng, RawAlt)
 import Flight.Field (FieldOrdering(..))
-import Flight.Score (Pilot(..))
+import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Comp (StartGate(..))
 
 -- | For each task, the crossing for that task.

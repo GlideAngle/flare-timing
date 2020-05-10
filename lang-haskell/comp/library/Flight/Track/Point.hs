@@ -28,21 +28,25 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.LatLng (QAlt)
 import Flight.Field (FieldOrdering(..))
-import Flight.Gap.Fraction (Fractions(..))
-import Flight.Score
-    ( GoalRatio, TaskPlacing
-    , TaskPoints, Points
-    , Validity, ValidityWorking, Weights
+import "flight-gap-allot" Flight.Score
+    ( TaskPlacing, Fractions(..)
+    , Pilot, BestTime, PilotTime, PilotDistance, PilotVelocity
+    )
+import "flight-gap-lead" Flight.Score (LeadingArea(..), LeadingCoef(..))
+import "flight-gap-math" Flight.Score
+    ( TaskPoints, Points
+    , PenaltySeqs
+    , JumpedTheGun(..)
+    )
+import "flight-gap-valid" Flight.Score
+    ( Validity, ValidityWorking
     , LaunchValidityWorking
     , TimeValidityWorking
     , DistanceValidityWorking
     , StopValidityWorking
-    , Pilot, BestTime, PilotTime, PilotDistance, PilotVelocity
-    , PenaltySeqs
-    , LeadingArea(..), LeadingCoef(..)
     , ReachToggle(..)
-    , JumpedTheGun(..)
     )
+import "flight-gap-weight" Flight.Score (GoalRatio, Weights)
 import Flight.Track.Distance (Land)
 import Flight.Comp (StartGate)
 

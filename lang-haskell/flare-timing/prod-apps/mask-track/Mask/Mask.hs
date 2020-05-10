@@ -75,8 +75,8 @@ import Flight.Scribe
     -- , readPilotPegThenDiscard
     , readDiscardingLead
     )
-import qualified Flight.Score as Gap (ReachToggle(..))
-import Flight.Score (ArrivalFraction(..))
+import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..))
+import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskArrival (maskArrival, arrivalInputs)

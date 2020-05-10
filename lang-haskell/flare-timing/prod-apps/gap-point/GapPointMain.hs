@@ -119,37 +119,46 @@ import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)
-import qualified Flight.Score as Gap (ReachToggle(..), taskPoints)
-import Flight.Score
+import "flight-gap-allot" Flight.Score
     ( MinimumDistance(..), LaunchToEss(..)
-    , SumOfDistance(..), PilotDistance(..)
-    , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..), PilotsLanded(..)
-    , GoalRatio(..), Lw(..), Aw(..), Rw(..), Ew(..)
     , NominalTime(..), BestTime(..)
-    , Validity(..), ValidityWorking(..)
-    , StopValidity(..), StopValidityWorking
-    , ReachToggle(..), ReachStats(..)
-    , DifficultyFraction(..), LeadingFraction(..)
-    , ArrivalFraction(..), SpeedFraction(..)
-    , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
-    , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
-    , PenaltySeqs, PointsReduced(..)
-    , TaskPlacing(..), PilotVelocity(..), PilotTime(..)
-    , IxChunk(..), ChunkDifficulty(..)
+    , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..), PilotsLanded(..)
     , FlownMax(..)
+    , ArrivalFraction(..), SpeedFraction(..)
+    , SumOfDistance(..), PilotDistance(..)
+    , DifficultyFraction(..), LeadingFraction(..)
+    , TaskPlacing(..), PilotVelocity(..), PilotTime(..)
+    , unFlownMaxAsKm
+    )
+import "flight-gap-effort" Flight.Score
+    ( IxChunk(..), ChunkDifficulty(..)
+    , toIxChunk
+    )
+import "flight-gap-math" Flight.Score
+    ( DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
+    , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
     , JumpedTheGun(..)
     , TooEarlyPoints(..), LaunchToStartPoints(..)
     , SitRep(..)
+    , PenaltySeqs, PointsReduced(..)
     , idSeq, addSeq, nullSeqs, toSeqs, exAdd
-    , unFlownMaxAsKm
+    , jumpTheGunSitRepHg, jumpTheGunSitRepPg
+    , availablePointsHg, availablePointsPg
+    )
+import "flight-gap-valid" Flight.Score
+    ( Validity(..), ValidityWorking(..)
+    , StopValidity(..), StopValidityWorking
+    , ReachToggle(..), ReachStats(..)
+    , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
+    )
+import "flight-gap-weight" Flight.Score
+    ( GoalRatio(..), Lw(..), Aw(..), Rw(..), Ew(..)
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
-    , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
-    , availablePointsHg, availablePointsPg
-    , toIxChunk
-    , jumpTheGunSitRepHg, jumpTheGunSitRepPg
     )
-import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
+import qualified "flight-gap-math" Flight.Score as Gap (Points(..), taskPoints)
+import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..), Validity(..))
+import qualified "flight-gap-weight" Flight.Score as Gap (Weights(..))
 import GapPointOptions (description)
 
 type StartEndTags = StartEnd (Maybe ZoneTag) ZoneTag

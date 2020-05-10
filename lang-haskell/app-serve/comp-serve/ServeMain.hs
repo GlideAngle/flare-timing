@@ -61,17 +61,19 @@ import Flight.Track.Mask
 import qualified Flight.Track.Point as Norm (NormPointing(..), NormBreakdown(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
-import qualified Flight.Score as Wg (Weights(..))
-import qualified Flight.Score as Vy (Validity(..))
-import qualified Flight.Score as Vw (ValidityWorking(..))
-import Flight.Score
-    ( PilotVelocity(..)
-    , DistanceWeight(..), ReachWeight(..), EffortWeight(..)
-    , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
-    , DistanceValidity(..), LaunchValidity(..), TimeValidity(..)
+import qualified "flight-gap-weight" Flight.Score as Wg (Weights(..))
+import qualified "flight-gap-valid" Flight.Score as Vy (Validity(..))
+import qualified "flight-gap-valid" Flight.Score as Vw (ValidityWorking(..))
+import "flight-gap-allot" Flight.Score (PilotVelocity(..))
+import "flight-gap-lead" Flight.Score (LeadingArea2Units)
+import "flight-gap-math" Flight.Score (TaskPoints(..))
+import "flight-gap-valid" Flight.Score
+    ( DistanceValidity(..), LaunchValidity(..), TimeValidity(..)
     , TaskValidity(..), StopValidity(..)
-    , TaskPoints(..)
-    , LeadingArea2Units
+    )
+import "flight-gap-weight" Flight.Score
+    ( DistanceWeight(..), ReachWeight(..), EffortWeight(..)
+    , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     )
 import Flight.Scribe
     ( readComp, readNormArrival, readNormLandout, readNormRoute, readNormScore

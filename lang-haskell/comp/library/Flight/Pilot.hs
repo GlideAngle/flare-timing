@@ -22,7 +22,8 @@ import Data.UnitsOfMeasure ((*:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), QTaskDistance)
-import Flight.Score (Pilot, LinearFraction(..), ReachToggle(..))
+import "flight-gap-allot" Flight.Score (Pilot, LinearFraction(..))
+import "flight-gap-valid" Flight.Score (ReachToggle(..))
 import Flight.Track.Time (AwardedVelocity)
 import Flight.Track.Distance (AwardedDistance(..), TrackReach(..))
 

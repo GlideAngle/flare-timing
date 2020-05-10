@@ -28,7 +28,7 @@ import Text.XML.HXT.Core
     )
 
 import Flight.Comp (Nominal(..), defaultNominal)
-import Flight.Score
+import "flight-gap-allot" Flight.Score
     ( NominalLaunch(..)
     , NominalGoal(..)
     , NominalDistance(..)

@@ -19,11 +19,12 @@ import Flight.Comp.Distance (compNighTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
 import Flight.Track.Mask (MaskingReach(..))
-import Flight.Score
+import "flight-gap-allot" Flight.Score
     ( MinimumDistance(..), PilotDistance(..), FlownMax(..), LinearFraction(..)
-    , FlownMax(..), FlownMean(..), FlownStdDev(..), ReachStats(..)
+    , FlownMax(..), FlownMean(..), FlownStdDev(..)
     , linearFraction
     )
+import "flight-gap-valid" Flight.Score (ReachStats(..))
 import Stats (DashPathInputs(..))
 
 maskReachTick

@@ -37,7 +37,8 @@ import Text.XML.HXT.Core
 
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
 import Flight.Comp (PilotId(..), Pilot(..), Tweak(..), Task(..))
-import Flight.Score (ArrivalPoints(..), ArrivalFraction(..))
+import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
+import "flight-gap-math" Flight.Score (ArrivalPoints(..))
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)

@@ -34,7 +34,8 @@ import Flight.Comp
     , ensureExt
     )
 import Flight.Zone.MkZones (Discipline(..))
-import Flight.Score (ScoreBackTime(..), PilotsAtEss(..))
+import "flight-gap-allot" Flight.Score (PilotsAtEss(..))
+import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
 import Flight.Scribe (readTrimFsdb, writeNormArrival)
 import FsArrivalOptions (description)
 

@@ -37,15 +37,16 @@ import Flight.Units ()
 import Flight.Fsdb.Internal.XmlPickle ()
 import Flight.Track.Land (TaskLanding(..))
 import Flight.Comp (Pilot(..), PilotId(..))
-import Flight.Score
-    ( MinimumDistance(..), PilotDistance(..)
-    , Lookahead(..), SumOfDifficulty(..)
+import "flight-gap-allot" Flight.Score
+    (MinimumDistance(..), PilotDistance(..), FlownMax(..))
+import "flight-gap-effort" Flight.Score
+    ( Lookahead(..), SumOfDifficulty(..)
     , IxChunk(..), Chunk(..), Chunking(..)
     , RelativeDifficulty(..), DifficultyFraction(..)
-    , ReachToggle(..), FlownMax(..)
     , toIxChunk
     )
-import qualified Flight.Score as Gap (ChunkDifficulty(..))
+import qualified "flight-gap-effort" Flight.Score as Gap (ChunkDifficulty(..))
+import "flight-gap-valid" Flight.Score (ReachToggle(..))
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Pilot (getCompPilot)
 

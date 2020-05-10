@@ -34,7 +34,7 @@ module Flight.Score
     , gradeDifficulty
     ) where
 
-import "flight-gap-allot" Flight.Gap.Fraction (DifficultyFraction(..))
+import "flight-gap-allot" Flight.Score (DifficultyFraction(..))
 import Flight.Gap.Distance.Relative
 import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty

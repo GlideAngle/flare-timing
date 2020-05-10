@@ -24,7 +24,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.Route (TrackLine(..))
-import Flight.Score (LinearFraction(..))
+import "flight-gap-allot" Flight.Score (LinearFraction(..))
 
 type Nigh = TrackLine
 type Land = QTaskDistance Double [u| m |]

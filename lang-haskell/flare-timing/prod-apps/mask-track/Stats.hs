@@ -15,7 +15,7 @@ import Flight.Kml (Altitude(..))
 import Flight.Track.Distance (TrackDistance(..), Land)
 import Flight.Mask (RaceSections(..))
 import Flight.Comp.Distance (DashPathInputs(..))
-import Flight.Score (PilotTime(..), ArrivalPlacing(..))
+import "flight-gap-allot" Flight.Score (PilotTime(..), ArrivalPlacing(..))
 
 altToAlt :: Altitude -> QAlt Double [u| m |]
 altToAlt (Altitude x) = Alt . MkQuantity . fromIntegral $ x

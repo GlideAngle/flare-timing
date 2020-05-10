@@ -12,7 +12,7 @@ module Flight.Track.Mask.Arrival (MaskingArrival (..)) where
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Flight.Score (Pilot(..), PilotsAtEss(..))
+import "flight-gap-allot" Flight.Score (Pilot(..), PilotsAtEss(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Arrival (TrackArrival(..))

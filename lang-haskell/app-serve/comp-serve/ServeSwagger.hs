@@ -32,7 +32,13 @@ import Flight.LatLng.Raw
 import Flight.Geodesy
 import Flight.Earth.Ellipsoid
 import Flight.Route
-import Flight.Score
+import "flight-gap-allot" Flight.Score
+import "flight-gap-effort" Flight.Score
+import "flight-gap-lead" Flight.Score
+import "flight-gap-math" Flight.Score
+import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
+import "flight-gap-valid" Flight.Score
+import "flight-gap-weight" Flight.Score
 import Flight.Comp
 import Flight.Track.Arrival
 import Flight.Track.Land
@@ -43,7 +49,6 @@ import Flight.Track.Lead
 import Flight.Track.Point
 import Flight.Track.Cross
 import Flight.Track.Stop
-import Flight.Gap.Fraction (Fractions(..))
 import Flight.EastNorth
 import qualified Flight.Kml as Kml
 import ServeTrack (RawLatLngTrack(..), BolsterStats(..))

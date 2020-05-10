@@ -64,7 +64,7 @@ import Flight.Scribe
     , writeCompAreaStep
     , readCompLeading, writeDiscardingLead
     )
-import Flight.Score
+import "flight-gap-lead" Flight.Score
     ( LeadingArea(..), LcPoint
     , LeadingArea1Units, area1Steps
     , LeadingArea2Units, area2Steps

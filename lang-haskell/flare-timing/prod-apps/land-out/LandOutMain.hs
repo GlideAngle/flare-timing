@@ -31,18 +31,11 @@ import Flight.Track.Distance (TrackDistance(..))
 import Flight.Track.Mask (MaskingEffort(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe (readComp, readMaskingEffort, writeLanding)
-import Flight.Score
-    ( FlownMax(..)
-    , PilotDistance(..)
-    , MinimumDistance(..)
-    , Difficulty(..)
-    , Pilot
-    , mergeChunks
-    )
-import qualified Flight.Score as Gap
-    ( Chunking(..), ChunkDifficulty(..)
-    , landouts, lookahead, gradeDifficulty
-    )
+import "flight-gap-allot" Flight.Score
+    (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
+import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
+import qualified "flight-gap-effort" Flight.Score as Gap
+    (Chunking(..), ChunkDifficulty(..), landouts, lookahead, gradeDifficulty)
 import LandOutOptions (description)
 
 main :: IO ()

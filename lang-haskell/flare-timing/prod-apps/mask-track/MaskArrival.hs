@@ -6,7 +6,7 @@ import Data.Maybe (catMaybes)
 import Flight.Comp (Pilot(..))
 import Flight.Track.Arrival (ArrivalInputs, TrackArrival(..))
 import Flight.Track.Mask (MaskingArrival(..))
-import Flight.Score (PilotsAtEss(..))
+import "flight-gap-allot" Flight.Score (PilotsAtEss(..))
 import Stats (TimeStats(..), FlightStats(..))
 
 arrivalInputs :: [(Pilot, FlightStats k)] -> ArrivalInputs

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 830024969871cfd7ab26b82ad6bc38077560d0063f26e8f061f371fe7ab5a42c
+-- hash: 4e3adb1a7335ddd148bfdd2af251b171c018ac9834682df5a00594de2d3ef423
 
 name:           flare-timing
 version:        0.1.0
@@ -97,7 +97,8 @@ executable area-step
     , flight-clip
     , flight-cmd
     , flight-comp
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-lead
     , flight-latlng
     , flight-lookup
     , flight-mask
@@ -175,7 +176,7 @@ executable discard-further
     , flight-clip
     , flight-cmd
     , flight-comp
-    , flight-gap
+    , flight-gap-allot
     , flight-latlng
     , flight-lookup
     , flight-mask
@@ -215,7 +216,9 @@ executable extract-input
     , flight-comp
     , flight-earth
     , flight-fsdb
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-math
+    , flight-gap-stop
     , flight-latlng
     , flight-mask
     , flight-scribe
@@ -252,7 +255,8 @@ executable fs-arrival
     , flight-comp
     , flight-earth
     , flight-fsdb
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-stop
     , flight-latlng
     , flight-mask
     , flight-route
@@ -290,7 +294,7 @@ executable fs-effort
     , flight-comp
     , flight-earth
     , flight-fsdb
-    , flight-gap
+    , flight-gap-allot
     , flight-latlng
     , flight-mask
     , flight-route
@@ -328,7 +332,7 @@ executable fs-filter
     , flight-comp
     , flight-earth
     , flight-fsdb
-    , flight-gap
+    , flight-gap-allot
     , flight-latlng
     , flight-mask
     , flight-route
@@ -366,7 +370,7 @@ executable fs-route
     , flight-comp
     , flight-earth
     , flight-fsdb
-    , flight-gap
+    , flight-gap-allot
     , flight-latlng
     , flight-mask
     , flight-route
@@ -404,7 +408,8 @@ executable fs-score
     , flight-comp
     , flight-earth
     , flight-fsdb
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-math
     , flight-latlng
     , flight-mask
     , flight-scribe
@@ -440,7 +445,12 @@ executable gap-point
     , filepath
     , flight-cmd
     , flight-comp
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-valid
+    , flight-gap-weight
     , flight-latlng
     , flight-lookup
     , flight-mask
@@ -479,7 +489,8 @@ executable land-out
     , filepath
     , flight-cmd
     , flight-comp
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-effort
     , flight-latlng
     , flight-scribe
     , flight-time
@@ -525,7 +536,9 @@ executable mask-track
     , flight-cmd
     , flight-comp
     , flight-earth
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-lead
+    , flight-gap-valid
     , flight-kml
     , flight-latlng
     , flight-lookup

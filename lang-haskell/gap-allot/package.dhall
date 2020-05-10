@@ -68,11 +68,7 @@ in    defs
             , "flight-units"
             ]
       , library =
-          { source-dirs =
-              "library"
-          , exposed-modules =
-              [ "Flight.Score", "Flight.Gap.Fraction" ]
-          }
+          { source-dirs = "library", exposed-modules = "Flight.Score" }
       , tests =
             ./../default-tests.dhall
           ⫽ { doctest =

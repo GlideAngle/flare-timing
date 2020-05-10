@@ -30,17 +30,24 @@ import Flight.Comp
     , findTrimFsdb
     , ensureExt
     )
-import qualified Flight.Score as Gap (bestTime')
-import qualified Flight.Gap.Fraction as Frac (Fractions(..))
-import Flight.Score
+import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
+import qualified "flight-gap-allot" Flight.Score as Frac (Fractions(..))
+import "flight-gap-allot" Flight.Score
     ( BestTime(..), PilotTime(..)
-    , LeadingFraction(..), LeadingPoints(..)
-    , ArrivalFraction(..), ArrivalPoints(..)
-    , DistanceFraction(..), DistancePoints(..)
-    , LinearFraction(..), LinearPoints(..)
-    , DifficultyFraction(..), DifficultyPoints(..)
-    , Points(..)
+    , LeadingFraction(..)
+    , ArrivalFraction(..)
+    , DistanceFraction(..)
+    , LinearFraction(..)
+    , DifficultyFraction(..)
     , speedFraction
+    )
+import "flight-gap-math" Flight.Score
+    ( Points(..)
+    , LeadingPoints(..)
+    , ArrivalPoints(..)
+    , DistancePoints(..)
+    , LinearPoints(..)
+    , DifficultyPoints(..)
     )
 import Flight.Scribe (readTrimFsdb, writeNormScore)
 import FsScoreOptions (description)

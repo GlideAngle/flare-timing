@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a503f3265b3f152f6471abd08b92c9f3756a20d00925693cea8205ab1c3e54b2
+-- hash: e9aa3c3f84e946d8463f76c67d34cbe23cc16b62a433d1a6075a9791a7fec505
 
 name:           flight-lookup
 version:        0.1.0
@@ -59,7 +59,8 @@ library
     , filepath
     , flight-clip
     , flight-comp
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-math
     , flight-kml
     , flight-latlng
     , flight-mask

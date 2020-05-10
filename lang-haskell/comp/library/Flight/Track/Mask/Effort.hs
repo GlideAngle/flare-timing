@@ -14,7 +14,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Distance (QTaskDistance)
-import Flight.Score (Pilot(..))
+import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Distance (TrackDistance(..), Land)

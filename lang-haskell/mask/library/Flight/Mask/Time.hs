@@ -7,7 +7,7 @@ import Flight.Units ()
 import Flight.Kml (MarkedFixes(..))
 import Flight.Comp (Task(..))
 import Flight.Zone.Raw (Give)
-import Flight.Score (PilotTime(..))
+import "flight-gap-allot" Flight.Score (PilotTime(..))
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 
 import Flight.Mask.Tag (GeoTag(..))

@@ -22,7 +22,7 @@ import Text.XML.HXT.Core
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Score (ScoreBackTime(..))
+import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
 
 xpScoreBack :: PU (Maybe (ScoreBackTime (Quantity Double [u| s |])))
 xpScoreBack =

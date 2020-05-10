@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f07b160e338c8b5b8805457223be5182bff1b8c213e5fa2e742375add7c57f90
+-- hash: 32c7ca0a4a98f741ee2ea0ee5bd55d93f7bd5c9b28b5282cfcd907b30a02079d
 
 name:           flight-scribe
 version:        0.1.0
@@ -59,7 +59,8 @@ library
     , filepath
     , flight-clip
     , flight-comp
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-lead
     , flight-latlng
     , flight-route
     , flight-units

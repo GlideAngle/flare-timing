@@ -13,8 +13,8 @@ import Flight.LatLng (QAlt)
 import Flight.Comp (Pilot(..), TaskRouteDistance(..))
 import Flight.Track.Mask (MaskingSpeed(..))
 import Flight.Track.Speed (TrackSpeed(..))
-import qualified Flight.Score as Gap (bestTime')
-import Flight.Score (BestTime(..), PilotTime(..), speedFraction)
+import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
+import "flight-gap-allot" Flight.Score (BestTime(..), PilotTime(..), speedFraction)
 import Stats (TimeStats(..), FlightStats(..))
 
 landAltitudes :: [(Pilot, FlightStats k)] -> [(Pilot, QAlt Double [u| m |])]

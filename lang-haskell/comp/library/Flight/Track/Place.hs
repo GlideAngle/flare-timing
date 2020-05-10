@@ -18,7 +18,8 @@ import Data.List (groupBy, sort)
 import Data.Time.Clock (UTCTime)
 
 import Flight.Track.Point (Breakdown(..))
-import Flight.Score (Pilot(..), TaskPoints(..), TaskPlacing(..), ArrivalPlacing(..))
+import "flight-gap-allot" Flight.Score (Pilot(..), TaskPlacing(..), ArrivalPlacing(..))
+import "flight-gap-math" Flight.Score (TaskPoints(..))
 import Data.Ratio.Rounding (dpRound)
 
 -- | Reindexing produces 1,2=,2=,4 and not 1,2=,2=,3 or 1,3=,3=,4.

@@ -31,7 +31,7 @@ import qualified Data.Map as Map
 import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
-import "flight-gap-allot" Flight.Gap.Fraction (DifficultyFraction(..))
+import "flight-gap-allot" Flight.Score (DifficultyFraction(..))
 import "flight-gap-allot" Flight.Score (PilotDistance(..))
 import "flight-gap-allot" Flight.Score (Pilot)
 import "flight-gap-allot" Flight.Score (FlownMax(..))

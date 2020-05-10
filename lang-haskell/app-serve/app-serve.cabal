@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 34b5a9cd383d929d891f0d9e758092eb5e900e02f34901e498f75ca64cd7171d
+-- hash: a3e47457a949faa622dcf4f67f616458f28cd959150ca009ef8593cd84c0b2fd
 
 name:           app-serve
 version:        0.1.0
@@ -61,7 +61,13 @@ executable comp-serve
     , flight-cmd
     , flight-comp
     , flight-earth
-    , flight-gap
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
     , flight-kml
     , flight-latlng
     , flight-mask

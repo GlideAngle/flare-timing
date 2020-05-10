@@ -27,7 +27,8 @@ import Flight.Track.Distance
     )
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Speed (pilotTime)
-import Flight.Score (ArrivalPlacing(..), MinimumDistance(..), ReachToggle(..))
+import "flight-gap-allot" Flight.Score (ArrivalPlacing(..), MinimumDistance(..))
+import "flight-gap-valid" Flight.Score (ReachToggle(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats)
 
 awardByFrac

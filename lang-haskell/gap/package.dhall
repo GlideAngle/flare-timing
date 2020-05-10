@@ -74,9 +74,5 @@ in    defs
             , "flight-gap-weight"
             ]
       , library =
-          { source-dirs =
-              "library"
-          , exposed-modules =
-              [ "Flight.Score", "Flight.Gap.Fraction" ]
-          }
+          { source-dirs = "library", exposed-modules = "Flight.Score" }
       }

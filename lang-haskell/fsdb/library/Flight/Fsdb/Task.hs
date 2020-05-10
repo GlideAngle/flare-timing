@@ -70,13 +70,14 @@ import Flight.Comp
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..), Tweak(..)
     , EarlyStart(..), nullEarlyStart
     )
-import Flight.Score
-    ( ScoreBackTime(..), ReachToggle(..)
-    , SecondsPerPoint(..), JumpTheGunLimit(..), TooEarlyPoints(..)
+import "flight-gap-math" Flight.Score
+    ( SecondsPerPoint(..), JumpTheGunLimit(..), TooEarlyPoints(..)
     , PenaltySeq(..)
     , idMul, idSeq, addSeq, mulSeq
     , mkMul, mkAdd, exMul, exAdd
     )
+import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
+import "flight-gap-valid" Flight.Score (ReachToggle(..))
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.Parse (parseUtcTime)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity)

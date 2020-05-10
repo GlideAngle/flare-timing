@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3f1243208f38aad99b2d7e4a38466f7ea5b6d42b1c89a2ba1255b5f18d4f81f3
+-- hash: d28e470690e2da7255ad72b5746cacbc29a81ebb5b957296e1ccd032a8d87be0
 
 name:           flight-gap-allot
 version:        0.1.0
@@ -36,7 +36,6 @@ flag suppress-failing-tests
 library
   exposed-modules:
       Flight.Score
-      Flight.Gap.Fraction
   other-modules:
       Flight.Gap.Allot
       Flight.Gap.Distance.Min
@@ -45,6 +44,7 @@ library
       Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
+      Flight.Gap.Fraction
       Flight.Gap.Fraction.Arrival
       Flight.Gap.Fraction.Difficulty
       Flight.Gap.Fraction.Distance

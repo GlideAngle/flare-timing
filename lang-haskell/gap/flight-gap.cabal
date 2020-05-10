@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 297ef75cad95d7854b4ccec6ce10d7940c97fe0378d1617ef91c2b42cca096bc
+-- hash: e9cd585fb5301e68d8f6bae0d8252454192e8625b26170d991f0e90ba3f46df2
 
 name:           flight-gap
 version:        0.1.0
@@ -37,7 +37,6 @@ flag suppress-failing-tests
 library
   exposed-modules:
       Flight.Score
-      Flight.Gap.Fraction
   other-modules:
       Paths_flight_gap
   hs-source-dirs:

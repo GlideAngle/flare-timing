@@ -32,11 +32,12 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Distance (QTaskDistance)
 import Flight.Comp (Pilot)
-import Flight.Score
-    ( LeadingArea(..), LeadingCoef(..), LeadingFraction(..), LwScaling(..)
+import "flight-gap-lead" Flight.Score
+    ( LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
     , LeadingAreaUnits, LeadingAreaToCoefUnits, LengthOfSs, AreaToCoef
     , leadingFraction
     )
+import "flight-gap-weight" Flight.Score (LwScaling(..))
 import Flight.Track.Time (LeadingAreas(..), taskToLeading, minLeadingCoef)
 import Flight.Zone.MkZones (Discipline(..))
 

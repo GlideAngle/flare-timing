@@ -94,7 +94,7 @@ import System.FilePath
 import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
-import Flight.Score (PilotId(..), PilotName(..), Pilot(..))
+import "flight-gap-allot" Flight.Score (PilotId(..), PilotName(..), Pilot(..))
 
 -- | The path to a competition expected arrival file.
 newtype NormArrivalFile = NormArrivalFile FilePath deriving Show

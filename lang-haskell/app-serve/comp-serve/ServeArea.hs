@@ -9,7 +9,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.Track.Time (TickRow(..), LeadTick(..))
-import Flight.Score (LeadingArea(..), LeadingAreas(..), LeadingArea2Units, EssTime(..))
+import "flight-gap-lead" Flight.Score
+    (LeadingArea(..), LeadingAreas(..), LeadingArea2Units, EssTime(..))
 import Flight.Track.Mask (RaceTime(..))
 
 data RawLeadingArea =

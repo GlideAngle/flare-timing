@@ -31,7 +31,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Clip (FlyingSection)
-import Flight.Score (Pilot(..))
+import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Comp (LastStart(..), StartGate(..))
 import Flight.Track.Cross (Seconds(..))
 import Flight.Track.Tag (TrackTime(..), PilotTrackTag(..), ZonesLastTag(..))

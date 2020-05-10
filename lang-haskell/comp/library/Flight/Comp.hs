@@ -90,24 +90,25 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
 import Flight.Distance (TaskDistance(..), QTaskDistance)
-import Flight.Score
-    ( Leg(..)
-    , NominalLaunch(..)
+import "flight-gap-allot" Flight.Score
+    ( NominalLaunch(..)
     , NominalGoal(..)
     , NominalDistance(..)
     , MinimumDistance(..)
     , NominalTime(..)
-    , ScoreBackTime(..)
     , PilotId(..)
     , PilotName(..)
     , Pilot(..)
-    , LwScaling(..)
-    , PenaltySeqs(..)
+    )
+import "flight-gap-lead" Flight.Score (Leg(..), LengthOfSs(..))
+import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
+import "flight-gap-math" Flight.Score
+    ( PenaltySeqs(..)
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
     , TooEarlyPoints(..)
-    , LengthOfSs(..)
     )
+import "flight-gap-weight" Flight.Score (LwScaling(..))
 import Flight.Geodesy (EarthMath(..), EarthModel(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one

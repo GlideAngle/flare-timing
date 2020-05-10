@@ -23,7 +23,8 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Comp (StartEnd(..), StartEndMark, StartGate(..))
-import Flight.Score (SpeedFraction(..), PilotTime(..), JumpedTheGun(..))
+import "flight-gap-allot" Flight.Score (SpeedFraction(..), PilotTime(..))
+import "flight-gap-math" Flight.Score (JumpedTheGun(..))
 import Flight.Units ()
 
 -- ^ If arrived at goal then speed fraction.

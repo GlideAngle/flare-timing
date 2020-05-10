@@ -33,7 +33,8 @@ import Flight.Comp
     , StartEndDownMark
     )
 import qualified Flight.Comp as Cmp (openClose)
-import Flight.Score (ArrivalPlacing(..), PilotTime(..), JumpedTheGun(..))
+import "flight-gap-allot" Flight.Score (ArrivalPlacing(..), PilotTime(..))
+import "flight-gap-math" Flight.Score (JumpedTheGun(..))
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Stop (TrackScoredSection(..))

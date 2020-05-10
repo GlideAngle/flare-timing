@@ -20,7 +20,7 @@ import Flight.Units ()
 import "flight-gap-allot" Flight.Score (PilotDistance(..))
 import "flight-gap-allot" Flight.Score (FlownMax(..))
 import "flight-gap-allot" Flight.Score (Pilot)
-import "flight-gap-allot" Flight.Gap.Fraction (DifficultyFraction(..))
+import "flight-gap-allot" Flight.Score (DifficultyFraction(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 import Flight.Gap.Distance.Chunk
     ( IxChunk(..)

@@ -24,7 +24,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Track.Speed (pilotArrivalLag)
 import Flight.Track.Place (rankByArrival)
-import Flight.Score
+import "flight-gap-allot" Flight.Score
     ( Pilot(..), ArrivalPlacing(..), ArrivalFraction(..), ArrivalLag(..)
     , PilotsAtEss(..)
     , arrivalRankFraction, arrivalTimeFraction

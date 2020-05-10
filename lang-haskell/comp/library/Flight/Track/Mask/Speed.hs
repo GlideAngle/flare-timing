@@ -16,7 +16,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Distance (QTaskDistance)
 import Flight.LatLng (QAlt)
-import Flight.Score (Pilot(..), BestTime(..))
+import "flight-gap-allot" Flight.Score (Pilot(..), BestTime(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Speed (TrackSpeed(..))

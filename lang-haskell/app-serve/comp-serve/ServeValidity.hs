@@ -1,7 +1,8 @@
 module ServeValidity (nullValidityWorking) where
 
 import Data.UnitsOfMeasure (u)
-import Flight.Score
+import "flight-gap-allot" Flight.Score
+import "flight-gap-valid" Flight.Score
 
 nullLaunchValidityWorking :: LaunchValidityWorking
 nullLaunchValidityWorking =
