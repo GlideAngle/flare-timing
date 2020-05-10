@@ -7,6 +7,7 @@ import Reflex.Dom
 import WireTypes.Route (TaskLength(..))
 import WireTypes.Pilot (Pilot(..), Nyp(..), Dnf(..), DfNoTrack(..), Penal(..))
 import WireTypes.Point (Breakdown(..))
+import WireTypes.Penalty (PenaltySeqs(..))
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTaskPilotAbs)
 import FlareTiming.Pilot (rowPilot, rowDfNt, rowPenalJump, rowPenalAuto, rowPenal)
@@ -144,8 +145,8 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                 (\(p, Breakdown{jump, penaltiesJump}) ->
                                     (p, penaltiesJump, jump))
                                 <$> filter
-                                        (\(_, Breakdown{jump, penaltiesJump}) ->
-                                            isJust jump || not (null penaltiesJump))
+                                        (\(_, Breakdown{jump, penaltiesJump = PenaltySeqs{adds}}) ->
+                                            isJust jump || not (null adds))
                                         sDf')
 
                     dyn_ $ ffor3 penalAuto penal jumpers (\penalAuto'' penal'' jumpers' ->

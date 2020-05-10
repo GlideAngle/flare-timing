@@ -74,19 +74,16 @@ module WireTypes.Point
 
 import Text.Printf (printf)
 import Data.Ord (comparing)
-import Data.List (partition)
 import Control.Applicative (empty)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
-import Data.Aeson
-    ( Value(..), FromJSON(..), Options(..), SumEncoding(..)
-    , genericParseJSON, defaultOptions
-    )
+import Data.Aeson (Value(..), FromJSON(..))
 import qualified Data.Text as T (Text, pack, unpack)
 
 import WireTypes.Speed (PilotTime)
 import WireTypes.Lead (LeadingArea, LeadingCoefficient)
 import WireTypes.Fraction (Fractions)
+import WireTypes.Penalty
 import qualified FlareTiming.Statistics as Stats
 import FlareTiming.Time (showHmsForSecs)
 
@@ -170,26 +167,6 @@ instance FromJSON PilotVelocity where
             _ -> empty
     parseJSON _ = empty
 
-data PointPenalty
-    = PenaltyPoints Double
-    | PenaltyFraction Double
-    | PenaltyReset Int
-    deriving (Eq, Ord, Show, Generic)
-
-pointPenaltyOptions :: Options
-pointPenaltyOptions =
-    defaultOptions
-        { sumEncoding = ObjectWithSingleField
-        , constructorTagModifier = \case
-            "PenaltyPoints" -> "penalty-points"
-            "PenaltyFraction" -> "penalty-fraction"
-            "PenaltyReset" -> "penalty-reset"
-            s -> s
-        }
-
-instance FromJSON PointPenalty where
-    parseJSON = genericParseJSON pointPenaltyOptions
-
 showPilotDistance :: Int -> PilotDistance -> T.Text
 showPilotDistance dp (PilotDistance d) =
     T.pack $ printf "%.*f" dp d
@@ -212,36 +189,12 @@ showJumpedTheGunTime (Just (JumpedTheGun s)) = showHmsForSecs s
 
 -- | Positive penalties (demerits) are shown as negative amounts and negative
 -- penalties (bonuses) are shown as positive amounts.
-showJumpedTheGunPenalty :: Int -> [PointPenalty] -> T.Text
-showJumpedTheGunPenalty _ [] = ""
-showJumpedTheGunPenalty dp ps =
-    let (points, _) =
-            partition
-                (\case
-                    PenaltyFraction _ -> False
-                    PenaltyPoints _ -> True
-                    PenaltyReset _ -> False)
-                ps
-
-        (resets, _) =
-            partition
-                (\case
-                    PenaltyFraction _ -> False
-                    PenaltyPoints _ -> False
-                    PenaltyReset _ -> True)
-                ps
-
-    in
-        T.pack $
-        if null resets
-           then
-                printf "%+.*f" dp . sum
-                $ (\case
-                    PenaltyPoints y -> negate y
-                    PenaltyFraction _ -> 0
-                    PenaltyReset _ -> 0)
-                <$> points
-            else ""
+showJumpedTheGunPenalty :: Int -> PenaltySeqs -> T.Text
+showJumpedTheGunPenalty dp PenaltySeqs{adds, resets} =
+    T.pack $
+    if null resets
+        then let (PenaltyPoints p) = effectiveAdd adds in printf "%+.*f" dp p
+        else ""
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
@@ -531,8 +484,8 @@ data Breakdown =
         , demeritReset :: TaskPoints
         , total :: TaskPoints
         , jump :: Maybe JumpedTheGun
-        , penaltiesJump :: [PointPenalty]
-        , penalties :: [PointPenalty]
+        , penaltiesJump :: PenaltySeqs
+        , penalties :: PenaltySeqs
         , penaltyReason :: String
         , breakdown :: Points
         , velocity :: Maybe Velocity

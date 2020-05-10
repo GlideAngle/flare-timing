@@ -15,7 +15,6 @@ module FlareTiming.Pilot
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import Data.Maybe (fromMaybe)
-import Data.List (find)
 import Text.Printf (printf)
 import Data.Time.LocalTime (TimeZone)
 
@@ -24,7 +23,8 @@ import WireTypes.Pilot
     ( Pilot(..), PilotId(..), PilotName(..)
     , AwardedDistance(..), AwardedVelocity(..), DfNoTrackPilot(..)
     )
-import WireTypes.Point (PointPenalty(..), ReachToggle(..), JumpedTheGun(..), showJumpedTheGunTime)
+import WireTypes.Penalty
+import WireTypes.Point (ReachToggle(..), JumpedTheGun(..), showJumpedTheGunTime)
 import WireTypes.Comp (UtcOffset(..), JumpTheGunLimit(..))
 import FlareTiming.Time (showT, timeZone)
 
@@ -93,21 +93,12 @@ classOfEarlyStart (JumpTheGunLimit e) =
 rowPenalJump
     :: MonadWidget t m
     => Dynamic t JumpTheGunLimit
-    -> Dynamic t (Pilot, [PointPenalty], Maybe JumpedTheGun)
+    -> Dynamic t (Pilot, PenaltySeqs, Maybe JumpedTheGun)
     -> m ()
 rowPenalJump earliest ppp = do
     let tdPoint = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
     let tdReset = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
-    dyn_ $ ffor ppp (\(pilot, ps, jump) -> el "tr" $ do
-        let pPoint =
-                find
-                    (\case PenaltyPoints{} -> True; _ -> False)
-                    ps
-
-        let pReset =
-                find
-                    (\case PenaltyReset{} -> True; _ -> False)
-                    ps
+    dyn_ $ ffor ppp (\(pilot, PenaltySeqs{adds = pPoints, resets = pResets}, jump) -> el "tr" $ do
 
         let classEarly = ffor earliest (flip classOfEarlyStart $ jump)
 
@@ -115,66 +106,51 @@ rowPenalJump earliest ppp = do
         el "td" . text . showPilotName $ pilot
         elDynClass "td" classEarly . text $ showJumpedTheGunTime jump
 
-        case pPoint of
-            Just (PenaltyPoints y) -> tdPoint $ negate y
-            _ -> el "td" $ text ""
+        if null pPoints
+            then el "td" $ text ""
+            else tdPoint $ showEffectiveAdd pPoints
 
-        case pReset of
-            Just (PenaltyReset y) -> tdReset $ (fromIntegral y :: Double)
-            _ -> el "td" $ text "")
+        if null pResets
+            then el "td" $ text ""
+            else tdReset $ showEffectiveReset pResets)
 
 rowPenalAuto
     :: MonadWidget t m
-    => Dynamic t (Pilot, [PointPenalty], String)
+    => Dynamic t (Pilot, PenaltySeqs, String)
     -> m ()
 rowPenalAuto ppp = do
     let td = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
-    dyn_ $ ffor ppp (\(pilot, ps, reason) -> el "tr" $ do
-        let pp =
-                find
-                    (\case PenaltyPoints{} -> True; _ -> False)
-                    ps
-
+    dyn_ $ ffor ppp (\(pilot, PenaltySeqs{adds = pp}, reason) -> el "tr" $ do
         elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
-        case pp of
-            Just (PenaltyPoints y) -> td $ negate y
-            _ -> el "td" $ text ""
+        if null pp
+            then el "td" $ text ""
+            else td $ showEffectiveAdd pp
 
         el "td" . text $ T.pack reason)
 
 rowPenal
     :: MonadWidget t m
-    => Dynamic t (Pilot, [PointPenalty], String)
+    => Dynamic t (Pilot, PenaltySeqs, String)
     -> m ()
 rowPenal ppp = do
     let td = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
-    dyn_ $ ffor ppp (\(pilot, ps, reason) -> el "tr" $ do
-        let p =
-                find
-                    (\case PenaltyFraction{} -> True; _ -> False)
-                    ps
-
-        let pp =
-                find
-                    (\case PenaltyPoints{} -> True; _ -> False)
-                    ps
-
+    dyn_ $ ffor ppp (\(pilot, PenaltySeqs{muls = p, adds = pp}, reason) -> el "tr" $ do
         elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
         case (p, pp) of
-            (Just (PenaltyFraction x), Nothing) -> do
-                td $ negate x
+            ([], []) -> do
                 el "td" $ text ""
-            (Nothing, Just (PenaltyPoints y)) -> do
                 el "td" $ text ""
-                td $ negate y
-            (Just (PenaltyFraction x), Just (PenaltyPoints y)) -> do
-                td $ negate x
-                td $ negate y
+            (_, []) -> do
+                td $ showEffectiveMul p
+                el "td" $ text ""
+            ([], _) -> do
+                el "td" $ text ""
+                td $ showEffectiveAdd pp
             _ -> do
-                el "td" $ text ""
-                el "td" $ text ""
+                td $ showEffectiveMul p
+                td $ showEffectiveAdd pp
         el "td" . text $ T.pack reason)
 
 showPilotId :: Pilot -> T.Text

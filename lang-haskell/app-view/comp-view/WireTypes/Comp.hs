@@ -55,7 +55,8 @@ import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
 import WireTypes.ZoneKind
 import WireTypes.Pilot (Pilot)
-import WireTypes.Point (StartGate(..), PointPenalty)
+import WireTypes.Penalty (PenaltySeqs)
+import WireTypes.Point (StartGate(..))
 import FlareTiming.Time (UtcOffset(..))
 import FlareTiming.Time (showHmsForSecs)
 
@@ -362,8 +363,8 @@ data Task =
         , stopped :: Maybe TaskStop
         , taskTweak :: Maybe Tweak
         , earlyStart :: EarlyStart
-        , penalsAuto :: [(Pilot, [PointPenalty], String)]
-        , penals :: [(Pilot, [PointPenalty], String)]
+        , penalsAuto :: [(Pilot, PenaltySeqs, String)]
+        , penals :: [(Pilot, PenaltySeqs, String)]
         }
     deriving (Eq, Ord, Generic, FromJSON)
 

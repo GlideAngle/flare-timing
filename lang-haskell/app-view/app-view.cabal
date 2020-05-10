@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d024b76a6149e5d7aedc68b116d9ffd548c3dbe7c0f95afc4a6604cab248c1a5
+-- hash: 5f7327ca2739a7d9ff98bf61e9a9aa68d86c800e186cbdabb1d94b0a8b92df55
 
 name:           app-view
 version:        0.1.0
@@ -131,6 +131,7 @@ executable comp-view
       WireTypes.Effort
       WireTypes.Fraction
       WireTypes.Lead
+      WireTypes.Penalty
       WireTypes.Pilot
       WireTypes.Point
       WireTypes.Reach

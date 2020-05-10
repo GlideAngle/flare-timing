@@ -19,10 +19,11 @@ module WireTypes.Pilot
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
-import WireTypes.Point (PointPenalty, ReachToggle(..))
+import WireTypes.Point (ReachToggle(..))
+import WireTypes.Penalty (PenaltySeqs)
 
 -- | The group of pilots that were penalized for a task.
-newtype Penal = Penal {unPenal :: [(Pilot, [PointPenalty], String)]}
+newtype Penal = Penal {unPenal :: [(Pilot, PenaltySeqs, String)]}
 
 -- | The group of pilots that did not fly a task.
 newtype Dnf = Dnf {unDnf :: [Pilot]}
