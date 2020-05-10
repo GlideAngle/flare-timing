@@ -75,7 +75,7 @@ jobs:
       run: cabal v2-test flight-gap-math --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-stop
-      run: cabal v2-test flight-gap-storp --test-show-details=direct --test-option="--color=always"
+      run: cabal v2-test flight-gap-stop --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-valid
       run: cabal v2-test flight-gap-valid --test-show-details=direct --test-option="--color=always"
