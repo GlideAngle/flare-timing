@@ -13,7 +13,6 @@ jobs:
       matrix:
         os: [ubuntu-latest]
 
-
     steps:
     - uses: mstksg/get-package@v1
       name: Install OS Packages
@@ -40,4 +39,4 @@ jobs:
 
     - name: Unit and property tests
       run: |
-        stack test --no-terminal --stack-yaml=lang-haskell/stack.yaml --test-arguments "--color=always"
+        stack test --no-terminal --test-arguments "--color=always" --jobs=1
