@@ -2,6 +2,7 @@
 
 ![stack](https://github.com/BlockScope/flare-timing/workflows/stack/badge.svg)
 ![cabal](https://github.com/BlockScope/flare-timing/workflows/cabal/badge.svg)
+![pier](https://github.com/BlockScope/flare-timing/workflows/pier/badge.svg)
 
 **Flare Timing** is a reference implementation of [GAP](lang-haskell/GAP.md)
 scoring for cross country hang gliding and paragliding racing.
