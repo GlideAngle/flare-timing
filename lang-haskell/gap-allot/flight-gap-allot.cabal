@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d28e470690e2da7255ad72b5746cacbc29a81ebb5b957296e1ccd032a8d87be0
+-- hash: 372798bf8904600f2deda1246aa285563d12ccc9359b126b6136c6f0ed8245bd
 
 name:           flight-gap-allot
 version:        0.1.0
@@ -91,35 +91,8 @@ test-suite doctest
   type: exitcode-stdio-1.0
   main-is: DocTest.hs
   other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
-      Flight.Gap.Fraction
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
-      Flight.Gap.Ratio
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
-      Flight.Gap.Time.Velocity
-      Flight.Score
       Paths_flight_gap_allot
   hs-source-dirs:
-      library
       test-suite-doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N

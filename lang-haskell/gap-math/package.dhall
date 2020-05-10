@@ -97,7 +97,7 @@ in    defs
                 , main =
                     "DocTest.hs"
                 , source-dirs =
-                    [ "library", "test-suite-doctest" ]
+                    "test-suite-doctest"
                 , when =
                     { condition =
                         "flag(suppress-failing-tests)"

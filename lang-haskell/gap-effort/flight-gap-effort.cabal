@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fb4930f26cecd8c01c2265c1e510494810ffdb0351a43278bfebd1a44519775b
+-- hash: dfe2e5b3ef4e90c1b2d6997ec89a51fa2b4d59752fa8da6e4b252374de083aae
 
 name:           flight-gap-effort
 version:        0.1.0
@@ -69,13 +69,8 @@ test-suite doctest
   type: exitcode-stdio-1.0
   main-is: DocTest.hs
   other-modules:
-      Flight.Gap.Distance.Chunk
-      Flight.Gap.Distance.Difficulty
-      Flight.Gap.Distance.Relative
-      Flight.Score
       Paths_flight_gap_effort
   hs-source-dirs:
-      library
       test-suite-doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N

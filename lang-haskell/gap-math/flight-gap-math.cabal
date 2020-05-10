@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b7f7bd4e2aff7b7517bf2e0cab6065ebe6392df75bd36bdc12e734ad1b6e40fd
+-- hash: e8da3bccc042bb3ef76ac93718de8c0e95c5e7671bd79448dbedacee5d6f775f
 
 name:           flight-gap-math
 version:        0.1.0
@@ -77,19 +77,8 @@ test-suite doctest
   type: exitcode-stdio-1.0
   main-is: DocTest.hs
   other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Time.Early
-      Flight.Score
       Paths_flight_gap_math
   hs-source-dirs:
-      library
       test-suite-doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
