@@ -8,6 +8,13 @@ packages:
 - comp
 - earth
 - fsdb
+- gap-allot
+- gap-effort
+- gap-lead
+- gap-math
+- gap-stop
+- gap-valid
+- gap-weight
 - gap
 - igc
 - kml
@@ -28,6 +35,7 @@ packages:
 - app-serve
 - hcoord/hcoord
 - hcoord/hcoord-utm
+- exact-real
 extra-deps:
 - hxt-xpath-9.1.2.2
 - uom-plugin-0.3.0.0
@@ -38,6 +46,8 @@ extra-deps:
 - chell-0.4.0.2
 - chell-quickcheck-0.2.5.1
 - ghc-paths-0.1.0.9
+- facts-0.0.1.0
+- memoize-0.8.1
 flags:
     detour-via-sci:
         suppress-failing-tests: true
@@ -50,8 +60,6 @@ flags:
     flight-earth:
         suppress-failing-tests: true
     flight-fsdb:
-        suppress-failing-tests: true
-    flight-gap:
         suppress-failing-tests: true
     flight-igc:
         suppress-failing-tests: true
