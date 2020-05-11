@@ -79,5 +79,86 @@ jobs:
       if: steps.cache-pier-exe.outputs.cache-hit != 'true'
       run: stack install pier --stack-yaml=lang-haskell/stack-pier.yaml
 
+    #- name: flight-clip
+       #run: ~/.local/bin/pier test flight-clip
+
+    #- name: flight-cmd
+       #run: ~/.local/bin/pier test flight-cmd
+
+    - name: flight-comp
+      run: ~/.local/bin/pier test flight-comp:test:comp
+
+    #- name: detour-via-sci
+      #run: ~/.local/bin/pier test detour-via-sci
+
+    #- name: detour-via-uom
+      #run: ~/.local/bin/pier test detour-via-uom
+
+    - name: flight-earth
+      run: ~/.local/bin/pier test flight-earth
+
+    #- name: flight-fsdb
+      #run: ~/.local/bin/pier test flight-fsdb
+
+    #- name: flight-gap-allot
+      #run: ~/.local/bin/pier test flight-gap-allot
+
+    - name: flight-gap-effort
+      run: ~/.local/bin/pier test flight-gap-effort:test:effort
+
+    - name: flight-gap-lead
+      run: ~/.local/bin/pier test flight-gap-lead:test:lead
+
+    - name: flight-gap-math
+      run: ~/.local/bin/pier test flight-gap-math:test:math
+
+    - name: flight-gap-stop
+      run: ~/.local/bin/pier test flight-gap-stop:test:stop
+
+    - name: flight-gap-valid
+      run: ~/.local/bin/pier test flight-gap-valid:test:valid
+
+    - name: flight-gap-weight
+      run: ~/.local/bin/pier test flight-gap-weight:test:weight
+
+    #- name: flight-igc
+      #run: ~/.local/bin/pier test flight-igc
+
+    - name: flight-kml
+      run: ~/.local/bin/pier test flight-kml:test:parse
+
+    #- name: flight-latlng
+      #run: ~/.local/bin/pier test flight-latlng
+
+    #- name: flight-lookup
+      #run: ~/.local/bin/pier test flight-lookup
+
+    #- name: flight-mask
+      #run: ~/.local/bin/pier test flight-mask
+
+    #- name: flight-route
+      #run: ~/.local/bin/pier test flight-route
+
+    #- name: flight-scribe
+      #run: ~/.local/bin/pier test flight-scribe
+
     - name: siggy-chardust
       run: ~/.local/bin/pier test siggy-chardust:test:digits
+
+    #- name: flight-span
+      #run: ~/.local/bin/pier test flight-span
+
+    - name: flight-task
+      run: ~/.local/bin/pier test flight-task:test:task
+
+    #- name: flight-time
+      #run: ~/.local/bin/pier test flight-time
+
+    #- name: flight-track
+      #run: ~/.local/bin/pier test flight-track
+
+    #- name: flight-units
+      #  run: ~/.local/bin/pier test flight-units
+
+    - name: flight-zone
+      run: ~/.local/bin/pier test flight-zone:test:serial
