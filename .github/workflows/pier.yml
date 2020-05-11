@@ -8,36 +8,61 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    name: ghc ${{ matrix.ghc }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        cabal:
+          - "3.2"
+        ghc:
+          - "8.2.2"
 
     steps:
-    - uses: mstksg/get-package@v1
-      name: Install OS Packages
-      with:
-        apt-get: libgmp-dev
-
     - uses: actions/checkout@v2
       with:
         submodules: true
 
-    - uses: mstksg/setup-stack@v1
-      name: Setup Stack
+    - uses: actions/setup-haskell@v1.1
+      name: setup GHC and cabal-install
+      with:
+        enable-stack: true
+        stack-version: latest
+        ghc-version: ${{ matrix.ghc }}
+        cabal-version: ${{ matrix.cabal }}
 
-    - name: Cache Key
-      id: cache_key
-      run: echo ::set-output name=key::$(md5sum lang-haskell/stack.yaml | awk '{print $1}')
-
+    # SEE: https://github.com/actions/cache/blob/master/examples.md#haskell---cabal
     - uses: actions/cache@v1
-      name: Cache ~/.stack
-      id: cache
+      name: cache ~/.stack
       with:
         path: ~/.stack
-        key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
+        key: ${{ runner.os }}-${{ matrix.ghc }}-stack
+
+    - uses: actions/cache@v1
+      name: cache .stack-work
+      with:
+        path: .stack-work
+        key: ${{ runner.os }}-${{ matrix.ghc }}-stack-work
+
+    - uses: actions/cache@v1
+      name: cache ~/.pier/artifact
+      with:
+        path: ~/.pier/artifact
+        key: ${{ runner.os }}-${{ matrix.ghc }}-shared-pier-artifact
+
+    - uses: actions/cache@v1
+      name: cache _pier/artifact
+      with:
+        path: _pier/artifact
+        key: ${{ runner.os }}-${{ matrix.ghc }}-pier-artifact
+
+    - uses: actions/cache@v1
+      name: cache-pier-exe
+      with:
+        path: ~/.local/bin/pier
+        key: ${{ runner.os }}-${{ matrix.ghc }}-pier-exe
 
     - name: install pier
+      if: steps.cache-pier-exe.outputs.cache-hit != 'true'
       run: stack install pier --stack-yaml=lang-haskell/stack-pier.yaml
 
     - name: siggy-chardust
