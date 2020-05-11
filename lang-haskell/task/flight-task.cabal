@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 962d9f92305c89bb0ef0569c590abc55c08d15d4a9c352af106941a7a4a734bc
+-- hash: c6216c6924c9278738cce2944d068367e020e9017720e10dd0dbb8f0e9ba21ab
 
 name:           flight-task
 version:        0.1.0
@@ -58,6 +58,40 @@ library
     , flight-latlng
     , flight-units
     , flight-zone
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.ShortestPath
+      Flight.ShortestPath.Cost
+      Flight.ShortestPath.Double
+      Flight.ShortestPath.Graph
+      Flight.ShortestPath.Rational
+      Flight.Task
+      Paths_flight_task
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances AllowAmbiguousTypes InstanceSigs UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hlint
     , mtl
     , numbers
     , scientific

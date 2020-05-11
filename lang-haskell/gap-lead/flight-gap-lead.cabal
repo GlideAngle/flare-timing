@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 190bd0000b4895226fd00bd9077d84c2cd451a2a3e5eb70171c3c52573fba500
+-- hash: f5b9eef21b4b9dc5b5052413841d938639e5d6f12cd758a3021871668b4a2a94
 
 name:           flight-gap-lead
 version:        0.1.0
@@ -60,6 +60,45 @@ library
     , facts
     , flight-gap-allot
     , flight-units
+    , newtype
+    , numbers
+    , scientific
+    , siggy-chardust
+    , template-haskell
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
+      Flight.Gap.Leading1Area
+      Flight.Gap.Leading2Area
+      Flight.Gap.Time.Leading
+      Flight.Score
+      Paths_flight_gap_lead
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-gap-allot
+    , flight-units
+    , hlint
     , newtype
     , numbers
     , scientific

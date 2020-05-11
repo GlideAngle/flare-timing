@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3dd97035095f3da9f2d37acd5088cf8087965b43a091f860533eb85e071e7907
+-- hash: 81e2f2edeea1fef0d319b50cd6d1473ca417bed18de0c5940fc832a59f36dc18
 
 name:           tasty-compare
 version:        0.1.0
@@ -46,6 +46,25 @@ library
   build-depends:
       base >=4.10.1.0 && <5
     , call-stack
+    , tasty
+    , tasty-hunit
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Test.Tasty.HUnit.Compare
+      Paths_tasty_compare
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: PackageImports
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , call-stack
+    , hlint
     , tasty
     , tasty-hunit
   default-language: Haskell2010

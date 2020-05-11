@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 28b39275c21df15e0f1a268350f5600f33862a01affb645e79154deb7d8e7036
+-- hash: 4c5640e00952b455dfbb0974a3f89b7585641896996b252e4bf926bb2b43d243
 
 name:           flight-gap-stop
 version:        0.1.0
@@ -57,6 +57,42 @@ library
     , flight-gap-lead
     , flight-gap-math
     , flight-units
+    , newtype
+    , numbers
+    , scientific
+    , siggy-chardust
+    , template-haskell
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Gap.Stopped
+      Flight.Gap.Time.ScoreBack
+      Flight.Score
+      Paths_flight_gap_stop
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-gap-allot
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-units
+    , hlint
     , newtype
     , numbers
     , scientific

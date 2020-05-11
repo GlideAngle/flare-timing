@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 19fae5658c7c8bda3006ae1146075b2f741d8aaab7a9ad7137b8123c20438238
+-- hash: 359dba54f7cec6e6113a577247898c2e73e88745a32433da59f443bea3d2581f
 
 name:           detour-via-uom
 version:        1.0.1
@@ -75,4 +75,26 @@ test-suite doctest
     , uom-plugin
   if flag(suppress-failing-tests)
     buildable: False
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Data.Via.UnitsOfMeasure
+      Paths_detour_via_uom
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: PackageImports
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , detour-via-sci
+    , hlint
+    , newtype
+    , scientific
+    , uom-plugin
   default-language: Haskell2010

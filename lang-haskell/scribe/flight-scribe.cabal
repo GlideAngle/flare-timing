@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 32c7ca0a4a98f741ee2ea0ee5bd55d93f7bd5c9b28b5282cfcd907b30a02079d
+-- hash: c579e68c7d84366893f7cb093276a121b3d7e963344baa6f1dabe24d0f2bbe4a
 
 name:           flight-scribe
 version:        0.1.0
@@ -65,6 +65,53 @@ library
     , flight-route
     , flight-units
     , flight-zone
+    , mtl
+    , path
+    , safe-exceptions
+    , scientific
+    , split
+    , text
+    , time
+    , unordered-containers
+    , uom-plugin
+    , vector
+    , yaml
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.AlignTime
+      Flight.AreaStep
+      Flight.DiscardFurther
+      Flight.Scribe
+      Flight.UnpackTrack
+      Paths_flight_scribe
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , cassava
+    , containers
+    , detour-via-sci
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-comp
+    , flight-gap-allot
+    , flight-gap-lead
+    , flight-latlng
+    , flight-route
+    , flight-units
+    , flight-zone
+    , hlint
     , mtl
     , path
     , safe-exceptions

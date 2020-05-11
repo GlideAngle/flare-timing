@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4e3adb1a7335ddd148bfdd2af251b171c018ac9834682df5a00594de2d3ef423
+-- hash: 20a220bb9fc3c71b6b52ac3dafc703df61c233536283d1675aba061ab6b92d9d
 
 name:           flare-timing
 version:        0.1.0
@@ -778,4 +778,19 @@ executable unpack-track
     , transformers
     , uom-plugin
     , yaml
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Paths_flare_timing
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , hlint
   default-language: Haskell2010

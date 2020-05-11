@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ebbeeed5203ed534569d2b26d626c01edb1d60bc5df763e216db70dbe373e443
+-- hash: b9454b8ebabd2b477fa852923d7422833e3d5b121f4ef243d13c85df2cc6e988
 
 name:           siggy-chardust
 version:        1.0.0
@@ -81,4 +81,20 @@ test-suite doctest
   build-depends:
       base >=4.10.1.0 && <5
     , doctest
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Data.Ratio.Rounding
+      Paths_siggy_chardust
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: PackageImports
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , hlint
   default-language: Haskell2010

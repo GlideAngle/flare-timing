@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7967a977638ccc4b0c56859fbeb29008a3b7f66f5d3451bb738bdd8ecdb54a1f
+-- hash: 9460978e4138232d40fee2f32dee093d568ba7eb632cb2df43cf4d191fff6835
 
 name:           build-flare-timing
 version:        0.1.0
@@ -59,4 +59,26 @@ executable build-flare-timing
     , shake
     , text
     , time
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Cmd
+      Doc
+      Nix
+      Pkg
+      Snack
+      Target
+      Web
+      Paths_build_flare_timing
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: PackageImports
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , hlint
   default-language: Haskell2010

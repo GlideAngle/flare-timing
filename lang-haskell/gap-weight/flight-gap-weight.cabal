@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9eac8a90e060bb513994bef56d1d5413a420cf6d6e60d145b8e0852f40f8949b
+-- hash: d5dfac9d36a1145a31faa82b2905e35cfea248d0ae36a90aa1cc1e0659369520
 
 name:           flight-gap-weight
 version:        0.1.0
@@ -59,6 +59,44 @@ library
     , facts
     , flight-gap-allot
     , flight-units
+    , newtype
+    , numbers
+    , scientific
+    , siggy-chardust
+    , template-haskell
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Paths_flight_gap_weight
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , facts
+    , flight-gap-allot
+    , flight-units
+    , hlint
     , newtype
     , numbers
     , scientific

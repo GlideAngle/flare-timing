@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d89d1429d21eda56a130339cf7583c8d1f3417ca46cb0fe637da5cce44295891
+-- hash: 707ce79cc6221a9ac9b5e56c4b686516989dd900f55000f37080e09be18bafc3
 
 name:           flight-cmd
 version:        0.1.0
@@ -53,6 +53,33 @@ library
     , filemanip
     , filepath
     , flight-span
+    , mtl
+    , raw-strings-qq
+    , transformers
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Cmd.BatchOptions
+      Flight.Cmd.Options
+      Flight.Cmd.Paths
+      Flight.Cmd.ServeOptions
+      Paths_flight_cmd
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , cmdargs
+    , directory
+    , filemanip
+    , filepath
+    , flight-span
+    , hlint
     , mtl
     , raw-strings-qq
     , transformers

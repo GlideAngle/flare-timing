@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 998bad320e393e466600cb3ace7a7a436fc706fd078323f9977937627c690730
+-- hash: 4025a8ce3299c29d4f6ef41a5f981aac205aa1586c96dd84004916431db03aba
 
 name:           flight-igc
 version:        2.0.0
@@ -87,4 +87,29 @@ test-suite doctest
     , utf8-string
   if flag(suppress-failing-tests)
     buildable: False
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Igc
+      Flight.Igc.Fix
+      Flight.Igc.Parse
+      Flight.Igc.Record
+      Paths_flight_igc
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , bytestring
+    , flight-clip
+    , hlint
+    , megaparsec >=7.0.4 && <7.1
+    , tasty-quickcheck
+    , time
+    , utf8-string
   default-language: Haskell2010

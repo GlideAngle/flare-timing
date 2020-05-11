@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 372798bf8904600f2deda1246aa285563d12ccc9359b126b6136c6f0ed8245bd
+-- hash: 4ac5a2e48eacc47009d4e36ab9857870d5aa4f72259d0f63bf19c5a5f66bae93
 
 name:           flight-gap-allot
 version:        0.1.0
@@ -118,4 +118,61 @@ test-suite doctest
     , uom-plugin
   if flag(suppress-failing-tests)
     buildable: False
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Stop
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Equation
+      Flight.Gap.Fraction
+      Flight.Gap.Fraction.Arrival
+      Flight.Gap.Fraction.Difficulty
+      Flight.Gap.Fraction.Distance
+      Flight.Gap.Fraction.Goal
+      Flight.Gap.Fraction.Launch
+      Flight.Gap.Fraction.Leading
+      Flight.Gap.Fraction.Linear
+      Flight.Gap.Fraction.Speed
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Ratio
+      Flight.Gap.Time.Arrival
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.Velocity
+      Flight.Score
+      Paths_flight_gap_allot
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , exact-real
+    , facts
+    , flight-units
+    , hlint
+    , newtype
+    , numbers
+    , scientific
+    , siggy-chardust
+    , template-haskell
+    , text
+    , uom-plugin
   default-language: Haskell2010
