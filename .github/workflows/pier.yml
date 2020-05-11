@@ -85,8 +85,8 @@ jobs:
     #- name: flight-cmd
        #run: ~/.local/bin/pier test flight-cmd
 
-    - name: flight-comp
-      run: ~/.local/bin/pier test flight-comp:test:comp
+    #- name: flight-comp
+      #run: ~/.local/bin/pier test flight-comp:test:comp
 
     #- name: detour-via-sci
       #run: ~/.local/bin/pier test detour-via-sci
@@ -148,8 +148,8 @@ jobs:
     #- name: flight-span
       #run: ~/.local/bin/pier test flight-span
 
-    - name: flight-task
-      run: ~/.local/bin/pier test flight-task:test:task
+    #- name: flight-task
+      #run: ~/.local/bin/pier test flight-task:test:task
 
     #- name: flight-time
       #run: ~/.local/bin/pier test flight-time
@@ -160,5 +160,10 @@ jobs:
     #- name: flight-units
       #  run: ~/.local/bin/pier test flight-units
 
-    - name: flight-zone
-      run: ~/.local/bin/pier test flight-zone:test:serial
+    # NOTE: Test using tasty-discover fails.
+    # Error when running Shake build system:
+    # * TestSuite serial from flight-zone
+    # * Command: flight-zone-0.1.0: building test-suite serial
+    # ghc: could not execute: tasty-discover
+    #- name: flight-zone
+      #run: ~/.local/bin/pier test flight-zone:test:serial
