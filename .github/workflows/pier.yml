@@ -66,4 +66,4 @@ jobs:
       run: stack install pier --stack-yaml=lang-haskell/stack-pier.yaml
 
     - name: siggy-chardust
-      run: pier test siggy-chardust:test:digits
+      run: ~/.local/bin/pier test siggy-chardust:test:digits
