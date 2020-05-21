@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a3e47457a949faa622dcf4f67f616458f28cd959150ca009ef8593cd84c0b2fd
+-- hash: 76f4c797837744fc44768f638af946619ad11c4d8d3318f1586fca25c4f17cf7
 
 name:           app-serve
 version:        0.1.0
@@ -34,17 +34,83 @@ flag suppress-failing-tests
   manual: False
   default: True
 
-executable comp-serve
-  main-is: ServeMain.hs
+executable comp-py
+  main-is: GenPyClient.hs
   other-modules:
+      ServeApi
       ServeArea
       ServeOptions
       ServeSwagger
       ServeTrack
       ServeValidity
-      Paths_app_serve
   hs-source-dirs:
-      comp-serve
+      src
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , cmdargs
+    , containers
+    , detour-via-sci
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
+    , flight-kml
+    , flight-latlng
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-units
+    , flight-zone
+    , lens
+    , mtl
+    , raw-strings-qq
+    , safe-exceptions
+    , sampling
+    , servant
+    , servant-py
+    , servant-server
+    , servant-swagger
+    , servant-swagger-ui
+    , siggy-chardust
+    , statistics
+    , swagger2
+    , text
+    , time
+    , transformers
+    , uom-plugin
+    , vector
+    , wai
+    , wai-cors
+    , wai-extra
+    , warp
+    , yaml
+  default-language: Haskell2010
+
+executable comp-serve
+  main-is: ServeMain.hs
+  other-modules:
+      ServeApi
+      ServeArea
+      ServeOptions
+      ServeSwagger
+      ServeTrack
+      ServeValidity
+  hs-source-dirs:
+      src
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:

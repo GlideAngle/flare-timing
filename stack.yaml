@@ -32,6 +32,8 @@ extra-deps:
     size: 310
     sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
 - memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
+- servant-py-0.1.1.1@sha256:815f2791443bec2a40821a01da6623154029a8c3cb041dc7845a1b92fd2e9601,2931
+- aeson-1.3.1.1@sha256:1ab29743b4c4c9be7df57200ed2c8779048adda4cead075944b7b471e93ed4c3,6006
 flags:
     detour-via-sci:
         suppress-failing-tests: true
