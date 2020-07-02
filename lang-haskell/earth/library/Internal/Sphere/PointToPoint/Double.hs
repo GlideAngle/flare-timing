@@ -17,18 +17,12 @@ import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Zone (Radius(..), realToFracLatLng)
 import Flight.Earth.Sphere (earthRadius)
 
-haversine :: Floating a
-          => Quantity a [u| rad |]
-          -> Quantity a [u| rad |]
-haversine (MkQuantity x) =
-    MkQuantity $ y * y
-    where
-        y = sin (x / 2)
+haversine :: Floating a => Quantity a [u| rad |] -> Quantity a [u| rad |]
+haversine (MkQuantity x) = MkQuantity $ y * y where
+    y = sin (x / 2)
+{-# INLINE haversine #-}
 
-aOfHaversine :: Floating a
-  => LatLng a [u| rad |]
-  -> LatLng a [u| rad |]
-  -> a
+aOfHaversine :: Floating a => LatLng a [u| rad |] -> LatLng a [u| rad |] -> a
 aOfHaversine (LatLng (Lat xLatF, Lng xLngF)) (LatLng (Lat yLatF, Lng yLngF)) =
     hLatF
     + cos xLatF'
@@ -41,15 +35,17 @@ aOfHaversine (LatLng (Lat xLatF, Lng xLngF)) (LatLng (Lat yLatF, Lng yLngF)) =
         (MkQuantity hLatF) = haversine dLatF
         (MkQuantity hLngF) = haversine dLngF
         (dLatF, dLngF) = (yLatF -: xLatF, yLngF -: xLngF)
+{-# INLINE aOfHaversine #-}
 
 -- | Spherical distance using haversines and floating point numbers.
 distance :: Floating a => SpanLatLng a
-distance x y =
-    TaskDistance $ radDist *: rEarth
-    where
-        Radius rEarth = earthRadius
-        radDist :: Quantity _ One
-        radDist = mk $ 2 * asin (sqrt $ aOfHaversine x y)
+distance x y = TaskDistance $ radDist *: rEarth where
+    Radius rEarth = earthRadius
+
+    radDist :: Quantity _ One
+    radDist = mk $ 2 * asin (sqrt $ aOfHaversine x y)
+    {-# INLINE radDist #-}
+{-# INLINE distance #-}
 
 azimuthFwd :: (Real a, Fractional a) => AzimuthFwd a
 azimuthFwd x y = do

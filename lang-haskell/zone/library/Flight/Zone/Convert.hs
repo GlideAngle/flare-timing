@@ -62,10 +62,12 @@ toRationalLng (Lng x) =
 toRationalLatLng :: Real a => LatLng a u -> LatLng Rational u
 toRationalLatLng (LatLng (lat, lng)) =
     LatLng (toRationalLat lat, toRationalLng lng)
+{-# INLINE realToFracLatLng #-}
 
 realToFracLat :: (Real a, Fractional b) => QLat a u -> QLat b u
 realToFracLat (Lat x) =
     Lat $ realToFrac' x
+{-# INLINE realToFracLat #-}
 
 realToFracLng :: (Real a, Fractional b) => QLng a u -> QLng b u
 realToFracLng (Lng x) =
@@ -74,6 +76,7 @@ realToFracLng (Lng x) =
 realToFracLatLng :: (Real a, Fractional b) => LatLng a u -> LatLng b u
 realToFracLatLng (LatLng (lat, lng)) =
     LatLng (realToFracLat lat, realToFracLng lng)
+{-# INLINE realToFracLng #-}
 
 fromRationalZone
     :: (Eq a, Ord a, Fractional a)
@@ -171,3 +174,4 @@ realToFracZone (SemiCircle az r x) =
         (realToFracBearing <$> az)
         (realToFracRadius r)
         (realToFracLatLng x)
+{-# INLINE realToFracZone #-}

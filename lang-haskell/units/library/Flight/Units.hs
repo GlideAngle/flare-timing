@@ -27,6 +27,7 @@ import Flight.Units.Angle ()
 -- | Convert any 'Real' quantity into a 'Fractional' type ('realToFrac').
 realToFrac' :: (Real a, Fractional b) => Quantity a u -> Quantity b u
 realToFrac' (MkQuantity x) = MkQuantity (realToFrac x)
+{-# INLINEABLE realToFrac' #-}
 
 instance Functor (Flip Quantity u) where
     fmap = map'

@@ -140,6 +140,7 @@ instance GeoTag Double a => GeoLeg Double a where
             -- not know about the sub-second field then it will parse multiple fixes
             -- with the same HMS time.
             uniqueFixes = nub fixes
+            {-# INLINE uniqueFixes #-}
 
             yssL :: [[Kml.Fix]]
             yssL =

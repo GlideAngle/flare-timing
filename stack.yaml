@@ -121,3 +121,6 @@ packages:
 - lang-haskell/hcoord/hcoord
 - lang-haskell/hcoord/hcoord-utm
 - lang-haskell/exact-real
+build:
+  library-profiling: true
+  executable-profiling: true

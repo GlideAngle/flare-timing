@@ -85,7 +85,7 @@ data LLA =
     deriving anyclass (ToJSON, FromJSON)
 
 -- | Constructs a 'LLA' from its parts.
--- 
+--
 -- >>> mkPosition (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
 -- LLA {llaLat = -33.65073300°, llaLng = 147.56036700°, llaAltGps = 214m}
 mkPosition :: (Latitude, Longitude, Altitude) -> LLA
@@ -95,15 +95,22 @@ mkPosition (lat', lng', alt') = LLA lat' lng' alt'
 -- seconds and possibly a barometric pressure altitude.
 data Fix =
     Fix
-        { fixMark :: Seconds
+        { fixMark :: !Seconds
         -- ^ A mark in time, seconds offset from the first fix.
         , fix :: LLA
         -- ^ The coordinates of the fix, latitude, longitude and altitude.
         , fixAltBaro :: Maybe Altitude
         -- ^ The barometric pressure altitude of the fix.
         }
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+instance Eq Fix where
+    (==) = eqFix
+
+eqFix :: Fix -> Fix -> Bool
+eqFix x y = fixMark x == fixMark y
+{-# INLINE eqFix #-}
 
 -- | Class for a fix made up of latitude, longitude and GPS altitude.
 class LatLngAlt a where
@@ -139,7 +146,14 @@ data MarkedFixes =
         { mark0 :: UTCTime -- ^ The UTC time of the first fix.
         , fixes :: [Fix] -- ^ The fixes of the track log.
         }
-    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+    deriving (Ord, Generic, ToJSON, FromJSON)
+
+instance Eq MarkedFixes where
+    (==) = eqMarkedFixes
+
+eqMarkedFixes :: MarkedFixes -> MarkedFixes -> Bool
+eqMarkedFixes x y = mark0 x == mark0 y
+{-# INLINE eqMarkedFixes #-}
 
 showMarkFix :: UTCTime -> Seconds -> String
 showMarkFix mark0 fixMark =
@@ -224,6 +238,7 @@ timeToFixIdx t MarkedFixes{mark0, fixes} =
     findIndex ((== s) . fixMark) fixes
     where
         s = Seconds . round $ t `diffUTCTime` mark0
+{-# INLINE timeToFixIdx #-}
 
 secondsToUtc :: UTCTime -> Seconds -> UTCTime
 secondsToUtc mark0 (Seconds secs) =

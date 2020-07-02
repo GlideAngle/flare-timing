@@ -18,7 +18,7 @@ module Data.Ratio.Rounding
     (
     -- * About the Name
     -- $name
-    
+
     -- * Rounding to Decimal Places
       dpRound
     -- * Rounding to Significant Digits
@@ -83,6 +83,7 @@ dpRound n f
     | n < 0 = dpRound 0 f
     | otherwise =
         fromInteger (round $ f * (10^n)) / (10.0^^n)
+{-# INLINEABLE dpRound #-}
 
 -- | Rounds to a non-negative number of __s__ignificant __d__igits.
 --
@@ -158,6 +159,7 @@ sdRound sd' f =
 
         g = f / 10^p
         gZ = f * 10^pZ
+{-# INLINEABLE sdRound #-}
 
 -- $name
 -- Rounding to decimal places is a special case of rounding significant digits.

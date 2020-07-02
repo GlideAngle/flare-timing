@@ -36,6 +36,7 @@ distancePointToPoint span xs =
         { edgesSum = distanceViaCenters span xs
         , vertices = center <$> xs
         }
+{-# INLINE distancePointToPoint #-}
 
 distanceViaCenters
     :: Real a
@@ -59,6 +60,7 @@ distanceViaCenters span xs@[a, b]
     | otherwise = distance span xs
 
 distanceViaCenters span xs = distance span xs
+{-# INLINE distanceViaCenters #-}
 
 sum :: Num a => [Quantity a [u| m |]] -> Quantity a [u| m |]
 sum = foldr (+:) zero
@@ -72,3 +74,5 @@ distance span xs =
 
         f :: LatLng _ [u| rad |] -> LatLng _ [u| rad |] -> Quantity _ [u| m |]
         f = (unwrap .) . span
+        {-# INLINE f #-}
+{-# INLINE distance #-}
