@@ -48,6 +48,7 @@ extra-deps:
 - ghc-paths-0.1.0.9
 - facts-0.0.1.0
 - memoize-0.8.1
+- servant-py-0.1.1.1
 flags:
     detour-via-sci:
         suppress-failing-tests: true
