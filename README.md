@@ -182,8 +182,8 @@ flare-timing includes or not.
 ## License
 
 ```
-Copyright © Phil de Joux 2017-2019
-Copyright © Block Scope Limited 2017-2019
+Copyright © Phil de Joux 2017-2020
+Copyright © Block Scope Limited 2017-2020
 ```
 
 This software is subject to the terms of the Mozilla Public License, v2.0. If
