@@ -89,7 +89,7 @@ To host the frontend web app for the comp locally:
 2. Open a try-reflex shell with:
     `> reflex-platform/try-reflex`
 3. Build the frontend and start its webpack dev server with:
-    `> ./stack-shake-build.sh view-start-ghcjs`
+    `> ../stack-shake-build.sh view-start-ghcjs`
 4. Open a browser at the hosted URL, usually http://localhost:9000/app.html.
 
 Documentation is available online at
