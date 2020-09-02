@@ -19,12 +19,19 @@ web site](https://flaretiming.com).
 
 ## Installation
 
-Download the source, build and install with [stack](https://docs.haskellstack.org):
+Download the source, build and install the command line apps with
+[stack](https://docs.haskellstack.org) or with ghc and cabal that can be
+installed with [ghcup](https://www.haskell.org/ghcup/):
 
 ```
 > git clone https://github.com/BlockScope/flare-timing.git --recursive
 > cd flare-timing/lang-haskell
+
+# with stack
 > stack install
+
+# with cabal supplying options --installdir and --overwrite-policy
+> cabal v2-install all:exes
 ```
 
 There's more in the [building](lang-haskell/BUILDING.md) guide. There's a guide for
