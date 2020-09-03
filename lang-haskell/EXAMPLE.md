@@ -89,7 +89,7 @@ listening on port 3000
 
 First we need to make a small edit to `app-view/comp-view/FlareTiming/Comms.hs`
 so that we're picking up the served data rather than picking up the data from
-`.json` files as we do when publishing a comp display as a static site.
+`.json` files as we do when publishing a comp as a static site.
 
 ```diff
 mapUri :: T.Text -> T.Text
