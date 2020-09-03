@@ -136,9 +136,10 @@ $ webpack-dev-server --config=webpack-ghcjs.config.js
 Navigating to http://localhost:9000/app.html should show a page listing the
 tasks of the **Australian National Hang Gliding Championships 2014**.
 
-Note that if you want to edit the frontend code, sometimes you may need to
-manually clean to pickup edits in a build:
+When editing frontend code, sometimes you may need to manually clean to force
+the build to pickup edits:
 
 ```
 [nix-shell:~/.../lang-haskell]$ ./stack-shake-build.sh clean-www
+[nix-shell:~/.../lang-haskell]$ ./stack-shake-build.sh view-start-ghcjs
 ```
