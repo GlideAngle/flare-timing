@@ -88,7 +88,7 @@ listening on port 3000
 ```
 
 First we need to make a small edit to `app-view/comp-view/FlareTiming/Comms.hs`
-so that we're picking up the served files rather than picking up the data from
+so that we're picking up the served data rather than picking up the data from
 `.json` files.
 
 ```diff
