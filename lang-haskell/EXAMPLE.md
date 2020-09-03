@@ -87,6 +87,16 @@ Reading expected or normative scores from 'forbes2014.norm-score.yaml'
 listening on port 3000
 ```
 
+First we need to make a small edit to `app-view/comp-view/FlareTiming/Comms.hs`
+so that we're picking up the served files rather than picking up the data from
+`.json` files.
+
+```diff
+mapUri :: T.Text -> T.Text
+-- mapUri s = "/json" <> s <> ".json"
+++ mapUri s = "http://localhost:3000" <> s
+```
+
 In another terminal, build and start the client dev server:
 
 ```
@@ -126,3 +136,10 @@ $ webpack-dev-server --config=webpack-ghcjs.config.js
 Navigate a web browser to http://localhost:9000/ and select app.html or
 navigate to http://localhost:9000/app.html. This should show a page listing the
 tasks of the **Australian National Hang Gliding Championships 2014**.
+
+Note that if you want to edit the frontend code, sometimes you may need to
+manually clean to pickup edits in a build:
+
+```
+[nix-shell:~/.../lang-haskell]$ ./stack-shake-build.sh clean-www
+```
