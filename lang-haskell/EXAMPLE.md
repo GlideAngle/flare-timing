@@ -1,32 +1,54 @@
 # Worked Example
 
-This example covers both scoring and display of those scores with client and
-server. We're going to need the source code for the [latest
-release](https://github.com/BlockScope/flare-timing/releases/tag/app-view-0.26).
-
+This example covers both scoring and displaying scores with client and server.
 We're going to be working with the Forbes Flatlands comp of 2014.
 
 ## Setup
 
-For both steps we need the full source tree including git submodules that are
-not included in the archive attached to the release, the `tar.gz`.
+For both scoring and display we'll get the source and checkout a release.
 
-```> git clone https://github.com/BlockScope/flare-timing.git
+```
+> git clone https://github.com/BlockScope/flare-timing.git
 > cd flare-timing
 > git checkout app-view-0.26
 ...
 You are in 'detached HEAD' state.
 ...
-> cd flare-timing-app-view-0.26
 > git submodule update --init
 > cd lang-haskell
 .../lang-haskell> stack install
+...
+Copied executables to /Users/.../.local/bin:
+- align-time
+- area-step
+- build-flare-timing
+- comp-py
+- comp-serve
+- cross-zone
+- discard-further
+- extract-input
+- fs-arrival
+- fs-effort
+- fs-filter
+- fs-route
+- fs-score
+- gap-point
+- land-out
+- mask-track
+- peg-frame
+- tag-zone
+- task-length
+- unpack-track
 ```
 
 ## Scoring
 
+Scoring is time consuming and has already been done and commited to the repo
+with the scores for this comp so this step can be skipped if you just want to
+see the display.
+
 Now that we've installed the command line apps needed for scoring we can invoke
-a script that calls those commands in order with the last command starting the
+a script that calls those commands in order. The last command starts the
 server.
 
 ```
@@ -37,8 +59,7 @@ server.
 
 ## Display
 
-The comp has already been scored so that step can be skipped. In one terminal,
-start the server:
+In one terminal, start the server:
 
 ```
 .../2014> comp-serve --file=forbes2014
