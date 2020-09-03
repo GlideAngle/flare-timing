@@ -133,8 +133,7 @@ $ webpack-dev-server --config=webpack-ghcjs.config.js
 ...
 ```
 
-Navigate a web browser to http://localhost:9000/ and select app.html or
-navigate to http://localhost:9000/app.html. This should show a page listing the
+Navigating to http://localhost:9000/app.html should show a page listing the
 tasks of the **Australian National Hang Gliding Championships 2014**.
 
 Note that if you want to edit the frontend code, sometimes you may need to
