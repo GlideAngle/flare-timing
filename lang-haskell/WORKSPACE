@@ -1,11 +1,7 @@
-# Give your project a name. :)
 workspace(name = "flare_timing")
 
 # Load the repository rule to download an http archive.
-load(
-    "@bazel_tools//tools/build_defs/repo:http.bzl",
-    "http_archive"
-)
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Download rules_haskell and make it accessible as "@rules_haskell".
 http_archive(
@@ -29,4 +25,29 @@ load(
 )
 
 # Download a GHC binary distribution from haskell.org and register it as a toolchain.
-rules_haskell_toolchains()
+rules_haskell_toolchains(
+    locale = "en_US.UTF-8",
+    version = "8.2.2",
+)
+
+# Enable GHC persistent worker mode.
+# SEE: https://www.tweag.io/blog/2019-09-25-bazel-ghc-persistent-worker-internship/
+load("@rules_haskell//tools:repositories.bzl", "rules_haskell_worker_dependencies")
+
+rules_haskell_worker_dependencies()
+
+load(
+    "@rules_haskell//haskell:cabal.bzl",
+    "stack_snapshot",
+)
+
+# This call establishes a @stackage repository, and describes what packages
+# we use from Stackage. The resolver, as well as the non-Stackage packages
+# on which we depend, are specified in stack-snapshot.yaml.
+stack_snapshot(
+    name = "stackage",
+    local_snapshot = "//:stack-snapshot.yaml",
+    packages = [
+        "base",
+    ],
+)
