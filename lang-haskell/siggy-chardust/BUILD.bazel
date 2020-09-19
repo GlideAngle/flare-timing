@@ -1,0 +1,18 @@
+package(default_visibility = ["//visibility:public"])
+
+load(
+    "@rules_haskell//haskell:defs.bzl",
+    "haskell_toolchain_library",
+    "haskell_library",
+)
+
+haskell_toolchain_library(name = "base")
+
+haskell_library(
+    name = "siggy-chardust",
+    src_strip_prefix = "src",
+    srcs = glob(['src/**/*.hs']),
+    deps = [
+        "base"
+    ],
+)
