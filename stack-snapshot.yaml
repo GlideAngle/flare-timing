@@ -1,0 +1,4 @@
+resolver: lts-11.22
+allow-newer: True
+packages:
+- stm-2.4.5.0

@@ -4,15 +4,25 @@ load(
     "@rules_haskell//haskell:defs.bzl",
     "haskell_toolchain_library",
     "haskell_library",
+    "haskell_test",
 )
 
-haskell_toolchain_library(name = "base")
+haskell_toolchain_library(name = "base",)
 
 haskell_library(
     name = "siggy-chardust",
-    src_strip_prefix = "src",
-    srcs = glob(['src/**/*.hs']),
+    srcs = glob(['library/Rounding.hs']),
+    deps = ["base"],
+)
+
+haskell_test(
+    name = "digits",
+    srcs = glob(["test-suite-digits/Rounding.hs"]),
     deps = [
-        "base"
+        "@stackage//:tasty",
+        "@stackage//:tasty-hunit",
+        "@stackage//:tasty-quickcheck",
+        "@stackage//:tasty-smallcheck",
+        "@stackage//:smallcheck",
     ],
 )
