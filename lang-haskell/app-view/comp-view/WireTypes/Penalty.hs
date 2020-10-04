@@ -126,7 +126,6 @@ isJustReset (PenaltyReset x) = isJust x
 showEffectiveMul :: [PointPenalty Mul] -> T.Text
 showEffectiveMul = T.pack . show . effectiveMul
 
-
 showEffectiveAdd :: [PointPenalty Add] -> T.Text
 showEffectiveAdd = T.pack . show . effectiveAdd
 

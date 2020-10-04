@@ -96,8 +96,8 @@ rowPenalJump
     -> Dynamic t (Pilot, PenaltySeqs, Maybe JumpedTheGun)
     -> m ()
 rowPenalJump earliest ppp = do
-    let tdPoint = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
-    let tdReset = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
+    let tdPoint = elClass "td" "td-penalty" . text 
+    let tdReset = elClass "td" "td-penalty" . text
     dyn_ $ ffor ppp (\(pilot, PenaltySeqs{adds = pPoints, resets = pResets}, jump) -> el "tr" $ do
 
         let classEarly = ffor earliest (flip classOfEarlyStart $ jump)
@@ -119,7 +119,7 @@ rowPenalAuto
     => Dynamic t (Pilot, PenaltySeqs, String)
     -> m ()
 rowPenalAuto ppp = do
-    let td = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
+    let td = elClass "td" "td-penalty" . text
     dyn_ $ ffor ppp (\(pilot, PenaltySeqs{adds = pp}, reason) -> el "tr" $ do
         elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
@@ -134,7 +134,7 @@ rowPenal
     => Dynamic t (Pilot, PenaltySeqs, String)
     -> m ()
 rowPenal ppp = do
-    let td = elClass "td" "td-penalty" . text . T.pack . printf "%+.3f"
+    let td = elClass "td" "td-penalty" . text 
     dyn_ $ ffor ppp (\(pilot, PenaltySeqs{muls = p, adds = pp}, reason) -> el "tr" $ do
         elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
