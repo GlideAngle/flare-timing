@@ -5,7 +5,7 @@ module WireTypes.Penalty
     , Add, Mul, Reset
     , PenaltySeqs(..)
     , effectiveMul, effectiveAdd, effectiveReset
-    , showEffectiveMul, showEffectiveAdd, showEffectiveReset
+    , pprEffectiveMul, pprEffectiveAdd, pprEffectiveReset
     ) where
 
 import Text.Printf (printf)
@@ -34,6 +34,25 @@ instance Ord (PointPenalty a) where
     compare (PenaltyPoints x) (PenaltyPoints y) = x `compare` y
     compare (PenaltyReset x) (PenaltyReset y) = x `compare` y
 
+-- NOTE: For pretty printing penalized [-] or rewarded [+].
+pprPointPenalty :: PointPenalty a -> String
+pprPointPenalty (PenaltyFraction 1) = "* id"
+pprPointPenalty (PenaltyPoints 0) = "- id"
+pprPointPenalty (PenaltyReset Nothing) = "= id"
+
+-- | If positive then remove this fraction of points and if negative add this
+-- fraction of points.
+pprPointPenalty (PenaltyFraction x) =
+    if x < 0
+        then printf "+ %.3f*" x
+        else printf "- %.3f*" x
+
+pprPointPenalty (PenaltyPoints x) =
+    if x < 0
+        then printf "+ %.3f" (abs x)
+        else printf "- %.3f" x
+pprPointPenalty (PenaltyReset (Just x)) = printf "= %d" x
+
 instance Show (PointPenalty a) where
     show (PenaltyFraction 1) = "(* id)"
     show (PenaltyPoints 0) = "(+ id)"
@@ -42,8 +61,8 @@ instance Show (PointPenalty a) where
     show (PenaltyFraction x) = printf "(* %.3f)" x
     show (PenaltyPoints x) =
         if x < 0
-           then printf "(- %.3f)" (abs x)
-           else printf "(+ %.3f)" x
+            then printf "(- %.3f)" (abs x)
+            else printf "(+ %.3f)" x
     show (PenaltyReset (Just x)) = printf "(= %d)" x
 
 instance Num (PointPenalty Mul) where
@@ -123,12 +142,11 @@ effectiveReset =
 isJustReset :: PointPenalty Reset -> Bool
 isJustReset (PenaltyReset x) = isJust x
 
-showEffectiveMul :: [PointPenalty Mul] -> T.Text
-showEffectiveMul = T.pack . show . effectiveMul
+pprEffectiveMul :: [PointPenalty Mul] -> T.Text
+pprEffectiveMul = T.pack . pprPointPenalty . effectiveMul
 
-showEffectiveAdd :: [PointPenalty Add] -> T.Text
-showEffectiveAdd = T.pack . show . effectiveAdd
+pprEffectiveAdd :: [PointPenalty Add] -> T.Text
+pprEffectiveAdd = T.pack . pprPointPenalty . effectiveAdd
 
-showEffectiveReset :: [PointPenalty Reset] -> T.Text
-showEffectiveReset = T.pack . show . effectiveReset
-
+pprEffectiveReset :: [PointPenalty Reset] -> T.Text
+pprEffectiveReset = T.pack . pprPointPenalty . effectiveReset
