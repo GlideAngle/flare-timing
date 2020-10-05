@@ -63,31 +63,33 @@ trimmed XML, the `*.trim-fsdb.xml`. If we have the track logs we can score the
 tasks:
 
 1. Extract the inputs with
-[`extract-input`](lang-haskell/flare-timing/prod-apps/extract-input).  
+[`ft-extract-input`](lang-haskell/flare-timing/prod-apps/extract-input).  
 2. Trace the shortest path to fly a task with
-[`task-length`](lang-haskell/flare-timing/prod-apps/task-length).  
+[`ft-task-length`](lang-haskell/flare-timing/prod-apps/task-length).  
 3. Find pairs of fixes crossing over zones with
-[`cross-zone`](lang-haskell/flare-timing/prod-apps/cross-zone).  
+[`ft-cross-zone`](lang-haskell/flare-timing/prod-apps/cross-zone).  
 4. Interpolate between crossing fixes for the time and place where a track tags
-a zone with [`tag-zone`](lang-haskell/flare-timing/prod-apps/tag-zone).  
+a zone with [`ft-tag-zone`](lang-haskell/flare-timing/prod-apps/tag-zone).  
 5. Unpack the `*.igc` or `*.kml` tracklogs with
-[`unpack-track`](lang-haskell/flare-timing/prod-apps/unpack-track).  
+[`ft-unpack-track`](lang-haskell/flare-timing/prod-apps/unpack-track).  
 6. Peg the timing window to a reference frame with
-[`peg-frame`](lang-haskell/flare-timing/prod-apps/peg-frame).  
+[`ft-peg-frame`](lang-haskell/flare-timing/prod-apps/peg-frame).  
 7. Index fixes from the time of first crossing with
-[`align-time`](lang-haskell/flare-timing/prod-apps/align-time).  
+[`ft-align-time`](lang-haskell/flare-timing/prod-apps/align-time).  
 8. Discard fixes that get further from goal and note leading area with
-[`discard-further`](lang-haskell/flare-timing/prod-apps/discard-further).  
-9. Mask a task over its tracklogs with
-[`mask-track`](lang-haskell/flare-timing/prod-apps/mask-track).  
-10. Group and count land outs with
-[`land-out`](lang-haskell/flare-timing/prod-apps/land-out).  
-11. Score the competition with [`gap-point`](lang-haskell/flare-timing/prod-apps/gap-point).  
+[`ft-discard-further`](lang-haskell/flare-timing/prod-apps/discard-further).  
+9. Draw out leading areas 
+[`ft-area-step`](lang-haskell/flare-timing/prod-apps/area-step).  
+10. Mask a task over its tracklogs with
+[`ft-mask-track`](lang-haskell/flare-timing/prod-apps/mask-track).  
+11. Group and count land outs with
+[`ft-land-out`](lang-haskell/flare-timing/prod-apps/land-out).  
+12. Score the competition with [`ft-gap-point`](lang-haskell/flare-timing/prod-apps/gap-point).  
 
 To get the backend server for hosting the comp data running locally:
 
 Start the server with
-[`comp-serve`](lang-haskell/app-serve).  
+[`ftcomp-serve`](lang-haskell/app-serve).  
 
 To host the frontend web app for the comp locally:
 
