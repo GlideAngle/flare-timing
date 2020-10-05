@@ -1,8 +1,12 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ { name =
           "siggy-chardust"
+      , homepage =
+          mkHome "lang-haskell/siggy-chardust#readme"
       , version =
           "1.0.0"
       , synopsis =
@@ -11,10 +15,6 @@ in    defs
           "The round function from the prelude returns an integer. The standard librarys of C and C++ have round functions that return floating point numbers. Rounding in this library takes and returns rationals and can round to a number of significant digits or a number of decimal places."
       , category =
           "Data, Math, Numeric"
-      , github =
-          "blockscope/flare-timing/siggy-chardust"
-      , homepage =
-          "https://github.com/blockscope/flare-timing/tree/master/siggy-chardust#readme"
       , library =
           { source-dirs = "library", exposed-modules = "Data.Ratio.Rounding" }
       , tests =

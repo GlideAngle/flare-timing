@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7967a977638ccc4b0c56859fbeb29008a3b7f66f5d3451bb738bdd8ecdb54a1f
+-- hash: 726f8ab716c4b868da1746ae840695100037c1d9d4df06574a313c4ae26d7c8b
 
-name:           build-flare-timing
+name:           ft-build
 version:        0.1.0
 synopsis:       A shake build of flare-timing.
 description:    Builds the packages making up flare-timing.
 category:       Data, Parsing
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/build#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,14 +27,13 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: build
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False
   default: True
 
-executable build-flare-timing
+executable ft-build
   main-is: Main.hs
   other-modules:
       Driver
@@ -45,7 +44,7 @@ executable build-flare-timing
       Snack
       Target
       Web
-      Paths_build_flare_timing
+      Paths_ft_build
   hs-source-dirs:
       app-cmd
       library

@@ -1,4 +1,6 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in  let testdeps =
           [ "base"
@@ -35,14 +37,14 @@ in    defs
           { suppress-failing-tests = { manual = False, default = True } }
       , name =
           "flight-gap-allot"
+      , homepage =
+          mkHome "lang-haskell/gap-allot#readme"
       , synopsis =
           "GAP Scoring, allotment."
       , description =
           "GAP scoring for hang gliding and paragliding competitons, allot points available for each part."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/lang-haskell/gap-base"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"

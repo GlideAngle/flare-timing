@@ -1,17 +1,19 @@
-    let deps = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let deps = ./../defaults.dhall
 
 in    deps
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-latlng"
+      , homepage =
+          mkHome "lang-haskell/latlng#readme"
       , synopsis =
           "Latitude and longitude as used in hang gliding and paragliding competitions."
       , description =
           "Latitude and longitude."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/latlng"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , dependencies =

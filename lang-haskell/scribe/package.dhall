@@ -1,17 +1,19 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-scribe"
+      , homepage =
+          mkHome "lang-haskell/scribe#readme"
       , synopsis =
           "Hang gliding and paragliding competition scoring files."
       , description =
           "Reading and writing competition scoring files."
       , category =
           "Data"
-      , github =
-          "blockscope/flare-timing/scribe"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"

@@ -1,9 +1,13 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-kml"
+      , homepage =
+          mkHome "lang-haskell/kml#readme"
       , version =
           "1.1.0"
       , synopsis =
@@ -12,10 +16,6 @@ in    defs
           "Provides parsing of dumped tracklogs. In hang gliding and paragliding competitions when FS and GpsDump are paired in competition mode a pilot's tracklog is dumped as KML. This is exlained in detail on the FS wiki."
       , category =
           "Data, Parsing, Geography, Gps, Flight, XML, KML"
-      , github =
-          "blockscope/flare-timing/kml"
-      , homepage =
-          "https://github.com/blockscope/flare-timing/tree/master/kml#readme"
       , extra-source-files =
           defs.extra-source-files # [ "**/*.kml" ]
       , dependencies =

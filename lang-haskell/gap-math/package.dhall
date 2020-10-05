@@ -1,4 +1,6 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in  let testdeps =
           [ "base"
@@ -35,14 +37,14 @@ in    defs
           { suppress-failing-tests = { manual = False, default = True } }
       , name =
           "flight-gap-math"
+      , homepage =
+          mkHome "lang-haskell/gap-math#readme"
       , synopsis =
           "GAP Scoring, Math"
       , description =
           "GAP scoring for hang gliding and paragliding competitons, the math of how to add points and apply penalties."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/lang-haskell/gap-lead"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"

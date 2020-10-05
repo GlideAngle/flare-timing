@@ -1,17 +1,19 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-time"
+      , homepage =
+          mkHome "lang-haskell/time#readme"
       , synopsis =
           "Align times of competing pilot's tracklogs."
       , description =
           "From a defined start, align the times of pilots on track so that we can then work out the leading points."
       , category =
           "Data"
-      , github =
-          "blockscope/flare-timing/time"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , dependencies =

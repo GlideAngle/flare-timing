@@ -1,8 +1,12 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ { name =
           "detour-via-sci"
+      , homepage =
+          mkHome "lang-haskell/detour-via-sci#readme"
       , version =
           "1.0.1"
       , synopsis =
@@ -11,10 +15,6 @@ in    defs
           "Lossy JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places."
       , category =
           "Data, Math, Numeric, JSON, CSV"
-      , github =
-          "blockscope/flare-timing/detour-via-sci"
-      , homepage =
-          "https://github.com/blockscope/flare-timing/tree/master/detour-via-sci#readme"
       , dependencies =
             defs.dependencies
           # [ "newtype"

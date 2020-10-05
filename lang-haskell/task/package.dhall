@@ -1,18 +1,20 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in  let exts = ./../default-extensions.dhall
 
 in    defs
     ⫽ { name =
           "flight-task"
+      , homepage =
+          mkHome "lang-haskell/task#readme"
       , synopsis =
           "Tasks to fly."
       , description =
           "Tasks for hang gliding and paragliding competitons."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/task"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , default-extensions =

@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c6305a9892bfa2442fa99f6026119907bb37839d7393a7ea7db297478ec5a6a
+-- hash: 175262804ec4371bcea33bc07d1205d01e1548959ca129e41b37dba7197bff80
 
 name:           flight-units
 version:        0.1.0
 synopsis:       Units used in hang gliding and paragliding competitions.
 description:    Unit definitions such as m, km, rad and deg.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/units#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: units
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

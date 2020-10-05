@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e9cd585fb5301e68d8f6bae0d8252454192e8625b26170d991f0e90ba3f46df2
+-- hash: 1b8af30e4d36e76635389f85cd9de69a658cd3b34653437d19a0cb91c74664bc
 
 name:           flight-gap
 version:        0.1.0
 synopsis:       GAP Scoring.
 description:    GAP scoring for hang gliding and paragliding competitons.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/gap#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: gap
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

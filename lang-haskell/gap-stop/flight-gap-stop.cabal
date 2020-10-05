@@ -1,18 +1,18 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 28b39275c21df15e0f1a268350f5600f33862a01affb645e79154deb7d8e7036
+-- hash: 845f78521605b3628ac791c491f3fde8d41ead6cdb161ed604b0d5264b1a2aa2
 
 name:           flight-gap-stop
 version:        0.1.0
 synopsis:       GAP Scoring, Stopped
 description:    GAP scoring for hang gliding and paragliding competitons, stopped tasks.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-lead#readme
-bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-lead/issues
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/gap-stop#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
@@ -27,7 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-lead
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

@@ -1,4 +1,6 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in  let testdeps =
           [ "base"
@@ -35,14 +37,14 @@ in    defs
           { suppress-failing-tests = { manual = False, default = True } }
       , name =
           "flight-gap"
+      , homepage =
+          mkHome "lang-haskell/gap#readme"
       , synopsis =
           "GAP Scoring."
       , description =
           "GAP scoring for hang gliding and paragliding competitons."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/gap"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"

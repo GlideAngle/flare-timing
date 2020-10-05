@@ -55,20 +55,20 @@ in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "app-serve"
+      , homepage =
+          "https://github.com/blockscope/flare-timing/lang-haskell/app-serve#readme"
       , synopsis =
           "A collection of apps and libraries for scoring hang gliding and paragliding competitions."
       , description =
           "Scoring and viewing hang gliding and paragliding competitions."
       , category =
           "Data, Parsing"
-      , github =
-          "blockscope/flare-timing/app-serve"
       , dependencies =
           defs.dependencies
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , executables =
-          { comp-py =
+          { ft-comp-py =
               { dependencies =
                   deps # [ "servant-py" ]
               , other-modules =
@@ -84,7 +84,7 @@ in    defs
               , source-dirs =
                   "src"
               }
-          , comp-serve =
+          , ft-comp-serve =
               { dependencies =
                   deps
               , ghc-options =

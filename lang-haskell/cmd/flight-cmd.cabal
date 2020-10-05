@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d89d1429d21eda56a130339cf7583c8d1f3417ca46cb0fe637da5cce44295891
+-- hash: 019866803d78201def41149bc030b6acf9178c9d82ee07a5782c2d5fb52cef5f
 
 name:           flight-cmd
 version:        0.1.0
 synopsis:       Command line options.
 description:    Command line options such as file or directory, task or pilot.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/cmd#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: cmd
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

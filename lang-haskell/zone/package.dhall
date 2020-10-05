@@ -1,19 +1,19 @@
--- NOTE: The serial test works fine locally but on travis-ci.org it fails
--- ghc: could not execute: tasty-discover
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-zone"
+      , homepage =
+          mkHome "lang-haskell/zone#readme"
       , synopsis =
           "Control zones to fly."
       , description =
           "Control zones for hang gliding and paragliding competitons."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/zone"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , dependencies =

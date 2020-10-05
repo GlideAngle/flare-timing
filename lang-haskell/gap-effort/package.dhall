@@ -1,4 +1,6 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in  let testdeps =
           [ "base"
@@ -35,14 +37,14 @@ in    defs
           { suppress-failing-tests = { manual = False, default = True } }
       , name =
           "flight-gap-effort"
+      , homepage =
+          mkHome "lang-haskell/gap-effort#readme"
       , synopsis =
           "GAP Scoring, Effort"
       , description =
           "GAP scoring for hang gliding and paragliding competitons, the effort (distance difficulty) parts."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/lang-haskell/gap-validity"
       , ghc-options =
           [ "-Wall"
           , "-fplugin Data.UnitsOfMeasure.Plugin"

@@ -1,17 +1,19 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-route"
+      , homepage =
+          mkHome "lang-haskell/route#readme"
       , synopsis =
           "Control zones to fly."
       , description =
           "Control zones for hang gliding and paragliding competitons."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/route"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , dependencies =

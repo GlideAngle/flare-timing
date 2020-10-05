@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 19fae5658c7c8bda3006ae1146075b2f741d8aaab7a9ad7137b8123c20438238
+-- hash: e499f9cefed080d9a3446d8cf0f2097e4c77625ac6105116b3ffdd408aa8fdd4
 
 name:           detour-via-uom
 version:        1.0.1
 synopsis:       JSON and CSV encoding for quantities.
 description:    Lossy JSON and CSV encoding and decoding for newtype quantities via scientific with fixed decimal places and with units.
 category:       Data, Math, Numeric, JSON, CSV, Physics
-homepage:       https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/detour-via-uom#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: detour-via-uom
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

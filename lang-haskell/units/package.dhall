@@ -1,17 +1,19 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-units"
+      , homepage =
+          mkHome "lang-haskell/units#readme"
       , synopsis =
           "Units used in hang gliding and paragliding competitions."
       , description =
           "Unit definitions such as m, km, rad and deg."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/units"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , dependencies =

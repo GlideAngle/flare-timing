@@ -1,4 +1,6 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in  let opts = [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
 
@@ -7,14 +9,14 @@ in  let exts = ./../default-extensions.dhall
 in    defs
     ⫽ { name =
           "flight-earth"
+      , homepage =
+          mkHome "lang-haskell/earth#readme"
       , synopsis =
           "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection."
       , description =
           "Distances on the Earth for hang gliding and paragliding competitons."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/earth"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , default-extensions =

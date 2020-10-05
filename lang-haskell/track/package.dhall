@@ -1,17 +1,19 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-track"
+      , homepage =
+          mkHome "lang-haskell/track#readme"
       , synopsis =
           "Hang gliding and paragliding competition track logs."
       , description =
           "Reading track logs for each pilot in each task of a competition."
       , category =
           "Data"
-      , github =
-          "blockscope/flare-timing/track"
       , extra-source-files =
           defs.extra-source-files # [ "**/*.igc" ]
       , dependencies =

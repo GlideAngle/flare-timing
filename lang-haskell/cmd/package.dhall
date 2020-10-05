@@ -1,17 +1,19 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-cmd"
+      , homepage =
+          mkHome "lang-haskell/cmd#readme"
       , synopsis =
           "Command line options."
       , description =
           "Command line options such as file or directory, task or pilot."
       , category =
           "Flight"
-      , github =
-          "blockscope/flare-timing/cmd"
       , dependencies =
             defs.dependencies
           # [ "directory"

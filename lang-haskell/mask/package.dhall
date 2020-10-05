@@ -1,18 +1,20 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in  let exts = ./../default-extensions.dhall
 
 in    defs
     ⫽ { name =
           "flight-mask"
+      , homepage =
+          mkHome "lang-haskell/mask#readme"
       , synopsis =
           "Track logs masked by competition task zones."
       , description =
           "Masking tracks with zones, work out; did the pilot launch, did they make goal and how long did that take? What was distance to goal?"
       , category =
           "Data"
-      , github =
-          "blockscope/flare-timing/mask"
       , extra-source-files =
           defs.extra-source-files # [ "**/*.yaml" ]
       , ghc-options =

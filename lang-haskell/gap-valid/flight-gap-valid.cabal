@@ -1,18 +1,18 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 335b529f9b897831f5f0dc1cf8b8002c7d2edf1df5d208f6b5b29a54f044f877
+-- hash: cf63f0b0198b90820f60ef5c95640f7793079102f667a566db2973a22053b062
 
 name:           flight-gap-valid
 version:        0.1.0
 synopsis:       GAP Scoring Validities
 description:    GAP scoring for hang gliding and paragliding competitons, the validity parts.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-validity#readme
-bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-validity/issues
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/gap-valid#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
@@ -27,7 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-validity
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

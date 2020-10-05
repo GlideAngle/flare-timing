@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 01e21ee9877279f7fa859b962085e8dfbffd69fa3db18035613f89d9cdd0790e
+-- hash: 351c687b3ca8a1d6e8e3207d586383b3f3bc6cfc5d1a0535b9eb20f130af8796
 
 name:           flight-fsdb
 version:        0.1.0
 synopsis:       A parser for fsdb, the database XML format of FS.
 description:    Hang gliding and paragliding competitors, tasks and results as XML.
 category:       Data, Parsing
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/fsdb#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: fsdb
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 76f4c797837744fc44768f638af946619ad11c4d8d3318f1586fca25c4f17cf7
+-- hash: c2677d778d237054987cf01e05dbd90b15b0cbce40c308c6c42aa2be94c62a74
 
 name:           app-serve
 version:        0.1.0
 synopsis:       A collection of apps and libraries for scoring hang gliding and paragliding competitions.
 description:    Scoring and viewing hang gliding and paragliding competitions.
 category:       Data, Parsing
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/blockscope/flare-timing/lang-haskell/app-serve#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,14 +27,13 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: app-serve
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False
   default: True
 
-executable comp-py
+executable ft-comp-py
   main-is: GenPyClient.hs
   other-modules:
       ServeApi
@@ -100,7 +99,7 @@ executable comp-py
     , yaml
   default-language: Haskell2010
 
-executable comp-serve
+executable ft-comp-serve
   main-is: ServeMain.hs
   other-modules:
       ServeApi

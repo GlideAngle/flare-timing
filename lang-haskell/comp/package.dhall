@@ -1,17 +1,19 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-comp"
+      , homepage =
+          mkHome "lang-haskell/comp#readme"
       , synopsis =
           "Hang gliding and paragliding competition scoring inputs."
       , description =
           "Hang gliding and paragliding competitors and tasks."
       , category =
           "Data"
-      , github =
-          "blockscope/flare-timing/comp"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , dependencies =

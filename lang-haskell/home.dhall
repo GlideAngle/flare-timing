@@ -1,0 +1,1 @@
+λ(s : Text) → "https://github.com/BlockScope/flare-timing/tree/master/" ++ s

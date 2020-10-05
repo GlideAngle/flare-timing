@@ -25,7 +25,7 @@ dhallCabal =
 
     [ ("lang-haskell/detour-via-sci", "detour-via-sci")
     , ("lang-haskell/detour-via-uom", "detour-via-uom")
-    , ("lang-haskell/build", "build-flare-timing")
+    , ("lang-haskell/build", "ft-build")
     , ("lang-haskell/cmd", "flight-cmd")
     , ("lang-haskell/clip", "flight-clip")
     , ("lang-haskell/comp", "flight-comp")

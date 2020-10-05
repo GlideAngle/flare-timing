@@ -37,14 +37,14 @@ in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flare-timing"
+      , homepage =
+          "https://github.com/BlockScope/flare-timing#readme"
       , synopsis =
           "A collection of apps and libraries for scoring hang gliding and paragliding competitions."
       , description =
           "Scoring and viewing hang gliding and paragliding competitions."
       , category =
           "Data, Parsing"
-      , github =
-          "blockscope/flare-timing/flare-timing"
       , flags =
           { suppress-failing-tests =
               { manual = False, default = True }
@@ -52,7 +52,7 @@ in    defs
               { manual = False, default = True }
           }
       , executables =
-          { extract-input =
+          { ft-extract-input =
               { dependencies =
                     deps
                   # [ "flight-earth"
@@ -161,7 +161,7 @@ in    defs
               , source-dirs =
                   "prod-apps/fs-score"
               }
-          , task-length =
+          , ft-task-length =
               { dependencies =
                     deps
                   # [ "safe-exceptions"
@@ -182,7 +182,7 @@ in    defs
               , source-dirs =
                   "prod-apps/task-length"
               }
-          , cross-zone =
+          , ft-cross-zone =
               { dependencies =
                     deps
                   # [ "lens"
@@ -206,7 +206,7 @@ in    defs
               , source-dirs =
                   "prod-apps/cross-zone"
               }
-          , tag-zone =
+          , ft-tag-zone =
               { dependencies =
                     deps
                   # [ "safe-exceptions"
@@ -228,7 +228,7 @@ in    defs
               , source-dirs =
                   "prod-apps/tag-zone"
               }
-          , unpack-track =
+          , ft-unpack-track =
               { dependencies =
                     deps
                   # [ "lens"
@@ -251,7 +251,7 @@ in    defs
               , source-dirs =
                   "prod-apps/unpack-track"
               }
-          , peg-frame =
+          , ft-peg-frame =
               { dependencies =
                     deps
                   # [ "containers"
@@ -272,7 +272,7 @@ in    defs
               , source-dirs =
                   "prod-apps/peg-frame"
               }
-          , align-time =
+          , ft-align-time =
               { dependencies =
                     deps
                   # [ "lens"
@@ -295,7 +295,7 @@ in    defs
               , source-dirs =
                   "prod-apps/align-time"
               }
-          , discard-further =
+          , ft-discard-further =
               { dependencies =
                     deps
                   # [ "safe-exceptions"
@@ -319,7 +319,7 @@ in    defs
               , source-dirs =
                   "prod-apps/discard-further"
               }
-          , area-step =
+          , ft-area-step =
               { dependencies =
                     deps
                   # [ "safe-exceptions"
@@ -344,7 +344,7 @@ in    defs
               , source-dirs =
                   "prod-apps/area-step"
               }
-          , mask-track =
+          , ft-mask-track =
               { dependencies =
                     deps
                   # [ "containers"
@@ -378,7 +378,7 @@ in    defs
               , source-dirs =
                   "prod-apps/mask-track"
               }
-          , land-out =
+          , ft-land-out =
               { dependencies =
                     deps
                   # [ "safe-exceptions"
@@ -397,7 +397,7 @@ in    defs
               , source-dirs =
                   "prod-apps/land-out"
               }
-          , gap-point =
+          , ft-gap-point =
               { dependencies =
                     deps
                   # [ "containers"
@@ -428,7 +428,7 @@ in    defs
               , source-dirs =
                   "prod-apps/gap-point"
               }
-          , test-fsdb-parser =
+          , ft-fsdb-parser =
               { dependencies =
                   depsTest # [ "uom-plugin", "flight-fsdb", "flight-units" ]
               , ghc-options =
@@ -444,7 +444,7 @@ in    defs
                       False
                   }
               }
-          , test-igc-parser =
+          , ft-igc-parser =
               { dependencies =
                   depsTest # [ "flight-igc" ]
               , ghc-options =
@@ -460,7 +460,7 @@ in    defs
                       False
                   }
               }
-          , test-kml-parser =
+          , ft-kml-parser =
               { dependencies =
                   depsTest # [ "flight-kml" ]
               , ghc-options =

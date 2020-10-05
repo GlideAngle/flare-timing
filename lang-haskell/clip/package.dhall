@@ -1,9 +1,13 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-clip"
+      , homepage =
+          mkHome "lang-haskell/clip#readme"
       , version =
           "1.1.0"
       , synopsis =
@@ -12,10 +16,6 @@ in    defs
           "Provides types and typeclasses for clipping a tracklog."
       , category =
           "Data, Parsing, Flight"
-      , github =
-          "blockscope/flare-timing/clip"
-      , homepage =
-          "https://github.com/blockscope/flare-timing/tree/master/clip#readme"
       , dependencies =
           defs.dependencies # [ "split", "time" ]
       , library =

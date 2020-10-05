@@ -1,8 +1,12 @@
-    let defs = ./../defaults.dhall
+    let mkHome = ./../home.dhall
+
+in  let defs = ./../defaults.dhall
 
 in    defs
     ⫽ { name =
           "detour-via-uom"
+      , homepage =
+          mkHome "lang-haskell/detour-via-uom#readme"
       , version =
           "1.0.1"
       , synopsis =
@@ -11,10 +15,6 @@ in    defs
           "Lossy JSON and CSV encoding and decoding for newtype quantities via scientific with fixed decimal places and with units."
       , category =
           "Data, Math, Numeric, JSON, CSV, Physics"
-      , github =
-          "blockscope/flare-timing/detour-via-uom"
-      , homepage =
-          "https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme"
       , ghc-options =
           [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , dependencies =

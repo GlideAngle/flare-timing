@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 32c7ca0a4a98f741ee2ea0ee5bd55d93f7bd5c9b28b5282cfcd907b30a02079d
+-- hash: 170582a4e0938ac1c2970b60ccda44b9ab589e7dee481bbb7b8e357d99e61719
 
 name:           flight-scribe
 version:        0.1.0
 synopsis:       Hang gliding and paragliding competition scoring files.
 description:    Reading and writing competition scoring files.
 category:       Data
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/scribe#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: scribe
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False
