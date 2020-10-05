@@ -89,7 +89,7 @@ a zone with [`ft-tag-zone`](lang-haskell/flare-timing/prod-apps/tag-zone).
 To get the backend server for hosting the comp data running locally:
 
 Start the server with
-[`ftcomp-serve`](lang-haskell/app-serve).  
+[`ft-comp-serve`](lang-haskell/app-serve).  
 
 To host the frontend web app for the comp locally:
 
