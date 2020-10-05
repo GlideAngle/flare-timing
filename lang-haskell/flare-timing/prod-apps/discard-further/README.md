@@ -1,6 +1,6 @@
 ### Discard Further 
 
-    $ __shake-build/discard-further --help
+    $ ft-discard-further --help
 
     From competition inputs '.comp-input.yaml', finds the aligned time '.csv' files
     for each pilot. Keeping only tick and distance columns, initial zero distance
@@ -14,7 +14,7 @@
     all tasks are processed. The same thing goes if a list of pilots is supplied or
     not.
 
-    discard-further [OPTIONS]
+    ft-discard-further [OPTIONS]
 
     Source:
       -d --dir=ITEM            Over all the competition *.comp.yaml files in this

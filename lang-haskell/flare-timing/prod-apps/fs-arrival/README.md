@@ -1,6 +1,6 @@
 ### Extracting Scoring Inputs
 
-    $ __shake-build/fs-arrival --help
+    $ fs-arrival --help
 
     Extracts the arrival time, position and fraction from a competition.
 

@@ -1,6 +1,6 @@
 ### Extracting Scoring Inputs
 
-    $ __shake-build/fs-route --help
+    $ fs-route --help
 
     Extracts the expected or normative optimal routes from a competition.
 

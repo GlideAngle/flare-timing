@@ -1,6 +1,6 @@
 ### Landing Out 
 
-    $ __shake-build/land-out --help
+    $ ft-land-out --help
 
     Group and count land outs.
 
@@ -13,7 +13,7 @@
 
     The same thing goes if a list of pilots is supplied or not.
 
-    land-out [OPTIONS]
+    ft-land-out [OPTIONS]
 
     Source:
       -d --dir=ITEM          Over all *.comp.yaml files in this directory

@@ -1,6 +1,6 @@
 ### Align Times
 
-    $ __shake-build/align-time --help
+    $ ft-align-time --help
 
     From competition inputs '.comp-input.yaml', relative track logs '.kml' and
     tagged zones '.tag-zone.yaml', writes each fix to a single '.csv' per-pilot
@@ -20,7 +20,7 @@
         Reads  ./k/p.kml
         Writes ./flare-timing/align-time/task-n/p.csv
 
-    align-time [OPTIONS]
+    ft-align-time [OPTIONS]
 
     Source:
       -d --dir=ITEM            Over all the competition *.comp.yaml files in this

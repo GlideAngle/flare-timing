@@ -1,6 +1,6 @@
 ### Extracting Scoring Inputs
 
-    $ __shake-build/fs-score --help
+    $ fs-score --help
 
     Extracts the expected or normative scores from a competition.
 

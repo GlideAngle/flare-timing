@@ -1,6 +1,6 @@
 ### Extracting Scoring Inputs
 
-    $ __shake-build/fs-route --help
+    $ fs-route --help
 
     Extracts the distance difficulty chunking from a competition.
 

@@ -1,6 +1,6 @@
 ### Masking Tracks
 
-    $ __shake-build/mask-track --help
+    $ ft-mask-track --help
 
     By masking the track logs with the zones, works out;
     * if the pilot launched
@@ -23,7 +23,7 @@
     all tasks are processed. The same thing goes if a list of pilots is supplied or
     not.    
 
-    mask-track [OPTIONS]
+    ft-mask-track [OPTIONS]
 
     Source:
       -d --dir=ITEM            Over all the competition *.comp.yaml files in this
