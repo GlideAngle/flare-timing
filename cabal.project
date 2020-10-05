@@ -1,12 +1,20 @@
 with-compiler: ghc-8.2.2
 packages:
-      lang-haskell/clip
-    , lang-haskell/cmd
-    , lang-haskell/comp
+      lang-haskell/build
+
     , lang-haskell/detour-via-sci
     , lang-haskell/detour-via-uom
+    , lang-haskell/tasty-compare
+    , lang-haskell/siggy-chardust
+
+    , lang-haskell/hcoord/hcoord
+    , lang-haskell/hcoord/hcoord-utm
+    , lang-haskell/exact-real
+
+    , lang-haskell/clip
+    , lang-haskell/cmd
+    , lang-haskell/comp
     , lang-haskell/earth
-    , lang-haskell/flare-timing
     , lang-haskell/fsdb
     , lang-haskell/gap-allot
     , lang-haskell/gap-effort
@@ -23,17 +31,15 @@ packages:
     , lang-haskell/mask
     , lang-haskell/route
     , lang-haskell/scribe
-    , lang-haskell/siggy-chardust
     , lang-haskell/span
     , lang-haskell/task
-    , lang-haskell/tasty-compare
     , lang-haskell/time
     , lang-haskell/track
     , lang-haskell/units
     , lang-haskell/zone
-    , lang-haskell/hcoord/hcoord
-    , lang-haskell/hcoord/hcoord-utm
-    , lang-haskell/exact-real
+
+    , lang-haskell/flare-timing
+
 package flight-clip
     tests: true
 package flight-cmd

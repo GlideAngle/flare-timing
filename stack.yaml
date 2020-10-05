@@ -86,8 +86,16 @@ flags:
 tested-with: GHC == 8.2.2
 packages:
 - lang-haskell/build
+
 - lang-haskell/detour-via-sci
 - lang-haskell/detour-via-uom
+- lang-haskell/tasty-compare
+- lang-haskell/siggy-chardust
+
+- lang-haskell/hcoord/hcoord
+- lang-haskell/hcoord/hcoord-utm
+- lang-haskell/exact-real
+
 - lang-haskell/clip
 - lang-haskell/cmd
 - lang-haskell/comp
@@ -108,16 +116,12 @@ packages:
 - lang-haskell/mask
 - lang-haskell/route
 - lang-haskell/scribe
-- lang-haskell/siggy-chardust
 - lang-haskell/span
 - lang-haskell/task
-- lang-haskell/tasty-compare
 - lang-haskell/time
 - lang-haskell/track
 - lang-haskell/units
 - lang-haskell/zone
+
 - lang-haskell/flare-timing
 - lang-haskell/app-serve
-- lang-haskell/hcoord/hcoord
-- lang-haskell/hcoord/hcoord-utm
-- lang-haskell/exact-real
