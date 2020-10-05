@@ -60,7 +60,8 @@ xpTweak discipline =
             in
                 Tweak
                     { leadingWeightScaling = ls'
-                    , leadingAreaDistanceSquared = fromMaybe False lsq
+                    -- NOTE: The default is to use the square of leading area distance.
+                    , leadingAreaDistanceSquared = fromMaybe True lsq
                     , arrivalRank = ar && discipline /= Paragliding
                     , arrivalTime = at && discipline /= Paragliding
                     }
