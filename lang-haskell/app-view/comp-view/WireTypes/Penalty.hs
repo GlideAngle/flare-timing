@@ -40,17 +40,18 @@ pprPointPenalty (PenaltyFraction 1) = "* id"
 pprPointPenalty (PenaltyPoints 0) = "- id"
 pprPointPenalty (PenaltyReset Nothing) = "= id"
 
--- | If positive then remove this fraction of points and if negative add this
--- fraction of points.
-pprPointPenalty (PenaltyFraction x) =
-    if x < 0
-        then printf "+ %.3f*" x
-        else printf "- %.3f*" x
+-- | Convert from scaling to fraction of points.
+-- The inverse of the function f(x) = 1 - x is f(x) = 1 - x.
+pprPointPenalty (PenaltyFraction x) = let y = 1 - x in
+    if y < 0
+        then printf "+ %.3f*" y
+        else printf "- %.3f*" y
 
 pprPointPenalty (PenaltyPoints x) =
     if x < 0
         then printf "+ %.3f" (abs x)
         else printf "- %.3f" x
+
 pprPointPenalty (PenaltyReset (Just x)) = printf "= %d" x
 
 instance Show (PointPenalty a) where

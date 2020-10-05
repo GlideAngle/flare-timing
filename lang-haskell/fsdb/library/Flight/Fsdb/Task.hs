@@ -126,15 +126,15 @@ xpPointPenalty =
         ( \case
             -- WARNING: Zero for the penalty fraction means don't apply
             -- a fraction. If this were a fraction we'd be multiplying by one.
+            -- NOTE: We convert penalties to scalings when fractions with f(x) = 1 - x.
             (0.0, 0.0, s) -> (idSeq, s)
-            (frac, 0.0, s) -> (mulSeq frac, s)
+            (frac, 0.0, s) -> (mulSeq (1.0 - frac), s)
             (0.0, pts, s) -> (addSeq pts, s)
-            (frac, pts, s) ->
-                (idSeq{mul = mkMul frac, add = mkAdd pts}, s)
+            (frac, pts, s) -> (idSeq{mul = mkMul (1.0 - frac), add = mkAdd pts}, s)
         , \(PenaltySeq{mul, add = y}, s) ->
                 case mul of
                     (idMul -> True) -> (0.0, exAdd y, s)
-                    x -> (exMul x, exAdd y, s)
+                    x -> (1.0 - exMul x, exAdd y, s)
         )
     $ xpTriple
         (xpAttr "penalty" xpPrim)

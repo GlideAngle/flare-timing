@@ -81,13 +81,14 @@ data Reset
 
 data PointPenalty a where
 
-    -- | If positive then remove this fraction of points and if negative add this
-    -- fraction of points. Unlike FS that uses 0 as a sentinel value meaning no
-    -- penalty in all penalty applications, for a fraction we're using the
-    -- identity of multiplication here for that purpose.
+    -- | Strictly a multiplication of the score so a penalty would normally be
+    -- between 0 .. 1 and a bonus greater than one. Unlike FS that uses 0 as a
+    -- sentinel value meaning no penalty in all penalty applications, for a
+    -- fraction we're using the identity of multiplication here for that
+    -- purpose.
     PenaltyFraction :: CReal -> PointPenalty Mul
 
-    -- | If positive then remove this number of points and if negative add this
+    -- | If positive then add this number of points and if negative remove this
     -- number of points.
     PenaltyPoints :: CReal -> PointPenalty Add
 
