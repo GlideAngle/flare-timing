@@ -187,8 +187,8 @@ showJumpedTheGunTime :: Maybe JumpedTheGun -> T.Text
 showJumpedTheGunTime Nothing = ""
 showJumpedTheGunTime (Just (JumpedTheGun s)) = showHmsForSecs s
 
--- | Positive penalties (demerits) are shown as negative amounts and negative
--- penalties (bonuses) are shown as positive amounts.
+-- | Negative adds (demerits) are shown as negative amounts and positive adds
+-- (bonuses) are shown as positive amounts.
 showJumpedTheGunPenalty :: Int -> PenaltySeqs -> T.Text
 showJumpedTheGunPenalty dp PenaltySeqs{adds, resets} =
     T.pack $

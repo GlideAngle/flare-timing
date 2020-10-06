@@ -110,7 +110,7 @@ jumpTheGunSitRepHg
     -> Either (PointPenalty Add) (SitRep Hg)
 jumpTheGunSitRepHg pts (JumpTheGunLimit secsMax) spp jtg@(JumpedTheGun jump)
     | jump > secsMax = Right (JumpedTooEarly pts)
-    | otherwise = Left . mkAdd $ jumpTheGunPenalty spp jtg
+    | otherwise = Left . mkAdd . negate $ jumpTheGunPenalty spp jtg
 
 jumpTheGunSitRepPg
     :: LaunchToStartPoints
@@ -227,11 +227,11 @@ reconcileJumped p@(Jumped spp jtg) j@((==) idSeq -> True) ps points =
 reconcileJumped p@(JumpedNoGoal spp jtg) j@((==) idSeq -> True) ps points =
     reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 reconcileJumped p@(Jumped spp jtg) (seqOnlyAdds -> Just j) ps points =
-    if jumpTheGunPenalty spp jtg /= exAdd j then
+    if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
 reconcileJumped p@(JumpedNoGoal spp jtg) (seqOnlyAdds -> Just j) ps points =
-    if jumpTheGunPenalty spp jtg /= exAdd j then
+    if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
 reconcileJumped p j ps _ =
