@@ -107,8 +107,8 @@ xpPointPenaltyAuto =
     $ xpWrap
         ( \case
             (0.0, s) -> (idSeq, s)
-            (pts, s) -> (addSeq pts, s)
-        , \(PenaltySeq{add}, s) -> (exAdd add, s)
+            (pts, s) -> (addSeq $ negate pts, s)
+        , \(PenaltySeq{add}, s) -> (exAdd $ negate add, s)
         )
     $ xpPair
         (xpAttr "penalty_points_auto" xpPrim)
@@ -129,12 +129,12 @@ xpPointPenalty =
             -- NOTE: We convert penalties to scalings when fractions with f(x) = 1 - x.
             (0.0, 0.0, s) -> (idSeq, s)
             (frac, 0.0, s) -> (mulSeq (1.0 - frac), s)
-            (0.0, pts, s) -> (addSeq pts, s)
-            (frac, pts, s) -> (idSeq{mul = mkMul (1.0 - frac), add = mkAdd pts}, s)
+            (0.0, pts, s) -> (addSeq $ negate pts, s)
+            (frac, pts, s) -> (idSeq{mul = mkMul (1.0 - frac), add = mkAdd $ negate pts}, s)
         , \(PenaltySeq{mul, add = y}, s) ->
                 case mul of
-                    (idMul -> True) -> (0.0, exAdd y, s)
-                    x -> (1.0 - exMul x, exAdd y, s)
+                    (idMul -> True) -> (0.0, exAdd $ negate y, s)
+                    x -> (1.0 - exMul x, exAdd $ negate y, s)
         )
     $ xpTriple
         (xpAttr "penalty" xpPrim)

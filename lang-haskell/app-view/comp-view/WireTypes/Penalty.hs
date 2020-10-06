@@ -49,8 +49,11 @@ pprPointPenalty (PenaltyFraction x) = let y = 1 - x in
 
 pprPointPenalty (PenaltyPoints x) =
     if x < 0
-        then printf "+ %.3f" (abs x)
-        else printf "- %.3f" x
+        -- NOTE: The + printf flag will show the sign symbol. I want the symbol
+        -- then a space before the number. The sign here is showing whether it
+        -- is a penalty or a bonus.
+        then printf "- %.3f" (abs x)
+        else printf "+ %.3f" x
 
 pprPointPenalty (PenaltyReset (Just x)) = printf "= %d" x
 
