@@ -29,7 +29,7 @@ import Text.Printf (printf)
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure ((/:), u)
+import Data.UnitsOfMeasure ((/:), u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Points.Distance
@@ -99,8 +99,11 @@ jumpTheGunPenalty
     :: SecondsPerPoint (Quantity Double [u| s |])
     -> JumpedTheGun (Quantity Double [u| s |])
     -> Double
-jumpTheGunPenalty (SecondsPerPoint secs) (JumpedTheGun jump) =
-    let (MkQuantity penalty) = jump /: secs in penalty
+jumpTheGunPenalty (SecondsPerPoint secs) (JumpedTheGun jump)
+    -- WARNING: Some comps will have jump_the_gun_factor="0" as a sentinel value
+    -- to turn off jump the gun.
+    | secs > [u| 0 s |] = let (MkQuantity penalty) = jump /: secs in penalty
+    | otherwise = 0
 
 jumpTheGunSitRepHg
     :: TooEarlyPoints
@@ -131,6 +134,7 @@ data ReconcilePointErrors
     | WAT_NoGoal_Hg (SitRep Hg, PenaltySeq)
     | WAT_NoGoal_Pg (SitRep Pg, PenaltySeq)
     | WAT_Jumped (SitRep Hg, PenaltySeq, PenaltySeqs)
+    | WAT_Jumped_Seconds_Per_Point (SitRep Hg)
     | EQ_Jumped_Point (SitRep Hg, PointPenalty Add)
     deriving Eq
 
@@ -155,6 +159,8 @@ instance Show ReconcilePointErrors where
         printf "ESS but no goal PG with unexpected jump penalties %s" (show e)
     show (WAT_Jumped e) =
         printf "Early HG with unexpected jump penalties of %s" (show e)
+    show (WAT_Jumped_Seconds_Per_Point e) =
+        printf "Early HG with unexpected jump seconds per point %s" (show e)
     show (EQ_Jumped_Point e) =
         printf "Early HG with jump points /= seconds per point * seconds from %s" (show e)
 
@@ -222,6 +228,8 @@ reconcileJumped
     -> PenaltySeqs -- ^ Other penalties.
     -> Points
     -> Either ReconcilePointErrors PointsReduced
+reconcileJumped p@((\(Jumped (SecondsPerPoint spp) _) -> spp <= zero) -> True) _ _ _ =
+    Left $ WAT_Jumped_Seconds_Per_Point p
 reconcileJumped p@(Jumped spp jtg) j@((==) idSeq -> True) ps points =
     reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 reconcileJumped p@(JumpedNoGoal spp jtg) j@((==) idSeq -> True) ps points =
@@ -295,8 +303,15 @@ taskPoints s js ps points
     | NominalPg <- s = reconcileNominal WAT_Nominal_Pg NominalPg js ps points
     | NoGoalHg <- s = reconcileNoGoal WAT_NoGoal_Hg NoGoalHg js ps points
     | NoGoalPg <- s = reconcileNoGoal WAT_NoGoal_Pg NoGoalPg js ps points
-    | Jumped{} <- s = reconcileJumped s js ps points
-    | JumpedNoGoal{} <- s = reconcileJumped s js ps points
+
+    -- WARNING: Some comps will have jump the gun settings where seconds per
+    -- point is zero. This is a sentinel value for turning off jump the gun
+    -- penalties.
+    | (Jumped (SecondsPerPoint spp) _) <- s
+    , spp > zero = reconcileJumped s js ps points
+    | (JumpedNoGoal (SecondsPerPoint spp) _) <- s
+    , spp > zero = reconcileJumped s js ps points
+    
     | otherwise = Right $ reconcile s js ps points
 
 isPg :: SitRep a -> Bool
