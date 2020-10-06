@@ -8,7 +8,7 @@ import Control.Arrow ((***))
 import Control.Monad (join)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
-    , unpickleDoc', xpWrap, xpElem, xpAttr, xpOption, xpFilterAttr, xp5Tuple
+    , unpickleDoc', xpWrap, xpElem, xpAttr, xpTextAttr, xpOption, xpFilterAttr, xp6Tuple
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -35,18 +35,36 @@ import "flight-gap-weight" Flight.Score (LwScaling(..))
 import Flight.Track.Lead (lwScalingDefault)
 import Flight.Fsdb.Internal.XmlPickle (xpBool)
 
+-- | The default is to use the square of leading area distance since 2016.
+leadingSquareAreaDefault :: String -> Bool
+leadingSquareAreaDefault formula = not $ formula `elem` xs where
+    xs =
+        [ "OzGAP2005"
+        , "GAP2000"
+        , "GAP2002"
+        , "GAP2007"
+        , "GAP2008"
+        , "GAP2009"
+        , "GAP2011"
+        , "GAP2012"
+        , "GAP2013"
+        , "GAP2014"
+        , "GAP2015"
+        ]
+
 xpTweak :: Discipline -> PU Tweak
 xpTweak discipline =
     xpElem "FsScoreFormula"
     $ xpFilterAttr
-        (hasName "use_leading_points"
+        (hasName "id"
+        <+> hasName "use_leading_points"
         <+> hasName "use_distance_squared_for_LC"
         <+> hasName "double_leading_weight"
         <+> hasName "use_arrival_position_points"
         <+> hasName "use_arrival_time_points"
         )
     $ xpWrap
-        ( \(lp, lsq, dlw, ar, at) ->
+        ( \(formula, lp, lsq, dlw, ar, at) ->
             let ls =
                     case (lp, dlw) of
                         (Just False, _) -> Just $ LwScaling 0
@@ -60,8 +78,7 @@ xpTweak discipline =
             in
                 Tweak
                     { leadingWeightScaling = ls'
-                    -- NOTE: The default is to use the square of leading area distance.
-                    , leadingAreaDistanceSquared = fromMaybe True lsq
+                    , leadingAreaDistanceSquared = fromMaybe (leadingSquareAreaDefault formula) lsq
                     , arrivalRank = ar && discipline /= Paragliding
                     , arrivalTime = at && discipline /= Paragliding
                     }
@@ -80,9 +97,10 @@ xpTweak discipline =
                         Just (LwScaling _) -> (True, True)
                         Nothing -> (True, True)
 
-            in (lp, Just lsq, lw, ar, at)
+            in ("", lp, Just lsq, lw, ar, at)
         )
-    $ xp5Tuple
+    $ xp6Tuple
+        (xpTextAttr "id")
         (xpOption $ xpAttr "use_leading_points" xpBool)
         (xpOption $ xpAttr "use_distance_squared_for_LC" xpBool)
         (xpOption $ xpAttr "double_leading_weight" xpBool)
