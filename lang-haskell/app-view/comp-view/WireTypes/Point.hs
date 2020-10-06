@@ -193,7 +193,9 @@ showJumpedTheGunPenalty :: Int -> PenaltySeqs -> T.Text
 showJumpedTheGunPenalty dp PenaltySeqs{adds, resets} =
     T.pack $
     if null resets
-        then let (PenaltyPoints p) = effectiveAdd adds in printf "%+.*f" dp p
+        then
+            let (PenaltyPoints p) = effectiveAdd adds
+            in if p == 0 then "" else printf "%+.*f" dp p
         else ""
 
 showPilotAlt :: Alt -> T.Text
