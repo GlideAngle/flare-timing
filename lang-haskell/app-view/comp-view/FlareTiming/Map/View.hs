@@ -80,7 +80,7 @@ import WireTypes.Route
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comms (getTaskPilotDf)
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Time (timeZone, showTime)
+import FlareTiming.Time (timeZone, showTime, showTimePico)
 import FlareTiming.Earth (AzimuthFwd(..), azimuthFwd, azimuthFlip)
 
 data ZoomOrPan = Zoom | Pan deriving Show
@@ -268,7 +268,7 @@ tagMarkers
             ++ "#"
             ++ printf "%.2f" fixFrac
             ++ " at "
-            ++ showTime tz time
+            ++ showTimePico tz time
             ++ "<br />"
             ++ showLatLng latLng
 

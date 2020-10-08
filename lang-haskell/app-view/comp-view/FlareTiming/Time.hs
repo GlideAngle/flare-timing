@@ -6,6 +6,7 @@ module FlareTiming.Time
     , hoursToRoundSecs
     , showHours
     , showSignedSecs
+    , showTimePico
     , showTime
     , showT
     , showTDiff
@@ -57,6 +58,11 @@ showHmsForSecs s =
 
 showHmsForHours :: Double -> T.Text
 showHmsForHours = showHmsForSecs . hoursToSecs
+
+showTimePico :: TimeZone -> UTCTime -> String
+showTimePico tz =
+    formatTime defaultTimeLocale "%T %q"
+    . utcToLocalTime tz
 
 showTime :: TimeZone -> UTCTime -> String
 showTime tz =
