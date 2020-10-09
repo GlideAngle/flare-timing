@@ -241,9 +241,23 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 | (sg, gs) <- dedupCrossings
                 ]
 
+            -- WARNING: We have to be careful to exclude those crossings that
+            -- happen after the pilot has crossed the next zone. This can happen
+            -- when a pilot again crosses the start cylinder enroute between
+            -- subsequent turnpoints.
+            beforeNextZoneCrossing :: ZoneCross -> Bool
+            beforeNextZoneCrossing =
+                case sliceZones speedSection $ coerce nominees of
+                    (_ : ns : _) ->
+                        let ns' = catMaybes ns in if null ns' then const True else
+                        \x -> all ((<) x) ns'
+                    _ -> const True
+
+            dedupStarts' = (fmap . fmap) (filter beforeNextZoneCrossing) dedupStarts
+
             -- The last crossing of the last start gate with crossings.
             selectedStart = do
-                (sg, xs) <- listToMaybe . take 1 $ filter (not . null . snd) dedupStarts
+                (sg, xs) <- listToMaybe . take 1 $ filter (not . null . snd) dedupStarts'
                 case reverse xs of
                     [] -> Nothing
                     x : _ -> Just (sg, x)
