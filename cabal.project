@@ -39,6 +39,7 @@ packages:
     , lang-haskell/zone
 
     , lang-haskell/flare-timing
+    , lang-haskell/app-serve
 
 package flight-clip
     tests: true
@@ -123,7 +124,8 @@ constraints:
     , doctest ^>= 0.15.0
     , megaparsec ^>= 7.0.4
     , parser-combinators ^>= 1.0.0
-    , HUnit ^>= 1.5.0.0
+    -- WARNING: To build app-serve don't constraint HUnit.
+    -- , HUnit ^>= 1.5.0.0
 
     -- NOTE: The following are taken from stackage with some items commented
     -- out that clash with the above extra-deps.
