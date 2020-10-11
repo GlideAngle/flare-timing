@@ -9,7 +9,7 @@ of this changelog.
   the gun penalty. Be aware of this and calculate the penalty only if the
   seconds per point are positive.
 * Select the last crossing of the last start gate for the start crossing.
-* Exclude start zone crossing that come after tagging subsequent zones.
+* Exclude start zone crossings that come after tagging subsequent zones.
 * Selecting table rows will highlight points for those pilots in the scatter plots.
 * Restrict function-plot to v1.19.1 as later versions introduce breaking changes.
 * Use square of leading area when calculating leading points except for:
