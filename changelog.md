@@ -3,7 +3,7 @@ version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changel
 of this changelog.
 
 # Plot Selected Pilots
-## app-view-0.28
+## v0.28
 
 * Zero seconds per point is used by FS as a sentinel value to turn off the jump
   the gun penalty. Be aware of this and calculate the penalty only if the
@@ -55,7 +55,7 @@ of this changelog.
   and reset penalties to indicate whether this it's a bonus or penalty.
 
 # Weighted Leading Area
-## app-view-0.27
+## v0.27
 
 * Show milliseconds if a pilot jumped the gun by less than a second.
 * Display ###-pilot or ####-pilot dependening on the pilot id width.
@@ -72,7 +72,7 @@ of this changelog.
   separate layers on the map.
 
 # Leading Area Plot
-## app-view-0.26
+## v0.26
 
 * Show a plot of the leading area, selecting up to five pilots at once. Include
   the extra area added after landing and another potential area hinted at in FS
@@ -84,12 +84,12 @@ of this changelog.
 * Show a table of tasks instead of a list of tasks.
 
 # Open API Specification
-## app-view-0.25
+## v0.25
 
 * Added an OpenAPI specification ([OAS](https://swagger.io/)) for the server.
 
 # Arrival Time Points and Start Too Early
-## app-view-0.24
+## v0.24
 
 * Score hang gliding comps using arrival time points.
 * Document for stopped tasks at least that unpack-track needs to be run before
@@ -106,7 +106,7 @@ of this changelog.
   whether that pilot had a track or not.
 
 # Jump the Gun
-## app-view-0.23
+## v0.23
 
 * Show the task number before the task name in the breadcrumb.
 * Allow early tagging if within the jump-the-gun window.
@@ -121,7 +121,7 @@ of this changelog.
   `FsTaskShortestPath/FsPathVertex`. Updated the `*.fsdb` parsing accordingly.
 
 # Earth, Through and Through
-## app-view-0.22
+## v0.22
 
 * Use the Earth model and Earth math throughout the scoring.
 * Avoid skipping some B records (position fixes) when parsing `*.igc` files.
@@ -130,7 +130,7 @@ of this changelog.
 * Allow a crossing if one fix passes the time check but the other does not.
 
 # Validity Compared
-## app-view-0.21
+## v0.21
 
 * Compare task validities side-by-side with those of FS.
 * Show the optimal task route from FS on the map.
@@ -177,7 +177,7 @@ of this changelog.
   comparisons of the scores.
 
 # Stopped Validity and Bonus Reach
-## app-view-0.20
+## v0.20
 
 * Only consider crossings that are exiting exit zones and entering entry zones.
 * Compare arrival fractions between flare-timing and FS.
@@ -195,7 +195,7 @@ of this changelog.
   picking the shifted fix that is now closest to goal as the point reached.
 
 # Making a Line Goal
-## app-view-0.19
+## v0.19
 
 * Sample line goals as semicircles when figuring out the optimal path.
 * Sort and rename the base layers of the map to:
@@ -213,7 +213,7 @@ of this changelog.
 * Show the task name in the list of tasks.
 
 # Interpolate Zone Tagging
-## app-view-0.18
+## v0.18
 
 * Find that GAP and FS use different equations for working out the speed
   fraction and leading fraction. Show the curve of the equation in the GAP
@@ -230,7 +230,7 @@ of this changelog.
 * Draw line goals on the map as semicircles.
 
 # Side-by-Side Score Check
-## app-view-0.17
+## v0.17
 
 * Parse the `*.fsdb` for scores.
 * Add an `Overview | Points | Speed | Distance` set of child tabs beneath the
@@ -241,25 +241,25 @@ of this changelog.
   **Distance** table do the same for the components of distance points.
 
 # Effort Plot
-## app-view-0.16
+## v0.16
 
 * Add a plot for effort.
 
 # Fewer Tabs
-## app-view-0.15
+## v0.15
 
 * Reduce the number of top level tabs to `Task | Map | Score | Plot | Basis`.
 * Select the pilot tracklog for display on the map when fetched.
 
 # Singular Plots
-## app-view-0.14
+## v0.14
 
 * Default the x-domain when there is one data point to plot.
 * Pad the x-domain of the plots relative to the range of the data.
 * Add a reach plot.
 
 # Fractional Point Plots
-## app-view-0.13
+## v0.13
 
 * Add plots for time, arrival and leading point fractions.
 * Show the working for task validity.
@@ -267,7 +267,7 @@ of this changelog.
 * Use color swatches with plot tabs.
 
 # Duplicate Zones and Angle Formats
-## app-view-0.12
+## v0.12
 
 * Fix a bug showing turnpoints when the first zone starts the speed section.
 * When time rolls over in a sequence of IGC B records, bump the date.
@@ -280,7 +280,7 @@ of this changelog.
 * Parse the lat and lng of turnpoints in `*.fsdb` files as ddd or dmm or dms.
 
 # Split of Available Points
-## app-view-0.11
+## v0.11
 
 * Add a plot of curves showing how the weighting for distance points, for time
   points, for arrival points and for leading points changes in relation to the
@@ -288,7 +288,7 @@ of this changelog.
   hand.
 
 # Give a Little
-## app-view-0.10
+## v0.10
 
 * Score with the give in turnpoint radius.
 * Use the last pilot landing time in leading points calculations and allow for
@@ -300,7 +300,7 @@ of this changelog.
 * Pilots can share arrival position.
 
 # Associate Fixes with Legs
-## app-view-0.9
+## v0.9
 
 * Better identify which leg each fix belongs to.
 * Show the distances to goal in the turnpoints table.
@@ -310,7 +310,7 @@ of this changelog.
 * Remove duplicate fixes in the tracklog due to ignored sub-second logging.
 
 # Leading Points
-## app-view-0.8
+## v0.8
 
 * Pilots landing out get their leading points scaled in the same way as pilots
   making goal.
@@ -324,7 +324,7 @@ of this changelog.
 * Show when a task was stopped and when it will be scored back to.
 
 # Trackless Pilots
-## app-view-0.7
+## v0.7
 
 * Parsing `*.fsdb` files for pilots that do not have an associated tracklog
   file that did fly. These pilots will be awarded either the competition
@@ -341,7 +341,7 @@ of this changelog.
   and algorithms.
 
 # Pilot Tracks and Zone Give
-## app-view-0.6
+## v0.6
 
 * Download and show pilot tracks on the map.
 * Show the give or tolerance around turnpoints both in the table an on the map.
@@ -357,7 +357,7 @@ of this changelog.
 * Fix a bug in showing the legs of the task, #145.
 
 # IGC Parsing, Start Gates and Pilot Status
-## app-view-0.5
+## v0.5
 
 * Parse the newer `*.igc` **HFDTEDATE:** date header.
 * Show pilots that are not yet processed (NYP).
@@ -371,7 +371,7 @@ of this changelog.
 * When scoring is incomplete, show the tasks anyway.
 
 # Equal Placings and DNF
-## app-view-0.4
+## v0.4
 
 * Switch over to using megaparsec when parsing `*.igc` and `*.kml` files.
 * Show pilots that did not fly (DNF) with absentees and scores.
@@ -383,20 +383,20 @@ of this changelog.
 ```
 
 # Pan to Zone
-## app-view-0.3
+## v0.3
 
 Add a toggle button switching between zoom and pan. The map's button group now
 has buttons for all zones, not just the speed section zones. The speed section
 is indicated with color; green for start and red for stop.
 
 # Zoom to Extent and Zoom to Zone
-## app-view-0.2
+## v0.2
 
 Only one new feature in this release; a group of buttons above the map for
 zooming in on each zone and for zooming to the extents of the task.
 
 # Speed Section Velocity
-## app-view-0.1
+## v0.1
 
 * Calculate the velocity over the speed section from the speed section distance
 * Group headers using colour
