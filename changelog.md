@@ -1,5 +1,5 @@
 The [latest
-version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
+version](https://github.com/BlockScope/flare-timing/blob/master/changelog.md)
 of this changelog.
 
 # Plot Selected Pilots
