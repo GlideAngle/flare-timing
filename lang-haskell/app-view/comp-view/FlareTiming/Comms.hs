@@ -73,19 +73,33 @@ import WireTypes.ValidityWorking
 import FlareTiming.Events (IxTask(..))
 
 -- NOTE: Possible alternatives for mapUri ...
--- mapUri s = "http://1976-never-land.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://1989-lift-lines.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://2012-forbes.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://2018-forbes.flaretiming.com/json" <> s <> ".json"
+-- Paragliding
 -- mapUri s = "http://2018-dalmatian.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2019-dalmatian.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://2016-quest.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://2017-dalby.flaretiming.com/json" <> s <> ".json"
+-- Comp Archetypes
+-- mapUri s = "http://1976-never-land.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://1989-lift-lines.flaretiming.com/json" <> s <> ".json"
+-- Hang Gliding: Worlds
 -- mapUri s = "http://2019-italy.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2012-forbes.flaretiming.com/json" <> s <> ".json"
+-- Hang Gliding: Australia
+-- mapUri s = "http://2014-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2015-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2016-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2017-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2018-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2017-dalby.flaretiming.com/json" <> s <> ".json"
+-- Hang Glding: USA
+-- mapUri s = "http://2016-quest.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2016-greenswamp.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2016-greenswamp-sport.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2016-big-spring.flaretiming.com/json" <> s <> ".json"
+-- Local Relative
 -- mapUri s = "/json" <> s <> ".json"
+-- Development Server
 -- mapUri s = "http://localhost:3000" <> s
 mapUri :: T.Text -> T.Text
-mapUri s = "http://localhost:3000" <> s
+mapUri s = "/json" <> s <> ".json"
 
 emptyRoute :: OptimalRoute (Maybe a)
 emptyRoute =
