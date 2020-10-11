@@ -5,8 +5,54 @@ of this changelog.
 # Plot Selected Pilots
 ## app-view-0.28
 
-* Selecting table rows will highlight points for those pilots in the scatter
-  plots.
+* Zero seconds per point is used by FS as a sentinel value to turn off the jump
+  the gun penalty. Be aware of this and calculate the penalty only if the
+  seconds per point are positive.
+* Select the last crossing of the last start gate for the start crossing.
+* Exclude start zone crossing that come after tagging subsequent zones.
+* Selecting table rows will highlight points for those pilots in the scatter plots.
+* Restrict function-plot to v1.19.1 as later versions introduce breaking changes.
+* Use square of leading area when calculating leading points except for:
+  * GAP2000
+  * GAP2002
+  * OzGAP2005
+  * GAP2007
+  * GAP2008
+  * GAP2009
+  * GAP2011
+  * GAP2012
+  * GAP2013
+  * GAP2014
+  * GAP2015
+* Use positive numbers for demerits and negative numbers for penalties.
+* Build the comp server with cabal by relaxing constraints on HUnit.
+* Commands dealing with FSDB extraction already had `fs-` prefixes. Do the same
+  for flare-timing, using `ft-` prefixes for these commands.
+    ```
+      > cabal install all:exes --overwrite-policy=always --installdir=$HOME/.cabal/bin
+      ...
+      Symlinking 'fs-arrival'
+      Symlinking 'fs-effort'
+      Symlinking 'ft-extract-input'
+      Symlinking 'ft-land-out'
+      Symlinking 'fs-filter'
+      Symlinking 'ft-discard-further'
+      Symlinking 'ft-cross-zone'
+      Symlinking 'ft-tag-zone'
+      Symlinking 'fs-score'
+      Symlinking 'ft-mask-track'
+      Symlinking 'ft-gap-point'
+      Symlinking 'ft-task-length'
+      Symlinking 'ft-align-time'
+      Symlinking 'ft-peg-frame'
+      Symlinking 'ft-area-step'
+      Symlinking 'fs-route'
+      Symlinking 'ft-unpack-track'
+      Symlinking 'ft-build
+      Symlinking 'ft-comp-serve
+    ```
+* Show penalties with a leading `+` or `-` prefix for additive, multiplicative
+  and reset penalties to indicate whether this it's a bonus or penalty.
 
 # Weighted Leading Area
 ## app-view-0.27
