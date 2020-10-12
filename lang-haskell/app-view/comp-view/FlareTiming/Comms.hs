@@ -99,7 +99,7 @@ import FlareTiming.Events (IxTask(..))
 -- Development Server
 -- mapUri s = "http://localhost:3000" <> s
 mapUri :: T.Text -> T.Text
-mapUri s = "/json" <> s <> ".json"
+mapUri s = "http://localhost:3000" <> s
 
 emptyRoute :: OptimalRoute (Maybe a)
 emptyRoute =
