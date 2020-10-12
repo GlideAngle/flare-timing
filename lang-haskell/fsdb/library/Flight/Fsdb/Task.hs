@@ -13,7 +13,7 @@ module Flight.Fsdb.Task
     ) where
 
 import Data.Refined (assumeProp, refined)
-import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.Time.Clock (UTCTime, addUTCTime, diffUTCTime)
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (sort, sortOn, nub)
 import Data.UnitsOfMeasure (u)
@@ -576,6 +576,9 @@ getTask discipline compTweak sb =
                 , zoneTimes = ts''
                 , startGates = gates
                 , stopped =
+                    -- NOTE: In paragliding there is a score back time but in
+                    -- hang gliding this is taken as the interval between the
+                    -- start gates or 15 mins.
                     maybe
                         Nothing
                         (\case
@@ -583,11 +586,21 @@ getTask discipline compTweak sb =
                                 Just $ TaskStop
                                     { announced = t
                                     , retroactive =
-                                        maybe
-                                            t
-                                            (\(ScoreBackTime (MkQuantity secs)) ->
-                                                realToFrac (negate secs) `addUTCTime` t)
-                                            sb
+                                        case discipline of
+                                            HangGliding ->
+                                                let diff =
+                                                        case gates of
+                                                            StartGate g0 : StartGate g1 : _ -> g0 `diffUTCTime` g1
+                                                            _ -> realToFrac $ negate (900 :: Int)
+
+                                                in diff `addUTCTime` t
+
+                                            Paragliding ->
+                                                maybe
+                                                    t
+                                                    (\(ScoreBackTime (MkQuantity secs)) ->
+                                                        realToFrac (negate secs) `addUTCTime` t)
+                                                    sb
                                     }
 
                             TaskStateRegular _ -> Nothing
