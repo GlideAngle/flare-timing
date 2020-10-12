@@ -39,6 +39,7 @@ in    defs
             , "these"
             , "time"
             , "uom-plugin"
+            , "vector"
             , "yaml"
             , "flight-clip"
             , "flight-comp"

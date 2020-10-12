@@ -8,6 +8,8 @@ import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
 import Data.List ((\\), filter, inits)
 import Control.Arrow (first)
 import Control.Monad (join)
+import Data.Vector (Vector)
+import qualified Data.Vector as V (fromList, toList)
 
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
@@ -159,30 +161,32 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
 
             fromZs = fromZones @Double @Double e give
 
-            keptFixes :: [Kml.Fix]
+            keptFixes :: Vector Kml.Fix
             keptFixes =
-                maybe
+                V.fromList
+                $ maybe
                     fixes
                     (\(m, n) -> take (n - m) $ drop m fixes)
                     indices
 
-            xss :: [[Crossing]]
+            xss :: [Vector Crossing]
             xss =
-                tickedZones
-                    fs
-                    (fromZs zones)
-                    (fixToPoint <$> keptFixes)
+                V.fromList
+                <$> tickedZones
+                        fs
+                        (fromZs zones)
+                        (V.toList (fixToPoint <$> keptFixes))
 
-            xss' :: [[Crossing]]
+            xss' :: [Vector Crossing]
             xss' =
                 maybe
                     xss
                     (\(ii, _) -> (fmap . fmap) (reindex ii) xss)
                     (first ZoneIdx <$> indices)
 
-            css = f (const True) <$> xss'
+            css = f (const True) . V.toList <$> xss'
             nss =
-                [ f timecheck xs
+                [ f timecheck $ V.toList xs
                 | timecheck <- timechecks
                 | xs <- xss'
                 ]
@@ -263,7 +267,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                     x : _ -> Just (sg, x)
 
             -- Replace the crossings of the start with the selected start.
-            xss'' :: [[Crossing]] = fromMaybe xss' $ do
+            xss'' :: [[Crossing]] = fromMaybe (V.toList <$> xss') $ do
                 (_, ZoneCross{crossingPair, inZone}) <- selectedStart
 
                 let crossing :: (ZoneIdx, ZoneIdx) -> Crossing =
@@ -275,7 +279,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 case crossingPair of
                     [Fix{fix = i}, Fix{fix = j}] ->
                         let start = [crossing ((ZoneIdx i), (ZoneIdx j))]
-                        in Just $ restartZones speedSection start xss'
+                        in Just . restartZones speedSection start $ V.toList <$> xss'
 
                     _ ->
                         Nothing
