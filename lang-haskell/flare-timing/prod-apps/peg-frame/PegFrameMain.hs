@@ -23,12 +23,12 @@ import Flight.Track.Cross
     , ZoneTag(..), InterpolatedFix(..)
     )
 import Flight.Track.Tag
-    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed, lastStarting)
+    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed, lastStarting, starting, tagTimes)
 import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
 import Flight.Track.Time (FixIdx(..), TrackRow(..))
 import Flight.Track.Stop
     ( StopWindow(..), StopFraming(..), Framing(..)
-    , TrackScoredSection(..), TrackRacingGateSection(..)
+    , TrackScoredSection(..), TrackRacingGateSection(..), TrackRacingStartSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate, endOfScored
     )
 import Flight.Comp
@@ -214,7 +214,7 @@ writeStop
 
                             _ -> do
                                 let (sg, tsClipped) = stopClipByGate clipSecs gs ts
-                                StartGate g <- sg
+                                StartGate tG <- sg
                                 (t0, t1) <- tsClipped
                                 let deltaFlying = t1 `diffUTCTime` t0
                                 let rFlying = round deltaFlying
@@ -224,7 +224,7 @@ writeStop
                                 let st = Just (t0, t1)
                                 let si = join $ scoredIndices st <$> track
 
-                                let rgt = Just (g, t1)
+                                let rgt = Just (tG, t1)
                                 let rgi = join $ scoredIndices rgt <$> track
 
                                 let sfSecs =
@@ -235,8 +235,8 @@ writeStop
                                 let rgSecs =
                                         do
                                             (Seconds w0, _) <- flyingSeconds
-                                            let delta0 = g `diffUTCTime` t0
-                                            let delta1 = t1 `diffUTCTime` g
+                                            let delta0 = tG `diffUTCTime` t0
+                                            let delta1 = t1 `diffUTCTime` tG
                                             let r0 = round delta0
                                             let r1 = round delta1
                                             return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + rFlying))
@@ -295,15 +295,52 @@ writeStop
             [
                 [ (p,) $
                     StopFraming
-                        { stopScored = sf
-                        , stopRacingGate = sg
-                        , stopRacingStart = Nothing
+                        { stopScored = sfStop
+                        , stopRacingGate = sfGate
+                        , stopRacingStart = do
+                            TrackFlyingSection{flyingSeconds} <- tfs
+                            TrackScoredSection{scoredTimes} <- sfStop
+                            TrackRacingGateSection{racingGateTimes} <- sfGate
+                            (t0, _) <- scoredTimes
+                            (_, t1) <- racingGateTimes
+                            tags' <- tagTimes ptt
+                            tS <- starting ss tags'
+                            let deltaStart = t1 `diffUTCTime` tS
+                            let rStart = round deltaStart
+                            
+                            let track = Map.lookup p tracks
+
+                            let rst = Just (tS, t1)
+                            let rsi = join $ scoredIndices rst <$> track
+
+                            let rsSecs =
+                                    do
+                                        (Seconds w0, _) <- flyingSeconds
+                                        let delta0 = tS `diffUTCTime` t0
+                                        let delta1 = t1 `diffUTCTime` tS
+                                        let r0 = round delta0
+                                        let r1 = round delta1
+                                        return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + rStart))
+
+                            return
+                                TrackRacingStartSection
+                                    { racingStartFixes = rsi
+                                    , racingStartSeconds = (fmap . fmap) snd $ rsSecs
+                                    , racingStartTimes = rst
+                                    , racingStartWindowSeconds = fst <$> rsSecs
+                                    }
                         }
 
-                | (p, (sf, sg)) <- sfs
+                | (_, tfs) <- pfs
+                | (p, (sfStop, sfGate)) <- sfs
+                | ptt@PilotTrackTag{} <- tags
                 ]
 
+            | Task{speedSection = ss} <- tasks
+            | pfs <- flying
             | sfs <- sfss
+            | tags <- tagss
+            | tracks <- trackss
             ]
 
     let frame =

@@ -19,6 +19,8 @@ module Flight.Track.Tag
     , lastStarting
     , lastArrival
     , timed
+    , starting
+    , tagTimes
     ) where
 
 import Data.Maybe (listToMaybe, fromMaybe, catMaybes)
@@ -74,6 +76,13 @@ data TrackTime =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+-- | The time of the start given tagging times for a single pilot for each zone.
+starting :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
+starting ss tags =
+    case drop ((maybe 1 fst ss) - 1) tags of
+        [] -> Nothing
+        t : _ -> t
 
 -- | The time of the last start and pilots starting at that time.
 lastStarting :: SpeedSection -> TrackTime -> (Maybe UTCTime, [Pilot])
