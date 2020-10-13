@@ -13,6 +13,9 @@ module Flight.Track.Stop
     , Framing(..)
     , StopWindow(..)
     , TrackScoredSection(..)
+    , TrackRacingGateSection(..)
+    , TrackRacingStartSection(..)
+    , StopFraming(..)
     , tardyElapsed
     , tardyGate
     , stopClipByDuration
@@ -20,7 +23,8 @@ module Flight.Track.Stop
     , endOfScored
     ) where
 
-import Data.List.NonEmpty (nonEmpty)
+import Prelude hiding (unzip)
+import Data.List.NonEmpty (nonEmpty, unzip)
 import Data.Maybe (listToMaybe)
 import Data.List (sort)
 import Data.String (IsString())
@@ -46,17 +50,19 @@ newtype RetroActive = RetroActive UTCTime
 
 data StopWindow =
     StopWindow
-        { lastStarters :: [Pilot]
+        { lastStartTime :: Maybe UTCTime
+        -- ^ The start time of the pilot or pilots last to start.
+        , lastStarters :: [Pilot]
         -- ^ The pilot or pilots last to start in an elapsed time race or
         -- a race to goal task with multiple start gates. For race to goal
         -- tasks with a single start gate @lastStarters@ will be an empty list.
-        , windowTimes :: FlyingSection UTCTime
-        -- ^ The scored window as a time range. For an elapsed time race or
-        -- a race to goal task with only one start gate this will be the range
-        -- from the start until the retroactive stop time.  For race to goal
-        -- task with multiple start gates this will be the time available
-        -- racing for the last pilot or pilots to start.
-        , windowSeconds :: Seconds
+        , stopWindowTimes :: FlyingSection UTCTime
+        -- ^ The scored window for a stopped task as a time range. For an
+        -- elapsed time race or a race to goal task with only one start gate
+        -- this will be the range from the start until the retroactive stop
+        -- time. For race to goal task with multiple start gates this will be
+        -- the time available racing for the last pilot or pilots to start.
+        , stopWindowSeconds :: Seconds
         -- ^ The width of the time window.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -71,6 +77,50 @@ data TrackScoredSection =
         -- ^ The scored section as second offsets from the first fix.
         , scoredTimes :: FlyingSection UTCTime
         -- ^ The scored section as a time range.
+        , scoredWindowSeconds :: Maybe Seconds
+        -- ^ The width of the time window of the scoring section.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | For a single track, the racing section from the start gate taken.
+data TrackRacingGateSection =
+    TrackRacingGateSection
+        { racingGateFixes :: FlyingSection Int
+        -- ^ The racing section from the opening of the gate taken as indices into the list of fixes.
+        , racingGateSeconds :: FlyingSection Seconds
+        -- ^ The racing section from the opening of the gate taken as second offsets from the first fix.
+        , racingGateTimes :: FlyingSection UTCTime
+        -- ^ The racing section from the opening of the gate taken as a time range.
+        , racingGateWindowSeconds :: Maybe Seconds
+        -- ^ The width of the time window from opening of the start gate taken to the end of the scoring window.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | For a single track, the racing section from the actual starting time. This
+-- will be at or after a start gate opening time except when jumping the gun. A
+-- pilot that jumps the gun may start before the opening of the first start
+-- gate.
+data TrackRacingStartSection =
+    TrackRacingStartSection
+        { racingStartFixes :: FlyingSection Int
+        -- ^ The racing section from the starting time as indices into the list of fixes.
+        , racingStartSeconds :: FlyingSection Seconds
+        -- ^ The racing section from the starting time as second offsets from the first fix.
+        , racingStartTimes :: FlyingSection UTCTime
+        -- ^ The racing section from the starting time as a time range.
+        , racingStartWindowSeconds :: Maybe Seconds
+        -- ^ The width of the time window from opening of the starting time to the end of the scoring window.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+data StopFraming =
+    StopFraming
+        { stopScored :: Maybe TrackScoredSection
+        , stopRacingGate :: Maybe TrackRacingGateSection
+        , stopRacingStart :: Maybe TrackRacingStartSection
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -81,7 +131,7 @@ data Framing =
     Framing
         { stopWindow :: [Maybe StopWindow]
         -- ^ The scored time window for a stopped task.
-        , stopFlying :: [[(Pilot, Maybe TrackScoredSection)]]
+        , stopFlying :: [[(Pilot, StopFraming)]]
         -- ^ For each task, the pilots' flying section that is scored.
         , timing :: [TrackTime]
           -- ^ For each made zone, the first and last tag.
@@ -112,20 +162,27 @@ tardyGate gs ss ts _ = do
     lastStart <- listToMaybe . reverse $ sort starts
     return . snd $ startGateTaken gs' lastStart
 
+-- | The scoring time window can be limited when a task was stopped. Find the
+-- scored time window. This is the flying time window truncated to only so many
+-- seconds after the start taken.
+-- TODO: Add a parameter for the start time to stopClipByDuration.
 stopClipByDuration :: Seconds -> FlyingSection UTCTime -> FlyingSection UTCTime
 stopClipByDuration (Seconds n) x = do
     (s, e) <- x
     return (s, min e $ (fromIntegral n) `addUTCTime` s)
 
-stopClipByGate :: Seconds -> [StartGate] -> FlyingSection UTCTime -> FlyingSection UTCTime
-stopClipByGate (Seconds n) ((StartGate g) : []) x = do
+-- | The scoring time window can be limited when a task was stopped. Find the
+-- start gate taken and the scored time window. This is the flying time window
+-- truncated to only so many seconds after the start gate taken.
+stopClipByGate :: Seconds -> [StartGate] -> FlyingSection UTCTime -> (Maybe StartGate, FlyingSection UTCTime)
+stopClipByGate (Seconds n) (sg@(StartGate g) : []) x = unzip $ do
     (s, e) <- x
-    return (s, min e $ (fromIntegral n) `addUTCTime` g)
-stopClipByGate (Seconds n) gs x = do
+    return (sg, (s, min e $ (fromIntegral n) `addUTCTime` g))
+stopClipByGate (Seconds n) gs x = unzip $ do
     (s, e) <- x
     gs' <- nonEmpty gs
-    let StartGate g = snd $ startGateTaken gs' s
-    return (s, min e $ (fromIntegral n) `addUTCTime` g)
+    let sg@(StartGate g) = snd $ startGateTaken gs' s
+    return (sg, (s, min e $ (fromIntegral n) `addUTCTime` g))
 
 instance FieldOrdering Framing where
     fieldOrder _ = cmp
@@ -147,12 +204,12 @@ cmp a b =
 
         ("lastStarters", _) -> LT
 
-        ("windowTimes", "lastStarters") -> GT
-        ("windowTimes", _) -> LT
+        ("stopWindowTimes", "lastStarters") -> GT
+        ("stopWindowTimes", _) -> LT
 
-        ("windowSeconds", "lastStarters") -> GT
-        ("windowSeconds", "windowTimes") -> GT
-        ("windowSeconds", _) -> LT
+        ("stopWindowSeconds", "lastStarters") -> GT
+        ("stopWindowSeconds", "stopWindowTimes") -> GT
+        ("stopWindowSeconds", _) -> LT
 
         ("inter", _) -> LT
         ("cross", _) -> GT

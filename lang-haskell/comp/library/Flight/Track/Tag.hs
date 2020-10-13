@@ -16,6 +16,7 @@ module Flight.Track.Tag
     , ZonesLastTag(..)
     , firstLead
     , firstStart
+    , lastStarting
     , lastArrival
     , timed
     ) where
@@ -73,6 +74,14 @@ data TrackTime =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+-- | The time of the last start and pilots starting at that time.
+lastStarting :: SpeedSection -> TrackTime -> (Maybe UTCTime, [Pilot])
+lastStarting ss TrackTime{zonesLast = ZonesLastTag tags, zonesRankTime, zonesRankPilot} =
+    case drop ((maybe 1 fst ss) - 1) (zip3 tags zonesRankTime zonesRankPilot) of
+        [] -> (Nothing, [])
+        (Nothing, _, _) : _ -> (Nothing, [])
+        (Just tag, ts, ps) : _ -> (Just tag, fmap snd . filter ((==) tag . fst) $ zip ts ps)
 
 timed
     :: [PilotTrackTag]

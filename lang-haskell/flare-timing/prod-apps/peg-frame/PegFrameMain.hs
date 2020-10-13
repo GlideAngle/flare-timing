@@ -23,11 +23,11 @@ import Flight.Track.Cross
     , ZoneTag(..), InterpolatedFix(..)
     )
 import Flight.Track.Tag
-    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed)
+    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed, lastStarting)
 import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
 import Flight.Track.Time (FixIdx(..), TrackRow(..))
 import Flight.Track.Stop
-    ( StopWindow(..), Framing(..), TrackScoredSection(..)
+    ( StopWindow(..), StopFraming(..), Framing(..), TrackScoredSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate, endOfScored
     )
 import Flight.Comp
@@ -121,18 +121,19 @@ writeStop
             [
                 do
                     TaskStop{retroactive = t1} <- stopped
+                    let (tN, psN) = lastStarting ss tt
 
                     case gs of
-                        -- NOTE: An elapsed time task. Find the last crossing
-                        -- of the start.
+                        -- NOTE: An elapsed time task. Find the last crossing of
+                        -- the start.
                         [] -> do
                             LastStart sN <- tardyElapsed ss zonesLast
-                            let wt = if sN < t1 then Just (sN, t1) else Nothing
                             return
                                 StopWindow
-                                    { lastStarters = []
-                                    , windowTimes = wt
-                                    , windowSeconds = Seconds . round $ t1 `diffUTCTime` sN
+                                    { lastStartTime = tN
+                                    , lastStarters = psN
+                                    , stopWindowTimes = if sN < t1 then Just (sN, t1) else Nothing
+                                    , stopWindowSeconds = Seconds . round $ t1 `diffUTCTime` sN
                                     }
 
                         -- NOTE: A race task with a single start gate. All
@@ -140,25 +141,26 @@ writeStop
                         (StartGate t0) : [] ->
                             return
                                 StopWindow
-                                    { lastStarters = []
-                                    , windowTimes = Just (t0, t1)
-                                    , windowSeconds = Seconds . round $ t1 `diffUTCTime` t0
+                                    { lastStartTime = tN
+                                    , lastStarters = psN
+                                    , stopWindowTimes = Just (t0, t1)
+                                    , stopWindowSeconds = Seconds . round $ t1 `diffUTCTime` t0
                                     }
 
                         -- NOTE: A race task with a multiple start gates. Find
                         -- the last start gate taken.
                         _ -> do
                             StartGate gN <- tardyGate gs ss zts zps
-                            let wt = if gN < t1 then Just (gN, t1) else Nothing
                             return
                                 StopWindow
-                                    { lastStarters = []
-                                    , windowTimes = wt
-                                    , windowSeconds = Seconds . round $ t1 `diffUTCTime` gN
+                                    { lastStartTime = tN
+                                    , lastStarters = psN
+                                    , stopWindowTimes = if gN < t1 then Just (gN, t1) else Nothing
+                                    , stopWindowSeconds = Seconds . round $ t1 `diffUTCTime` gN
                                     }
 
             | Task{stopped, startGates = gs, speedSection = ss} <- tasks
-            | TrackTime{zonesLast, zonesRankTime = zts, zonesRankPilot = zps} <- timing
+            | tt@TrackTime{zonesLast, zonesRankTime = zts, zonesRankPilot = zps} <- timing
             ]
 
     let ps = (fmap . fmap) fst flying
@@ -181,15 +183,18 @@ writeStop
                                 { scoredFixes = flyingFixes
                                 , scoredTimes = flyingTimes
                                 , scoredSeconds = flyingSeconds
+                                , scoredWindowSeconds = do
+                                    (t0, t1) <- flyingTimes
+                                    return . Seconds . round $ t1 `diffUTCTime` t0
                                 }
 
                     _ -> do
-                        StopWindow{windowSeconds = clipSecs} <- sw
+                        StopWindow{stopWindowSeconds = clipSecs} <- sw
                         TrackFlyingSection{flyingTimes = ts, flyingSeconds} <- tfs
                         case gs of
                             [] -> do
                                 (t0, t1) <- stopClipByDuration clipSecs ts
-                                let delta = t1 `diffUTCTime` t0
+                                let delta = round $ t1 `diffUTCTime` t0
                                 let st = Just (t0, t1)
                                 let track = Map.lookup p tracks
                                 let si = join $ scoredIndices st <$> track
@@ -200,23 +205,30 @@ writeStop
                                         , scoredTimes = st
                                         , scoredSeconds = do
                                             (Seconds w0, _) <- flyingSeconds
-                                            return (Seconds w0, Seconds $ w0 + round delta)
+                                            return (Seconds w0, Seconds $ w0 + delta)
+                                        , scoredWindowSeconds = Just $ Seconds delta
                                         }
 
                             _ -> do
-                                (t0, t1) <- stopClipByGate clipSecs gs ts
-                                let delta = t1 `diffUTCTime` t0
+                                let (_sg, tsClipped) = stopClipByGate clipSecs gs ts
+                                (t0, t1) <- tsClipped
+                                let deltaFlying = t1 `diffUTCTime` t0
+
                                 let st = Just (t0, t1)
                                 let track = Map.lookup p tracks
                                 let si = join $ scoredIndices st <$> track
 
+                                let secs =
+                                        do
+                                            (Seconds w0, _) <- flyingSeconds
+                                            let delta = round deltaFlying
+                                            return (Seconds delta, (Seconds w0, Seconds $ w0 + delta))
                                 return
                                     TrackScoredSection
                                         { scoredFixes = si
                                         , scoredTimes = st
-                                        , scoredSeconds = do
-                                            (Seconds w0, _) <- flyingSeconds
-                                            return (Seconds w0, Seconds $ w0 + round delta)
+                                        , scoredSeconds = (fmap . fmap) snd $ secs
+                                        , scoredWindowSeconds = fst <$> secs
                                         }
 
                 | (p, tfs) <- pfs
@@ -253,10 +265,25 @@ writeStop
             | fs <- fmap (endOfScored . snd) <$> sfss
             ]
 
+    let sfss' =
+            [
+                [ (p,) $
+                    StopFraming
+                        { stopScored = sf
+                        , stopRacingGate = Nothing
+                        , stopRacingStart = Nothing
+                        }
+
+                | (p, sf) <- sfs
+                ]
+
+            | sfs <- sfss
+            ]
+
     let frame =
             Framing
                 { stopWindow = sws
-                , stopFlying = sfss
+                , stopFlying = sfss'
                 , timing = timess
                 , tagging = tagss
                 }

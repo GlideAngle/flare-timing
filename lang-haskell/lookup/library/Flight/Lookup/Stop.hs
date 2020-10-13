@@ -6,7 +6,7 @@ module Flight.Lookup.Stop
 import Data.List (find)
 import Control.Lens ((^?), element)
 import Flight.Comp (IxTask(..), Pilot(..))
-import Flight.Track.Stop (TrackScoredSection(..))
+import Flight.Track.Stop (StopFraming(stopScored), TrackScoredSection(..))
 import qualified Flight.Track.Stop as S (Framing(..))
 
 type StopLookup a = IxTask -> Pilot -> Maybe a
@@ -21,4 +21,4 @@ flyingTask :: S.Framing -> IxTask -> Pilot -> Maybe TrackScoredSection
 flyingTask S.Framing{stopFlying = xs} (IxTask i) pilot =
     case xs ^? element (fromIntegral i - 1) of
         Nothing -> Nothing
-        Just ys -> snd =<< find (\(p, _) -> p == pilot) ys
+        Just ys -> stopScored . snd =<< find (\(p, _) -> p == pilot) ys
