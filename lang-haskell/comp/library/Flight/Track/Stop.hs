@@ -21,11 +21,12 @@ module Flight.Track.Stop
     , stopClipByDuration
     , stopClipByGate
     , endOfScored
+    , effectiveTagging
     ) where
 
 import Prelude hiding (unzip)
 import Data.List.NonEmpty (nonEmpty, unzip)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe, isJust)
 import Data.List (sort)
 import Data.String (IsString())
 import Data.Time.Clock (UTCTime, addUTCTime)
@@ -38,7 +39,7 @@ import Flight.Clip (FlyingSection)
 import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Comp (LastStart(..), StartGate(..))
 import Flight.Track.Cross (Seconds(..))
-import Flight.Track.Tag (TrackTime(..), PilotTrackTag(..), ZonesLastTag(..))
+import Flight.Track.Tag (Tagging(..), TrackTime(..), PilotTrackTag(..), ZonesLastTag(..))
 import Flight.Track.Speed (startGateTaken)
 import Flight.Field (FieldOrdering(..))
 
@@ -140,6 +141,17 @@ data Framing =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+effectiveTagging :: Tagging -> Framing -> Tagging
+effectiveTagging
+    Tagging{timing = tssTag, tagging = gssTag}
+    Framing{timing = tssStop, tagging = gssStop, stopWindow} =
+        uncurry Tagging . unzip $
+        [ if isJust sw then tsStop else tsTag
+        | sw <- stopWindow
+        | tsTag <- zip tssTag gssTag
+        | tsStop <- zip tssStop gssStop
+        ]
 
 endOfScored :: Maybe TrackScoredSection -> Maybe UTCTime
 endOfScored = join . fmap (fmap snd . scoredTimes)

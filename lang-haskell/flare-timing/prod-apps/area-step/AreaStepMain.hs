@@ -25,6 +25,7 @@ import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
     , TagZoneFile(..)
+    , PegFrameFile(..)
     , TaskLengthFile(..)
     , CompSettings(..)
     , TaskStop(..)
@@ -46,6 +47,7 @@ import Flight.Comp
     , compToCross
     , compToLeadArea
     , crossToTag
+    , tagToPeg
     , findCompInput
     , speedSectionToLeg
     , ensureExt
@@ -57,10 +59,11 @@ import Flight.Track.Time
     , leadingAreaFlown, leadingAreaAfterLanding, leadingAreaBeforeStart
     )
 import Flight.Track.Lead (DiscardingLead(..))
+import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readComp, readRoute, readTagging
+    ( readComp, readRoute, readTagging, readFraming
     , writeCompAreaStep
     , readCompLeading, writeDiscardingLead
     )
@@ -98,9 +101,11 @@ go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
+    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
+    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
 
     compSettings <-
         catchIO
@@ -112,20 +117,26 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readTagging tagFile)
             (const $ return Nothing)
 
+    stopping <-
+        catchIO
+            (Just <$> readFraming stopFile)
+            (const $ return Nothing)
+
     routes <-
         catchIO
             (Just <$> readRoute lenFile)
             (const $ return Nothing)
 
-    case (compSettings, tagging, routes) of
-        (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just _, Just _) ->
+    case (compSettings, tagging, stopping, routes) of
+        (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frames."
+        (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just cs, Just tg, Just sp, Just _) ->
             filterTime
                 cs
                 (routeLength taskRoute taskRouteSpeedSubset stopRoute startRoute routes)
-                (tagTaskLeading tagging)
+                (tagTaskLeading . Just $ effectiveTagging tg sp)
                 compFile
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
