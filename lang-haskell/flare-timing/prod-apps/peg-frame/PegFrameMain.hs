@@ -239,19 +239,19 @@ writeStop
                                             let delta1 = t1 `diffUTCTime` tG
                                             let r0 = round delta0
                                             let r1 = round delta1
-                                            return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + rFlying))
+                                            return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
 
                                 return
                                     ( TrackScoredSection
                                         { scoredFixes = si
-                                        , scoredSeconds = (fmap . fmap) snd $ sfSecs
+                                        , scoredSeconds = snd <$> sfSecs
                                         , scoredTimes = st
                                         , scoredWindowSeconds = fst <$> sfSecs
                                         }
                                     , Just
                                         TrackRacingGateSection
                                             { racingGateFixes = rgi
-                                            , racingGateSeconds = (fmap . fmap) snd $ rgSecs
+                                            , racingGateSeconds = snd <$> rgSecs
                                             , racingGateTimes = rgt
                                             , racingGateWindowSeconds = fst <$> rgSecs
                                             }
@@ -305,8 +305,6 @@ writeStop
                             (_, t1) <- racingGateTimes
                             tags' <- tagTimes ptt
                             tS <- starting ss tags'
-                            let deltaStart = t1 `diffUTCTime` tS
-                            let rStart = round deltaStart
                             
                             let track = Map.lookup p tracks
 
@@ -320,12 +318,12 @@ writeStop
                                         let delta1 = t1 `diffUTCTime` tS
                                         let r0 = round delta0
                                         let r1 = round delta1
-                                        return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + rStart))
+                                        return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
 
                             return
                                 TrackRacingStartSection
                                     { racingStartFixes = rsi
-                                    , racingStartSeconds = (fmap . fmap) snd $ rsSecs
+                                    , racingStartSeconds = snd <$> rsSecs
                                     , racingStartTimes = rst
                                     , racingStartWindowSeconds = fst <$> rsSecs
                                     }
