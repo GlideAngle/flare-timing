@@ -18,7 +18,7 @@ import Data.Csv
     (Header, decodeByName, EncodeOptions(..), encodeByNameWith, defaultEncodeOptions)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
-import qualified Data.Vector as V (toList, null, last)
+import qualified Data.Vector as V (toList, null, last, filter)
 
 import Flight.Track.Time
     ( TimeRow(..), TickRow(..), TimeToTick, TickToTick
@@ -128,6 +128,7 @@ readPilotAlignTimeWriteDiscardFurther
     -> TickToTick
     -> CompInputFile
     -> (IxTask -> Bool)
+    -> (TimeRow -> Bool)
     -> IxTask
     -> Pilot
     -> IO (Maybe (Vector TickRow))
@@ -136,11 +137,13 @@ readPilotAlignTimeWriteDiscardFurther
     tickToTick
     compFile
     selectTask
+    selectRow
     iTask@(IxTask i) pilot =
     if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
-    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick timeRows
+    let keptTimeRows = V.filter selectRow timeRows
+    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick keptTimeRows
     _ <- f tickRows
     return $ Just tickRows
     where
@@ -154,6 +157,7 @@ readPilotAlignTimeWritePegThenDiscard
     -> TickToTick
     -> CompInputFile
     -> (IxTask -> Bool)
+    -> (TimeRow -> Bool)
     -> IxTask
     -> Pilot
     -> IO (Maybe (Vector TickRow))
@@ -162,11 +166,13 @@ readPilotAlignTimeWritePegThenDiscard
     tickToTick
     compFile
     selectTask
+    selectRow
     iTask@(IxTask i) pilot =
     if not (selectTask iTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
-    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick timeRows
+    let keptTimeRows = V.filter selectRow timeRows
+    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick keptTimeRows
     _ <- f tickRows
     return $ Just tickRows
     where
