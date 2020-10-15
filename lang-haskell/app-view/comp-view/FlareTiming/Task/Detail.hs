@@ -41,6 +41,7 @@ import FlareTiming.Comms
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map.View (viewMap)
+import FlareTiming.Map.Track (tableTrack)
 import FlareTiming.Plot.Weight (weightPlot)
 import FlareTiming.Plot.Reach (reachPlot)
 import FlareTiming.Plot.Effort (effortPlot)
@@ -293,6 +294,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                 TaskTabMap -> mdo
                     p <- viewMap utc ix task sphericalRoutes ellipsoidRoutes planarRoute normRoute pt
+                    _ <- tableTrack utc ptfs''
                     p' <- holdDyn nullPilot p
 
                     tfs <- getTaskPilotTrackFlyingSection ix p
@@ -303,6 +305,18 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                     tts <- holdUniqDyn $ zipDynWith (,) tfs' tss'
                     ptfs <- holdUniqDyn $ zipDynWith (,) p' tts
+
+                    ptfs' <-
+                        foldDyn
+                            (\a@(p0, ((p1,_), (p2, _))) b ->
+                                if | nullPilot `elem` [p0, p1, p2] -> b
+                                   | p0 /= p1 -> b
+                                   | p1 /= p2 -> b
+                                   | otherwise -> a : b)
+                            []
+                            (updated ptfs)
+
+                    ptfs'' <- holdUniqDyn ptfs'
 
                     tag <- getTaskPilotTag ix p
                     tag' <- holdDyn (nullPilot, []) (attachPromptlyDyn p' tag)
