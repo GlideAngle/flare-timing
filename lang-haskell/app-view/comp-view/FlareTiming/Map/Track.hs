@@ -13,6 +13,7 @@ module FlareTiming.Map.Track (tableTrack) where
 -- import Reflex.Dom
 -- import qualified Debug.Trace as DT
 import Prelude hiding (map)
+import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
@@ -31,9 +32,14 @@ tableTrack _utc xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    el "th" . dynText $ ffor w hashIdHyphenPilot
-                    el "th" $ text "Flying Fixes"
-                    el "th" $ text "Scored Fixes"
+                    elAttr "th" ("rowspan" =: "2") . dynText $ ffor w hashIdHyphenPilot
+                    el "th" $ text ""
+                    elAttr "th" ("colspan" =: "3") $ text "Fixes"
+                    return ()
+                el "tr" $ do
+                    el "th" $ text "Flying"
+                    el "th" $ text "Scored"
+                    el "th" $ text "Unscored"
                     return ()
             el "tbody" $ simpleList xs (row w)
 
@@ -53,6 +59,7 @@ row w x = do
         td $ ffor2 w p showPilot
         td $ ffor flying (maybe "" showTrackFlyingSection)
         td $ ffor scored (maybe "" showTrackScoredSection)
+        td $ ffor2 flying scored showUnscored
 
 showTrackFlyingSection :: TrackFlyingSection -> T.Text
 showTrackFlyingSection TrackFlyingSection{flyingFixes} =
@@ -61,3 +68,8 @@ showTrackFlyingSection TrackFlyingSection{flyingFixes} =
 showTrackScoredSection :: TrackScoredSection -> T.Text
 showTrackScoredSection TrackScoredSection{scoredFixes} =
     maybe "" (T.pack . show) scoredFixes
+
+showUnscored :: Maybe TrackFlyingSection -> Maybe TrackScoredSection -> T.Text
+showUnscored (Just TrackFlyingSection{flyingFixes = Just (_, fN)}) (Just TrackScoredSection{scoredFixes = Just (_, sN)}) =
+    T.pack . printf "%d" $ fN - sN
+showUnscored _ _ = ""
