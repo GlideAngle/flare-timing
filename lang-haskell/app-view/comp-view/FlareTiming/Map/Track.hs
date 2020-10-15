@@ -16,7 +16,9 @@ import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
+import Data.Time.LocalTime (TimeZone)
 
+import FlareTiming.Time (timeZone, showT)
 import WireTypes.Cross (TrackFlyingSection(..), TrackScoredSection(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Comp (UtcOffset(..))
@@ -27,7 +29,8 @@ tableTrack
     => Dynamic t UtcOffset
     -> Dynamic t [(Pilot, ((Pilot, Maybe TrackFlyingSection), (Pilot, Maybe TrackScoredSection)))]
     -> m ()
-tableTrack _utc xs = do
+tableTrack utcOffset xs = do
+    tz <- sample . current $ timeZone <$> utcOffset
     let w = ffor xs (pilotIdsWidth . fmap fst)
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
@@ -35,41 +38,55 @@ tableTrack _utc xs = do
                     elAttr "th" ("rowspan" =: "2") . dynText $ ffor w hashIdHyphenPilot
                     el "th" $ text ""
                     elAttr "th" ("colspan" =: "3") $ text "Fixes"
+                    elAttr "th" ("colspan" =: "2") $ text "Times"
                     return ()
                 el "tr" $ do
                     el "th" $ text "Flying"
                     el "th" $ text "Scored"
                     el "th" $ text "Unscored"
+                    el "th" $ text "Flying"
+                    el "th" $ text "Scored"
                     return ()
-            el "tbody" $ simpleList xs (row w)
+            el "tbody" $ simpleList xs (row tz w)
 
     return ()
 
 row
     :: MonadWidget t m
-    => Dynamic t Int
+    => TimeZone
+    -> Dynamic t Int
     -> Dynamic t (Pilot, ((Pilot, Maybe TrackFlyingSection), (Pilot, Maybe TrackScoredSection)))
     -> m ()
-row w x = do
+row tz w x = do
     let td = el "td" . dynText
     let p = fst <$> x
     let flying = snd . fst . snd <$> x
     let scored = snd . snd . snd <$> x
     el "tr" $ do
         td $ ffor2 w p showPilot
-        td $ ffor flying (maybe "" showTrackFlyingSection)
-        td $ ffor scored (maybe "" showTrackScoredSection)
+        td $ ffor flying (maybe "" showFlyingFixes)
+        td $ ffor scored (maybe "" showScoredFixes)
         td $ ffor2 flying scored showUnscored
+        td $ ffor flying (maybe "" $ showFlyingTimes tz)
+        td $ ffor scored (maybe "" $ showScoredTimes tz)
 
-showTrackFlyingSection :: TrackFlyingSection -> T.Text
-showTrackFlyingSection TrackFlyingSection{flyingFixes} =
+showFlyingFixes :: TrackFlyingSection -> T.Text
+showFlyingFixes TrackFlyingSection{flyingFixes} =
     maybe "" (T.pack . show) flyingFixes
 
-showTrackScoredSection :: TrackScoredSection -> T.Text
-showTrackScoredSection TrackScoredSection{scoredFixes} =
+showScoredFixes :: TrackScoredSection -> T.Text
+showScoredFixes TrackScoredSection{scoredFixes} =
     maybe "" (T.pack . show) scoredFixes
 
 showUnscored :: Maybe TrackFlyingSection -> Maybe TrackScoredSection -> T.Text
 showUnscored (Just TrackFlyingSection{flyingFixes = Just (_, fN)}) (Just TrackScoredSection{scoredFixes = Just (_, sN)}) =
     T.pack . printf "%d" $ fN - sN
 showUnscored _ _ = ""
+
+showFlyingTimes :: TimeZone -> TrackFlyingSection -> T.Text
+showFlyingTimes tz TrackFlyingSection{flyingTimes} =
+    maybe "" (\(t0, tN) -> T.pack $ printf "[%s, %s]" (showT tz t0) (showT tz tN)) flyingTimes
+
+showScoredTimes :: TimeZone -> TrackScoredSection -> T.Text
+showScoredTimes tz TrackScoredSection{scoredTimes} =
+    maybe "" (\(t0, tN) -> T.pack $ printf "[%s, %s]" (showT tz t0) (showT tz tN)) scoredTimes
