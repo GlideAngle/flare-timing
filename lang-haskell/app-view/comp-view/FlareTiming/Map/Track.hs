@@ -36,9 +36,8 @@ tableTrack utcOffset xs = do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("rowspan" =: "2") . dynText $ ffor w hashIdHyphenPilot
-                    el "th" $ text ""
-                    elAttr "th" ("colspan" =: "3") $ text "Fixes"
-                    elAttr "th" ("colspan" =: "2") $ text "Times"
+                    elAttr "th" ("colspan" =: "3" <> "class" =: "th-map-fixes") $ text "Fixes"
+                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-map-times") $ text "Times"
                     return ()
                 el "tr" $ do
                     el "th" $ text "Flying"
@@ -66,7 +65,7 @@ row tz w x = do
         td $ ffor2 w p showPilot
         td $ ffor flying (maybe "" showFlyingFixes)
         td $ ffor scored (maybe "" showScoredFixes)
-        td $ ffor2 flying scored showUnscored
+        elAttr "td" ("class" =: "td-map-unscored") . dynText $ ffor2 flying scored showUnscored
         td $ ffor flying (maybe "" $ showFlyingTimes tz)
         td $ ffor scored (maybe "" $ showScoredTimes tz)
 
