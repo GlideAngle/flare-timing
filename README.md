@@ -170,7 +170,7 @@ flare-timing includes or not.
 * Stopped Tasks
     - [x] Stopped task time as announcement minus score back
     - [ ] Requirements checking, goal or duration
-    - [ ] Score time window
+    - [x] Score time window
     - [ ] Time points for pilots at or after the end of the speed section
     - [x] Distance points with altitude bonus
 * Penalties
