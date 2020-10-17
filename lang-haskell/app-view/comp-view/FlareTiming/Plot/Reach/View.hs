@@ -4,7 +4,7 @@ module FlareTiming.Plot.Reach.View (reachPlot) where
 
 import Reflex.Dom
 import Data.Maybe (isJust, catMaybes)
-import Data.List (sortOn, find)
+import Data.List (find)
 
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
