@@ -35,7 +35,7 @@ foreign import javascript unsafe
     \  },{\
     \    points: $6\
     \  , fnType: 'points'\
-    \  , color: '#377eb8'\
+    \  , color: '#808080'\
     \  , attr: { r: 5, opacity: 0.5 }\
     \  , graphType: 'scatter'\
     \  },{\

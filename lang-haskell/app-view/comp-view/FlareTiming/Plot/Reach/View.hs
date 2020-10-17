@@ -37,8 +37,8 @@ timeRange xs = let rXs = rawReach <$> xs in (minimum rXs, maximum rXs)
 reValue :: [(Pilot, TrackReach)] -> [(Pilot, TrackReach)] -> [[Double]]
 reValue pxs pys =
     [ [x, y]
-    | (_, TrackReach{reach = PilotDistance x}) <- sortOn fst pxs
-    | (_, TrackReach{frac = ReachFraction y}) <- sortOn fst pys
+    | (_, TrackReach{reach = PilotDistance x}) <- pxs
+    | (_, TrackReach{frac = ReachFraction y}) <- pys
     ]
 
 reachPlot
