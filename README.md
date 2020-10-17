@@ -162,7 +162,7 @@ flare-timing includes or not.
     - [ ] 1000 points for winner before day quality applied
     - [x] Double leading points weight
     - [ ] Proportional leading points weight if no pilot made goal
-    - [ ] Adjustable stopped task bonus glide ratio (fixed at 4:1 for PG and 5:1 for HG)
+    - [x] Adjustable stopped task bonus glide ratio (fixed at 4:1 for PG and 5:1 for HG)
 * Special Cases
     - [ ] End of the speed section but not goal
     - [x] Early start
