@@ -112,6 +112,30 @@ flare-timing includes or not.
 
 * Scoring Method
     - [x] GAP
+        - [ ] GAP2000
+        - [ ] GAP2002
+        - [ ] OzGAP2005
+        - [ ] GAP2007
+        - [ ] GAP2008
+        - [ ] GAP2011
+        - [ ] GAP2013
+        - [ ] GAP2014
+        - [ ] GAP2015
+        - [ ] GAP2016
+        - [ ] GAP2018
+        - [ ] GAP2020
+    - [ ] PWC (GAP variant)
+        - [ ] PWC2007
+        - [ ] PWC2008
+        - [ ] PWC2009
+        - [ ] PWC2011
+        - [ ] PWC2012
+        - [ ] PWC2013
+        - [ ] PWC2014
+        - [ ] PWC2015
+        - [ ] PWC2016
+        - [ ] PWC2017
+        - [ ] GAP2019
     - [ ] Linear distance
     - [ ] Time-based scoring (TBS)
 * Earth Model
