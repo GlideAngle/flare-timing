@@ -77,7 +77,7 @@ reachPlot task sEx xs xsBonus = do
                         let reaches' = snd . unzip $ ys'
                         let reachesBonus' = snd . unzip $ ysBonus'
 
-                        let tt = timeRange reaches
+                        let tt = timeRange reachesBonus
 
                         _ <-
                             if isJust stopped then
