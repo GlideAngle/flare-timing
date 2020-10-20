@@ -28,6 +28,7 @@ import Flight.Comp
     , ensureExt
     , pilotNamed
     )
+import Flight.Track.Stop (effectiveTagging)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
@@ -102,12 +103,13 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     case (compSettings, tagging, stopping, routes) of
         (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frame."
+        (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frames."
         (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just _, Just _, Just _) -> do
+        (Just cs, Just tg, Just stp, Just _) -> do
             let iTasks = (IxTask <$> task)
             let ps = (pilotNamed cs $ PilotName <$> pilot)
-            let ttl = tagTaskLeading tagging
+            let tagging' = Just $ effectiveTagging tg stp
+            let ttl = tagTaskLeading tagging'
 
             let lc1 chk = do
                     let invert = mk1Coef . area1toCoef
@@ -123,4 +125,4 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
 
             let CompSettings{compTweak} = cs
             let lc = if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1
-            lc (check math lookupTaskLength scoredLookup tagging)
+            lc (check math lookupTaskLength scoredLookup tagging')

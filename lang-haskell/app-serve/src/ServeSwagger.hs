@@ -5,7 +5,7 @@
 
 module ServeSwagger (SwagUiApi) where
 
-import Data.Time.Clock (UTCTime)
+import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.Ratio
 import qualified Data.Text as T
 import Text.RawString.QQ
@@ -315,12 +315,14 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, FlyingSection UTCTime) where
 instance ToSchema TrackScoredSection where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & example ?~
-            toJSON
+            (toJSON $
+                let (t0, t1) = (read "2017-04-12 01:55:24 UTC", read "2017-04-12 05:53:01 UTC") in
                 TrackScoredSection
-                    { scoredSeconds = Just (0, 14257)
-                    , scoredTimes = Just (read "2017-04-12 01:55:24 UTC", read "2017-04-12 05:53:01 UTC")
-                    , scoredFixes = Just (0, 7672)
-                    }
+                    { scoredFixes = Just (0, 7672)
+                    , scoredSeconds = Just (0, 14257)
+                    , scoredTimes = Just (t0, t1)
+                    , scoredWindowSeconds = Just . Seconds . round $ t1 `diffUTCTime` t0
+                    })
 
 instance ToSchema TrackFlyingSection where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty

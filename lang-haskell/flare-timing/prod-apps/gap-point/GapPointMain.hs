@@ -46,6 +46,7 @@ import Flight.Comp
     , Tweak(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
+    , PegFrameFile(..)
     , MaskArrivalFile(..)
     , MaskEffortFile(..)
     , MaskLeadFile(..)
@@ -67,6 +68,7 @@ import Flight.Comp
     , compToTaskLength
     , compToCross
     , crossToTag
+    , tagToPeg
     , compToMaskArrival
     , compToMaskEffort
     , compToMaskLead
@@ -81,6 +83,7 @@ import Flight.Comp
 import Flight.Track.Cross
     (InterpolatedFix(..), Crossing(..), ZoneTag(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
+import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Distance
     ( TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Land
     , awardByFrac
@@ -104,7 +107,7 @@ import Flight.Track.Point
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     ( readComp, readRoute
-    , readCrossing, readTagging
+    , readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readMaskingLead
@@ -192,6 +195,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
+    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
     let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
     let maskEffortFile@(MaskEffortFile maskEffortPath) = compToMaskEffort compFile
     let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
@@ -203,6 +207,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading pilots ABS & DNF from task from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
+    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
     putStrLn $ "Reading start and end zone tagging from '" ++ takeFileName tagPath ++ "'"
     putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
     putStrLn $ "Reading effort from '" ++ takeFileName maskEffortPath ++ "'"
@@ -225,6 +230,11 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     tgs <-
         catchIO
             (Just <$> readTagging tagFile)
+            (const $ return Nothing)
+
+    stps <-
+        catchIO
+            (Just <$> readFraming stopFile)
             (const $ return Nothing)
 
     ma <-
@@ -275,20 +285,22 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 startRoute
                 routes
 
-    case (compSettings, cgs, tgs, ma, me, ml2, mr, br, ms, landing, routes) of
-        (Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the crossings."
-        (_, _, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, _, Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking arrivals."
-        (_, _, _, _, Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking effort."
-        (_, _, _, _, _, Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the masking leading."
-        (_, _, _, _, _, _, Nothing, _, _, _, _) -> putStrLn "Couldn't read the masking reach."
-        (_, _, _, _, _, _, _, Nothing, _, _, _) -> putStrLn "Couldn't read the bonus reach."
-        (_, _, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
-        (_, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
-        (_, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just cg, Just tg, Just mA, Just mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) ->
-            writePointing pointFile $ points' cs lookupTaskLength cg tg mA mE mL2 (mR, bR) mS lg
+    case (compSettings, cgs, tgs, stps, ma, me, ml2, mr, br, ms, landing, routes) of
+        (Nothing, _, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the crossings."
+        (_, _, Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, _, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the scored frames."
+        (_, _, _, _, Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking arrivals."
+        (_, _, _, _, _, Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking effort."
+        (_, _, _, _, _, _, Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the masking leading."
+        (_, _, _, _, _, _, _, Nothing, _, _, _, _) -> putStrLn "Couldn't read the masking reach."
+        (_, _, _, _, _, _, _, _, Nothing, _, _, _) -> putStrLn "Couldn't read the bonus reach."
+        (_, _, _, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
+        (_, _, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
+        (_, _, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just cs, Just cg, Just tg, Just stp, Just mA, Just mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) ->
+            let tg' = effectiveTagging tg stp in
+            writePointing pointFile $ points' cs lookupTaskLength cg tg' mA mE mL2 (mR, bR) mS lg
 
 points'
     :: CompSettings k

@@ -112,6 +112,45 @@ flare-timing includes or not.
 
 * Scoring Method
     - [x] GAP
+        - [ ] GAP2000
+        - [ ] GAP2002
+        - [ ] OzGAP2005
+        - [ ] GAP2007
+        - [ ] GAP2008
+        - [x] GAP2011 tested with:
+            Forbes [2012](http://2012-forbes.flaretiming.com)
+            , Forbes [2014](http://2014-forbes.flaretiming.com)
+            , Forbes [2015](http://2015-forbes.flaretiming.com)            
+        - [x] GAP2013 tested with:
+            Forbes [2017](http://2017-forbes.flaretiming.com)
+        - [ ] GAP2014
+        - [x] GAP2015 tested with:
+            Big Spring [2016](http://2016-big-spring.flaretiming.com)
+            , Green Swamp [2016](http://2016-greenswamp.flaretiming.com)
+            , Green Swamp Sport [2016](http://2016-greenswamp-sport.flaretiming.com)
+            , Forbes [2016](http://2016-forbes.flaretiming.com)
+            , Quest [2016](http://2016-quest.flaretiming.com)
+        - [x] GAP2016 tested with:
+            Dalmatian [2018](http://2018-dalmatian.flaretiming.com)
+            , Dalby [2017](http://2017-dalby.flaretiming.com)
+            , Forbes [2018](http://2018-forbes.flaretiming.com)
+            , Forbes [2019](http://2018-forbes.flaretiming.com)
+        - [x] GAP2018 tested with:
+            Dalmatian [2019](http://2019-dalmatian.flaretiming.com)
+            , Italy [2019](http://2019-italy.flaretiming.com)
+        - [ ] GAP2020
+    - [ ] PWC (GAP variant)
+        - [ ] PWC2007
+        - [ ] PWC2008
+        - [ ] PWC2009
+        - [ ] PWC2011
+        - [ ] PWC2012
+        - [ ] PWC2013
+        - [ ] PWC2014
+        - [ ] PWC2015
+        - [ ] PWC2016
+        - [ ] PWC2017
+        - [ ] GAP2019
     - [ ] Linear distance
     - [ ] Time-based scoring (TBS)
 * Earth Model
@@ -162,7 +201,7 @@ flare-timing includes or not.
     - [ ] 1000 points for winner before day quality applied
     - [x] Double leading points weight
     - [ ] Proportional leading points weight if no pilot made goal
-    - [ ] Adjustable stopped task bonus glide ratio (fixed at 4:1 for PG and 5:1 for HG)
+    - [x] Adjustable stopped task bonus glide ratio (fixed at 4:1 for PG and 5:1 for HG)
 * Special Cases
     - [ ] End of the speed section but not goal
     - [x] Early start
@@ -170,7 +209,7 @@ flare-timing includes or not.
 * Stopped Tasks
     - [x] Stopped task time as announcement minus score back
     - [ ] Requirements checking, goal or duration
-    - [ ] Score time window
+    - [x] Score time window
     - [ ] Time points for pilots at or after the end of the speed section
     - [x] Distance points with altitude bonus
 * Penalties

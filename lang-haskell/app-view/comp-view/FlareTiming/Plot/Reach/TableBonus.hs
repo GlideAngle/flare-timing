@@ -26,7 +26,7 @@ tablePilotReachBonus
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
 tablePilotReachBonus sEx xs xsBonus select = do
-    let tdFoot = elAttr "td" ("colspan" =: "6")
+    let tdFoot = elAttr "td" ("colspan" =: "10")
     let foot = el "tr" . tdFoot . text
     let w = ffor xs (pilotIdsWidth . fmap fst)
 

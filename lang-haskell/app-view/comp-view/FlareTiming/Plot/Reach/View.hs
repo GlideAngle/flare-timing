@@ -4,7 +4,7 @@ module FlareTiming.Plot.Reach.View (reachPlot) where
 
 import Reflex.Dom
 import Data.Maybe (isJust, catMaybes)
-import Data.List (sortOn, find)
+import Data.List (find)
 
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
@@ -37,8 +37,8 @@ timeRange xs = let rXs = rawReach <$> xs in (minimum rXs, maximum rXs)
 reValue :: [(Pilot, TrackReach)] -> [(Pilot, TrackReach)] -> [[Double]]
 reValue pxs pys =
     [ [x, y]
-    | (_, TrackReach{reach = PilotDistance x}) <- sortOn fst pxs
-    | (_, TrackReach{frac = ReachFraction y}) <- sortOn fst pys
+    | (_, TrackReach{reach = PilotDistance x}) <- pxs
+    | (_, TrackReach{frac = ReachFraction y}) <- pys
     ]
 
 reachPlot
@@ -77,7 +77,7 @@ reachPlot task sEx xs xsBonus = do
                         let reaches' = snd . unzip $ ys'
                         let reachesBonus' = snd . unzip $ ysBonus'
 
-                        let tt = timeRange reaches
+                        let tt = timeRange reachesBonus
 
                         _ <-
                             if isJust stopped then

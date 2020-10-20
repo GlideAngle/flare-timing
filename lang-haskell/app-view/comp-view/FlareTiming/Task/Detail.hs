@@ -11,7 +11,7 @@ import WireTypes.Pilot
     (Pilot(..), Nyp(..), Dnf(..), DfNoTrack(..), Penal(..), nullPilot)
 import qualified WireTypes.Comp as Comp
 import WireTypes.Comp
-    ( UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..), ScoreBackTime
+    ( Discipline(..), UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..), ScoreBackTime
     , EarthModel(..), EarthMath(..)
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
     , showScoreBackTime
@@ -41,6 +41,7 @@ import FlareTiming.Comms
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map.View (viewMap)
+import FlareTiming.Map.Track (tableTrack)
 import FlareTiming.Plot.Weight (weightPlot)
 import FlareTiming.Plot.Reach (reachPlot)
 import FlareTiming.Plot.Effort (effortPlot)
@@ -88,18 +89,19 @@ showRetro tz TaskStop{..} = showT tz retroactive
 
 taskTileZones
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => Dynamic t Discipline
+    -> Dynamic t UtcOffset
     -> Dynamic t (Maybe ScoreBackTime)
     -> Dynamic t Task
     -> Dynamic t (Maybe TaskLength)
     -> m ()
-taskTileZones utcOffset sb t len = do
+taskTileZones hgOrPg utcOffset sb t len = do
     tz <- sample . current $ timeZone <$> utcOffset
     let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
     let title = T.intercalate "-" <$> zs
     let ss = getSpeedSection <$> t
-    let gs = length . getStartGates <$> t
+    let gsNum = length . getStartGates <$> t
     let d = ffor len (maybe "" $ \TaskLength{..} -> showTaskDistance taskRoute)
     let stp = stopped <$> t
 
@@ -117,12 +119,12 @@ taskTileZones utcOffset sb t len = do
 
                 dyn_ $ ffor ss (\case
                     Just _ -> do
-                        let kind = ffor gs (\case
+                        let kind = ffor gsNum (\case
                                     0 -> " elapsed time*"
                                     1 -> " race to goal* with a single start gate"
                                     n -> " race to goal* with " <> (T.pack . show $ n) <> " start gates")
 
-                        let sideNote = ffor gs (\case 0 -> elapsedNote; _ -> raceNote)
+                        let sideNote = ffor gsNum (\case 0 -> elapsedNote; _ -> raceNote)
 
                         elClass "p" "level subtitle is-6" $ do
                             elClass "span" "level-item level-left" $ do
@@ -140,10 +142,10 @@ taskTileZones utcOffset sb t len = do
                                 dynText d
                                 dynText $ openKind)
 
-                dyn_ $ ffor2 stp sb (\x y ->
-                    case x of
-                        Nothing -> return ()
-                        Just x' -> do
+                dyn_ $ ffor3 hgOrPg stp sb (\hgOrPg' x y ->
+                    case (hgOrPg', x) of
+                        (_, Nothing) -> return ()
+                        (Paragliding, Just x') -> do
                             let stop = "Stopped at " <> showStop tz x' <> "†"
 
                             elClass "p" "level subtitle is-6" $ do
@@ -161,7 +163,27 @@ taskTileZones utcOffset sb t len = do
                                                 <> showRetro tz x'
 
                                         elClass "span" "level-item level-right" $
-                                            el "strong" $ text back)
+                                            el "strong" $ text back
+                        (HangGliding, Just x') -> do
+                            let stop = "Stopped at " <> showStop tz x' <> "†"
+                            sbGates <- sample . current $ ffor gsNum (\case
+                                            0 -> "15 mins with no start gates"
+                                            1 -> "15 mins with one start gate"
+                                            _ -> "the start gate interval")
+
+                            elClass "p" "level subtitle is-6" $ do
+                                elClass "span" "level-item level-left" $ do
+                                            elClass "span" "level-item level-right" $
+                                                el "strong" $ text stop
+
+                                let back =
+                                        "† Scored back by "
+                                        <> sbGates
+                                        <> " to "
+                                        <> showRetro tz x'
+
+                                elClass "span" "level-item level-right" $
+                                    el "strong" $ text back)
 
 taskDetail
     :: MonadWidget t m
@@ -226,7 +248,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     let tp = (fmap . fmap) taskPoints alloc
     let wg = (fmap . fmap) weight alloc
 
-    taskTileZones utc sb task ln
+    taskTileZones hgOrPg utc sb task ln
     es <- crumbTask ix task comp
     tabTask <- tabsTask
 
@@ -272,6 +294,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                 TaskTabMap -> mdo
                     p <- viewMap utc ix task sphericalRoutes ellipsoidRoutes planarRoute normRoute pt
+                    _ <- tableTrack utc ptfs''
                     p' <- holdDyn nullPilot p
 
                     tfs <- getTaskPilotTrackFlyingSection ix p
@@ -282,6 +305,18 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                     tts <- holdUniqDyn $ zipDynWith (,) tfs' tss'
                     ptfs <- holdUniqDyn $ zipDynWith (,) p' tts
+
+                    ptfs' <-
+                        foldDyn
+                            (\a@(p0, ((p1,_), (p2, _))) b ->
+                                if | nullPilot `elem` [p0, p1, p2] -> b
+                                   | p0 /= p1 -> b
+                                   | p1 /= p2 -> b
+                                   | otherwise -> a : b)
+                            []
+                            (updated ptfs)
+
+                    ptfs'' <- holdUniqDyn ptfs'
 
                     tag <- getTaskPilotTag ix p
                     tag' <- holdDyn (nullPilot, []) (attachPromptlyDyn p' tag)

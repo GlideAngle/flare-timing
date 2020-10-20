@@ -42,7 +42,7 @@ import qualified Flight.Track.Cross as Cg (Crossing(..), PilotTrackCross(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
 import qualified Flight.Track.Stop as Sp (Framing(..))
 import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..), TrackCross(..))
-import Flight.Track.Stop (TrackScoredSection(..))
+import Flight.Track.Stop (StopFraming(..), TrackScoredSection(..))
 import Flight.Track.Distance (TrackReach(..))
 import Flight.Track.Land
     (Landing(..), TaskLanding(..), TrackEffort(..), effortRank, taskLanding)
@@ -1004,7 +1004,7 @@ getTaskPilotTrackScoredSection ii pilotId = do
             case take 1 $ drop jj fss' of
                 fs : _ ->
                     case find (isPilot . fst) fs of
-                        Just (_, Just y) -> return y
+                        Just (_, StopFraming{stopScored = Just y}) -> return y
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
 
