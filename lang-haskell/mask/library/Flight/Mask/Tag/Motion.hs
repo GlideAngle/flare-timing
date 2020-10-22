@@ -465,4 +465,4 @@ jumpGaps :: [Int] -> [Int]
 jumpGaps xs =
     if ys == xs then ys else jumpGaps ys
     where
-        ys = sum <$> chop jumpGap xs
+        ys = strictSum <$> chop jumpGap xs
