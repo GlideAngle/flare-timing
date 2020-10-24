@@ -165,9 +165,15 @@ xpRankScore =
                     $ Stats.max 0 dL
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
+
+                -- WARNING: FS always has a time for ss_time but airscore uses
+                -- "" instead of "00:00:00" when the pilot didn't complete the
+                -- speed section.
                 , timeElapsed =
-                    if ssE == Just "00:00:00" then Nothing else
-                    toPilotTime . parseHmsTime <$> ssE
+                    if | ssE == Just "00:00:00" -> Nothing
+                       | ssE == Just "" -> Nothing
+                       | otherwise -> toPilotTime . parseHmsTime <$> ssE
+
                 , leadingArea = LeadingArea zero
                 , leadingCoef = LeadingCoef zero
                 }
