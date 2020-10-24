@@ -242,10 +242,12 @@ addHoursHms
     (Hour h)
     (HMS (Hour hh) mm ss) =
     HMS (Hour $ hh + h) mm ss
+{-# INLINABLE addHoursHms #-}
 
 addHoursIgc :: Hour -> IgcRecord -> IgcRecord
 addHoursIgc h x@B{hms} = x{hms = addHoursHms h hms}
 addHoursIgc _ x = x
+{-# INLINABLE addHoursIgc #-}
 
 showDegreeOfLat :: Degree -> String
 showDegreeOfLat (Degree d) = printf "%02d°" d
@@ -322,6 +324,7 @@ isMark HFDTEDATE{} = True
 isMark HFDTE{} = True
 isMark G{} = False
 isMark Ignore = False
+{-# INLINABLE isMark #-}
 
 -- | Is the record a __@B@__ record?
 isFix :: IgcRecord -> Bool
@@ -330,6 +333,7 @@ isFix HFDTEDATE{} = False
 isFix HFDTE{} = False
 isFix G{} = False
 isFix Ignore = False
+{-# INLINABLE isFix #-}
 
 {--
 B: record type is a basic tracklog record

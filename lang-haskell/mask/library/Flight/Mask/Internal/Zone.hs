@@ -132,6 +132,7 @@ fixToPoint fix =
     where
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
+{-# INLINABLE fixToPoint #-}
 
 rowToPoint :: (Eq a, Ord a, Fractional a) => TimeRow -> TrackZone a
 rowToPoint
