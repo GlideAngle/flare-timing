@@ -3,7 +3,7 @@ module Flight.Fsdb.Comp (parseComp) where
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc', xpWrap, xp9Tuple, xpFilterAttr, xpDefault
-    , xpElem, xpTrees, xpAttr, xpPrim, xpInt, xpOption, xpTextAttr
+    , xpElem, xpTrees, xpAttr, xpPrim, xpOption, xpTextAttr
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -39,7 +39,7 @@ xpComp =
         <+> hasName "score_back"
         )
     $ xpWrap
-        ( \(i, n, d, l, f, t, utc, s, _) ->
+        ( \(i, n, d, l, f, t, utc :: Double, s, _) ->
             let e = EarthAsFlat UTM; em = Pythagorus in
             Comp
                 { civilId = i
@@ -48,7 +48,7 @@ xpComp =
                 , location = l
                 , from = f
                 , to = t
-                , utcOffset = UtcOffset $ 60 * utc
+                , utcOffset = UtcOffset . round $ 60.0 * utc
                 , scoreBack = s
                 , give = Nothing
                 , earth = e
@@ -61,7 +61,7 @@ xpComp =
             , location
             , from
             , to
-            , let (UtcOffset utc) = utcOffset in utc `div` 60
+            , fromIntegral $ let (UtcOffset utc) = utcOffset in utc `div` 60
             , scoreBack
             , []
             )
@@ -73,7 +73,7 @@ xpComp =
         (xpTextAttr "location")
         (xpTextAttr "from")
         (xpTextAttr "to")
-        (xpAttr "utc_offset" xpInt)
+        (xpAttr "utc_offset" xpPrim)
         (xpOption $ xpAttr "score_back" xpPrim)
         xpTrees
 
