@@ -33,6 +33,7 @@ import Control.Monad.Except (ExceptT(..), MonadError)
 import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList)
+import Data.Vector (Vector)
 import Numeric.Sampling
 import System.FilePath (takeFileName)
 
@@ -775,8 +776,11 @@ getTaskPointsDiffStats = do
              in do
                     es'' <- es'
                     let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''
-                    let (mean, variance) = Stats.meanVariance $ V.fromList xs
+                    (mean, variance) <- maybeMeanVariance $ V.fromList xs
                     return (mean, sqrt variance)
+
+maybeMeanVariance :: Vector Double -> Maybe (Double, Double)
+maybeMeanVariance xs = if null xs then Nothing else Just $ Stats.meanVariance xs
 
 ellipsoidRouteLength :: TaskTrack -> Maybe (QTaskDistance Double [u| m |])
 ellipsoidRouteLength
