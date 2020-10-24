@@ -23,10 +23,11 @@ import Data.List (sortBy, partition)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_, join)
+import Control.Monad.Zip (mzip)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
 import "newtype" Control.Newtype (Newtype(..))
-import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
+import Data.UnitsOfMeasure ((/:), u, convert, unQuantity, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (QAlt)
@@ -418,7 +419,7 @@ points'
         maybeTasks :: [a -> Maybe a]
         maybeTasks =
             [ if b == [u| 0 km |] then const Nothing else Just
-            | ReachStats{max = FlownMax b} <- bolsterStatsF
+            | b <- maybe zero (\ReachStats{max = FlownMax d} -> d) <$> bolsterStatsF
             ]
 
         lvs =
@@ -444,8 +445,8 @@ points'
                 (ReachToggle{extra = bE, flown = bF})
                 s
             | pf <- PilotsFlying <$> dfss
-            | ReachStats{max = bE} <- bolsterStatsE
-            | ReachStats{max = bF} <- bolsterStatsF
+            | bE <- maybe (FlownMax zero) (\ReachStats{max = d} -> d) <$> bolsterStatsE
+            | bF <- maybe (FlownMax zero) (\ReachStats{max = d} -> d) <$> bolsterStatsF
             | s <- dSums
             ]
 
@@ -464,8 +465,8 @@ points'
 
                 | ssT <- f ssBestTime
                 | gsT <- f gsBestTime
-                | ReachStats{max = bE} <- bolsterStatsE
-                | ReachStats{max = bF} <- bolsterStatsF
+                | bE <- maybe (FlownMax zero) (\ReachStats{max = d} -> d) <$> bolsterStatsE
+                | bF <- maybe (FlownMax zero) (\ReachStats{max = d} -> d) <$> bolsterStatsF
                 ]
 
         workings :: [Maybe ValidityWorking] =
@@ -512,7 +513,7 @@ points'
             | gr <- grs
             | dw <- dws
             | tw <- taskTweak <$> tasks
-            | ReachStats{max = FlownMax bd} <- bolsterStatsE
+            | bd <- maybe zero (\ReachStats{max = FlownMax d} -> d) <$> bolsterStatsE
             | td <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> lsWholeTask
             ]
 
@@ -569,6 +570,7 @@ points'
                 do
                     _ <- sp
                     ed' <- ed
+
                     let ls = PilotsLanded . fromIntegral . length $ snd <$> landedByStop
                     let sf = PilotsFlying . fromIntegral . length $ snd <$> stillFlying
                     let r = ReachToggle{extra = rE, flown = rF}
@@ -611,18 +613,20 @@ points'
         -- NOTE: Pilots either get to goal or have a nigh distance.
         nighDistanceDfE :: [[(Pilot, Maybe Double)]] =
             [ let xs' = (fmap . fmap) madeNigh xs
-                  ys' = (fmap . fmap) (const . Just $ unFlownMaxAsKm b) ys
+                  f = (\ReachStats{max = b} -> unFlownMaxAsKm b) <$> rStats
+                  ys' = (fmap . fmap) (const f) ys
               in (xs' ++ ys')
-            | ReachStats{max = b} <- bolsterStatsE
+            | rStats <- bolsterStatsE
             | xs <- nighE
             | ys <- arrivalRank
             ]
 
         nighDistanceDfF :: [[(Pilot, Maybe Double)]] =
             [ let xs' = (fmap . fmap) madeNigh xs
-                  ys' = (fmap . fmap) (const . Just $ unFlownMaxAsKm b) ys
+                  f = (\ReachStats{max = b} -> unFlownMaxAsKm b) <$> rStats
+                  ys' = (fmap . fmap) (const f) ys
               in (xs' ++ ys')
-            | ReachStats{max = b} <- bolsterStatsF
+            | rStats <- bolsterStatsF
             | xs <- nighF
             | ys <- arrivalRank
             ]
@@ -738,11 +742,11 @@ points'
                 TooEarlyPoints . assumeProp . refined . round . unpack
                 $ maybe
                     (LinearPoints 0)
-                    (\ps' ->
+                    (\(ReachStats{max = FlownMax b}, ps') ->
                         let bd = Just . TaskDistance $ convert b in
                         (applyLinear free bd ps') (Just . unQuantity $ unpack free))
-                    ps
-            | ReachStats{max = FlownMax b} <- bolsterStatsE
+                    (mzip rStats ps)
+            | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
             ]
 
@@ -752,11 +756,11 @@ points'
                 LaunchToStartPoints . assumeProp . refined . round . unpack
                 $ maybe
                     (LinearPoints 0)
-                    (\ps' ->
+                    (\(ReachStats{max = FlownMax b}, ps') ->
                         let bd = Just . TaskDistance $ convert b
                         in (applyLinear free bd ps') launchToStart)
-                    ps
-            | ReachStats{max = FlownMax b} <- bolsterStatsE
+                    (mzip rStats ps)
+            | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
             | launchToStart <-
                 (fmap . fmap)
@@ -770,11 +774,11 @@ points'
         nighDistancePointsDfE :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' ->
+                (\(ReachStats{max = FlownMax b}, ps') ->
                     let bd = Just . TaskDistance $ convert b in
                     (fmap . fmap) (applyLinear free bd ps') ds)
-                ps
-            | ReachStats{max = FlownMax b} <- bolsterStatsE
+                (mzip rStats ps)
+            | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDfE
             ]
@@ -782,11 +786,11 @@ points'
         nighDistancePointsDfNoTrackE :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' ->
+                (\(ReachStats{max = FlownMax b}, ps') ->
                     let bd = Just . TaskDistance $ convert b in
                     (fmap . fmap) (applyLinear free bd ps') ds)
-                ps
-            | ReachStats{max = FlownMax b} <- bolsterStatsE
+                (mzip rStats ps)
+            | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDfNoTrackE
             ]

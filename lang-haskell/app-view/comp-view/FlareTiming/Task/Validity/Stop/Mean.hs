@@ -21,6 +21,14 @@ viewStopMean
     -> m ()
 viewStopMean ValidityWorking{stop = Nothing} _ _ _ = return ()
 viewStopMean _ ValidityWorking{stop = Nothing} _ _ = return ()
+viewStopMean ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ _ = return ()
+viewStopMean ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ _ = return ()
+viewStopMean _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ = return ()
+viewStopMean _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ = return ()
+viewStopMean _ _ Stats.BolsterStats{bolster = Nothing} _ = return ()
+viewStopMean _ _ Stats.BolsterStats{reach = Nothing} _ = return ()
+viewStopMean _ _ _ Stats.BolsterStats{bolster = Nothing} = return ()
+viewStopMean _ _ _ Stats.BolsterStats{reach = Nothing} = return ()
 viewStopMean
     -- | Working from flare-timing.
     ValidityWorking
@@ -29,10 +37,12 @@ viewStopMean
                 { reachStats =
                     ReachToggle
                         { extra =
+                            Just
                             ReachStats
                                 { mean = meanE
                                 }
                         , flown =
+                            Just
                             ReachStats
                                 { mean = meanF
                                 }
@@ -46,10 +56,12 @@ viewStopMean
                 { reachStats =
                     ReachToggle
                         { extra =
+                            Just
                             ReachStats
                                 { mean = meanEN
                                 }
                         , flown =
+                            Just
                             ReachStats
                                 { mean = meanFN
                                 }
@@ -59,10 +71,12 @@ viewStopMean
     -- | Reach as flown.
     Stats.BolsterStats
         { bolster =
+            Just
             ReachStats
                 { mean = meanB
                 }
         , reach =
+            Just
             ReachStats
                 { mean = _meanF
                 }
@@ -70,10 +84,12 @@ viewStopMean
     -- | With extra altitude converted by way of glide to extra reach.
     Stats.BolsterStats
         { bolster =
+            Just
             ReachStats
                 { mean = meanBE
                 }
         , reach =
+            Just
             ReachStats
                 { mean = _meanE
                 }

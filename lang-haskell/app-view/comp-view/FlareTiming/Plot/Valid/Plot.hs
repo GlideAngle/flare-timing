@@ -416,6 +416,7 @@ fnReach (MinimumDistance dMin) d n
     | otherwise = Stats.min 1 $ (n - dMin) / d
 
 stopByReachPlot :: IsElement e => e -> StopValidity -> StopValidityWorking -> IO Plot
+stopByReachPlot _ _ StopValidityWorking{reachStats = ReachToggle{flown = Nothing}} = error "flown is missing"
 stopByReachPlot
     e
     (StopValidity y)
@@ -423,6 +424,7 @@ stopByReachPlot
         { reachStats =
             ReachToggle
                 { flown =
+                    Just
                     ReachStats
                         { max = PilotDistance bd
                         , mean = PilotDistance dMean
@@ -458,8 +460,8 @@ stopByReachPlot
             (toJSString msgBest)
 
 fnStopByReach :: StopValidityWorking -> Double -> Double
-fnStopByReach
-    StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByReach StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByReach StopValidityWorking{reachStats = ReachToggle{flown = Nothing}} _ = error "flown is missing"
 fnStopByReach
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
@@ -469,6 +471,7 @@ fnStopByReach
         , reachStats =
             ReachToggle
                 { flown =
+                    Just
                     ReachStats
                         { max = PilotDistance bd
                         , stdDev = PilotDistance flownStdDev
@@ -517,8 +520,8 @@ stopByLandedPlot
             (toJSString msg)
 
 fnStopByLanded :: StopValidityWorking -> Double -> Double
-fnStopByLanded
-    StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByLanded StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByLanded StopValidityWorking{reachStats = ReachToggle{flown = Nothing}} _ = error "flown is missing"
 fnStopByLanded
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
@@ -527,6 +530,7 @@ fnStopByLanded
         , reachStats =
             ReachToggle
                 { flown =
+                    Just
                     ReachStats
                         { max = PilotDistance bd
                         , mean = PilotDistance flownMean
@@ -542,6 +546,7 @@ fnStopByLanded
             b = landed / (fromIntegral flying :: Double)
 
 stopByVaryPlot :: IsElement e => e -> StopValidity -> StopValidityWorking -> IO Plot
+stopByVaryPlot _ _ StopValidityWorking{reachStats = ReachToggle{flown = Nothing}} = error "flown is missing"
 stopByVaryPlot
     e
     (StopValidity y)
@@ -549,6 +554,7 @@ stopByVaryPlot
         { reachStats =
             ReachToggle
                 { flown =
+                    Just
                     ReachStats
                         { max = PilotDistance bd
                         , stdDev = PilotDistance std
@@ -581,8 +587,8 @@ stopByVaryPlot
             (toJSString msg)
 
 fnStopByVary :: StopValidityWorking -> Double -> Double
-fnStopByVary
-    StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByVary StopValidityWorking{launchToEssDistance = Nothing} _ = 1
+fnStopByVary StopValidityWorking{reachStats = ReachToggle{flown = Nothing}} _ = error "flown is missing"
 fnStopByVary
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
@@ -592,6 +598,7 @@ fnStopByVary
         , reachStats =
             ReachToggle
                 { flown =
+                    Just
                     ReachStats
                         { max = PilotDistance bd
                         , mean = PilotDistance flownMean

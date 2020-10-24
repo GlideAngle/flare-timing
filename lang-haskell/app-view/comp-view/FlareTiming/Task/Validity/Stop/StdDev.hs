@@ -21,6 +21,14 @@ viewStopStdDev
     -> m ()
 viewStopStdDev ValidityWorking{stop = Nothing} _ _ _ = return ()
 viewStopStdDev _ ValidityWorking{stop = Nothing} _ _ = return ()
+viewStopStdDev ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ _ = return ()
+viewStopStdDev ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ _ = return ()
+viewStopStdDev _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ = return ()
+viewStopStdDev _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ = return ()
+viewStopStdDev _ _ Stats.BolsterStats{bolster = Nothing} _ = return ()
+viewStopStdDev _ _ Stats.BolsterStats{reach = Nothing} _ = return ()
+viewStopStdDev _ _ _ Stats.BolsterStats{bolster = Nothing} = return ()
+viewStopStdDev _ _ _ Stats.BolsterStats{reach = Nothing} = return ()
 viewStopStdDev
     -- | Working from flare-timing.
     ValidityWorking
@@ -29,10 +37,12 @@ viewStopStdDev
                 { reachStats =
                     ReachToggle
                         { extra =
+                            Just
                             ReachStats
                                 { stdDev = sdE
                                 }
                         , flown =
+                            Just
                             ReachStats
                                 { stdDev = sdF
                                 }
@@ -46,10 +56,12 @@ viewStopStdDev
                 { reachStats =
                     ReachToggle
                         { extra =
+                            Just
                             ReachStats
                                 { stdDev = sdEN
                                 }
                         , flown =
+                            Just
                             ReachStats
                                 { stdDev = sdFN
                                 }
@@ -59,10 +71,12 @@ viewStopStdDev
     -- | Reach as flown.
     Stats.BolsterStats
         { bolster =
+            Just
             ReachStats
                 { stdDev = sdB
                 }
         , reach =
+            Just
             ReachStats
                 { stdDev = _sdF
                 }
@@ -70,10 +84,12 @@ viewStopStdDev
     -- | With extra altitude converted by way of glide to extra reach.
     Stats.BolsterStats
         { bolster =
+            Just
             ReachStats
                 { stdDev = sdBE
                 }
         , reach =
+            Just
             ReachStats
                 { stdDev = _sdE
                 }

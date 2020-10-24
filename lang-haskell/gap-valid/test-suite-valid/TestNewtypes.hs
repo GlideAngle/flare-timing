@@ -55,26 +55,28 @@ instance QC.Arbitrary TvTest where
         (NormalSum (x, y, z)) <- arbitrary
         return $ TvTest (LaunchValidity x, DistanceValidity y, TimeValidity z)
 
-mkReachStats :: [Double] -> ReachToggle ReachStats
+mkReachStats :: [Double] -> ReachToggle (Maybe ReachStats)
 
 mkReachStats [] =
     let x =
-            ReachStats
-                { max = FlownMax zero
-                , mean = FlownMean zero
-                , stdDev = FlownStdDev zero
-                }
+            Just
+                ReachStats
+                    { max = FlownMax zero
+                    , mean = FlownMean zero
+                    , stdDev = FlownStdDev zero
+                    }
 
     in ReachToggle{extra = x, flown = x}
 
 mkReachStats xs =
     let (xsMean, xsVariance) = Stats.meanVariance $ V.fromList xs
         x =
-            ReachStats
-                { max = FlownMax . MkQuantity $ maximum xs
-                , mean = FlownMean $ MkQuantity xsMean
-                , stdDev = FlownStdDev . MkQuantity $ sqrt xsVariance
-                }
+            Just
+                ReachStats
+                    { max = FlownMax . MkQuantity $ maximum xs
+                    , mean = FlownMean $ MkQuantity xsMean
+                    , stdDev = FlownStdDev . MkQuantity $ sqrt xsVariance
+                    }
 
     in ReachToggle{extra = x, flown = x}
 
@@ -89,7 +91,7 @@ newtype StopValidityTest =
             , LaunchToEss (Quantity Double [u| km |])
             )
         ,
-            ReachToggle ReachStats
+            ReachToggle (Maybe ReachStats)
         )
         deriving Show
 

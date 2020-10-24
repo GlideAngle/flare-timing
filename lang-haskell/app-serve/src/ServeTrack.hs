@@ -34,7 +34,7 @@ tagToTrack (PilotTrackTag _ (Just TrackTag{zonesTag = xs})) = xs
 
 data BolsterStats =
     BolsterStats
-        { bolster :: ReachStats
-        , reach :: ReachStats
+        { bolster :: Maybe ReachStats
+        , reach :: Maybe ReachStats
         }
     deriving (Generic, ToJSON)

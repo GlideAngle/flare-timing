@@ -23,8 +23,8 @@ data TrackReach =
 
 data BolsterStats =
     BolsterStats
-        { bolster :: ReachStats
-        , reach :: ReachStats
+        { bolster :: Maybe ReachStats
+        , reach :: Maybe ReachStats
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)

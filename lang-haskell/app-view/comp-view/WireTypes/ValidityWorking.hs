@@ -289,7 +289,7 @@ data StopValidityWorking =
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
         , launchToEssDistance :: Maybe LaunchToEss
-        , reachStats :: ReachToggle ReachStats
+        , reachStats :: ReachToggle (Maybe ReachStats)
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

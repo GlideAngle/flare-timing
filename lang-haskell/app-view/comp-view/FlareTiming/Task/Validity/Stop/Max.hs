@@ -21,6 +21,14 @@ viewStopMax
     -> m ()
 viewStopMax ValidityWorking{stop = Nothing} _ _ _ = return ()
 viewStopMax _ ValidityWorking{stop = Nothing} _ _ = return ()
+viewStopMax ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ _ = return ()
+viewStopMax ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ _ = return ()
+viewStopMax _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ = return ()
+viewStopMax _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ = return ()
+viewStopMax _ _ Stats.BolsterStats{bolster = Nothing} _ = return ()
+viewStopMax _ _ Stats.BolsterStats{reach = Nothing} _ = return ()
+viewStopMax _ _ _ Stats.BolsterStats{bolster = Nothing} = return ()
+viewStopMax _ _ _ Stats.BolsterStats{reach = Nothing} = return ()
 viewStopMax
     -- | Working from flare-timing.
     ValidityWorking
@@ -29,10 +37,12 @@ viewStopMax
                 { reachStats =
                     ReachToggle
                         { extra =
+                            Just
                             ReachStats
                                 { max = maxE
                                 }
                         , flown =
+                            Just
                             ReachStats
                                 { max = maxF
                                 }
@@ -46,10 +56,12 @@ viewStopMax
                 { reachStats =
                     ReachToggle
                         { extra =
+                            Just
                             ReachStats
                                 { max = maxEN
                                 }
                         , flown =
+                            Just
                             ReachStats
                                 { max = maxFN
                                 }
@@ -59,10 +71,12 @@ viewStopMax
     -- | Reach as flown.
     Stats.BolsterStats
         { bolster =
+            Just
             ReachStats
                 { max = maxB
                 }
         , reach =
+            Just
             ReachStats
                 { max = _maxF
                 }
@@ -70,10 +84,12 @@ viewStopMax
     -- | With extra altitude converted by way of glide to extra reach.
     Stats.BolsterStats
         { bolster =
+            Just
             ReachStats
                 { max = maxBE
                 }
         , reach =
+            Just
             ReachStats
                 { max = _maxE
                 }

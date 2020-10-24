@@ -579,7 +579,7 @@ instance ToSchema NominalDistanceArea
 instance ToSchema TimeValidityWorking
 instance ToSchema StopValidityWorking
 instance ToSchema ReachStats
-instance ToSchema (ReachToggle ReachStats)
+instance ToSchema (ReachToggle (Maybe ReachStats))
 instance ToSchema PilotsAtEss
 instance ToSchema PilotsLanded
 instance ToSchema NormBreakdown

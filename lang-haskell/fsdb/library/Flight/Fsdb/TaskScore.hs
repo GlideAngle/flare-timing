@@ -431,13 +431,13 @@ xpStopValidityWorking =
                     , flying = PilotsFlying $ fromIntegral pf
                     , reachStats =
                         ReachToggle
-                            { extra =
+                            { extra = Just $
                                 ReachStats
                                     { max = FlownMax $ convert qExtraMax
                                     , mean = FlownMean [u| 0 km |]
                                     , stdDev = FlownStdDev [u| 0 km |]
                                     }
-                            , flown =
+                            , flown =Just $
                                 ReachStats
                                     { max = FlownMax $ convert qFlownMax
                                     , mean = FlownMean [u| 0 km |]
@@ -450,25 +450,28 @@ xpStopValidityWorking =
                 { pilotsAtEss = PilotsAtEss pe
                 , landed = PilotsLanded pl
                 , flying = PilotsFlying pf
-                , reachStats =
-                    ReachToggle
-                        { extra = ReachStats{max = FlownMax qExtraMax}
-                        , flown = ReachStats{max = FlownMax qFlownMax}
-                        }
+                , reachStats = ReachToggle{extra, flown}
                 , launchToEssDistance = ed
                 } ->
-                    let (MkQuantity eMax) :: Quantity _ [u| km |] = convert qExtraMax
-                        (MkQuantity fMax) :: Quantity _ [u| km |] = convert qFlownMax
-                    in
-                        ( fromIntegral pe
-                        , fromIntegral pl
-                        , fromIntegral pf
-                        , eMax
-                        , fMax
-                        , do
-                            LaunchToEss (MkQuantity d) <- ed
-                            return d
-                        )
+                    ( fromIntegral pe
+                    , fromIntegral pl
+                    , fromIntegral pf
+                    , maybe
+                        0
+                        (\ReachStats{max = FlownMax qExtraMax} ->
+                            let (MkQuantity eMax) :: Quantity _ [u| km |] = convert qExtraMax
+                            in eMax)
+                        extra
+                    , maybe
+                        0
+                        (\ReachStats{max = FlownMax qFlownMax} ->
+                            let (MkQuantity fMax) :: Quantity _ [u| km |] = convert qFlownMax
+                            in fMax)
+                        flown
+                    , do
+                        LaunchToEss (MkQuantity d) <- ed
+                        return d
+                    )
         )
     $ xp6Tuple
         (xpAttr "no_of_pilots_reaching_es" xpInt)
@@ -708,7 +711,7 @@ parseNormScores
     let vws =
             [
                 (\(vs, lw, tw, dw, sw) ->
-                    let sw' = sw{reachStats = ReachToggle{extra = e, flown = r}} in
+                    let sw' = sw{reachStats = ReachToggle{extra = Just e, flown = Just r}} in
                     (vs, lw, tw, dw, sw')
                 )
                 <$> gv

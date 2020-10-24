@@ -1,7 +1,7 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Mask.Reach.Tick (maskReachTick) where
+module Mask.Reach.Tick (maskReachTick, maybeMeanVariance, maybeReachStats) where
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
@@ -12,6 +12,7 @@ import Data.UnitsOfMeasure (u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Statistics.Sample as Stats (meanVariance)
 import qualified Data.Vector as V (fromList, maximum)
+import Data.Vector (Vector)
 
 import Flight.Comp (Pilot(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
@@ -45,8 +46,8 @@ maskReachTick
     dsNighRows
     psArriving =
     MaskingReach
-        { bolster = zipWith3 ReachStats bsMax bsMean bsStdDev
-        , reach = zipWith3 ReachStats rsMax rsMean rsStdDev
+        { bolster = zipWith3 maybeReachStats bsMax bsMean bsStdDev
+        , reach = zipWith3 maybeReachStats rsMax rsMean rsStdDev
         , reachRank = rss
         , nigh = dsNigh
         }
@@ -127,13 +128,13 @@ maskReachTick
             | rs <- rssRaw
             ]
 
-        mvs = Stats.meanVariance <$> rssRaw
+        mvs = maybeMeanVariance <$> rssRaw
 
-        rsMean :: [FlownMean (Quantity Double [u| km |])] =
-            FlownMean . MkQuantity . fst <$> mvs
+        rsMean :: [Maybe (FlownMean (Quantity Double [u| km |]))] =
+            fmap (FlownMean . MkQuantity . fst) <$> mvs
 
-        rsStdDev :: [FlownStdDev (Quantity Double [u| km |])] =
-            FlownStdDev . MkQuantity . sqrt . snd <$> mvs
+        rsStdDev :: [Maybe (FlownStdDev (Quantity Double [u| km |]))] =
+            fmap (FlownStdDev . MkQuantity . sqrt . snd) <$> mvs
 
         bssRaw =
             [ V.fromList
@@ -148,10 +149,24 @@ maskReachTick
             | bs <- bssRaw
             ]
 
-        bvs = Stats.meanVariance <$> bssRaw
+        bvs = maybeMeanVariance <$> bssRaw
 
-        bsMean :: [FlownMean (Quantity Double [u| km |])] =
-            FlownMean . MkQuantity . fst <$> bvs
+        bsMean :: [Maybe (FlownMean (Quantity Double [u| km |]))] =
+            fmap (FlownMean . MkQuantity . fst) <$> bvs
 
-        bsStdDev :: [FlownStdDev (Quantity Double [u| km |])] =
-            FlownStdDev . MkQuantity . sqrt . snd <$> bvs
+        bsStdDev :: [Maybe (FlownStdDev (Quantity Double [u| km |]))] =
+            fmap (FlownStdDev . MkQuantity . sqrt . snd) <$> bvs
+
+
+maybeMeanVariance :: Vector Double -> Maybe (Double, Double)
+maybeMeanVariance xs = if null xs then Nothing else Just $ Stats.meanVariance xs
+
+maybeReachStats
+    :: FlownMax (Quantity Double [u| km |])
+    -> Maybe (FlownMean (Quantity Double [u| km |]))
+    -> Maybe (FlownStdDev (Quantity Double [u| km |]))
+    -> Maybe ReachStats
+maybeReachStats mx mn sd = do
+    mn' <- mn
+    sd' <- sd
+    return $ ReachStats mx mn' sd'

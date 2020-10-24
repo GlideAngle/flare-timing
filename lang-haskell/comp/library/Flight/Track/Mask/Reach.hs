@@ -23,9 +23,9 @@ import qualified Flight.Track.Mask.Cmp as Cmp (cmp)
 -- | For each task, the masking for reach for that task.
 data MaskingReach =
     MaskingReach
-        { bolster :: [ReachStats]
+        { bolster :: [Maybe ReachStats]
         -- ^ The bolstered reach, reach clamped below to minimum distance.
-        , reach :: [ReachStats]
+        , reach :: [Maybe ReachStats]
         -- ^ The reach as flown, possibly less than minimum distance.
         -- ^ For each task, the best distance made.
         , reachRank :: [[(Pilot, TrackReach)]]

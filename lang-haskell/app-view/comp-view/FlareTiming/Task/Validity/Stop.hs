@@ -74,10 +74,14 @@ stopWorkingSubA
         {launchToEssDistance = Nothing} = (0, "ed is missing")
 stopWorkingSubA
     StopValidityWorking
+        {reachStats = ReachToggle{flown = Nothing}} = (0, "flown is missing")
+stopWorkingSubA
+    StopValidityWorking
         { launchToEssDistance = Just (ed@(LaunchToEss ed'))
         , reachStats =
             ReachToggle
                 { flown =
+                    Just
                     ReachStats
                         { max = bd@(PilotDistance bd')
                         , mean = mf@(PilotDistance mf')
