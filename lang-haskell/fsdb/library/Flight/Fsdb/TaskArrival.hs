@@ -54,7 +54,10 @@ xpRankScore =
         <+> hasName "finished_ss"
         )
     $ xpWrap
-        ( \(a, es) -> (ArrivalPoints $ dToR a,) <$> (parseUtcTime <$> es)
+        -- WARNING: FsResult@finished_ss is only written by FS when arrival
+        -- points are positive but airscore writes it empty, not parsable as a
+        -- UTC time. Guard against that parse with the check on @arrival_points.
+        ( \(a, es) -> (ArrivalPoints $ dToR a,) <$> (parseUtcTime <$> if a > 0 then es else Nothing)
         , (\case
             Nothing -> (0, Nothing)
             Just (ArrivalPoints a, es) -> (fromRational a, Just $ show es))
