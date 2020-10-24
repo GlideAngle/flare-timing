@@ -3,7 +3,7 @@ module Flight.Fsdb.Stopped (parseScoreBack) where
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
-    , xpWrap, xpAttr, xpInt, xpFilterAttr, xpTrees, unpickleDoc'
+    , xpWrap, xpAttr, xpPrim, xpFilterAttr, xpTrees, unpickleDoc'
     , xpPair, xpElem, xpOption
     )
 import Text.XML.HXT.Core
@@ -29,11 +29,11 @@ xpScoreBack =
     xpElem "FsScoreFormula"
     $ xpFilterAttr (hasName "score_back_time")
     $ xpWrap
-        ( fmap (ScoreBackTime . MkQuantity . fromIntegral . (* 60)) . fst
-        , (, []) . fmap (\(ScoreBackTime (MkQuantity x)) -> round x `div` 60)
+        ( fmap (ScoreBackTime . MkQuantity . (* 60.0)) . fst
+        , (, []) . fmap (\(ScoreBackTime (MkQuantity x)) -> x / 60)
         )
     $ xpPair
-        (xpOption $ xpAttr "score_back_time" xpInt)
+        (xpOption $ xpAttr "score_back_time" xpPrim)
         xpTrees
 
 getScoreBack
