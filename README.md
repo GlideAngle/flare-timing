@@ -117,25 +117,25 @@ flare-timing includes or not.
         - [ ] OzGAP2005
         - [ ] GAP2007
         - [ ] GAP2008
-        - [x] GAP2011 tested with:
+        - [x] GAP2011 tested with:    
             Forbes [2012](http://2012-forbes.flaretiming.com)
             , Forbes [2014](http://2014-forbes.flaretiming.com)
             , Forbes [2015](http://2015-forbes.flaretiming.com)            
-        - [x] GAP2013 tested with:
+        - [x] GAP2013 tested with:    
             Forbes [2017](http://2017-forbes.flaretiming.com)
         - [ ] GAP2014
-        - [x] GAP2015 tested with:
+        - [x] GAP2015 tested with:    
             Big Spring [2016](http://2016-big-spring.flaretiming.com)
             , Green Swamp [2016](http://2016-greenswamp.flaretiming.com)
             , Green Swamp Sport [2016](http://2016-greenswamp-sport.flaretiming.com)
             , Forbes [2016](http://2016-forbes.flaretiming.com)
             , Quest [2016](http://2016-quest.flaretiming.com)
-        - [x] GAP2016 tested with:
+        - [x] GAP2016 tested with:    
             Dalmatian [2018](http://2018-dalmatian.flaretiming.com)
             , Dalby [2017](http://2017-dalby.flaretiming.com)
             , Forbes [2018](http://2018-forbes.flaretiming.com)
             , Forbes [2019](http://2018-forbes.flaretiming.com)
-        - [x] GAP2018 tested with:
+        - [x] GAP2018 tested with:    
             Dalmatian [2019](http://2019-dalmatian.flaretiming.com)
             , Italy [2019](http://2019-italy.flaretiming.com)
         - [ ] GAP2020
