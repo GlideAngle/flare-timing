@@ -123,8 +123,15 @@ instance RealFloat a => GeoPath Double a where
             distance _ span distancePointToPoint cs builder cut xs@[Point _, _, Point _] =
                 distanceUnchecked span distancePointToPoint cs builder cut xs
 
-            -- NOTE: Allow duplicates as some tasks are set that way but otherwise zones
-            -- must be separated.
             distance e span distancePointToPoint cs builder cut xs
-                | not . (separatedZones e) . dedup $ xs = (ZxNotSeparated, [])
-                | otherwise = distanceUnchecked span distancePointToPoint cs builder cut xs
+                -- NOTE: Allow duplicates as some tasks are set that way but
+                -- remove them before working out the shortest path. I used to
+                -- require that zones be separated but that seems to have been
+                -- overly cautious. It was returning ZxNotSeparated in that
+                -- case.
+                | ys <- dedup xs
+                , not $ separatedZones e ys =
+                    distanceUnchecked span distancePointToPoint cs builder cut ys
+
+                | otherwise =
+                    distanceUnchecked span distancePointToPoint cs builder cut xs
