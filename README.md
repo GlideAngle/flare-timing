@@ -150,7 +150,7 @@ flare-timing includes or not.
         - [ ] PWC2015
         - [ ] PWC2016
         - [ ] PWC2017
-        - [ ] GAP2019
+        - [ ] PWC2019
     - [ ] Linear distance
     - [ ] Time-based scoring (TBS)
 * Earth Model
