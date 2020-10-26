@@ -765,7 +765,7 @@ points'
             | launchToStart <-
                 (fmap . fmap)
                     (\(TaskDistance td) ->
-                        let ss :: Quantity _ [u| m |]
+                        let ss :: Quantity _ [u| km |]
                             ss = convert td
                          in unQuantity ss)
                     lsLaunchToSssTask

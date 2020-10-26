@@ -336,8 +336,8 @@ mkAdd x = PenaltyPoints $ realToFrac x
 mkReset :: Maybe Int -> PointPenalty Reset
 mkReset Nothing = PenaltyReset Nothing
 mkReset (Just x) =
-    if | x < 0 -> error "Points cannot be reset to less than 0"
-       | x > 1000 -> error "Points cannot be reset to greater than 1000"
+    if | x < 0 -> error $ printf "Points cannot be reset to less than 0 but got %d." x
+       | x > 1000 -> error $ printf "Points cannot be reset to greater than 1000 but got %d." x
        | otherwise -> PenaltyReset . Just . assumeProp $ refined x
 
 exMul :: PointPenalty Mul -> Double
