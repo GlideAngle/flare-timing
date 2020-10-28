@@ -120,6 +120,16 @@ inverse
                 λ' = _L + (1 - _C) * f * sinα * (σ + _C * sinσ * x)
                 x = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
 
+{-# SPECIALIZE
+   inverse
+    :: Ellipsoid Double
+    -> GeodeticAccuracy Double
+    -> InverseProblem (LatLng Double [u| rad |])
+    -> GeodeticInverse
+        (InverseSolution
+            (QTaskDistance Double [u| m |])
+            (Quantity Double [u| rad |])
+        ) #-}
 
 tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
@@ -307,6 +317,7 @@ distance
                 "Latitude of %s or %s is outside -90° .. 90° range"
                 (show $ toDMS qx)
                 (show $ toDMS qy)
+{-# SPECIALIZE distance :: Ellipsoid Double -> SpanLatLng Double #-}
 
 azimuthFwd :: RealFloat a => Ellipsoid a -> AzimuthFwd a
 azimuthFwd e x y =
@@ -314,6 +325,7 @@ azimuthFwd e x y =
         GeodeticInverseAntipodal -> Nothing
         GeodeticInverseAbnormal _ -> Nothing
         GeodeticInverse InverseSolution{α₁} -> Just α₁
+{-# SPECIALIZE azimuthFwd :: Ellipsoid Double -> AzimuthFwd Double #-}
 
 azimuthRev :: RealFloat a => Ellipsoid a -> AzimuthRev a
 azimuthRev e x y =
@@ -321,6 +333,7 @@ azimuthRev e x y =
         GeodeticInverseAntipodal -> Nothing
         GeodeticInverseAbnormal _ -> Nothing
         GeodeticInverse InverseSolution{α₂} -> α₂
+{-# SPECIALIZE azimuthRev :: Ellipsoid Double -> AzimuthRev Double #-}
 
 distanceUnchecked
     :: RealFloat a
@@ -358,6 +371,12 @@ distanceUnchecked
         where
             GeodeticAccuracy accuracy = defaultGeodeticAccuracy
             accuracy' = GeodeticAccuracy $ fromRational accuracy
+{-# SPECIALIZE
+   distanceUnchecked
+    :: Ellipsoid Double
+    -> InverseProblem (LatLng Double [u| rad |])
+    -> GeodeticInverse
+        (InverseSolution (QTaskDistance Double [u| m |]) (Quantity Double [u| rad |])) #-}
 
 -- $setup
 -- >>> import Flight.Earth.Ellipsoid
