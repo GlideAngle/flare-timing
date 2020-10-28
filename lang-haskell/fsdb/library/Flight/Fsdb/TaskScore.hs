@@ -2,6 +2,7 @@
 
 module Flight.Fsdb.TaskScore (parseNormScores) where
 
+import Debug.Trace
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
@@ -16,7 +17,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc, unpickleDoc'
-    , xpWrap, xpElem, xpAttr
+    , xpWrap, xpElem, xpAttr, xpAttrImplied
     , xpFilterAttr, xpFilterCont
     , xpInt, xpPrim, xpDefault
     , xpPair, xpTriple, xp4Tuple, xp5Tuple, xp6Tuple, xp14Tuple
@@ -113,8 +114,8 @@ xpRankScore =
         ( hasName "rank"
         <+> hasName "points"
 
-        <+> hasName "linear_distance_points"
-        <+> hasName "difficulty_distance_points"
+--        <+> hasName "linear_distance_points"
+--        <+> hasName "difficulty_distance_points"
 
         <+> hasName "distance_points"
         <+> hasName "leading_points"
@@ -123,60 +124,66 @@ xpRankScore =
 
         <+> hasName "real_distance"
         <+> hasName "distance"
-        <+> hasName "last_distance"
+        -- <+> hasName "last_distance"
 
         <+> hasName "started_ss"
         <+> hasName "finished_ss"
         <+> hasName "ss_time"
         )
     $ xpWrap
-        ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, dL, ss, es, ssE) ->
-            NormBreakdown
-                { place = TaskPlacing $ fromIntegral r
-                , total = TaskPoints $ fromIntegral p
-                , breakdown =
-                    Points
-                        { reach = LinearPoints $ dToR ldp
-                        , effort = DifficultyPoints $ dToR ddp
-                        , distance = DistancePoints $ dToR dp
-                        , leading = LeadingPoints $ dToR l
-                        , arrival = ArrivalPoints $ dToR a
-                        , time = TimePoints $ dToR t
-                        }
-                , fractions =
-                    Frac.Fractions
-                        { Frac.reach = LinearFraction 0
-                        , Frac.effort = DifficultyFraction 0
-                        , Frac.distance = DistanceFraction 0
-                        , Frac.leading = LeadingFraction 0
-                        , Frac.arrival = ArrivalFraction 0
-                        , Frac.time = SpeedFraction 0
-                        }
+        ( \(r, p, ldp', ddp', dp, l, a, t, dM, dE, _dL :: Maybe Double, ss, es, ssE) ->
+            let (ldp, ddp) =
+                    case (ldp', ddp') of
+                        (Just linear, Just difficulty) -> traceShowId (linear, difficulty)
+                        _ -> traceShowId (dp, 0)
+            in
+                NormBreakdown
+                    { place = TaskPlacing $ fromIntegral r
+                    , total = TaskPoints $ fromIntegral p
+                    , breakdown =
+                        Points
+                            { reach = LinearPoints $ dToR ldp
+                            , effort = DifficultyPoints $ dToR ddp
+                            , distance = DistancePoints $ dToR dp
+                            , leading = LeadingPoints $ dToR l
+                            , arrival = ArrivalPoints $ dToR a
+                            , time = TimePoints $ dToR t
+                            }
+                    , fractions =
+                        Frac.Fractions
+                            { Frac.reach = LinearFraction 0
+                            , Frac.effort = DifficultyFraction 0
+                            , Frac.distance = DistanceFraction 0
+                            , Frac.leading = LeadingFraction 0
+                            , Frac.arrival = ArrivalFraction 0
+                            , Frac.time = SpeedFraction 0
+                            }
 
-                , reach =
-                    ReachToggle
-                        { flown = taskKmToMetres . TaskDistance . MkQuantity $ dM
-                        , extra = taskKmToMetres . TaskDistance . MkQuantity $ dE
-                        }
-                -- WARNING: Sometimes FS writes min double to last_distance.
-                -- last_distance="-1.79769313486232E+305"
-                , landedMade =
-                    taskKmToMetres . TaskDistance . MkQuantity
-                    $ Stats.max 0 dL
-                , ss = parseUtcTime <$> ss
-                , es = parseUtcTime <$> es
+                    , reach =
+                        ReachToggle
+                            { flown = taskKmToMetres . TaskDistance . MkQuantity $ dM
+                            , extra = taskKmToMetres . TaskDistance . MkQuantity $ dE
+                            }
+                    -- WARNING: Sometimes FS writes min double to last_distance.
+                    -- last_distance="-1.79769313486232E+305"
+                    , landedMade =
+                        taskKmToMetres . TaskDistance . MkQuantity
+                        -- $ Stats.max 0 dL
+                        $ 0
+                    , ss = parseUtcTime <$> ss
+                    , es = parseUtcTime <$> es
 
-                -- WARNING: FS always has a time for ss_time but airscore uses
-                -- "" instead of "00:00:00" when the pilot didn't complete the
-                -- speed section.
-                , timeElapsed =
-                    if | ssE == Just "00:00:00" -> Nothing
-                       | ssE == Just "" -> Nothing
-                       | otherwise -> toPilotTime . parseHmsTime <$> ssE
+                    -- WARNING: FS always has a time for ss_time but airscore uses
+                    -- "" instead of "00:00:00" when the pilot didn't complete the
+                    -- speed section.
+                    , timeElapsed =
+                        if | ssE == Just "00:00:00" -> Nothing
+                           | ssE == Just "" -> Nothing
+                           | otherwise -> toPilotTime . parseHmsTime <$> ssE
 
-                , leadingArea = LeadingArea zero
-                , leadingCoef = LeadingCoef zero
-                }
+                    , leadingArea = LeadingArea zero
+                    , leadingCoef = LeadingCoef zero
+                    }
         , \NormBreakdown
                 { place = TaskPlacing r
                 , total = TaskPoints p
@@ -194,22 +201,23 @@ xpRankScore =
                         { flown = TaskDistance (MkQuantity dM)
                         , extra = TaskDistance (MkQuantity dE)
                         }
-                , landedMade = TaskDistance (MkQuantity dL)
+                , landedMade = TaskDistance (MkQuantity _dL)
                 , ss
                 , es
                 , timeElapsed
                 } ->
                     ( fromIntegral r
                     , round p
-                    , fromRational ldp
-                    , fromRational ddp
+                    , Just $ fromRational ldp
+                    , Just $ fromRational ddp
                     , fromRational dp
                     , fromRational l
                     , fromRational a
                     , fromRational t
                     , dE
                     , dM
-                    , dL
+                    --, dL
+                    , Nothing
                     , show <$> ss
                     , show <$> es
                     , show <$> timeElapsed
@@ -219,8 +227,8 @@ xpRankScore =
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
 
-        (xpDefault (0 :: Double) $ xpAttr "linear_distance_points" xpPrim)
-        (xpDefault (0 :: Double) $ xpAttr "difficulty_distance_points" xpPrim)
+        (xpAttrImplied "linear_distance_points" xpPrim)
+        (xpAttrImplied "difficulty_distance_points" xpPrim)
 
         (xpAttr "distance_points" xpPrim)
         (xpAttr "leading_points" xpPrim)
@@ -229,12 +237,14 @@ xpRankScore =
 
         (xpAttr "real_distance" xpPrim)
         (xpAttr "distance" xpPrim)
-        (xpDefault (0 :: Double) $ xpAttr "last_distance" xpPrim)
+        -- (xpDefault (0 :: Double) $ xpAttr "last_distance" xpPrim)
+        (xpAttrImplied "last_distance_NOT" xpPrim)
 
         (xpOption $ xpTextAttr "started_ss")
         (xpOption $ xpTextAttr "finished_ss")
         (xpOption $ xpTextAttr "ss_time")
 
+    {-
 xpLeading :: PU (Int, Double)
 xpLeading =
     xpElem "FsFlightData"
@@ -242,6 +252,7 @@ xpLeading =
     $ xpPair
         (xpAttr "iv" xpInt)
         (xpAttr "lc" xpPrim)
+        -}
 
 xpValidity :: PU Validity
 xpValidity =
@@ -499,8 +510,10 @@ getScore pilots =
             dfntM = Map.fromList ysnt
             dfM = Map.union dfntM dfwtM
         in
+            trace (show (t, length xs)) $
             [
                 (,) p $ do
+                    -- n@NormBreakdown{reach = r@ReachToggle{flown = dm}, fractions = fracs} <- trace ("X :" ++ show x) x
                     n@NormBreakdown{reach = r@ReachToggle{flown = dm}, fractions = fracs} <- x
                     let dKm = taskMetresToKm dm
                     AwardedDistance{awardedFrac = dFrac} <- asAwardReach t (Just dKm)
@@ -562,17 +575,21 @@ getScore pilots =
                         )
                     >>> getAttrValue "id"
                     &&& getResultScore
-                    &&& getLeading
-                    >>> arr (\(pid, (x, ld)) ->
+                    -- &&& getLeading
+                    -- >>> arr (\(pid, (x, ld)) ->
+                    >>> arr (\(pid, x) ->
                         ( unKeyPilot (keyMap kps) . PilotId $ pid
                         , do
                             norm <- x
-                            (a, c) <- ld
+                            -- (a, c) <- ld
                             return $
                                 norm
-                                    { leadingArea = LeadingArea . MkQuantity . fromIntegral $ a
-                                    , leadingCoef = LeadingCoef . MkQuantity $ c
+                                    { leadingArea = LeadingArea zero
+                                    , leadingCoef = LeadingCoef zero
                                     }
+                                    --{ leadingArea = LeadingArea . MkQuantity . fromIntegral $ a
+                                    --, leadingCoef = LeadingCoef . MkQuantity $ c
+                                    --}
                         ))
 
                 getResultScore =
@@ -580,10 +597,10 @@ getScore pilots =
                     >>> hasName "FsResult"
                     >>> arr (unpickleDoc xpRankScore)
 
-        getLeading =
-            getChildren
-            >>> hasName "FsFlightData"
-            >>> arr (unpickleDoc xpLeading)
+{-        getLeading =-}
+            --getChildren
+            -- >>> hasName "FsFlightData"
+            {->>> arr (unpickleDoc xpLeading)-}
 
         getTaskDistance =
             getChildren

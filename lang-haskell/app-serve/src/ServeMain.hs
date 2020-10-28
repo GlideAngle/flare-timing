@@ -1,3 +1,4 @@
+import Debug.Trace
 import Prelude hiding (abs)
 import GHC.Records
 import qualified Data.Text as T (Text)
@@ -757,6 +758,7 @@ getTaskPointsDiffStats = do
         (Just ps', Just exs') -> do
             let taskDiffs =
                     [
+                        trace (show ("EXS" :: String, length exsTask, length psTask)) $
                         let exsMap = Map.fromList exsTask in
                         [(Map.lookup pilot exsMap, p') | (pilot, p') <- psTask]
 
@@ -766,13 +768,13 @@ getTaskPointsDiffStats = do
 
             return $ (uncurry stats . unzip) <$> taskDiffs
 
-        (Nothing, _) -> throwError errTaskPoints
-        (_, Nothing) -> throwError errNormPoints
+        (Nothing, _) -> trace "N, _" $ throwError errTaskPoints
+        (_, Nothing) -> trace "_, N" $ throwError errNormPoints
     where
         stats :: [Maybe TaskPoints] -> [TaskPoints] -> Maybe (Double, Double)
         stats es ps =
             let es' :: Maybe [TaskPoints]
-                es' = sequence es
+                es' = trace (show ("ES" :: String, length es, length ps)) sequence es
              in do
                     es'' <- es'
                     let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''

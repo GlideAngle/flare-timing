@@ -35,9 +35,9 @@ import Data.Functor.Identity
 -- >>> parseUtcTime "2016-05-10T17:46:43-04:00"
 -- 2016-05-10 21:46:43 UTC
 parseUtcTime :: String -> UTCTime
-parseUtcTime =
+parseUtcTime x = let x' = if null x then "2012-01-05T12:00:00+11:00" else x in
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
-    parseTimeOrError False defaultTimeLocale "%FT%T%Z"
+    parseTimeOrError False defaultTimeLocale "%FT%T%Z" x'
 
 -- |
 -- >>> parseHmsTime "12:00:00"
