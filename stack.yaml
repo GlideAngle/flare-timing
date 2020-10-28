@@ -7,10 +7,6 @@ extra-deps:
   pantry-tree:
     size: 2225
     sha256: aee2f75974e868ff429b8ff349a29667536c60397098f5dfedc968d1951511bb
-- hackage: uom-plugin-0.3.0.0@sha256:b9dc0f0dd19c54f78f3c16065bc9975572abfdcd58e78df955e223bb038929b4,2851
-  pantry-tree:
-    size: 1465
-    sha256: d782094dd66d63659990e6f8823d405110b662d1d7a2e6af9065c0ebdcb9da88
 - hackage: doctest-0.15.0@sha256:b90e16b49bdb3863c394525b229dc6f1be99457ec49fb8831e2706f80389b590,6932
   pantry-tree:
     size: 7980
@@ -95,6 +91,7 @@ packages:
 - lang-haskell/hcoord/hcoord
 - lang-haskell/hcoord/hcoord-utm
 - lang-haskell/exact-real
+- lang-haskell/uom-plugin/uom-plugin
 
 - lang-haskell/clip
 - lang-haskell/cmd

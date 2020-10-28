@@ -10,6 +10,7 @@ packages:
     , lang-haskell/hcoord/hcoord
     , lang-haskell/hcoord/hcoord-utm
     , lang-haskell/exact-real
+    , lang-haskell/uom-plugin/uom-plugin
 
     , lang-haskell/clip
     , lang-haskell/cmd
@@ -120,7 +121,8 @@ package exact-real
 constraints:
     -- NOTE: The following are taken from stack.yaml extra-deps section.
       hxt-xpath ^>= 9.1.2.2
-    , uom-plugin ^>= 0.3.0.0
+    -- NOTE: We're using a local version of the uom-plugin.
+    --, uom-plugin ^>= 0.3.0.0
     , doctest ^>= 0.15.0
     , megaparsec ^>= 7.0.4
     , parser-combinators ^>= 1.0.0
@@ -2385,7 +2387,7 @@ constraints:
     , unlit ==0.4.0.0
     , unordered-containers ==0.2.9.0
     , unsafe ==0.0
-    , uom-plugin ==0.3.0.0
+    --, uom-plugin ==0.3.0.0
     , uri-bytestring ==0.3.2.0
     , uri-bytestring-aeson ==0.1.0.6
     , uri-encode ==1.5.0.5
