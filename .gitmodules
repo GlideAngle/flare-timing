@@ -8,5 +8,4 @@
 	path = lang-haskell/exact-real
 	url = https://github.com/BlockScope/exact-real.git
 [submodule "lang-haskell/uom-plugin"]
-	path = lang-haskell/uom-plugin
-	url = https://github.com/blockscope/uom-plugin
+	branch = wip/faster-task-length-461
