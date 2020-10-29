@@ -127,7 +127,8 @@ pilotTracks
         ]]
 pilotTracks _ [] = return []
 pilotTracks f tasks =
-    taskPilotTracks f (zip ixTasks tasks) 
+    taskPilotTracks f (zip ixTasks tasks)
+{-# INLINABLE pilotTracks #-}
 
 filterPilots
     :: [ Pilot ]
@@ -209,6 +210,7 @@ igcMarkedFixes xs =
 -- ((2018-01-02 00:44:29 UTC,2018-01-02 09:07:43 UTC),(00:00:00,08:23:14))
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark = Igc.mark unStamp
+{-# INLINE mark #-}
 
 unStamp
     :: Maybe UTCTime
@@ -221,6 +223,7 @@ unStamp (Just mark0) xs =
         { K.mark0 = mark0
         , K.fixes = toFix mark0 <$> xs
         }
+{-# INLINE unStamp #-}
 
 toFix :: UTCTime -> (UTCTime, (Lat, Lng, AltBaro, Maybe AltGps)) -> K.Fix
 toFix mark0 (t, (lat, lng, altBaro, altGps)) =
@@ -235,6 +238,7 @@ toFix mark0 (t, (lat, lng, altBaro, altGps)) =
         -- TODO: Which is Maybe GPS or BARO, KML vs IGC?
         , K.fixAltBaro = readAltGps <$> altGps
         }
+{-# INLINE toFix #-}
 
 readDegMin :: Degree -> MinuteOfAngle -> Rational
 readDegMin (Degree d) MinuteOfAngle{unThousandths} =
@@ -242,20 +246,25 @@ readDegMin (Degree d) MinuteOfAngle{unThousandths} =
     where
         d' = fromIntegral d
         m' = fromIntegral unThousandths :: Integer
+{-# INLINE readDegMin #-}
 
 readLat :: Lat -> K.Latitude
 readLat (LatN d m) = K.Latitude $ readDegMin d m
 readLat (LatS d m) = K.Latitude . negate $ readDegMin d m
+{-# INLINE readLat #-}
 
 readLng :: Lng -> K.Longitude
 readLng (LngE d m) = K.Longitude $ readDegMin d m
 readLng (LngW d m) = K.Longitude . negate $ readDegMin d m
+{-# INLINE readLng #-}
 
 readAltBaro :: AltBaro -> K.Altitude
 readAltBaro (AltBaro (Altitude alt)) = K.Altitude $ fromIntegral alt
+{-# INLINE readAltBaro #-}
 
 readAltGps :: AltGps -> K.Altitude
 readAltGps (AltGps (Altitude alt)) = K.Altitude $ fromIntegral alt
+{-# INLINE readAltGps #-}
 
 -- $setup
 -- >>> :set -XTemplateHaskell
