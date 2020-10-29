@@ -24,6 +24,11 @@ haversine (MkQuantity x) =
     MkQuantity $ y * y
     where
         y = sin (x / 2)
+{-# INLINABLE haversine #-}
+{-# SPECIALIZE
+   haversine
+       :: Quantity Double [u| rad |]
+       -> Quantity Double [u| rad |] #-}
 
 aOfHaversine :: Floating a
   => LatLng a [u| rad |]
@@ -41,6 +46,12 @@ aOfHaversine (LatLng (Lat xLatF, Lng xLngF)) (LatLng (Lat yLatF, Lng yLngF)) =
         (MkQuantity hLatF) = haversine dLatF
         (MkQuantity hLngF) = haversine dLngF
         (dLatF, dLngF) = (yLatF -: xLatF, yLngF -: xLngF)
+{-# INLINABLE aOfHaversine #-}
+{-# SPECIALIZE
+    aOfHaversine
+      :: LatLng Double [u| rad |]
+      -> LatLng Double [u| rad |]
+      -> Double #-}
 
 -- | Spherical distance using haversines and floating point numbers.
 distance :: Floating a => SpanLatLng a
@@ -50,18 +61,24 @@ distance x y =
         Radius rEarth = earthRadius
         radDist :: Quantity _ One
         radDist = mk $ 2 * asin (sqrt $ aOfHaversine x y)
+{-# INLINABLE distance #-}
+{-# SPECIALIZE distance :: SpanLatLng Double #-}
 
 azimuthFwd :: (Real a, Fractional a) => AzimuthFwd a
 azimuthFwd x y = do
     let x' = realToFracLatLng x
     let y' = realToFracLatLng y
     realToFrac' <$> azimuthFwd' x' y'
+{-# INLINABLE azimuthFwd #-}
+{-# SPECIALIZE azimuthFwd :: AzimuthFwd Double #-}
 
 azimuthRev :: (Real a, Fractional a) => AzimuthRev a
 azimuthRev x y = do
     let x' = realToFracLatLng x
     let y' = realToFracLatLng y
     realToFrac' <$> azimuthRev' x' y'
+{-# INLINABLE azimuthRev #-}
+{-# SPECIALIZE azimuthRev :: AzimuthRev Double #-}
 
 -- SEE: https://www.movable-type.co.uk/scripts/latlong.html
 azimuthFwd' :: AzimuthFwd Double
@@ -76,6 +93,7 @@ azimuthFwd' (LatLng (Lat xLatF, Lng xLngF)) (LatLng (Lat yLatF, Lng yLngF)) =
         deltaLng = yLngF' - xLngF'
         x = sin deltaLng * cos yLatF'
         y = cos xLatF' * sin yLatF' - sin xLatF' * cos yLatF' * cos deltaLng
+{-# INLINE azimuthFwd' #-}
 
 azimuthRev' :: AzimuthRev Double
 azimuthRev' x y =
@@ -83,3 +101,4 @@ azimuthRev' x y =
     where
         flip :: Quantity _ [u| rad |]
         flip = convert [u| 180 deg |]
+{-# INLINE azimuthRev' #-}
