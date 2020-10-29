@@ -36,6 +36,7 @@ prove pass mark0 fixes i@(ZoneIdx i') j@(ZoneIdx j') bs = do
     let fs@[Fix{time = ti}, Fix{time = tj}] = [f i fixM, f j fixN]
     let zc = ZoneCross{crossingPair = fs, inZone = bs}
     if pass ti || pass tj then return zc else Nothing
+{-# INLINABLE prove #-}
 
 proveCrossing :: TimePass -> UTCTime -> [Kml.Fix] -> Crossing -> Maybe ZoneCross
 proveCrossing pass mark0 fixes (Right (ZoneExit m n)) =
