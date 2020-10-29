@@ -31,6 +31,7 @@ line =
     -- an end of line before the end of file.
     <|> security <* (eol <|> (const "" <$> eof))
     <|> ignore <* eol
+{-# INLINE line #-}
 
 -- |
 -- >>> parseTest timeHHMMSS "0200223"
@@ -41,6 +42,7 @@ timeHHMMSS = do
     mm <- MinuteOfTime . read <$> count 2 digitChar
     ss <- Second . read <$> count 2 digitChar
     return $ HMS hh mm ss
+{-# INLINE timeHHMMSS #-}
 
 -- |
 -- >>> parseTest lat "3321354S"
@@ -51,6 +53,7 @@ lat = do
     mins <- MinuteOfAngle . read <$> count 5 digitChar
     f <- const LatN <$> char 'N' <|> const LatS <$> char 'S'
     return $ f degs mins
+{-# INLINE lat #-}
 
 -- |
 -- >>> parseTest lng "14756057E"
@@ -61,6 +64,7 @@ lng = do
     mins <- MinuteOfAngle . read <$> count 5 digitChar
     f <- const LngW <$> char 'W' <|> const LngE <$> char 'E'
     return $ f degs mins
+{-# INLINE lng #-}
 
 -- |
 -- >>> parseTest altBaro "00244"
@@ -81,6 +85,7 @@ altBaro =
         ( count 5 digitChar
         <|> (char '-' >> (("-" ++) <$> count 4 digitChar))
         )
+{-# INLINE altBaro #-}
 
 -- |
 -- >>> parseTest altGps "00244"
@@ -101,6 +106,7 @@ altGps =
         ( count 5 digitChar
         <|> (char '-' >> (("-" ++) <$> count 4 digitChar))
         )
+{-# INLINE altGps #-}
 
 -- |
 -- >>> parseTest alt "A0024400241000"
@@ -120,6 +126,7 @@ alt = do
     altBaro' <- altBaro
     altGps' <- optional altGps
     return (altBaro', altGps')
+{-# INLINE alt #-}
 
 -- |
 -- >>> parseTest fix "B0200223321354S14756057EA0024400241000\n"
@@ -139,12 +146,14 @@ fix = do
     (altBaro', altGps') <- alt
     _ <- many (noneOf ("\r\n" :: String))
     return $ B hms' (lat', lng',  altBaro',  altGps')
+{-# INLINE fix #-}
 
 security :: ParsecT Void String Identity IgcRecord
 security = do
     _ <- char 'G'
     _ <- many (noneOf ("\r\n" :: String))
     return G
+{-# INLINE security #-}
 
 -- |
 -- >>> parseTest dateHFDTEDATE "HFDTEDATE:030118,01"
@@ -162,6 +171,7 @@ dateHFDTEDATE = do
     nn <- Nth <$> count 2 digitChar
 
     return $ HFDTEDATE {ymd = ymd, nth = nn}
+{-# INLINE dateHFDTEDATE #-}
 
 -- |
 -- >>> parseTest dateHFDTE "HFDTE0301181"
@@ -176,11 +186,13 @@ dateHFDTE = do
     let ymd = YMD {year = yy, month = mm, day = dd}
 
     return $ HFDTE ymd
+{-# INLINE dateHFDTE #-}
 
 ignore :: ParsecT Void String Identity IgcRecord
 ignore = do
     _ <- many (noneOf ("\r\n" :: String))
     return Ignore
+{-# INLINE ignore #-}
 
 -- |
 -- >>> line 1 igcHFDTE
