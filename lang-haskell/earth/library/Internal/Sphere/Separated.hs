@@ -154,3 +154,16 @@ separatedZones
     -> Bool
 separatedZones azFwd span xs =
     and $ zipWith (separated azFwd span) xs (tail xs)
+{-# INLINABLE separatedZones #-}
+{-# SPECIALIZE
+   separatedZones
+       :: AzimuthFwd Double
+       -> SpanLatLng Double
+       -> [Zone Double]
+       -> Bool #-}
+{-# SPECIALIZE
+   separatedZones
+       :: AzimuthFwd Rational
+       -> SpanLatLng Rational
+       -> [Zone Rational]
+       -> Bool #-}
