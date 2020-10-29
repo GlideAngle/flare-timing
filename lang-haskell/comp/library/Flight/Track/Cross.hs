@@ -29,6 +29,7 @@ import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
 import Control.Monad (join)
 import GHC.Generics (Generic)
+import Control.DeepSeq
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Clip (FlyingSection)
@@ -63,7 +64,7 @@ data Crossing =
 newtype Seconds = Seconds Integer
     deriving (Eq, Ord, Show, Generic)
     deriving newtype Num
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | For a single track, the flying section.
 data TrackFlyingSection =
@@ -82,7 +83,7 @@ data TrackFlyingSection =
         -- ^ The flying section as a time range.
         }
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | For a single track, the zones crossed.
 data TrackCross =
@@ -145,7 +146,7 @@ data Fix =
         -- ^ The altitude in decimal degrees, +ve is E and -ve is W.
         }
     deriving (Eq, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 instance Ord Fix where
     Fix{fix = i} `compare` Fix{fix = j} =
@@ -209,7 +210,7 @@ data ZoneCross =
         -- ^ Mark each fix as inside or outside the zone.
         }
     deriving (Eq, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 instance Ord ZoneCross where
     ZoneCross{crossingPair = i} `compare` ZoneCross{crossingPair = j} =

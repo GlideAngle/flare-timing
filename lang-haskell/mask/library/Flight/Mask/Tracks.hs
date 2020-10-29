@@ -1,5 +1,6 @@
 module Flight.Mask.Tracks (checkTracks) where
 
+import Control.DeepSeq
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import System.FilePath (takeDirectory)
@@ -37,7 +38,7 @@ settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
                 zs = zipWith (<$>) fs ys
 
 checkTracks
-    :: (MonadThrow m, MonadIO m)
+    :: (NFData a, MonadThrow m, MonadIO m)
     => (CompSettings k -> (IxTask -> MarkedFixes -> a))
     -> CompInputFile
     -> [IxTask]

@@ -55,6 +55,7 @@ in    defs
           # [ "aeson"
             , "cassava"
             , "containers"
+            , "deepseq"
             , "exact-real"
             , "facts"
             , "newtype"

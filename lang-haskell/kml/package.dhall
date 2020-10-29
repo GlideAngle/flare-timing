@@ -21,6 +21,7 @@ in    defs
       , dependencies =
             defs.dependencies
           # [ "split"
+            , "deepseq"
             , "megaparsec"
             , "hxt"
             , "path"

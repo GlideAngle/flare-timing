@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 170582a4e0938ac1c2970b60ccda44b9ab589e7dee481bbb7b8e357d99e61719
+-- hash: 96672153ff2ece161190cc12fe65a05c97eb46f570fc27504097ba70fff41653
 
 name:           flight-scribe
 version:        0.1.0
@@ -52,6 +52,7 @@ library
     , bytestring
     , cassava
     , containers
+    , deepseq
     , detour-via-sci
     , directory
     , filemanip

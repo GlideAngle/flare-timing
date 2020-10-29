@@ -13,6 +13,7 @@ module Flight.Pilot
     , dfNoTrackReach
     ) where
 
+import Control.DeepSeq
 import GHC.Generics (Generic)
 import Data.Aeson
     ( ToJSON(..), FromJSON(..), Options(..)
@@ -121,7 +122,7 @@ data TrackFileFail
     | TrackLogFileExistsNot String
     | TrackLogFileNotSet
     | TrackLogFileNotRead String
-    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Generic, ToJSON, FromJSON, NFData)
 
 instance Show TrackFileFail where
     show (TaskFolderExistsNot x) = "Folder '" ++ x ++ "' not found"

@@ -22,6 +22,7 @@ in    defs
             defs.dependencies
           # [ "bytestring"
             , "flight-clip"
+            , "deepseq"
             , "megaparsec ^>= 7.0.4"
             , "tasty-quickcheck"
             , "time"

@@ -24,6 +24,7 @@ in    defs
           # [ "split"
             , "path"
             , "aeson"
+            , "deepseq"
             , "scientific"
             , "containers"
             , "unordered-containers"

@@ -1,4 +1,6 @@
-﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+﻿{-# LANGUAGE BangPatterns #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import System.Environment (getProgName)
@@ -8,6 +10,8 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_, when, zipWithM_)
+import Control.DeepSeq
+import Control.Concurrent.ParallelIO (parallel_)
 import Control.Exception.Safe (catchIO)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
@@ -96,20 +100,21 @@ writeTime selectTasks selectPilots compFile f = do
 
     case checks of
         Nothing -> putStrLn "Unable to read tracks for pilots."
-        Just xs -> do
-            let ys :: [[(Pilot, [TrackRow])]] =
-                    (fmap . fmap)
-                        (\case
-                            Left (p, _) -> (p, [])
-                            Right (p, g) -> (p, g p))
-                        xs
-
+        Just xs' -> do
             zipWithM_
-                (\ n zs ->
+                (\ n xs ->
                     when (includeTask selectTasks $ IxTask n) $
-                        mapM_ (writePilotTimes compFile n) zs)
+                        let ptWrite = writePilotTimes compFile n in
+
+                        -- SEE: https://mail.haskell.org/pipermail/haskell-cafe/2012-September/103683.html
+                        parallel_ $
+                        fmap
+                            (\case
+                                Left (p, _) -> ptWrite (p, [])
+                                Right (p, g) -> ptWrite (p, force $ g p))
+                            xs)
                 [1 .. ]
-                ys
+                xs'
 
 checkAll
     :: CompInputFile

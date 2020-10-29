@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1c0d42db3dd54cc77e12df9ea211229ac210461ea9e04e21155da09face470c1
+-- hash: 1f8f8039bafd68a170a6356f259512f57923e1100d1fe4c50f98b0364377e022
 
 name:           flight-latlng
 version:        0.1.0
@@ -59,6 +59,7 @@ library
     , bifunctors
     , bytestring
     , cassava
+    , deepseq
     , detour-via-sci
     , detour-via-uom
     , flight-units

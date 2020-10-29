@@ -76,6 +76,7 @@ import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
 import Data.Time.Clock (addUTCTime)
 import GHC.Generics (Generic)
+import Control.DeepSeq
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Maybe (listToMaybe)
 import Data.List (intercalate, nub, sort)
@@ -191,7 +192,7 @@ newtype RoutesLookupTaskDistance =
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
     deriving (Eq, Ord, Show, Read, Generic)

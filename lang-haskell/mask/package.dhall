@@ -27,6 +27,7 @@ in    defs
           # [ "bytestring"
             , "cmdargs"
             , "containers"
+            , "deepseq"
             , "directory"
             , "filepath"
             , "fgl"

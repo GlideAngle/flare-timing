@@ -15,6 +15,7 @@
     ) where
 
 import Prelude hiding (min)
+import Control.DeepSeq
 import Data.Semigroup
 import Text.Printf (printf)
 import Data.Time.Clock (UTCTime(..), addUTCTime, diffUTCTime)
@@ -32,24 +33,24 @@ import Data.Via.Scientific
 -- | Latitude in degress.
 newtype Latitude = Latitude Rational
     deriving (Eq, Ord, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | Longitude in degress.
 newtype Longitude = Longitude Rational
     deriving (Eq, Ord, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | Altitude in metres.
 newtype Altitude = Altitude Integer
     deriving (Eq, Ord, Generic)
     deriving newtype Num
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | The number of seconds offset from the time of the first fix.
 newtype Seconds = Seconds Integer
     deriving (Eq, Ord, Generic)
     deriving newtype Num
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 deriveDecimalPlaces dpDegree ''Latitude
 deriveDecimalPlaces dpDegree ''Longitude
@@ -82,7 +83,7 @@ data LLA =
         , llaAltGps :: Altitude
         }
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | Constructs a 'LLA' from its parts.
 -- 
@@ -103,7 +104,7 @@ data Fix =
         -- ^ The barometric pressure altitude of the fix.
         }
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | Class for a fix made up of latitude, longitude and GPS altitude.
 class LatLngAlt a where
@@ -139,7 +140,8 @@ data MarkedFixes =
         { mark0 :: UTCTime -- ^ The UTC time of the first fix.
         , fixes :: [Fix] -- ^ The fixes of the track log.
         }
-    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 showMarkFix :: UTCTime -> Seconds -> String
 showMarkFix mark0 fixMark =

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a864090c4fcb57fa702d86f92bfb695f32fa532a9532e2e1f55257cc76db9311
+-- hash: 1b2feb1f0336769d819ad44bbcba12061183ada840160f960781a9c57e02f697
 
 name:           flight-mask
 version:        0.1.0
@@ -74,6 +74,7 @@ library
     , bytestring
     , cmdargs
     , containers
+    , deepseq
     , detour-via-sci
     , directory
     , fgl
@@ -146,6 +147,7 @@ test-suite doctest
     , bytestring
     , cmdargs
     , containers
+    , deepseq
     , detour-via-sci
     , directory
     , doctest

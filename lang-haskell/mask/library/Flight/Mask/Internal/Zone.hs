@@ -19,6 +19,8 @@ module Flight.Mask.Internal.Zone
     , zonesToTaskZones
     ) where
 
+import GHC.Generics (Generic)
+import Control.DeepSeq
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.UnitsOfMeasure (Quantity, u)
 
@@ -52,32 +54,38 @@ data MadeZones =
         , nomineeStarts :: NomineeStarts
         , excludedCrossings :: ExcludedCrossings
         }
+    deriving (Generic, NFData)
 
 -- | Crossings from the set of nominee crossings selected for possible tagging.
 newtype SelectedCrossings =
     SelectedCrossings { unSelectedCrossings :: [Maybe ZoneCross] }
-    deriving Show
+    deriving (Show, Generic)
+    deriving anyclass NFData
 
 -- | All crossings except those excluded.
 newtype NomineeCrossings =
     NomineeCrossings { unNomineeCrossings :: [[Maybe ZoneCross]] }
-    deriving Show
+    deriving (Show, Generic)
+    deriving anyclass NFData
 
 -- | The start gate selected with its crossing.
 newtype SelectedStart =
     SelectedStart { unSelectedStart :: Maybe (StartGate, ZoneCross) }
-    deriving Show
+    deriving (Show, Generic)
+    deriving anyclass NFData
 
 -- | Crossings of the start zone, partitioned for each start gate.
 newtype NomineeStarts =
     NomineeStarts { unNomineeStarts :: [(StartGate, [ZoneCross])] }
-    deriving Show
+    deriving (Show, Generic)
+    deriving anyclass NFData
 
 -- | Crossings excluded because they are outside of the open time window of the
 -- zone.
 newtype ExcludedCrossings =
     ExcludedCrossings { unExcludedCrossings :: [[Maybe ZoneCross]] }
-    deriving Show
+    deriving (Show, Generic)
+    deriving anyclass NFData
 
 data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving (Eq, Show)
 data ZoneExit = ZoneExit ZoneIdx ZoneIdx deriving (Eq, Show)

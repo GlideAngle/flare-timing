@@ -22,6 +22,7 @@ in    defs
             , "bytestring"
             , "cassava"
             , "containers"
+            , "deepseq"
             , "directory"
             , "facts"
             , "filepath"

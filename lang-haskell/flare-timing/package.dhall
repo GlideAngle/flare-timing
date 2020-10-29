@@ -232,6 +232,8 @@ in    defs
               { dependencies =
                     deps
                   # [ "lens"
+                    , "deepseq"
+                    , "parallel-io"
                     , "safe-exceptions"
                     , "siggy-chardust"
                     , "time"

@@ -4,9 +4,11 @@ module Flight.UnpackTrack
     , readCompTrackRows
     ) where
 
+import Control.DeepSeq
 import Control.Exception.Safe (MonadThrow, throwString, catchIO)
 import Control.Monad.Except (MonadIO, liftIO)
 import Control.Monad (zipWithM)
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 import Data.Csv
     ( Header
@@ -15,7 +17,7 @@ import Data.Csv
     , encodeByNameWith
     , defaultEncodeOptions
     )
-import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
+import qualified Data.ByteString.Char8 as S (writeFile, readFile)
 import Data.Vector (Vector)
 import qualified Data.Vector as V (toList)
 import System.FilePath ((</>))
@@ -32,17 +34,21 @@ import Flight.Comp
     , compFileToCompDir
     )
 
+-- SEE: https://gist.github.com/dino-/28b09c465c756c44b2c91d777408e166
+mkLazy :: B.ByteString -> BL.ByteString
+mkLazy = BL.fromChunks . return
+
 readUnpackTrack
     :: (MonadThrow m, MonadIO m)
     => UnpackTrackFile
     -> m (Header, Vector TrackRow)
 readUnpackTrack (UnpackTrackFile csvPath) = do
-    contents <- liftIO $ BL.readFile csvPath
-    either throwString return $ decodeByName contents
+    contents <- liftIO $ S.readFile csvPath
+    either throwString return $!! decodeByName (mkLazy contents)
 
 writeUnpackTrack :: UnpackTrackFile -> [TrackRow] -> IO ()
 writeUnpackTrack (UnpackTrackFile path) xs =
-    L.writeFile path rows
+    S.writeFile path $ BL.toStrict rows
     where
         (TimeHeader hs) = timeHeader
         opts = defaultEncodeOptions {encUseCrLf = False}

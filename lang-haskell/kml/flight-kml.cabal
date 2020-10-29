@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3a2d95e99e4a7b252b74dff131db124827fc6c8735a30ba54a922e4155ed4806
+-- hash: 007c562a6393bc25482eb49544d732e032152ab828cd8c9ec95446adbb209d96
 
 name:           flight-kml
 version:        1.1.0
@@ -48,6 +48,7 @@ library
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
+    , deepseq
     , detour-via-sci
     , flight-clip
     , hxt
@@ -75,6 +76,7 @@ test-suite doctest
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
+    , deepseq
     , detour-via-sci
     , doctest
     , flight-clip
@@ -107,6 +109,7 @@ test-suite parse
   build-depends:
       aeson
     , base
+    , deepseq
     , detour-via-sci
     , flight-clip
     , hxt

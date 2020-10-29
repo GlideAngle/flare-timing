@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5adaf11a561d464663ddc85b678a7ed9dffa56a7613e7a3c3b3fac27f6223001
+-- hash: 3e69644bcb41d49513a4d9ab578fd9486eb4a1ed9a81f90ce3e11ad4e5c97af0
 
 name:           flight-comp
 version:        0.1.0
@@ -68,6 +68,7 @@ library
     , bytestring
     , cassava
     , containers
+    , deepseq
     , detour-via-sci
     , detour-via-uom
     , directory
@@ -138,6 +139,7 @@ test-suite comp
     , bytestring
     , cassava
     , containers
+    , deepseq
     , detour-via-sci
     , detour-via-uom
     , directory
@@ -215,6 +217,7 @@ test-suite doctest
     , bytestring
     , cassava
     , containers
+    , deepseq
     , detour-via-sci
     , detour-via-uom
     , directory
