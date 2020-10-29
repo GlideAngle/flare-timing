@@ -22,6 +22,7 @@ in    defs
             , "path"
             , "containers"
             , "mtl"
+            , "deepseq"
             , "directory"
             , "filepath"
             , "time"

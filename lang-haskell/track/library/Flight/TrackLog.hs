@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 {-|
 Module      : Flight.TrackLog
 Copyright   : (c) Block Scope Limited 2017
@@ -22,8 +24,8 @@ import Data.Time.Clock (UTCTime(..), diffUTCTime)
 import Data.Time.Calendar
 import Data.Bifunctor (bimap)
 import Data.Maybe (catMaybes, listToMaybe)
-import Data.List (nubBy)
 import Data.Char (toLower)
+import Control.DeepSeq
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath
@@ -35,6 +37,8 @@ import System.FilePath
     , joinPath
     , takeExtension
     )
+import Data.Set (Set)
+import qualified Data.Set as Set
 
 import qualified Flight.Kml as K
 import qualified Flight.Igc as I (parse)
@@ -52,7 +56,6 @@ import Flight.Comp
     , TaskFolder(..)
     , IxTask(..)
     )
-import Flight.Igc (eqOnTime)
 import qualified Flight.Igc as Igc (mark)
 
 ixTasks :: [IxTask]
@@ -93,7 +96,7 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                                                 $ "Can't parse IGC: " ++ file
 
                                             Right xs ->
-                                                return . Right $ igcMarkedFixes xs
+                                                return . Right $!! igcMarkedFixes xs
 
                                       _ ->
                                           K.parse contents
@@ -101,9 +104,11 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                             return $ bimap TrackLogFileNotRead f kml
 
     ExceptT . return . bimap (p,) (p,) $ x
+{-# SCC pilotTrack #-}
 
 taskPilotTracks
-    :: (IxTask -> K.MarkedFixes -> a)
+    :: NFData a
+    => (IxTask -> K.MarkedFixes -> a)
     -> [ (IxTask, [ PilotTrackLogFile ]) ]
     -> IO
         [[ Either
@@ -112,13 +117,16 @@ taskPilotTracks
         ]]
 taskPilotTracks _ [] =
     return []
-taskPilotTracks f xs =
-    sequence $ (\(i, ts) ->
-        sequence $ runExceptT . pilotTrack (f i) <$> ts)
-        <$> xs
+taskPilotTracks f !xs =
+    sequence
+    $ (\(i, ts) -> do
+        pts <- sequence $ runExceptT . pilotTrack (f i) <$> ts
+        return $!! pts)
+    <$> xs
 
 pilotTracks
-    :: (IxTask -> K.MarkedFixes -> a)
+    :: NFData a
+    => (IxTask -> K.MarkedFixes -> a)
     -> [[ PilotTrackLogFile ]]
     -> IO
         [[ Either
@@ -178,8 +186,8 @@ nullMarkedFixes :: K.MarkedFixes
 nullMarkedFixes = K.MarkedFixes (UTCTime (ModifiedJulianDay 0) 0) []
 
 igcMarkedFixes :: [Flight.Igc.IgcRecord] -> K.MarkedFixes
-igcMarkedFixes xs =
-    maybe nullMarkedFixes (`mark` zs) date
+igcMarkedFixes !xs =
+    maybe nullMarkedFixes (\d -> mark d $!! zs) date
     where
         date =
             listToMaybe
@@ -187,14 +195,31 @@ igcMarkedFixes xs =
             . filter isMark
             $ xs
 
-        ys = bumpOver $ filter isFix xs
+        xs' = {-# SCC filter_is_fix #-} filter isFix xs
+        ys = {-# SCC bump_over #-} bumpOver xs'
 
         -- NOTE: Some loggers will be using sub-second logging. The columns in
         -- the B record holding the s or ss, tenths or hundredths of a second,
         -- are specified in the I record. Whether parsing IGC files at the
         -- second or sub-second granularity, we need to avoid having fixes with
         -- identical time stamps hence the nubBy here.
-        zs = nubBy eqOnTime ys
+        zs =  {-# SCC nubOrdOn_hms #-} nubOrdOn hms ys
+{-# SCC igcMarkedFixes #-}
+
+-- TODO: Remove nubOrdOn and nubOrdOnExcluding when I can upgrade the
+-- containers version.
+nubOrdOn :: Ord b => (a -> b) -> [a] -> [a]
+nubOrdOn f = \xs -> nubOrdOnExcluding f Set.empty xs
+{-# INLINE nubOrdOn #-}
+
+nubOrdOnExcluding :: Ord b => (a -> b) -> Set b -> [a] -> [a]
+nubOrdOnExcluding f = go
+  where
+    go _ [] = []
+    go s (x:xs)
+      | fx `Set.member` s = go s xs
+      | otherwise = x : go (Set.insert fx s) xs
+      where !fx = f x
 
 -- |
 -- >>> mark markSasha fixesSasha

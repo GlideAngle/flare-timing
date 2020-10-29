@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 71a09693e42e997ca6362090349244d1af5eef8d15f962c35198202e813a4052
+-- hash: 590edffe908a8731c9609f0fdb1f0afe83ec1e47a171841e620d78dda966edd1
 
 name:           flight-track
 version:        0.1.0
@@ -50,6 +50,7 @@ library
       base >=4.10.1.0 && <5
     , bytestring
     , containers
+    , deepseq
     , directory
     , filepath
     , flight-clip
@@ -78,6 +79,7 @@ test-suite doctest
       base >=4.10.1.0 && <5
     , bytestring
     , containers
+    , deepseq
     , directory
     , doctest
     , filepath
