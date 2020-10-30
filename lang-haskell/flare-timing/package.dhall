@@ -240,6 +240,7 @@ in    defs
                     , "flight-kml"
                     , "flight-lookup"
                     , "flight-mask"
+                    , "flight-track"
                     ]
               , ghc-options =
                   [ "-rtsopts"

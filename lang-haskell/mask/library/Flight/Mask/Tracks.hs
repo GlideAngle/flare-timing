@@ -1,4 +1,4 @@
-module Flight.Mask.Tracks (checkTracks) where
+module Flight.Mask.Tracks (checkTracks, settingsLogs) where
 
 import Control.DeepSeq
 import Control.Exception.Safe (MonadThrow)
@@ -6,7 +6,7 @@ import Control.Monad.Except (MonadIO, liftIO)
 import System.FilePath (takeDirectory)
 
 import Flight.Kml (MarkedFixes)
-import Flight.Comp 
+import Flight.Comp
     ( IxTask(..)
     , CompSettings(..)
     , Pilot(..)

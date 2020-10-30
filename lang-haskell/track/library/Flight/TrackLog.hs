@@ -11,6 +11,7 @@ Competition pilot tracks logs.
 -}
 module Flight.TrackLog
     ( pilotTracks
+    , pilotTrack
     , filterPilots
     , filterTasks
     , makeAbsolute

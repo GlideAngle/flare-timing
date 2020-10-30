@@ -3,16 +3,18 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+import Text.Printf (printf)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
-import Control.Monad (mapM_, when, zipWithM_)
+import Control.Monad (mapM_)
 import Control.DeepSeq
 import Control.Concurrent.ParallelIO (parallel_)
 import Control.Exception.Safe (catchIO)
+import Control.Monad.Except (runExceptT)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
 
@@ -32,18 +34,18 @@ import Flight.Comp
     , PilotName(..)
     , Pilot(..)
     , IxTask(..)
-    , TrackFileFail
     , compFileToCompDir
     , unpackTrackPath
     , findCompInput
     , ensureExt
     , pilotNamed
     )
-import Flight.Mask (FnIxTask, checkTracks, fixFromFix)
+import Flight.Mask (FnIxTask, settingsLogs, fixFromFix)
 import Flight.Track.Cross (Fix(..))
 import Flight.Kml (MarkedFixes(..))
 import Flight.Scribe (readComp, writeUnpackTrack)
 import UnpackTrackOptions (description)
+import Flight.TrackLog (pilotTrack)
 
 main :: IO ()
 main = do
@@ -76,66 +78,43 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
 
     case compSettings of
         Nothing -> putStrLn "Couldn't read the comp settings."
-        Just cs ->
-            writeTime
-                (IxTask <$> task)
-                (pilotNamed cs $ PilotName <$> pilot)
-                (CompInputFile compPath)
-                checkAll
+        Just cs@CompSettings{tasks} -> do
+            let ixSelectTasks = IxTask <$> task
+            let ps = pilotNamed cs $ PilotName <$> pilot
+            (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks ps
 
-writeTime
-    :: [IxTask]
-    -> [Pilot]
-    -> CompInputFile
-    -> (CompInputFile
-      -> [IxTask]
-      -> [Pilot]
-      -> IO [[Either (Pilot, t) (Pilot, Pilot -> [TrackRow])]])
-    -> IO ()
-writeTime selectTasks selectPilots compFile f = do
-    checks <-
-        catchIO
-            (Just <$> f compFile selectTasks selectPilots)
-            (const $ return Nothing)
+            parallel_ . concat $
+                [
+                    [ do
+                        check <-
+                            catchIO
+                                (Just <$> (runExceptT $ pilotTrack (dump tasks ixTask) pilotLog))
+                                (const $ return Nothing)
 
-    case checks of
-        Nothing -> putStrLn "Unable to read tracks for pilots."
-        Just xs' -> do
-            zipWithM_
-                (\ n xs ->
-                    when (includeTask selectTasks $ IxTask n) $
-                        let ptWrite = writePilotTimes compFile n in
+                        case check of
+                            Nothing ->
+                                putStrLn
+                                $ printf
+                                    "Unable to read task %d, %s." n (show pilotLog)
 
-                        -- SEE: https://mail.haskell.org/pipermail/haskell-cafe/2012-September/103683.html
-                        parallel_ $
-                        fmap
-                            (\case
-                                Left (p, _) -> ptWrite (p, [])
-                                Right (p, g) -> ptWrite (p, force $ g p))
-                            xs)
-                [1 .. ]
-                xs'
+                            Just pt -> do
+                                let ptWrite = writePilotTimes compFile n
 
-checkAll
-    :: CompInputFile
-    -> [IxTask]
-    -> [Pilot]
-    -> IO
-         [
-             [Either
-                 (Pilot, TrackFileFail)
-                 (Pilot, Pilot -> [TrackRow])
-             ]
-         ]
-checkAll =
-    checkTracks (\CompSettings{tasks} -> dump tasks)
+                                either
+                                    (\(p, _) -> ptWrite (p, []))
+                                    (\(p, g) -> ptWrite (p, force $ g p))
+                                    pt
 
-includeTask :: [IxTask] -> IxTask -> Bool
-includeTask tasks = if null tasks then const True else (`elem` tasks)
+                    | pilotLog <- taskLogs
+                    ]
+
+                | ixTask@(IxTask n) <- IxTask <$> [1..]
+                | taskLogs <- selectedCompLogs
+                ]
 
 writePilotTimes :: CompInputFile -> Int -> (Pilot, [TrackRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
-    putStrLn . commentOnFixRange pilot $ fixIdx <$> rows
+    putStrLn $ printf "Task %d %s" iTask (commentOnFixRange pilot $ fixIdx <$> rows)
     _ <- createDirectoryIfMissing True dOut
     _ <- writeUnpackTrack (UnpackTrackFile $ dOut </> f) rows
     return ()

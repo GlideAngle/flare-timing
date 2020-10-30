@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e352860598b5d348f681ccd91941bf66be4047874c5a3986eed0e06d1bc07c96
+-- hash: 13744115d66122b537fb1b995441bf9d745d2e5dd5651ea8052cc68b668ca921
 
 name:           flare-timing
 version:        0.1.0
@@ -768,6 +768,7 @@ executable ft-unpack-track
     , flight-mask
     , flight-scribe
     , flight-time
+    , flight-track
     , formatting
     , lens
     , mtl
