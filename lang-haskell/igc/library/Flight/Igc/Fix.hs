@@ -154,6 +154,7 @@ mark f (HFDTE YMD{year = yy, month = mm, day = dd}) xs =
     where
         ys = catMaybes $ extract <$> xs
         ts = [stamp (yy, mm, dd) `first` y | y <- ys]
+{-# INLINABLE mark #-}
 
 -- | Extracts B record data as type @IgcFix@.
 --
