@@ -122,11 +122,15 @@ altGps =
 -- (-1m,Just -43m)
 alt :: ParsecT Void String Identity (AltBaro, Maybe AltGps)
 alt = do
-    _ <- oneOf ("AV" :: String)
+    _ <- altLeadingChar
     altBaro' <- altBaro
     altGps' <- optional altGps
     return (altBaro', altGps')
 {-# INLINE alt #-}
+
+altLeadingChar :: ParsecT Void String Identity (Token [Char])
+altLeadingChar = satisfy (`elem` ['A', 'V'])
+{-# INLINE altLeadingChar #-}
 
 -- |
 -- >>> parseTest fix "B0200223321354S14756057EA0024400241000\n"
@@ -144,14 +148,14 @@ fix = do
     lat' <- lat
     lng' <- lng
     (altBaro', altGps') <- alt
-    _ <- many (noneOf ("\r\n" :: String))
+    _ <- many notNewLine
     return $ B hms' (lat', lng',  altBaro',  altGps')
 {-# INLINE fix #-}
 
 security :: ParsecT Void String Identity IgcRecord
 security = do
     _ <- char 'G'
-    _ <- many (noneOf ("\r\n" :: String))
+    _ <- many notNewLine
     return G
 {-# INLINE security #-}
 
@@ -190,9 +194,13 @@ dateHFDTE = do
 
 ignore :: ParsecT Void String Identity IgcRecord
 ignore = do
-    _ <- many (noneOf ("\r\n" :: String))
+    _ <- many notNewLine
     return Ignore
 {-# INLINE ignore #-}
+
+notNewLine :: ParsecT Void String Identity Char
+notNewLine = satisfy (`notElem` ['\r', '\n'])
+{-# INLINE notNewLine #-}
 
 -- |
 -- >>> line 1 igcHFDTE
