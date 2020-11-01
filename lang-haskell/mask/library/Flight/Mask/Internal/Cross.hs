@@ -127,6 +127,7 @@ enterExitSeq sepZs z xs =
 
         (hit@(ZoneEntry _ jIdx@(ZoneIdx j)) : _) ->
             Left hit : (reindex jIdx <$> exitEnterSeq sepZs z (drop j xs))
+{-# INLINABLE enterExitSeq #-}
 
 -- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
 exitEnterSeq
@@ -140,6 +141,7 @@ exitEnterSeq sepZs z xs =
 
         (hit@(ZoneExit _ jIdx@(ZoneIdx j)) : _) ->
             Right hit : (reindex jIdx <$> enterExitSeq sepZs z (drop j xs))
+{-# INLINABLE exitEnterSeq #-}
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then
