@@ -11,8 +11,10 @@ import Data.Maybe (catMaybes, isNothing)
 import Data.List (nub, sort)
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
+import Control.Monad.Except (runExceptT)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
+import Control.Concurrent.ParallelIO (parallel)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -50,10 +52,11 @@ import Flight.Mask
     , SelectedStart(..)
     , NomineeStarts(..)
     , ExcludedCrossings(..)
-    , checkTracks
+    , settingsLogs
     , madeZones
     , nullFlying
     )
+import Flight.TrackLog (pilotTrack)
 import Flight.Scribe (readComp, writeCrossing)
 import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
@@ -79,7 +82,7 @@ drive o = do
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go co@CmdBatchOptions{pilot, task} compFile@(CompInputFile compPath) = do
+go CmdBatchOptions{pilot, math, task} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
 
     compSettings <-
@@ -90,16 +93,23 @@ go co@CmdBatchOptions{pilot, task} compFile@(CompInputFile compPath) = do
     case compSettings of
         Nothing -> putStrLn "Couldn't read the comp settings."
         Just cs@CompSettings{comp, tasks} -> do
-            let ixs = IxTask <$> task
+            let ixSelectTasks = IxTask <$> task
             let ps = pilotNamed cs $ PilotName <$> pilot
-            tracks <-
-                catchIO
-                    (Just <$> checkAll comp (math co) compFile ixs ps)
-                    (const $ return Nothing)
+            (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks ps
 
-            case tracks of
-                Nothing -> putStrLn "Unable to read tracks for pilots."
-                Just ts -> writeCrossings compFile tasks ts
+            tracks :: [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]] <-
+                    sequence $
+                    [
+                        parallel $
+                        [ runExceptT $ pilotTrack ((flown comp math) tasks ixTask) pilotLog
+                        | pilotLog <- taskLogs
+                        ]
+
+                    | ixTask <- IxTask <$> [1..]
+                    | taskLogs <- selectedCompLogs
+                    ]
+
+            writeCrossings compFile tasks tracks
 
 writeCrossings
     :: CompInputFile
@@ -176,16 +186,6 @@ flew TrackFlyingSection{flyingFixes, flyingSeconds}
 
 madeZonesToFlying :: MadeZones -> TrackFlyingSection
 madeZonesToFlying MadeZones{flying} = flying
-
-checkAll
-    :: Comp
-    -> Math
-    -> CompInputFile
-    -> [IxTask]
-    -> [Pilot]
-    -> IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
-checkAll c math =
-    checkTracks $ \CompSettings{tasks} -> flown c math tasks
 
 flown :: Comp -> Math -> FnIxTask k MadeZones
 flown c math tasks (IxTask i) fs =

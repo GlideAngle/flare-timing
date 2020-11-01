@@ -186,11 +186,14 @@ in    defs
               { dependencies =
                     deps
                   # [ "lens"
+                    , "deepseq"
+                    , "parallel-io"
                     , "safe-exceptions"
                     , "siggy-chardust"
                     , "flight-earth"
                     , "flight-mask"
                     , "flight-span"
+                    , "flight-track"
                     , "flight-units"
                     , "flight-zone"
                     ]
