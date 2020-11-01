@@ -95,7 +95,7 @@ parseUtcTime s =
 
 pUtcTimeZ :: ParsecT Void String Identity UTCTime
 pUtcTimeZ = do
-    ymd <- many $ noneOf ("T" :: String)
+    ymd <- many $ satisfy ((/=) 'T')
     _ <- char 'T'
     hrs <- count 2 digitChar
     _ <- char ':'
