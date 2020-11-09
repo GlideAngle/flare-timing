@@ -4,19 +4,35 @@ module Flight.Igc.Parse
     ) where
 
 import Prelude hiding (readFile)
-import Data.ByteString.UTF8 (toString)
-import Data.ByteString (readFile)
-import Text.Megaparsec hiding (parse)
-import Text.Megaparsec.Char
-import qualified Text.Megaparsec as P (parse)
-import Data.Void
-import Data.Functor.Identity
-import Flight.Igc.Record
 
-igcFile :: ParsecT Void String Identity [IgcRecord]
+import Data.ByteString.UTF8 (toString)
+import Data.ByteString (ByteString, readFile)
+import qualified Data.ByteString.Char8 as BS (readInt)
+import Data.ByteString.Internal (packBytes, c2w)
+import Text.Megaparsec hiding (parse)
+import Text.Megaparsec.Byte (char, string, digitChar, eol)
+import qualified Text.Megaparsec as P (parse)
+import Data.Word (Word8)
+import Data.Void (Void)
+import Data.Functor.Identity (Identity)
+import Flight.Igc.Record
+    ( IgcRecord(..), YMD(..), HMS(..), AltGps(..), AltBaro(..), Lat(..), Lng(..)
+    , Nth(..), Second(..), Hour(..), Day(..), Month(..), Year(..), Altitude(..)
+    , Degree(..), MinuteOfAngle(..), MinuteOfTime(..)
+    )
+
+readInt :: ByteString -> Int
+readInt s =
+    case BS.readInt s of
+        Just (n, "") -> n
+        _ -> error "Can't parse int"
+
+type MParsec a = ParsecT Void ByteString Identity a
+
+igcFile :: MParsec [IgcRecord]
 igcFile = do
     hfdte <- try p1 <|> try p2
-    lines' <- lookAhead (manyTill anySingle (char 'B')) *> many line
+    lines' <- lookAhead (manyTill anySingle (char $ c2w 'B')) *> many line
     _ <- eof
     return $ hfdte : lines'
     where
@@ -24,7 +40,7 @@ igcFile = do
         p2 = manyTill anySingle (lookAhead (string "HFDTE")) *> headerLine dateHFDTE
         headerLine date = date <* eol
 
-line :: ParsecT Void String Identity IgcRecord
+line :: MParsec IgcRecord
 line =
     fix <* eol
     -- WARNING: The security record in the IGC file is not always followed by
@@ -36,33 +52,33 @@ line =
 -- |
 -- >>> parseTest timeHHMMSS "0200223"
 -- 02:00:22
-timeHHMMSS :: ParsecT Void String Identity HMS
+timeHHMMSS :: MParsec HMS
 timeHHMMSS = do
-    hh <- Hour . read <$> count 2 digitChar
-    mm <- MinuteOfTime . read <$> count 2 digitChar
-    ss <- Second . read <$> count 2 digitChar
+    hh <- Hour . readInt . packBytes <$> count 2 digitChar
+    mm <- MinuteOfTime . readInt . packBytes <$> count 2 digitChar
+    ss <- Second . readInt . packBytes <$> count 2 digitChar
     return $ HMS hh mm ss
 {-# INLINE timeHHMMSS #-}
 
 -- |
 -- >>> parseTest lat "3321354S"
 -- 33° 21.354' S
-lat :: ParsecT Void String Identity Lat
+lat :: MParsec Lat
 lat = do
-    degs <- Degree . read <$> count 2 digitChar
-    mins <- MinuteOfAngle . read <$> count 5 digitChar
-    f <- const LatN <$> char 'N' <|> const LatS <$> char 'S'
+    degs <- Degree . readInt . packBytes <$> count 2 digitChar
+    mins <- MinuteOfAngle . readInt . packBytes <$> count 5 digitChar
+    f <- const LatN <$> char (c2w 'N') <|> const LatS <$> char (c2w 'S')
     return $ f degs mins
 {-# INLINE lat #-}
 
 -- |
 -- >>> parseTest lng "14756057E"
 -- 147° 56.057' E
-lng :: ParsecT Void String Identity Lng
+lng :: MParsec Lng
 lng = do
-    degs <- Degree . read <$> count 3 digitChar
-    mins <- MinuteOfAngle . read <$> count 5 digitChar
-    f <- const LngW <$> char 'W' <|> const LngE <$> char 'E'
+    degs <- Degree . readInt . packBytes <$> count 3 digitChar
+    mins <- MinuteOfAngle . readInt . packBytes <$> count 5 digitChar
+    f <- const LngW <$> char (c2w 'W') <|> const LngE <$> char (c2w 'E')
     return $ f degs mins
 {-# INLINE lng #-}
 
@@ -78,12 +94,12 @@ lng = do
 --
 -- >>> parseTest altBaro "-0001"
 -- -1m
-altBaro :: ParsecT Void String Identity AltBaro
+altBaro :: MParsec AltBaro
 altBaro =
-    AltBaro . Altitude . read
+    AltBaro . Altitude . readInt . packBytes
     <$>
         ( count 5 digitChar
-        <|> (char '-' >> (("-" ++) <$> count 4 digitChar))
+        <|> (char (c2w '-') >> ((\xs -> c2w '-' : xs) <$> count 4 digitChar))
         )
 {-# INLINE altBaro #-}
 
@@ -99,12 +115,12 @@ altBaro =
 --
 -- >>> parseTest altGps "-0001"
 -- -1m
-altGps :: ParsecT Void String Identity AltGps
+altGps :: MParsec AltGps
 altGps =
-    AltGps . Altitude . read
+    AltGps . Altitude . readInt . packBytes
     <$>
         ( count 5 digitChar
-        <|> (char '-' >> (("-" ++) <$> count 4 digitChar))
+        <|> (char (c2w '-') >> ((\xs -> c2w '-' : xs) <$> count 4 digitChar))
         )
 {-# INLINE altGps #-}
 
@@ -120,7 +136,7 @@ altGps =
 --
 -- >>> parseTest alt "A-0001-0043"
 -- (-1m,Just -43m)
-alt :: ParsecT Void String Identity (AltBaro, Maybe AltGps)
+alt :: MParsec (AltBaro, Maybe AltGps)
 alt = do
     _ <- altLeadingChar
     altBaro' <- altBaro
@@ -128,8 +144,8 @@ alt = do
     return (altBaro', altGps')
 {-# INLINE alt #-}
 
-altLeadingChar :: ParsecT Void String Identity (Token [Char])
-altLeadingChar = satisfy (`elem` ['A', 'V'])
+altLeadingChar :: MParsec Word8
+altLeadingChar = satisfy (\x -> x == (c2w 'A') || x == (c2w 'V'))
 {-# INLINE altLeadingChar #-}
 
 -- |
@@ -141,9 +157,9 @@ altLeadingChar = satisfy (`elem` ['A', 'V'])
 --
 -- >>> parseTest fix "B1701282832124N08150806WA-000100043\n"
 -- 17:01:28 28° 32.124' N 081° 50.806' W -1m (Just 43m)
-fix :: ParsecT Void String Identity IgcRecord
+fix :: MParsec IgcRecord
 fix = do
-    _ <- char 'B'
+    _ <- char $ c2w 'B'
     hms' <- timeHHMMSS
     lat' <- lat
     lng' <- lng
@@ -152,9 +168,9 @@ fix = do
     return $ B hms' (lat', lng',  altBaro',  altGps')
 {-# INLINE fix #-}
 
-security :: ParsecT Void String Identity IgcRecord
+security :: MParsec IgcRecord
 security = do
-    _ <- char 'G'
+    _ <- char $ c2w 'G'
     _ <- many notNewLine
     return G
 {-# INLINE security #-}
@@ -162,17 +178,17 @@ security = do
 -- |
 -- >>> parseTest dateHFDTEDATE "HFDTEDATE:030118,01"
 -- 2018-01-03, 01
-dateHFDTEDATE :: ParsecT Void String Identity IgcRecord
+dateHFDTEDATE :: MParsec IgcRecord
 dateHFDTEDATE = do
     _ <- string "HFDTEDATE:"
 
-    dd <- Day . read <$> count 2 digitChar
-    mm <- Month . read <$> count 2 digitChar
-    yy <- Year . read <$> count 2 digitChar
+    dd <- Day . readInt . packBytes <$> count 2 digitChar
+    mm <- Month . readInt . packBytes <$> count 2 digitChar
+    yy <- Year . readInt . packBytes <$> count 2 digitChar
     let ymd = YMD {year = yy, month = mm, day = dd}
 
     _ <- string ","
-    nn <- Nth <$> count 2 digitChar
+    nn <- Nth . toString . packBytes <$> count 2 digitChar
 
     return $ HFDTEDATE {ymd = ymd, nth = nn}
 {-# INLINE dateHFDTEDATE #-}
@@ -180,26 +196,26 @@ dateHFDTEDATE = do
 -- |
 -- >>> parseTest dateHFDTE "HFDTE0301181"
 -- 2018-01-03
-dateHFDTE :: ParsecT Void String Identity IgcRecord
+dateHFDTE :: MParsec IgcRecord
 dateHFDTE = do
     _ <- string "HFDTE"
 
-    dd <- Day . read <$> count 2 digitChar
-    mm <- Month . read <$> count 2 digitChar
-    yy <- Year . read <$> count 2 digitChar
+    dd <- Day . readInt . packBytes <$> count 2 digitChar
+    mm <- Month . readInt . packBytes <$> count 2 digitChar
+    yy <- Year . readInt . packBytes <$> count 2 digitChar
     let ymd = YMD {year = yy, month = mm, day = dd}
 
     return $ HFDTE ymd
 {-# INLINE dateHFDTE #-}
 
-ignore :: ParsecT Void String Identity IgcRecord
+ignore :: MParsec IgcRecord
 ignore = do
     _ <- many notNewLine
     return Ignore
 {-# INLINE ignore #-}
 
-notNewLine :: ParsecT Void String Identity Char
-notNewLine = satisfy (`notElem` ['\r', '\n'])
+notNewLine :: MParsec Word8
+notNewLine = satisfy (\x -> x /= (c2w '\r') && x /= (c2w '\n'))
 {-# INLINE notNewLine #-}
 
 -- |
@@ -267,15 +283,15 @@ notNewLine = satisfy (`notElem` ['\r', '\n'])
 -- ... plus 1757 other B records
 -- <BLANKLINE>
 parse
-   :: String -- ^ A string to parse
-   -> Either (ParseErrorBundle String Void) [IgcRecord]
+   :: ByteString -- ^ A string to parse
+   -> Either (ParseErrorBundle ByteString Void) [IgcRecord]
 parse = P.parse igcFile "(stdin)"
 
 parseFromFile
     :: FilePath -- ^ An IGC file to parse.
-    -> IO (Either (ParseErrorBundle String Void) [IgcRecord])
+    -> IO (Either (ParseErrorBundle ByteString Void) [IgcRecord])
 parseFromFile fname =
-    runParser igcFile fname . toString <$> readFile fname
+    runParser igcFile fname <$> readFile fname
 
 -- $setup
 -- >>> :set -XTemplateHaskell

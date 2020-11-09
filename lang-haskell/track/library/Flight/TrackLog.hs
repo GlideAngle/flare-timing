@@ -83,12 +83,12 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                     if not dfe
                         then return . Left $ TrackLogFileExistsNot file
                         else do
-                            contents <- toString <$> readFile file
+                            contents <- readFile file
 
                             kml :: Either String K.MarkedFixes
                                 <- case toLower <$> takeExtension file of
                                       ".kml" ->
-                                          K.parse contents
+                                          K.parse $ toString contents
 
                                       ".igc" ->
                                           case I.parse contents of
@@ -100,7 +100,7 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                                                 return . Right $!! igcMarkedFixes xs
 
                                       _ ->
-                                          K.parse contents
+                                          K.parse $ toString contents
 
                             return $ bimap TrackLogFileNotRead f kml
 
