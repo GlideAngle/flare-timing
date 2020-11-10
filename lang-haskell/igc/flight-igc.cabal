@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 46a01b5efe535e8516ea95c1c8ce2958419f0a474faf3155e8b485f2a88b9672
+-- hash: 953e428b18747e6da8e61deee0a706933fb036e04165672cb3abfd1c7e199f13
 
 name:           flight-igc
 version:        2.0.0
@@ -51,11 +51,11 @@ library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths
   build-depends:
-      base >=4.10.1.0 && <5
+      attoparsec
+    , base >=4.10.1.0 && <5
     , bytestring
     , deepseq
     , flight-clip
-    , megaparsec >=7.0.4 && <7.1
     , tasty-quickcheck
     , time
     , utf8-string
@@ -77,15 +77,15 @@ test-suite doctest
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       QuickCheck
+    , attoparsec
     , base >=4.10.1.0 && <5
     , bytestring
     , deepseq
     , doctest
     , flight-clip
-    , megaparsec >=7.0.4 && <7.1
     , tasty-quickcheck
     , time
     , utf8-string
   if flag(suppress-failing-tests)
-    buildable: False
+    buildable: True
   default-language: Haskell2010

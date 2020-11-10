@@ -23,7 +23,7 @@ in    defs
           # [ "bytestring"
             , "flight-clip"
             , "deepseq"
-            , "megaparsec ^>= 7.0.4"
+            , "attoparsec"
             , "tasty-quickcheck"
             , "time"
             , "utf8-string"
@@ -45,7 +45,7 @@ in    defs
                     { condition =
                         "flag(suppress-failing-tests)"
                     , buildable =
-                        False
+                        True
                     }
                 }
             }
