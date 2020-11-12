@@ -1,11 +1,11 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Mask.Mask (writeMask, check) where
+module Mask.Mask (writeMask) where
 
 import Control.Lens ((^?), element)
-import Control.Exception.Safe (MonadThrow, catchIO)
-import Control.Monad.Except (MonadIO)
+import Control.Monad.Except (runExceptT)
+import Control.Concurrent.ParallelIO (parallel)
 
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
@@ -19,13 +19,14 @@ import Flight.Comp
     , RoutesLookupTaskDistance(..)
     , compToMaskArrival
     )
-import Flight.Mask (FnIxTask, checkTracks)
+import Flight.Mask (FnIxTask, settingsLogs)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
 import qualified Flight.Track.Arrival as Arrival (TrackArrival(..))
 import qualified Flight.Lookup as Lookup
     (arrivalRank, compRoutes, pilotTime, pilotEssTime)
 import Flight.Lookup.Tag (tagArrivalRank, tagPilotTime)
+import Flight.TrackLog (pilotTrack)
 import Flight.Scribe (writeMaskingArrival)
 import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
@@ -33,22 +34,16 @@ import Stats (TimeStats(..), FlightStats(..), nullStats)
 import MaskArrival (maskArrival, arrivalInputs)
 import MaskPilots (maskPilots)
 
+type IOStep k = Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)
+
 writeMask
     :: CompSettings k
     -> RoutesLookupTaskDistance
+    -> Math
+    -> Maybe Tagging
     -> [IxTask]
     -> [Pilot]
     -> CompInputFile
-    -> (CompInputFile
-        -> [IxTask]
-        -> [Pilot]
-        -> IO
-            [
-                [Either
-                    (Pilot, TrackFileFail)
-                    (Pilot, Pilot -> FlightStats k)
-                ]
-            ])
     -> IO ()
 writeMask
     CompSettings
@@ -57,60 +52,54 @@ writeMask
         , pilotGroups
         }
     routes
-    ixSelectTasks selectPilots compFile f = do
+    math
+    tags
+    ixSelectTasks selectPilots compFile = do
+    (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks selectPilots
 
-    checks <-
-        catchIO
-            (Just <$> f compFile ixSelectTasks selectPilots)
-            (const $ return Nothing)
+    fss :: [[IOStep k]] <-
+            sequence $
+            [
+                parallel $
+                [ runExceptT $ pilotTrack (flown math tags tasks ixTask) pilotLog
+                | pilotLog <- taskLogs
+                ]
 
-    case checks of
-        Nothing -> putStrLn "Unable to read tracks for pilots."
+            | ixTask <- IxTask <$> [1..]
+            | taskLogs <- selectedCompLogs
+            ]
 
-        Just fss -> do
+    let iTasks = IxTask <$> [1 .. length fss]
 
-            let iTasks = IxTask <$> [1 .. length fss]
+    -- Task lengths (ls).
+    let lsTask' = Lookup.compRoutes routes iTasks
 
-            -- Task lengths (ls).
-            let lsTask' = Lookup.compRoutes routes iTasks
+    let yss = maskPilots free tasks lsTask' pilotGroups fss
 
-            let yss = maskPilots free tasks lsTask' pilotGroups fss
+    -- Arrivals (as).
+    let as :: [[(Pilot, TrackArrival)]] =
+            [
+                let aRank = maybe True arrivalRank tweak
+                    aTime = maybe False arrivalTime tweak
+                    ys' = arrivalInputs ys
+                in
+                    case (aRank, aTime) of
+                        (True, _) -> arrivalsByRank ys'
+                        (False, True) -> arrivalsByTime ys'
+                        -- NOTE: We're not using either kind of arrival
+                        -- for points so zero the fraction.
+                        (False, False) ->
+                            [ (p, ta{Arrival.frac = ArrivalFraction 0})
+                            | (p, ta) <- arrivalsByRank ys'
+                            ]
 
-            -- Arrivals (as).
-            let as :: [[(Pilot, TrackArrival)]] =
-                    [
-                        let aRank = maybe True arrivalRank tweak
-                            aTime = maybe False arrivalTime tweak
-                            ys' = arrivalInputs ys
-                        in
-                            case (aRank, aTime) of
-                                (True, _) -> arrivalsByRank ys'
-                                (False, True) -> arrivalsByTime ys'
-                                -- NOTE: We're not using either kind of arrival
-                                -- for points so zero the fraction.
-                                (False, False) ->
-                                    [ (p, ta{Arrival.frac = ArrivalFraction 0})
-                                    | (p, ta) <- arrivalsByRank ys'
-                                    ]
+            | Task{taskTweak = tweak} <- tasks
+            | ys <- yss
+            ]
 
-                    | Task{taskTweak = tweak} <- tasks
-                    | ys <- yss
-                    ]
-
-            -- REVIEW: Waiting on feedback on GAP rule question about altitude
-            -- bonus distance pushing a flight to goal so that it arrives.
-            writeMaskingArrival (compToMaskArrival compFile) (maskArrival as)
-
-check
-    :: (MonadThrow m, MonadIO m)
-    => Math
-    -> Maybe Tagging
-    -> CompInputFile
-    -> [IxTask]
-    -> [Pilot]
-    -> m [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)]]
-check math tags =
-    checkTracks $ \CompSettings{tasks} -> flown math tags tasks
+    -- REVIEW: Waiting on feedback on GAP rule question about altitude
+    -- bonus distance pushing a flight to goal so that it arrives.
+    writeMaskingArrival (compToMaskArrival compFile) (maskArrival as)
 
 flown :: Math -> Maybe Tagging -> FnIxTask k (Pilot -> FlightStats k)
 flown Rational _ _ _ _ _ = error "Nigh for rationals not yet implemented."

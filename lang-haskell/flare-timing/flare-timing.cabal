@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 41eaf0343046d5c8ed27f7edcbb2674a13f450baa55ca97c0ac46ee34c271aee
+-- hash: 8c0c99ad03c14f17acf01ada9c84c9de84ca03595d1a98fc51ea9d2486aff698
 
 name:           flare-timing
 version:        0.1.0
@@ -596,6 +596,7 @@ executable ft-mask-arrival
     , clock
     , cmdargs
     , containers
+    , deepseq
     , directory
     , filemanip
     , filepath
@@ -613,10 +614,12 @@ executable ft-mask-arrival
     , flight-scribe
     , flight-span
     , flight-time
+    , flight-track
     , flight-zone
     , formatting
     , lens
     , mtl
+    , parallel-io
     , raw-strings-qq
     , safe-exceptions
     , siggy-chardust

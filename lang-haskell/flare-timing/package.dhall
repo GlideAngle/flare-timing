@@ -354,6 +354,8 @@ in    defs
               { dependencies =
                     deps
                   # [ "containers"
+                    , "deepseq"
+                    , "parallel-io"
                     , "lens"
                     , "siggy-chardust"
                     , "safe-exceptions"
@@ -369,6 +371,7 @@ in    defs
                     , "flight-mask"
                     , "flight-route"
                     , "flight-span"
+                    , "flight-track"
                     , "flight-zone"
                     ]
               , ghc-options =

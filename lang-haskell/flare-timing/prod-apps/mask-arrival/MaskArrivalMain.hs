@@ -33,7 +33,7 @@ import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe (readComp, readRoute, readTagging, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskArrivalOptions (description)
-import Mask.Mask (writeMask, check)
+import Mask.Mask (writeMask)
 
 main :: IO ()
 main = do
@@ -106,7 +106,8 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             writeMask
                 cs
                 lookupTaskLength
+                math
+                tagging'
                 iTasks
                 ps
                 compFile
-                (check math tagging')
