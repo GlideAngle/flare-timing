@@ -31,7 +31,6 @@ import Flight.Comp
 import Flight.Distance (QTaskDistance)
 import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
-import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
 import qualified Flight.Track.Arrival as Arrival (TrackArrival(..))
 import Flight.Track.Distance (TrackDistance(..))
@@ -41,12 +40,7 @@ import qualified Flight.Lookup as Lookup
     ( scoredTimeRange, arrivalRank, ticked, compRoutes
     , pilotTime, pilotEssTime
     )
-import Flight.Lookup.Tag
-    ( TaskLeadingLookup(..)
-    , tagArrivalRank
-    , tagPilotTime
-    , tagTicked
-    )
+import Flight.Lookup.Tag (tagArrivalRank, tagPilotTime, tagTicked)
 import Flight.Scribe (writeMaskingArrival)
 import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
@@ -58,13 +52,8 @@ sp :: SampleParams Double
 sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 
 writeMask
-    :: LeadingAreaSum u
-    -> MkLeadingCoef u
-    -> MkAreaToCoef v
-    -> Math
-    -> CompSettings k
+    :: CompSettings k
     -> RoutesLookupTaskDistance
-    -> TaskLeadingLookup
     -> [IxTask]
     -> [Pilot]
     -> CompInputFile
@@ -80,17 +69,12 @@ writeMask
             ])
     -> IO ()
 writeMask
-    _sumAreas
-    _invert
-    _areaToCoef
-    _math
     CompSettings
         { nominal = Cmp.Nominal{free}
         , tasks
         , pilotGroups
         }
     routes
-    _lookupTaskLeading
     selectTasks selectPilots compFile f = do
 
     checks <-

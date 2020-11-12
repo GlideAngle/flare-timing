@@ -18,8 +18,6 @@ import Flight.Comp
     , PegFrameFile(..)
     , PilotName(..)
     , IxTask(..)
-    , CompSettings(..)
-    , Tweak(..)
     , compToTaskLength
     , compToCross
     , crossToTag
@@ -33,13 +31,10 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
-import Flight.Lookup.Tag (tagTaskLeading)
 import Flight.Scribe (readComp, readRoute, readTagging, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskArrivalOptions (description)
 import Mask.Mask (writeMask, check)
-import Flight.Track.Lead (sumAreas)
-import "flight-gap-lead" Flight.Score (mk1Coef, mk2Coef, area1toCoef, area2toCoef)
 
 main :: IO ()
 main = do
@@ -109,20 +104,11 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             let iTasks = (IxTask <$> task)
             let ps = (pilotNamed cs $ PilotName <$> pilot)
             let tagging' = Just $ effectiveTagging tg stp
-            let ttl = tagTaskLeading tagging'
 
-            let lc1 chk = do
-                    let invert = mk1Coef . area1toCoef
-
-                    _ <- writeMask sumAreas invert area1toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
-                    return ()
-
-            let lc2 chk = do
-                    let invert = mk2Coef . area2toCoef
-
-                    _ <- writeMask sumAreas invert area2toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
-                    return ()
-
-            let CompSettings{compTweak} = cs
-            let lc = if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1
-            lc (check math lookupTaskLength scoredLookup tagging')
+            writeMask
+                cs
+                lookupTaskLength
+                iTasks
+                ps
+                compFile
+                (check math lookupTaskLength scoredLookup tagging')

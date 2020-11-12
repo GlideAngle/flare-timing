@@ -363,7 +363,6 @@ in    defs
                     , "flight-clip"
                     , "flight-earth"
                     , "flight-gap-allot"
-                    , "flight-gap-lead"
                     , "flight-gap-valid"
                     , "flight-kml"
                     , "flight-lookup"
