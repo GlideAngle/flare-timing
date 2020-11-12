@@ -53,7 +53,7 @@ drive o = do
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
-    fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
+    fprint ("Masking tracks for arrivals completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
