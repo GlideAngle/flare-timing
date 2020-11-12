@@ -5,7 +5,7 @@ module MaskPilots (maskPilots) where
 import Data.Function (on)
 import Data.Maybe (isJust)
 import Data.List (sortOn, groupBy, partition)
-import Data.UnitsOfMeasure ((-:), u, convert)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified Flight.Comp as Cmp (DfNoTrackPilot(..))
@@ -18,32 +18,11 @@ import Flight.Comp
     , StartGate(..)
     , StartEnd(..)
     )
-import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Track.Place (reIndex)
 import Flight.Track.Time (AwardedVelocity(..))
-import Flight.Track.Distance
-    ( TrackDistance(..), AwardedDistance(..)
-    , Clamp(..), Land
-    )
-import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Speed (pilotTime)
 import "flight-gap-allot" Flight.Score (ArrivalPlacing(..), MinimumDistance(..))
-import "flight-gap-valid" Flight.Score (ReachToggle(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats)
-
-awardByFrac
-    :: Clamp
-    -> QTaskDistance Double [u| m |]
-    -> AwardedDistance
-    -> Quantity Double [u| m |]
-awardByFrac c td a = convert $ Track.awardByFrac c td a
-
-madeAwarded :: QTaskDistance Double [u| m |] -> Land -> TrackDistance Land
-madeAwarded (TaskDistance td) d@(TaskDistance d') =
-    TrackDistance
-        { togo = Just . TaskDistance $ td -: d'
-        , made = Just d
-        }
 
 rankByArrival
     :: [(Pilot, FlightStats _)]
@@ -90,7 +69,7 @@ maskPilots
     -> [PilotGroup]
     -> [[Either (Pilot, b) (Pilot, Pilot -> FlightStats w)]]
     -> [[(Pilot, FlightStats w)]]
-maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
+maskPilots _dMin tasks _lsTask pilotGroups fss =
     [ rankByArrival ysDf ysDfNt
     | ysDf <- yssDf
     | ysDfNt <- yssDfNt
@@ -123,24 +102,9 @@ maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
                 fmap
                     (\Cmp.DfNoTrackPilot
                         { pilot = p
-                        , awardedReach = dA
                         , awardedVelocity = AwardedVelocity{ss, es}
                         } ->
-                        let dm :: Quantity Double [u| m |] = convert dMin
-
-                            d = TaskDistance
-                                <$> maybe
-                                    (Just dm)
-                                    (\ReachToggle{extra = dAward} -> do
-                                        td <- lTask
-                                        let a = awardByFrac (Clamp True) td dAward
-
-                                        return $ max a dm)
-                                    dA
-
-                            sLand = madeAwarded <$> lTask <*> d
-
-                            sTime =
+                        let sTime =
                                 case (ss, es) of
                                     (Just ss', Just es') ->
                                         let se = StartEnd ss' es
@@ -159,9 +123,8 @@ maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
                                                         }
                                     _ -> Nothing
 
-                        in (p, nullStats{statLand = sLand, statTimeRank = sTime}))
+                        in (p, nullStats{statTimeRank = sTime}))
                     dfNts
             | DfNoTrack dfNts <- dfNtss
-            | lTask <- (fmap. fmap) wholeTaskDistance lsTask
             | gates <- startGates <$> tasks
             ]

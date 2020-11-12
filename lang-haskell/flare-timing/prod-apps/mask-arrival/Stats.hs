@@ -3,22 +3,14 @@ module Stats
     , FlightStats(..)
     , DashPathInputs(..)
     , nullStats
-    , altToAlt
     ) where
 
 import Data.Time.Clock (UTCTime)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (QAlt, Alt(..))
-import Flight.Kml (Altitude(..))
-import Flight.Track.Distance (TrackDistance(..), Land)
-import Flight.Mask (RaceSections(..))
 import Flight.Comp.Distance (DashPathInputs(..))
 import "flight-gap-allot" Flight.Score (PilotTime(..), ArrivalPlacing(..))
-
-altToAlt :: Altitude -> QAlt Double [u| m |]
-altToAlt (Altitude x) = Alt . MkQuantity . fromIntegral $ x
 
 data TimeStats =
     TimeStats
@@ -34,27 +26,10 @@ data TimeStats =
 instance Show TimeStats where
     show TimeStats{..} = show esMark
 
-data FlightStats k =
-    FlightStats
-        { statTimeRank :: Maybe TimeStats
-        , statLand :: Maybe (TrackDistance Land)
-        , statAlt :: Maybe (QAlt Double [u| m |])
-        , statDash :: DashPathInputs k
-        }
+data FlightStats k = FlightStats{statTimeRank :: Maybe TimeStats}
 
 instance Show (FlightStats k) where
     show FlightStats{..} = show statTimeRank
 
 nullStats :: FlightStats k
-nullStats =
-    FlightStats
-        { statTimeRank = Nothing
-        , statLand = Nothing
-        , statAlt = Nothing
-        , statDash =
-            DashPathInputs
-                { dashTask = Nothing
-                , dashTicked = RaceSections [] [] []
-                , dashFlyCut = Nothing
-                }
-        }
+nullStats = FlightStats{statTimeRank = Nothing}
