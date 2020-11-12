@@ -350,6 +350,40 @@ in    defs
               , source-dirs =
                   "prod-apps/area-step"
               }
+          , ft-mask-arrival =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "lens"
+                    , "siggy-chardust"
+                    , "safe-exceptions"
+                    , "statistics"
+                    , "time"
+                    , "vector"
+                    , "flight-clip"
+                    , "flight-earth"
+                    , "flight-gap-allot"
+                    , "flight-gap-lead"
+                    , "flight-gap-valid"
+                    , "flight-kml"
+                    , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-span"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "MaskTrackMain.hs"
+              , source-dirs =
+                  "prod-apps/mask-track"
+              }
           , ft-mask-track =
               { dependencies =
                     deps

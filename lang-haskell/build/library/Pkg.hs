@@ -78,6 +78,7 @@ readmes =
     , ("align-time", "ft-align-time", "Align Times")
     , ("discard-further", "ft-discard-further", "Discard Further Fixes")
     , ("area-step", "ft-area-step", "Area Steps")
+    , ("mask-arrival", "ft-mask-arrival", "Masking Tracks for Arrivar")
     , ("mask-track", "ft-mask-track", "Masking Tracks")
     , ("land-out", "ft-land-out", "Landing Out")
     , ("gap-point", "ft-gap-point", "Tallying the GAP Points")
