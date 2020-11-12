@@ -485,11 +485,12 @@ getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> getTaskDistance
+    >>> getAttrValue "name"
+    &&& getTaskDistance
     &&& getDidFly kps
     &&& getDidFlyNoTracklog kps
     &&& getPoint
-    >>> arr (\(t, (wt, (nt, xs))) ->
+    >>> arr (\(_name, (t, (wt, (nt, xs)))) ->
         let td :: Maybe (QTaskDistance _ [u| km |]) = asTaskKm t
             dfwt = asAward t <$> wt
             dfnt = asAward t <$> nt
@@ -567,12 +568,15 @@ getScore pilots =
                         ( unKeyPilot (keyMap kps) . PilotId $ pid
                         , do
                             norm <- x
-                            (a, c) <- ld
                             return $
-                                norm
-                                    { leadingArea = LeadingArea . MkQuantity . fromIntegral $ a
-                                    , leadingCoef = LeadingCoef . MkQuantity $ c
-                                    }
+                                maybe
+                                    norm
+                                    (\(a, c) ->
+                                        norm
+                                            { leadingArea = LeadingArea . MkQuantity . fromIntegral $ a
+                                            , leadingCoef = LeadingCoef . MkQuantity $ c
+                                            })
+                                    ld
                         ))
 
                 getResultScore =
@@ -586,9 +590,11 @@ getScore pilots =
             >>> arr (unpickleDoc xpLeading)
 
         getTaskDistance =
-            getChildren
+            (getChildren
             >>> hasName "FsTaskScoreParams"
             >>> getAttrValue "task_distance"
+            )
+            `orElse` constA ""
 
 getValidity
     :: ArrowXml a
@@ -600,21 +606,21 @@ getValidity
     -> a XmlTree
          ( Either
              String
-             ( Validity
-             , LaunchValidityWorking
-             , TimeValidityWorking
-             , DistanceValidityWorking
-             , StopValidityWorking
+             ( Maybe Validity
+             , Maybe LaunchValidityWorking
+             , Maybe TimeValidityWorking
+             , Maybe DistanceValidityWorking
+             , Maybe StopValidityWorking
              )
          )
 getValidity ng nl nd md nt =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> getTaskValidity
-    &&& getLaunchValidityWorking
-    &&& getTimeValidityWorking
-    &&& getDistanceValidityWorking
-    &&& getStopValidityWorking
+    >>> (maybeScored getTaskValidity)
+    &&& (maybeScored getLaunchValidityWorking)
+    &&& (maybeScored getTimeValidityWorking)
+    &&& (maybeScored getDistanceValidityWorking)
+    &&& (maybeScored getStopValidityWorking)
     >>> arr (\(tv, (lw, (tw, (dw, sw)))) -> do
             tv' <- tv
             lw' <- lw
@@ -647,6 +653,13 @@ getValidity ng nl nd md nt =
             getChildren
             >>> hasName "FsTaskScoreParams"
             >>> arr (unpickleDoc' xpStopValidityWorking)
+
+        -- NOTE: When a task is cancelled, it doesn't have FsTaskScoreParams.
+        --  <FsTask>
+        --    <FsTaskState task_state="CANCELLED">
+        --    <!-- No child FsTaskScoreParams element -->
+        --  </FsTask>
+        maybeScored x = (x >>> arr (fmap Just)) `orElse` constA (Right Nothing)
 
 parseNormScores :: Nominal -> String -> IO (Either String NormPointing)
 parseNormScores
@@ -710,9 +723,15 @@ parseNormScores
     gvs <- runX $ doc >>> getValidity ng nl nd md nt
     let vws =
             [
-                (\(vs, lw, tw, dw, sw) ->
-                    let sw' = sw{reachStats = ReachToggle{extra = Just e, flown = Just r}} in
-                    (vs, lw, tw, dw, sw')
+                (\(vs, lw, tw, dw, sw') ->
+                    ( vs
+                    , lw
+                    , tw
+                    , dw
+                    ,
+                        (\sw -> sw{reachStats = ReachToggle{extra = Just e, flown = Just r}})
+                        <$> sw'
+                    )
                 )
                 <$> gv
             | gv <- gvs
@@ -724,11 +743,11 @@ parseNormScores
         (\(vs, lw, tw, dw, sw) ->
             NormPointing
                 { bestTime = tss
-                , validityWorkingLaunch = Just <$> lw
-                , validityWorkingTime = Just <$> tw
-                , validityWorkingDistance = Just <$> dw
-                , validityWorkingStop = Just <$> sw
-                , validity = Just <$> vs
+                , validityWorkingLaunch = lw
+                , validityWorkingTime = tw
+                , validityWorkingDistance = dw
+                , validityWorkingStop = sw
+                , validity = vs
                 , score = yss
                 })
         . unzip5
