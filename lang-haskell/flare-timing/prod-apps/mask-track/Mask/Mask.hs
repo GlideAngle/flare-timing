@@ -3,7 +3,6 @@
 
 module Mask.Mask (writeMask, check) where
 
-import Debug.Trace
 import Data.Maybe (catMaybes)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList)
@@ -27,14 +26,12 @@ import Flight.Comp
     , Pilot(..)
     , PilotGroup(..)
     , Task(..)
-    , Tweak(..)
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
     , DfNoTrack(..)
     , dfNoTrackReach
-    , compToMaskArrival
     , compToMaskEffort
     , compToMaskLead
     , compToMaskReach
@@ -47,8 +44,7 @@ import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
-import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
-import qualified Flight.Track.Arrival as Arrival (TrackArrival(..))
+import Flight.Track.Mask (MaskingArrival(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Land)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
@@ -64,7 +60,6 @@ import Flight.Lookup.Tag
     )
 import Flight.Scribe
     ( AltBonus(..)
-    , writeMaskingArrival
     , writeMaskingEffort
     , writeMaskingLead
     , writeMaskingReach
@@ -77,10 +72,8 @@ import Flight.Scribe
     , readDiscardingLead
     )
 import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..))
-import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
-import MaskArrival (maskArrival, arrivalInputs)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
@@ -94,7 +87,8 @@ sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 
 writeMask
     :: (KnownUnit (Unpack u), KnownUnit (Unpack v))
-    => LeadingAreaSum u
+    => MaskingArrival
+    -> LeadingAreaSum u
     -> MkLeadingCoef u
     -> MkAreaToCoef v
     -> Math
@@ -116,6 +110,7 @@ writeMask
             ])
     -> IO ()
 writeMask
+    MaskingArrival{arrivalRank}
     sumAreas
     invert
     areaToCoef
@@ -152,28 +147,7 @@ writeMask
             let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> yss
             let psLandingOut = (fmap . fmap) fst dsLand
 
-            -- Arrivals (as).
-            let as :: [[(Pilot, TrackArrival)]] =
-                    [
-                        let aRank = maybe True arrivalRank tweak
-                            aTime = maybe False arrivalTime tweak
-                            ys' = arrivalInputs ys
-                        in
-                            case (aRank, aTime) of
-                                (True, _) -> arrivalsByRank ys'
-                                (False, True) -> arrivalsByTime ys'
-                                -- NOTE: We're not using either kind of arrival
-                                -- for points so zero the fraction.
-                                (False, False) ->
-                                    [ (p, ta{Arrival.frac = ArrivalFraction 0})
-                                    | (p, ta) <- arrivalsByRank ys'
-                                    ]
-
-                    | Task{taskTweak = tweak} <- tasks
-                    | ys <- yss
-                    ]
-
-            let psArriving = (fmap . fmap) fst (trace ("AS: " ++ show (length as)) as)
+            let psArriving = (fmap . fmap) fst arrivalRank
 
             {- TODO: Take care to consider bonus altitude distance with leading area.
             let pilots =
@@ -265,10 +239,6 @@ writeMask
             -- NOTE: For time and leading points do not use altitude bonus distances.
             writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
             writeMaskingLead (compToMaskLead compFile) nullAltLead
-
-            -- REVIEW: Waiting on feedback on GAP rule question about altitude
-            -- bonus distance pushing a flight to goal so that it arrives.
-            writeMaskingArrival (compToMaskArrival compFile) (maskArrival as)
 
             -- TODO: Use altitude bonus distance for effort.
             writeMaskingEffort

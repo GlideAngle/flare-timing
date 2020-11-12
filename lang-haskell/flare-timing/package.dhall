@@ -380,9 +380,9 @@ in    defs
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
               , main =
-                  "MaskTrackMain.hs"
+                  "MaskArrivalMain.hs"
               , source-dirs =
-                  "prod-apps/mask-track"
+                  "prod-apps/mask-arrival"
               }
           , ft-mask-track =
               { dependencies =

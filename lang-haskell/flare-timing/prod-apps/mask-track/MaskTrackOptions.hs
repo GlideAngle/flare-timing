@@ -6,9 +6,8 @@ import Flight.Cmd.Options (Description(..))
 description :: Description
 description = Description [r|
 By masking the track logs with the zones, works out;
-* if the pilot launched
-* if they made goal then
-    * how long the pilot took to reach goal
+* if a pilot launched
+* how long a pilot took to reach goal
 * if they landed out then
     * how far they got along the course
     * how far yet to reach goal
@@ -19,6 +18,7 @@ tracklogs, one per task;
     Reads  ./c.comp-input.yaml
     Reads  ./k/p.kml
     Reads  ./c.tag-zone.yaml
+    Reads  ./c.mask-arrival.yaml
     Writes ./flare-timing/discard-further/task-n/p.csv
     Writes ./c.mask-track.yaml
 
