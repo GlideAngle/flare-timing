@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6a544969cc9fb206718f435712c2cdb7472ebb383057370987120529d8a3722e
+-- hash: 03caaa0074f45300e2a552fdef1f3df3ccb28c160245def2a1567546405a7534
 
 name:           flare-timing
 version:        0.1.0
@@ -606,6 +606,67 @@ executable ft-mask-arrival
     , flight-comp
     , flight-earth
     , flight-gap-allot
+    , flight-gap-valid
+    , flight-kml
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-span
+    , flight-time
+    , flight-track
+    , flight-zone
+    , formatting
+    , lens
+    , mtl
+    , parallel-io
+    , raw-strings-qq
+    , safe-exceptions
+    , siggy-chardust
+    , statistics
+    , time
+    , transformers
+    , uom-plugin
+    , vector
+    , yaml
+  default-language: Haskell2010
+
+executable ft-mask-effort
+  main-is: MaskEffortMain.hs
+  other-modules:
+      Mask.Mask
+      Mask.Reach.Tick
+      Mask.Reach.Time
+      MaskEffort
+      MaskEffortOptions
+      MaskLead
+      MaskLeadCoef
+      MaskPilots
+      MaskSpeed
+      Stats
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/mask-effort
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , containers
+    , deepseq
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-gap-allot
+    , flight-gap-lead
     , flight-gap-valid
     , flight-kml
     , flight-latlng
