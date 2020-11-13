@@ -16,14 +16,12 @@ import Flight.Comp
     , TaskLengthFile(..)
     , TagZoneFile(..)
     , PegFrameFile(..)
-    , MaskArrivalFile(..)
     , PilotName(..)
     , IxTask(..)
     , CompSettings(..)
     , Tweak(..)
     , compToTaskLength
     , compToCross
-    , compToMaskArrival
     , crossToTag
     , tagToPeg
     , findCompInput
@@ -35,13 +33,10 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
-import Flight.Lookup.Tag (tagTaskLeading)
-import Flight.Scribe (readComp, readRoute, readTagging, readFraming, readMaskingArrival)
+import Flight.Scribe (readComp, readRoute, readTagging, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskSpeedOptions (description)
 import Mask.Mask (writeMask, check)
-import Flight.Track.Lead (sumAreas)
-import "flight-gap-lead" Flight.Score (mk1Coef, mk2Coef, area1toCoef, area2toCoef)
 
 main :: IO ()
 main = do
@@ -68,12 +63,10 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
     putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
-    putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
 
     compSettings <-
         catchIO
@@ -90,11 +83,6 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readFraming stopFile)
             (const $ return Nothing)
 
-    arriving <-
-        catchIO
-            (Just <$> readMaskingArrival maskArrivalFile)
-            (const $ return Nothing)
-
     routes <-
         catchIO
             (Just <$> readRoute lenFile)
@@ -109,28 +97,22 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 startRoute
                 routes
 
-    case (compSettings, tagging, stopping, arriving, routes) of
-        (Nothing, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, Nothing, _, _) -> putStrLn "Couldn't read the scored frames."
-        (_, _, _, Nothing, _) -> putStrLn "Couldn't read the arrivals."
-        (_, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just tg, Just stp, Just as, Just _) -> do
+    case (compSettings, tagging, stopping, routes) of
+        (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frames."
+        (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just cs, Just tg, Just stp, Just _) -> do
             let iTasks = (IxTask <$> task)
             let ps = (pilotNamed cs $ PilotName <$> pilot)
             let tagging' = Just $ effectiveTagging tg stp
-            let ttl = tagTaskLeading tagging'
 
             let lc1 chk = do
-                    let invert = mk1Coef . area1toCoef
-
-                    _ <- writeMask as sumAreas invert area1toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
+                    _ <- writeMask cs lookupTaskLength iTasks ps compFile chk
                     return ()
 
             let lc2 chk = do
-                    let invert = mk2Coef . area2toCoef
-
-                    _ <- writeMask as sumAreas invert area2toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
+                    _ <- writeMask cs lookupTaskLength iTasks ps compFile chk
                     return ()
 
             let CompSettings{compTweak} = cs
