@@ -39,7 +39,7 @@ import Flight.Lookup.Tag (tagTaskLeading)
 import Flight.Scribe (readComp, readRoute, readTagging, readFraming, readMaskingArrival)
 import Flight.Lookup.Route (routeLength)
 import MaskReachOptions (description)
-import Mask.Mask (writeMask, check)
+import Mask.Mask (writeMask)
 import Flight.Track.Lead (sumAreas)
 import "flight-gap-lead" Flight.Score (mk1Coef, mk2Coef, area1toCoef, area2toCoef)
 
@@ -115,24 +115,19 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (_, _, Nothing, _, _) -> putStrLn "Couldn't read the scored frames."
         (_, _, _, Nothing, _) -> putStrLn "Couldn't read the arrivals."
         (_, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just tg, Just stp, Just as, Just _) -> do
-            let iTasks = (IxTask <$> task)
-            let ps = (pilotNamed cs $ PilotName <$> pilot)
+        (Just cs@CompSettings{compTweak}, Just tg, Just stp, Just as, Just _) -> do
             let tagging' = Just $ effectiveTagging tg stp
-            let ttl = tagTaskLeading tagging'
 
-            let lc1 chk = do
-                    let invert = mk1Coef . area1toCoef
+            let lc1 = writeMask as sumAreas (mk1Coef . area1toCoef) area1toCoef
+            let lc2 = writeMask as sumAreas (mk2Coef . area2toCoef) area2toCoef
 
-                    _ <- writeMask as sumAreas invert area1toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
-                    return ()
-
-            let lc2 chk = do
-                    let invert = mk2Coef . area2toCoef
-
-                    _ <- writeMask as sumAreas invert area2toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
-                    return ()
-
-            let CompSettings{compTweak} = cs
-            let lc = if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1
-            lc (check math lookupTaskLength scoredLookup tagging')
+            (if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1)
+                cs
+                lookupTaskLength
+                math
+                scoredLookup
+                tagging'
+                (tagTaskLeading tagging')
+                (IxTask <$> task)
+                (pilotNamed cs $ PilotName <$> pilot)
+                compFile
