@@ -35,7 +35,6 @@ import Flight.Comp
     , compToMaskEffort
     , compToMaskLead
     , compToMaskReach
-    , compToMaskSpeed
     , compToBonusReach
     , compToLeadArea
     )
@@ -63,7 +62,6 @@ import Flight.Scribe
     , writeMaskingEffort
     , writeMaskingLead
     , writeMaskingReach
-    , writeMaskingSpeed
     , writeBonusReach
     , readCompBestDistances, readCompTimeRows
     -- TODO: Take care to consider bonus altitude distance with leading area.
@@ -160,7 +158,7 @@ writeMask
             -- Zones (zs) of the task and zones ticked.
             let zsTaskTicked :: [Map Pilot _] = Map.fromList . landTaskTicked <$> yss
 
-            let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
+            let (gsBestTime, _maskSpeed) = maskSpeed lsTask' yss
             let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 
             {- TODO: Take care to consider bonus altitude distance with leading area.
@@ -237,7 +235,6 @@ writeMask
             let dsBonusAltNighRows = bonusAltRowsBest
 
             -- NOTE: For time and leading points do not use altitude bonus distances.
-            writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
             writeMaskingLead (compToMaskLead compFile) nullAltLead
 
             -- TODO: Use altitude bonus distance for effort.
