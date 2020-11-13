@@ -115,9 +115,8 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (_, _, Nothing, _, _) -> putStrLn "Couldn't read the scored frames."
         (_, _, _, Nothing, _) -> putStrLn "Couldn't read the arrivals."
         (_, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just tg, Just stp, Just as, Just _) -> do
-            let CompSettings{compTweak} = cs
-            let tagging' = (Just $ effectiveTagging tg stp)
+        (Just cs@CompSettings{compTweak}, Just tg, Just stp, Just as, Just _) -> do
+            let tagging' = Just $ effectiveTagging tg stp
 
             let lc1 = writeMask as sumAreas (mk1Coef . area1toCoef) area1toCoef
             let lc2 = writeMask as sumAreas (mk2Coef . area2toCoef) area2toCoef
