@@ -116,23 +116,19 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (_, _, _, Nothing, _) -> putStrLn "Couldn't read the arrivals."
         (_, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
         (Just cs, Just tg, Just stp, Just as, Just _) -> do
-            let iTasks = (IxTask <$> task)
-            let ps = (pilotNamed cs $ PilotName <$> pilot)
-            let tagging' = Just $ effectiveTagging tg stp
-            let ttl = tagTaskLeading tagging'
-
-            let lc1 () = do
-                    let invert = mk1Coef . area1toCoef
-
-                    _ <- writeMask as sumAreas invert area1toCoef cs lookupTaskLength math scoredLookup tagging' ttl iTasks ps compFile
-                    return ()
-
-            let lc2 () = do
-                    let invert = mk2Coef . area2toCoef
-
-                    _ <- writeMask as sumAreas invert area2toCoef cs lookupTaskLength math scoredLookup tagging' ttl iTasks ps compFile
-                    return ()
-
             let CompSettings{compTweak} = cs
-            let lc = if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1
-            lc ()
+            let tagging' = (Just $ effectiveTagging tg stp)
+
+            let lc1 = writeMask as sumAreas (mk1Coef . area1toCoef) area1toCoef
+            let lc2 = writeMask as sumAreas (mk2Coef . area2toCoef) area2toCoef
+
+            (if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1)
+                cs
+                lookupTaskLength
+                math
+                scoredLookup
+                tagging'
+                (tagTaskLeading tagging')
+                (IxTask <$> task)
+                (pilotNamed cs $ PilotName <$> pilot)
+                compFile
