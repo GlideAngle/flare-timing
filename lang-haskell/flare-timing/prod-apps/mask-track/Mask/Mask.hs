@@ -32,7 +32,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , DfNoTrack(..)
     , dfNoTrackReach
-    , compToMaskEffort
     , compToMaskReach
     , compToBonusReach
     , compToLeadArea
@@ -58,7 +57,6 @@ import Flight.Lookup.Tag
     )
 import Flight.Scribe
     ( AltBonus(..)
-    , writeMaskingEffort
     , writeMaskingReach
     , writeBonusReach
     , readCompBestDistances, readCompTimeRows
@@ -70,7 +68,7 @@ import Flight.Scribe
 import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
-import MaskEffort (maskEffort, landDistances)
+import MaskEffort (landDistances)
 import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
 import Mask.Reach.Time (maskReachTime)
@@ -231,11 +229,6 @@ writeMask
                         (catMaybes <$> nullAltRowTicks)
 
             let dsBonusAltNighRows = bonusAltRowsBest
-
-            -- TODO: Use altitude bonus distance for effort.
-            writeMaskingEffort
-                (compToMaskEffort compFile)
-                (maskEffort dsNullAltBest dsLand)
 
             let dfNtReach :: [[(Pilot, TrackReach)]] =
                     [
