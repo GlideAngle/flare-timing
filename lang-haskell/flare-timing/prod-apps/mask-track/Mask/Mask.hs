@@ -77,7 +77,7 @@ import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
 import Mask.Reach.Time (maskReachTime)
 import Mask.Reach.Tick (maskReachTick)
-import MaskSpeed (maskSpeed)
+import MaskSpeed (maskSpeedBestTime)
 import MaskPilots (maskPilots)
 
 sp :: SampleParams Double
@@ -158,7 +158,7 @@ writeMask
             -- Zones (zs) of the task and zones ticked.
             let zsTaskTicked :: [Map Pilot _] = Map.fromList . landTaskTicked <$> yss
 
-            let (gsBestTime, _maskSpeed) = maskSpeed lsTask' yss
+            let gsBestTime = maskSpeedBestTime yss
             let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 
             {- TODO: Take care to consider bonus altitude distance with leading area.

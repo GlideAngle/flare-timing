@@ -1,26 +1,18 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module MaskSpeed (maskSpeed) where
+module MaskSpeed (maskSpeedBestTime) where
 
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (catMaybes)
 import Data.List (sortOn)
 import Control.Arrow (second)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (QAlt)
-import Flight.Comp (Pilot(..), TaskRouteDistance(..))
-import Flight.Track.Mask (MaskingSpeed(..))
+import Flight.Comp (Pilot(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
 import "flight-gap-allot" Flight.Score (BestTime(..), PilotTime(..), speedFraction)
 import Stats (TimeStats(..), FlightStats(..))
-
-landAltitudes :: [(Pilot, FlightStats k)] -> [(Pilot, QAlt Double [u| m |])]
-landAltitudes xs =
-    catMaybes
-    $ fmap (\(p, FlightStats{..}) -> (p,) <$> statAlt) xs
 
 times
     :: (TimeStats -> PilotTime (Quantity Double [u| h |]))
@@ -45,35 +37,7 @@ times f xs =
                 , frac = speedFraction best t
                 }
 
-maskSpeed
-    :: [Maybe TaskRouteDistance]
-    -> [[(Pilot, FlightStats k)]]
-    -> ([Maybe (BestTime (Quantity Double [u| h |]))], MaskingSpeed)
-maskSpeed lsTask yss =
-    (gsBestTime,) $
-    MaskingSpeed
-        { ssBestTime = ssBestTime
-        , gsBestTime = gsBestTime
-        , taskDistance = lsWholeTask
-        , taskSpeedDistance = lsSpeedSubset
-        , ssSpeed = fromMaybe [] <$> (fmap . fmap) snd ssVs
-        , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs
-        , altStopped = dsAlt
-        }
-    where
-        lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask
-        lsSpeedSubset = (fmap . fmap) speedSubsetDistance lsTask
-
-        -- Velocities (vs).
-        ssVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                times ssTime <$> yss
-
-        gsVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                times gsTime <$> yss
-
-        dsAlt :: [[(Pilot, QAlt Double [u| m |])]] = landAltitudes <$> yss
-
-        -- Times (ts).
-        ssBestTime = (fmap . fmap) fst ssVs
-        gsBestTime = (fmap . fmap) fst gsVs
-
+maskSpeedBestTime
+    :: [[(Pilot, FlightStats k)]]
+    -> ([Maybe (BestTime (Quantity Double [u| h |]))])
+maskSpeedBestTime yss = (fmap . fmap) fst $ times gsTime <$> yss
