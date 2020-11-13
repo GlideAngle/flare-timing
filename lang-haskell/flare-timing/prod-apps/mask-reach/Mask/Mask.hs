@@ -33,7 +33,6 @@ import Flight.Comp
     , DfNoTrack(..)
     , dfNoTrackReach
     , compToMaskReach
-    , compToBonusReach
     , compToLeadArea
     )
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
@@ -58,7 +57,6 @@ import Flight.Lookup.Tag
 import Flight.Scribe
     ( AltBonus(..)
     , writeMaskingReach
-    , writeBonusReach
     , readCompBestDistances, readCompTimeRows
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
@@ -72,7 +70,6 @@ import MaskEffort (landDistances)
 import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
 import Mask.Reach.Time (maskReachTime)
-import Mask.Reach.Tick (maskReachTick)
 import MaskSpeed (maskSpeedBestTime)
 import MaskPilots (maskPilots)
 
@@ -183,13 +180,6 @@ writeMask
                     (includeTask selectTasks)
                     ((fmap . fmap) fst dsLand)
 
-            bonusAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
-                <- readCompBestDistances
-                    (AltBonus True)
-                    compFile
-                    (includeTask selectTasks)
-                    ((fmap . fmap) fst dsLand)
-
             discardingLeads <- readDiscardingLead (compToLeadArea compFile)
 
             let (dsNullAltBest, nullAltRowTicks, _nullAltLead) =
@@ -206,29 +196,11 @@ writeMask
                         nullAltRowsBest
                         discardingLeads
 
-            let (dsBonusAltBest, _, _) =
-                    maskLeadCoef
-                        sumAreas
-                        invert
-                        areaToCoef
-                        free
-                        raceTimes'
-                        lsTask'
-                        psArriving
-                        psLandingOut
-                        gsBestTime
-                        bonusAltRowsBest
-                        -- TODO: Use bonus altitude calculating
-                        -- discardingLeads.
-                        discardingLeads
-
             dsNullAltNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
                 <- readCompTimeRows
                         compFile
                         (includeTask selectTasks)
                         (catMaybes <$> nullAltRowTicks)
-
-            let dsBonusAltNighRows = bonusAltRowsBest
 
             let dfNtReach :: [[(Pilot, TrackReach)]] =
                     [
@@ -252,18 +224,6 @@ writeMask
                     zsTaskTicked
                     dsNullAltBest
                     dsNullAltNighRows
-                    psArriving)
-
-            -- NOTE: The reach with altitude bonus distance.
-            writeBonusReach
-                (compToBonusReach compFile)
-                (maskReachTick
-                    free
-                    dfNtReach
-                    lsWholeTask
-                    zsTaskTicked
-                    dsBonusAltBest
-                    dsBonusAltNighRows
                     psArriving)
 
 includeTask :: [IxTask] -> IxTask -> Bool
