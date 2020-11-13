@@ -57,7 +57,7 @@ import Flight.Scribe
     , readDiscardingLead
     )
 import Flight.Span.Math (Math(..))
-import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
+import Stats (TimeStats(..), FlightStats(..), nullStats, altToAlt)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
@@ -264,15 +264,7 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
                 , uncut = mf
                 }
 
-        tickedStats =
-            nullStats
-                { statDash =
-                    DashPathInputs
-                        { dashTask = maybeTask
-                        , dashTicked = ticked
-                        , dashFlyCut = Just xs
-                        }
-                }
+        tickedStats = nullStats
 
         landDistance task =
             let earth =
