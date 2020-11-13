@@ -3,14 +3,10 @@
 
 module Mask.Mask (writeMask, check) where
 
-import Data.Maybe (catMaybes)
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map (fromList)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.Except (MonadIO)
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Zone.Raw (Give)
@@ -24,26 +20,21 @@ import Flight.Comp
     , CompSettings(..)
     , Comp(..)
     , Pilot(..)
-    , PilotGroup(..)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
-    , DfNoTrack(..)
-    , dfNoTrackReach
     , compToMaskEffort
-    , compToMaskReach
-    , compToBonusReach
     , compToLeadArea
     )
-import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
+import Flight.Distance (QTaskDistance)
 import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
-import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
+import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Mask (MaskingArrival(..))
-import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Land)
+import Flight.Track.Distance (TrackDistance(..), Land)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
 import qualified Flight.Lookup as Lookup
@@ -59,22 +50,17 @@ import Flight.Lookup.Tag
 import Flight.Scribe
     ( AltBonus(..)
     , writeMaskingEffort
-    , writeMaskingReach
-    , writeBonusReach
-    , readCompBestDistances, readCompTimeRows
+    , readCompBestDistances
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
     -- , readPilotPegThenDiscard
     , readDiscardingLead
     )
-import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
-import Mask.Reach.Time (maskReachTime)
-import Mask.Reach.Tick (maskReachTick)
 import MaskSpeed (maskSpeedBestTime)
 import MaskPilots (maskPilots)
 
@@ -82,7 +68,7 @@ sp :: SampleParams Double
 sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 
 writeMask
-    :: (KnownUnit (Unpack u), KnownUnit (Unpack v))
+    :: (KnownUnit (Unpack u))
     => MaskingArrival
     -> LeadingAreaSum u
     -> MkLeadingCoef u
@@ -110,10 +96,9 @@ writeMask
     sumAreas
     invert
     areaToCoef
-    math
+    _math
     CompSettings
-        { comp = Comp{earthMath, give}
-        , nominal = Cmp.Nominal{free}
+        { nominal = Cmp.Nominal{free}
         , tasks
         , pilotGroups
         }
@@ -135,7 +120,6 @@ writeMask
 
             -- Task lengths (ls).
             let lsTask' = Lookup.compRoutes routes iTasks
-            let lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask'
 
             let yss = maskPilots free tasks lsTask' pilotGroups fss
 
@@ -154,8 +138,6 @@ writeMask
             -}
 
             -- Zones (zs) of the task and zones ticked.
-            let zsTaskTicked :: [Map Pilot _] = Map.fromList . landTaskTicked <$> yss
-
             let gsBestTime = maskSpeedBestTime yss
             let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 
@@ -185,16 +167,9 @@ writeMask
                     (includeTask selectTasks)
                     ((fmap . fmap) fst dsLand)
 
-            bonusAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
-                <- readCompBestDistances
-                    (AltBonus True)
-                    compFile
-                    (includeTask selectTasks)
-                    ((fmap . fmap) fst dsLand)
-
             discardingLeads <- readDiscardingLead (compToLeadArea compFile)
 
-            let (dsNullAltBest, nullAltRowTicks, _nullAltLead) =
+            let (dsNullAltBest, _nullAltRowTicks, _nullAltLead) =
                     maskLeadCoef
                         sumAreas
                         invert
@@ -208,77 +183,13 @@ writeMask
                         nullAltRowsBest
                         discardingLeads
 
-            let (dsBonusAltBest, _, _) =
-                    maskLeadCoef
-                        sumAreas
-                        invert
-                        areaToCoef
-                        free
-                        raceTimes'
-                        lsTask'
-                        psArriving
-                        psLandingOut
-                        gsBestTime
-                        bonusAltRowsBest
-                        -- TODO: Use bonus altitude calculating
-                        -- discardingLeads.
-                        discardingLeads
-
-            dsNullAltNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
-                <- readCompTimeRows
-                        compFile
-                        (includeTask selectTasks)
-                        (catMaybes <$> nullAltRowTicks)
-
-            let dsBonusAltNighRows = bonusAltRowsBest
-
             -- TODO: Use altitude bonus distance for effort.
             writeMaskingEffort
                 (compToMaskEffort compFile)
                 (maskEffort dsNullAltBest dsLand)
 
-            let dfNtReach :: [[(Pilot, TrackReach)]] =
-                    [
-                        (fmap . fmap) Gap.flown $
-                        dfNoTrackReach (TaskDistance $ MkQuantity td)
-                        <$> dfnts
-                    | dfnts <- unDfNoTrack . didFlyNoTracklog <$> pilotGroups
-                    | td <- maybe 0 unTaskDistanceAsKm <$> lsWholeTask
-                    ]
-
-            -- NOTE: The reach without altitude bonus distance.
-            writeMaskingReach
-                (compToMaskReach compFile)
-                (maskReachTime
-                    math
-                    earthMath
-                    give
-                    free
-                    dfNtReach
-                    lsWholeTask
-                    zsTaskTicked
-                    dsNullAltBest
-                    dsNullAltNighRows
-                    psArriving)
-
-            -- NOTE: The reach with altitude bonus distance.
-            writeBonusReach
-                (compToBonusReach compFile)
-                (maskReachTick
-                    free
-                    dfNtReach
-                    lsWholeTask
-                    zsTaskTicked
-                    dsBonusAltBest
-                    dsBonusAltNighRows
-                    psArriving)
-
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
-
-landTaskTicked :: [(Pilot, FlightStats k)] -> [(Pilot, _)]
-landTaskTicked xs =
-    (\(p, FlightStats{..}) -> (p, statDash)) <$> xs
 
 check
     :: (MonadThrow m, MonadIO m)
