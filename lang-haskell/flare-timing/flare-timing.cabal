@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 539092c14f56809b26e45cc0d56357febeb871b7692546c40ce3aa4d8ea257e3
+-- hash: 336d88e5d4c232505004832fe0e97dc75d03cbd0287cfb0b65fb2e1908a95144
 
 name:           flare-timing
 version:        0.1.0
@@ -621,6 +621,64 @@ executable ft-mask-arrival
     , lens
     , mtl
     , parallel-io
+    , raw-strings-qq
+    , safe-exceptions
+    , siggy-chardust
+    , statistics
+    , time
+    , transformers
+    , uom-plugin
+    , vector
+    , yaml
+  default-language: Haskell2010
+
+executable ft-mask-lead
+  main-is: MaskLeadMain.hs
+  other-modules:
+      Mask.Mask
+      Mask.Reach.Tick
+      Mask.Reach.Time
+      MaskEffort
+      MaskLead
+      MaskLeadCoef
+      MaskLeadOptions
+      MaskPilots
+      MaskSpeed
+      Stats
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/mask-lead
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , containers
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-gap-allot
+    , flight-gap-lead
+    , flight-gap-valid
+    , flight-kml
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-span
+    , flight-time
+    , flight-zone
+    , formatting
+    , lens
+    , mtl
     , raw-strings-qq
     , safe-exceptions
     , siggy-chardust
