@@ -386,6 +386,43 @@ in    defs
               , source-dirs =
                   "prod-apps/mask-arrival"
               }
+          , ft-mask-reach =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "deepseq"
+                    , "parallel-io"
+                    , "lens"
+                    , "siggy-chardust"
+                    , "safe-exceptions"
+                    , "statistics"
+                    , "time"
+                    , "vector"
+                    , "flight-clip"
+                    , "flight-earth"
+                    , "flight-gap-allot"
+                    , "flight-gap-lead"
+                    , "flight-gap-valid"
+                    , "flight-kml"
+                    , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-span"
+                    , "flight-track"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "MaskReachMain.hs"
+              , source-dirs =
+                  "prod-apps/mask-reach"
+              }
           , ft-mask-effort =
               { dependencies =
                     deps
