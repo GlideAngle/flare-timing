@@ -124,13 +124,13 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             let lc1 chk = do
                     let invert = mk1Coef . area1toCoef
 
-                    _ <- writeMask as sumAreas invert area1toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
+                    _ <- writeMask as sumAreas invert area1toCoef cs lookupTaskLength ttl iTasks ps compFile chk
                     return ()
 
             let lc2 chk = do
                     let invert = mk2Coef . area2toCoef
 
-                    _ <- writeMask as sumAreas invert area2toCoef math cs lookupTaskLength ttl iTasks ps compFile chk
+                    _ <- writeMask as sumAreas invert area2toCoef cs lookupTaskLength ttl iTasks ps compFile chk
                     return ()
 
             let CompSettings{compTweak} = cs
