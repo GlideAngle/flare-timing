@@ -33,7 +33,6 @@ import Flight.Comp
     , DfNoTrack(..)
     , dfNoTrackReach
     , compToMaskEffort
-    , compToMaskLead
     , compToMaskReach
     , compToBonusReach
     , compToLeadArea
@@ -60,7 +59,6 @@ import Flight.Lookup.Tag
 import Flight.Scribe
     ( AltBonus(..)
     , writeMaskingEffort
-    , writeMaskingLead
     , writeMaskingReach
     , writeBonusReach
     , readCompBestDistances, readCompTimeRows
@@ -196,7 +194,7 @@ writeMask
 
             discardingLeads <- readDiscardingLead (compToLeadArea compFile)
 
-            let (dsNullAltBest, nullAltRowTicks, nullAltLead) =
+            let (dsNullAltBest, nullAltRowTicks, _nullAltLead) =
                     maskLeadCoef
                         sumAreas
                         invert
@@ -233,9 +231,6 @@ writeMask
                         (catMaybes <$> nullAltRowTicks)
 
             let dsBonusAltNighRows = bonusAltRowsBest
-
-            -- NOTE: For time and leading points do not use altitude bonus distances.
-            writeMaskingLead (compToMaskLead compFile) nullAltLead
 
             -- TODO: Use altitude bonus distance for effort.
             writeMaskingEffort
