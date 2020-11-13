@@ -1,11 +1,11 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Mask.Mask (writeMask, check) where
+module Mask.Mask (writeMask) where
 
 import Control.Lens ((^?), element)
-import Control.Exception.Safe (MonadThrow, catchIO)
-import Control.Monad.Except (MonadIO)
+import Control.Monad.Except (runExceptT)
+import Control.Concurrent.ParallelIO (parallel)
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
@@ -29,7 +29,7 @@ import Flight.Comp
     , compToLeadArea
     )
 import Flight.Distance (QTaskDistance)
-import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
+import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
@@ -47,6 +47,7 @@ import Flight.Lookup.Tag
     , tagPilotTime
     , tagTicked
     )
+import Flight.TrackLog (pilotTrack)
 import Flight.Scribe
     ( AltBonus(..)
     , writeMaskingEffort
@@ -67,143 +68,129 @@ import MaskPilots (maskPilots)
 sp :: SampleParams Double
 sp = SampleParams (replicate 6 $ Samples 11) (Tolerance 0.03)
 
+type IOStep k = Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)
+
 writeMask
     :: (KnownUnit (Unpack u))
     => MaskingArrival
     -> LeadingAreaSum u
     -> MkLeadingCoef u
     -> MkAreaToCoef v
-    -> Math
     -> CompSettings k
     -> RoutesLookupTaskDistance
+    -> Math
+    -> ScoredLookup
+    -> Maybe Tagging
     -> TaskLeadingLookup
     -> [IxTask]
     -> [Pilot]
     -> CompInputFile
-    -> (CompInputFile
-        -> [IxTask]
-        -> [Pilot]
-        -> IO
-            [
-                [Either
-                    (Pilot, TrackFileFail)
-                    (Pilot, Pilot -> FlightStats k)
-                ]
-            ])
     -> IO ()
 writeMask
     MaskingArrival{arrivalRank}
     sumAreas
     invert
     areaToCoef
-    _math
     CompSettings
-        { nominal = Cmp.Nominal{free}
+        { comp = Comp{earthMath, give}
+        , nominal = Cmp.Nominal{free}
         , tasks
         , pilotGroups
         }
     routes
+    math
+    flying
+    tags
     lookupTaskLeading
-    selectTasks selectPilots compFile f = do
+    ixSelectTasks selectPilots compFile = do
+    (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks selectPilots
 
-    checks <-
-        catchIO
-            (Just <$> f compFile selectTasks selectPilots)
-            (const $ return Nothing)
+    fss :: [[IOStep k]] <-
+            sequence $
+            [
+                parallel $
+                [ runExceptT $ pilotTrack (flown math earthMath give routes flying tags tasks ixTask) pilotLog
+                | pilotLog <- taskLogs
+                ]
 
-    case checks of
-        Nothing -> putStrLn "Unable to read tracks for pilots."
+            | ixTask <- IxTask <$> [1..]
+            | taskLogs <- selectedCompLogs
+            ]
 
-        Just fss -> do
+    let iTasks = IxTask <$> [1 .. length fss]
 
-            let iTasks = IxTask <$> [1 .. length fss]
+    -- Task lengths (ls).
+    let lsTask' = Lookup.compRoutes routes iTasks
 
-            -- Task lengths (ls).
-            let lsTask' = Lookup.compRoutes routes iTasks
+    let yss = maskPilots free tasks lsTask' pilotGroups fss
 
-            let yss = maskPilots free tasks lsTask' pilotGroups fss
+    -- Distances (ds) of the landout spot.
+    let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> yss
+    let psLandingOut = (fmap . fmap) fst dsLand
 
-            -- Distances (ds) of the landout spot.
-            let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> yss
-            let psLandingOut = (fmap . fmap) fst dsLand
+    let psArriving = (fmap . fmap) fst arrivalRank
 
-            let psArriving = (fmap . fmap) fst arrivalRank
+    {- TODO: Take care to consider bonus altitude distance with leading area.
+    let pilots =
+            [ pAs ++ pLs
+            | pAs <- psArriving
+            | pLs <- psLandingOut
+            ]
+    -}
 
-            {- TODO: Take care to consider bonus altitude distance with leading area.
-            let pilots =
-                    [ pAs ++ pLs
-                    | pAs <- psArriving
-                    | pLs <- psLandingOut
-                    ]
-            -}
+    -- Zones (zs) of the task and zones ticked.
+    let gsBestTime = maskSpeedBestTime yss
+    let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 
-            -- Zones (zs) of the task and zones ticked.
-            let gsBestTime = maskSpeedBestTime yss
-            let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
+    {- TODO: Take care to consider bonus altitude distance with leading area.
+    nullAltRows :: [[(Pilot, [Time.TickRow])]]
+        <-
+            sequence $
+            [ sequence [sequence (p, readPilotDiscardFurther compFile ix p) | p <- ps]
+            | ix <- (IxTask <$> [1 .. ])
+            | ps <- pilots
+            ]
 
-            {- TODO: Take care to consider bonus altitude distance with leading area.
-            nullAltRows :: [[(Pilot, [Time.TickRow])]]
-                <-
-                    sequence $
-                    [ sequence [sequence (p, readPilotDiscardFurther compFile ix p) | p <- ps]
-                    | ix <- (IxTask <$> [1 .. ])
-                    | ps <- pilots
-                    ]
+    bonusAltRows :: [[(Pilot, [Time.TickRow])]]
+        <-
+            sequence $
+            [ sequence [sequence (p, readPilotPegThenDiscard compFile ix p) | p <- ps]
+            | ix <- (IxTask <$> [1 .. ])
+            | ps <- pilots
+            ]
+    -}
 
-            bonusAltRows :: [[(Pilot, [Time.TickRow])]]
-                <-
-                    sequence $
-                    [ sequence [sequence (p, readPilotPegThenDiscard compFile ix p) | p <- ps]
-                    | ix <- (IxTask <$> [1 .. ])
-                    | ps <- pilots
-                    ]
-            -}
+    -- For each task, for each pilot, the row closest to goal.
+    nullAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
+        <- readCompBestDistances
+            (AltBonus False)
+            compFile
+            (includeTask ixSelectTasks)
+            ((fmap . fmap) fst dsLand)
 
-            -- For each task, for each pilot, the row closest to goal.
-            nullAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
-                <- readCompBestDistances
-                    (AltBonus False)
-                    compFile
-                    (includeTask selectTasks)
-                    ((fmap . fmap) fst dsLand)
+    discardingLeads <- readDiscardingLead (compToLeadArea compFile)
 
-            discardingLeads <- readDiscardingLead (compToLeadArea compFile)
+    let (dsNullAltBest, _nullAltRowTicks, _nullAltLead) =
+            maskLeadCoef
+                sumAreas
+                invert
+                areaToCoef
+                free
+                raceTimes'
+                lsTask'
+                psArriving
+                psLandingOut
+                gsBestTime
+                nullAltRowsBest
+                discardingLeads
 
-            let (dsNullAltBest, _nullAltRowTicks, _nullAltLead) =
-                    maskLeadCoef
-                        sumAreas
-                        invert
-                        areaToCoef
-                        free
-                        raceTimes'
-                        lsTask'
-                        psArriving
-                        psLandingOut
-                        gsBestTime
-                        nullAltRowsBest
-                        discardingLeads
-
-            -- TODO: Use altitude bonus distance for effort.
-            writeMaskingEffort
-                (compToMaskEffort compFile)
-                (maskEffort dsNullAltBest dsLand)
+    -- TODO: Use altitude bonus distance for effort.
+    writeMaskingEffort
+        (compToMaskEffort compFile)
+        (maskEffort dsNullAltBest dsLand)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
-
-check
-    :: (MonadThrow m, MonadIO m)
-    => Math
-    -> RoutesLookupTaskDistance
-    -> ScoredLookup
-    -> Maybe Tagging
-    -> CompInputFile
-    -> [IxTask]
-    -> [Pilot]
-    -> m [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)]]
-check math lengths flying tags =
-    checkTracks $ \CompSettings{tasks, comp = Comp{earthMath, give}} ->
-        flown math earthMath give lengths flying tags tasks
 
 flown
     :: Math
