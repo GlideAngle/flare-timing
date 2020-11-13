@@ -1,16 +1,12 @@
-module MaskTrackOptions (description) where
+module MaskBonusOptions (description) where
 
 import Text.RawString.QQ (r)
 import Flight.Cmd.Options (Description(..))
 
 description :: Description
 description = Description [r|
-By masking the track logs with the zones, works out;
-* if a pilot launched
-* how long a pilot took to reach goal
-* if they landed out then
-    * how far they got along the course
-    * how far yet to reach goal
+By masking the track logs with the zones, works out how far they reached given
+bonus altitude.
 
 Where 'c' is the comp name, 'p' is the pilot name, '.' is the folder with
 competition inputs and k is a folder path specified in the inputs for
