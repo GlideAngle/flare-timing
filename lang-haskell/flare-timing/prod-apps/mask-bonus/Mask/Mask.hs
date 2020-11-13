@@ -3,7 +3,6 @@
 
 module Mask.Mask (writeMask, check) where
 
-import Data.Maybe (catMaybes)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList)
 import Control.Lens ((^?), element)
@@ -32,7 +31,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , DfNoTrack(..)
     , dfNoTrackReach
-    , compToMaskReach
     , compToBonusReach
     , compToLeadArea
     )
@@ -40,7 +38,7 @@ import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Mask (GeoDash(..), FnIxTask, checkTracks)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
-import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
+import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Mask (MaskingArrival(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Land)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
@@ -57,9 +55,8 @@ import Flight.Lookup.Tag
     )
 import Flight.Scribe
     ( AltBonus(..)
-    , writeMaskingReach
     , writeBonusReach
-    , readCompBestDistances, readCompTimeRows
+    , readCompBestDistances
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
     -- , readPilotPegThenDiscard
@@ -71,7 +68,6 @@ import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, alt
 import MaskEffort (landDistances)
 import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
-import Mask.Reach.Time (maskReachTime)
 import Mask.Reach.Tick (maskReachTick)
 import MaskSpeed (maskSpeedBestTime)
 import MaskPilots (maskPilots)
@@ -108,10 +104,9 @@ writeMask
     sumAreas
     invert
     areaToCoef
-    math
+    _math
     CompSettings
-        { comp = Comp{earthMath, give}
-        , nominal = Cmp.Nominal{free}
+        { nominal = Cmp.Nominal{free}
         , tasks
         , pilotGroups
         }
@@ -176,13 +171,6 @@ writeMask
             -}
 
             -- For each task, for each pilot, the row closest to goal.
-            nullAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
-                <- readCompBestDistances
-                    (AltBonus False)
-                    compFile
-                    (includeTask selectTasks)
-                    ((fmap . fmap) fst dsLand)
-
             bonusAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
                 <- readCompBestDistances
                     (AltBonus True)
@@ -191,20 +179,6 @@ writeMask
                     ((fmap . fmap) fst dsLand)
 
             discardingLeads <- readDiscardingLead (compToLeadArea compFile)
-
-            let (dsNullAltBest, nullAltRowTicks, _nullAltLead) =
-                    maskLeadCoef
-                        sumAreas
-                        invert
-                        areaToCoef
-                        free
-                        raceTimes'
-                        lsTask'
-                        psArriving
-                        psLandingOut
-                        gsBestTime
-                        nullAltRowsBest
-                        discardingLeads
 
             let (dsBonusAltBest, _, _) =
                     maskLeadCoef
@@ -222,12 +196,6 @@ writeMask
                         -- discardingLeads.
                         discardingLeads
 
-            dsNullAltNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
-                <- readCompTimeRows
-                        compFile
-                        (includeTask selectTasks)
-                        (catMaybes <$> nullAltRowTicks)
-
             let dsBonusAltNighRows = bonusAltRowsBest
 
             let dfNtReach :: [[(Pilot, TrackReach)]] =
@@ -238,21 +206,6 @@ writeMask
                     | dfnts <- unDfNoTrack . didFlyNoTracklog <$> pilotGroups
                     | td <- maybe 0 unTaskDistanceAsKm <$> lsWholeTask
                     ]
-
-            -- NOTE: The reach without altitude bonus distance.
-            writeMaskingReach
-                (compToMaskReach compFile)
-                (maskReachTime
-                    math
-                    earthMath
-                    give
-                    free
-                    dfNtReach
-                    lsWholeTask
-                    zsTaskTicked
-                    dsNullAltBest
-                    dsNullAltNighRows
-                    psArriving)
 
             -- NOTE: The reach with altitude bonus distance.
             writeBonusReach
