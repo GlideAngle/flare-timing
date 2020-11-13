@@ -220,10 +220,10 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
         Just task' ->
             case (ssTime, gsTime, esTime, arrivalRank) of
                 (Just a, Just b, Just e, c@(Just _)) ->
-                    tickedStats {statTimeRank = Just $ TimeStats a b e c}
+                    nullStats {statTimeRank = Just $ TimeStats a b e c}
 
                 _ ->
-                    tickedStats {statLand = Just $ landDistance task'}
+                    nullStats {statLand = Just $ landDistance task'}
 
     where
         maybeTask = tasks ^? element (i - 1)
@@ -239,8 +239,6 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
                 { cut = Lookup.scoredTimeRange flying mark0 iTask p
                 , uncut = mf
                 }
-
-        tickedStats = nullStats
 
         landDistance task =
             let earth =
@@ -275,12 +273,7 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
                             xs
                     }
 
-        startGates' =
+        (startGates', speedSection') =
             case tasks ^? element (i - 1) of
-                Nothing -> []
-                Just Task{..} -> startGates
-
-        speedSection' =
-            case tasks ^? element (i - 1) of
-                Nothing -> Nothing
-                Just Task{..} -> speedSection
+                Nothing -> ([], Nothing)
+                Just Task{..} -> (startGates, speedSection)

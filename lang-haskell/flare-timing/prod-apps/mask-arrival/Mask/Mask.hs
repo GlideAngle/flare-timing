@@ -122,10 +122,10 @@ flown Floating flying tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
         Just _ ->
             case (ssTime, gsTime, esTime, arrivalRank) of
                 (Just a, Just b, Just e, c@(Just _)) ->
-                    tickedStats {statTimeRank = Just $ TimeStats a b e c}
+                    nullStats {statTimeRank = Just $ TimeStats a b e c}
 
                 _ ->
-                    tickedStats
+                    nullStats
                         { statAlt =
                             case reverse ys of
                                 [] -> Nothing
@@ -147,14 +147,7 @@ flown Floating flying tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
                 , uncut = mf
                 }
 
-        tickedStats = nullStats
-
-        startGates' =
+        (startGates', speedSection') =
             case tasks ^? element (i - 1) of
-                Nothing -> []
-                Just Task{..} -> startGates
-
-        speedSection' =
-            case tasks ^? element (i - 1) of
-                Nothing -> Nothing
-                Just Task{..} -> speedSection
+                Nothing -> ([], Nothing)
+                Just Task{..} -> (startGates, speedSection)

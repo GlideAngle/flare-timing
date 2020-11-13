@@ -13,7 +13,7 @@ import Flight.Zone.Raw (Give)
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
-import Flight.Clip (FlyCut(..), FlyClipping(..))
+import Flight.Clip (FlyCut(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( CompInputFile(..)
@@ -35,7 +35,7 @@ import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Mask (MaskingArrival(..))
 import Flight.Track.Distance (TrackDistance(..), Land)
-import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
+import Flight.Kml (MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
 import qualified Flight.Lookup as Lookup
     ( scoredTimeRange, arrivalRank, ticked, compRoutes
@@ -57,7 +57,7 @@ import Flight.Scribe
     , readDiscardingLead
     )
 import Flight.Span.Math (Math(..))
-import Stats (TimeStats(..), FlightStats(..), nullStats, altToAlt)
+import Stats (TimeStats(..), FlightStats(..), nullStats)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
@@ -237,16 +237,10 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
         Just task' ->
             case (ssTime, gsTime, esTime, arrivalRank) of
                 (Just a, Just b, Just e, c@(Just _)) ->
-                    tickedStats {statTimeRank = Just $ TimeStats a b e c}
+                    nullStats {statTimeRank = Just $ TimeStats a b e c}
 
                 _ ->
-                    tickedStats
-                        { statLand = Just $ landDistance task'
-                        , statAlt =
-                            case reverse ys of
-                                [] -> Nothing
-                                y : _ -> Just . altToAlt $ altGps y
-                        }
+                    nullStats {statLand = Just $ landDistance task'}
 
     where
         maybeTask = tasks ^? element (i - 1)
@@ -256,15 +250,12 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
         ssTime = Lookup.pilotTime (tagPilotTime tags) mf iTask [] speedSection' p
         gsTime = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
         arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p
-        FlyCut{uncut = MarkedFixes{fixes = ys}} = clipToCut xs
 
         xs =
             FlyCut
                 { cut = Lookup.scoredTimeRange flying mark0 iTask p
                 , uncut = mf
                 }
-
-        tickedStats = nullStats
 
         landDistance task =
             let earth =
@@ -299,12 +290,7 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
                             xs
                     }
 
-        startGates' =
+        (startGates', speedSection') =
             case tasks ^? element (i - 1) of
-                Nothing -> []
-                Just Task{..} -> startGates
-
-        speedSection' =
-            case tasks ^? element (i - 1) of
-                Nothing -> Nothing
-                Just Task{..} -> speedSection
+                Nothing -> ([], Nothing)
+                Just Task{..} -> (startGates, speedSection)
