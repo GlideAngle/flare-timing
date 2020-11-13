@@ -30,6 +30,7 @@ import Flight.Track.Stop (effectiveTagging)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
+import Flight.Lookup.Stop (stopFlying)
 import Flight.Scribe (readComp, readRoute, readTagging, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskArrivalOptions (description)
@@ -85,6 +86,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readRoute lenFile)
             (const $ return Nothing)
 
+    let scoredLookup = stopFlying stopping
     let lookupTaskLength =
             routeLength
                 taskRoute
@@ -107,6 +109,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 cs
                 lookupTaskLength
                 math
+                scoredLookup
                 tagging'
                 iTasks
                 ps

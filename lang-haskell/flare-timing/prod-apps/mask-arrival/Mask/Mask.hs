@@ -7,6 +7,7 @@ import Control.Lens ((^?), element)
 import Control.Monad.Except (runExceptT)
 import Control.Concurrent.ParallelIO (parallel)
 
+import Flight.Clip (FlyCut(..), FlyClipping(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( CompInputFile(..)
@@ -18,20 +19,24 @@ import Flight.Comp
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , compToMaskArrival
+    , compToMaskSpeed
     )
 import Flight.Mask (FnIxTask, settingsLogs)
 import Flight.Track.Tag (Tagging)
+import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
+import Flight.Lookup.Stop (ScoredLookup(..))
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
 import qualified Flight.Track.Arrival as Arrival (TrackArrival(..))
 import qualified Flight.Lookup as Lookup
-    (arrivalRank, compRoutes, pilotTime, pilotEssTime)
+    (scoredTimeRange, arrivalRank, compRoutes, pilotTime, pilotEssTime)
 import Flight.Lookup.Tag (tagArrivalRank, tagPilotTime)
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (writeMaskingArrival)
+import Flight.Scribe (writeMaskingArrival, writeMaskingSpeed)
 import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
-import Stats (TimeStats(..), FlightStats(..), nullStats)
+import Stats (TimeStats(..), FlightStats(..), nullStats, altToAlt)
 import MaskArrival (maskArrival, arrivalInputs)
+import MaskSpeed (maskSpeed)
 import MaskPilots (maskPilots)
 
 type IOStep k = Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)
@@ -40,6 +45,7 @@ writeMask
     :: CompSettings k
     -> RoutesLookupTaskDistance
     -> Math
+    -> ScoredLookup
     -> Maybe Tagging
     -> [IxTask]
     -> [Pilot]
@@ -53,6 +59,7 @@ writeMask
         }
     routes
     math
+    flying
     tags
     ixSelectTasks selectPilots compFile = do
     (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks selectPilots
@@ -61,7 +68,7 @@ writeMask
             sequence $
             [
                 parallel $
-                [ runExceptT $ pilotTrack (flown math tags tasks ixTask) pilotLog
+                [ runExceptT $ pilotTrack (flown math flying tags tasks ixTask) pilotLog
                 | pilotLog <- taskLogs
                 ]
 
@@ -101,9 +108,14 @@ writeMask
     -- bonus distance pushing a flight to goal so that it arrives.
     writeMaskingArrival (compToMaskArrival compFile) (maskArrival as)
 
-flown :: Math -> Maybe Tagging -> FnIxTask k (Pilot -> FlightStats k)
-flown Rational _ _ _ _ _ = error "Nigh for rationals not yet implemented."
-flown Floating tags tasks iTask@(IxTask i) mf p =
+    let (_gsBestTime, maskSpeed') = maskSpeed lsTask' yss
+
+    -- NOTE: For time and leading points do not use altitude bonus distances.
+    writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
+
+flown :: Math -> ScoredLookup -> Maybe Tagging -> FnIxTask k (Pilot -> FlightStats k)
+flown Rational _ _ _ _ _ _ = error "Nigh for rationals not yet implemented."
+flown Floating flying tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of
         Nothing -> nullStats
 
@@ -112,7 +124,13 @@ flown Floating tags tasks iTask@(IxTask i) mf p =
                 (Just a, Just b, Just e, c@(Just _)) ->
                     tickedStats {statTimeRank = Just $ TimeStats a b e c}
 
-                _ -> tickedStats
+                _ ->
+                    tickedStats
+                        { statAlt =
+                            case reverse ys of
+                                [] -> Nothing
+                                y : _ -> Just . altToAlt $ altGps y
+                        }
 
     where
         maybeTask = tasks ^? element (i - 1)
@@ -121,6 +139,13 @@ flown Floating tags tasks iTask@(IxTask i) mf p =
         ssTime = Lookup.pilotTime (tagPilotTime tags) mf iTask [] speedSection' p
         gsTime = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
         arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p
+        FlyCut{uncut = MarkedFixes{fixes = ys}} = clipToCut xs
+
+        xs =
+            FlyCut
+                { cut = Lookup.scoredTimeRange flying mark0 iTask p
+                , uncut = mf
+                }
 
         tickedStats = nullStats
 

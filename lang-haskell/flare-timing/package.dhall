@@ -386,40 +386,6 @@ in    defs
               , source-dirs =
                   "prod-apps/mask-arrival"
               }
-          , ft-mask-speed =
-              { dependencies =
-                    deps
-                  # [ "containers"
-                    , "lens"
-                    , "siggy-chardust"
-                    , "safe-exceptions"
-                    , "statistics"
-                    , "time"
-                    , "vector"
-                    , "flight-clip"
-                    , "flight-earth"
-                    , "flight-gap-allot"
-                    , "flight-gap-lead"
-                    , "flight-gap-valid"
-                    , "flight-kml"
-                    , "flight-lookup"
-                    , "flight-mask"
-                    , "flight-route"
-                    , "flight-span"
-                    , "flight-zone"
-                    ]
-              , ghc-options =
-                  [ "-rtsopts"
-                  , "-threaded"
-                  , "-with-rtsopts=-N"
-                  , "-Wall"
-                  , "-fplugin Data.UnitsOfMeasure.Plugin"
-                  ]
-              , main =
-                  "MaskSpeedMain.hs"
-              , source-dirs =
-                  "prod-apps/mask-speed"
-              }
           , ft-mask-track =
               { dependencies =
                     deps
