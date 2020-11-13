@@ -39,7 +39,7 @@ import Flight.Lookup.Tag (tagTaskLeading)
 import Flight.Scribe (readComp, readRoute, readTagging, readFraming, readMaskingArrival)
 import Flight.Lookup.Route (routeLength)
 import MaskLeadOptions (description)
-import Mask.Mask (writeMask, check)
+import Mask.Mask (writeMask)
 import Flight.Track.Lead (sumAreas)
 import "flight-gap-lead" Flight.Score (mk1Coef, mk2Coef, area1toCoef, area2toCoef)
 
@@ -121,18 +121,18 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             let tagging' = Just $ effectiveTagging tg stp
             let ttl = tagTaskLeading tagging'
 
-            let lc1 chk = do
+            let lc1 () = do
                     let invert = mk1Coef . area1toCoef
 
-                    _ <- writeMask as sumAreas invert area1toCoef cs lookupTaskLength ttl iTasks ps compFile chk
+                    _ <- writeMask as sumAreas invert area1toCoef cs lookupTaskLength math scoredLookup tagging' ttl iTasks ps compFile
                     return ()
 
-            let lc2 chk = do
+            let lc2 () = do
                     let invert = mk2Coef . area2toCoef
 
-                    _ <- writeMask as sumAreas invert area2toCoef cs lookupTaskLength ttl iTasks ps compFile chk
+                    _ <- writeMask as sumAreas invert area2toCoef cs lookupTaskLength math scoredLookup tagging' ttl iTasks ps compFile
                     return ()
 
             let CompSettings{compTweak} = cs
             let lc = if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1
-            lc (check math lookupTaskLength scoredLookup tagging')
+            lc ()
