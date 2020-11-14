@@ -350,10 +350,48 @@ in    defs
               , source-dirs =
                   "prod-apps/area-step"
               }
-          , ft-mask-track =
+          , ft-mask-arrival =
               { dependencies =
                     deps
                   # [ "containers"
+                    , "deepseq"
+                    , "parallel-io"
+                    , "lens"
+                    , "siggy-chardust"
+                    , "safe-exceptions"
+                    , "statistics"
+                    , "time"
+                    , "vector"
+                    , "flight-clip"
+                    , "flight-earth"
+                    , "flight-gap-allot"
+                    , "flight-gap-valid"
+                    , "flight-kml"
+                    , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-span"
+                    , "flight-track"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "MaskArrivalMain.hs"
+              , source-dirs =
+                  "prod-apps/mask-arrival"
+              }
+          , ft-mask-reach =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "deepseq"
+                    , "parallel-io"
                     , "lens"
                     , "siggy-chardust"
                     , "safe-exceptions"
@@ -370,6 +408,7 @@ in    defs
                     , "flight-mask"
                     , "flight-route"
                     , "flight-span"
+                    , "flight-track"
                     , "flight-zone"
                     ]
               , ghc-options =
@@ -380,9 +419,120 @@ in    defs
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
               , main =
-                  "MaskTrackMain.hs"
+                  "MaskReachMain.hs"
               , source-dirs =
-                  "prod-apps/mask-track"
+                  "prod-apps/mask-reach"
+              }
+          , ft-mask-bonus =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "deepseq"
+                    , "parallel-io"
+                    , "lens"
+                    , "siggy-chardust"
+                    , "safe-exceptions"
+                    , "statistics"
+                    , "time"
+                    , "vector"
+                    , "flight-clip"
+                    , "flight-earth"
+                    , "flight-gap-allot"
+                    , "flight-gap-lead"
+                    , "flight-gap-valid"
+                    , "flight-kml"
+                    , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-span"
+                    , "flight-track"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "MaskBonusMain.hs"
+              , source-dirs =
+                  "prod-apps/mask-bonus"
+              }
+          , ft-mask-effort =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "deepseq"
+                    , "parallel-io"
+                    , "lens"
+                    , "siggy-chardust"
+                    , "safe-exceptions"
+                    , "statistics"
+                    , "time"
+                    , "vector"
+                    , "flight-clip"
+                    , "flight-earth"
+                    , "flight-gap-allot"
+                    , "flight-gap-lead"
+                    , "flight-gap-valid"
+                    , "flight-kml"
+                    , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-span"
+                    , "flight-track"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "MaskEffortMain.hs"
+              , source-dirs =
+                  "prod-apps/mask-effort"
+              }
+          , ft-mask-lead =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "deepseq"
+                    , "parallel-io"
+                    , "lens"
+                    , "siggy-chardust"
+                    , "safe-exceptions"
+                    , "statistics"
+                    , "time"
+                    , "vector"
+                    , "flight-clip"
+                    , "flight-earth"
+                    , "flight-gap-allot"
+                    , "flight-gap-lead"
+                    , "flight-gap-valid"
+                    , "flight-kml"
+                    , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-span"
+                    , "flight-track"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "MaskLeadMain.hs"
+              , source-dirs =
+                  "prod-apps/mask-lead"
               }
           , ft-land-out =
               { dependencies =
