@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9062f8e4261715c7fecf02c28ab8d83afd2f640e4929649c5ff0c286275dbb98
+-- hash: ca35cec4c9484232a2015a1069cd984361fab54366323fca8d131054d89860d2
 
 name:           flare-timing
 version:        0.1.0
@@ -637,12 +637,12 @@ executable ft-mask-bonus
   other-modules:
       MaskLead
       MaskLeadCoef
+      MaskPilots
       MaskSpeed
       Mask.Mask
       Mask.Reach.Tick
       MaskBonusOptions
       MaskEffort
-      MaskPilots
       Stats
       Paths_flare_timing
   hs-source-dirs:
@@ -698,11 +698,11 @@ executable ft-mask-effort
   other-modules:
       MaskLead
       MaskLeadCoef
+      MaskPilots
       MaskSpeed
       Mask.Mask
       MaskEffort
       MaskEffortOptions
-      MaskPilots
       Stats
       Paths_flare_timing
   hs-source-dirs:
@@ -758,11 +758,11 @@ executable ft-mask-lead
   other-modules:
       MaskLead
       MaskLeadCoef
+      MaskPilots
       MaskSpeed
       Mask.Mask
       MaskEffort
       MaskLeadOptions
-      MaskPilots
       Stats
       Paths_flare_timing
   hs-source-dirs:
@@ -818,12 +818,12 @@ executable ft-mask-reach
   other-modules:
       MaskLead
       MaskLeadCoef
+      MaskPilots
       MaskSpeed
       Mask.Mask
       Mask.Reach.Tick
       Mask.Reach.Time
       MaskEffort
-      MaskPilots
       MaskReachOptions
       Stats
       Paths_flare_timing
