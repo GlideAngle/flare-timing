@@ -449,9 +449,10 @@ getTaskPilotGroup ps =
                     >>> arr (unKeyPilot (keyMap kps) . PilotId)
 
         getTaskDistance =
-            getChildren
+            (getChildren
             >>> hasName "FsTaskScoreParams"
-            >>> getAttrValue "task_distance"
+            >>> getAttrValue "task_distance")
+            `orElse` constA ""
 
 getDidFlyNoTracklog
     :: ArrowXml a
