@@ -80,8 +80,12 @@ a zone with [`ft-tag-zone`](lang-haskell/flare-timing/prod-apps/tag-zone).
 [`ft-discard-further`](lang-haskell/flare-timing/prod-apps/discard-further).  
 9. Draw out leading areas 
 [`ft-area-step`](lang-haskell/flare-timing/prod-apps/area-step).  
-10. Mask a task over its tracklogs with
-[`ft-mask-track`](lang-haskell/flare-timing/prod-apps/mask-track).  
+10. Mask a task over its tracklogs with the following, run in any order:
+    * [`ft-mask-arrival`](lang-haskell/flare-timing/prod-apps/mask-arrival).  
+    * [`ft-mask-bonus`](lang-haskell/flare-timing/prod-apps/mask-bonus).  
+    * [`ft-mask-effort`](lang-haskell/flare-timing/prod-apps/mask-effort).  
+    * [`ft-mask-lead`](lang-haskell/flare-timing/prod-apps/mask-lead).  
+    * [`ft-mask-reach`](lang-haskell/flare-timing/prod-apps/mask-reach).  
 11. Group and count land outs with
 [`ft-land-out`](lang-haskell/flare-timing/prod-apps/land-out).  
 12. Score the competition with [`ft-gap-point`](lang-haskell/flare-timing/prod-apps/gap-point).  
