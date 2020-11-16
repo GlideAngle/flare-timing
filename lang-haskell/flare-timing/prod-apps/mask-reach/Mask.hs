@@ -1,7 +1,7 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Mask.Mask (writeMask) where
+module Mask (writeMask) where
 
 import Data.Maybe (catMaybes)
 import Data.Map.Strict (Map)

@@ -31,7 +31,7 @@ import Flight.Lookup.Stop (stopFlying)
 import Flight.Scribe (readComp, readRoute, readTagging, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskArrivalOptions (description)
-import Mask.Mask (writeMask)
+import Mask (writeMask)
 
 main :: IO ()
 main = do

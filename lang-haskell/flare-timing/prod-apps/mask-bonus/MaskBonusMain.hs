@@ -39,7 +39,7 @@ import Flight.Lookup.Tag (tagTaskLeading)
 import Flight.Scribe (readComp, readRoute, readTagging, readFraming, readMaskingArrival)
 import Flight.Lookup.Route (routeLength)
 import MaskBonusOptions (description)
-import Mask.Mask (writeMask)
+import Mask (writeMask)
 import Flight.Track.Lead (sumAreas)
 import "flight-gap-lead" Flight.Score (mk1Coef, mk2Coef, area1toCoef, area2toCoef)
 

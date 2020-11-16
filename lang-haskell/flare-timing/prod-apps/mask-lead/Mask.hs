@@ -1,47 +1,40 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Mask.Mask (writeMask) where
+module Mask (writeMask) where
 
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map (fromList)
 import Control.Lens ((^?), element)
 import Control.Monad.Except (runExceptT)
 import Control.Concurrent.ParallelIO (parallel)
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Zone.Raw (Give)
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
-import Flight.Clip (FlyCut(..), FlyClipping(..))
+import Flight.Clip (FlyCut(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
     , Comp(..)
     , Pilot(..)
-    , PilotGroup(..)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
-    , DfNoTrack(..)
-    , dfNoTrackReach
-    , compToBonusReach
+    , compToMaskLead
     , compToLeadArea
     )
-import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
+import Flight.Distance (QTaskDistance)
 import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Mask (MaskingArrival(..))
-import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Land)
-import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
+import Flight.Track.Distance (TrackDistance(..), Land)
+import Flight.Kml (MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
 import qualified Flight.Lookup as Lookup
     ( scoredTimeRange, arrivalRank, ticked, compRoutes
@@ -56,20 +49,18 @@ import Flight.Lookup.Tag
 import Flight.TrackLog (pilotTrack)
 import Flight.Scribe
     ( AltBonus(..)
-    , writeBonusReach
+    , writeMaskingLead
     , readCompBestDistances
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
     -- , readPilotPegThenDiscard
     , readDiscardingLead
     )
-import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
-import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
+import Stats (TimeStats(..), FlightStats(..), nullStats)
 import MaskEffort (landDistances)
 import MaskLead (raceTimes)
 import MaskLeadCoef (maskLeadCoef)
-import Mask.Reach.Tick (maskReachTick)
 import MaskSpeed (maskSpeedBestTime)
 import MaskPilots (maskPilots)
 
@@ -129,7 +120,6 @@ writeMask
 
     -- Task lengths (ls).
     let lsTask' = Lookup.compRoutes routes iTasks
-    let lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask'
 
     let yss = maskPilots free tasks lsTask' pilotGroups fss
 
@@ -146,9 +136,6 @@ writeMask
             | pLs <- psLandingOut
             ]
     -}
-
-    -- Zones (zs) of the task and zones ticked.
-    let zsTaskTicked :: [Map Pilot _] = Map.fromList . landTaskTicked <$> yss
 
     let gsBestTime = maskSpeedBestTime yss
     let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
@@ -172,16 +159,16 @@ writeMask
     -}
 
     -- For each task, for each pilot, the row closest to goal.
-    bonusAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
+    nullAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
         <- readCompBestDistances
-            (AltBonus True)
+            (AltBonus False)
             compFile
             (includeTask ixSelectTasks)
             ((fmap . fmap) fst dsLand)
 
     discardingLeads <- readDiscardingLead (compToLeadArea compFile)
 
-    let (dsBonusAltBest, _, _) =
+    let (_dsNullAltBest, _nullAltRowTicks, nullAltLead) =
             maskLeadCoef
                 sumAreas
                 invert
@@ -192,40 +179,14 @@ writeMask
                 psArriving
                 psLandingOut
                 gsBestTime
-                bonusAltRowsBest
-                -- TODO: Use bonus altitude calculating
-                -- discardingLeads.
+                nullAltRowsBest
                 discardingLeads
 
-    let dsBonusAltNighRows = bonusAltRowsBest
-
-    let dfNtReach :: [[(Pilot, TrackReach)]] =
-            [
-                (fmap . fmap) Gap.flown $
-                dfNoTrackReach (TaskDistance $ MkQuantity td)
-                <$> dfnts
-            | dfnts <- unDfNoTrack . didFlyNoTracklog <$> pilotGroups
-            | td <- maybe 0 unTaskDistanceAsKm <$> lsWholeTask
-            ]
-
-    -- NOTE: The reach with altitude bonus distance.
-    writeBonusReach
-        (compToBonusReach compFile)
-        (maskReachTick
-            free
-            dfNtReach
-            lsWholeTask
-            zsTaskTicked
-            dsBonusAltBest
-            dsBonusAltNighRows
-            psArriving)
+    -- NOTE: For time and leading points do not use altitude bonus distances.
+    writeMaskingLead (compToMaskLead compFile) nullAltLead
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
-
-landTaskTicked :: [(Pilot, FlightStats k)] -> [(Pilot, _)]
-landTaskTicked xs =
-    (\(p, FlightStats{..}) -> (p, statDash)) <$> xs
 
 flown
     :: Math
@@ -259,16 +220,10 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
         Just task' ->
             case (ssTime, gsTime, esTime, arrivalRank) of
                 (Just a, Just b, Just e, c@(Just _)) ->
-                    tickedStats {statTimeRank = Just $ TimeStats a b e c}
+                    nullStats {statTimeRank = Just $ TimeStats a b e c}
 
                 _ ->
-                    tickedStats
-                        { statLand = Just $ landDistance task'
-                        , statAlt =
-                            case reverse ys of
-                                [] -> Nothing
-                                y : _ -> Just . altToAlt $ altGps y
-                        }
+                    nullStats {statLand = Just $ landDistance task'}
 
     where
         maybeTask = tasks ^? element (i - 1)
@@ -278,22 +233,11 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
         ssTime = Lookup.pilotTime (tagPilotTime tags) mf iTask [] speedSection' p
         gsTime = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
         arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p
-        FlyCut{uncut = MarkedFixes{fixes = ys}} = clipToCut xs
 
         xs =
             FlyCut
                 { cut = Lookup.scoredTimeRange flying mark0 iTask p
                 , uncut = mf
-                }
-
-        tickedStats =
-            nullStats
-                { statDash =
-                    DashPathInputs
-                        { dashTask = maybeTask
-                        , dashTicked = ticked
-                        , dashFlyCut = Just xs
-                        }
                 }
 
         landDistance task =
@@ -329,12 +273,7 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
                             xs
                     }
 
-        startGates' =
+        (startGates', speedSection') =
             case tasks ^? element (i - 1) of
-                Nothing -> []
-                Just Task{..} -> startGates
-
-        speedSection' =
-            case tasks ^? element (i - 1) of
-                Nothing -> Nothing
-                Just Task{..} -> speedSection
+                Nothing -> ([], Nothing)
+                Just Task{..} -> (startGates, speedSection)
