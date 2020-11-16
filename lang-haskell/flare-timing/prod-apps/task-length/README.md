@@ -12,8 +12,6 @@ Where 'c' is the comp name and '.' is the folder with competition inputs;
 ft-task-length [OPTIONS]
 
 Source:
-  -d --dir=ITEM                Over all the competition *.comp.yaml files in
-                               this directory
      --file=ITEM               With this one competition *.comp.yaml file
 Filter:
   -t --task[=TASK NUMBER]      Which tasks?

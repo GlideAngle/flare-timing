@@ -15,7 +15,6 @@ Note that the give fraction is required but the give distance is optional.
 ft-extract-input [OPTIONS]
 
 Source:
-  -d --dir=ITEM                Over all FSDB files in this directory
      --file=ITEM               With this one competition FSDB file
 Give when crossing zones:
      --give-fraction=NUM       How much give as a fraction, 0.005 or 0.0001?

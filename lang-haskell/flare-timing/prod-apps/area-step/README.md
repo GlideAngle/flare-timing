@@ -18,7 +18,6 @@ not.
 ft-area-step [OPTIONS]
 
 Source:
-  -d --dir=ITEM                  Over all *.comp.yaml files in this directory
   -f --file=ITEM                 With this one competition *.comp.yaml file
 Filter:
   -t --task[=TASK NUMBER]        Which tasks?

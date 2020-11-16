@@ -17,8 +17,6 @@ not.
 ft-tag-zone [OPTIONS]
 
 Source:
-  -d --dir=ITEM                  Over all *.comp-input.yaml files in this
-                                 directory
   -f --file=ITEM                 With this one competition *.comp-input.yaml
                                  file
 Filter:

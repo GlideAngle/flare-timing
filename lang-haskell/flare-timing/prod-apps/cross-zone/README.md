@@ -20,7 +20,6 @@ The same thing goes if a list of pilots is supplied or not.
 ft-cross-zone [OPTIONS]
 
 Source:
-  -d --dir=ITEM                  Over all *.comp.yaml files in this directory
   -f --file=ITEM                 With this one competition *.comp.yaml file
 Filter:
   -t --task[=TASK NUMBER]        Which tasks?
