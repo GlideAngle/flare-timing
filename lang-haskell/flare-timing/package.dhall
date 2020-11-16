@@ -381,6 +381,15 @@ in    defs
                   , "-Wall"
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
+              , other-modules =
+                  [ "Mask"
+                  , "MaskArrival"
+                  , "MaskArrivalOptions"
+                  , "MaskPilots"
+                  , "MaskSpeed"
+                  , "Stats"
+                  , "Paths_flare_timing"
+                  ]
               , main =
                   "MaskArrivalMain.hs"
               , source-dirs =
@@ -417,6 +426,19 @@ in    defs
                   , "-with-rtsopts=-N"
                   , "-Wall"
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , other-modules =
+                  [ "Mask.Reach.Tick"
+                  , "Mask.Reach.Time"
+                  , "MaskEffort"
+                  , "MaskLead"
+                  , "MaskLeadCoef"
+                  , "MaskPilots"
+                  , "MaskSpeed"
+                  , "Mask"
+                  , "MaskReachOptions"
+                  , "Stats"
+                  , "Paths_flare_timing"
                   ]
               , main =
                   "MaskReachMain.hs"
@@ -455,6 +477,18 @@ in    defs
                   , "-Wall"
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
+              , other-modules =
+                  [ "MaskEffort"
+                  , "MaskLead"
+                  , "MaskLeadCoef"
+                  , "MaskPilots"
+                  , "MaskSpeed"
+                  , "Mask"
+                  , "Mask.Reach.Tick"
+                  , "MaskBonusOptions"
+                  , "Stats"
+                  , "Paths_flare_timing"
+                  ]
               , main =
                   "MaskBonusMain.hs"
               , source-dirs =
@@ -492,6 +526,17 @@ in    defs
                   , "-Wall"
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
+              , other-modules =
+                  [ "MaskEffort"
+                  , "MaskLead"
+                  , "MaskLeadCoef"
+                  , "MaskPilots"
+                  , "MaskSpeed"
+                  , "Mask"
+                  , "MaskEffortOptions"
+                  , "Stats"
+                  , "Paths_flare_timing"
+                  ]
               , main =
                   "MaskEffortMain.hs"
               , source-dirs =
@@ -528,6 +573,17 @@ in    defs
                   , "-with-rtsopts=-N"
                   , "-Wall"
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , other-modules =
+                  [ "MaskEffort"
+                  , "MaskLead"
+                  , "MaskLeadCoef"
+                  , "MaskPilots"
+                  , "MaskSpeed"
+                  , "Mask"
+                  , "MaskLeadOptions"
+                  , "Stats"
+                  , "Paths_flare_timing"
                   ]
               , main =
                   "MaskLeadMain.hs"
