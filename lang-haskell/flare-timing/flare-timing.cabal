@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ca35cec4c9484232a2015a1069cd984361fab54366323fca8d131054d89860d2
+-- hash: 698047c66056372cc20af909840b5723e19dd1a637ece70b8a60bd2e67ecaba5
 
 name:           flare-timing
 version:        0.1.0
@@ -635,6 +635,7 @@ executable ft-mask-arrival
 executable ft-mask-bonus
   main-is: MaskBonusMain.hs
   other-modules:
+      MaskEffort
       MaskLead
       MaskLeadCoef
       MaskPilots
@@ -642,7 +643,6 @@ executable ft-mask-bonus
       Mask.Mask
       Mask.Reach.Tick
       MaskBonusOptions
-      MaskEffort
       Stats
       Paths_flare_timing
   hs-source-dirs:
@@ -696,12 +696,12 @@ executable ft-mask-bonus
 executable ft-mask-effort
   main-is: MaskEffortMain.hs
   other-modules:
+      MaskEffort
       MaskLead
       MaskLeadCoef
       MaskPilots
       MaskSpeed
       Mask.Mask
-      MaskEffort
       MaskEffortOptions
       Stats
       Paths_flare_timing
@@ -756,12 +756,12 @@ executable ft-mask-effort
 executable ft-mask-lead
   main-is: MaskLeadMain.hs
   other-modules:
+      MaskEffort
       MaskLead
       MaskLeadCoef
       MaskPilots
       MaskSpeed
       Mask.Mask
-      MaskEffort
       MaskLeadOptions
       Stats
       Paths_flare_timing
@@ -816,6 +816,7 @@ executable ft-mask-lead
 executable ft-mask-reach
   main-is: MaskReachMain.hs
   other-modules:
+      MaskEffort
       MaskLead
       MaskLeadCoef
       MaskPilots
@@ -823,7 +824,6 @@ executable ft-mask-reach
       Mask.Mask
       Mask.Reach.Tick
       Mask.Reach.Time
-      MaskEffort
       MaskReachOptions
       Stats
       Paths_flare_timing
