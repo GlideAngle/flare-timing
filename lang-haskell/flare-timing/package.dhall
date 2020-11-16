@@ -384,7 +384,7 @@ in    defs
               , main =
                   "MaskArrivalMain.hs"
               , source-dirs =
-                  "prod-apps/mask-arrival"
+                  [ "prod-apps/mask-arrival" ]
               }
           , ft-mask-reach =
               { dependencies =
@@ -421,7 +421,7 @@ in    defs
               , main =
                   "MaskReachMain.hs"
               , source-dirs =
-                  "prod-apps/mask-reach"
+                  [ "prod-apps/mask-common", "prod-apps/mask-reach" ]
               }
           , ft-mask-bonus =
               { dependencies =
@@ -458,7 +458,7 @@ in    defs
               , main =
                   "MaskBonusMain.hs"
               , source-dirs =
-                  "prod-apps/mask-bonus"
+                  [ "prod-apps/mask-common", "prod-apps/mask-bonus" ]
               }
           , ft-mask-effort =
               { dependencies =
@@ -495,7 +495,7 @@ in    defs
               , main =
                   "MaskEffortMain.hs"
               , source-dirs =
-                  "prod-apps/mask-effort"
+                  [ "prod-apps/mask-common", "prod-apps/mask-effort" ]
               }
           , ft-mask-lead =
               { dependencies =
@@ -532,7 +532,7 @@ in    defs
               , main =
                   "MaskLeadMain.hs"
               , source-dirs =
-                  "prod-apps/mask-lead"
+                  [ "prod-apps/mask-common", "prod-apps/mask-lead" ]
               }
           , ft-land-out =
               { dependencies =

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0aa0723f6245f7f1ec91733ccf78175153d0ff3676c7f23d2125cc442147cd55
+-- hash: 1f79aa0c90ff96fec56327bf9476416ff25c21ac9c71891ed10fd06c196f841b
 
 name:           flare-timing
 version:        0.1.0
@@ -635,17 +635,18 @@ executable ft-mask-arrival
 executable ft-mask-bonus
   main-is: MaskBonusMain.hs
   other-modules:
+      MaskLead
+      MaskLeadCoef
       Mask.Mask
       Mask.Reach.Tick
       MaskBonusOptions
       MaskEffort
-      MaskLead
-      MaskLeadCoef
       MaskPilots
       MaskSpeed
       Stats
       Paths_flare_timing
   hs-source-dirs:
+      prod-apps/mask-common
       prod-apps/mask-bonus
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
@@ -695,16 +696,17 @@ executable ft-mask-bonus
 executable ft-mask-effort
   main-is: MaskEffortMain.hs
   other-modules:
+      MaskLead
+      MaskLeadCoef
       Mask.Mask
       MaskEffort
       MaskEffortOptions
-      MaskLead
-      MaskLeadCoef
       MaskPilots
       MaskSpeed
       Stats
       Paths_flare_timing
   hs-source-dirs:
+      prod-apps/mask-common
       prod-apps/mask-effort
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
@@ -754,16 +756,17 @@ executable ft-mask-effort
 executable ft-mask-lead
   main-is: MaskLeadMain.hs
   other-modules:
-      Mask.Mask
-      MaskEffort
       MaskLead
       MaskLeadCoef
+      Mask.Mask
+      MaskEffort
       MaskLeadOptions
       MaskPilots
       MaskSpeed
       Stats
       Paths_flare_timing
   hs-source-dirs:
+      prod-apps/mask-common
       prod-apps/mask-lead
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
@@ -813,18 +816,19 @@ executable ft-mask-lead
 executable ft-mask-reach
   main-is: MaskReachMain.hs
   other-modules:
+      MaskLead
+      MaskLeadCoef
       Mask.Mask
       Mask.Reach.Tick
       Mask.Reach.Time
       MaskEffort
-      MaskLead
-      MaskLeadCoef
       MaskPilots
       MaskReachOptions
       MaskSpeed
       Stats
       Paths_flare_timing
   hs-source-dirs:
+      prod-apps/mask-common
       prod-apps/mask-reach
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
