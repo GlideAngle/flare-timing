@@ -3,7 +3,7 @@
 ```
 > ft-mask-effort --help
 
-By masking the track logs with the zones, works out how far they got along the
+By masking the track logs with the zones, works out how far pilots got along the
 course if they landed out.
 
 Where 'c' is the comp name, 'p' is the pilot name, '.' is the folder with

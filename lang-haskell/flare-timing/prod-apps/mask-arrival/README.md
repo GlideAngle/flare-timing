@@ -3,7 +3,7 @@
 ```
 > ft-mask-arrival --help
 
-By masking the track logs with the zones, works out if they made goal.
+By masking the track logs with the zones, works out if pilots made goal.
 
 Where 'c' is the comp name, 'p' is the pilot name, '.' is the folder with
 competition inputs and k is a folder path specified in the inputs for
