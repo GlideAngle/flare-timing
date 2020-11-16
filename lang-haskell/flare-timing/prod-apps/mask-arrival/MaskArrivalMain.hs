@@ -1,7 +1,4 @@
-﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-
-import System.Environment (getProgName)
+﻿import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
@@ -57,7 +54,7 @@ drive o = do
     fprint ("Masking tracks for arrivals completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
+go CmdBatchOptions{math, task, pilot} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
