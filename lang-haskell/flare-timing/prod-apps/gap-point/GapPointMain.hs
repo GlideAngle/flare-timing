@@ -26,6 +26,7 @@ import Control.Monad (mapM_, join)
 import Control.Monad.Zip (mzip)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -38,7 +39,8 @@ import Flight.Distance (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (DfNoTrackPilot(..))
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CompSettings(..)
@@ -182,10 +184,11 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic

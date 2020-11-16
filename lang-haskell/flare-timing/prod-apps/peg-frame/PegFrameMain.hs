@@ -14,6 +14,7 @@ import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Monad (join)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 
@@ -32,7 +33,8 @@ import Flight.Track.Stop
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate, endOfScored
     )
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
     , CompInputFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
@@ -66,10 +68,11 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic

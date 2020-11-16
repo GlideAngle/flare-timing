@@ -1,5 +1,6 @@
 module Flight.Path
-    ( FileType(..)
+    ( FindDirFile(..)
+    , FileType(..)
     , IgcFile(..)
     , KmlFile(..)
     , FsdbFile(..)
@@ -95,6 +96,12 @@ import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
 import "flight-gap-allot" Flight.Score (PilotId(..), PilotName(..), Pilot(..))
+
+data FindDirFile
+    = FindDirFile
+        { dir :: FilePath
+        , file :: FilePath
+        }
 
 -- | The path to a competition expected arrival file.
 newtype NormArrivalFile = NormArrivalFile FilePath deriving Show

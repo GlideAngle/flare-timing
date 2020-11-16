@@ -14,13 +14,15 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 import Control.Concurrent.ParallelIO (parallel)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
     , CompInputFile(..)
     , CompSettings(..)
     , PilotName(..)
@@ -72,10 +74,11 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic

@@ -12,6 +12,7 @@ import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -21,7 +22,8 @@ import Flight.Track.Speed (TrackSpeed)
 import qualified Flight.Track.Speed as Time (TrackSpeed(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
 import Flight.Comp
-    ( FileType(TrimFsdb)
+    ( FindDirFile(..)
+    , FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , Pilot(..)
@@ -63,10 +65,11 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findTrimFsdb o
+    cwd <- getCurrentDirectory
+    files <- findTrimFsdb $ FindDirFile {dir = cwd, file = file}
 
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files

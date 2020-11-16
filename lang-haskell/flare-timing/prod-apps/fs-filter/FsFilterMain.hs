@@ -5,13 +5,15 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import qualified Flight.Fsdb as Fsdb (cleanComp, trimComp)
 import Flight.Comp
-    ( FileType(Fsdb)
+    ( FindDirFile(..)
+    , FileType(Fsdb)
     , FsdbFile(..)
     , FsdbXml(..)
     , fsdbToCleanFsdb
@@ -33,10 +35,11 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findFsdb o
+    cwd <- getCurrentDirectory
+    files <- findFsdb $ FindDirFile {dir = cwd, file = file}
 
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files

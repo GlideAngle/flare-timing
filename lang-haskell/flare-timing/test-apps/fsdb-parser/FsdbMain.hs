@@ -4,6 +4,7 @@ import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_, when)
 import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
@@ -18,7 +19,8 @@ import Flight.Fsdb
     )
 import qualified Flight.Comp as Comp
 import Flight.Comp
-    ( Pilot(..)
+    ( FindDirFile(..)
+    , Pilot(..)
     , PilotTrackLogFile(..)
     , FsdbFile(..)
     , showTask
@@ -57,8 +59,9 @@ showPilotTracks tasks =
     unlines $ showTaskPilotTracks (zip [ 1 .. ] tasks) 
 
 drive :: FsdbOptions -> IO ()
-drive o = do
-    files <- findFsdb o
+drive o@FsdbOptions{file} = do
+    cwd <- getCurrentDirectory
+    files <- findFsdb $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find input files."
                   else mapM_ (go o) files
 

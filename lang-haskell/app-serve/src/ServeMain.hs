@@ -36,6 +36,7 @@ import qualified Data.Vector as V (fromList)
 import Data.Vector (Vector)
 import Numeric.Sampling
 import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 
 import Flight.Units ()
 import Flight.Clip (FlyingSection)
@@ -93,7 +94,8 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
 import Flight.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
     , CompSettings(..)
     , Comp(..)
     , PilotTrackLogFile(..)
@@ -270,10 +272,12 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdServeOptions -> IO ()
-drive o = do
-    files <- findCompInput o
+drive o@CmdServeOptions{file} = do
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
+
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile

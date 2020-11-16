@@ -21,9 +21,7 @@ import Flight.Cmd.Options (ProgramName(..), Description(..), Extension(..))
 -- | Options passed in on the command line.
 data CmdServeOptions
     = CmdServeOptions
-        { dir :: FilePath
-        -- ^ Picking all competition in this directory.
-        , file :: FilePath
+        { file :: FilePath
         -- ^ Picking the competition in this file.
         }
     deriving (Data, Typeable, Show)
@@ -31,11 +29,7 @@ data CmdServeOptions
 mkOptions :: ProgramName -> Description -> Maybe Extension -> CmdServeOptions
 mkOptions (ProgramName programName) (Description description) ext =
     CmdServeOptions
-        { dir = def
-        &= help dirMsg
-        &= groupname "Source"
-
-        , file = def
+        { file = def
         &= help fileMsg
         &= groupname "Source"
 
@@ -44,5 +38,4 @@ mkOptions (ProgramName programName) (Description description) ext =
         &= program programName
     where
         Extension ext' = fromMaybe (Extension "*.comp.yaml") ext
-        dirMsg =  "Over all " ++ ext' ++ " files in this directory"
         fileMsg = "With this one competition " ++ ext' ++ " file"

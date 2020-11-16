@@ -18,9 +18,7 @@ import System.Console.CmdArgs.Implicit
 -- | Options passed in on the command line.
 data FsdbOptions
     = FsdbOptions
-        { dir :: FilePath
-        -- ^ Picking all competition in this directory.
-        , file :: FilePath
+        { file :: FilePath
         -- ^ Picking the competition in this file.
         , detail :: [Detail]
         -- ^ What details to show. If none supplied then all are
@@ -67,11 +65,7 @@ for inputs, working and outputs of scoring.
 mkOptions :: String -> FsdbOptions
 mkOptions programName =
     FsdbOptions
-        { dir = def
-        &= help "Over all the FSDB files in this directory"
-        &= groupname "Source"
-
-        , file = def
+        { file = def
         &= help "With this one FSDB file"
         &= groupname "Source"
 

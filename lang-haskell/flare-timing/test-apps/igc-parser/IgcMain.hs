@@ -2,10 +2,11 @@ import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)
 import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Igc (parseFromFile)
-import Flight.Comp (IgcFile(..), findIgc)
+import Flight.Comp (FindDirFile(..), IgcFile(..), findIgc)
 import IgcOptions (IgcOptions(..), mkOptions)
 
 main :: IO ()
@@ -19,8 +20,9 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: IgcOptions -> IO ()
-drive o = do
-    files <- findIgc o
+drive IgcOptions{file} = do
+    cwd <- getCurrentDirectory
+    files <- findIgc $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
 
