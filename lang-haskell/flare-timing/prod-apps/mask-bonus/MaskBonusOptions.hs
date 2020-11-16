@@ -5,8 +5,8 @@ import Flight.Cmd.Options (Description(..))
 
 description :: Description
 description = Description [r|
-By masking the track logs with the zones, works out how far they reached given
-bonus altitude.
+By masking the track logs with the zones, works out how far pilots reached
+given an bonus altitude when the task is stopped.
 
 Where 'c' is the comp name, 'p' is the pilot name, '.' is the folder with
 competition inputs and k is a folder path specified in the inputs for
