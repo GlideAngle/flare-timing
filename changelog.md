@@ -17,6 +17,7 @@ of this changelog.
   seen as huge negative numbers before the fix.
 * Show the flying and scored fixes for pilots that have had their tracks
   downloaded for the map.
+* Show the effective reset in the penal table when the pilot is too early.
 
 # Plot Selected Pilots
 ## v0.28
