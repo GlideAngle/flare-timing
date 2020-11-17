@@ -173,7 +173,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                                             elClass "th" "th-penalty" $ text "Resets"
 
                                                     el "tbody" $
-                                                        simpleList jumpers (rowPenalJump (earliest <$> early))
+                                                        simpleList jumpers (rowPenalJump 3 (earliest <$> early))
 
                                             return ()
 
@@ -188,7 +188,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                                             elClass "th" "th-norm th-penalty" $ text "✓ Points"
                                                             elClass "th" "th-norm th-penalty-reason" $ text "Reason"
 
-                                                    el "tbody" $ simpleList penalAuto rowPenalAuto
+                                                    el "tbody" $ simpleList penalAuto (rowPenalAuto 3)
                                             return ()
 
                                     if null penal'' then return () else do
@@ -203,7 +203,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                                             elClass "th" "th-penalty" $ text "Point"
                                                             elClass "th" "th-penalty-reason" $ text "Reason"
 
-                                                    el "tbody" $ simpleList penal rowPenal
+                                                    el "tbody" $ simpleList penal (rowPenal 3)
                                             return ()
 
                                     el "p" . text

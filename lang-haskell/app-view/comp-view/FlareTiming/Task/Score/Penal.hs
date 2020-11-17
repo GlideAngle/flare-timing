@@ -301,9 +301,9 @@ pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
     let jtgPenalty = ffor jtgPenalties (\PenaltySeqs{adds, muls, resets} ->
                         case (null adds, null muls, null resets) of
                             (True, True, True) -> ""
-                            (False, True, True) -> pprEffectiveAdd adds
-                            (_, False, True) -> pprEffectiveMul muls
-                            (_, _, False) -> pprEffectiveReset resets)
+                            (False, True, True) -> pprEffectiveAdd 1 adds
+                            (_, False, True) -> pprEffectiveMul 1 muls
+                            (_, _, False) -> pprEffectiveReset 1 resets)
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" $ dynText yRank

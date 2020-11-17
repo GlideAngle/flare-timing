@@ -35,38 +35,38 @@ instance Ord (PointPenalty a) where
     compare (PenaltyReset x) (PenaltyReset y) = x `compare` y
 
 -- NOTE: For pretty printing penalized [-] or rewarded [+].
-pprPointPenalty :: PointPenalty a -> String
-pprPointPenalty (PenaltyFraction 1) = "* id"
-pprPointPenalty (PenaltyPoints 0) = "- id"
-pprPointPenalty (PenaltyReset Nothing) = "= id"
+pprPointPenalty :: Int -> PointPenalty a -> String
+pprPointPenalty _ (PenaltyFraction 1) = "* id"
+pprPointPenalty _ (PenaltyPoints 0) = "- id"
+pprPointPenalty _ (PenaltyReset Nothing) = "= id"
 
 -- | Convert from scaling to fraction of points.
 -- The inverse of the function f(x) = 1 - x is f(x) = 1 - x.
-pprPointPenalty (PenaltyFraction x) = let y = 1 - x in
+pprPointPenalty dp (PenaltyFraction x) = let y = 1 - x in
     if y < 0
-        then printf "+ %.3f*" y
-        else printf "- %.3f*" y
+        then printf "+ %.*f*" dp y
+        else printf "- %.*f*" dp y
 
-pprPointPenalty (PenaltyPoints x) =
+pprPointPenalty dp (PenaltyPoints x) =
     if x < 0
         -- NOTE: The + printf flag will show the sign symbol. I want the symbol
         -- then a space before the number. The sign here is showing whether it
         -- is a penalty or a bonus.
-        then printf "- %.3f" (abs x)
-        else printf "+ %.3f" x
+        then printf "- %.*f" dp (abs x)
+        else printf "+ %.*f" dp x
 
-pprPointPenalty (PenaltyReset (Just x)) = printf "= %d" x
+pprPointPenalty _ (PenaltyReset (Just x)) = printf "= %d" x
 
 instance Show (PointPenalty a) where
     show (PenaltyFraction 1) = "(* id)"
     show (PenaltyPoints 0) = "(+ id)"
     show (PenaltyReset Nothing) = "(= id)"
 
-    show (PenaltyFraction x) = printf "(* %.3f)" x
+    show (PenaltyFraction x) = printf "(* %.*f)" x
     show (PenaltyPoints x) =
         if x < 0
-            then printf "(- %.3f)" (abs x)
-            else printf "(+ %.3f)" x
+            then printf "(- %.*f)" (abs x)
+            else printf "(+ %.*f)" x
     show (PenaltyReset (Just x)) = printf "(= %d)" x
 
 instance Num (PointPenalty Mul) where
@@ -146,11 +146,11 @@ effectiveReset =
 isJustReset :: PointPenalty Reset -> Bool
 isJustReset (PenaltyReset x) = isJust x
 
-pprEffectiveMul :: [PointPenalty Mul] -> T.Text
-pprEffectiveMul = T.pack . pprPointPenalty . effectiveMul
+pprEffectiveMul :: Int -> [PointPenalty Mul] -> T.Text
+pprEffectiveMul dp = T.pack . pprPointPenalty dp . effectiveMul
 
-pprEffectiveAdd :: [PointPenalty Add] -> T.Text
-pprEffectiveAdd = T.pack . pprPointPenalty . effectiveAdd
+pprEffectiveAdd :: Int -> [PointPenalty Add] -> T.Text
+pprEffectiveAdd dp = T.pack . pprPointPenalty dp . effectiveAdd
 
-pprEffectiveReset :: [PointPenalty Reset] -> T.Text
-pprEffectiveReset = T.pack . pprPointPenalty . effectiveReset
+pprEffectiveReset :: Int -> [PointPenalty Reset] -> T.Text
+pprEffectiveReset dp = T.pack . pprPointPenalty dp . effectiveReset

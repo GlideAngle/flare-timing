@@ -92,10 +92,11 @@ classOfEarlyStart (JumpTheGunLimit e) =
 
 rowPenalJump
     :: MonadWidget t m
-    => Dynamic t JumpTheGunLimit
+    => Int
+    -> Dynamic t JumpTheGunLimit
     -> Dynamic t (Pilot, PenaltySeqs, Maybe JumpedTheGun)
     -> m ()
-rowPenalJump earliest ppp = do
+rowPenalJump dp earliest ppp = do
     dyn_ $ ffor ppp (\(pilot, PenaltySeqs{adds = pPoints, resets = pResets}, jump) -> el "tr" $ do
 
         let classEarly = ffor earliest (flip classOfEarlyStart $ jump)
@@ -106,34 +107,36 @@ rowPenalJump earliest ppp = do
 
         if null pPoints
             then el "td" $ text ""
-            else tdPointPenalty $ pprEffectiveAdd pPoints
+            else tdPointPenalty $ pprEffectiveAdd dp pPoints
 
         if null pResets
             then el "td" $ text ""
-            else tdPointPenalty $ pprEffectiveReset pResets)
+            else tdPointPenalty $ pprEffectiveReset dp pResets)
 
 tdPointPenalty :: MonadWidget t m => T.Text -> m ()
 tdPointPenalty = elClass "td" "td-penalty" . text
 
 rowPenalAuto
     :: MonadWidget t m
-    => Dynamic t (Pilot, PenaltySeqs, String)
+    => Int
+    -> Dynamic t (Pilot, PenaltySeqs, String)
     -> m ()
-rowPenalAuto ppp = do
+rowPenalAuto dp ppp = do
     dyn_ $ ffor ppp (\(pilot, PenaltySeqs{adds = pp}, reason) -> el "tr" $ do
         elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
         if null pp
             then el "td" $ text ""
-            else tdPointPenalty $ pprEffectiveAdd pp
+            else tdPointPenalty $ pprEffectiveAdd dp pp
 
         el "td" . text $ T.pack reason)
 
 rowPenal
     :: MonadWidget t m
-    => Dynamic t (Pilot, PenaltySeqs, String)
+    => Int
+    -> Dynamic t (Pilot, PenaltySeqs, String)
     -> m ()
-rowPenal ppp = do
+rowPenal dp ppp = do
     dyn_ $ ffor ppp (\(pilot, PenaltySeqs{muls = p, adds = pp}, reason) -> el "tr" $ do
         elClass "td" "td-pid" . text . showPilotId $ pilot
         el "td" . text . showPilotName $ pilot
@@ -142,14 +145,14 @@ rowPenal ppp = do
                 el "td" $ text ""
                 el "td" $ text ""
             (_, []) -> do
-                tdPointPenalty $ pprEffectiveMul p
+                tdPointPenalty $ pprEffectiveMul dp p
                 el "td" $ text ""
             ([], _) -> do
                 el "td" $ text ""
-                tdPointPenalty $ pprEffectiveAdd pp
+                tdPointPenalty $ pprEffectiveAdd dp pp
             _ -> do
-                tdPointPenalty $ pprEffectiveMul p
-                tdPointPenalty $ pprEffectiveAdd pp
+                tdPointPenalty $ pprEffectiveMul dp p
+                tdPointPenalty $ pprEffectiveAdd dp pp
         el "td" . text $ T.pack reason)
 
 showPilotId :: Pilot -> T.Text
