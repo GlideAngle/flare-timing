@@ -4,7 +4,7 @@
   "auther": "Phil de Joux",
   "license": "ISC",
   "dependencies": {
-    "jquery": "^3.2.1"
+    "jquery": "^3.5.0"
   },
   "devDependencies": {
     "css-loader": "^0.28.4",
