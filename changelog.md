@@ -2,6 +2,22 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/changelog.md)
 of this changelog.
 
+# Faster Commands
+## v0.29
+
+* Fixed a space leak and made some of the commands faster by making use of
+  [parallel-io](https://hackage.haskell.org/package/parallel-io) and using
+  pragmas; INLINE, INLINABLE and SPECIALIZE.
+* Removed the `--dir` option from all commands. The current working directory
+  is used instead.
+* The `mask-track` command has been split up into smaller commands;
+  `mask-arrival`, `mask-bonus`, `mask-effort`, `mask-lead` and `mask-reach`.
+  Each deals with separate aspects of masking.
+* Avoid calculating impossible means when the data set is empty. These were
+  seen as huge negative numbers before the fix.
+* Show the flying and scored fixes for pilots that have had their tracks
+  downloaded for the map.
+
 # Plot Selected Pilots
 ## v0.28
 
