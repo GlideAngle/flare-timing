@@ -24,9 +24,9 @@ import WireTypes.Point
     , showDemeritPointsNonZero
     , showRounded
     , showJumpedTheGunTime
-    , showJumpedTheGunPenalty
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
+import WireTypes.Penalty (PenaltySeqs(..), pprEffectiveAdd, pprEffectiveMul, pprEffectiveReset)
 import WireTypes.Comp
     ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..)
     , showEarlyStartEarliest, showEarlyStartPenaltyRate
@@ -298,13 +298,19 @@ pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
                            else ("", n))
 
     let classEarly = ffor2 earliest jtg classOfEarlyStart
+    let jtgPenalty = ffor jtgPenalties (\PenaltySeqs{adds, muls, resets} ->
+                        case (null adds, null muls, null resets) of
+                            (True, True, True) -> ""
+                            (False, True, True) -> pprEffectiveAdd adds
+                            (_, False, True) -> pprEffectiveMul muls
+                            (_, _, False) -> pprEffectiveReset resets)
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elDynClass "td" classEarly . dynText $ showJumpedTheGunTime <$> jtg
-        elClass "td" "td-demerit-points" . dynText $ showJumpedTheGunPenalty 1 <$> jtgPenalties
+        elClass "td" "td-demerit-points" $ dynText jtgPenalty
 
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points

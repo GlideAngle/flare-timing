@@ -32,7 +32,6 @@ module WireTypes.Point
     , showPilotDistanceDiff
     , showPilotAlt
     , showJumpedTheGunTime
-    , showJumpedTheGunPenalty
     -- * Showing Points
     , showTaskDistancePoints
     , showTaskLinearPoints
@@ -186,17 +185,6 @@ showPilotDistanceDiff dp (PilotDistance expected) (PilotDistance actual)
 showJumpedTheGunTime :: Maybe JumpedTheGun -> T.Text
 showJumpedTheGunTime Nothing = ""
 showJumpedTheGunTime (Just (JumpedTheGun s)) = showHmsForSecs s
-
--- | Negative adds (demerits) are shown as negative amounts and positive adds
--- (bonuses) are shown as positive amounts.
-showJumpedTheGunPenalty :: Int -> PenaltySeqs -> T.Text
-showJumpedTheGunPenalty dp PenaltySeqs{adds, resets} =
-    T.pack $
-    if null resets
-        then
-            let (PenaltyPoints p) = effectiveAdd adds
-            in if p == 0 then "" else printf "%+.*f" dp p
-        else ""
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
