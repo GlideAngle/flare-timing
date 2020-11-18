@@ -710,7 +710,7 @@ applyReset resets p =
 -- -1.000
 --
 -- >>> applyPenalty 2 (mkReset $ Just (-1))
--- *** Exception: Points cannot be reset to less than 0
+-- *** Exception: Points cannot be reset to less than 0 but got -1.
 -- ...
 --
 -- >>> applyPenalty 2 (mkMul 0)
