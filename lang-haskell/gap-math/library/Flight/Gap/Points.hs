@@ -222,13 +222,17 @@ reconcileNoGoal _ p j@((==) idSeq -> True) ps points =
 reconcileNoGoal wat p js _ _ =
     Left $ wat (p, js)
 
+nonPositiveSecondsPerPoint :: SitRep a -> Bool
+nonPositiveSecondsPerPoint (Jumped (SecondsPerPoint spp) _) = spp <= zero
+nonPositiveSecondsPerPoint _ = False
+
 reconcileJumped
     :: SitRep Hg
     -> PenaltySeq -- ^ Penalties for jumping the gun.
     -> PenaltySeqs -- ^ Other penalties.
     -> Points
     -> Either ReconcilePointErrors PointsReduced
-reconcileJumped p@((\(Jumped (SecondsPerPoint spp) _) -> spp <= zero) -> True) _ _ _ =
+reconcileJumped p@(nonPositiveSecondsPerPoint -> True) _ _ _ =
     Left $ WAT_Jumped_Seconds_Per_Point p
 reconcileJumped p@(Jumped spp jtg) j@((==) idSeq -> True) ps points =
     reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
