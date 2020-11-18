@@ -69,9 +69,14 @@ instance FromJSON (Refined '[GE 0] Int) where
     parseJSON o = assumeProp @(GE 0) . refined <$> parseJSON o
 
 -- NOTE: Reset points are the final points awarded and so can be ints.
+
+-- | Paragliders starting early are scored from launch to start.
 data LaunchToStartPoints = LaunchToStartPoints PosInt
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+-- | Hang glider pilots starting too early are scored for minimum distance.  If
+-- they jump the gun then application of the penalty won't reduce their score
+-- below minimum distance points either.
 data TooEarlyPoints = TooEarlyPoints PosInt
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -270,12 +275,19 @@ data PenaltySeqs =
 data PointsReduced =
     PointsReduced
         { subtotal :: TaskPoints
+        -- ^ Points before penalties are applied.
         , mulApplied :: TaskPoints
+        -- ^ The multiplicative penalties to apply.
         , addApplied :: TaskPoints
+        -- ^ The additive penalties to apply.
         , resetApplied :: TaskPoints
+        -- ^ The reset penalties to apply.
         , total :: TaskPoints
+        -- ^ Points after penalties are applied.
         , effp :: PenaltySeq
+        -- ^ The effective sequence of penalties.
         , effj :: PenaltySeq
+        -- ^ The effective sequence of jump the gun penalties.
         }
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 

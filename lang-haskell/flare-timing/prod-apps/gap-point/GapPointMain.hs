@@ -1334,7 +1334,7 @@ tallyDf
                         case jumpTheGunSitRepHg tooEarlyPoints earliest spp jtg of
                             Left j ->
                                 Gap.taskPoints
-                                    (Jumped spp (JumpedTheGun jSecs))
+                                    (Jumped tooEarlyPoints spp (JumpedTheGun jSecs))
                                     (addSeq $ exAdd j)
                                     penalties
                                     x

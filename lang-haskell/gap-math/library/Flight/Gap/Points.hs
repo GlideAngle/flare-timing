@@ -62,9 +62,20 @@ data Pg = Pg deriving (Show)
 data SitRep a where
     NominalHg :: SitRep Hg
     NoGoalHg :: SitRep Hg
+
     JumpedTooEarly :: TooEarlyPoints -> SitRep Hg
-    Jumped :: SecondsPerPoint (Quantity Double [u| s |]) -> JumpedTheGun (Quantity Double [u| s |]) -> SitRep Hg
-    JumpedNoGoal :: SecondsPerPoint (Quantity Double [u| s |]) -> JumpedTheGun (Quantity Double [u| s |]) -> SitRep Hg
+
+    Jumped
+        :: TooEarlyPoints
+        -> SecondsPerPoint (Quantity Double [u| s |])
+        -> JumpedTheGun (Quantity Double [u| s |])
+        -> SitRep Hg
+
+    JumpedNoGoal
+        :: TooEarlyPoints
+        -> SecondsPerPoint (Quantity Double [u| s |])
+        -> JumpedTheGun (Quantity Double [u| s |])
+        -> SitRep Hg
 
     NominalPg :: SitRep Pg
     NoGoalPg :: SitRep Pg
@@ -223,29 +234,39 @@ reconcileNoGoal wat p js _ _ =
     Left $ wat (p, js)
 
 nonPositiveSecondsPerPoint :: SitRep a -> Bool
-nonPositiveSecondsPerPoint (Jumped (SecondsPerPoint spp) _) = spp <= zero
+nonPositiveSecondsPerPoint (Jumped _ (SecondsPerPoint spp) _) = spp <= zero
 nonPositiveSecondsPerPoint _ = False
 
+-- | Apply penalties for jump the gun first and then the others because they
+-- should not reduce the points below the score for minimum distance.
 reconcileJumped
     :: SitRep Hg
     -> PenaltySeq -- ^ Penalties for jumping the gun.
     -> PenaltySeqs -- ^ Other penalties.
     -> Points
     -> Either ReconcilePointErrors PointsReduced
+
 reconcileJumped p@(nonPositiveSecondsPerPoint -> True) _ _ _ =
     Left $ WAT_Jumped_Seconds_Per_Point p
-reconcileJumped p@(Jumped spp jtg) j@((==) idSeq -> True) ps points =
+
+-- NOTE: Convert jump-the-gun into a penalty.
+reconcileJumped p@(Jumped _ spp jtg) j@((==) idSeq -> True) ps points =
     reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
-reconcileJumped p@(JumpedNoGoal spp jtg) j@((==) idSeq -> True) ps points =
+
+-- NOTE: Convert jump-the-gun into a penalty.
+reconcileJumped p@(JumpedNoGoal _ spp jtg) j@((==) idSeq -> True) ps points =
     reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
-reconcileJumped p@(Jumped spp jtg) (seqOnlyAdds -> Just j) ps points =
+
+reconcileJumped p@(Jumped _ spp jtg) (seqOnlyAdds -> Just j) ps points =
     if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
-reconcileJumped p@(JumpedNoGoal spp jtg) (seqOnlyAdds -> Just j) ps points =
+
+reconcileJumped p@(JumpedNoGoal _ spp jtg) (seqOnlyAdds -> Just j) ps points =
     if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
+
 reconcileJumped p j ps _ =
     Left $ WAT_Jumped (p, j, ps)
 
@@ -281,18 +302,37 @@ reconcile p j ps points =
     in
         e{effj = PenaltySeq jMul jAdd jReset}
 
+tooEarly :: SitRep Hg -> Maybe TooEarlyPoints
+tooEarly (Jumped tooE _ _) = Just tooE
+tooEarly (JumpedNoGoal tooE _ _) = Just tooE
+tooEarly _ = Nothing
+
 _reconcileJumped
     :: SitRep Hg
     -> Double
     -> PenaltySeqs -- ^ Other penalties.
     -> Points
     -> Either ReconcilePointErrors PointsReduced
-_reconcileJumped p pJump ps points =
-    let subtotal = tallySubtotal p points
+
+_reconcileJumped p@(tooEarly -> Just (TooEarlyPoints tooE)) pJump ps points =
+    let subtotal@(TaskPoints subT) = tallySubtotal p points
+
         j = mkAdd pJump
-        e = applyPenalties (muls ps) (j : adds ps) (resets ps) subtotal
+        PointsReduced{total = TaskPoints total'} = applyPenalties [] [j] [] subtotal
+
+        -- NOTE: Limit the jump penalty so that points do not go below minimum.
+        tooE' = fromIntegral $ unrefined tooE
+        jLimited =
+                if total' >= tooE'
+                        then j
+                        else let pJump' = subT - tooE' in mkAdd $ negate pJump'
+
+        e = applyPenalties (muls ps) (jLimited : adds ps) (resets ps) subtotal
     in
-        Right $ e{ effj = (effj e){ add = j }}
+        Right $ e{ effj = (effj e){ add = jLimited }}
+
+_reconcileJumped p _ ps points =
+    Right $ applyPenalties (muls ps) (adds ps) (resets ps) (tallySubtotal p points)
 
 taskPoints
     :: SitRep b
@@ -311,10 +351,10 @@ taskPoints s js ps points
     -- WARNING: Some comps will have jump the gun settings where seconds per
     -- point is zero. This is a sentinel value for turning off jump the gun
     -- penalties.
-    | (Jumped (SecondsPerPoint spp) _) <- s
+    | (Jumped _ (SecondsPerPoint spp) _) <- s
     , spp > zero = reconcileJumped s js ps points
 
-    | (JumpedNoGoal (SecondsPerPoint spp) _) <- s
+    | (JumpedNoGoal _ (SecondsPerPoint spp) _) <- s
     , spp > zero = reconcileJumped s js ps points
 
     | otherwise = Right $ reconcile s js ps points
@@ -327,8 +367,8 @@ isPg = \case
 
     NominalHg -> False
     JumpedTooEarly _ -> False
-    Jumped _ _ -> False
-    JumpedNoGoal _ _ -> False
+    Jumped _ _ _ -> False
+    JumpedNoGoal _ _ _ -> False
     NoGoalHg -> False
 
 tallySubtotal :: SitRep a -> Points -> TaskPoints
