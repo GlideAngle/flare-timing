@@ -28,6 +28,8 @@ import "flight-gap-math" Flight.Score
     , mulSeq, addSeq, resetSeq
     , mkReset
     , exAdd
+    -- NOTE: imports needed for memory leaking, stack overflowing test.
+    --, PenaltySeq(..), mkMull
     )
 
 -- TODO: When base >= 4.11 use Data.Functor ((<&>))
@@ -150,7 +152,11 @@ hgUnits = testGroup "HG Points"
 
     {- TODO: Failing test - memory leak?
         , HU.testCase "✓ With other penalty, fraction <= 0 => zero task points" $
-            (FS.taskPoints (JumpedTooEarly tooEarly1) (resetSeq $ Just 1) nullSeqs{muls = [mkMul 0]} ptsAllOne)
+            (FS.taskPoints
+                (JumpedTooEarly tooEarly1)
+                (resetSeq $ Just 1)
+                nullSeqs{muls = [mkMul 0]}
+                ptsAllOne)
                 @?=
                     Right
                     PointsReduced
@@ -167,7 +173,7 @@ hgUnits = testGroup "HG Points"
         , HU.testCase "✓ With smaller other penalty, a reset" $
             (FS.taskPoints
                 (JumpedTooEarly tooEarly2)
-                (resetSeq (Just 2))
+                (resetSeq $ Just 2)
                 nullSeqs{resets = [mkReset $ Just 1]}
                 ptsAllOne)
                 @?=
