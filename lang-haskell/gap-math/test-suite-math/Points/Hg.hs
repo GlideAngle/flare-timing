@@ -266,7 +266,7 @@ hgUnits = testGroup "HG Points"
 
                 Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
             in
-                (FS.taskPoints (JumpedNoGoal secs jump) (addSeq . exAdd $ negate j) nullSeqs ptsAllOne)
+                (FS.taskPoints (JumpedNoGoal secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
                     @?=
                         Right essNoGoalEarlyHg
 

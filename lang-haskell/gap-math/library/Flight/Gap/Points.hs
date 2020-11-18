@@ -313,9 +313,10 @@ taskPoints s js ps points
     -- penalties.
     | (Jumped (SecondsPerPoint spp) _) <- s
     , spp > zero = reconcileJumped s js ps points
+
     | (JumpedNoGoal (SecondsPerPoint spp) _) <- s
     , spp > zero = reconcileJumped s js ps points
-    
+
     | otherwise = Right $ reconcile s js ps points
 
 isPg :: SitRep a -> Bool
