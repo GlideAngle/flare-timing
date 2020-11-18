@@ -114,7 +114,7 @@ hgUnits = testGroup "HG Points"
                             , effj = addSeq $ negate 2
                             }
 
-        , HU.testCase "✓ Very early start = full points minus jump the gun penalty resulting in no less than zero" $
+        , HU.testCase "✓ Very early start = full points minus jump the gun penalty" $
             let jump = JumpedTheGun [u| 3 s |]
                 secs = SecondsPerPoint [u| 1 s |]
                 limit = JumpTheGunLimit [u| 3 s |]
@@ -132,6 +132,26 @@ hgUnits = testGroup "HG Points"
                             , total = TaskPoints 2
                             , effp = addSeq $ negate 3
                             , effj = addSeq $ negate 3
+                            }
+
+        , HU.testCase "✓ Early start = no less than zero" $
+            let jump = JumpedTheGun [u| 10 s |]
+                secs = SecondsPerPoint [u| 1 s |]
+                limit = JumpTheGunLimit [u| 11 s |]
+
+                Left j = FS.jumpTheGunSitRepHg tooEarly1 limit secs jump
+            in
+                (FS.taskPoints (Jumped secs jump) (addSeq $ exAdd j) nullSeqs ptsAllOne)
+                    @?=
+                        Right
+                        PointsReduced
+                            { subtotal = TaskPoints 5
+                            , mulApplied = TaskPoints 0
+                            , addApplied = TaskPoints 5
+                            , resetApplied = TaskPoints 0
+                            , total = TaskPoints 0
+                            , effp = addSeq $ negate 10
+                            , effj = addSeq $ negate 10
                             }
         ]
 

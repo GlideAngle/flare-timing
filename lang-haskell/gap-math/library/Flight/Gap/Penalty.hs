@@ -638,7 +638,8 @@ isJustReset (PenaltyReset x) = isJust x
 --
 -- prop> \x -> applyMul [] x == x
 -- prop> \x -> applyMul [identityOfMul] x == x
--- prop> \x y -> applyMul [mkMul x] y == (TaskPoints x) * y
+-- prop> \x y -> x * y >= 0 && y >= 0 ==> applyMul [mkMul x] (TaskPoints y) == TaskPoints (x * y)
+-- prop> \x y -> x * y < 0 && y >= 0 ==> applyMul [mkMul x] (TaskPoints y) == TaskPoints 0
 applyMul :: [PointPenalty Mul] -> TaskPoints -> TaskPoints
 applyMul fracs p =
     applyPenalty p (effectiveMul fracs)
@@ -647,7 +648,8 @@ applyMul fracs p =
 --
 -- prop> \x -> applyAdd [] x == x
 -- prop> \x -> applyAdd [identityOfAdd] x == x
--- prop> \x y -> applyAdd [mkAdd x] y == (TaskPoints x) + y
+-- prop> \x y -> x + y >= 0 && y >= 0 ==> applyAdd [mkAdd x] (TaskPoints y) == TaskPoints (x + y)
+-- prop> \x y -> x + y < 0 && y >= 0 ==> applyAdd [mkAdd x] (TaskPoints y) == TaskPoints 0
 applyAdd :: [PointPenalty Add] -> TaskPoints -> TaskPoints
 applyAdd points p =
     applyPenalty p (effectiveAdd points)
@@ -687,7 +689,7 @@ applyAdd points p =
 --
 -- prop> \x -> applyReset [] x == x
 -- prop> \x -> applyReset [identityOfReset] x == x
--- prop> \x y -> x >= 0 ==> applyReset [mkReset $ Just x] y == TaskPoints (fromIntegral x)
+-- prop> \x y -> x >= 0 && y >= 0 ==> applyReset [mkReset $ Just x] y == TaskPoints (fromIntegral x)
 applyReset :: [PointPenalty Reset] -> TaskPoints -> TaskPoints
 applyReset resets p =
     applyPenalty p (effectiveReset resets)
@@ -704,10 +706,10 @@ applyReset resets p =
 -- 2.000
 --
 -- >>> applyPenalty 2 (mkMul (-1))
--- -2.000
+-- 0.000
 --
 -- >>> applyPenalty 2 (mkAdd (-3))
--- -1.000
+-- 0.000
 --
 -- >>> applyPenalty 2 (mkReset $ Just (-1))
 -- *** Exception: Points cannot be reset to less than 0 but got -1.
@@ -738,16 +740,24 @@ applyPenalty (TaskPoints p) pp = TaskPoints p'
             -- NOTE: When positive @Add@ penalties are bonuses. A true penalty is
             -- subtraction, adding a negative number. A bonus adds a positive
             -- number.
-            | Just (_, n) <- cmpAdd pp = p + n
+            | Just (ordAdd, n) <- cmpAdd pp =
+                case ordAdd of
+                    EQ -> p
+                    GT -> p + n
+                    LT -> max 0 (p + n)
 
             -- NOTE: It doesn't matter the magnitude or the sign of the scaling
-            -- as we're going to multiply by it anyway.
-            | Just (_, n) <- cmpMul pp = p * n
+            -- as we're going to multiply by it anyway but clamp it
+            -- non-negative.
+            | Just (ordMul, n) <- cmpMul pp =
+                case ordMul of
+                    EQ -> p
+                    GT -> p * n
+                    LT -> max 0 (p * n)
 
+            -- NOTE: Resets are never negative.
             | PenaltyReset (Just n) <- pp = fromIntegral $ unrefined n
 
-            | Just (EQ, _) <- cmpMul pp = p
-            | Just (EQ, _) <- cmpAdd pp = p
             | PenaltyReset Nothing <- pp = p
             | otherwise = p
 
