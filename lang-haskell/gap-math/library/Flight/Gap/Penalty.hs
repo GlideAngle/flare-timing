@@ -650,8 +650,7 @@ isJustReset (PenaltyReset x) = isJust x
 --
 -- prop> \x -> applyMul [] x == x
 -- prop> \x -> applyMul [identityOfMul] x == x
--- prop> \x y -> x * y >= 0 && y >= 0 ==> applyMul [mkMul x] (TaskPoints y) == TaskPoints (x * y)
--- prop> \x y -> x * y < 0 && y >= 0 ==> applyMul [mkMul x] (TaskPoints y) == TaskPoints 0
+-- prop> \x y -> applyMul [mkMul x] (TaskPoints y) == TaskPoints (x * y)
 applyMul :: [PointPenalty Mul] -> TaskPoints -> TaskPoints
 applyMul fracs p =
     applyPenalty p (effectiveMul fracs)
@@ -660,8 +659,7 @@ applyMul fracs p =
 --
 -- prop> \x -> applyAdd [] x == x
 -- prop> \x -> applyAdd [identityOfAdd] x == x
--- prop> \x y -> x + y >= 0 && y >= 0 ==> applyAdd [mkAdd x] (TaskPoints y) == TaskPoints (x + y)
--- prop> \x y -> x + y < 0 && y >= 0 ==> applyAdd [mkAdd x] (TaskPoints y) == TaskPoints 0
+-- prop> \x y -> applyAdd [mkAdd x] (TaskPoints y) == TaskPoints (x + y)
 applyAdd :: [PointPenalty Add] -> TaskPoints -> TaskPoints
 applyAdd points p =
     applyPenalty p (effectiveAdd points)
@@ -718,10 +716,10 @@ applyReset resets p =
 -- 2.000
 --
 -- >>> applyPenalty 2 (mkMul (-1))
--- 0.000
+-- -2.000
 --
 -- >>> applyPenalty 2 (mkAdd (-3))
--- 0.000
+-- -1.000
 --
 -- >>> applyPenalty 2 (mkReset $ Just (-1))
 -- *** Exception: Points cannot be reset to less than 0 but got -1.
@@ -756,7 +754,7 @@ applyPenalty (TaskPoints p) pp = TaskPoints p'
                 case ordAdd of
                     EQ -> p
                     GT -> p + n
-                    LT -> max 0 (p + n)
+                    LT -> p + n
 
             -- NOTE: It doesn't matter the magnitude or the sign of the scaling
             -- as we're going to multiply by it anyway but clamp it
@@ -765,7 +763,7 @@ applyPenalty (TaskPoints p) pp = TaskPoints p'
                 case ordMul of
                     EQ -> p
                     GT -> p * n
-                    LT -> max 0 (p * n)
+                    LT -> p * n
 
             -- NOTE: Resets are never negative.
             | PenaltyReset (Just n) <- pp = fromIntegral $ unrefined n

@@ -52,6 +52,7 @@ import Flight.Gap.Penalty
     , applyPenalties, idSeq, nullSeqs, seqOnlyAdds, seqOnlyResets
     , mkAdd, mkReset
     , exAdd, exReset
+    , effectiveAdd
     )
 
 newtype NoGoal = NoGoal Bool deriving (Eq, Show)
@@ -315,7 +316,7 @@ _reconcileJumped
     -> Either ReconcilePointErrors PointsReduced
 
 _reconcileJumped p@(tooEarly -> Just (TooEarlyPoints tooE)) pJump ps points =
-    let subtotal@(TaskPoints subT) = tallySubtotal p points
+    let subtotal = tallySubtotal p points
 
         j = mkAdd pJump
         PointsReduced{total = TaskPoints total'} = applyPenalties [] [j] [] subtotal
@@ -323,13 +324,14 @@ _reconcileJumped p@(tooEarly -> Just (TooEarlyPoints tooE)) pJump ps points =
         -- NOTE: Limit the jump penalty so that points do not go below minimum.
         tooE' = fromIntegral $ unrefined tooE
         jLimited =
+                j :
                 if total' >= tooE'
-                        then j
-                        else let pJump' = subT - tooE' in mkAdd $ negate pJump'
+                        then []
+                        else [let pCorrection = tooE' - total' in mkAdd pCorrection]
 
-        e = applyPenalties (muls ps) (jLimited : adds ps) (resets ps) subtotal
+        e = applyPenalties (muls ps) (jLimited ++ adds ps) (resets ps) subtotal
     in
-        Right $ e{ effj = (effj e){ add = jLimited }}
+        Right $ e{ effj = (effj e){ add = effectiveAdd jLimited }}
 
 _reconcileJumped p _ ps points =
     Right $ applyPenalties (muls ps) (adds ps) (resets ps) (tallySubtotal p points)
