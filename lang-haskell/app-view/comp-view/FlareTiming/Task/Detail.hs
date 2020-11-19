@@ -393,7 +393,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                     tabPenal <- tabsPenal
                     let penalJump =
                             elAttr "div" ("id" =: "score-penal") $
-                                tablePenalJump hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tablePenalJump hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx penalAuto
 
                     _ <- widgetHold penalJump $
                             (\case
