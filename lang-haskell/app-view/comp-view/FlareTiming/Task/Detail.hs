@@ -58,7 +58,9 @@ import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
 import FlareTiming.Nav.TabPlotLead (PlotLeadTab(..), tabsPlotLead)
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Score.Over (tableScoreOver)
-import FlareTiming.Task.Score.Penal (tableScorePenal)
+import FlareTiming.Task.Penal.Jump (tablePenalJump)
+import FlareTiming.Task.Penal.EssGoal (tablePenalEssGoal)
+import FlareTiming.Task.Penal.Other (tablePenalOther)
 import FlareTiming.Task.Score.Split (tableScoreSplit)
 import FlareTiming.Task.Score.Reach (tableScoreReach)
 import FlareTiming.Task.Score.Effort (tableScoreEffort)
@@ -391,13 +393,19 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                     tabPenal <- tabsPenal
                     let penalJump =
                             elAttr "div" ("id" =: "score-penal") $
-                                tableScorePenal hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tablePenalJump hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
 
                     _ <- widgetHold penalJump $
                             (\case
                                 PenalTabJump -> penalJump
-                                PenalTabEssGoal -> penalJump
-                                PenalTabOther -> penalJump)
+
+                                PenalTabEssGoal ->
+                                    elAttr "div" ("id" =: "score-penal") $
+                                        tablePenalEssGoal hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+
+                                PenalTabOther ->
+                                    elAttr "div" ("id" =: "score-penal") $
+                                        tablePenalOther hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
 
                             <$> tabPenal
 

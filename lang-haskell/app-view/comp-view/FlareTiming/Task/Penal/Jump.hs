@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Penal (tableScorePenal) where
+module FlareTiming.Task.Penal.Jump (tablePenalJump) where
 
 import Prelude hiding (min)
 import Reflex.Dom
@@ -36,7 +36,7 @@ import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot, classOfEarlyStart)
 import FlareTiming.Task.Score.Show
 
-tableScorePenal
+tablePenalJump
     :: MonadWidget t m
     => Dynamic t Discipline
     -> Dynamic t EarlyStart
@@ -52,7 +52,7 @@ tableScorePenal
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScorePenal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
+tablePenalJump hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
