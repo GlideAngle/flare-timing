@@ -5,7 +5,7 @@ module WireTypes.Penalty
     , Add, Mul, Reset
     , PenaltySeqs(..)
     , effectiveMul, effectiveAdd, effectiveReset
-    , pprEffectiveMul, pprEffectiveAdd, pprEffectiveReset
+    , pprEffectiveMul, pprEffectiveAdd, pprNthAdd, pprEffectiveReset
     ) where
 
 import Text.Printf (printf)
@@ -148,6 +148,12 @@ isJustReset (PenaltyReset x) = isJust x
 
 pprEffectiveMul :: Int -> [PointPenalty Mul] -> T.Text
 pprEffectiveMul dp = T.pack . pprPointPenalty dp . effectiveMul
+
+pprNthAdd :: Int -> Int -> [PointPenalty Add] -> T.Text
+pprNthAdd dp n xs =
+    case take 1 $ drop n xs of
+        x : _ -> T.pack $ pprPointPenalty dp x
+        _ -> ""
 
 pprEffectiveAdd :: Int -> [PointPenalty Add] -> T.Text
 pprEffectiveAdd dp = T.pack . pprPointPenalty dp . effectiveAdd

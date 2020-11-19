@@ -23,7 +23,8 @@ import WireTypes.Pilot
     ( Pilot(..), PilotId(..), PilotName(..)
     , AwardedDistance(..), AwardedVelocity(..), DfNoTrackPilot(..)
     )
-import WireTypes.Penalty (PenaltySeqs(..), pprEffectiveAdd, pprEffectiveMul, pprEffectiveReset)
+import WireTypes.Penalty
+    (PenaltySeqs(..), pprEffectiveAdd, pprNthAdd, pprEffectiveMul, pprEffectiveReset)
 import WireTypes.Point (ReachToggle(..), JumpedTheGun(..), showJumpedTheGunTime)
 import WireTypes.Comp (UtcOffset(..), JumpTheGunLimit(..))
 import FlareTiming.Time (showT, timeZone)
@@ -94,10 +95,10 @@ rowPenalJump
     :: MonadWidget t m
     => Int
     -> Dynamic t JumpTheGunLimit
-    -> Dynamic t (Pilot, PenaltySeqs, Maybe JumpedTheGun)
+    -> Dynamic t (Pilot, Maybe PenaltySeqs, PenaltySeqs, Maybe JumpedTheGun)
     -> m ()
 rowPenalJump dp earliest ppp = do
-    dyn_ $ ffor ppp (\(pilot, PenaltySeqs{adds = pPoints, resets = pResets}, jump) -> el "tr" $ do
+    dyn_ $ ffor ppp (\(pilot, pRaw, PenaltySeqs{adds = pPoints, resets = pResets}, jump) -> el "tr" $ do
 
         let classEarly = ffor earliest (flip classOfEarlyStart $ jump)
 
@@ -110,8 +111,22 @@ rowPenalJump dp earliest ppp = do
             else tdPointPenalty $ pprEffectiveReset dp pResets
 
         if null pPoints
-            then el "td" $ text ""
-            else tdPointPenalty $ pprEffectiveAdd dp pPoints)
+            then do
+                el "td" $ text ""
+                el "td" $ text ""
+                el "td" $ text ""
+
+            else do
+                maybe
+                    (do
+                        el "td" $ text ""
+                        el "td" $ text "")
+                    (\PenaltySeqs{adds} -> do
+                        tdPointPenalty $ pprNthAdd dp 0 adds
+                        tdPointPenalty $ pprNthAdd dp 1 adds)
+                    pRaw
+
+                tdPointPenalty $ pprEffectiveAdd dp pPoints)
 
 tdPointPenalty :: MonadWidget t m => T.Text -> m ()
 tdPointPenalty = elClass "td" "td-penalty" . text

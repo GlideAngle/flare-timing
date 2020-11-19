@@ -561,8 +561,13 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 .subtitle + .subtitle
     margin-top: -1.25rem;
 
-.th-penalty, .td-penalty
+.th-penalty, .td-penalty, .th-penalty-reset, .th-penalty-point
     @extend .has-text-right;
+
+.content table th.th-penalty-point, .content table th.th-penalty-point-group
+    color: $time-invert;
+    border-bottom-color: $time;
+    background-color: $time;
 
 .th-awarded-reach, .td-awarded-reach
     @extend .has-text-right;

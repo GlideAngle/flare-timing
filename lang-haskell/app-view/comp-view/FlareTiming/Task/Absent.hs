@@ -142,8 +142,8 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                         )
 
                     let jumpers = ffor sDf (\sDf' ->
-                                (\(p, Breakdown{jump, penaltiesJumpEffective}) ->
-                                    (p, penaltiesJumpEffective, jump))
+                                (\(p, Breakdown{jump, penaltiesJumpRaw, penaltiesJumpEffective}) ->
+                                    (p, penaltiesJumpRaw, penaltiesJumpEffective, jump))
                                 <$> filter
                                         (\(_, Breakdown{jump, penaltiesJumpEffective = PenaltySeqs{adds}}) ->
                                             isJust jump || not (null adds))
@@ -166,11 +166,17 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                             _ <- elClass "table" "table is-striped is-narrow" $ do
                                                     el "thead" $ do
                                                         el "tr" $ do
+                                                            elAttr "th" ("colspan" =: "4") $ text ""
+                                                            elAttr "th" ("class" =: "th-penalty-point-group" <> "colspan" =: "3") $ text "Points (so that ≮ minimum distance)"
+
+                                                        el "tr" $ do
                                                             elClass "th" "th-pid" $ text "Id"
                                                             el "th" $ text "Name"
                                                             elClass "th" "th-start-early" $ text "Early"
-                                                            elClass "th" "th-penalty" $ text "Resets"
-                                                            elClass "th" "th-penalty" $ text "Points"
+                                                            elClass "th" "th-penalty-reset" $ text "Reset"
+                                                            elClass "th" "th-penalty-point" $ text "Toll"
+                                                            elClass "th" "th-penalty-point" $ text "Rebate"
+                                                            elClass "th" "th-penalty-point" $ text "Fee"
 
                                                     el "tbody" $
                                                         simpleList jumpers (rowPenalJump 3 (earliest <$> early))
