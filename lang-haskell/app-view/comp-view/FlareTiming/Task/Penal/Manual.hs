@@ -213,7 +213,10 @@ pointRow w dfNt tp sEx pManual x = do
                     Nothing -> (("", ""), "")
 
                     Just (PenaltySeqs{muls, adds}, reason) ->
-                        ((pprEffectiveMul 3 muls, pprEffectiveAdd 3 adds), T.pack reason))
+                        let m = if null muls then "" else pprEffectiveMul 3 muls
+                            a = if null adds then "" else pprEffectiveAdd 3 adds
+                        in
+                            ((m, a), T.pack reason))
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" $ dynText yRank
