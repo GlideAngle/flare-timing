@@ -21,8 +21,6 @@ tabsScore =
         el "ul" $ mdo
             (over, _) <- elDynClass' "li" overClass $ el "a" (text "Overview")
 
-            (penal, _) <- elDynClass' "li" penalClass $ el "a" (text "Penal")
-
             (split, _) <- elDynClass' "li" splitClass . el "a" $ do
                             elClass "span" "legend-reach" $ text "▩"
                             elClass "span" "legend-effort" $ text "▩"
@@ -51,110 +49,112 @@ tabsScore =
                             elClass "span" "legend-arrival" $ text "▩"
                             text "Arrival"
 
+            (penal, _) <- elDynClass' "li" penalClass $ el "a" (text "Penal")
+
             let eOver = (const ScoreTabOver) <$> domEvent Click over
-            let ePenal = (const ScoreTabPenal) <$> domEvent Click penal
             let eSplit = (const ScoreTabSplit) <$> domEvent Click split
             let eReach = (const ScoreTabReach) <$> domEvent Click reach
             let eEffort = (const ScoreTabEffort) <$> domEvent Click effort
             let eSpeed = (const ScoreTabSpeed) <$> domEvent Click speed
             let eTime = (const ScoreTabTime) <$> domEvent Click time
             let eArrive = (const ScoreTabArrive) <$> domEvent Click arrive
+            let ePenal = (const ScoreTabPenal) <$> domEvent Click penal
 
             overClass <- holdDyn "is-active" . leftmost $
                             [ "is-active" <$ eOver
+                            , "" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eEffort
+                            , "" <$ eSpeed
+                            , "" <$ eTime
+                            , "" <$ eArrive
                             , "" <$ ePenal
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eEffort
-                            , "" <$ eSpeed
-                            , "" <$ eTime
-                            , "" <$ eArrive
-                            ]
-
-            penalClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
-                            , "is-active" <$ ePenal
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eEffort
-                            , "" <$ eSpeed
-                            , "" <$ eTime
-                            , "" <$ eArrive
                             ]
 
             splitClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
-                            , "" <$ ePenal
                             , "is-active" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eSpeed
                             , "" <$ eTime
                             , "" <$ eArrive
+                            , "" <$ ePenal
                             ]
 
             reachClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
-                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "is-active" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eSpeed
                             , "" <$ eTime
                             , "" <$ eArrive
+                            , "" <$ ePenal
                             ]
 
             effortClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
-                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "is-active" <$ eEffort
                             , "" <$ eSpeed
                             , "" <$ eTime
                             , "" <$ eArrive
+                            , "" <$ ePenal
                             ]
 
             speedClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
-                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
                             , "is-active" <$ eSpeed
                             , "" <$ eTime
                             , "" <$ eArrive
+                            , "" <$ ePenal
                             ]
 
             timeClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
-                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eSpeed
                             , "is-active" <$ eTime
                             , "" <$ eArrive
+                            , "" <$ ePenal
                             ]
 
             arriveClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
-                            , "" <$ ePenal
                             , "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eSpeed
                             , "" <$ eTime
                             , "is-active" <$ eArrive
+                            , "" <$ ePenal
+                            ]
+
+            penalClass <- holdDyn "" . leftmost $
+                            [ "" <$ eOver
+                            , "" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eEffort
+                            , "" <$ eSpeed
+                            , "" <$ eTime
+                            , "" <$ eArrive
+                            , "is-active" <$ ePenal
                             ]
 
             return . leftmost $
                 [ eOver
-                , ePenal
                 , eSplit
                 , eReach
                 , eEffort
                 , eSpeed
                 , eTime
                 , eArrive
+                , ePenal
                 ]
