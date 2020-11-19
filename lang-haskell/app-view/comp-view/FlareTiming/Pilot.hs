@@ -105,13 +105,13 @@ rowPenalJump dp earliest ppp = do
         el "td" . text . showPilotName $ pilot
         elDynClass "td" classEarly . text $ showJumpedTheGunTime jump
 
-        if null pPoints
-            then el "td" $ text ""
-            else tdPointPenalty $ pprEffectiveAdd dp pPoints
-
         if null pResets
             then el "td" $ text ""
-            else tdPointPenalty $ pprEffectiveReset dp pResets)
+            else tdPointPenalty $ pprEffectiveReset dp pResets
+
+        if null pPoints
+            then el "td" $ text ""
+            else tdPointPenalty $ pprEffectiveAdd dp pPoints)
 
 tdPointPenalty :: MonadWidget t m => T.Text -> m ()
 tdPointPenalty = elClass "td" "td-penalty" . text

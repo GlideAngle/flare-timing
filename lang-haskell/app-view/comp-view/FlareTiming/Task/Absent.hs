@@ -169,8 +169,8 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                                             elClass "th" "th-pid" $ text "Id"
                                                             el "th" $ text "Name"
                                                             elClass "th" "th-start-early" $ text "Early"
-                                                            elClass "th" "th-penalty" $ text "Points"
                                                             elClass "th" "th-penalty" $ text "Resets"
+                                                            elClass "th" "th-penalty" $ text "Points"
 
                                                     el "tbody" $
                                                         simpleList jumpers (rowPenalJump 3 (earliest <$> early))
