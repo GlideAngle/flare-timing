@@ -60,7 +60,7 @@ import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Score.Over (tableScoreOver)
 import FlareTiming.Task.Penal.Jump (tablePenalJump)
 import FlareTiming.Task.Penal.EssGoal (tablePenalEssGoal)
-import FlareTiming.Task.Penal.Other (tablePenalOther)
+import FlareTiming.Task.Penal.Manual (tablePenalManual)
 import FlareTiming.Task.Score.Split (tableScoreSplit)
 import FlareTiming.Task.Score.Reach (tableScoreReach)
 import FlareTiming.Task.Score.Effort (tableScoreEffort)
@@ -403,9 +403,9 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                     elAttr "div" ("id" =: "score-penal") $
                                         tablePenalEssGoal hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
 
-                                PenalTabOther ->
+                                PenalTabManual ->
                                     elAttr "div" ("id" =: "score-penal") $
-                                        tablePenalOther hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
+                                        tablePenalManual hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx penal)
 
                             <$> tabPenal
 
