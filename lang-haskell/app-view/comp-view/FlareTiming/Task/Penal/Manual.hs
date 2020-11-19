@@ -79,7 +79,7 @@ tablePenalManual hgOrPg _early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx pena
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-norm th-penalty" $ text "✓ Fraction"
+                elClass "th" "th-norm th-penalty" $ text "✓ Frac"
                 elClass "th" "th-norm th-penalty" $ text "✓ Points"
                 elClass "th" "th-norm th-penalty-reason" $ text "Reason"
                 elClass "th" "th-total-points" $ text "Subtotal"
@@ -225,7 +225,7 @@ pointRow w dfNt tp sEx pManual x = do
 
         elClass "td" "td-norm td-penalty" . dynText $ fst . fst <$> manual
         elClass "td" "td-norm td-penalty" . dynText $ snd . fst <$> manual
-        elClass "td" "td-norm" . dynText $ snd <$> manual
+        elClass "td" "td-norm td-penalty-reason" . dynText $ snd <$> manual
 
         elClass "td" "td-total-points" . dynText
             $ (showTaskPointsNonZero 1 . subtotal) <$> xB

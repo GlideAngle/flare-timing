@@ -246,7 +246,7 @@ pointRow w earliest dfNt tp sEx pAuto x = do
         elClass "td" "td-demerit-points" $ dynText jtgPenalty
 
         elClass "td" "td-norm td-penalty" . dynText $ fst <$> auto
-        elClass "td" "td-norm" . dynText $ snd <$> auto
+        elClass "td" "td-norm td-penalty-reason" . dynText $ snd <$> auto
 
         elClass "td" "td-total-points" . dynText
             $ (showTaskPointsNonZero 1 . subtotal) <$> xB
