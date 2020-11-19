@@ -53,6 +53,7 @@ import FlareTiming.Plot.Valid (validPlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
 import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
+import FlareTiming.Nav.TabPenal (PenalTab(..), tabsPenal)
 import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
 import FlareTiming.Nav.TabPlotLead (PlotLeadTab(..), tabsPlotLead)
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
@@ -262,9 +263,6 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                         ScoreTabOver ->
                             tableScoreHold
 
-                        ScoreTabPenal ->
-                            elAttr "div" ("id" =: "score-penal") $
-                            tableScorePenal hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                         ScoreTabSplit ->
                             elAttr "div" ("id" =: "score-points") $
                                 tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
@@ -386,6 +384,22 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                 BasisTabGeo -> tableGeo ix comp)
 
                             <$> tabBasis
+
+                    return ()
+
+                TaskTabPenal -> do
+                    tabPenal <- tabsPenal
+                    let penalJump =
+                            elAttr "div" ("id" =: "score-penal") $
+                                tableScorePenal hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+
+                    _ <- widgetHold penalJump $
+                            (\case
+                                PenalTabJump -> penalJump
+                                PenalTabEssGoal -> penalJump
+                                PenalTabOther -> penalJump)
+
+                            <$> tabPenal
 
                     return ())
 
