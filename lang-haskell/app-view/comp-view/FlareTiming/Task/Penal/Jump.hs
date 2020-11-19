@@ -113,7 +113,7 @@ tablePenalJump hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") . dynText
                     $ ((<> " of Jump-the-Gun") . showEarlyStartEarliest) <$> early
-                elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
+                elClass "th" "th-points" $ dynText "Points Before Penalties Applied"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
 
@@ -124,10 +124,6 @@ tablePenalJump hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 elClass "th" "th-start-early" $ text "Early †"
                 elClass "th" "th-early-demerit" $ text "Points"
 
-                elClass "th" "th-distance-points" $ text "Distance"
-                elDynClass "th" (fst <$> cTimePoints) $ text "Time"
-                elClass "th" "th-leading-points" $ text "Lead"
-                elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Subtotal"
                 elClass "th" "th-demerit-points" $ text "Frac"
                 elClass "th" "th-demerit-points" $ text "Points"
@@ -141,38 +137,6 @@ tablePenalJump hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 el "th" $ text ""
                 elClass "th" "th-early-units" . dynText
                     $ ((\r -> "(" <> r <> ")") . showEarlyStartPenaltyRate) <$> early
-
-                elClass "th" "th-distance-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskDistancePoints (Just x) x)
-                        . Pt.distance
-                        )
-                    <$> pt
-
-                elClass "th" "th-time-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskTimePoints (Just x) x)
-                        . Pt.time
-                        )
-                    <$> pt
-
-                elClass "th" "th-leading-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskLeadingPoints (Just x) x)
-                        . Pt.leading
-                        )
-                    <$> pt
-
-                elClass "th" "th-arrival-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskArrivalPoints (Just x) x)
-                        . Pt.arrival
-                        )
-                    <$> pt
 
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
@@ -311,15 +275,6 @@ pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elDynClass "td" classEarly . dynText $ showJumpedTheGunTime <$> jtg
         elClass "td" "td-demerit-points" $ dynText jtgPenalty
-
-        elClass "td" "td-distance-points" . dynText
-            $ showMax Pt.distance showTaskDistancePoints pt points
-        elDynClass "td" cTime . dynText
-            $ showMax Pt.time showTaskTimePoints pt points
-        elClass "td" "td-leading-points" . dynText
-            $ showMax Pt.leading showTaskLeadingPoints pt points
-        elDynClass "td" cArrival . dynText
-            $ showMax Pt.arrival showTaskArrivalPoints pt points
 
         elClass "td" "td-total-points" . dynText
             $ (showTaskPointsNonZero 1 . subtotal) <$> xB
