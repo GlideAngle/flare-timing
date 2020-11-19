@@ -18,6 +18,10 @@ of this changelog.
 * Show the flying and scored fixes for pilots that have had their tracks
   downloaded for the map.
 * Show the effective reset in the penal table when the pilot is too early.
+* Move the penal tab to the top-level with its own children; Jump-the-Gun
+  & Auto, Ess ≠ Goal and Manual.
+* Show toll, rebate and fee to explain how the points after applying the
+  jump-the-gun penalty are not less than minimum distance.
 
 # Plot Selected Pilots
 ## v0.28
