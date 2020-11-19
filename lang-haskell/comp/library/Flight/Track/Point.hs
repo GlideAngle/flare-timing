@@ -111,7 +111,7 @@ data Breakdown =
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.
         , jump :: Maybe (JumpedTheGun (Quantity Double [u| s |]))
-        , penaltiesJumpRaw :: PenaltySeqs
+        , penaltiesJumpRaw :: Maybe PenaltySeqs
         , penaltiesJumpEffective :: PenaltySeqs
         , penalties :: PenaltySeqs
         , penaltyReason :: String

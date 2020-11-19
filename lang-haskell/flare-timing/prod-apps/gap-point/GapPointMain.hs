@@ -1291,8 +1291,8 @@ tallyDf
         , demeritReset = resetApplied
         , total = total
         , jump = jump
-        , penaltiesJumpRaw = rawj
-        , penaltiesJumpEffective = toSeqs effj
+        , penaltiesJumpRaw = jRaw
+        , penaltiesJumpEffective = jEffective
         , penalties = toSeqs effp
         , penaltyReason = penaltyReason
         , breakdown = x
@@ -1364,6 +1364,9 @@ tallyDf
                 , rawj
                 } = ptsReduced'
 
+        jEffective = toSeqs effj
+        jRaw = if rawj /= jEffective then Just rawj else Nothing
+
         ss' = getTagTime unStart
         es' = getTagTime unEnd
         getTagTime accessor =
@@ -1403,7 +1406,7 @@ tallyDfNoTrack
         , demeritReset = resetApplied
         , total = total
         , jump = Nothing
-        , penaltiesJumpRaw = nullSeqs
+        , penaltiesJumpRaw = Nothing
         , penaltiesJumpEffective = nullSeqs
         , penalties = toSeqs effp
         , penaltyReason = penaltyReason

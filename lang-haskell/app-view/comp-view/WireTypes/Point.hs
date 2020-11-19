@@ -474,7 +474,7 @@ data Breakdown =
         , demeritReset :: TaskPoints
         , total :: TaskPoints
         , jump :: Maybe JumpedTheGun
-        , penaltiesJumpRaw :: PenaltySeqs
+        , penaltiesJumpRaw :: Maybe PenaltySeqs
         , penaltiesJumpEffective :: PenaltySeqs
         , penalties :: PenaltySeqs
         , penaltyReason :: String
