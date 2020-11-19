@@ -19,17 +19,13 @@ import WireTypes.Point
     , showTaskPointsDiff
     , showDemeritPointsNonZero
     , showRounded
-    , showJumpedTheGunTime
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
-import WireTypes.Penalty (PenaltySeqs(..), pprEffectiveAdd, pprEffectiveMul, pprEffectiveReset)
-import WireTypes.Comp
-    ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..)
-    , showEarlyStartEarliest, showEarlyStartPenaltyRate
-    )
+import WireTypes.Penalty (PenaltySeqs(..), pprEffectiveAdd, pprEffectiveMul)
+import WireTypes.Comp (Discipline(..), EarlyStart(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), Penal(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
-import FlareTiming.Pilot (showPilot, hashIdHyphenPilot, classOfEarlyStart)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Task.Score.Show
 
 tablePenalManual
@@ -49,7 +45,7 @@ tablePenalManual
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t Penal
     -> m ()
-tablePenalManual hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penalAuto' = do
+tablePenalManual hgOrPg _early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penalManual' = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
 
     let dnf = unDnf <$> dnf'
@@ -60,7 +56,7 @@ tablePenalManual hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penal
             . fromIntegral
             $ lenDfs + 1
 
-    let penalAuto = unPenal <$> penalAuto'
+    let penalManual = unPenal <$> penalManual'
 
     let tableClass =
             let tc = "table is-striped is-narrow is-fullwidth" in
@@ -73,9 +69,7 @@ tablePenalManual hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penal
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") . dynText
-                    $ ((<> " of Jump-the-Gun") . showEarlyStartEarliest) <$> early
-                elAttr "th" ("colspan" =: "2") $ dynText "Auto Point Adjustments"
+                elAttr "th" ("colspan" =: "3") $ dynText "Manual Point Adjustments"
                 elClass "th" "th-total-points" $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
@@ -84,9 +78,8 @@ tablePenalManual hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penal
                 elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
-                elClass "th" "th-start-early" $ text "Early †"
-                elClass "th" "th-early-demerit" $ text "Points"
 
+                elClass "th" "th-norm th-penalty" $ text "✓ Fraction"
                 elClass "th" "th-norm th-penalty" $ text "✓ Points"
                 elClass "th" "th-norm th-penalty-reason" $ text "Reason"
                 elClass "th" "th-total-points" $ text "Subtotal"
@@ -99,11 +92,8 @@ tablePenalManual hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penal
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                el "th" $ text ""
-                elClass "th" "th-early-units" . dynText
-                    $ ((\r -> "(" <> r <> ")") . showEarlyStartPenaltyRate) <$> early
 
-                elAttr "th" ("colspan" =: "6") $ text ""
+                elAttr "th" ("colspan" =: "7") $ text ""
 
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
@@ -119,16 +109,15 @@ tablePenalManual hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penal
                     sDfs
                     (pointRow
                         w
-                        (earliest <$> early)
                         dfNt
                         tp
                         (Map.fromList <$> sEx)
-                        (Map.fromList . fmap (\(a, b, c) -> (a, (b, c))) <$> penalAuto))
+                        (Map.fromList . fmap (\(a, b, c) -> (a, (b, c))) <$> penalManual))
 
             dnfRows w dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "14")
+        let tdFoot = elAttr "td" ("colspan" =: "13")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -191,14 +180,13 @@ tablePenalManual hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penal
 pointRow
     :: MonadWidget t m
     => Dynamic t Int
-    -> Dynamic t JumpTheGunLimit
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Map.Map Pilot (PenaltySeqs, String))
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w earliest dfNt tp sEx pAuto x = do
+pointRow w dfNt tp sEx pManual x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     let y = ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p'}) ->
@@ -214,39 +202,27 @@ pointRow w earliest dfNt tp sEx pAuto x = do
     let yScore = ffor y $ \(_, ys, _) -> ys
     let yDiff = ffor y $ \(_, _, yd) -> yd
 
-    let jtg = jump . snd <$> x
-    let jtgPenalties = penaltiesJumpEffective . snd <$> x
-
     let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
                         let n = showPilot w' p in
                         if p `elem` (Pilot.pilot <$> ps)
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let classEarly = ffor2 earliest jtg classOfEarlyStart
-    let jtgPenalty = ffor jtgPenalties (\PenaltySeqs{adds, muls, resets} ->
-                        case (null adds, null muls, null resets) of
-                            (True, True, True) -> ""
-                            (False, True, True) -> pprEffectiveAdd 1 adds
-                            (_, False, True) -> pprEffectiveMul 1 muls
-                            (_, _, False) -> pprEffectiveReset 1 resets)
+    let manual = ffor2 pilot pManual (\pilot' pManual' ->
+                case Map.lookup pilot' pManual' of
+                    Nothing -> (("", ""), "")
 
-    let auto = ffor2 pilot pAuto (\pilot' pAuto' ->
-                case Map.lookup pilot' pAuto' of
-                    Nothing -> ("", "")
-
-                    Just (PenaltySeqs{adds = pp}, reason) ->
-                        (pprEffectiveAdd 3 pp, T.pack reason))
+                    Just (PenaltySeqs{muls, adds}, reason) ->
+                        ((pprEffectiveMul 3 muls, pprEffectiveAdd 3 adds), T.pack reason))
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elDynClass "td" classEarly . dynText $ showJumpedTheGunTime <$> jtg
-        elClass "td" "td-demerit-points" $ dynText jtgPenalty
 
-        elClass "td" "td-norm td-penalty" . dynText $ fst <$> auto
-        elClass "td" "td-norm" . dynText $ snd <$> auto
+        elClass "td" "td-norm td-penalty" . dynText $ fst . fst <$> manual
+        elClass "td" "td-norm td-penalty" . dynText $ snd . fst <$> manual
+        elClass "td" "td-norm" . dynText $ snd <$> manual
 
         elClass "td" "td-total-points" . dynText
             $ (showTaskPointsNonZero 1 . subtotal) <$> xB

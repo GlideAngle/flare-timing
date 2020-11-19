@@ -206,7 +206,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                                             elClass "th" "th-pid" $ text "Id"
                                                             el "th" $ text "Name"
                                                             elClass "th" "th-penalty" $ text "Fraction"
-                                                            elClass "th" "th-penalty" $ text "Point"
+                                                            elClass "th" "th-penalty" $ text "Points"
                                                             elClass "th" "th-penalty-reason" $ text "Reason"
 
                                                     el "tbody" $ simpleList penal (rowPenal 3)
