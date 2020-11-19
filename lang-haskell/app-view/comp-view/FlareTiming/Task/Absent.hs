@@ -142,10 +142,10 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                         )
 
                     let jumpers = ffor sDf (\sDf' ->
-                                (\(p, Breakdown{jump, penaltiesJump}) ->
-                                    (p, penaltiesJump, jump))
+                                (\(p, Breakdown{jump, penaltiesJumpEffective}) ->
+                                    (p, penaltiesJumpEffective, jump))
                                 <$> filter
-                                        (\(_, Breakdown{jump, penaltiesJump = PenaltySeqs{adds}}) ->
+                                        (\(_, Breakdown{jump, penaltiesJumpEffective = PenaltySeqs{adds}}) ->
                                             isJust jump || not (null adds))
                                         sDf')
 

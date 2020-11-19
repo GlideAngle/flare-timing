@@ -277,17 +277,21 @@ data PointsReduced =
         { subtotal :: TaskPoints
         -- ^ Points before penalties are applied.
         , mulApplied :: TaskPoints
-        -- ^ The multiplicative penalties to apply.
+        -- ^ The points after applying multiplicative penalties to the bare subtotal.
         , addApplied :: TaskPoints
-        -- ^ The additive penalties to apply.
+        -- ^ The points after applying additive penalties to the mulApplied
+        -- subtotal.
         , resetApplied :: TaskPoints
-        -- ^ The reset penalties to apply.
+        -- ^ The points after applying reset penalties to the addApplied
+        -- subtotal.
         , total :: TaskPoints
         -- ^ Points after penalties are applied.
         , effp :: PenaltySeq
         -- ^ The effective sequence of penalties.
         , effj :: PenaltySeq
         -- ^ The effective sequence of jump the gun penalties.
+        , rawj :: PenaltySeqs
+        -- ^ The raw sequence of jump the gun penalties.
         }
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
@@ -800,6 +804,7 @@ applyPenalties fracs points resets p =
             , total = withReset
             , effp = PenaltySeq eMul eAdd eReset
             , effj = idSeq
+            , rawj = nullSeqs
             }
 
 -- $setup

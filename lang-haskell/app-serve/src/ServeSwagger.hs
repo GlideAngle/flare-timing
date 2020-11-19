@@ -428,7 +428,8 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, Breakdown) where
                        , demeritReset = TaskPoints 0
                        , total = TaskPoints 1000
                        , jump = Nothing
-                       , penaltiesJump = nullSeqs
+                       , penaltiesJumpRaw = nullSeqs
+                       , penaltiesJumpEffective = nullSeqs
                        , penalties = nullSeqs
                        , penaltyReason = ""
                        , breakdown =

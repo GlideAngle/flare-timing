@@ -111,7 +111,8 @@ data Breakdown =
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.
         , jump :: Maybe (JumpedTheGun (Quantity Double [u| s |]))
-        , penaltiesJump :: PenaltySeqs
+        , penaltiesJumpRaw :: PenaltySeqs
+        , penaltiesJumpEffective :: PenaltySeqs
         , penalties :: PenaltySeqs
         , penaltyReason :: String
         , breakdown :: Points
@@ -293,28 +294,29 @@ cmpPointing a b =
         ("jump", "total") -> GT
         ("jump", _) -> LT
 
-        ("penaltiesJump", "place") -> GT
-        ("penaltiesJump", "total") -> GT
-        ("penaltiesJump", "jump") -> GT
-        ("penaltiesJump", _) -> LT
+        ("penaltiesJumpRaw", "place") -> GT
+        ("penaltiesJumpRaw", "total") -> GT
+        ("penaltiesJumpRaw", "jump") -> GT
+        ("penaltiesJumpRaw", _) -> LT
+
+        ("penaltiesJumpEffective", "place") -> GT
+        ("penaltiesJumpEffective", "total") -> GT
+        ("penaltiesJumpEffective", "jump") -> GT
+        ("penaltiesJumpEffective", "penaltiesJumpRaw") -> GT
+        ("penaltiesJumpEffective", _) -> LT
 
         ("penalties", "place") -> GT
         ("penalties", "total") -> GT
         ("penalties", "jump") -> GT
-        ("penalties", "penaltiesJump") -> GT
+        ("penalties", "penaltiesJumpRaw") -> GT
+        ("penalties", "penaltiesJumpEffective") -> GT
         ("penalties", _) -> LT
-
-        ("penaltyReason", "place") -> GT
-        ("penaltyReason", "total") -> GT
-        ("penaltyReason", "jump") -> GT
-        ("penaltyReason", "penaltiesJump") -> GT
-        ("penaltyReason", "penalties") -> GT
-        ("penaltyReason", _) -> LT
 
         ("breakdown", "place") -> GT
         ("breakdown", "total") -> GT
         ("breakdown", "jump") -> GT
-        ("breakdown", "penaltiesJump") -> GT
+        ("breakdown", "penaltiesJumpRaw") -> GT
+        ("breakdown", "penaltiesJumpEffective") -> GT
         ("breakdown", "penalties") -> GT
         ("breakdown", "penaltyReason") -> GT
         ("breakdown", _) -> LT
@@ -322,7 +324,8 @@ cmpPointing a b =
         ("velocity", "place") -> GT
         ("velocity", "total") -> GT
         ("velocity", "jump") -> GT
-        ("velocity", "penaltiesJump") -> GT
+        ("velocity", "penaltiesJumpRaw") -> GT
+        ("velocity", "penaltiesJumpEffective") -> GT
         ("velocity", "penalties") -> GT
         ("velocity", "penaltyReason") -> GT
         ("velocity", "breakdown") -> GT
@@ -331,12 +334,43 @@ cmpPointing a b =
         ("reach", "place") -> GT
         ("reach", "total") -> GT
         ("reach", "jump") -> GT
-        ("reach", "penaltiesJump") -> GT
+        ("reach", "penaltiesJumpRaw") -> GT
+        ("reach", "penaltiesJumpEffective") -> GT
         ("reach", "penalties") -> GT
         ("reach", "penaltyReason") -> GT
         ("reach", "breakdown") -> GT
         ("reach", "velocity") -> GT
         ("reach", _) -> LT
+
+        ("demeritFrac", "demeritPoint") -> LT
+        ("demeritFrac", "demeritReset") -> LT
+        ("demeritFrac", "penaltyReason") -> LT
+        ("demeritFrac", "subtotal") -> LT
+        ("demeritFrac", "landedMade") -> LT
+        ("demeritFrac", "stoppedAlt") -> LT
+        ("demeritFrac", _) -> GT
+
+        ("demeritPoint", "demeritReset") -> LT
+        ("demeritPoint", "penaltyReason") -> LT
+        ("demeritPoint", "subtotal") -> LT
+        ("demeritPoint", "landedMade") -> LT
+        ("demeritPoint", "stoppedAlt") -> LT
+        ("demeritPoint", _) -> GT
+
+        ("demeritReset", "penaltyReason") -> LT
+        ("demeritReset", "subtotal") -> LT
+        ("demeritReset", "landedMade") -> LT
+        ("demeritReset", "stoppedAlt") -> LT
+        ("demeritReset", _) -> GT
+
+        ("penaltyReason", "subtotal") -> LT
+        ("penaltyReason", "landedMade") -> LT
+        ("penaltyReason", "stoppedAlt") -> LT
+        ("penaltyReason", _) -> GT
+
+        ("subtotal", "landedMade") -> LT
+        ("subtotal", "stoppedAlt") -> LT
+        ("subtotal", _) -> GT
 
         ("landedMade", "stoppedAlt") -> LT
         ("landedMade", _) -> GT

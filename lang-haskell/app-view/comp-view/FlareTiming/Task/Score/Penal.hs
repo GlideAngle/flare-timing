@@ -289,7 +289,7 @@ pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
 
     let points = breakdown . snd <$> x
     let jtg = jump . snd <$> x
-    let jtgPenalties = penaltiesJump . snd <$> x
+    let jtgPenalties = penaltiesJumpEffective . snd <$> x
 
     let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
                         let n = showPilot w' p in

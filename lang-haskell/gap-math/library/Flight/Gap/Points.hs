@@ -287,6 +287,7 @@ reconcile p ((==) idSeq -> True) ((==) nullSeqs -> True) points =
             , total = x
             , effp = idSeq
             , effj = idSeq
+            , rawj = nullSeqs
             }
 reconcile p j ps points =
     let subtotal = tallySubtotal p points
@@ -329,9 +330,13 @@ _reconcileJumped p@(tooEarly -> Just (TooEarlyPoints tooE)) pJump ps points =
                         then []
                         else [let pCorrection = tooE' - total' in mkAdd pCorrection]
 
-        e = applyPenalties (muls ps) (jLimited ++ adds ps) (resets ps) subtotal
+        pReduced = applyPenalties (muls ps) (jLimited ++ adds ps) (resets ps) subtotal
     in
-        Right $ e{ effj = (effj e){ add = effectiveAdd jLimited }}
+        Right
+            pReduced
+                { effj = (effj pReduced){ add = effectiveAdd jLimited }
+                , rawj = (rawj pReduced){ adds = jLimited }
+                }
 
 _reconcileJumped p _ ps points =
     Right $ applyPenalties (muls ps) (adds ps) (resets ps) (tallySubtotal p points)
