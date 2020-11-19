@@ -295,14 +295,23 @@ reconcile p j ps points =
         jAdd = add j
         jReset = reset j
 
-        e =
+        pReduced =
+            applyPenalties
+                (muls ps)
+                (adds ps)
+                (resets ps)
+                subtotal
+        pjReduced =
             applyPenalties
                 (jMul : muls ps)
                 (jAdd : adds ps)
                 (jReset : resets ps)
                 subtotal
     in
-        e{effj = PenaltySeq jMul jAdd jReset}
+        -- WARNING: Skip jump-the-gun penalties if they increase the total.
+        if total pjReduced <= total pReduced
+           then pjReduced{effj = PenaltySeq jMul jAdd jReset}
+           else pReduced{effj = PenaltySeq jMul jAdd jReset}
 
 tooEarly :: SitRep Hg -> Maybe TooEarlyPoints
 tooEarly (Jumped tooE _ _) = Just tooE

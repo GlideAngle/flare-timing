@@ -777,6 +777,27 @@ applyPenalty (TaskPoints p) pp = TaskPoints p'
 
 -- | Applies the penalties, fractionals then absolutes and finally the resets.
 --
+-- >>> total $ applyPenalties [] [] [] 100
+-- 100.000
+--
+-- >>> total $ applyPenalties [mkMul (1)] [] [] 100
+-- 100.000
+--
+-- >>> total $ applyPenalties [mkMul (-1)] [] [] 100
+-- -100.000
+--
+-- >>> total $ applyPenalties [mkMul 0] [] [] 100
+-- 0.000
+--
+-- >>> total $ applyPenalties [mkMul 0] [] [mkReset $ Just 16] 100
+-- 16.000
+--
+-- >>> total $ applyPenalties [] [mkAdd (-5)] [] 100
+-- 95.000
+--
+-- >>> total $ applyPenalties [mkMul 0.5] [mkAdd (-5)] [] 100
+-- 45.000
+--
 -- prop> \ms as rs x -> (total $ applyPenalties ms as rs x) == applyReset rs (applyAdd as (applyMul ms x))
 -- prop> \x -> (total $ applyPenalties [identityOfMul] [] [] x) == x
 -- prop> \x -> (total $ applyPenalties [] [identityOfAdd] [] x) == x
