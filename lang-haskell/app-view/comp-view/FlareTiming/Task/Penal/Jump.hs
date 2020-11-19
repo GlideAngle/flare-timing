@@ -75,7 +75,8 @@ tablePenalJump hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penalAu
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") . dynText
                     $ ((<> " of Jump-the-Gun") . showEarlyStartEarliest) <$> early
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
+                elAttr "th" ("colspan" =: "2") $ dynText "Auto Point Adjustments"
+                elClass "th" "th-total-points" $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
 
