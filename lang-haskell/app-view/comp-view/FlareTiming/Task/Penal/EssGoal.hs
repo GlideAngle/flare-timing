@@ -339,14 +339,29 @@ pointRow w _earliest cTime cArrival dfNt pt tp sEx x = do
         dyn_ $ snd <$> eg
         elClass "td" "td-demerit-points" $ dynText jtgPenalty
 
-        elClass "td" "td-distance-points" . dynText
-            $ showMax Pt.distance showTaskDistancePoints pt points
-        elDynClass "td" cTime . dynText
-            $ showMax Pt.time showTaskTimePoints pt points
-        elClass "td" "td-leading-points" . dynText
-            $ showMax Pt.leading showTaskLeadingPoints pt points
-        elDynClass "td" cArrival . dynText
-            $ showMax Pt.arrival showTaskArrivalPoints pt points
+        dyn_ $ ffor x (\(_, Breakdown{essNotGoal}) ->
+            case essNotGoal of
+                Nothing -> do
+                    elClass "td" "td-distance-points" $ text ""
+                    elDynClass "td" cTime $ text ""
+                    elClass "td" "td-leading-points" $ text ""
+                    elDynClass "td" cArrival $ text ""
+
+                Just (EssNotGoal False) -> do
+                    elClass "td" "td-distance-points" $ text ""
+                    elDynClass "td" cTime $ text ""
+                    elClass "td" "td-leading-points" $ text ""
+                    elDynClass "td" cArrival $ text ""
+
+                Just (EssNotGoal True) -> do
+                    elClass "td" "td-distance-points" . dynText
+                        $ showMax Pt.distance showTaskDistancePoints pt points
+                    elDynClass "td" cTime . dynText
+                        $ showMax Pt.time showTaskTimePoints pt points
+                    elClass "td" "td-leading-points" . dynText
+                        $ showMax Pt.leading showTaskLeadingPoints pt points
+                    elDynClass "td" cArrival . dynText
+                        $ showMax Pt.arrival showTaskArrivalPoints pt points)
 
         elClass "td" "td-total-points" . dynText
             $ (showTaskPointsNonZero 1 . subtotal) <$> xB
