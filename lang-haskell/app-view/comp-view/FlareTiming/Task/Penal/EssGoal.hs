@@ -14,6 +14,7 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
+    , EssNotGoal(..)
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
@@ -30,7 +31,7 @@ import WireTypes.Comp
     ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..), showEarlyStartPenaltyRate)
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
-import FlareTiming.Pilot (showPilot, hashIdHyphenPilot, classOfEarlyStart)
+import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Task.Score.Show
 
 tablePenalEssGoal
@@ -270,7 +271,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
+pointRow w _earliest cTime cArrival dfNt pt tp sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     let y = ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p'}) ->
@@ -287,7 +288,6 @@ pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
     let yDiff = ffor y $ \(_, _, yd) -> yd
 
     let points = breakdown . snd <$> x
-    let jtg = jump . snd <$> x
     let jtgPenalties = penaltiesJumpEffective . snd <$> x
 
     let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
@@ -303,12 +303,29 @@ pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
                             (_, False, True) -> pprEffectiveMul 1 muls
                             (_, _, False) -> pprEffectiveReset 1 resets)
 
+    let eg = ffor x (\(_, Breakdown{essNotGoal}) ->
+                case essNotGoal of
+                    Nothing ->
+                        ( el "td" $ text ""
+                        , el "td" $ text ""
+                        )
+
+                    Just (EssNotGoal False) ->
+                        ( elClass "td" "td-zone-ess td-zone-made" $ text "✓"
+                        , elClass "td" "td-zone-goal td-zone-made" $ text "✓"
+                        )
+
+                    Just (EssNotGoal True) ->
+                        ( elClass "td" "td-zone-ess td-zone-made" $ text "✓"
+                        , elClass "td" "td-zone-goal td-zone-miss" $ text "✗"
+                        ))
+
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elClass "td" "td-zone-ess td-zone-made" $ text "✓"
-        elClass "td" "td-zone-goal td-zone-miss" $ text "✗"
+        dyn_ $ fst <$> eg
+        dyn_ $ snd <$> eg
         elClass "td" "td-demerit-points" $ dynText jtgPenalty
 
         elClass "td" "td-distance-points" . dynText

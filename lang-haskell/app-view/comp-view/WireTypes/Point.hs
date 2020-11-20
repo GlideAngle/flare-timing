@@ -7,6 +7,7 @@ module WireTypes.Point
     , Breakdown(..)
     , Allocation(..)
     , GoalRatio(..)
+    , EssNotGoal(..)
     , PilotDistance(..)
     , JumpedTheGun(..)
     , Alt(..)
@@ -91,6 +92,10 @@ newtype StartGate = StartGate UTCTime
     deriving anyclass (FromJSON)
 
 newtype GoalRatio = GoalRatio Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
+newtype EssNotGoal = EssNotGoal Bool
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
@@ -473,6 +478,7 @@ data Breakdown =
         , demeritPoint :: TaskPoints
         , demeritReset :: TaskPoints
         , total :: TaskPoints
+        , essNotGoal :: Maybe EssNotGoal
         , jump :: Maybe JumpedTheGun
         , penaltiesJumpRaw :: Maybe PenaltySeqs
         , penaltiesJumpEffective :: PenaltySeqs
