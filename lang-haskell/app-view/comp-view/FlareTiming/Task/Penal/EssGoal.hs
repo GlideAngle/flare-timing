@@ -23,14 +23,11 @@ import WireTypes.Point
     , showTaskPointsDiff
     , showDemeritPointsNonZero
     , showRounded
-    , showJumpedTheGunTime
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Penalty (PenaltySeqs(..), pprEffectiveAdd, pprEffectiveMul, pprEffectiveReset)
 import WireTypes.Comp
-    ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..)
-    , showEarlyStartEarliest, showEarlyStartPenaltyRate
-    )
+    ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..), showEarlyStartPenaltyRate)
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot, classOfEarlyStart)
@@ -111,8 +108,8 @@ tablePenalEssGoal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-early") . dynText
-                    $ ((<> " of Jump-the-Gun") . showEarlyStartEarliest) <$> early
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-early") $
+                    text "ESS not goal => 0.8 time validation"
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
@@ -121,7 +118,8 @@ tablePenalEssGoal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                 elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
-                elClass "th" "th-start-early" $ text "Early †"
+                elClass "th" "th-zone-ess" $ text "ESS"
+                elClass "th" "th-zone-goal" $ text "Goal"
                 elClass "th" "th-early-demerit" $ text "Points"
 
                 elClass "th" "th-distance-points" $ text "Distance"
@@ -138,6 +136,7 @@ tablePenalEssGoal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+                el "th" $ text ""
                 el "th" $ text ""
                 elClass "th" "th-early-units" . dynText
                     $ ((\r -> "(" <> r <> ")") . showEarlyStartPenaltyRate) <$> early
@@ -199,7 +198,7 @@ tablePenalEssGoal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
             dnfRows w dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "15")
+        let tdFoot = elAttr "td" ("colspan" =: "17")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -297,7 +296,6 @@ pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let classEarly = ffor2 earliest jtg classOfEarlyStart
     let jtgPenalty = ffor jtgPenalties (\PenaltySeqs{adds, muls, resets} ->
                         case (null adds, null muls, null resets) of
                             (True, True, True) -> ""
@@ -309,7 +307,8 @@ pointRow w earliest cTime cArrival dfNt pt tp sEx x = do
         elClass "td" "td-norm td-placing" $ dynText yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elDynClass "td" classEarly . dynText $ showJumpedTheGunTime <$> jtg
+        elClass "td" "td-zone-ess td-zone-made" $ text "✓"
+        elClass "td" "td-zone-goal td-zone-miss" $ text "✗"
         elClass "td" "td-demerit-points" $ dynText jtgPenalty
 
         elClass "td" "td-distance-points" . dynText
@@ -377,7 +376,7 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "6"
+                        <> "colspan" =: "7"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
