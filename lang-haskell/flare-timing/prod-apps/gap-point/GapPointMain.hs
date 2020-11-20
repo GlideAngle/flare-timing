@@ -8,7 +8,7 @@ import qualified Prelude as Stats (max)
 import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (fromMaybe, catMaybes, isJust, isNothing)
 import Data.Function ((&))
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -106,7 +106,7 @@ import Flight.Track.Mask
 import Flight.Track.Land (Landing(..))
 import Flight.Track.Place (rankByTotal)
 import Flight.Track.Point
-    (Velocity(..), Breakdown(..), Pointing(..), Allocation(..))
+    (Velocity(..), Breakdown(..), Pointing(..), Allocation(..), EssNotGoal(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     ( readComp, readRoute
@@ -121,8 +121,8 @@ import Flight.Scribe
     , writePointing
     )
 import Flight.Mask (RaceSections(..), section)
-import Flight.Zone.SpeedSection (SpeedSection)
-import Flight.Zone.MkZones (Discipline(..))
+import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
+import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)
 import "flight-gap-allot" Flight.Score
@@ -869,6 +869,26 @@ points'
             | ts <- tagging
             ]
 
+        essNotGoals :: [[(Pilot, Maybe EssNotGoal)]] =
+            [
+                [ (p,) $ do
+                    zs <- zonesTag <$> tag
+                    startToEss@(_, e) <- ss
+
+                    let essToGoal = (e, lenZs)
+                    let madeE = all isJust $ sliceZones (Just startToEss) zs
+                    let missedG = any isNothing $ sliceZones (Just essToGoal) zs
+
+                    return . EssNotGoal $ madeE && missedG
+
+                | PilotTrackTag p tag <- ts
+                ]
+            | Task{zones = Zones{raw = zsRaw}} <- tasks
+            , let lenZs = length zsRaw
+            | ss <- speedSections
+            | ts <- tagging
+            ]
+
         scoreDf :: [[(Pilot, Breakdown)]] =
             [ let dsL = Map.fromList dsLand
                   dsE = Map.fromList dsNighE
@@ -883,7 +903,7 @@ points'
               in
                   rankByTotal . sortScores
                   $ fmap (tallyDf discipline startGates hgTooE pgTooE earlyStart)
-                  A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs
+                  A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs egs gs
             | hgTooE <- tooEarlyPoints
             | pgTooE <- launchToStartPoints
             | diffs <- difficultyDistancePointsDf
@@ -913,6 +933,7 @@ points'
             | gs <- tags
             | Task{startGates, earlyStart} <- tasks
             | penals <- penals <$> tasks
+            | egs <- essNotGoals
             ]
 
         scoreDfNoTrack :: [[(Pilot, Breakdown)]] =
@@ -1065,6 +1086,7 @@ collateDf
     -> [(Pilot, (Maybe a, Maybe a, Maybe a, Maybe a))]
     -> [(Pilot, Maybe b)]
     -> [(Pilot, Maybe c)]
+    -> [(Pilot, Maybe EssNotGoal)]
     -> [(Pilot, Maybe d)]
     -> [
             ( Pilot
@@ -1073,14 +1095,17 @@ collateDf
                 ,
                     ( Maybe d
                     ,
-                        ( Maybe c
+                        ( Maybe EssNotGoal
                         ,
-                            ( Maybe b
+                            ( Maybe c
                             ,
-                                ( (Maybe a, Maybe a, Maybe a, Maybe a)
+                                ( Maybe b
                                 ,
-                                    ( (PenaltySeqs, String)
-                                    , Gap.Points
+                                    ( (Maybe a, Maybe a, Maybe a, Maybe a)
+                                    ,
+                                        ( (PenaltySeqs, String)
+                                        , Gap.Points
+                                        )
                                     )
                                 )
                             )
@@ -1089,10 +1114,12 @@ collateDf
                 )
             )
         ]
-collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
+
+collateDf diffs linears ls as ts penals alts ds ssEs gsEs egs gs =
     Map.toList
     $ Map.intersectionWith (,) malts
     $ Map.intersectionWith (,) mg
+    $ Map.intersectionWith (,) meg
     $ Map.intersectionWith (,) mgsEs
     $ Map.intersectionWith (,) mssEs
     $ Map.intersectionWith (,) md
@@ -1109,6 +1136,7 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
         md = Map.fromList ds
         mssEs = Map.fromList ssEs
         mgsEs = Map.fromList gsEs
+        meg = Map.fromList egs
         mg = Map.fromList gs
         penals' = tuplePenalty <$> penals
 
@@ -1241,19 +1269,22 @@ tallyDf
         ,
             ( Maybe StartEndTags
             ,
-                ( Maybe (PilotTime (Quantity Double [u| h |]))
+                ( Maybe EssNotGoal
                 ,
                     ( Maybe (PilotTime (Quantity Double [u| h |]))
                     ,
-                        (
-                            ( Maybe (PilotDistance (Quantity Double [u| km |]))
-                            , Maybe (PilotDistance (Quantity Double [u| km |]))
-                            , Maybe (PilotDistance (Quantity Double [u| km |]))
-                            , Maybe (PilotDistance (Quantity Double [u| km |]))
-                            )
+                        ( Maybe (PilotTime (Quantity Double [u| h |]))
                         ,
-                            ( (PenaltySeqs, String)
-                            , Gap.Points
+                            (
+                                ( Maybe (PilotDistance (Quantity Double [u| km |]))
+                                , Maybe (PilotDistance (Quantity Double [u| km |]))
+                                , Maybe (PilotDistance (Quantity Double [u| km |]))
+                                , Maybe (PilotDistance (Quantity Double [u| km |]))
+                                )
+                            ,
+                                ( (PenaltySeqs, String)
+                                , Gap.Points
+                                )
                             )
                         )
                     )
@@ -1271,6 +1302,8 @@ tallyDf
     ,
         ( g
         ,
+            ( eg
+            ,
             ( gsT
             ,
                 ( ssT
@@ -1280,6 +1313,7 @@ tallyDf
                         ((penalties, penaltyReason), x)
                     )
                 )
+            )
             )
         )
     ) =
@@ -1291,6 +1325,7 @@ tallyDf
         , demeritReset = resetApplied
         , total = total
         , jump = jump
+        , essNotGoal = eg
         , penaltiesJumpRaw = jRaw
         , penaltiesJumpEffective = jEffective
         , penalties = toSeqs effp
@@ -1406,6 +1441,7 @@ tallyDfNoTrack
         , demeritReset = resetApplied
         , total = total
         , jump = Nothing
+        , essNotGoal = Nothing
         , penaltiesJumpRaw = Nothing
         , penaltiesJumpEffective = nullSeqs
         , penalties = toSeqs effp

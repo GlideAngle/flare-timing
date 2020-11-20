@@ -427,6 +427,7 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, Breakdown) where
                        , demeritPoint = TaskPoints 0
                        , demeritReset = TaskPoints 0
                        , total = TaskPoints 1000
+                       , essNotGoal = Just $ EssNotGoal False
                        , jump = Nothing
                        , penaltiesJumpRaw = Nothing
                        , penaltiesJumpEffective = nullSeqs
@@ -549,6 +550,7 @@ instance ToSchema EarlyStart
 instance ToSchema OpenClose
 instance ToSchema StartGate
 instance ToSchema TaskStop
+instance ToSchema EGwScaling
 instance ToSchema Tweak
 instance ToSchema (Task k)
 instance ToSchema Comp
@@ -614,6 +616,7 @@ instance ToSchema DistanceWeight
 instance ToSchema LeadingWeight
 instance ToSchema ArrivalWeight
 instance ToSchema TimeWeight
+instance ToSchema EssNotGoal
 instance ToSchema Breakdown
 instance ToSchema q => ToSchema (JumpedTheGun q)
 instance ToSchema (PilotDistance q) => ToSchema (ReachToggle (PilotDistance q))

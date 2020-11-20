@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aa64a7351ffc300032d90a8e7b35bff8a0b040f2d6666a8ec75182ff92178d20
+-- hash: e7683165eba0f0a8a41ed0a7e9c7ae943d0b903a4211ee7740ec67bd9e4c2ebd
 
 name:           flight-gap-weight
 version:        0.1.0
@@ -39,6 +39,7 @@ library
   other-modules:
       Flight.Gap.Weight.Arrival
       Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.EssNotGoal
       Flight.Gap.Weight.GoalRatio
       Flight.Gap.Weight.Leading
       Flight.Gap.Weight.Time

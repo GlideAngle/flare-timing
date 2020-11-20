@@ -11,6 +11,7 @@ module Flight.Gap.Penalty
     , PenaltySeq(..)
     , PenaltySeqs(..)
     , Hide(..)
+    , TimeInvalidity
     , applyPenalties
     , applyMul, applyAdd, applyReset
     , effectiveMul, effectiveAdd, effectiveReset
@@ -79,6 +80,8 @@ data LaunchToStartPoints = LaunchToStartPoints PosInt
 -- below minimum distance points either.
 data TooEarlyPoints = TooEarlyPoints PosInt
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+type TimeInvalidity = PointPenalty Mul
 
 data Add
 data Mul
@@ -290,6 +293,8 @@ data PointsReduced =
         -- ^ The effective sequence of penalties.
         , effj :: PenaltySeq
         -- ^ The effective sequence of jump the gun penalties.
+        , effg :: PenaltySeq
+        -- ^ The effective sequence of ESS but not goal penalties.
         , rawj :: PenaltySeqs
         -- ^ The raw sequence of jump the gun penalties.
         }
@@ -825,6 +830,7 @@ applyPenalties fracs points resets p =
             , total = withReset
             , effp = PenaltySeq eMul eAdd eReset
             , effj = idSeq
+            , effg = idSeq
             , rawj = nullSeqs
             }
 

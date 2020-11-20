@@ -26,7 +26,6 @@ module Flight.Gap.Points
 
 import Data.Refined (unrefined)
 import Text.Printf (printf)
-import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure ((/:), u, zero)
@@ -48,12 +47,17 @@ import "flight-gap-weight" Flight.Score (TimeWeight(..))
 import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerPoint(..))
 import Flight.Gap.Penalty
     ( Add, Reset, PointsReduced(..), PenaltySeq(..), PenaltySeqs(..)
-    , PointPenalty, TooEarlyPoints(..), LaunchToStartPoints(..)
+    , PointPenalty, TooEarlyPoints(..), LaunchToStartPoints(..), TimeInvalidity
     , applyPenalties, idSeq, nullSeqs, seqOnlyAdds, seqOnlyResets
     , mkAdd, mkReset
     , exAdd, exReset
     , effectiveAdd
     )
+
+-- | Goal validated points are accrued by making ESS but are validated by
+-- making goal. Make ESS but not goal and loose some or all of their validity
+-- and value.
+newtype GoalValidatedPoints = GoalValidatedPoints (TimePoints, ArrivalPoints)
 
 newtype NoGoal = NoGoal Bool deriving (Eq, Show)
 
@@ -62,7 +66,7 @@ data Pg = Pg deriving (Show)
 
 data SitRep a where
     NominalHg :: SitRep Hg
-    NoGoalHg :: SitRep Hg
+    NoGoalHg :: TimeInvalidity -> SitRep Hg
 
     JumpedTooEarly :: TooEarlyPoints -> SitRep Hg
 
@@ -76,10 +80,11 @@ data SitRep a where
         :: TooEarlyPoints
         -> SecondsPerPoint (Quantity Double [u| s |])
         -> JumpedTheGun (Quantity Double [u| s |])
+        -> TimeInvalidity
         -> SitRep Hg
 
     NominalPg :: SitRep Pg
-    NoGoalPg :: SitRep Pg
+    NoGoalPg :: TimeInvalidity -> SitRep Pg
     Early :: LaunchToStartPoints -> SitRep Pg
 
 deriving instance Eq (SitRep a)
@@ -255,7 +260,7 @@ reconcileJumped p@(Jumped _ spp jtg) j@((==) idSeq -> True) ps points =
     reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 
 -- NOTE: Convert jump-the-gun into a penalty.
-reconcileJumped p@(JumpedNoGoal _ spp jtg) j@((==) idSeq -> True) ps points =
+reconcileJumped p@(JumpedNoGoal _ spp jtg _) j@((==) idSeq -> True) ps points =
     reconcileJumped p j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 
 reconcileJumped p@(Jumped _ spp jtg) (seqOnlyAdds -> Just j) ps points =
@@ -263,7 +268,7 @@ reconcileJumped p@(Jumped _ spp jtg) (seqOnlyAdds -> Just j) ps points =
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
 
-reconcileJumped p@(JumpedNoGoal _ spp jtg) (seqOnlyAdds -> Just j) ps points =
+reconcileJumped p@(JumpedNoGoal _ spp jtg _) (seqOnlyAdds -> Just j) ps points =
     if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
@@ -277,8 +282,9 @@ reconcile
     -> PenaltySeqs -- ^ Other penalties.
     -> Points
     -> PointsReduced
+
 reconcile p ((==) idSeq -> True) ((==) nullSeqs -> True) points =
-    let x = tallySubtotal p points in
+    let x = tallySubtotal_ p points in
         PointsReduced
             { subtotal = x
             , mulApplied = 0
@@ -287,10 +293,12 @@ reconcile p ((==) idSeq -> True) ((==) nullSeqs -> True) points =
             , total = x
             , effp = idSeq
             , effj = idSeq
+            , effg = idSeq
             , rawj = nullSeqs
             }
+
 reconcile p j ps points =
-    let subtotal = tallySubtotal p points
+    let subtotal = tallySubtotal_ p points
         jMul = mul j
         jAdd = add j
         jReset = reset j
@@ -315,7 +323,7 @@ reconcile p j ps points =
 
 tooEarly :: SitRep Hg -> Maybe TooEarlyPoints
 tooEarly (Jumped tooE _ _) = Just tooE
-tooEarly (JumpedNoGoal tooE _ _) = Just tooE
+tooEarly (JumpedNoGoal tooE _ _ _) = Just tooE
 tooEarly _ = Nothing
 
 _reconcileJumped
@@ -326,7 +334,7 @@ _reconcileJumped
     -> Either ReconcilePointErrors PointsReduced
 
 _reconcileJumped p@(tooEarly -> Just (TooEarlyPoints tooE)) pJump ps points =
-    let subtotal = tallySubtotal p points
+    let subtotal = tallySubtotal_ p points
 
         j = mkAdd pJump
         PointsReduced{total = TaskPoints total'} = applyPenalties [] [j] [] subtotal
@@ -348,7 +356,7 @@ _reconcileJumped p@(tooEarly -> Just (TooEarlyPoints tooE)) pJump ps points =
                 }
 
 _reconcileJumped p _ ps points =
-    Right $ applyPenalties (muls ps) (adds ps) (resets ps) (tallySubtotal p points)
+    Right $ applyPenalties (muls ps) (adds ps) (resets ps) (tallySubtotal_ p points)
 
 taskPoints
     :: SitRep b
@@ -359,10 +367,10 @@ taskPoints
 taskPoints s js ps points
     | JumpedTooEarly{} <- s = reconcileEarlyHg s js ps points
     | Early{} <- s = reconcileEarlyPg s js ps points
-    | NominalHg <- s = reconcileNominal WAT_Nominal_Hg NominalHg js ps points
-    | NominalPg <- s = reconcileNominal WAT_Nominal_Pg NominalPg js ps points
-    | NoGoalHg <- s = reconcileNoGoal WAT_NoGoal_Hg NoGoalHg js ps points
-    | NoGoalPg <- s = reconcileNoGoal WAT_NoGoal_Pg NoGoalPg js ps points
+    | x@NominalHg <- s = reconcileNominal WAT_Nominal_Hg x js ps points
+    | x@NominalPg <- s = reconcileNominal WAT_Nominal_Pg x js ps points
+    | x@NoGoalHg{} <- s = reconcileNoGoal WAT_NoGoal_Hg x js ps points
+    | x@NoGoalPg{} <- s = reconcileNoGoal WAT_NoGoal_Pg x js ps points
 
     -- WARNING: Some comps will have jump the gun settings where seconds per
     -- point is zero. This is a sentinel value for turning off jump the gun
@@ -370,7 +378,7 @@ taskPoints s js ps points
     | (Jumped _ (SecondsPerPoint spp) _) <- s
     , spp > zero = reconcileJumped s js ps points
 
-    | (JumpedNoGoal _ (SecondsPerPoint spp) _) <- s
+    | (JumpedNoGoal _ (SecondsPerPoint spp) _ _) <- s
     , spp > zero = reconcileJumped s js ps points
 
     | otherwise = Right $ reconcile s js ps points
@@ -378,34 +386,39 @@ taskPoints s js ps points
 isPg :: SitRep a -> Bool
 isPg = \case
     NominalPg -> True
-    Early _ -> True
-    NoGoalPg -> True
+    Early{} -> True
+    NoGoalPg{} -> True
 
     NominalHg -> False
     JumpedTooEarly _ -> False
-    Jumped _ _ _ -> False
-    JumpedNoGoal _ _ _ -> False
-    NoGoalHg -> False
+    Jumped{} -> False
+    JumpedNoGoal{} -> False
+    NoGoalHg{} -> False
 
-tallySubtotal :: SitRep a -> Points -> TaskPoints
+tallySubtotal_ :: SitRep a -> Points -> TaskPoints
+tallySubtotal_ s p = snd $ tallySubtotal s p
+
+tallySubtotal :: SitRep a -> Points -> (GoalValidatedPoints, TaskPoints)
 tallySubtotal
     s
     Points
         { reach = LinearPoints r
         , effort = DifficultyPoints e
         , leading = LeadingPoints l
-        , time = TimePoints t
-        , arrival = ArrivalPoints a
+        , time = tp@(TimePoints t)
+        , arrival = ap@(ArrivalPoints a)
         }
-    | NoGoalPg <- s = TaskPoints . fromRational $ l + r
-    | NoGoalHg <- s = TaskPoints . fromRational $ l + r + ((8 % 10) * (t + a))
-    | JumpedNoGoal{} <- s = TaskPoints . fromRational $ l + r + ((8 % 10) * (t + a))
-    | isPg s = TaskPoints . fromRational $ l + t + r
-    | otherwise = TaskPoints . fromRational $ l + t + a + r + e
+    | NoGoalPg{} <- s = f $ l + r + t
+    | NoGoalHg{} <- s = f $ l + r + t + a
+    | JumpedNoGoal{} <- s = f $ l + r + t + a
+    | isPg s = f $ l + t + r
+    | otherwise = f $ l + t + a + r + e
+    where
+        f = (GoalValidatedPoints (tp, ap),) . TaskPoints . fromRational
 
 availablePointsPg :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePointsPg (TaskValidity tv) Weights{..} =
-    (pts, tallySubtotal NominalPg pts)
+    (pts, tallySubtotal_ NominalPg pts)
     where
         DistanceWeight dw = distance
         ReachWeight rw = reach
@@ -425,7 +438,7 @@ availablePointsPg (TaskValidity tv) Weights{..} =
 
 availablePointsHg :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePointsHg (TaskValidity tv) Weights{..} =
-    (pts, tallySubtotal NominalHg pts)
+    (pts, tallySubtotal_ NominalHg pts)
     where
         DistanceWeight dw = distance
         ReachWeight rw = reach

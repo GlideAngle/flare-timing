@@ -131,7 +131,8 @@ fsCompetition =
 --     final_glide_decelerator="none"
 --     no_final_glide_decelerator_reason=""
 --     min_time_span_for_valid_task="60"
---     score_back_time="15" />
+--     score_back_time="15"
+--     time_points_if_not_in_goal="0.8" />
 fsScoreFormula :: ArrowXml a => a XmlTree XmlTree
 fsScoreFormula =
     processTopDown
@@ -154,6 +155,7 @@ fsScoreFormula =
                     , "use_arrival_position_points"
                     , "use_arrival_time_points"
                     , "use_distance_squared_for_LC"
+                    , "time_points_if_not_in_goal"
                     ])
                 . localPart)
             (isElem >>> hasName "FsScoreFormula")

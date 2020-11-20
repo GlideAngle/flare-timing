@@ -16,6 +16,7 @@ module Flight.Track.Point
     , NormPointing(..)
     , Pointing(..)
     , Allocation(..)
+    , EssNotGoal(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -49,6 +50,10 @@ import "flight-gap-valid" Flight.Score
 import "flight-gap-weight" Flight.Score (GoalRatio, Weights)
 import Flight.Track.Distance (Land)
 import Flight.Comp (StartGate)
+
+newtype EssNotGoal = EssNotGoal Bool
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data Velocity =
     Velocity
@@ -110,6 +115,8 @@ data Breakdown =
         , total :: TaskPoints
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.
+        , essNotGoal :: Maybe EssNotGoal
+        -- ^ If the pilot has a tracklog, true if they made ESS but not goal.
         , jump :: Maybe (JumpedTheGun (Quantity Double [u| s |]))
         , penaltiesJumpRaw :: Maybe PenaltySeqs
         , penaltiesJumpEffective :: PenaltySeqs
@@ -290,23 +297,31 @@ cmpPointing a b =
         ("total", "place") -> GT
         ("total", _) -> LT
 
+        ("essNotGoal", "place") -> GT
+        ("essNotGoal", "total") -> GT
+        ("essNotGoal", _) -> LT
+
         ("jump", "place") -> GT
         ("jump", "total") -> GT
+        ("jump", "essNotGoal") -> GT
         ("jump", _) -> LT
 
         ("penaltiesJumpRaw", "place") -> GT
         ("penaltiesJumpRaw", "total") -> GT
+        ("penaltiesJumpRaw", "essNotGoal") -> GT
         ("penaltiesJumpRaw", "jump") -> GT
         ("penaltiesJumpRaw", _) -> LT
 
         ("penaltiesJumpEffective", "place") -> GT
         ("penaltiesJumpEffective", "total") -> GT
+        ("penaltiesJumpEffective", "essNotGoal") -> GT
         ("penaltiesJumpEffective", "jump") -> GT
         ("penaltiesJumpEffective", "penaltiesJumpRaw") -> GT
         ("penaltiesJumpEffective", _) -> LT
 
         ("penalties", "place") -> GT
         ("penalties", "total") -> GT
+        ("penalties", "essNotGoal") -> GT
         ("penalties", "jump") -> GT
         ("penalties", "penaltiesJumpRaw") -> GT
         ("penalties", "penaltiesJumpEffective") -> GT
@@ -314,6 +329,7 @@ cmpPointing a b =
 
         ("breakdown", "place") -> GT
         ("breakdown", "total") -> GT
+        ("breakdown", "essNotGoal") -> GT
         ("breakdown", "jump") -> GT
         ("breakdown", "penaltiesJumpRaw") -> GT
         ("breakdown", "penaltiesJumpEffective") -> GT
@@ -323,6 +339,7 @@ cmpPointing a b =
 
         ("velocity", "place") -> GT
         ("velocity", "total") -> GT
+        ("velocity", "essNotGoal") -> GT
         ("velocity", "jump") -> GT
         ("velocity", "penaltiesJumpRaw") -> GT
         ("velocity", "penaltiesJumpEffective") -> GT
@@ -333,6 +350,7 @@ cmpPointing a b =
 
         ("reach", "place") -> GT
         ("reach", "total") -> GT
+        ("reach", "essNotGoal") -> GT
         ("reach", "jump") -> GT
         ("reach", "penaltiesJumpRaw") -> GT
         ("reach", "penaltiesJumpEffective") -> GT

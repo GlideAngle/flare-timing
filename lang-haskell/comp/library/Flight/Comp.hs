@@ -109,7 +109,7 @@ import "flight-gap-math" Flight.Score
     , JumpTheGunLimit(..)
     , TooEarlyPoints(..)
     )
-import "flight-gap-weight" Flight.Score (LwScaling(..))
+import "flight-gap-weight" Flight.Score (LwScaling(..), EGwScaling(..))
 import Flight.Geodesy (EarthMath(..), EarthModel(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
@@ -345,6 +345,7 @@ data Tweak =
         , leadingAreaDistanceSquared :: Bool
         , arrivalRank :: Bool
         , arrivalTime :: Bool
+        , essNotGoalScaling :: EGwScaling
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
