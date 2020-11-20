@@ -401,7 +401,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                                 PenalTabEssGoal ->
                                     elAttr "div" ("id" =: "score-penal") $
-                                        tablePenalEssGoal hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                        tablePenalEssGoal hgOrPg tweak early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
 
                                 PenalTabManual ->
                                     elAttr "div" ("id" =: "score-penal") $

@@ -18,6 +18,7 @@ module WireTypes.Comp
     , Tweak(..)
     , LwScaling(..)
     , AwScaling(..)
+    , EGwScaling(..)
     , JumpTheGunLimit(..)
     , SecondsPerPoint(..)
     , EarlyStart(..)
@@ -280,6 +281,10 @@ newtype LwScaling = LwScaling Double
     deriving (Eq, Ord, Generic)
     deriving anyclass FromJSON
 
+newtype EGwScaling = EGwScaling Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass FromJSON
+
 newtype AwScaling = AwScaling Double
     deriving (Eq, Ord, Generic)
     deriving anyclass FromJSON
@@ -298,6 +303,7 @@ data Tweak =
         , leadingAreaDistanceSquared :: Bool
         , arrivalRank :: Bool
         , arrivalTime :: Bool
+        , essNotGoalScaling :: EGwScaling
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
@@ -438,14 +444,18 @@ scaling HangGliding Nothing =
         , leadingAreaDistanceSquared = True
         , arrivalRank = False
         , arrivalTime = False
+        , essNotGoalScaling = EGwScaling 0.8
         }
+
 scaling Paragliding Nothing =
     Tweak
         { leadingWeightScaling = Just (LwScaling 2)
         , leadingAreaDistanceSquared = True
         , arrivalRank = False
         , arrivalTime = False
+        , essNotGoalScaling = EGwScaling 0
         }
+
 scaling
     HangGliding
     (Just Tweak{leadingWeightScaling = lw, ..}) =
@@ -454,9 +464,11 @@ scaling
         , leadingAreaDistanceSquared
         , arrivalRank
         , arrivalTime
+        , essNotGoalScaling
         }
     where
         lw' = fromMaybe (LwScaling 1) lw
+
 scaling
     Paragliding
     (Just Tweak{leadingWeightScaling = lw, ..}) =
@@ -465,6 +477,7 @@ scaling
         , leadingAreaDistanceSquared
         , arrivalRank
         , arrivalTime
+        , essNotGoalScaling
         }
     where
         lw' = fromMaybe (LwScaling 2) lw

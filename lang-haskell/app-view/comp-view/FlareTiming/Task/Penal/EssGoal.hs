@@ -2,6 +2,7 @@ module FlareTiming.Task.Penal.EssGoal (tablePenalEssGoal) where
 
 import Prelude hiding (min)
 import Reflex.Dom
+import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
@@ -28,7 +29,9 @@ import WireTypes.Point
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Penalty (PenaltySeqs(..), pprEffectiveAdd, pprEffectiveMul, pprEffectiveReset)
 import WireTypes.Comp
-    ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..), showEarlyStartPenaltyRate)
+    ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..), EGwScaling(..), Tweak(..)
+    , showEarlyStartPenaltyRate
+    )
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
@@ -37,6 +40,7 @@ import FlareTiming.Task.Score.Show
 tablePenalEssGoal
     :: MonadWidget t m
     => Dynamic t Discipline
+    -> Dynamic t (Maybe Tweak)
     -> Dynamic t EarlyStart
     -> Dynamic t [Pt.StartGate]
     -> Dynamic t (Maybe TaskLength)
@@ -50,7 +54,7 @@ tablePenalEssGoal
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tablePenalEssGoal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
+tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -104,13 +108,18 @@ tablePenalEssGoal hgOrPg early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
                                 (Paragliding, _) -> (thc, tdc))
                         vw')
 
+    let egScale = ffor tweak $
+                    maybe
+                        "ESS not goal => no time validity"
+                        (\Tweak{essNotGoalScaling = EGwScaling x} ->
+                            T.pack $ printf "ESS not goal => %.3f time validity" x)
+
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-early") $
-                    text "ESS not goal => 0.8 time validation"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-early") $ dynText egScale
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
