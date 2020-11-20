@@ -150,7 +150,9 @@ import "flight-gap-math" Flight.Score
     , idSeq, addSeq, nullSeqs, toSeqs, exAdd
     , jumpTheGunSitRepHg, jumpTheGunSitRepPg
     , availablePointsHg, availablePointsPg
+    , egPenaltyNull
     )
+import qualified "flight-gap-math" Flight.Score as GapMath (egPenalty)
 import "flight-gap-valid" Flight.Score
     ( Validity(..), ValidityWorking(..)
     , StopValidity(..), StopValidityWorking
@@ -902,7 +904,7 @@ points'
 
               in
                   rankByTotal . sortScores
-                  $ fmap (tallyDf discipline startGates hgTooE pgTooE earlyStart)
+                  $ fmap (tallyDf discipline egPenalty startGates hgTooE pgTooE earlyStart)
                   A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs egs gs
             | hgTooE <- tooEarlyPoints
             | pgTooE <- launchToStartPoints
@@ -931,7 +933,12 @@ points'
             | ssEs <- elapsedTime ssSpeed
             | gsEs <- elapsedTime gsSpeed
             | gs <- tags
-            | Task{startGates, earlyStart} <- tasks
+            | Task{startGates, earlyStart, taskTweak} <- tasks
+            , let egPenalty =
+                      maybe
+                          egPenaltyNull
+                          (\Tweak{essNotGoalScaling = x} -> GapMath.egPenalty x)
+                          taskTweak
             | penals <- penals <$> tasks
             | egs <- essNotGoals
             ]
@@ -1260,6 +1267,7 @@ startEnd RaceSections{race} =
 
 tallyDf
     :: Discipline
+    -> _
     -> [StartGate]
     -> TooEarlyPoints
     -> LaunchToStartPoints
@@ -1294,6 +1302,7 @@ tallyDf
     -> Breakdown
 tallyDf
     hgOrPg
+    egPenalty
     startGates
     tooEarlyPoints
     launchToStartPoints
@@ -1364,24 +1373,25 @@ tallyDf
 
         ptsReduced =
             case hgOrPg of
-                HangGliding -> fromMaybe (Gap.taskPoints NominalHg idSeq penalties x) $ do
+                HangGliding -> fromMaybe (Gap.taskPoints NominalHg egPenalty idSeq penalties x) $ do
                     jtg@(JumpedTheGun jSecs) <- jump
                     return $
                         case jumpTheGunSitRepHg tooEarlyPoints earliest spp jtg of
                             Left j ->
                                 Gap.taskPoints
                                     (Jumped tooEarlyPoints spp (JumpedTheGun jSecs))
+                                    egPenalty
                                     (addSeq $ exAdd j)
                                     penalties
                                     x
 
                             Right sitrep ->
-                                Gap.taskPoints sitrep idSeq penalties x
+                                Gap.taskPoints sitrep egPenalty idSeq penalties x
 
-                Paragliding -> fromMaybe (Gap.taskPoints NominalPg idSeq penalties x) $ do
+                Paragliding -> fromMaybe (Gap.taskPoints NominalPg egPenalty idSeq penalties x) $ do
                     jtg <- jump
                     sitrep <- jumpTheGunSitRepPg launchToStartPoints jtg
-                    return $ Gap.taskPoints sitrep idSeq penalties x
+                    return $ Gap.taskPoints sitrep egPenalty idSeq penalties x
 
         ptsReduced' =
             case ptsReduced of
@@ -1493,8 +1503,8 @@ tallyDfNoTrack
                 , effp
                 } =
                     case hgOrPg of
-                        HangGliding -> Gap.taskPoints NominalHg idSeq penalties x
-                        Paragliding -> Gap.taskPoints NominalPg idSeq penalties x
+                        HangGliding -> Gap.taskPoints NominalHg egPenaltyNull idSeq penalties x
+                        Paragliding -> Gap.taskPoints NominalPg egPenaltyNull idSeq penalties x
 
         dE = PilotDistance <$> do
                 dT <- dT'

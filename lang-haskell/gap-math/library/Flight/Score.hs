@@ -47,6 +47,7 @@ module Flight.Score
     , applyMul, applyAdd, applyReset
     , availablePointsPg
     , availablePointsHg
+    , egPenalty, egPenaltyNull
     -- * Early start
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)
