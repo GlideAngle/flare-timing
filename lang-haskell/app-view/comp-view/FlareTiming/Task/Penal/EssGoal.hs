@@ -150,12 +150,7 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                el "th" $ text ""
-                el "th" $ text ""
-                elClass "th" "th-early-units" . dynText
-                    $ ((\r -> "(" <> r <> ")") . showEarlyStartPenaltyRate) <$> early
-
-                el "th" $ text ""
+                elAttr "th" ("colspan" =: "4") $ text ""
 
                 elClass "th" "th-time-alloc" . dynText $
                     maybe
