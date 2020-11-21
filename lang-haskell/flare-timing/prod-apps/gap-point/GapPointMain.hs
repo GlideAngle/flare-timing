@@ -147,7 +147,7 @@ import "flight-gap-math" Flight.Score
     , TooEarlyPoints(..), LaunchToStartPoints(..)
     , SitRep(..)
     , PenaltySeqs, PointsReduced(..)
-    , idSeq, addSeq, nullSeqs, toSeqs, exAdd
+    , idSeq, addSeq, nullSeqs, toSeqs, exAdd, mkMul
     , jumpTheGunSitRepHg, jumpTheGunSitRepPg
     , availablePointsHg, availablePointsPg
     , egPenaltyNull
@@ -1333,8 +1333,9 @@ tallyDf
         , demeritPoint = addApplied
         , demeritReset = resetApplied
         , total = total
-        , jump = jump
         , essNotGoal = eg
+        , penaltiesEssNotGoal = toSeqs effg
+        , jump = jump
         , penaltiesJumpRaw = jRaw
         , penaltiesJumpEffective = jEffective
         , penalties = toSeqs effp
@@ -1373,22 +1374,41 @@ tallyDf
 
         ptsReduced =
             case hgOrPg of
-                HangGliding -> fromMaybe (Gap.taskPoints NominalHg egPenalty idSeq penalties x) $ do
-                    jtg@(JumpedTheGun jSecs) <- jump
-                    return $
-                        case jumpTheGunSitRepHg tooEarlyPoints earliest spp jtg of
-                            Left j ->
-                                Gap.taskPoints
-                                    (Jumped tooEarlyPoints spp (JumpedTheGun jSecs))
-                                    egPenalty
-                                    (addSeq $ exAdd j)
-                                    penalties
-                                    x
+                -- TODO: Workout what the sitrep is here. It won't always be
+                -- NominalHg.
+                HangGliding ->
+                    fromMaybe
+                        (let sitrep =
+                                 case eg of
+                                     Nothing -> NominalHg
+                                     Just (EssNotGoal False) -> NominalHg
+                                     Just (EssNotGoal True) -> NoGoalHg $ mkMul 0.8
+                         in
+                             Gap.taskPoints sitrep egPenalty idSeq penalties x) $
+                    do
+                        jtg@(JumpedTheGun jSecs) <- jump
+                        return $
+                            case jumpTheGunSitRepHg tooEarlyPoints earliest spp jtg of
+                                Left j ->
+                                    Gap.taskPoints
+                                        (Jumped tooEarlyPoints spp (JumpedTheGun jSecs))
+                                        egPenalty
+                                        (addSeq $ exAdd j)
+                                        penalties
+                                        x
 
-                            Right sitrep ->
-                                Gap.taskPoints sitrep egPenalty idSeq penalties x
+                                Right sitrep ->
+                                    Gap.taskPoints sitrep egPenalty idSeq penalties x
 
-                Paragliding -> fromMaybe (Gap.taskPoints NominalPg egPenalty idSeq penalties x) $ do
+                Paragliding ->
+                    fromMaybe
+                        (let sitrep =
+                                 case eg of
+                                     Nothing -> NominalPg
+                                     Just (EssNotGoal False) -> NominalPg
+                                     Just (EssNotGoal True) -> NoGoalPg $ mkMul 0.8
+                         in
+                             Gap.taskPoints sitrep egPenalty idSeq penalties x) $ do
                     jtg <- jump
                     sitrep <- jumpTheGunSitRepPg launchToStartPoints jtg
                     return $ Gap.taskPoints sitrep egPenalty idSeq penalties x
@@ -1407,6 +1427,7 @@ tallyDf
                 , effp
                 , effj
                 , rawj
+                , effg
                 } = ptsReduced'
 
         jEffective = toSeqs effj
@@ -1450,8 +1471,9 @@ tallyDfNoTrack
         , demeritPoint = addApplied
         , demeritReset = resetApplied
         , total = total
-        , jump = Nothing
         , essNotGoal = Nothing
+        , penaltiesEssNotGoal = nullSeqs
+        , jump = Nothing
         , penaltiesJumpRaw = Nothing
         , penaltiesJumpEffective = nullSeqs
         , penalties = toSeqs effp

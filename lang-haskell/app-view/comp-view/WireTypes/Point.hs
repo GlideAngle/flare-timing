@@ -479,6 +479,7 @@ data Breakdown =
         , demeritReset :: TaskPoints
         , total :: TaskPoints
         , essNotGoal :: Maybe EssNotGoal
+        , penaltiesEssNotGoal :: PenaltySeqs
         , jump :: Maybe JumpedTheGun
         , penaltiesJumpRaw :: Maybe PenaltySeqs
         , penaltiesJumpEffective :: PenaltySeqs

@@ -47,7 +47,7 @@ import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerP
 import Flight.Gap.Penalty
     ( Add, Reset, PointsReduced(..), PenaltySeq(..), PenaltySeqs(..)
     , PointPenalty, TooEarlyPoints(..), LaunchToStartPoints(..), TimeInvalidity
-    , applyPenalties, idSeq, nullSeqs, seqOnlyAdds, seqOnlyResets, addSeq
+    , applyPenalties, idSeq, nullSeqs, seqOnlyAdds, seqOnlyResets, addSeq, toSeqs
     , mkAdd, mkReset, exAdd, exReset, effectiveAdd
     )
 
@@ -303,25 +303,10 @@ reconcile
     -> Points
     -> PointsReduced
 
-reconcile p _ ((==) idSeq -> True) ((==) nullSeqs -> True) points =
-    let x = tallySubtotal_ p points in
-        PointsReduced
-            { subtotal = x
-            , mulApplied = 0
-            , addApplied = 0
-            , resetApplied = 0
-            , total = x
-            , effp = idSeq
-            , effj = idSeq
-            , effg = idSeq
-            , rawj = nullSeqs
-            }
-
-reconcile p _ j ps points =
-    let subtotal = tallySubtotal_ p points
-        jMul = mul j
-        jAdd = add j
-        jReset = reset j
+reconcile p eg ((==) idSeq -> True) ((==) nullSeqs -> True) points =
+    let (timedPts, subtotal) = tallySubtotal p points
+        egs = eg timedPts
+        ps = toSeqs egs
 
         pReduced =
             applyPenalties
@@ -329,17 +314,36 @@ reconcile p _ j ps points =
                 (adds ps)
                 (resets ps)
                 subtotal
+
+    in
+       pReduced{effg = egs}
+
+reconcile p eg j ps points =
+    let (timedPts, subtotal) = tallySubtotal p points
+        egs = eg timedPts
+        jMul = mul j
+        jAdd = add j
+        jReset = reset j
+        ps' = ps{adds = add egs : adds ps}
+
+        pReduced =
+            applyPenalties
+                (muls ps')
+                (adds ps')
+                (resets ps)
+                subtotal
+
         pjReduced =
             applyPenalties
-                (jMul : muls ps)
-                (jAdd : adds ps)
-                (jReset : resets ps)
+                (jMul : muls ps')
+                (jAdd : adds ps')
+                (jReset : resets ps')
                 subtotal
     in
         -- WARNING: Skip jump-the-gun penalties if they increase the total.
         if total pjReduced <= total pReduced
-           then pjReduced{effj = PenaltySeq jMul jAdd jReset}
-           else pReduced{effj = PenaltySeq jMul jAdd jReset}
+           then pjReduced{effj = PenaltySeq jMul jAdd jReset, effg = egs}
+           else pReduced{effj = PenaltySeq jMul jAdd jReset, effg = egs}
 
 tooEarly :: SitRep Hg -> Maybe TooEarlyPoints
 tooEarly (Jumped tooE _ _) = Just tooE
@@ -429,13 +433,15 @@ tallySubtotal
         , time = tp@(TimePoints t)
         , arrival = ap@(ArrivalPoints a)
         }
-    | NoGoalPg{} <- s = f $ l + r + t
-    | NoGoalHg{} <- s = f $ l + r + t + a
-    | JumpedNoGoal{} <- s = f $ l + r + t + a
+    | NoGoalPg{} <- s = f $ dPg + t + l + a
+    | NoGoalHg{} <- s = f $ dHg + t + l + a
+    | JumpedNoGoal{} <- s = f $ dHg + t + l + a
     | isPg s = f $ l + t + r
-    | otherwise = f $ l + t + a + r + e
+    | otherwise = f $ dHg + t + l + a
     where
         f = (GoalValidatedPoints (tp, ap),) . TaskPoints . fromRational
+        dHg = r + e
+        dPg = r
 
 availablePointsPg :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePointsPg (TaskValidity tv) Weights{..} =
