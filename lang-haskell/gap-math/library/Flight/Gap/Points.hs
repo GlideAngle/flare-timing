@@ -46,7 +46,7 @@ import "flight-gap-weight" Flight.Score
 import Flight.Gap.Time.Early (JumpTheGunLimit(..), JumpedTheGun(..), SecondsPerPoint(..))
 import Flight.Gap.Penalty
     ( Add, Reset, PointsReduced(..), PenaltySeq(..), PenaltySeqs(..)
-    , PointPenalty, TooEarlyPoints(..), LaunchToStartPoints(..), TimeInvalidity
+    , PointPenalty, TooEarlyPoints(..), LaunchToStartPoints(..)
     , applyPenalties, idSeq, nullSeqs, seqOnlyAdds, seqOnlyResets, addSeq, toSeqs
     , mkAdd, mkReset, exAdd, exReset, effectiveAdd
     )
@@ -70,7 +70,7 @@ data Pg = Pg deriving (Show)
 
 data SitRep a where
     NominalHg :: SitRep Hg
-    NoGoalHg :: TimeInvalidity -> SitRep Hg
+    NoGoalHg :: SitRep Hg
 
     JumpedTooEarly :: TooEarlyPoints -> SitRep Hg
 
@@ -84,11 +84,10 @@ data SitRep a where
         :: TooEarlyPoints
         -> SecondsPerPoint (Quantity Double [u| s |])
         -> JumpedTheGun (Quantity Double [u| s |])
-        -> TimeInvalidity
         -> SitRep Hg
 
     NominalPg :: SitRep Pg
-    NoGoalPg :: TimeInvalidity -> SitRep Pg
+    NoGoalPg :: SitRep Pg
     Early :: LaunchToStartPoints -> SitRep Pg
 
 deriving instance Eq (SitRep a)
@@ -279,7 +278,7 @@ reconcileJumped p@(Jumped _ spp jtg) eg j@((==) idSeq -> True) ps points =
     reconcileJumped p eg j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 
 -- NOTE: Convert jump-the-gun into a penalty.
-reconcileJumped p@(JumpedNoGoal _ spp jtg _) eg j@((==) idSeq -> True) ps points =
+reconcileJumped p@(JumpedNoGoal _ spp jtg) eg j@((==) idSeq -> True) ps points =
     reconcileJumped p eg j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 
 reconcileJumped p@(Jumped _ spp jtg) _ (seqOnlyAdds -> Just j) ps points =
@@ -287,7 +286,7 @@ reconcileJumped p@(Jumped _ spp jtg) _ (seqOnlyAdds -> Just j) ps points =
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
 
-reconcileJumped p@(JumpedNoGoal _ spp jtg _) _ (seqOnlyAdds -> Just j) ps points =
+reconcileJumped p@(JumpedNoGoal _ spp jtg) _ (seqOnlyAdds -> Just j) ps points =
     if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
@@ -347,7 +346,7 @@ reconcile p eg j ps points =
 
 tooEarly :: SitRep Hg -> Maybe TooEarlyPoints
 tooEarly (Jumped tooE _ _) = Just tooE
-tooEarly (JumpedNoGoal tooE _ _ _) = Just tooE
+tooEarly (JumpedNoGoal tooE _ _) = Just tooE
 tooEarly _ = Nothing
 
 _reconcileJumped
@@ -394,8 +393,8 @@ taskPoints s eg js ps points
     | Early{} <- s = reconcileEarlyPg s js ps points
     | x@NominalHg <- s = reconcileNominal WAT_Nominal_Hg x js ps points
     | x@NominalPg <- s = reconcileNominal WAT_Nominal_Pg x js ps points
-    | x@NoGoalHg{} <- s = reconcileNoGoal WAT_NoGoal_Hg x eg js ps points
-    | x@NoGoalPg{} <- s = reconcileNoGoal WAT_NoGoal_Pg x eg js ps points
+    | x@NoGoalHg <- s = reconcileNoGoal WAT_NoGoal_Hg x eg js ps points
+    | x@NoGoalPg <- s = reconcileNoGoal WAT_NoGoal_Pg x eg js ps points
 
     -- WARNING: Some comps will have jump the gun settings where seconds per
     -- point is zero. This is a sentinel value for turning off jump the gun
@@ -403,7 +402,7 @@ taskPoints s eg js ps points
     | (Jumped _ (SecondsPerPoint spp) _) <- s
     , spp > zero = reconcileJumped s egPenaltyNull js ps points
 
-    | (JumpedNoGoal _ (SecondsPerPoint spp) _ _) <- s
+    | (JumpedNoGoal _ (SecondsPerPoint spp) _) <- s
     , spp > zero = reconcileJumped s eg js ps points
 
     | otherwise = Right $ reconcile s egPenaltyNull js ps points
@@ -412,7 +411,7 @@ isPg :: SitRep a -> Bool
 isPg = \case
     NominalPg -> True
     Early{} -> True
-    NoGoalPg{} -> True
+    NoGoalPg -> True
 
     NominalHg -> False
     JumpedTooEarly _ -> False
@@ -433,8 +432,8 @@ tallySubtotal
         , time = tp@(TimePoints t)
         , arrival = ap@(ArrivalPoints a)
         }
-    | NoGoalPg{} <- s = f $ dPg + t + l + a
-    | NoGoalHg{} <- s = f $ dHg + t + l + a
+    | NoGoalPg <- s = f $ dPg + t + l + a
+    | NoGoalHg <- s = f $ dHg + t + l + a
     | JumpedNoGoal{} <- s = f $ dHg + t + l + a
     | isPg s = f $ l + t + r
     | otherwise = f $ dHg + t + l + a

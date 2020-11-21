@@ -11,7 +11,6 @@ module Flight.Gap.Penalty
     , PenaltySeq(..)
     , PenaltySeqs(..)
     , Hide(..)
-    , TimeInvalidity
     , applyPenalties
     , applyMul, applyAdd, applyReset
     , effectiveMul, effectiveAdd, effectiveReset
@@ -80,8 +79,6 @@ data LaunchToStartPoints = LaunchToStartPoints PosInt
 -- below minimum distance points either.
 data TooEarlyPoints = TooEarlyPoints PosInt
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-type TimeInvalidity = PointPenalty Mul
 
 data Add
 data Mul

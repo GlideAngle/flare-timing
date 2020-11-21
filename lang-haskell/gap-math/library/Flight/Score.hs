@@ -33,7 +33,6 @@ module Flight.Score
     , PosInt, GE
     , PenaltySeq(..), PenaltySeqs(..)
     , Mul, Add, Reset
-    , TimeInvalidity
     , zeroPoints
     , taskPoints
     , tallySubtotal

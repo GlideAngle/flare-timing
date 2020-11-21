@@ -147,7 +147,7 @@ import "flight-gap-math" Flight.Score
     , TooEarlyPoints(..), LaunchToStartPoints(..)
     , SitRep(..)
     , PenaltySeqs, PointsReduced(..)
-    , idSeq, addSeq, nullSeqs, toSeqs, exAdd, mkMul
+    , idSeq, addSeq, nullSeqs, toSeqs, exAdd
     , jumpTheGunSitRepHg, jumpTheGunSitRepPg
     , availablePointsHg, availablePointsPg
     , egPenaltyNull
@@ -1382,7 +1382,7 @@ tallyDf
                                  case eg of
                                      Nothing -> NominalHg
                                      Just (EssNotGoal False) -> NominalHg
-                                     Just (EssNotGoal True) -> NoGoalHg $ mkMul 0.8
+                                     Just (EssNotGoal True) -> NoGoalHg
                          in
                              Gap.taskPoints sitrep egPenalty idSeq penalties x) $
                     do
@@ -1406,7 +1406,7 @@ tallyDf
                                  case eg of
                                      Nothing -> NominalPg
                                      Just (EssNotGoal False) -> NominalPg
-                                     Just (EssNotGoal True) -> NoGoalPg $ mkMul 0.8
+                                     Just (EssNotGoal True) -> NoGoalPg
                          in
                              Gap.taskPoints sitrep egPenalty idSeq penalties x) $ do
                     jtg <- jump
