@@ -8,6 +8,7 @@ module FlareTiming.Pilot
     , rowDfNtReach
     , classOfEarlyStart
     , rowPenalJump
+    , rowPenalEssNotGoal
     , rowPenalAuto
     , rowPenal
     ) where
@@ -127,6 +128,18 @@ rowPenalJump dp earliest ppp = do
                     pRaw
 
                 tdPointPenalty $ pprEffectiveAdd dp pPoints)
+
+rowPenalEssNotGoal
+    :: MonadWidget t m
+    => Int
+    -> Dynamic t (Pilot, PenaltySeqs)
+    -> m ()
+rowPenalEssNotGoal dp ppp = do
+    dyn_ $ ffor ppp (\(pilot, PenaltySeqs{adds}) -> el "tr" $ do
+
+        elClass "td" "td-pid" . text . showPilotId $ pilot
+        el "td" . text . showPilotName $ pilot
+        tdPointPenalty $ pprEffectiveAdd dp adds)
 
 tdPointPenalty :: MonadWidget t m => T.Text -> m ()
 tdPointPenalty = elClass "td" "td-penalty" . text

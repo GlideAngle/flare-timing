@@ -28,9 +28,7 @@ import WireTypes.Point
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Penalty (PenaltySeqs(..), pprEffectiveAdd, pprEffectiveMul, pprEffectiveReset)
 import WireTypes.Comp
-    ( Discipline(..), EarlyStart(..), JumpTheGunLimit(..), EGwScaling(..), Tweak(..)
-    , showEarlyStartPenaltyRate
-    )
+    (Discipline(..), EarlyStart(..), JumpTheGunLimit(..), EGwScaling(..), Tweak(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
