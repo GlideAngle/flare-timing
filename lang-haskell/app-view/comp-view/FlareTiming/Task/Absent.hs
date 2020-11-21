@@ -112,9 +112,6 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                             $ "Unlike DNF pilots, these pilots do not decrease launch validity. When a task is not at full distance validity, if any one of the NYP pilots flew further then the task validity will increase when they are processed. Likewise for time validity and the fastest pilots being NYP."
                         )
 
-        elClass "div" "tile is-vertical is-8" $
-            elClass "div" "tile" $
-                elClass "div" "tile is-parent is-vertical" $ do
                     dyn_ $ ffor dfNt (\dfNt'' ->
                         if null dfNt''
                             then
@@ -142,6 +139,10 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                             $ "These pilots get awarded at least minimum distance."
                         )
 
+
+        elClass "div" "tile is-vertical is-8" $
+            elClass "div" "tile" $
+                elClass "div" "tile is-parent is-vertical" $ do
                     let jumpers = ffor sDf (\sDf' ->
                                 (\(p, Breakdown{jump, penaltiesJumpRaw, penaltiesJumpEffective}) ->
                                     (p, penaltiesJumpRaw, penaltiesJumpEffective, jump))
