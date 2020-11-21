@@ -299,7 +299,7 @@ pointRow w _earliest cTime cArrival dfNt pt tp sEx x = do
     let yDiff = ffor y $ \(_, _, yd) -> yd
 
     let points = breakdown . snd <$> x
-    let jtgPenalties = penaltiesJumpEffective . snd <$> x
+    let egPenalties = penaltiesEssNotGoal . snd <$> x
 
     let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
                         let n = showPilot w' p in
@@ -307,7 +307,7 @@ pointRow w _earliest cTime cArrival dfNt pt tp sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let jtgPenalty = ffor jtgPenalties (\PenaltySeqs{adds, muls, resets} ->
+    let egPenalty = ffor egPenalties (\PenaltySeqs{adds, muls, resets} ->
                         case (null adds, null muls, null resets) of
                             (True, True, True) -> ""
                             (False, True, True) -> pprEffectiveAdd 1 adds
@@ -337,7 +337,7 @@ pointRow w _earliest cTime cArrival dfNt pt tp sEx x = do
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         dyn_ $ fst <$> eg
         dyn_ $ snd <$> eg
-        elClass "td" "td-demerit-points" $ dynText jtgPenalty
+        elClass "td" "td-demerit-points" $ dynText egPenalty
 
         dyn_ $ ffor x (\(_, Breakdown{essNotGoal}) ->
             case essNotGoal of
