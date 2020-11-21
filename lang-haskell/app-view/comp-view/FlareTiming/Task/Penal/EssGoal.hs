@@ -16,9 +16,8 @@ import WireTypes.Point
     , TaskPoints(..)
     , Breakdown(..)
     , EssNotGoal(..)
-    , showTaskDistancePoints
     , showTaskArrivalPoints
-    , showTaskLeadingPoints
+    , showTaskTimeArrivalPoints
     , showTaskTimePoints
     , showTaskPointsRounded
     , showTaskPointsNonZero
@@ -120,7 +119,7 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-early") $ dynText egScale
-                elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
+                elAttr "th" ("colspan" =: "4" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
 
@@ -132,9 +131,8 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                 elClass "th" "th-zone-goal" $ text "Goal"
                 elClass "th" "th-early-demerit" $ text "Points"
 
-                elClass "th" "th-distance-points" $ text "Distance"
+                elClass "th" "th-time-arrival-points" $ text "Time + Arrival"
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
-                elClass "th" "th-leading-points" $ text "Lead"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Subtotal"
                 elClass "th" "th-demerit-points" $ text "Frac"
@@ -151,27 +149,13 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                 elClass "th" "th-early-units" . dynText
                     $ ((\r -> "(" <> r <> ")") . showEarlyStartPenaltyRate) <$> early
 
-                elClass "th" "th-distance-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskDistancePoints (Just x) x)
-                        . Pt.distance
-                        )
-                    <$> pt
+                el "th" $ text ""
 
                 elClass "th" "th-time-alloc" . dynText $
                     maybe
                         ""
                         ( (\x -> showTaskTimePoints (Just x) x)
                         . Pt.time
-                        )
-                    <$> pt
-
-                elClass "th" "th-leading-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskLeadingPoints (Just x) x)
-                        . Pt.leading
                         )
                     <$> pt
 
@@ -210,7 +194,7 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
             dnfRows w dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "17")
+        let tdFoot = elAttr "td" ("colspan" =: "16")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -342,24 +326,25 @@ pointRow w _earliest cTime cArrival dfNt pt tp sEx x = do
         dyn_ $ ffor x (\(_, Breakdown{essNotGoal}) ->
             case essNotGoal of
                 Nothing -> do
-                    elClass "td" "td-distance-points" $ text ""
+                    elClass "td" "td-time-arrival-points" $ text ""
                     elDynClass "td" cTime $ text ""
-                    elClass "td" "td-leading-points" $ text ""
                     elDynClass "td" cArrival $ text ""
 
                 Just (EssNotGoal False) -> do
-                    elClass "td" "td-distance-points" $ text ""
+                    elClass "td" "td-time-arrival-points" $ text ""
                     elDynClass "td" cTime $ text ""
-                    elClass "td" "td-leading-points" $ text ""
                     elDynClass "td" cArrival $ text ""
 
                 Just (EssNotGoal True) -> do
-                    elClass "td" "td-distance-points" . dynText
-                        $ showMax Pt.distance showTaskDistancePoints pt points
+                    elClass "td" "td-time-arrival-points" . dynText
+                        $ showMax
+                            (\ptsTask -> (Pt.time ptsTask, Pt.arrival ptsTask))
+                            showTaskTimeArrivalPoints
+                            pt
+                            points
+
                     elDynClass "td" cTime . dynText
                         $ showMax Pt.time showTaskTimePoints pt points
-                    elClass "td" "td-leading-points" . dynText
-                        $ showMax Pt.leading showTaskLeadingPoints pt points
                     elDynClass "td" cArrival . dynText
                         $ showMax Pt.arrival showTaskArrivalPoints pt points)
 
@@ -419,7 +404,7 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "7"
+                        <> "colspan" =: "6"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"

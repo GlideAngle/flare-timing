@@ -39,6 +39,7 @@ module WireTypes.Point
     , showTaskDifficultyPoints
     , showTaskArrivalPoints
     , showTaskTimePoints
+    , showTaskTimeArrivalPoints
     , showTaskLeadingPoints
     , showTaskPoints
     , showTaskPointsRounded
@@ -271,6 +272,10 @@ showTaskArrivalPoints task (ArrivalPoints p) =
 showTaskTimePoints :: Maybe TimePoints -> TimePoints -> T.Text
 showTaskTimePoints task (TimePoints p) =
     showMax p (\(TimePoints x) -> x) task
+
+showTaskTimeArrivalPoints :: (Maybe (TimePoints, ArrivalPoints)) -> (TimePoints, ArrivalPoints) -> T.Text
+showTaskTimeArrivalPoints task (TimePoints tp, ArrivalPoints ap) =
+    showMax (tp + ap) (\(TimePoints tTask, ArrivalPoints aTask) -> tTask + aTask) task
 
 showTaskLeadingPoints :: Maybe LeadingPoints -> LeadingPoints -> T.Text
 showTaskLeadingPoints task (LeadingPoints p) =
