@@ -117,9 +117,15 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
         el "thead" $ do
 
             el "tr" $ do
+                elAttr "th" ("colspan" =: "6") $ text ""
+                elAttr "th" ("colspan" =: "4" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
+                elAttr "th" ("colspan" =: "6") $ text ""
+
+            el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-early") $ dynText egScale
-                elAttr "th" ("colspan" =: "4" <> "class" =: "th-points") $ dynText "Points Before Penalties Applied"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-arrival-points") $ dynText "Time + Arrival"
+                elClass "th" "th-points" $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
 
@@ -131,7 +137,7 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                 elClass "th" "th-zone-goal" $ text "Goal"
                 elClass "th" "th-early-demerit" $ text "Points"
 
-                elClass "th" "th-time-arrival-points" $ text "Time + Arrival"
+                elClass "th" "th-time-arrival-points" $ text ""
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Subtotal"
