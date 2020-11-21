@@ -109,9 +109,10 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
 
     let egScale = ffor tweak $
                     maybe
-                        "ESS not goal => no time validity"
+                        ("ESS not goal => no time validity", "")
                         (\Tweak{essNotGoalScaling = EGwScaling x} ->
-                            T.pack $ printf "ESS not goal => %.3f time validity" x)
+                            ( T.pack $ printf "ESS not goal => %.1f time validity" x
+                            , T.pack $ printf "%.1f*TV" (1 - x)))
 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
@@ -123,8 +124,10 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-early") $ dynText egScale
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-arrival-points") $ dynText "Time + Arrival"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-early") . dynText
+                    $ fst <$> egScale
+
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-arrival-points") $ dynText "Time + Arrival ¶"
                 elClass "th" "th-points" $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-demerit") $ text "Penalties ‡"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-points") $ text "Final Rounded Points"
@@ -149,8 +152,11 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                elAttr "th" ("colspan" =: "4") $ text ""
+                elAttr "th" ("colspan" =: "5" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+
+                elClass "th" "th-early-units" . dynText $ snd <$> egScale
+
+                elClass "th" "th-early-units" $ text "TV"
 
                 elClass "th" "th-time-alloc" . dynText $
                     maybe
@@ -205,6 +211,7 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
+            foot "¶ The time and arrival points are time validated (TV) by making goal."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
                 Paragliding -> do
