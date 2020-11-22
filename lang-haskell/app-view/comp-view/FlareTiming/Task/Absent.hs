@@ -161,102 +161,109 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                                 Just (EssNotGoal b) -> b)
                                         sDf')
 
-                    dyn_ $ ffor jumpers (\jumpers' ->
-                        if null jumpers' then
+                    dyn_ $ ffor jumpers (\jumpers'' ->
+                        if null jumpers'' then
                             elClass "article" "tile is-child notification is-warning" $ do
                                 elClass "p" "title" $ text "Penal - Jump the Gun"
-                                el "p" $ text "There are no \"jump the gun\"penalties"
+                                el "p" $ text "There are no \"jump the gun\" penalties"
                         else
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Penal - Jump the Gun"
+                                elClass "p" "subtitle" $ text "what's a few points for a jump start?"
+                                elClass "div" "content" $ do
+                                    _ <- elClass "table" "table is-striped is-narrow" $ do
+                                            el "thead" $ do
+                                                el "tr" $ do
+                                                    elAttr "th" ("colspan" =: "4") $ text ""
+                                                    elAttr "th" ("class" =: "th-penalty-point-group" <> "colspan" =: "3") $ text "Points (so that ≮ minimum distance)"
 
-                                if null jumpers' then return () else do
-                                    elClass "p" "subtitle" $ text "what's a few points for a jump start?"
-                                    elClass "div" "content" $ do
-                                        _ <- elClass "table" "table is-striped is-narrow" $ do
-                                                el "thead" $ do
-                                                    el "tr" $ do
-                                                        elAttr "th" ("colspan" =: "4") $ text ""
-                                                        elAttr "th" ("class" =: "th-penalty-point-group" <> "colspan" =: "3") $ text "Points (so that ≮ minimum distance)"
+                                                el "tr" $ do
+                                                    elClass "th" "th-pid" $ text "Id"
+                                                    el "th" $ text "Name"
+                                                    elClass "th" "th-start-early" $ text "Early"
+                                                    elClass "th" "th-penalty-reset" $ text "Reset"
+                                                    elClass "th" "th-penalty-point" $ text "Toll"
+                                                    elClass "th" "th-penalty-point" $ text "Rebate"
+                                                    elClass "th" "th-penalty-point" $ text "Fee"
 
-                                                    el "tr" $ do
-                                                        elClass "th" "th-pid" $ text "Id"
-                                                        el "th" $ text "Name"
-                                                        elClass "th" "th-start-early" $ text "Early"
-                                                        elClass "th" "th-penalty-reset" $ text "Reset"
-                                                        elClass "th" "th-penalty-point" $ text "Toll"
-                                                        elClass "th" "th-penalty-point" $ text "Rebate"
-                                                        elClass "th" "th-penalty-point" $ text "Fee"
+                                            el "tbody" $
+                                                simpleList jumpers (rowPenalJump 3 (earliest <$> early))
 
-                                                el "tbody" $
-                                                    simpleList jumpers (rowPenalJump 3 (earliest <$> early))
-
-                                        return ()
+                                    return ()
 
                                 el "p" . text
                                     $ "These pilots were penalized (-) or rewarded (+).")
 
-                    dyn_ $ ffor egs (\egs'' ->
-                                elClass "article" "tile is-child box" $ do
-                                    elClass "p" "title" $ text "Penal - ESS not Goal"
+                    dyn_ $ ffor egs (\xs ->
+                        if null xs then
+                            elClass "article" "tile is-child notification is-warning" $ do
+                                elClass "p" "title" $ text "Penal - ESS not Goal"
+                                el "p" $ text "There are no \"ESS not goal\" penalties"
+                        else
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "Penal - ESS not Goal"
+                                elClass "p" "subtitle" $ text "miss goal and miss out"
+                                elClass "div" "content" $ do
+                                    _ <- elClass "table" "table is-striped is-narrow" $ do
+                                            el "thead" $ do
+                                                el "tr" $ do
+                                                    elClass "th" "th-pid" $ text "Id"
+                                                    el "th" $ text "Name"
+                                                    elClass "th" "th-penalty" $ text "Points"
 
-                                    if null egs'' then return () else do
-                                        elClass "p" "subtitle" $ text "miss goal and miss out"
-                                        elClass "div" "content" $ do
-                                            _ <- elClass "table" "table is-striped is-narrow" $ do
-                                                    el "thead" $ do
-                                                        el "tr" $ do
-                                                            elClass "th" "th-pid" $ text "Id"
-                                                            el "th" $ text "Name"
-                                                            elClass "th" "th-penalty" $ text "Points"
+                                            el "tbody" $ simpleList egs (rowPenalEssNotGoal 3)
+                                    return ()
 
-                                                    el "tbody" $ simpleList egs (rowPenalEssNotGoal 3)
-                                            return ()
+                                el "p" . text
+                                    $ "These pilots were penalized (-) or rewarded (+).")
 
-                                    el "p" . text
-                                        $ "These pilots were penalized (-) or rewarded (+).")
+                    dyn_ $ ffor penalAuto (\xs ->
+                        if null xs then
+                            elClass "article" "tile is-child notification is-warning" $ do
+                                elClass "p" "title" $ text "Penal - Auto"
+                                el "p" $ text "There are no auto penalties"
+                        else
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "Penal - Auto"
+                                elClass "p" "subtitle" $ text "getting jumpy"
+                                elClass "div" "content" $ do
+                                    _ <- elClass "table" "table is-striped is-narrow" $ do
+                                            el "thead" $ do
+                                                el "tr" $ do
+                                                    elClass "th" "th-pid" $ text "Id"
+                                                    el "th" $ text "Name"
+                                                    elClass "th" "th-norm th-penalty" $ text "✓ Points"
+                                                    elClass "th" "th-norm th-penalty-reason" $ text "Reason"
 
-                    dyn_ $ ffor penalAuto (\penalAuto'' ->
-                                elClass "article" "tile is-child box" $ do
-                                    elClass "p" "title" $ text "Penal - Auto"
+                                            el "tbody" $ simpleList penalAuto (rowPenalAuto 3)
+                                    return ()
 
-                                    if null penalAuto'' then return () else do
-                                        elClass "p" "subtitle" $ text "getting jumpy"
-                                        elClass "div" "content" $ do
-                                            _ <- elClass "table" "table is-striped is-narrow" $ do
-                                                    el "thead" $ do
-                                                        el "tr" $ do
-                                                            elClass "th" "th-pid" $ text "Id"
-                                                            el "th" $ text "Name"
-                                                            elClass "th" "th-norm th-penalty" $ text "✓ Points"
-                                                            elClass "th" "th-norm th-penalty-reason" $ text "Reason"
+                                el "p" . text
+                                    $ "These pilots were penalized (-) or rewarded (+).")
 
-                                                    el "tbody" $ simpleList penalAuto (rowPenalAuto 3)
-                                            return ()
+                    dyn_ $ ffor penal (\xs ->
+                        if null xs then
+                            elClass "article" "tile is-child notification is-warning" $ do
+                                elClass "p" "title" $ text "Penal - Manual"
+                                el "p" $ text "There are no penalties given out by the scorer"
+                        else
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "Penal - Manual"
+                                elClass "p" "subtitle" $ text "at the scorer's discretion"
+                                elClass "div" "content" $ do
+                                    _ <- elClass "table" "table is-striped is-narrow" $ do
+                                            el "thead" $ do
+                                                el "tr" $ do
+                                                    elClass "th" "th-pid" $ text "Id"
+                                                    el "th" $ text "Name"
+                                                    elClass "th" "th-penalty" $ text "Fraction"
+                                                    elClass "th" "th-penalty" $ text "Points"
+                                                    elClass "th" "th-penalty-reason" $ text "Reason"
 
-                                    el "p" . text
-                                        $ "These pilots were penalized (-) or rewarded (+).")
+                                            el "tbody" $ simpleList penal (rowPenal 3)
+                                    return ()
 
-                    dyn_ $ ffor penal (\penal'' ->
-                                elClass "article" "tile is-child box" $ do
-                                    elClass "p" "title" $ text "Penal - Manual"
-
-                                    if null penal'' then return () else do
-                                        elClass "p" "subtitle" $ text "at the scorer's discretion"
-                                        elClass "div" "content" $ do
-                                            _ <- elClass "table" "table is-striped is-narrow" $ do
-                                                    el "thead" $ do
-                                                        el "tr" $ do
-                                                            elClass "th" "th-pid" $ text "Id"
-                                                            el "th" $ text "Name"
-                                                            elClass "th" "th-penalty" $ text "Fraction"
-                                                            elClass "th" "th-penalty" $ text "Points"
-                                                            elClass "th" "th-penalty-reason" $ text "Reason"
-
-                                                    el "tbody" $ simpleList penal (rowPenal 3)
-                                            return ()
-
-                                    el "p" . text
-                                        $ "These pilots were penalized (-) or rewarded (+).")
+                                el "p" . text
+                                    $ "These pilots were penalized (-) or rewarded (+).")
 
     return ()
