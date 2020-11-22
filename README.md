@@ -221,6 +221,7 @@ flare-timing includes or not.
     - [x] Fractional
     - [x] Jump-the-gun factor
     - [x] Jump-the-gun maximum
+    - [x] Made ESS but not goal
 * Task Ranking
     - [x] Overall
     - [ ] Female

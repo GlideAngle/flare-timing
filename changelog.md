@@ -20,8 +20,10 @@ of this changelog.
 * Show the effective reset in the penal table when the pilot is too early.
 * Move the penal tab to the top-level with its own children; Jump-the-Gun
   & Auto, Ess ≠ Goal and Manual.
+* Under Basis | Pilots, put each kind of penalty in its own panel.
 * Show toll, rebate and fee to explain how the points after applying the
   jump-the-gun penalty are not less than minimum distance.
+* Score the penalty for making Ess but not making goal.
 
 # Plot Selected Pilots
 ## v0.28
