@@ -110,7 +110,7 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
                         ("ESS not goal => no time validity", "")
                         (\Tweak{essNotGoalScaling = EGwScaling x} ->
                             ( T.pack $ printf "ESS not goal => %.1f time validity" x
-                            , T.pack $ printf "%.1f*TV" (1 - x)))
+                            , T.pack $ printf "%.1f*TA" (1 - x)))
 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
@@ -154,7 +154,7 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
 
                 elClass "th" "th-early-units" . dynText $ snd <$> egScale
 
-                elClass "th" "th-early-units" $ text "TV"
+                elClass "th" "th-early-units" $ text "TA"
 
                 elClass "th" "th-time-alloc" . dynText $
                     maybe
@@ -209,7 +209,7 @@ tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
-            foot "¶ The time and arrival points are time validated (TV) by making goal."
+            foot "¶ The time and arrival (TA) points are validated by making goal."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
                 Paragliding -> do
