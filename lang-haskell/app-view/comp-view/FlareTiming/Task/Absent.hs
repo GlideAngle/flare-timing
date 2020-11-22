@@ -165,14 +165,13 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                         if null jumpers' then
                             elClass "article" "tile is-child notification is-warning" $ do
                                 elClass "p" "title" $ text "Penal - Jump the Gun"
-                                elClass "p" "subtitle" $ text "point adjustments"
-                                el "p" $ text "There are no \"Jump the Gun\"penalties"
+                                el "p" $ text "There are no \"jump the gun\"penalties"
                         else
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Penal - Jump the Gun"
 
                                 if null jumpers' then return () else do
-                                    elClass "p" "subtitle" $ text "jump the gun adjustments"
+                                    elClass "p" "subtitle" $ text "what's a few points for a jump start?"
                                     elClass "div" "content" $ do
                                         _ <- elClass "table" "table is-striped is-narrow" $ do
                                                 el "thead" $ do
@@ -202,7 +201,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                     elClass "p" "title" $ text "Penal - ESS not Goal"
 
                                     if null egs'' then return () else do
-                                        elClass "p" "subtitle" $ text "time validated points lost"
+                                        elClass "p" "subtitle" $ text "miss goal and miss out"
                                         elClass "div" "content" $ do
                                             _ <- elClass "table" "table is-striped is-narrow" $ do
                                                     el "thead" $ do
@@ -222,7 +221,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                     elClass "p" "title" $ text "Penal - Auto"
 
                                     if null penalAuto'' then return () else do
-                                        elClass "p" "subtitle" $ text "auto point adjustments"
+                                        elClass "p" "subtitle" $ text "getting jumpy"
                                         elClass "div" "content" $ do
                                             _ <- elClass "table" "table is-striped is-narrow" $ do
                                                     el "thead" $ do
@@ -243,7 +242,7 @@ tableAbsent utc early ix ln nyp' dnf' dfNt' penalAuto' penal' sDf = do
                                     elClass "p" "title" $ text "Penal - Manual"
 
                                     if null penal'' then return () else do
-                                        elClass "p" "subtitle" $ text "manual point adjustments"
+                                        elClass "p" "subtitle" $ text "at the scorer's discretion"
                                         elClass "div" "content" $ do
                                             _ <- elClass "table" "table is-striped is-narrow" $ do
                                                     el "thead" $ do
