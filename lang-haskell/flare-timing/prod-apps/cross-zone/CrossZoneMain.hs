@@ -107,7 +107,7 @@ go CmdBatchOptions{pilot, math, task} compFile@(CompInputFile compPath) = do
                     [
                         parallel $
                         [ runExceptT $ do
-                            lift . putStrLn $ printf "\rTask %d %s" ix (show p)
+                            lift . putStrLn $ printf "\rTask %d crossings for %s" ix (show p)
                             pilotTrack ((flown comp math) tasks ixTask) pilotLog
                         | pilotLog@(PilotTrackLogFile p _) <- taskLogs
                         ]
