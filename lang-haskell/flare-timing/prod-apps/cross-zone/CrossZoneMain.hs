@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 import Prelude hiding (span)
+import Text.Printf (printf)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Coerce (coerce)
@@ -11,7 +12,7 @@ import Data.Maybe (catMaybes, isNothing)
 import Data.List (nub, sort)
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
-import Control.Monad.Except (runExceptT)
+import Control.Monad.Except (runExceptT, lift)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
@@ -28,6 +29,7 @@ import Flight.Comp
     , PilotName(..)
     , Pilot(..)
     , TrackFileFail(..)
+    , PilotTrackLogFile(..)
     , IxTask(..)
     , Task(..)
     , Comp(..)
@@ -104,11 +106,13 @@ go CmdBatchOptions{pilot, math, task} compFile@(CompInputFile compPath) = do
                     sequence $
                     [
                         parallel $
-                        [ runExceptT $ pilotTrack ((flown comp math) tasks ixTask) pilotLog
-                        | pilotLog <- taskLogs
+                        [ runExceptT $ do
+                            lift . putStrLn $ printf "\rTask %d %s" ix (show p)
+                            pilotTrack ((flown comp math) tasks ixTask) pilotLog
+                        | pilotLog@(PilotTrackLogFile p _) <- taskLogs
                         ]
 
-                    | ixTask <- IxTask <$> [1..]
+                    | ixTask@(IxTask ix) <- IxTask <$> [1..]
                     | taskLogs <- selectedCompLogs
                     ]
 
