@@ -378,6 +378,9 @@ data Task k =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
+        , cancelled :: Bool
+        -- ^ If the task is cancelled. A task can be stopped and then later
+        -- cancelled.
         , taskTweak :: Maybe Tweak
         , earlyStart :: EarlyStart
         , penalsAuto :: [(Pilot, PenaltySeqs, String)]
@@ -526,6 +529,7 @@ cmp a b =
         ("speedSection", "zoneTimes") -> LT
         ("speedSection", "startGates") -> LT
         ("speedSection", "stopped") -> LT
+        ("speedSection", "cancelled") -> LT
         ("speedSection", "taskTweak") -> LT
         ("speedSection", "earlyStart") -> LT
         ("speedSection", "penalsAuto") -> LT
@@ -535,6 +539,7 @@ cmp a b =
 
         ("zoneTimes", "startGates") -> LT
         ("zoneTimes", "stopped") -> LT
+        ("zoneTimes", "cancelled") -> LT
         ("zoneTimes", "taskTweak") -> LT
         ("zoneTimes", "earlyStart") -> LT
         ("zoneTimes", "penalsAuto") -> LT
@@ -542,6 +547,8 @@ cmp a b =
         ("zoneTimes", "absent") -> LT
         ("zoneTimes", _) -> GT
 
+        ("startGates", "stopped") -> LT
+        ("startGates", "cancelled") -> LT
         ("startGates", "absent") -> LT
         ("startGates", "taskTweak") -> LT
         ("startGates", "earlyStart") -> LT
@@ -549,11 +556,18 @@ cmp a b =
         ("startGates", "penals") -> LT
         ("startGates", _) -> GT
 
+        ("stopped", "cancelled") -> LT
         ("stopped", "taskTweak") -> LT
         ("stopped", "earlyStart") -> LT
         ("stopped", "penalsAuto") -> LT
         ("stopped", "penals") -> LT
         ("stopped", _) -> GT
+
+        ("cancelled", "taskTweak") -> LT
+        ("cancelled", "earlyStart") -> LT
+        ("cancelled", "penalsAuto") -> LT
+        ("cancelled", "penals") -> LT
+        ("cancelled", _) -> GT
 
         ("taskTweak", "earlyStart") -> LT
         ("taskTweak", "penalsAuto") -> LT

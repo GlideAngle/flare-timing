@@ -24,6 +24,7 @@ of this changelog.
 * Show toll, rebate and fee to explain how the points after applying the
   jump-the-gun penalty are not less than minimum distance.
 * Score the penalty for making Ess but not making goal.
+* Show tasks stopped and cancelled in the task list.
 
 # Plot Selected Pilots
 ## v0.28

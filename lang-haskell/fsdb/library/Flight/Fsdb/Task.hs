@@ -607,6 +607,14 @@ getTask discipline compTweak sb =
                             TaskStateRegular _ -> Nothing
                             TaskStateCancel _ -> Nothing)
                         taskState
+                , cancelled =
+                    maybe
+                        False
+                        (\case
+                            TaskStateStop{} -> False
+                            TaskStateRegular _ -> False
+                            TaskStateCancel _ -> True)
+                        taskState
                 , taskTweak = if tw == compTweak then compTweak else tw
                 , earlyStart = fromMaybe nullEarlyStart es
                 , penalsAuto = []

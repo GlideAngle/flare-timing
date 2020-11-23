@@ -6,7 +6,7 @@ import qualified Data.Text as T (pack, intercalate)
 import Text.Printf (printf)
 
 import FlareTiming.Events (IxTask(..))
-import WireTypes.Comp (Task(..), getRaceRawZones)
+import WireTypes.Comp (Task(..), TaskStop(..), getRaceRawZones)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
@@ -40,12 +40,15 @@ taskList ds' stats' xs = do
                             elClass "th" "th-task-tps" $ text "Turnpoints"
                             elClass "th" "th-task-dist" $ text "Distance"
 
+                            elClass "th" "th-task-stopped" $ text "Stopped"
+                            elClass "th" "th-task-cancelled" $ text "Cancelled"
+
                             elClass "th" "th-task-stats-mean" $ text "Δ Mean"
                             elClass "th" "th-task-stats-stddev" $ text "± Std Dev"
 
                     rows <- el "tbody" $ simpleList ixs (rowTask ds stats)
 
-                    let tdFoot = elAttr "td" ("colspan" =: "6")
+                    let tdFoot = elAttr "td" ("colspan" =: "8")
                     let foot = el "tr" . tdFoot . text
 
                     el "tfoot" $ do
@@ -65,7 +68,9 @@ rowTask
     -> Dynamic t (IxTask, Task)
     -> m (Event t ())
 rowTask ds stats x' = do
-    ev <- dyn $ ffor x' (\(ix, x@Task{taskName}) ->
+    ev <- dyn $ ffor x' (\(ix, x@Task{taskName, stopped, cancelled}) ->
+                let isStopped = case stopped of Just TaskStop{} -> True; _ -> False in
+
                 case ix of
                     IxTaskNone -> return never
                     IxTask i -> do
@@ -96,6 +101,12 @@ rowTask ds stats x' = do
                                     elClass "td" "td-task-tps" $
                                         el "a" . text $ T.intercalate "-" ns
                                     elClass "td" "td-task-dist" $ text d
+
+                                    elClass "td" "td-task-stopped" . text
+                                        $ if isStopped then "STOPPED" else ""
+                                    elClass "td" "td-task-cancelled" . text
+                                        $ if cancelled then "CANCELLED" else ""
+
                                     elClass "td" "td-task-stats-mean" $
                                         elClass "span" meanClass $ text (T.pack mn)
                                     elClass "td" "td-task-stats-stddev" $

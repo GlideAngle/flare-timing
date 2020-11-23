@@ -367,6 +367,7 @@ data Task =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
+        , cancelled :: Bool
         , taskTweak :: Maybe Tweak
         , earlyStart :: EarlyStart
         , penalsAuto :: [(Pilot, PenaltySeqs, String)]
