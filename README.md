@@ -207,7 +207,7 @@ flare-timing includes or not.
     - [ ] Proportional leading points weight if no pilot made goal
     - [x] Adjustable stopped task bonus glide ratio (fixed at 4:1 for PG and 5:1 for HG)
 * Special Cases
-    - [ ] End of the speed section but not goal
+    - [x] End of the speed section but not goal
     - [x] Early start
     - [x] Stopped tasks
 * Stopped Tasks
