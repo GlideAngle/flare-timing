@@ -9,6 +9,7 @@
     "leaflet": "1.6.0",
     "leaflet-defaulticon-compatibility": "^0.1.1",
     "leaflet-draw": "^1.0.4",
+    "leaflet-ellipse": "^0.9.1",
     "leaflet-geometryutil": "^0.9.3",
     "leaflet-semicircle": "2.0.4",
     "leaflet.measurecontrol": "^1.1.0"

@@ -157,7 +157,7 @@ foreign import javascript unsafe
     markerPopup_ :: JSVal -> JSString -> IO ()
 
 foreign import javascript unsafe
-    "L['circle']([$1, $2], {radius: $3, color: $4, opacity: 0.6, weight: 1, stroke: $5, fill: $6})"
+    "L['ellipse']([$1, $2], [$3, $3], 90, {color: $4, opacity: 0.6, weight: 1, stroke: $5, fill: $6})"
     circle_ :: Double -> Double -> Double -> JSString -> Bool -> Bool -> IO JSVal
 
 foreign import javascript unsafe

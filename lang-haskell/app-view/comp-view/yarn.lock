@@ -2540,6 +2540,11 @@ leaflet-draw@^1.0.4:
   resolved "https://registry.yarnpkg.com/leaflet-draw/-/leaflet-draw-1.0.4.tgz#45be92f378ed253e7202fdeda1fcc71885198d46"
   integrity sha512-rsQ6saQO5ST5Aj6XRFylr5zvarWgzWnrg46zQ1MEOEIHsppdC/8hnN8qMoFvACsPvTioAuysya/TVtog15tyAQ==
 
+leaflet-ellipse@^0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/leaflet-ellipse/-/leaflet-ellipse-0.9.1.tgz#abef7447dd0cfc69fd1f3bec07f0e3d59a7ecfa2"
+  integrity sha512-WaTh+/7dwtn8h+WsUebxl2KS4diZ9Cpci5dBlzp92pSLNeWGLlmFz0/WTzeyVwxrYwojZHZvYfVmT2Xv9u5TCA==
+
 leaflet-geometryutil@^0.9.3:
   version "0.9.3"
   resolved "https://registry.yarnpkg.com/leaflet-geometryutil/-/leaflet-geometryutil-0.9.3.tgz#e10fa302d99d4b1d3c6365a1f39298635a2704cd"
