@@ -99,13 +99,16 @@ data ChunkDifficultyFraction =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
--- | How many pilots down in this chunk.
+-- | Pilots down in this chunk. The @downs@ and @downers@ fields can be zipped.
 data ChunkLandings =
     ChunkLandings
         { chunk :: IxChunk
         , down :: Int
+        -- ^ How many pilots are down in this chunk.
         , downs :: [PilotDistance (Quantity Double [u| km |])]
+        -- ^ The distance each of the downers came down.
         , downers :: [Pilot]
+        -- ^ The pilots that landed in this chunk.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -113,12 +116,19 @@ data ChunkDifficulty =
     ChunkDifficulty
         { chunk :: IxChunk
         , startChunk :: Chunk (Quantity Double [u| km |])
+        -- ^ The task distance to the beginning of this chunk.
         , endChunk :: Chunk (Quantity Double [u| km |])
+        -- ^ The task distance to the end of this chunk.
         , endAhead :: Chunk (Quantity Double [u| km |])
+        -- ^ The task distance to the end of the chunk that we look ahead to.
         , down :: Int
+        -- ^ How many pilots are down in this chunk.
         , downs :: [PilotDistance (Quantity Double [u| km |])]
+        -- ^ The distance each of the downers came down.
         , downers :: [Pilot]
+        -- ^ The pilots that landed in this chunk.
         , downward :: Int
+        -- ^ The number of pilots that landed ahead within the lookahead distance.
         , rel :: RelativeDifficulty
         , frac :: DifficultyFraction
         }
