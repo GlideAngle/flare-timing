@@ -209,6 +209,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     let penal = Penal . Comp.penals <$> task
     let tweak = Comp.taskTweak <$> task
     let early = earlyStart <$> task
+    let stp = stopped <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
     sEx <- holdDyn [] =<< getTaskNormScore ix pb
@@ -270,7 +271,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                 tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                         ScoreTabReach ->
                             elAttr "div" ("id" =: "score-reach") $
-                                tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vw ps sDf sEx
+                                tableScoreReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sEx
                         ScoreTabEffort ->
                             elAttr "div" ("id" =: "score-effort") $
                                 tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN
