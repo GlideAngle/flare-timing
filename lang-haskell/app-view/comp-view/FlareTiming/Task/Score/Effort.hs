@@ -125,12 +125,12 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-chunk" $ text "Chunk"
-                elClass "th" "th-norm th-chunk" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-
                 elClass "th" "th-landed-distance" $ text "Landed"
                 elClass "th" "th-norm th-effort-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
+
+                elClass "th" "th-chunk" $ text "Chunk"
+                elClass "th" "th-norm th-chunk" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-effort-points" $ text "Effort †"
@@ -140,13 +140,13 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
 
-                elClass "th" "th-chunk-units" $ text "(km)"
-                elClass "th" "th-chunk-units" $ text "(km)"
-                elClass "th" "th-chunk-units" $ text "(km)"
+                elClass "th" "th-landed-distance-units" $ text "(km)"
+                elClass "th" "th-landed-distance-units" $ text "(km)"
+                elClass "th" "th-landed-distance-units" $ text "(km)"
 
-                elClass "th" "th-landed-distance-units" $ text "(km)"
-                elClass "th" "th-landed-distance-units" $ text "(km)"
-                elClass "th" "th-landed-distance-units" $ text "(km)"
+                elClass "th" "th-chunk-units" $ text "(km)"
+                elClass "th" "th-chunk-units" $ text "(km)"
+                elClass "th" "th-chunk-units" $ text "(km)"
 
                 elClass "th" "th-effort-alloc" . dynText $
                     maybe
@@ -328,13 +328,13 @@ pointRow w _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
         elClass "td" "td-pilot" $ text idNamePilot
 
-        elClass "td" "td-chunk" $ text ixChunk
-        elClass "td" "td-norm td-chunk" $ text ixChunkN
-        elClass "td" "td-norm td-diff" $ text ixChunkDiff
-
         elDynClass "td" (fst <$> awardFree) . text $ landed
         elClass "td" "td-norm td-landed-distance" . text $ landedN
         elClass "td" "td-norm td-landed-distance" . text $ landedDiff
+
+        elClass "td" "td-chunk" $ text ixChunk
+        elClass "td" "td-norm td-chunk" $ text ixChunkN
+        elClass "td" "td-norm td-diff" $ text ixChunkDiff
 
         elClass "td" "td-effort-points" . dynText
             $ showMax Pt.effort showTaskDifficultyPoints pt points
