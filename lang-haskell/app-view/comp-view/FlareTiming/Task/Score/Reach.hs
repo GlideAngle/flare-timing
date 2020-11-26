@@ -10,12 +10,9 @@ import qualified Data.Map.Strict as Map
 import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
-import qualified WireTypes.Point as Wg (Weights(..))
-import qualified WireTypes.Validity as Vy (Validity(..))
 import qualified WireTypes.Point as Bk (Breakdown(..))
 import WireTypes.Point
     ( TaskPlacing(..)
-    , TaskPoints(..)
     , PilotDistance(..)
     , Points(..)
     , ReachToggle(..)
@@ -42,15 +39,12 @@ tableScoreReach
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t Dnf
     -> Dynamic t DfNoTrack
-    -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
-    -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
-    -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Bk.Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+tableScoreReach utcOffset hgOrPg free sgs ln dnf' dfNt vw pt sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf

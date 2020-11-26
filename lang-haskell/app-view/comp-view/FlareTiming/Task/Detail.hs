@@ -270,7 +270,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                 tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                         ScoreTabReach ->
                             elAttr "div" ("id" =: "score-reach") $
-                                tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vw ps sDf sEx
                         ScoreTabEffort ->
                             elAttr "div" ("id" =: "score-effort") $
                                 tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN
