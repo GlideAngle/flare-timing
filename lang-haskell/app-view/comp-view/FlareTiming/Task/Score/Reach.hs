@@ -1,10 +1,10 @@
 module FlareTiming.Task.Score.Reach (tableScoreReach) where
 
 import Data.List (sortBy)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import Text.Printf (printf)
 import Reflex.Dom
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
@@ -55,6 +55,11 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
             . fromIntegral
             $ lenDfs + 1
 
+    (cols, colsDnfPad) <- sample . current $ ffor stp (\s ->
+                                if isJust s
+                                   then ("19", "8")
+                                   else ("18", "7"))
+
     let thSpace = elClass "th" "th-space" $ text ""
 
     let tableClass =
@@ -71,7 +76,8 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
                 elAttr "th" ("colspan" =: "3") $ text ""
 
                 dyn_ $ ffor stp (\case
-                    Just _ ->
+                    Just _ -> do
+                        el "th" $ text ""
                         elAttr "th" ("colspan" =: "3" <> "class" =: "th-stopped") $
                             text "Only with Stopped Tasks"
                     Nothing ->
@@ -87,6 +93,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
 
                 dyn_ $ ffor stp (\case
                     Just _ -> do
+                        elClass "th" "th-distance-flown" $ text "Flown †"
                         elClass "th" "th-distance-extra" $ text "Extra ‡"
                         elClass "th" "th-norm th-best-distance" $ text "✓"
                         elClass "th" "th-norm th-diff" $ text "Δ"
@@ -103,9 +110,16 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
 
-                elClass "th" "th-best-distance-units" $ text "(km)"
-                elClass "th" "th-best-distance-units" $ text "(km)"
-                elClass "th" "th-best-distance-units" $ text "(km)"
+                dyn_ $ ffor stp (\case
+                    Just _ -> do
+                        elClass "th" "th-best-distance-units" $ text "(km)"
+                        elClass "th" "th-best-distance-units" $ text "(km)"
+                        elClass "th" "th-best-distance-units" $ text "(km)"
+                        elClass "th" "th-best-distance-units" $ text "(km)"
+                    Nothing -> do
+                        elClass "th" "th-best-distance-units" $ text "(km)"
+                        elClass "th" "th-best-distance-units" $ text "(km)"
+                        elClass "th" "th-best-distance-units" $ text "(km)")
 
                 elClass "th" "th-reach-alloc" . dynText $
                     maybe
@@ -133,10 +147,10 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
                         pt
                         (Map.fromList <$> sEx))
 
-            dnfRows w dnfPlacing dnf'
+            dnfRows colsDnfPad w dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "18")
+        let tdFoot = elAttr "td" ("colspan" =: cols)
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -286,6 +300,7 @@ pointRow w _utcOffset free _ln stp dfNt pt sEx x = do
 
         dyn_ $ ffor stp (\case
             Just _ -> do
+                elDynClass "td" (fst <$> awardFree) $ text xF
                 elDynClass "td" (fst <$> awardFree) $ text xE
                 elClass "td" "td-norm td-best-distance" $ text yE
                 elClass "td" "td-norm td-diff" $ text yDiffE
@@ -301,11 +316,12 @@ pointRow w _utcOffset free _ln stp dfNt pt sEx x = do
 
 dnfRows
     :: MonadWidget t m
-    => Dynamic t Int
+    => T.Text -- ^ colspan
+    -> Dynamic t Int
     -> TaskPlacing
     -> Dynamic t Dnf
     -> m ()
-dnfRows w place ps' = do
+dnfRows c w place ps' = do
     let ps = unDnf <$> ps'
     len <- sample . current $ length <$> ps
     let p1 = take 1 <$> ps
@@ -315,21 +331,22 @@ dnfRows w place ps' = do
         0 -> do
             return ()
         1 -> do
-            _ <- simpleList ps (dnfRow w place (Just 1))
+            _ <- simpleList ps (dnfRow c w place (Just 1))
             return ()
         n -> do
-            _ <- simpleList p1 (dnfRow w place (Just n))
-            _ <- simpleList pN (dnfRow w place Nothing)
+            _ <- simpleList p1 (dnfRow c w place (Just n))
+            _ <- simpleList pN (dnfRow c w place Nothing)
             return ()
 
 dnfRow
     :: MonadWidget t m
-    => Dynamic t Int
+    => T.Text -- ^ colspan
+    -> Dynamic t Int
     -> TaskPlacing
     -> Maybe Int
     -> Dynamic t Pilot
     -> m ()
-dnfRow w place rows pilot = do
+dnfRow colsDnfPad w place rows pilot = do
     let dnfMega =
             case rows of
                 Nothing -> return ()
@@ -337,7 +354,7 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "7"
+                        <> "colspan" =: colsDnfPad
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
