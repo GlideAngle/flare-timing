@@ -307,20 +307,22 @@ pointRow w _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
                             , quieten $ showDifficultyPointsDiff ePtsN ePts
                             ))
 
-    let pilotChunk pilot' ixChunkMap' = fromMaybe (IxChunk 0, PilotDistance 0) $ do
-        ic@(IxChunk i) <- Map.lookup pilot' ixChunkMap'
-        let pd = PilotDistance (0.1 * fromIntegral i :: Double)
-        return $ (ic, pd)
+    let pilotChunk pilot' ixChunkMap' = do
+            ic@(IxChunk i) <- Map.lookup pilot' ixChunkMap'
+            let pd = PilotDistance (0.1 * fromIntegral i :: Double)
+            return $ (ic, pd)
 
     (ixChunk, ixChunkN, ixChunkDiff) <- sample . current
             $ ffor3 pilot ixChunkMap ixChunkMapN (\p map mapN ->
-                let (_, pd) = pilotChunk p map
-                    (_, pdN) = pilotChunk p mapN
-                in
-                    ( showPilotDistance 1 pd
-                    , showPilotDistance 1 pdN
-                    , showPilotDistanceDiff 1 pdN pd
-                    ))
+                fromMaybe ("", "", "") $ do
+                    (_, pd) <- pilotChunk p map
+                    (_, pdN) <- pilotChunk p mapN
+
+                    return
+                        ( showPilotDistance 1 pd
+                        , showPilotDistance 1 pdN
+                        , showPilotDistanceDiff 1 pdN pd
+                        ))
 
     elClass "tr" classPilot $ do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
