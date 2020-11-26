@@ -2,7 +2,7 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/changelog.md)
 of this changelog.
 
-# Faster Commands
+# Ess ≠ Goal
 ## v0.29
 
 * Fixed a space leak and made some of the commands faster by making use of
@@ -25,6 +25,7 @@ of this changelog.
   jump-the-gun penalty are not less than minimum distance.
 * Score the penalty for making Ess but not making goal.
 * Show tasks stopped and cancelled in the task list.
+* Only show the extra reach via glide column for stopped tasks.
 
 # Plot Selected Pilots
 ## v0.28
