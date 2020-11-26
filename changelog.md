@@ -26,6 +26,8 @@ of this changelog.
 * Score the penalty for making Ess but not making goal.
 * Show tasks stopped and cancelled in the task list.
 * Only show the extra reach via glide column for stopped tasks.
+* Don't dislay a chunk distance in the effort table for pilots that don't land
+  out.
 
 # Plot Selected Pilots
 ## v0.28
