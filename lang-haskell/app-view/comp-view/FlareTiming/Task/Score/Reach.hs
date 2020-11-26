@@ -79,7 +79,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
                     Just _ -> do
                         el "th" $ text ""
                         elAttr "th" ("colspan" =: "3" <> "class" =: "th-stopped") $
-                            text "Only with Stopped Tasks"
+                            text "Extra reach via glide, only with stopped tasks"
                     Nothing ->
                         elAttr "th" ("colspan" =: "3") $ text "")
 
