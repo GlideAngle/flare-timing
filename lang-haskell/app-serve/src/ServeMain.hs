@@ -86,7 +86,7 @@ import Flight.Scribe
     , readMaskingReach
     , readMaskingSpeed
     , readBonusReach
-    , readLanding, readPointing
+    , readLanding, readFaring, readPointing
     , readPilotDiscardFurther
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -120,6 +120,7 @@ import Flight.Comp
     , MaskSpeedFile(..)
     , BonusReachFile(..)
     , LandOutFile(..)
+    , FarOutFile(..)
     , GapPointFile(..)
     , NormArrivalFile(..)
     , NormLandoutFile(..)
@@ -141,6 +142,7 @@ import Flight.Comp
     , compToMaskSpeed
     , compToBonusReach
     , compToLand
+    , compToFar
     , compToPoint
     , crossToTag
     , tagToPeg
@@ -291,7 +293,8 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
     let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
     let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
-    let landFile@(LandOutFile landPath) = compToLand compFile
+    let landFile@(LandOutFile _landPath) = compToLand compFile
+    let farFile@(FarOutFile landPath) = compToFar compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
     let normArrivalFile@(NormArrivalFile normArrivalPath) = compToNormArrival compFile
     let normLandoutFile@(NormLandoutFile normLandoutPath) = compToNormLandout compFile
@@ -380,9 +383,14 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readMaskingSpeed maskSpeedFile)
                     (const $ return Nothing)
 
-            landing <-
+            _landing <-
                 catchIO
                     (Just <$> readLanding landFile)
+                    (const $ return Nothing)
+
+            landing <-
+                catchIO
+                    (Just <$> readFaring farFile)
                     (const $ return Nothing)
 
             pointing <-

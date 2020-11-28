@@ -613,9 +613,15 @@ in    defs
               { dependencies =
                     deps
                   # [ "safe-exceptions"
+                    , "time"
+                    , "flight-lookup"
+                    , "flight-route"
                     , "flight-gap-allot"
                     , "flight-gap-effort"
+                    , "flight-gap-valid"
                     ]
+              , other-modules =
+                  [ "MaskPilots", "Stats", "FarOutOptions" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"
@@ -626,7 +632,10 @@ in    defs
               , main =
                   "FarOutMain.hs"
               , source-dirs =
-                  "prod-apps/far-out"
+                  [ "prod-apps/mask-common"
+                  , "prod-apps/mask-effort"
+                  , "prod-apps/far-out"
+                  ]
               }
           , ft-gap-point =
               { dependencies =

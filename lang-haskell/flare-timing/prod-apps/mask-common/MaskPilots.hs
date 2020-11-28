@@ -1,6 +1,6 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-module MaskPilots (maskPilots) where
+module MaskPilots (maskPilots, didFlyNoTrackStats) where
 
 import Data.Function (on)
 import Data.Maybe (isJust)
@@ -88,10 +88,10 @@ maskPilots
     -> [PilotGroup]
     -> [[Either (Pilot, b) (Pilot, Pilot -> FlightStats w)]]
     -> [[(Pilot, FlightStats w)]]
-maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
+maskPilots free tasks lsTask pilotGroups fss =
     [ rankByArrival ysDf ysDfNt
     | ysDf <- yssDf
-    | ysDfNt <- yssDfNt
+    | ysDfNt <- didFlyNoTrackStats free tasks lsTask dfNtss
     ]
     where
         dfNtss = didFlyNoTracklog <$> pilotGroups
@@ -116,50 +116,56 @@ maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
             | flights <- fssDf
             ]
 
-        yssDfNt :: [[(Pilot, FlightStats _)]] =
-            [
-                fmap
-                    (\Cmp.DfNoTrackPilot
-                        { pilot = p
-                        , awardedReach = dA
-                        , awardedVelocity = AwardedVelocity{ss, es}
-                        } ->
-                        let dm :: Quantity Double [u| m |] = convert dMin
+didFlyNoTrackStats
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> [Task k]
+    -> [Maybe TaskRouteDistance]
+    -> [DfNoTrack]
+    -> [[(Pilot, FlightStats w)]]
+didFlyNoTrackStats (MinimumDistance dMin) tasks lsTask dfNtss =
+    [
+        fmap
+            (\Cmp.DfNoTrackPilot
+                { pilot = p
+                , awardedReach = dA
+                , awardedVelocity = AwardedVelocity{ss, es}
+                } ->
+                let dm :: Quantity Double [u| m |] = convert dMin
 
-                            d = TaskDistance
-                                <$> maybe
-                                    (Just dm)
-                                    (\ReachToggle{extra = dAward} -> do
-                                        td <- lTask
-                                        let a = awardByFrac (Clamp True) td dAward
+                    d = TaskDistance
+                        <$> maybe
+                            (Just dm)
+                            (\ReachToggle{extra = dAward} -> do
+                                td <- lTask
+                                let a = awardByFrac (Clamp True) td dAward
 
-                                        return $ max a dm)
-                                    dA
+                                return $ max a dm)
+                            dA
 
-                            sEffort = madeAwarded <$> lTask <*> d
+                    sEffort = madeAwarded <$> lTask <*> d
 
-                            sTime =
-                                case (ss, es) of
-                                    (Just ss', Just es') ->
-                                        let se = StartEnd ss' es
-                                            ssT = pilotTime [StartGate ss'] se
-                                            gsT = pilotTime gates se
-                                        in
-                                            do
-                                                ssT' <- ssT
-                                                gsT' <- gsT
-                                                return
-                                                    TimeStats
-                                                        { ssTime = ssT'
-                                                        , gsTime = gsT'
-                                                        , esMark = es'
-                                                        , positionAtEss = Nothing
-                                                        }
-                                    _ -> Nothing
+                    sTime =
+                        case (ss, es) of
+                            (Just ss', Just es') ->
+                                let se = StartEnd ss' es
+                                    ssT = pilotTime [StartGate ss'] se
+                                    gsT = pilotTime gates se
+                                in
+                                    do
+                                        ssT' <- ssT
+                                        gsT' <- gsT
+                                        return
+                                            TimeStats
+                                                { ssTime = ssT'
+                                                , gsTime = gsT'
+                                                , esMark = es'
+                                                , positionAtEss = Nothing
+                                                }
+                            _ -> Nothing
 
-                        in (p, nullStats{statEffort = sEffort, statTimeRank = sTime}))
-                    dfNts
-            | DfNoTrack dfNts <- dfNtss
-            | lTask <- (fmap. fmap) wholeTaskDistance lsTask
-            | gates <- startGates <$> tasks
-            ]
+                in (p, nullStats{statEffort = sEffort, statTimeRank = sTime}))
+            dfNts
+    | DfNoTrack dfNts <- dfNtss
+    | lTask <- (fmap. fmap) wholeTaskDistance lsTask
+    | gates <- startGates <$> tasks
+    ]

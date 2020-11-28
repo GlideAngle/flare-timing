@@ -57,6 +57,7 @@ import Flight.Comp
     , MaskSpeedFile(..)
     , BonusReachFile(..)
     , LandOutFile(..)
+    , FarOutFile(..)
     , Pilot
     , PilotGroup(dnf, didFlyNoTracklog)
     , StartGate(..)
@@ -79,6 +80,7 @@ import Flight.Comp
     , compToMaskSpeed
     , compToBonusReach
     , compToLand
+    , compToFar
     , compToPoint
     , findCompInput
     , ensureExt
@@ -116,6 +118,7 @@ import Flight.Scribe
     , readMaskingSpeed
     , readBonusReach
     , readLanding
+    , readFaring
     , writePointing
     )
 import Flight.Mask (RaceSections(..), section)
@@ -206,7 +209,8 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
     let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
     let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
-    let landFile@(LandOutFile landPath) = compToLand compFile
+    let landFile@(LandOutFile _landPath) = compToLand compFile
+    let farFile@(FarOutFile landPath) = compToFar compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading pilots ABS & DNF from task from '" ++ takeFileName compPath ++ "'"
@@ -271,9 +275,14 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readMaskingSpeed maskSpeedFile)
             (const $ return Nothing)
 
-    landing <-
+    _landing <-
         catchIO
             (Just <$> readLanding landFile)
+            (const $ return Nothing)
+
+    landing <-
+        catchIO
+            (Just <$> readFaring farFile)
             (const $ return Nothing)
 
     routes <-

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 13e47101cd25bda529fbd1eb4150963041b7af57584c6bc5a4011577c81d029e
+-- hash: 2a6e68da54a282e5ca53945f0777a74ac3a4585ba6d5460140b02f5e9edd726d
 
 name:           flare-timing
 version:        0.1.0
@@ -428,9 +428,12 @@ executable ft-extract-input
 executable ft-far-out
   main-is: FarOutMain.hs
   other-modules:
+      MaskPilots
+      Stats
       FarOutOptions
-      Paths_flare_timing
   hs-source-dirs:
+      prod-apps/mask-common
+      prod-apps/mask-effort
       prod-apps/far-out
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
@@ -447,13 +450,17 @@ executable ft-far-out
     , flight-comp
     , flight-gap-allot
     , flight-gap-effort
+    , flight-gap-valid
     , flight-latlng
+    , flight-lookup
+    , flight-route
     , flight-scribe
     , flight-time
     , formatting
     , mtl
     , raw-strings-qq
     , safe-exceptions
+    , time
     , transformers
     , uom-plugin
     , yaml

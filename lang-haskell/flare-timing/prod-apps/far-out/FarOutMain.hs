@@ -5,6 +5,7 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
 import Control.Monad.Zip (munzip)
 import Control.Exception.Safe (catchIO)
@@ -13,6 +14,8 @@ import System.Directory (getCurrentDirectory)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Route (OptimalRoute(..))
+import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
@@ -20,25 +23,34 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
+    , TaskLengthFile(..)
     , CompSettings(..)
     , Nominal(..)
-    , MaskEffortFile(..)
-    , compToMaskEffort
+    , MaskReachFile(..)
+    , PilotGroup(didFlyNoTracklog)
+    , IxTask(..)
+    , compToTaskLength
+    , compToMaskReach
     , compToFar
     , findCompInput
     , ensureExt
     )
-import Flight.Distance (unTaskDistanceAsKm)
-import Flight.Track.Distance (TrackDistance(..))
-import Flight.Track.Mask (MaskingEffort(..))
+import Flight.Distance (unTaskDistanceAsKm, fromKms)
+import Flight.Track.Distance (TrackDistance(..), Effort)
+import Flight.Track.Mask (MaskingEffort(..), MaskingReach(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
-import Flight.Scribe (readComp, readMaskingEffort, writeFaring)
+import qualified Flight.Lookup as Lookup (compRoutes)
+import Flight.Scribe (readComp, readRoute, readMaskingReach, writeFaring)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
 import qualified "flight-gap-effort" Flight.Score as Gap
     (Chunking(..), ChunkDifficulty(..), landouts, lookahead, gradeDifficulty)
+import "flight-gap-valid" Flight.Score (ReachStats(..))
+import Flight.Lookup.Route (routeLength)
 import FarOutOptions (description)
+import MaskPilots (didFlyNoTrackStats)
+import Stats (FlightStats(..))
 
 main :: IO ()
 main = do
@@ -62,10 +74,13 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Far outs counted for distance difficulty completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile = do
-    let maskFile@(MaskEffortFile maskPath) = compToMaskEffort compFile
+go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
+    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
+    let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
     let farFile = compToFar compFile
-    putStrLn $ "Reading far outs from '" ++ takeFileName maskPath ++ "'"
+    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
+    putStrLn $ "Reading far outs from '" ++ takeFileName maskReachPath ++ "'"
 
     compSettings <-
         catchIO
@@ -74,13 +89,75 @@ go CmdBatchOptions{..} compFile = do
 
     masking <-
         catchIO
-            (Just <$> readMaskingEffort maskFile)
+            (Just <$> readMaskingReach maskReachFile)
             (const $ return Nothing)
 
-    case (compSettings, masking) of
-        (Nothing, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing) -> putStrLn "Couldn't read the maskings."
-        (Just cs, Just mk) -> writeFaring farFile $ difficulty cs mk
+    routes <-
+        catchIO
+            (Just <$> readRoute lenFile)
+            (const $ return Nothing)
+
+    let lookupTaskLength =
+            routeLength
+                taskRoute
+                taskRouteSpeedSubset
+                stopRoute
+                startRoute
+                routes
+
+    case (compSettings, masking, routes) of
+        (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _) -> putStrLn "Couldn't read the routes."
+        (_, _, Nothing) -> putStrLn "Couldn't read the maskings."
+        (Just cs, Just mk, Just _) -> do
+            let CompSettings{nominal = Cmp.Nominal{free}, tasks, pilotGroups} = cs
+            let ixTasks = take (length tasks) (IxTask <$> [1 ..])
+
+            let dfNtss =
+                    didFlyNoTrackStats
+                        free
+                        tasks
+                        (Lookup.compRoutes lookupTaskLength ixTasks)
+                        (didFlyNoTracklog <$> pilotGroups)
+
+            let ess =
+                    [
+                        catMaybes
+                        [ (p,) <$> statEffort
+                        | (p, FlightStats{statEffort}) <- dfNts
+                        ]
+
+                    | dfNts <- dfNtss
+                    ]
+
+            writeFaring farFile $ difficultyByReach cs mk ess
+
+difficultyByReach
+    :: CompSettings k
+    -> MaskingReach
+    -> [[(Pilot, TrackDistance Effort)]]
+    -> Cmp.Landing
+difficultyByReach cs MaskingReach{bolster, nigh} dfNtss =
+    difficulty
+        cs
+        MaskingEffort
+            { bestEffort =
+                [ do
+                    ReachStats{max = FlownMax d} <- b
+                    return $ fromKms d
+
+                | b <- bolster
+                ]
+            , land = zipWith (++) xss dfNtss
+            }
+    where
+        xss =
+                [
+                    [ (p,) . (\x -> TrackDistance Nothing x) $ made
+                    | (p, TrackDistance{made}) <- ns
+                    ]
+                | ns <- nigh
+                ]
 
 difficulty :: CompSettings k -> MaskingEffort -> Cmp.Landing
 difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
