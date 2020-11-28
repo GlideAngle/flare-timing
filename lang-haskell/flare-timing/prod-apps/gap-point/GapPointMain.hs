@@ -35,7 +35,7 @@ import Flight.LatLng (QAlt)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Distance (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
+import Flight.Distance (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm, fromKms)
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (DfNoTrackPilot(..))
 import Flight.Comp
@@ -311,9 +311,35 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (_, _, _, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
         (_, _, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
         (_, _, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just cg, Just tg, Just stp, Just mA, Just mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) ->
-            let tg' = effectiveTagging tg stp in
-            writePointing pointFile $ points' cs lookupTaskLength cg tg' mA mE mL2 (mR, bR) mS lg
+        (Just cs, Just cg, Just tg, Just stp, Just mA, Just _mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) -> do
+            let tg' = effectiveTagging tg stp
+            let mE' = efforts lg
+
+            writePointing pointFile $ points' cs lookupTaskLength cg tg' mA mE' mL2 (mR, bR) mS lg
+
+efforts :: Cmp.Landing -> MaskingEffort
+efforts Cmp.Landing{bestDistance = ds, difficulty = ess} =
+    MaskingEffort
+        { bestEffort = [ do FlownMax d' <- d; return $ fromKms d' | d <- ds ]
+        , land = downPilots <$> ess
+        }
+
+downPilots
+    :: Maybe [ChunkDifficulty]
+    -> [(Pilot, TrackDistance Effort)]
+downPilots Nothing = []
+downPilots (Just xs) =
+    concat
+    [ zip downers ((\(PilotDistance d) -> toBothWays $ fromKms d) <$> downs)
+    | ChunkDifficulty{downers, downs} <- xs
+    ]
+
+toBothWays :: QTaskDistance Double [u| m |] -> TrackDistance (QTaskDistance Double [u| m |])
+toBothWays d =
+    TrackDistance
+        { togo = Nothing -- NOTE: Don't care about togo right now.
+        , made = Just d
+        }
 
 points'
     :: CompSettings k
