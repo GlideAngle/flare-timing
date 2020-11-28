@@ -88,9 +88,7 @@ import Flight.Track.Cross
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Distance
-    ( TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Land
-    , awardByFrac
-    )
+    (TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Effort, awardByFrac)
 import Flight.Track.Time (AwardedVelocity(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
@@ -997,7 +995,7 @@ applyDifficulty Gap.Points{distance = DistancePoints y} (DifficultyFraction frac
 madeDifficultyDf
     :: MinimumDistance (Quantity Double [u| km |])
     -> Map IxChunk DifficultyFraction
-    -> TrackDistance Land
+    -> TrackDistance Effort
     -> DifficultyFraction
 madeDifficultyDf _ mapIxToFrac td =
     fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
@@ -1037,7 +1035,7 @@ madeAwarded (MinimumDistance (MkQuantity d)) _ _ = Just d
 madeNigh :: TrackDistance Nigh -> Maybe Double
 madeNigh TrackDistance{made} = unTaskDistanceAsKm <$> made
 
-madeLand :: TrackDistance Land -> Maybe Double
+madeLand :: TrackDistance Effort -> Maybe Double
 madeLand TrackDistance{made} = unTaskDistanceAsKm <$> made
 
 applyLinear

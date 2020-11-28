@@ -17,7 +17,7 @@ import Flight.Distance (QTaskDistance)
 import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
-import Flight.Track.Distance (TrackDistance(..), Land)
+import Flight.Track.Distance (TrackDistance(..), Effort)
 import Flight.Track.Mask.Cmp (cmp)
 
 -- | For each task, the masking for effort for that task.
@@ -25,7 +25,7 @@ data MaskingEffort =
     MaskingEffort
         { bestEffort :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the best distance made.
-        , land :: [[(Pilot, TrackDistance Land)]]
+        , land :: [[(Pilot, TrackDistance Effort)]]
         -- ^ For each task, the distance of the landing spot for each pilot
         -- landing out.
         }

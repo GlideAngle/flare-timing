@@ -8,7 +8,7 @@ import Data.Time.Clock (UTCTime)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Track.Distance (TrackDistance(..), Land)
+import Flight.Track.Distance (TrackDistance(..), Effort)
 import "flight-gap-allot" Flight.Score (PilotTime(..), ArrivalPlacing(..))
 
 data TimeStats =
@@ -28,7 +28,7 @@ instance Show TimeStats where
 data FlightStats k =
     FlightStats
         { statTimeRank :: Maybe TimeStats
-        , statLand :: Maybe (TrackDistance Land)
+        , statEffort :: Maybe (TrackDistance Effort)
         }
 
 instance Show (FlightStats k) where
@@ -38,5 +38,5 @@ nullStats :: FlightStats k
 nullStats =
     FlightStats
         { statTimeRank = Nothing
-        , statLand = Nothing
+        , statEffort = Nothing
         }

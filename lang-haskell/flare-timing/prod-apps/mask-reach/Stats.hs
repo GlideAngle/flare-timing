@@ -12,7 +12,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (QAlt, Alt(..))
 import Flight.Kml (Altitude(..))
-import Flight.Track.Distance (TrackDistance(..), Land)
+import Flight.Track.Distance (TrackDistance(..), Effort)
 import Flight.Mask (RaceSections(..))
 import Flight.Comp.Distance (DashPathInputs(..))
 import "flight-gap-allot" Flight.Score (PilotTime(..), ArrivalPlacing(..))
@@ -37,7 +37,7 @@ instance Show TimeStats where
 data FlightStats k =
     FlightStats
         { statTimeRank :: Maybe TimeStats
-        , statLand :: Maybe (TrackDistance Land)
+        , statEffort :: Maybe (TrackDistance Effort)
         , statAlt :: Maybe (QAlt Double [u| m |])
         , statDash :: DashPathInputs k
         }
@@ -49,7 +49,7 @@ nullStats :: FlightStats k
 nullStats =
     FlightStats
         { statTimeRank = Nothing
-        , statLand = Nothing
+        , statEffort = Nothing
         , statAlt = Nothing
         , statDash =
             DashPathInputs

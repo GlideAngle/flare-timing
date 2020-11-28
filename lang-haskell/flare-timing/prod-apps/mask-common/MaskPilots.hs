@@ -22,9 +22,7 @@ import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Track.Place (reIndex)
 import Flight.Track.Time (AwardedVelocity(..))
 import Flight.Track.Distance
-    ( TrackDistance(..), AwardedDistance(..)
-    , Clamp(..), Land
-    )
+    (TrackDistance(..), AwardedDistance(..), Clamp(..), Effort)
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Speed (pilotTime)
 import "flight-gap-allot" Flight.Score (ArrivalPlacing(..), MinimumDistance(..))
@@ -38,7 +36,7 @@ awardByFrac
     -> Quantity Double [u| m |]
 awardByFrac c td a = convert $ Track.awardByFrac c td a
 
-madeAwarded :: QTaskDistance Double [u| m |] -> Land -> TrackDistance Land
+madeAwarded :: QTaskDistance Double [u| m |] -> Effort -> TrackDistance Effort
 madeAwarded (TaskDistance td) d@(TaskDistance d') =
     TrackDistance
         { togo = Just . TaskDistance $ td -: d'
@@ -138,7 +136,7 @@ maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
                                         return $ max a dm)
                                     dA
 
-                            sLand = madeAwarded <$> lTask <*> d
+                            sEffort = madeAwarded <$> lTask <*> d
 
                             sTime =
                                 case (ss, es) of
@@ -159,7 +157,7 @@ maskPilots (MinimumDistance dMin) tasks lsTask pilotGroups fss =
                                                         }
                                     _ -> Nothing
 
-                        in (p, nullStats{statLand = sLand, statTimeRank = sTime}))
+                        in (p, nullStats{statEffort = sEffort, statTimeRank = sTime}))
                     dfNts
             | DfNoTrack dfNts <- dfNtss
             | lTask <- (fmap. fmap) wholeTaskDistance lsTask

@@ -48,7 +48,7 @@ import "flight-gap-valid" Flight.Score
     , ReachToggle(..)
     )
 import "flight-gap-weight" Flight.Score (GoalRatio, Weights)
-import Flight.Track.Distance (Land)
+import Flight.Track.Distance (Effort)
 import Flight.Comp (StartGate)
 
 newtype EssNotGoal = EssNotGoal Bool
@@ -89,8 +89,8 @@ data NormBreakdown =
         , total :: TaskPoints
         , breakdown :: Points
         , fractions :: Fractions
-        , reach :: ReachToggle Land
-        , landedMade :: Land
+        , reach :: ReachToggle Effort
+        , landedMade :: Effort
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))

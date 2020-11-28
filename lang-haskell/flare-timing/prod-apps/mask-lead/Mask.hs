@@ -33,7 +33,7 @@ import Flight.Track.Tag (Tagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Mask (MaskingArrival(..))
-import Flight.Track.Distance (TrackDistance(..), Land)
+import Flight.Track.Distance (TrackDistance(..), Effort)
 import Flight.Kml (MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
 import qualified Flight.Lookup as Lookup
@@ -124,7 +124,7 @@ writeMask
     let yss = maskPilots free tasks lsTask' pilotGroups fss
 
     -- Distances (ds) of the landout spot.
-    let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> yss
+    let dsLand :: [[(Pilot, TrackDistance Effort)]] = landDistances <$> yss
     let psLandingOut = (fmap . fmap) fst dsLand
 
     let psArriving = (fmap . fmap) fst arrivalRank
@@ -223,7 +223,7 @@ flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@Mark
                     nullStats {statTimeRank = Just $ TimeStats a b e c}
 
                 _ ->
-                    nullStats {statLand = Just $ landDistance task'}
+                    nullStats {statEffort = Just $ landDistance task'}
 
     where
         maybeTask = tasks ^? element (i - 1)
