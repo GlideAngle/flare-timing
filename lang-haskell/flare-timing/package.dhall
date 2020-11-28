@@ -609,6 +609,25 @@ in    defs
               , source-dirs =
                   "prod-apps/land-out"
               }
+          , ft-far-out =
+              { dependencies =
+                    deps
+                  # [ "safe-exceptions"
+                    , "flight-gap-allot"
+                    , "flight-gap-effort"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "FarOutMain.hs"
+              , source-dirs =
+                  "prod-apps/far-out"
+              }
           , ft-gap-point =
               { dependencies =
                     deps

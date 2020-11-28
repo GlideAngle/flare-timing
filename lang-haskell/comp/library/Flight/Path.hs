@@ -29,6 +29,7 @@ module Flight.Path
     , MaskSpeedFile(..)
     , BonusReachFile(..)
     , LandOutFile(..)
+    , FarOutFile(..)
     , GapPointFile(..)
     , CompDir(..)
     , UnpackTrackDir(..)
@@ -57,6 +58,7 @@ module Flight.Path
     , compToMaskSpeed
     , compToBonusReach
     , compToLand
+    , compToFar
     , compToPoint
     , crossToTag
     , tagToPeg
@@ -207,6 +209,9 @@ newtype BonusReachFile = BonusReachFile FilePath deriving Show
 -- | The path to a land out file.
 newtype LandOutFile = LandOutFile FilePath deriving Show
 
+-- | The path to a far out file.
+newtype FarOutFile = FarOutFile FilePath deriving Show
+
 -- | The path to a gap point file.
 newtype GapPointFile = GapPointFile FilePath deriving Show
 
@@ -298,6 +303,10 @@ compToLand :: CompInputFile -> LandOutFile
 compToLand (CompInputFile p) =
     LandOutFile $ flip replaceExtension (ext LandOut) $ dropExtension p
 
+compToFar :: CompInputFile -> FarOutFile
+compToFar (CompInputFile p) =
+    FarOutFile $ flip replaceExtension (ext FarOut) $ dropExtension p
+
 compToPoint :: CompInputFile -> GapPointFile
 compToPoint (CompInputFile p) =
     GapPointFile $ flip replaceExtension (ext GapPoint) $ dropExtension p
@@ -386,6 +395,7 @@ data FileType
     | MaskSpeed
     | BonusReach
     | LandOut
+    | FarOut
     | GapPoint
 
 ext :: FileType -> FilePath
@@ -416,6 +426,7 @@ ext MaskReach = ".mask-reach.yaml"
 ext MaskSpeed = ".mask-speed.yaml"
 ext BonusReach = ".bonus-reach.yaml"
 ext LandOut = ".land-out.yaml"
+ext FarOut = ".far-out.yaml"
 ext GapPoint = ".gap-point.yaml"
 
 ensureExt :: FileType -> FilePath -> FilePath
@@ -446,6 +457,7 @@ ensureExt MaskReach = flip replaceExtensions "mask-reach.yaml"
 ensureExt MaskSpeed = flip replaceExtensions "mask-speed.yaml"
 ensureExt BonusReach = flip replaceExtensions "bonus-reach.yaml"
 ensureExt LandOut = flip replaceExtensions "land-out.yaml"
+ensureExt FarOut = flip replaceExtensions "far-out.yaml"
 ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"
 
 findNormArrival' :: FilePath -> IO [NormArrivalFile]

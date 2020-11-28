@@ -16,6 +16,7 @@ module Flight.Scribe
     , readMaskingSpeed, writeMaskingSpeed
     , readBonusReach, writeBonusReach
     , readLanding, writeLanding
+    , readFaring, writeFaring
     , readPointing, writePointing
     , readCleanFsdb, writeCleanFsdb
     , readTrimFsdb, writeTrimFsdb
@@ -67,6 +68,7 @@ import Flight.Comp
     , MaskSpeedFile(..)
     , BonusReachFile(..)
     , LandOutFile(..)
+    , FarOutFile(..)
     , GapPointFile(..)
     , CompSettings(..)
     , FsdbXml(..)
@@ -334,6 +336,20 @@ readLanding (LandOutFile path) = do
 
 writeLanding :: LandOutFile -> Landing -> IO ()
 writeLanding (LandOutFile path) landout = do
+    let cfg = Y.setConfCompare (fieldOrder landout) Y.defConfig
+    let yaml = Y.encodePretty cfg landout
+    BS.writeFile path yaml
+
+readFaring
+    :: (MonadThrow m, MonadIO m)
+    => FarOutFile
+    -> m Landing
+readFaring (FarOutFile path) = do
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
+
+writeFaring :: FarOutFile -> Landing -> IO ()
+writeFaring (FarOutFile path) landout = do
     let cfg = Y.setConfCompare (fieldOrder landout) Y.defConfig
     let yaml = Y.encodePretty cfg landout
     BS.writeFile path yaml
