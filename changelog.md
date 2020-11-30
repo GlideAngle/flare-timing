@@ -28,6 +28,8 @@ of this changelog.
 * Only show the extra reach via glide column for stopped tasks.
 * Don't dislay a chunk distance in the effort table for pilots that don't land
   out.
+* Parse `FsCompetition/@utc_offset` whether or not it has a leading sign for
+  both integers and floats.
 
 # Plot Selected Pilots
 ## v0.28
