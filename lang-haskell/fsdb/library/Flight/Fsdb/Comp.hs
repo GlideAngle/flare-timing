@@ -23,7 +23,8 @@ import Text.XML.HXT.Core
 
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
-import Flight.Comp (Comp(..), UtcOffset(..))
+import Flight.Comp (Comp(..))
+import Flight.Fsdb.Internal.XmlPickle (xpUtcOffset)
 
 xpComp :: PU Comp
 xpComp =
@@ -39,7 +40,7 @@ xpComp =
         <+> hasName "score_back"
         )
     $ xpWrap
-        ( \(i, n, d, l, f, t, utc :: Double, s, _) ->
+        ( \(i, n, d, l, f, t, utc, s, _) ->
             let e = EarthAsFlat UTM; em = Pythagorus in
             Comp
                 { civilId = i
@@ -48,7 +49,7 @@ xpComp =
                 , location = l
                 , from = f
                 , to = t
-                , utcOffset = UtcOffset . round $ 60.0 * utc
+                , utcOffset = utc
                 , scoreBack = s
                 , give = Nothing
                 , earth = e
@@ -61,7 +62,7 @@ xpComp =
             , location
             , from
             , to
-            , fromIntegral $ let (UtcOffset utc) = utcOffset in utc `div` 60
+            , utcOffset
             , scoreBack
             , []
             )
@@ -73,7 +74,7 @@ xpComp =
         (xpTextAttr "location")
         (xpTextAttr "from")
         (xpTextAttr "to")
-        (xpAttr "utc_offset" xpPrim)
+        (xpAttr "utc_offset" xpUtcOffset)
         (xpOption $ xpAttr "score_back" xpPrim)
         xpTrees
 

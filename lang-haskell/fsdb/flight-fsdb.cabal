@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 351c687b3ca8a1d6e8e3207d586383b3f3bc6cfc5d1a0535b9eb20f130af8796
+-- hash: 2b06833678b48f22cf34e2cd50f8d0be211355651ad4d4872e5bd81ee921b3b0
 
 name:           flight-fsdb
 version:        0.1.0
@@ -149,6 +149,4 @@ test-suite doctest
     , time
     , uom-plugin
     , vector
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010

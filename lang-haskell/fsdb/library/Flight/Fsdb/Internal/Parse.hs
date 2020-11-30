@@ -8,6 +8,7 @@ module Flight.Fsdb.Internal.Parse
     , dms
     , parseUtcTime
     , parseHmsTime
+    , parseUtcOffset
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -15,9 +16,13 @@ import Data.Time.LocalTime (TimeOfDay)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Text.Megaparsec hiding (parse)
 import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec.Char.Lexer as L
 import qualified Text.Megaparsec as P
 import Data.Functor.Identity
+import Data.Scientific (Scientific, floatingOrInteger)
+
+import Flight.Comp (UtcOffset(..))
 
 -- |
 -- >>> parseUtcTime "2012-01-05T12:00:00+11:00"
@@ -75,25 +80,14 @@ pNat = decimal_
 pFloat :: ParsecT String String Identity Double
 pFloat = float_
 
-float_
-    ::
-        ( m ~ ParsecT String String Identity
-        , MonadParsec e s m
-        , Token s ~ Char
-        , RealFloat a
-        )
-    => m a
+float_ :: Parser Double
 float_ = lexeme L.float
 
-decimal_
-    ::
-        ( m ~ ParsecT String String Identity
-        , MonadParsec e s m
-        , Token s ~ Char
-        , Integral a
-        )
-    => m a
+decimal_ :: Parser Integer
 decimal_ = lexeme L.decimal
+
+scientific_ :: Parser Scientific
+scientific_ = lexeme L.scientific
 
 -- | Parser for decimal degrees.
 --
@@ -169,8 +163,43 @@ dms = do
 deg :: ParsecT String String Identity Double
 deg = try ddd <|> try dmm <|> dms
 
+-- | Parser for UTC offset.
+--
+-- >>> parseTest utcoffset "0"
+-- Right 0
+--
+-- >>> parseTest utcoffset "+0"
+-- Right 0
+--
+-- >>> parseTest utcoffset "-0"
+-- Right 0
+--
+-- >>> parseTest utcoffset "1"
+-- Right 1
+--
+-- >>> parseTest utcoffset "1.50"
+-- Left 1.5
+--
+-- >>> parseTest utcoffset "-1.50"
+-- Left (-1.5)
+--
+-- >>> parseTest utcoffset "+1"
+-- Right 1
+--
+-- >>> parseTest utcoffset "-1"
+-- Right (-1)
+utcoffset :: ParsecT String String Identity (Either Double Int)
+utcoffset = floatingOrInteger <$> L.signed (P.hidden C.space) scientific_
+
 parseDegree :: String -> Maybe Double
 parseDegree = either (const Nothing) Just . P.parse deg "(stdin)"
+
+parseUtcOffset :: String -> Maybe UtcOffset
+parseUtcOffset =
+    either
+        (const Nothing)
+        (Just . UtcOffset . either (fromEnum . (* 60.0)) (* 60))
+    . P.parse utcoffset "(stdin)"
 
 -- $setup
 -- >>> :set -XTypeSynonymInstances
