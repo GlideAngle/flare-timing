@@ -1033,7 +1033,14 @@ madeDifficultyDf
     -> TrackDistance Effort
     -> DifficultyFraction
 madeDifficultyDf _ mapIxToFrac td =
-    fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
+    -- WARNING: The pilot distance, if rounded up could index the next chunk.
+    case Map.lookup ix mapIxToFrac of
+        Just df -> df
+        Nothing ->
+            case Map.lookupLE ix mapIxToFrac of
+                Just (ixLE, df) | ix - ixLE == 1 -> df
+                Just _ -> DifficultyFraction 0
+                Nothing -> DifficultyFraction 0
     where
         pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
         ix = toIxChunk pd
