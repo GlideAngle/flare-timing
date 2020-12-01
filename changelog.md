@@ -30,6 +30,8 @@ of this changelog.
   out.
 * Parse `FsCompetition/@utc_offset` whether or not it has a leading sign for
   both integers and floats.
+* Fixed a bug where looking up a chunk for effort failed because of rounding
+  then the misplaced pilot got zero points for effort.
 
 # Plot Selected Pilots
 ## v0.28
