@@ -14,6 +14,7 @@ module Flight.Gap.Points
     , SitRep(..)
     , Points(..)
     , ReconcilePointErrors(..)
+    , GoalValidatedPoints(..)
     , zeroPoints
     , taskPoints
     , tallySubtotal

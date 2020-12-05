@@ -22,6 +22,7 @@ import "flight-gap-math" Flight.Score
     , Points(..)
     , PointsReduced(..)
     , ReconcilePointErrors(..)
+    , GoalValidatedPoints
     , PenaltySeq(..), PenaltySeqs(..)
     , jumpTheGunPenalty
     , idSeq
@@ -33,15 +34,15 @@ import "flight-gap-math" Flight.Score
 import TestNewtypes
 
 hgTaskPoints :: PtTest Hg -> Bool
-hgTaskPoints (PtTest sitrep js others parts) =
-    let expected = correct sitrep js others parts
-        actual = (FS.taskPoints sitrep js others parts) <&> total
+hgTaskPoints (PtTest sitrep eg js others parts) =
+    let expected = correct sitrep eg js others parts
+        actual = (FS.taskPoints sitrep eg js others parts) <&> total
     in actual == expected
 
 pgTaskPoints :: PtTest Pg -> Bool
-pgTaskPoints (PtTest sitrep js others parts) =
-    let expected = correct sitrep js others parts
-        actual = (FS.taskPoints sitrep js others parts) <&> total
+pgTaskPoints (PtTest sitrep eg js others parts) =
+    let expected = correct sitrep eg js others parts
+        actual = (FS.taskPoints sitrep eg js others parts) <&> total
     in actual == expected
 
 -- TODO: When base >= 4.11 use Data.Functor ((<&>))
@@ -50,6 +51,7 @@ pgTaskPoints (PtTest sitrep js others parts) =
 
 correct
     :: forall a. (SitRep a)
+    -> (GoalValidatedPoints -> PenaltySeq)
     -> PenaltySeq
     -> PenaltySeqs
     -> Points
@@ -57,6 +59,7 @@ correct
 
 correct
     NominalHg
+    _eg
     ((==) idSeq -> True)
     PenaltySeqs{muls, adds, resets}
     Points
@@ -70,11 +73,13 @@ correct
     where
         x = TaskPoints (fromRational $ r + e + l + t + a)
         p = FS.applyPenalties muls adds resets x
-correct p@NominalHg js others _ =
+
+correct p@NominalHg _eg js others _ =
     Left $ WAT_Nominal_Hg (p, js, others)
 
 correct
     NoGoalHg
+    _eg
     ((==) idSeq -> True)
     PenaltySeqs{muls, adds, resets}
     Points
@@ -89,20 +94,21 @@ correct
         x = TaskPoints (fromRational $ r + e + l + ((8 % 10) * (a + t)))
         p = FS.applyPenalties muls adds resets x
 
-correct p@NoGoalHg js _ _ =
+correct p@NoGoalHg _eg js _ _ =
     Left $ WAT_NoGoal_Hg (p, js)
 
-correct p@(JumpedTooEarly (TooEarlyPoints ep)) ((==) idSeq -> True) others pts =
-    correct p (resetSeq (Just $ unrefined ep)) others pts
+correct p@(JumpedTooEarly (TooEarlyPoints ep)) eg ((==) idSeq -> True) others pts =
+    correct p eg (resetSeq (Just $ unrefined ep)) others pts
 
-correct p@JumpedTooEarly{} js@(seqOnlyMuls -> Just _) others _ =
+correct p@JumpedTooEarly{} _eg js@(seqOnlyMuls -> Just _) others _ =
     Left $ WAT_JumpedTooEarly (p, js, others)
 
-correct p@JumpedTooEarly{} js@(seqOnlyAdds -> Just _) others _ =
+correct p@JumpedTooEarly{} _eg js@(seqOnlyAdds -> Just _) others _ =
     Left $ WAT_JumpedTooEarly (p, js, others)
 
 correct
     p@(JumpedTooEarly (TooEarlyPoints ep))
+    _eg
     (seqOnlyResets -> Just j)
     PenaltySeqs{muls, adds, resets}
     Points
@@ -120,17 +126,18 @@ correct
         x = TaskPoints (fromRational $ r + e + l + t + a)
         tp = FS.applyPenalties muls adds (j : resets) x
 
-correct p@JumpedTooEarly{} js others _ =
+correct p@JumpedTooEarly{} _eg js others _ =
     Left $ WAT_JumpedTooEarly (p, js, others)
 
-correct p@(Jumped spp jtg) ((==) idSeq -> True) others pts =
-    correct p (addSeq . negate $ jumpTheGunPenalty spp jtg) others pts
+correct p@(Jumped _ spp jtg) eg ((==) idSeq -> True) others pts =
+    correct p eg (addSeq . negate $ jumpTheGunPenalty spp jtg) others pts
 
-correct p@(JumpedNoGoal spp jtg) ((==) idSeq -> True) others pts =
-    correct p (addSeq . negate $ jumpTheGunPenalty spp jtg) others pts
+correct p@(JumpedNoGoal _ spp jtg) eg ((==) idSeq -> True) others pts =
+    correct p eg (addSeq . negate $ jumpTheGunPenalty spp jtg) others pts
 
 correct
-    p@(Jumped spp jtg)
+    p@(Jumped _ spp jtg)
+    _eg
     (seqOnlyAdds -> Just j)
     PenaltySeqs{muls, adds, resets}
     Points
@@ -149,7 +156,8 @@ correct
         tp = FS.applyPenalties muls (j : adds) resets x
 
 correct
-    p@(JumpedNoGoal spp jtg)
+    p@(JumpedNoGoal _ spp jtg)
+    _eg
     (seqOnlyAdds -> Just j)
     PenaltySeqs{muls, adds, resets}
     Points
@@ -167,14 +175,15 @@ correct
         x = TaskPoints (fromRational $ r + e + l + ((8 % 10) * (t + a)))
         tp = FS.applyPenalties muls (j : adds) resets x
 
-correct p@Jumped{} js others _ =
+correct p@Jumped{} _eg js others _ =
     Left $ WAT_Jumped (p, js, others)
 
-correct p@JumpedNoGoal{} js others _ =
+correct p@JumpedNoGoal{} _eg js others _ =
     Left $ WAT_Jumped (p, js, others)
 
 correct
     NominalPg
+    _eg
     ((==) idSeq -> True)
     PenaltySeqs{muls, adds, resets}
     Points
@@ -187,11 +196,12 @@ correct
         x = TaskPoints (fromRational $ r + l + t)
         p = FS.applyPenalties muls adds resets x
 
-correct p@NominalPg js others _ =
+correct p@NominalPg _eg js others _ =
     Left $ WAT_Nominal_Pg (p, js, others)
 
 correct
     NoGoalPg
+    _eg
     ((==) idSeq -> True)
     PenaltySeqs{muls, adds, resets}
     Points
@@ -203,20 +213,21 @@ correct
         x = TaskPoints (fromRational $ r + l)
         p = FS.applyPenalties muls adds resets x
 
-correct p@NoGoalPg js _ _ =
+correct p@NoGoalPg _eg js _ _ =
     Left $ WAT_NoGoal_Pg (p, js)
 
-correct p@(Early (LaunchToStartPoints lsp)) ((==) idSeq -> True) others pts =
-    correct p (resetSeq (Just $ unrefined lsp)) others pts
+correct p@(Early (LaunchToStartPoints lsp)) eg ((==) idSeq -> True) others pts =
+    correct p eg (resetSeq (Just $ unrefined lsp)) others pts
 
-correct p@Early{} js@(seqOnlyMuls -> Just _) _ _ =
+correct p@Early{} _eg js@(seqOnlyMuls -> Just _) _ _ =
     Left $ WAT_Early_Jump (p, js)
 
-correct p@Early{} js@(seqOnlyAdds -> Just _) _ _ =
+correct p@Early{} _eg js@(seqOnlyAdds -> Just _) _ _ =
     Left $ WAT_Early_Jump (p, js)
 
 correct
     p@(Early (LaunchToStartPoints lsp))
+    _eg
     (seqOnlyResets -> Just j)
     PenaltySeqs{muls, adds, resets}
     Points
@@ -232,5 +243,5 @@ correct
         x = TaskPoints (fromRational $ r + l + t)
         tp = FS.applyPenalties muls adds (j : resets) x
 
-correct p@Early{} js others _ =
+correct p@Early{} _eg js others _ =
     Left $ WAT_Early (p, js, others)

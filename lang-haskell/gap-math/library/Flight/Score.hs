@@ -30,6 +30,7 @@ module Flight.Score
     , Points(..)
     , PointsReduced(..)
     , ReconcilePointErrors(..)
+    , GoalValidatedPoints(..)
     , PosInt, GE
     , PenaltySeq(..), PenaltySeqs(..)
     , Mul, Add, Reset
