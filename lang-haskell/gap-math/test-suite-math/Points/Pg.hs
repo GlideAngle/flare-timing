@@ -366,7 +366,7 @@ pgUnits = testGroup "PG Points"
                 @?=
                     (Left $ WAT_Early_Jump (Early launchToStart1, mulSeq 0.5))
 
-        , HU.testCase "✘ error on wrong type of penalty, a fraction penalty, applied, with other resete" $
+        , HU.testCase "✘ error on wrong type of penalty, a fraction penalty, applied, with other resets" $
             (FS.taskPoints
                 (Early launchToStart1)
                 egPenaltyNull
