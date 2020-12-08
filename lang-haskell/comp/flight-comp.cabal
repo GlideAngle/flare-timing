@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3e69644bcb41d49513a4d9ab578fd9486eb4a1ed9a81f90ce3e11ad4e5c97af0
+-- hash: 1251365338ad7777a63199293d181bc5c58bd4ad39479058c46c6ae65724d8df
 
 name:           flight-comp
 version:        0.1.0
@@ -50,6 +50,9 @@ library
       Flight.Track.Distance
   other-modules:
       Flight.Path
+      Flight.Path.Find
+      Flight.Path.Tx
+      Flight.Path.Types
       Flight.Pilot
       Flight.Track.Mask.Arrival
       Flight.Track.Mask.Cmp
@@ -108,6 +111,9 @@ test-suite comp
   other-modules:
       Flight.Comp
       Flight.Path
+      Flight.Path.Find
+      Flight.Path.Tx
+      Flight.Path.Types
       Flight.Pilot
       Flight.Track.Arrival
       Flight.Track.Cross
@@ -186,6 +192,9 @@ test-suite doctest
   other-modules:
       Flight.Comp
       Flight.Path
+      Flight.Path.Find
+      Flight.Path.Tx
+      Flight.Path.Types
       Flight.Pilot
       Flight.Track.Arrival
       Flight.Track.Cross
@@ -212,7 +221,8 @@ test-suite doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      aeson
+      QuickCheck
+    , aeson
     , base >=4.10.1.0 && <5
     , bytestring
     , cassava
@@ -250,6 +260,4 @@ test-suite doctest
     , unordered-containers
     , uom-plugin
     , vector
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010

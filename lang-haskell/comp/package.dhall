@@ -99,19 +99,13 @@ in    defs
                 }
             , doctest =
                 { dependencies =
-                    [ "doctest" ]
+                    [ "doctest", "QuickCheck" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
                     "DocTest.hs"
                 , source-dirs =
                     [ "library", "test-suite-doctest" ]
-                , when =
-                    { condition =
-                        "flag(suppress-failing-tests)"
-                    , buildable =
-                        False
-                    }
                 }
             }
       }
