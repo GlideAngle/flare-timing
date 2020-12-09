@@ -466,13 +466,13 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, Breakdown) where
                       }
                 )
 
-instance {-# OVERLAPPING #-} ToSchema (Pilot, NormBreakdown) where
+instance {-# OVERLAPPING #-} ToSchema (Pilot, AltBreakdown) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & example ?~
             toJSON
                ( Pilot (PilotId "5", PilotName "Jonny Durand")
                ,
-                   NormBreakdown
+                   AltBreakdown
                        { place = TaskPlacing 1
                        , total = TaskPoints 1000
                        , breakdown =
@@ -586,7 +586,7 @@ instance ToSchema ReachStats
 instance ToSchema (ReachToggle (Maybe ReachStats))
 instance ToSchema PilotsAtEss
 instance ToSchema PilotsLanded
-instance ToSchema NormBreakdown
+instance ToSchema AltBreakdown
 instance ToSchema (TaskDistance q) => ToSchema (ReachToggle (TaskDistance q))
 instance ToSchema q => ToSchema (PilotTime q)
 instance ToSchema q => ToSchema (LeadingArea q)

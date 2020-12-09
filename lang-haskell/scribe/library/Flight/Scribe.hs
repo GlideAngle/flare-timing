@@ -1,8 +1,8 @@
 module Flight.Scribe
-    ( readNormArrival, writeNormArrival
-    , readNormLandout, writeNormLandout
-    , readNormRoute, writeNormRoute
-    , readNormScore, writeNormScore
+    ( readAltArrival, writeAltArrival
+    , readAltLandout, writeAltLandout
+    , readAltRoute, writeAltRoute
+    , readAltScore, writeAltScore
     , readComp, writeComp
     , readRoute, writeRoute
     , readCrossing , writeCrossing
@@ -45,16 +45,16 @@ import Flight.Track.Mask
     (MaskingArrival, MaskingEffort, MaskingReach, MaskingSpeed, MaskingLead)
 import Flight.Track.Lead (DiscardingLead)
 import Flight.Track.Land (Landing)
-import Flight.Track.Point (Pointing, NormPointing)
+import Flight.Track.Point (Pointing, AltPointing)
 import Flight.Route (GeoLines)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CleanFsdbFile(..)
     , TrimFsdbFile(..)
-    , NormArrivalFile(..)
-    , NormLandoutFile(..)
-    , NormRouteFile(..)
-    , NormScoreFile(..)
+    , AltArrivalFile(..)
+    , AltLandoutFile(..)
+    , AltRouteFile(..)
+    , AltScoreFile(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
@@ -114,58 +114,58 @@ writeComp (CompInputFile path) compInput = do
     let yaml = Y.encodePretty cfg compInput
     BS.writeFile path yaml
 
-readNormScore
+readAltScore
     :: (MonadThrow m, MonadIO m)
-    => NormScoreFile
-    -> m NormPointing
-readNormScore (NormScoreFile path) = do
+    => AltScoreFile
+    -> m AltPointing
+readAltScore (AltScoreFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeNormScore :: NormScoreFile -> NormPointing -> IO ()
-writeNormScore (NormScoreFile path) pointing = do
+writeAltScore :: AltScoreFile -> AltPointing -> IO ()
+writeAltScore (AltScoreFile path) pointing = do
     let cfg = Y.setConfCompare (fieldOrder pointing) Y.defConfig
     let yaml = Y.encodePretty cfg pointing
     BS.writeFile path yaml
 
-readNormArrival
+readAltArrival
     :: (MonadThrow m, MonadIO m)
-    => NormArrivalFile
+    => AltArrivalFile
     -> m MaskingArrival
-readNormArrival (NormArrivalFile path) = do
+readAltArrival (AltArrivalFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeNormArrival :: NormArrivalFile -> MaskingArrival -> IO ()
-writeNormArrival (NormArrivalFile path) track = do
+writeAltArrival :: AltArrivalFile -> MaskingArrival -> IO ()
+writeAltArrival (AltArrivalFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
 
-readNormLandout
+readAltLandout
     :: (MonadThrow m, MonadIO m)
-    => NormLandoutFile
+    => AltLandoutFile
     -> m Landing
-readNormLandout (NormLandoutFile path) = do
+readAltLandout (AltLandoutFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeNormLandout :: NormLandoutFile -> Landing -> IO ()
-writeNormLandout (NormLandoutFile path) track = do
+writeAltLandout :: AltLandoutFile -> Landing -> IO ()
+writeAltLandout (AltLandoutFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
 
-readNormRoute
+readAltRoute
     :: (MonadThrow m, MonadIO m)
-    => NormRouteFile
+    => AltRouteFile
     -> m [GeoLines]
-readNormRoute (NormRouteFile path) = do
+readAltRoute (AltRouteFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeNormRoute :: NormRouteFile -> [GeoLines] -> IO ()
-writeNormRoute (NormRouteFile path) track = do
+writeAltRoute :: AltRouteFile -> [GeoLines] -> IO ()
+writeAltRoute (AltRouteFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml

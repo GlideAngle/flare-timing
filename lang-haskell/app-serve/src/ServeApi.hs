@@ -13,7 +13,7 @@ import Flight.Track.Land (TaskLanding(..), TrackEffort(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
-import qualified Flight.Track.Point as Norm (NormBreakdown(..))
+import qualified Flight.Track.Point as Alt (AltBreakdown(..))
 import Flight.Track.Point (Allocation(..), Breakdown(..))
 import qualified "flight-gap-valid" Flight.Score as Vy (Validity(..))
 import qualified "flight-gap-valid" Flight.Score as Vw (ValidityWorking(..))
@@ -96,7 +96,7 @@ type GapPointApi k =
         :> Get '[JSON] (Maybe Vw.ValidityWorking)
 
     :<|> "fs-score" :> (Capture "task" Int) :> "score"
-        :> Get '[JSON] [(Pilot, Norm.NormBreakdown)]
+        :> Get '[JSON] [(Pilot, Alt.AltBreakdown)]
 
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))

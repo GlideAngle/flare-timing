@@ -11,9 +11,9 @@ Task points.
 -}
 module Flight.Track.Point
     ( Velocity(..)
-    , NormBreakdown(..)
+    , AltBreakdown(..)
     , Breakdown(..)
-    , NormPointing(..)
+    , AltPointing(..)
     , Pointing(..)
     , Allocation(..)
     , EssNotGoal(..)
@@ -83,8 +83,8 @@ data Velocity =
 
 -- | The breakdown of the expected or normative score for a pilot for a task
 -- extracted from the *.fsdb file.
-data NormBreakdown =
-    NormBreakdown
+data AltBreakdown =
+    AltBreakdown
         { place :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points
@@ -138,15 +138,15 @@ data Breakdown =
 
 -- | For each task, the expected or normative points for that task as scored by
 -- FS.
-data NormPointing =
-    NormPointing
+data AltPointing =
+    AltPointing
         { bestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
         , validityWorkingLaunch :: [Maybe LaunchValidityWorking]
         , validityWorkingTime :: [Maybe TimeValidityWorking]
         , validityWorkingDistance :: [Maybe DistanceValidityWorking]
         , validityWorkingStop :: [Maybe StopValidityWorking]
         , validity :: [Maybe Validity]
-        , score :: [[(Pilot, NormBreakdown)]]
+        , score :: [[(Pilot, AltBreakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -174,11 +174,11 @@ data Allocation =
 instance FieldOrdering Pointing where
     fieldOrder _ = cmpPointing
 
-instance FieldOrdering NormPointing where
-    fieldOrder _ = cmpNorm
+instance FieldOrdering AltPointing where
+    fieldOrder _ = cmpAlt
 
-cmpNorm :: (Ord a, IsString a) => a -> a -> Ordering
-cmpNorm a b =
+cmpAlt :: (Ord a, IsString a) => a -> a -> Ordering
+cmpAlt a b =
     case (a, b) of
         ("place", _) -> LT
 

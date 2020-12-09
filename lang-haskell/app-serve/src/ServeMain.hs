@@ -59,7 +59,7 @@ import Flight.Track.Mask
     , MaskingReach(..)
     , MaskingSpeed(..)
     )
-import qualified Flight.Track.Point as Norm (NormPointing(..), NormBreakdown(..))
+import qualified Flight.Track.Point as Alt (AltPointing(..), AltBreakdown(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
 import qualified "flight-gap-weight" Flight.Score as Wg (Weights(..))
@@ -77,7 +77,7 @@ import "flight-gap-weight" Flight.Score
     , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     )
 import Flight.Scribe
-    ( readComp, readNormArrival, readNormLandout, readNormRoute, readNormScore
+    ( readComp, readAltArrival, readAltLandout, readAltRoute, readAltScore
     , readRoute, readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
@@ -94,7 +94,8 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
 import Flight.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Comp
-    ( FindDirFile(..)
+    ( AltDot(AltFs)
+    , FindDirFile(..)
     , FileType(CompInput)
     , CompSettings(..)
     , Comp(..)
@@ -122,16 +123,16 @@ import Flight.Comp
     , LandOutFile(..)
     , FarOutFile(..)
     , GapPointFile(..)
-    , NormArrivalFile(..)
-    , NormLandoutFile(..)
-    , NormRouteFile(..)
-    , NormScoreFile(..)
+    , AltArrivalFile(..)
+    , AltLandoutFile(..)
+    , AltRouteFile(..)
+    , AltScoreFile(..)
     , Pilot(..)
     , findCompInput
-    , compToNormArrival
-    , compToNormLandout
-    , compToNormRoute
-    , compToNormScore
+    , compToAltArrival
+    , compToAltLandout
+    , compToAltRoute
+    , compToAltScore
     , compToTaskLength
     , compToCross
     , compToMaskArrival
@@ -182,7 +183,7 @@ data Config k
         , normArrival :: Maybe Mask.MaskingArrival
         , normLandout :: Maybe Landing
         , normRoute :: Maybe [GeoLines]
-        , normScore :: Maybe Norm.NormPointing
+        , normScore :: Maybe Alt.AltPointing
         }
 
 nullConfig :: CompInputFile -> CompSettings k -> Config k
@@ -296,10 +297,10 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let landFile@(LandOutFile _landPath) = compToLand compFile
     let farFile@(FarOutFile landPath) = compToFar compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
-    let normArrivalFile@(NormArrivalFile normArrivalPath) = compToNormArrival compFile
-    let normLandoutFile@(NormLandoutFile normLandoutPath) = compToNormLandout compFile
-    let normRouteFile@(NormRouteFile normRoutePath) = compToNormRoute compFile
-    let normScoreFile@(NormScoreFile normScorePath) = compToNormScore compFile
+    let normArrivalFile@(AltArrivalFile normArrivalPath) = compToAltArrival AltFs compFile
+    let normLandoutFile@(AltLandoutFile normLandoutPath) = compToAltLandout AltFs compFile
+    let normRouteFile@(AltRouteFile normRoutePath) = compToAltRoute AltFs compFile
+    let normScoreFile@(AltScoreFile normScorePath) = compToAltScore AltFs compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
@@ -400,22 +401,22 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
 
             normA <-
                 catchIO
-                    (Just <$> readNormArrival normArrivalFile)
+                    (Just <$> readAltArrival normArrivalFile)
                     (const $ return Nothing)
 
             normL <-
                 catchIO
-                    (Just <$> readNormLandout normLandoutFile)
+                    (Just <$> readAltLandout normLandoutFile)
                     (const $ return Nothing)
 
             normR <-
                 catchIO
-                    (Just <$> readNormRoute normRouteFile)
+                    (Just <$> readAltRoute normRouteFile)
                     (const $ return Nothing)
 
             normS <-
                 catchIO
-                    (Just <$> readNormScore normScoreFile)
+                    (Just <$> readAltScore normScoreFile)
                     (const $ return Nothing)
 
             case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
@@ -495,12 +496,12 @@ serverGapPointApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
-        :<|> getTaskNormLanding
-        :<|> getTaskNormRouteSphere
-        :<|> getTaskNormRouteEllipse
+        :<|> getTaskAltLanding
+        :<|> getTaskAltRouteSphere
+        :<|> getTaskAltRouteEllipse
         :<|> getValidity <$> n
-        :<|> getNormTaskValidityWorking
-        :<|> getTaskNormScore
+        :<|> getAltTaskValidityWorking
+        :<|> getTaskAltScore
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
         :<|> getTaskRouteProjectedSphericalEdge
@@ -529,7 +530,7 @@ serverGapPointApi cfg =
         :<|> getTaskBonusBolsterStats
         :<|> getTaskReach
         :<|> getTaskBonusReach
-        :<|> getTaskArrivalNorm
+        :<|> getTaskArrivalAlt
         :<|> getTaskArrival
         :<|> getTaskLead
         :<|> getTaskTime
@@ -643,12 +644,12 @@ getTaskValidityWorking ii = do
 
         _ -> throwError $ errTaskStep "gap-point" ii
 
-getNormTaskValidityWorking :: Int -> AppT k IO (Maybe Vw.ValidityWorking)
-getNormTaskValidityWorking ii = do
-    ls' <- fmap Norm.validityWorkingLaunch <$> asks normScore
-    ts' <- fmap Norm.validityWorkingTime <$> asks normScore
-    ds' <- fmap Norm.validityWorkingDistance <$> asks normScore
-    ss' <- fmap Norm.validityWorkingStop <$> asks normScore
+getAltTaskValidityWorking :: Int -> AppT k IO (Maybe Vw.ValidityWorking)
+getAltTaskValidityWorking ii = do
+    ls' <- fmap Alt.validityWorkingLaunch <$> asks normScore
+    ts' <- fmap Alt.validityWorkingTime <$> asks normScore
+    ds' <- fmap Alt.validityWorkingDistance <$> asks normScore
+    ss' <- fmap Alt.validityWorkingStop <$> asks normScore
     case (ls', ts', ds', ss') of
         (Just ls, Just ts, Just ds, Just ss) ->
             case drop (ii - 1) $ zip4 ls ts ds ss of
@@ -764,7 +765,7 @@ getTaskRouteLengths = do
 getTaskPointsDiffStats :: AppT k IO [Maybe (Double, Double)]
 getTaskPointsDiffStats = do
     ps <- fmap (\Pointing{score} -> (fmap . fmap . fmap) (\Breakdown{total} -> total) score) <$> asks pointing
-    exs <- fmap (\Norm.NormPointing{score} -> (fmap . fmap . fmap) (\Norm.NormBreakdown{total} -> total) score) <$> asks normScore
+    exs <- fmap (\Alt.AltPointing{score} -> (fmap . fmap . fmap) (\Alt.AltBreakdown{total} -> total) score) <$> asks normScore
     case (ps, exs) of
         (Just ps', Just exs') -> do
             let taskDiffs =
@@ -779,7 +780,7 @@ getTaskPointsDiffStats = do
             return $ (uncurry stats . unzip) <$> taskDiffs
 
         (Nothing, _) -> throwError errTaskPoints
-        (_, Nothing) -> throwError errNormPoints
+        (_, Nothing) -> throwError errAltPoints
     where
         stats :: [Maybe TaskPoints] -> [TaskPoints] -> Maybe (Double, Double)
         stats es ps =
@@ -1129,9 +1130,9 @@ getTaskBonusReach ii = do
 
         _ -> throwError $ errTaskStep "mask-track" ii
 
-getTaskNormScore :: Int -> AppT k IO [(Pilot, Norm.NormBreakdown)]
-getTaskNormScore ii = do
-    xs' <- fmap Norm.score <$> asks normScore
+getTaskAltScore :: Int -> AppT k IO [(Pilot, Alt.AltBreakdown)]
+getTaskAltScore ii = do
+    xs' <- fmap Alt.score <$> asks normScore
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -1140,8 +1141,8 @@ getTaskNormScore ii = do
 
         _ -> throwError $ errTaskStep "fs-score" ii
 
-getTaskNormRouteSphere :: Int -> AppT k IO (Maybe TrackLine)
-getTaskNormRouteSphere ii = do
+getTaskAltRouteSphere :: Int -> AppT k IO (Maybe TrackLine)
+getTaskAltRouteSphere ii = do
     xs' <- asks normRoute
     case xs' of
         Just xs ->
@@ -1151,8 +1152,8 @@ getTaskNormRouteSphere ii = do
 
         _ -> throwError $ errTaskStep "fs-route" ii
 
-getTaskNormRouteEllipse :: Int -> AppT k IO (Maybe TrackLine)
-getTaskNormRouteEllipse ii = do
+getTaskAltRouteEllipse :: Int -> AppT k IO (Maybe TrackLine)
+getTaskAltRouteEllipse ii = do
     xs' <- asks normRoute
     case xs' of
         Just xs ->
@@ -1173,8 +1174,8 @@ getTaskEffort ii = do
 
         _ -> throwError $ errTaskStep "land-out" ii
 
-getTaskNormLanding :: Int -> AppT k IO (Maybe TaskLanding)
-getTaskNormLanding ii = do
+getTaskAltLanding :: Int -> AppT k IO (Maybe TaskLanding)
+getTaskAltLanding ii = do
     x <- asks normLandout
     return . join $ taskLanding (IxTask ii) <$> x
 
@@ -1183,8 +1184,8 @@ getTaskLanding ii = do
     x <- asks landing
     return . join $ taskLanding (IxTask ii) <$> x
 
-getTaskArrivalNorm :: Int -> AppT k IO [(Pilot, TrackArrival)]
-getTaskArrivalNorm ii = do
+getTaskArrivalAlt :: Int -> AppT k IO [(Pilot, TrackArrival)]
+getTaskArrivalAlt ii = do
     xs' <- fmap Mask.arrivalRank <$> asks maskingArrival
     case xs' of
         Just xs ->
@@ -1250,8 +1251,8 @@ errTaskPoints :: ServantErr
 errTaskPoints =
     err400 {errBody = LBS.pack "I need the points of each task" }
 
-errNormPoints :: ServantErr
-errNormPoints =
+errAltPoints :: ServantErr
+errAltPoints =
     err400 {errBody = LBS.pack "I need the expected points of each task" }
 
 errTaskStep :: String -> Int -> ServantErr

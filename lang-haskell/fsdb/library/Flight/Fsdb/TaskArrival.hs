@@ -1,4 +1,4 @@
-module Flight.Fsdb.TaskArrival (parseNormArrivals) where
+module Flight.Fsdb.TaskArrival (parseAltArrivals) where
 
 import Data.Time.Clock (UTCTime)
 import Data.Maybe (catMaybes)
@@ -116,8 +116,8 @@ getScore pilots =
                     >>> hasName "FsResult"
                     >>> arr (unpickleDoc xpRankScore)
 
-parseNormArrivals :: [Task k] -> String -> IO (Either String [[(Pilot, TrackArrival)]])
-parseNormArrivals tasks contents = do
+parseAltArrivals :: [Task k] -> String -> IO (Either String [[(Pilot, TrackArrival)]])
+parseAltArrivals tasks contents = do
     let doc =
             readString
                 [ withValidate no

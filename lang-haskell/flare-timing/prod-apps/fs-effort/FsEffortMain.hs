@@ -13,20 +13,21 @@ import System.Directory (getCurrentDirectory)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNominal, parseNormLandouts)
+import Flight.Fsdb (parseNominal, parseAltLandouts)
 import Flight.Track.Land (Landing(..), TaskLanding(..), compLanding)
 import Flight.Comp
-    ( FindDirFile(..)
+    ( AltDot(AltFs)
+    , FindDirFile(..)
     , FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , Nominal(..)
-    , trimFsdbToNormLandout
+    , trimFsdbToAltLandout
     , findTrimFsdb
     , reshape
     )
 import Flight.Score (MinimumDistance(..))
-import Flight.Scribe (readTrimFsdb, writeNormLandout)
+import Flight.Scribe (readTrimFsdb, writeAltLandout)
 import FsEffortOptions (description)
 
 main :: IO ()
@@ -56,7 +57,7 @@ go trimFsdbFile = do
     FsdbXml contents <- readTrimFsdb trimFsdbFile
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ normEfforts (FsdbXml contents')
-    either print (writeNormLandout (trimFsdbToNormLandout trimFsdbFile)) settings
+    either print (writeAltLandout (trimFsdbToAltLandout AltFs trimFsdbFile)) settings
 
 fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
 fsdbNominal (FsdbXml contents) = do
@@ -74,7 +75,7 @@ fsdbEfforts
     -> FsdbXml
     -> ExceptT String IO [TaskLanding]
 fsdbEfforts free (FsdbXml contents) = do
-    fs <- lift $ parseNormLandouts free contents
+    fs <- lift $ parseAltLandouts free contents
     ExceptT $ return fs
 
 normEfforts :: FsdbXml -> ExceptT String IO Landing

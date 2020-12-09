@@ -1,5 +1,6 @@
 module Flight.Path.Types
     ( DotFolder(..)
+    , AltDot(..)
     , FileType(..)
     , FileShape(..)
 
@@ -16,10 +17,10 @@ module Flight.Path.Types
     , CleanFsdbFile(..)
     , TrimFsdbFile(..)
     , FsdbXml(..)
-    , NormArrivalFile(..)
-    , NormLandoutFile(..)
-    , NormRouteFile(..)
-    , NormScoreFile(..)
+    , AltArrivalFile(..)
+    , AltLandoutFile(..)
+    , AltRouteFile(..)
+    , AltScoreFile(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
@@ -48,6 +49,9 @@ data DotFolder
     | DotFs -- ^ The dot folder for FS, .flight-system.
     | DotAs -- ^ The dot folder for airScore, .air-score.
     deriving Show
+
+-- | Alternative dot folders than .flare-timing and root.
+data AltDot = AltFs | AltAs
 
 data FileType
     = Fsdb -- ^ A *.fsdb file, usually obtained from FS.
@@ -81,26 +85,26 @@ data FileType
     | PegThenDiscard
     | AreaStep
 
-    | NormArrival
-    | NormLandout
-    | NormRoute
-    | NormScore
+    | AltArrival AltDot
+    | AltLandout AltDot
+    | AltRoute AltDot
+    | AltScore AltDot
 
 data FileShape
     = Ext FilePath
     | DotDirName FilePath DotFolder
 
--- | The path to a competition expected arrival file.
-newtype NormArrivalFile = NormArrivalFile FilePath deriving (Eq, Show)
+-- | The path to a competition arrival file, scored elsewhere.
+newtype AltArrivalFile = AltArrivalFile FilePath deriving (Eq, Show)
 
--- | The path to a competition expected effort file.
-newtype NormLandoutFile = NormLandoutFile FilePath deriving (Eq, Show)
+-- | The path to a competition effort file, scored elsewhere.
+newtype AltLandoutFile = AltLandoutFile FilePath deriving (Eq, Show)
 
--- | The path to a competition expected optimal route file.
-newtype NormRouteFile = NormRouteFile FilePath deriving (Eq, Show)
+-- | The path to a competition optimal route file, scored elsewhere.
+newtype AltRouteFile = AltRouteFile FilePath deriving (Eq, Show)
 
--- | The path to a competition expected score file.
-newtype NormScoreFile = NormScoreFile FilePath deriving (Eq, Show)
+-- | The path to a competition score file, scored elsewhere.
+newtype AltScoreFile = AltScoreFile FilePath deriving (Eq, Show)
 
 -- | The path to a *.igc file.
 newtype IgcFile = IgcFile FilePath deriving (Eq, Show)

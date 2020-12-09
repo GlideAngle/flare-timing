@@ -1,4 +1,4 @@
-module Flight.Fsdb.TaskRoute (parseNormRoutes) where
+module Flight.Fsdb.TaskRoute (parseAltRoutes) where
 
 import Data.Maybe (catMaybes)
 import Data.UnitsOfMeasure (u)
@@ -60,8 +60,8 @@ getRoute =
                     >>> arr (unpickleDoc xpWaypoint)
 
 
-parseNormRoutes :: String -> IO (Either String [[LatLng Rational [u| deg |]]])
-parseNormRoutes contents = do
+parseAltRoutes :: String -> IO (Either String [[LatLng Rational [u| deg |]]])
+parseAltRoutes contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getRoute
     return $ Right xs

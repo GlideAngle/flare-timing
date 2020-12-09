@@ -1,9 +1,9 @@
 module Flight.Path.Find
     ( FindDirFile(..)
-    , findNormArrival
-    , findNormLandout
-    , findNormRoute
-    , findNormScore
+    , findAltArrival
+    , findAltLandout
+    , findAltRoute
+    , findAltScore
     , findFsdb
     , findCleanFsdb
     , findTrimFsdb
@@ -29,41 +29,49 @@ data FindDirFile =
         }
     deriving Show
 
-findNormArrival' :: FilePath -> IO [NormArrivalFile]
-findNormArrival' dir = fmap NormArrivalFile <$> findFiles DotFs NormArrival dir
+findAltArrival' :: AltDot -> FilePath -> IO [AltArrivalFile]
+findAltArrival' AltFs dir = fmap AltArrivalFile <$> findFiles DotFs (AltArrival AltFs) dir
+findAltArrival' AltAs dir = fmap AltArrivalFile <$> findFiles DotFs (AltArrival AltAs) dir
 
-findNormArrival
+findAltArrival
     :: (HasField "dir" o String, HasField "file" o String)
-    => o
-    -> IO [NormArrivalFile]
-findNormArrival = findFileType NormArrival findNormArrival' NormArrivalFile
+    => AltDot
+    -> o
+    -> IO [AltArrivalFile]
+findAltArrival a = findFileType (AltArrival a) (findAltArrival' a) AltArrivalFile
 
-findNormLandout' :: FilePath -> IO [NormLandoutFile]
-findNormLandout' dir = fmap NormLandoutFile <$> findFiles DotFs NormLandout dir
+findAltLandout' :: AltDot -> FilePath -> IO [AltLandoutFile]
+findAltLandout' AltFs dir = fmap AltLandoutFile <$> findFiles DotFs (AltLandout AltFs) dir
+findAltLandout' AltAs dir = fmap AltLandoutFile <$> findFiles DotAs (AltLandout AltAs) dir
 
-findNormLandout
+findAltLandout
     :: (HasField "dir" o String, HasField "file" o String)
-    => o
-    -> IO [NormLandoutFile]
-findNormLandout = findFileType NormLandout findNormLandout' NormLandoutFile
+    => AltDot
+    -> o
+    -> IO [AltLandoutFile]
+findAltLandout a = findFileType (AltLandout a) (findAltLandout' a) AltLandoutFile
 
-findNormRoute' :: FilePath -> IO [NormRouteFile]
-findNormRoute' dir = fmap NormRouteFile <$> findFiles DotFs NormRoute dir
+findAltRoute' :: AltDot -> FilePath -> IO [AltRouteFile]
+findAltRoute' AltFs dir = fmap AltRouteFile <$> findFiles DotFs (AltRoute AltFs) dir
+findAltRoute' AltAs dir = fmap AltRouteFile <$> findFiles DotAs (AltRoute AltAs) dir
 
-findNormRoute
+findAltRoute
     :: (HasField "dir" o String, HasField "file" o String)
-    => o
-    -> IO [NormRouteFile]
-findNormRoute = findFileType NormRoute findNormRoute' NormRouteFile
+    => AltDot
+    -> o
+    -> IO [AltRouteFile]
+findAltRoute a = findFileType (AltRoute a) (findAltRoute' a) AltRouteFile
 
-findNormScore' :: FilePath -> IO [NormScoreFile]
-findNormScore' dir = fmap NormScoreFile <$> findFiles DotFs NormScore dir
+findAltScore' :: AltDot -> FilePath -> IO [AltScoreFile]
+findAltScore' AltFs dir = fmap AltScoreFile <$> findFiles DotFs (AltScore AltFs) dir
+findAltScore' AltAs dir = fmap AltScoreFile <$> findFiles DotAs (AltScore AltAs) dir
 
-findNormScore
+findAltScore
     :: (HasField "dir" o String, HasField "file" o String)
-    => o
-    -> IO [NormScoreFile]
-findNormScore = findFileType NormScore findNormScore' NormScoreFile
+    => AltDot
+    -> o
+    -> IO [AltScoreFile]
+findAltScore a = findFileType (AltScore a) (findAltScore' a) AltScoreFile
 
 findFsdb' :: FilePath -> IO [FsdbFile]
 findFsdb' dir = fmap FsdbFile <$> findFiles DotRoot Fsdb dir
@@ -155,26 +163,22 @@ findFileType typ finder ctor o = do
         dir = getField @"dir" o
         file = reshape typ $ getField @"file" o
 
+-- TODO: Figure out what to do with this function now that the extension or
+-- compound extension does not by itself distinguish the file.
 ext :: FileType -> FilePath
+
 ext Fsdb = ".fsdb"
 ext CleanFsdb = ".clean-fsdb.xml"
 ext TrimFsdb = ".trim-fsdb.xml"
+
 ext Kml = ".kml"
 ext Igc = ".igc"
-ext NormArrival = ".norm-arrival.yaml"
-ext NormLandout = ".norm-land-out.yaml"
-ext NormRoute = ".norm-route.yaml"
-ext NormScore = ".norm-score.yaml"
+
 ext CompInput = ".comp-input.yaml"
 ext TaskLength = ".task-length.yaml"
 ext CrossZone = ".cross-zone.yaml"
 ext TagZone = ".tag-zone.yaml"
 ext PegFrame = ".peg-frame.yaml"
-ext UnpackTrack = ".unpack-track.csv"
-ext AlignTime = ".align-time.csv"
-ext DiscardFurther = ".discard-further.csv"
-ext PegThenDiscard = ".peg-then-discard.csv"
-ext AreaStep = ".area-step.csv"
 ext LeadArea = ".lead-area.yaml"
 ext MaskArrival = ".mask-arrival.yaml"
 ext MaskEffort = ".mask-effort.yaml"
@@ -185,3 +189,14 @@ ext BonusReach = ".bonus-reach.yaml"
 ext LandOut = ".land-out.yaml"
 ext FarOut = ".far-out.yaml"
 ext GapPoint = ".gap-point.yaml"
+
+ext UnpackTrack = ".unpack-track.csv"
+ext AlignTime = ".align-time.csv"
+ext DiscardFurther = ".discard-further.csv"
+ext PegThenDiscard = ".peg-then-discard.csv"
+ext AreaStep = ".area-step.csv"
+
+ext (AltArrival _) = "arrival.yaml"
+ext (AltLandout _) = ".norm-land-out.yaml"
+ext (AltRoute _) = ".norm-route.yaml"
+ext (AltScore _) = ".norm-score.yaml"

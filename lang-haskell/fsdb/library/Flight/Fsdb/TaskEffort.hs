@@ -1,4 +1,4 @@
-module Flight.Fsdb.TaskEffort (parseNormLandouts) where
+module Flight.Fsdb.TaskEffort (parseAltLandouts) where
 
 import Data.Either (partitionEithers)
 import Data.List (sortBy)
@@ -251,11 +251,11 @@ getEffort free pilots =
             >>> hasName "FsChunk"
             >>> arr (unpickleDoc' $ xpChunk kps)
 
-parseNormLandouts
+parseAltLandouts
     :: MinimumDistance (Quantity Double [u| km |])
     -> String
     -> IO (Either String [TaskLanding])
-parseNormLandouts free contents = do
+parseAltLandouts free contents = do
     let doc =
             readString
                 [ withValidate no

@@ -1,12 +1,12 @@
 module Flight.Path.Tx
-    ( trimFsdbToNormArrival
-    , trimFsdbToNormLandout
-    , trimFsdbToNormRoute
-    , trimFsdbToNormScore
-    , compToNormArrival
-    , compToNormLandout
-    , compToNormRoute
-    , compToNormScore
+    ( trimFsdbToAltArrival
+    , trimFsdbToAltLandout
+    , trimFsdbToAltRoute
+    , trimFsdbToAltScore
+    , compToAltArrival
+    , compToAltLandout
+    , compToAltRoute
+    , compToAltScore
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
@@ -81,10 +81,15 @@ shape DiscardFurther = Ext ".discard-further.csv"
 shape PegThenDiscard = Ext ".peg-then-discard.csv"
 shape AreaStep = Ext ".area-step.csv"
 
-shape NormArrival = DotDirName "mask-arrival.yaml" DotFs
-shape NormLandout = DotDirName "land-out.yaml" DotFs
-shape NormRoute = DotDirName "task-route.yaml" DotFs
-shape NormScore = DotDirName "gap-score.yaml" DotFs
+shape (AltArrival AltFs) = DotDirName "mask-arrival.yaml" DotFs
+shape (AltLandout AltFs) = DotDirName "land-out.yaml" DotFs
+shape (AltRoute AltFs) = DotDirName "task-route.yaml" DotFs
+shape (AltScore AltFs) = DotDirName "gap-score.yaml" DotFs
+
+shape (AltArrival AltAs) = DotDirName "mask-arrival.yaml" DotAs
+shape (AltLandout AltAs) = DotDirName "land-out.yaml" DotAs
+shape (AltRoute AltAs) = DotDirName "task-route.yaml" DotAs
+shape (AltScore AltAs) = DotDirName "gap-score.yaml" DotAs
 
 reshape :: FileType -> FilePath -> FilePath
 reshape Fsdb = flip replaceExtensions "fsdb"
@@ -93,11 +98,6 @@ reshape TrimFsdb = coerce . cleanFsdbToTrimFsdb . fsdbToCleanFsdb . FsdbFile
 
 reshape Kml = id
 reshape Igc = id
-
-reshape NormArrival = coerce . compToNormArrival . coerce . reshape CompInput
-reshape NormLandout = coerce . compToNormLandout . coerce . reshape CompInput
-reshape NormRoute = coerce . compToNormRoute . coerce . reshape CompInput
-reshape NormScore = coerce . compToNormScore . coerce . reshape CompInput
 
 reshape CompInput = coerce . trimFsdbToComp . coerce . reshape TrimFsdb
 reshape TaskLength = flip replaceExtensions "task-length.yaml"
@@ -122,6 +122,11 @@ reshape AlignTime = flip replaceExtensions "align-time.csv"
 reshape DiscardFurther = flip replaceExtensions "discard-further.csv"
 reshape PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
 reshape AreaStep = flip replaceExtensions "area-step.csv"
+
+reshape (AltArrival x) = coerce . compToAltArrival x . coerce . reshape CompInput
+reshape (AltLandout x) = coerce . compToAltLandout x . coerce . reshape CompInput
+reshape (AltRoute x) = coerce . compToAltRoute x . coerce . reshape CompInput
+reshape (AltScore x) = coerce . compToAltScore x . coerce . reshape CompInput
 
 dotDirTask :: CompDir -> DotFolder -> FilePath -> Int -> FilePath
 dotDirTask (CompDir dir) dotFolder name task
@@ -268,68 +273,76 @@ compToPoint :: CompInputFile -> GapPointFile
 compToPoint _ = let DotDirName s d = shape GapPoint in GapPointFile $ dotDir d s
 
 -- |
--- >>> compToNormArrival (CompInputFile ".flare-timing/comp-input.yaml")
--- NormArrivalFile ".flight-system/mask-arrival.yaml"
+-- >>> compToAltArrival AltFs (CompInputFile ".flare-timing/comp-input.yaml")
+-- AltArrivalFile ".flight-system/mask-arrival.yaml"
 --
--- prop> \s -> compToNormArrival (CompInputFile s) == NormArrivalFile ".flight-system/mask-arrival.yaml"
-compToNormArrival :: CompInputFile -> NormArrivalFile
-compToNormArrival _ = let DotDirName s d = shape NormArrival in NormArrivalFile $ dotDir d s
+-- prop> \s -> compToAltArrival AltFs (CompInputFile s) == AltArrivalFile ".flight-system/mask-arrival.yaml"
+compToAltArrival :: AltDot -> CompInputFile -> AltArrivalFile
+compToAltArrival a _ = let DotDirName s d = shape (AltArrival a) in
+    AltArrivalFile $ dotDir d s
 
 -- |
--- >>> compToNormLandout (CompInputFile ".flare-timing/comp-input.yaml")
--- NormLandoutFile ".flight-system/land-out.yaml"
+-- >>> compToAltLandout AltFs (CompInputFile ".flare-timing/comp-input.yaml")
+-- AltLandoutFile ".flight-system/land-out.yaml"
 --
--- prop> \s -> compToNormLandout (CompInputFile s) == NormLandoutFile ".flight-system/land-out.yaml"
-compToNormLandout :: CompInputFile -> NormLandoutFile
-compToNormLandout _ = let DotDirName s d = shape NormLandout in NormLandoutFile $ dotDir d s
+-- prop> \s -> compToAltLandout AltFs (CompInputFile s) == AltLandoutFile ".flight-system/land-out.yaml"
+compToAltLandout :: AltDot -> CompInputFile -> AltLandoutFile
+compToAltLandout a _ = let DotDirName s d = shape (AltLandout a) in
+    AltLandoutFile $ dotDir d s
 
 -- |
--- >>> trimFsdbToNormArrival (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- NormArrivalFile ".flight-system/mask-arrival.yaml"
+-- >>> trimFsdbToAltArrival AltFs (TrimFsdbFile ".flight-system/trim-fsdb.xml")
+-- AltArrivalFile ".flight-system/mask-arrival.yaml"
 --
--- prop> \s -> trimFsdbToNormArrival (TrimFsdbFile s) == NormArrivalFile ".flight-system/mask-arrival.yaml"
-trimFsdbToNormArrival :: TrimFsdbFile -> NormArrivalFile
-trimFsdbToNormArrival _ = let DotDirName s d = shape NormArrival in NormArrivalFile $ dotDir d s
+-- prop> \s -> trimFsdbToAltArrival AltFs (TrimFsdbFile s) == AltArrivalFile ".flight-system/mask-arrival.yaml"
+trimFsdbToAltArrival :: AltDot -> TrimFsdbFile -> AltArrivalFile
+trimFsdbToAltArrival a _ = let DotDirName s d = shape (AltArrival a) in
+    AltArrivalFile $ dotDir d s
 
 -- |
--- >>> trimFsdbToNormLandout (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- NormLandoutFile ".flight-system/land-out.yaml"
+-- >>> trimFsdbToAltLandout AltFs (TrimFsdbFile ".flight-system/trim-fsdb.xml")
+-- AltLandoutFile ".flight-system/land-out.yaml"
 --
--- prop> \s -> trimFsdbToNormLandout (TrimFsdbFile s) == NormLandoutFile ".flight-system/land-out.yaml"
-trimFsdbToNormLandout :: TrimFsdbFile -> NormLandoutFile
-trimFsdbToNormLandout _ = let DotDirName s d = shape NormLandout in NormLandoutFile $ dotDir d s
+-- prop> \s -> trimFsdbToAltLandout AltFs (TrimFsdbFile s) == AltLandoutFile ".flight-system/land-out.yaml"
+trimFsdbToAltLandout :: AltDot -> TrimFsdbFile -> AltLandoutFile
+trimFsdbToAltLandout a _ = let DotDirName s d = shape (AltLandout a) in
+    AltLandoutFile $ dotDir d s
 
 -- |
--- >>> compToNormRoute (CompInputFile ".flare-timing/comp-input.yaml")
--- NormRouteFile ".flight-system/task-route.yaml"
+-- >>> compToAltRoute AltFs (CompInputFile ".flare-timing/comp-input.yaml")
+-- AltRouteFile ".flight-system/task-route.yaml"
 --
--- prop> \s -> compToNormRoute (CompInputFile s) == NormRouteFile ".flight-system/task-route.yaml"
-compToNormRoute :: CompInputFile -> NormRouteFile
-compToNormRoute _ = let DotDirName s d = shape NormRoute in NormRouteFile $ dotDir d s
+-- prop> \s -> compToAltRoute AltFs (CompInputFile s) == AltRouteFile ".flight-system/task-route.yaml"
+compToAltRoute :: AltDot -> CompInputFile -> AltRouteFile
+compToAltRoute a _ = let DotDirName s d = shape (AltRoute a) in
+    AltRouteFile $ dotDir d s
 
 -- |
--- >>> trimFsdbToNormRoute (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- NormRouteFile ".flight-system/task-route.yaml"
+-- >>> trimFsdbToAltRoute AltFs (TrimFsdbFile ".flight-system/trim-fsdb.xml")
+-- AltRouteFile ".flight-system/task-route.yaml"
 --
--- prop> \s -> trimFsdbToNormRoute (TrimFsdbFile s) == NormRouteFile ".flight-system/task-route.yaml"
-trimFsdbToNormRoute :: TrimFsdbFile -> NormRouteFile
-trimFsdbToNormRoute _ = let DotDirName s d = shape NormRoute in NormRouteFile $ dotDir d s
+-- prop> \s -> trimFsdbToAltRoute AltFs (TrimFsdbFile s) == AltRouteFile ".flight-system/task-route.yaml"
+trimFsdbToAltRoute :: AltDot -> TrimFsdbFile -> AltRouteFile
+trimFsdbToAltRoute a _ = let DotDirName s d = shape (AltRoute a) in
+    AltRouteFile $ dotDir d s
 
 -- |
--- >>> compToNormScore (CompInputFile ".flare-timing/comp-input.yaml")
--- NormScoreFile ".flight-system/gap-score.yaml"
+-- >>> compToAltScore AltFs (CompInputFile ".flare-timing/comp-input.yaml")
+-- AltScoreFile ".flight-system/gap-score.yaml"
 --
--- prop> \s -> compToNormScore (CompInputFile s) == NormScoreFile ".flight-system/gap-score.yaml"
-compToNormScore :: CompInputFile -> NormScoreFile
-compToNormScore _ = let DotDirName s d = shape NormScore in NormScoreFile $ dotDir d s
+-- prop> \s -> compToAltScore AltFs (CompInputFile s) == AltScoreFile ".flight-system/gap-score.yaml"
+compToAltScore :: AltDot -> CompInputFile -> AltScoreFile
+compToAltScore a _ = let DotDirName s d = shape (AltScore a) in
+    AltScoreFile $ dotDir d s
 
 -- |
--- >>> trimFsdbToNormScore (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- NormScoreFile ".flight-system/gap-score.yaml"
+-- >>> trimFsdbToAltScore AltFs (TrimFsdbFile ".flight-system/trim-fsdb.xml")
+-- AltScoreFile ".flight-system/gap-score.yaml"
 --
--- prop> \s -> trimFsdbToNormScore (TrimFsdbFile s) == NormScoreFile ".flight-system/gap-score.yaml"
-trimFsdbToNormScore :: TrimFsdbFile -> NormScoreFile
-trimFsdbToNormScore _ = let DotDirName s d = shape NormScore in NormScoreFile $ dotDir d s
+-- prop> \s -> trimFsdbToAltScore AltFs (TrimFsdbFile s) == AltScoreFile ".flight-system/gap-score.yaml"
+trimFsdbToAltScore :: AltDot -> TrimFsdbFile -> AltScoreFile
+trimFsdbToAltScore a _ = let DotDirName s d = shape (AltScore a) in
+    AltScoreFile $ dotDir d s
 
 compFileToCompDir :: CompInputFile -> CompDir
 compFileToCompDir (CompInputFile p) =

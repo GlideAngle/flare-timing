@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Fsdb.TaskScore (parseNormScores) where
+module Flight.Fsdb.TaskScore (parseAltScores) where
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
@@ -47,8 +47,8 @@ import Text.XML.HXT.Core
 
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Track.Distance (AwardedDistance(..))
-import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
-import qualified Flight.Track.Point as Norm (NormBreakdown(..))
+import Flight.Track.Point (AltPointing(..), AltBreakdown(..))
+import qualified Flight.Track.Point as Alt (AltBreakdown(..))
 import Flight.Comp (PilotId(..), Pilot(..), Nominal(..), DfNoTrackPilot(..))
 import qualified "flight-gap-allot" Flight.Score as Frac (Fractions(..))
 import "flight-gap-allot" Flight.Score
@@ -106,7 +106,7 @@ toPilotTime x =
         secs :: Quantity Double [u| s |]
         secs = fromRational' . MkQuantity . toRational $ timeOfDayToTime x
 
-xpRankScore :: PU NormBreakdown
+xpRankScore :: PU AltBreakdown
 xpRankScore =
     xpElem "FsResult"
     $ xpFilterAttr
@@ -131,7 +131,7 @@ xpRankScore =
         )
     $ xpWrap
         ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, dL, ss, es, ssE) ->
-            NormBreakdown
+            AltBreakdown
                 { place = TaskPlacing $ fromIntegral r
                 , total = TaskPoints $ fromIntegral p
                 , breakdown =
@@ -177,7 +177,7 @@ xpRankScore =
                 , leadingArea = LeadingArea zero
                 , leadingCoef = LeadingCoef zero
                 }
-        , \NormBreakdown
+        , \AltBreakdown
                 { place = TaskPlacing r
                 , total = TaskPoints p
                 , breakdown =
@@ -481,7 +481,7 @@ xpStopValidityWorking =
         (xpAttr "best_real_dist" xpPrim)
         (xpOption $ xpAttr "launch_to_ess_distance" xpPrim)
 
-getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
+getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe AltBreakdown)]
 getScore pilots =
     getChildren
     >>> deep (hasName "FsTask")
@@ -502,13 +502,13 @@ getScore pilots =
         in
             [
                 (,) p $ do
-                    n@NormBreakdown{reach = r@ReachToggle{flown = dm}, fractions = fracs} <- x
+                    n@AltBreakdown{reach = r@ReachToggle{flown = dm}, fractions = fracs} <- x
                     let dKm = taskMetresToKm dm
                     AwardedDistance{awardedFrac = dFrac} <- asAwardReach t (Just dKm)
                     return
                         n
                             { fractions = fracs{Frac.distance = DistanceFraction $ toRational dFrac}
-                            , Norm.reach =
+                            , Alt.reach =
                                 maybe
                                     r
                                     (\(TaskDistance (d :: Quantity _ [u| m |])
@@ -661,8 +661,8 @@ getValidity ng nl nd md nt =
         --  </FsTask>
         maybeScored x = (x >>> arr (fmap Just)) `orElse` constA (Right Nothing)
 
-parseNormScores :: Nominal -> String -> IO (Either String NormPointing)
-parseNormScores
+parseAltScores :: Nominal -> String -> IO (Either String AltPointing)
+parseAltScores
     Nominal
         { goal = ng
         , launch = nl
@@ -682,14 +682,14 @@ parseNormScores
     ps <- runX $ doc >>> getCompPilot
     xss <- runX $ doc >>> getScore ps
 
-    let yss :: [[(Pilot, NormBreakdown)]] = [catMaybes $ sequence <$> xs| xs <- xss]
+    let yss :: [[(Pilot, AltBreakdown)]] = [catMaybes $ sequence <$> xs| xs <- xss]
     let tss = const Nothing <$> yss
 
     let rss =
             [
                 unzip
                 [ (extra, flown)
-                | NormBreakdown{reach = ReachToggle{extra, flown}} <- ys
+                | AltBreakdown{reach = ReachToggle{extra, flown}} <- ys
                 ]
             | ys <- (fmap . fmap) snd yss
             ]
@@ -741,7 +741,7 @@ parseNormScores
 
     return $
         (\(vs, lw, tw, dw, sw) ->
-            NormPointing
+            AltPointing
                 { bestTime = tss
                 , validityWorkingLaunch = lw
                 , validityWorkingTime = tw

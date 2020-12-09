@@ -16,19 +16,20 @@ import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNormRoutes)
+import Flight.Fsdb (parseAltRoutes)
 import Flight.Comp
-    ( FindDirFile(..)
+    ( AltDot(AltFs)
+    , FindDirFile(..)
     , FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
-    , trimFsdbToNormRoute
+    , trimFsdbToAltRoute
     , findTrimFsdb
     , reshape
     )
 import Flight.Route
 import Flight.TaskTrack.Double
-import Flight.Scribe (readTrimFsdb, writeNormRoute)
+import Flight.Scribe (readTrimFsdb, writeAltRoute)
 import FsRouteOptions (description)
 
 sp :: SampleParams Double
@@ -61,11 +62,11 @@ go trimFsdbFile = do
     FsdbXml contents <- readTrimFsdb trimFsdbFile
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ normRoutes (FsdbXml contents')
-    either print (writeNormRoute (trimFsdbToNormRoute trimFsdbFile)) settings
+    either print (writeAltRoute (trimFsdbToAltRoute AltFs trimFsdbFile)) settings
 
 fsdbRoutes :: FsdbXml -> ExceptT String IO [[RawLatLng]]
 fsdbRoutes (FsdbXml contents) = do
-    fs <- lift $ parseNormRoutes contents
+    fs <- lift $ parseAltRoutes contents
     let fs' = (fmap . fmap . fmap) convertLatLng fs
     ExceptT $ return fs'
 
