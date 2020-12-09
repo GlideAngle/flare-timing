@@ -1,5 +1,6 @@
 module FlareTiming.Comms
     ( GetConstraint
+    , AltDot(..)
     , getComps
     , getNominals
     , getTasks
@@ -8,13 +9,9 @@ module FlareTiming.Comms
     , getPilots
     , getPilotsStatus
     , getValidity
-    , getAltValidity
     , getAllocation
     , getTaskScore
     , getTaskValidityWorking
-    , getTaskAltValidityWorking
-    , getTaskLengthAltSphere
-    , getTaskLengthAltEllipse
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -37,14 +34,19 @@ module FlareTiming.Comms
     , getTaskReach
     , getTaskBonusReach
     , getTaskEffort
-    , getTaskAltLanding
     , getTaskLanding
-    , getTaskAltScore
     , getTaskArrival
-    , getTaskAltArrival
     , getTaskLead
     , getTaskTime
     , emptyRoute
+
+    , getAltValidity
+    , getTaskAltValidityWorking
+    , getTaskLengthAltSphere
+    , getTaskLengthAltEllipse
+    , getTaskAltLanding
+    , getTaskAltScore
+    , getTaskAltArrival
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -185,9 +187,6 @@ getPilotsStatus = get "/gap-point/pilots-status"
 getValidity :: Get t m [Maybe Validity]
 getValidity = get "/gap-point/validity"
 
-getAltValidity :: Get t m [Maybe Validity]
-getAltValidity = get "/fs-score/validity"
-
 getAllocation :: Get t m [Maybe Allocation]
 getAllocation = get "/gap-point/allocation"
 
@@ -209,20 +208,11 @@ getTaskBonusReach = getIxTask "mask-track" "bonus-reach"
 getTaskEffort :: GetIxTask' t m [(Pilot, TrackEffort)]
 getTaskEffort = getIxTask "land-out" "effort"
 
-getTaskAltLanding :: GetIxTask' t m (Maybe TaskLanding)
-getTaskAltLanding = getIxTask "fs-effort" "landing"
-
 getTaskLanding :: GetIxTask' t m (Maybe TaskLanding)
 getTaskLanding = getIxTask "land-out" "landing"
 
-getTaskAltScore :: GetIxTask' t m [(Pilot, AltBreakdown)]
-getTaskAltScore = getIxTask "fs-score" "score"
-
 getTaskArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
 getTaskArrival = getIxTask "mask-track" "arrival"
-
-getTaskAltArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
-getTaskAltArrival = getIxTask "fs-mask-track" "arrival"
 
 getTaskLead :: GetIxTask' t m [(Pilot, TrackLead)]
 getTaskLead = getIxTask "mask-track" "lead"
@@ -236,18 +226,8 @@ getTaskFlyingSectionTimes = getIxTask "cross-zone" "flying-times"
 getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"
 
-getTaskAltValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
-getTaskAltValidityWorking = getIxTask "fs-score" "validity-working"
-
-getFsRoute_ :: T.Text -> IxTask -> Get t m b
-getFsRoute_ = getIxTask "fs-route"
-
 getTaskLength_ :: T.Text -> IxTask -> Get t m b
 getTaskLength_ = getIxTask "task-length"
-
-getTaskLengthAltSphere, getTaskLengthAltEllipse :: GetIxTask' t m (Maybe TrackLine)
-getTaskLengthAltSphere = getFsRoute_ "sphere"
-getTaskLengthAltEllipse = getFsRoute_ "ellipse"
 
 getTaskLengthSphericalEdge, getTaskLengthEllipsoidEdge
     :: GetIxTask' t m (OptimalRoute (Maybe TrackLine))
@@ -430,3 +410,29 @@ getTaskPilotTag (IxTask ii) ev = do
     let req' md = XhrRequest "GET" (u md) def
     rsp <- performRequestAsync . fmap req' $ getPilotId <$> ev
     return $ fmapMaybe decodeXhrResponse rsp
+
+data AltDot = AltFs | AltAs
+
+getAltValidity :: Get t m [Maybe Validity]
+getAltValidity = get "/fs-score/validity"
+
+getFsRoute_ :: T.Text -> IxTask -> Get t m b
+getFsRoute_ = getIxTask "fs-route"
+
+getTaskAltLanding :: GetIxTask' t m (Maybe TaskLanding)
+getTaskAltLanding = getIxTask "fs-effort" "landing"
+
+getTaskAltScore :: AltDot -> GetIxTask' t m [(Pilot, AltBreakdown)]
+getTaskAltScore AltFs = getIxTask "fs-score" "score"
+getTaskAltScore AltAs = getIxTask "as-score" "score"
+
+getTaskAltArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
+getTaskAltArrival = getIxTask "fs-mask-track" "arrival"
+
+getTaskAltValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
+getTaskAltValidityWorking = getIxTask "fs-score" "validity-working"
+
+getTaskLengthAltSphere, getTaskLengthAltEllipse :: GetIxTask' t m (Maybe TrackLine)
+getTaskLengthAltSphere = getFsRoute_ "sphere"
+getTaskLengthAltEllipse = getFsRoute_ "ellipse"
+

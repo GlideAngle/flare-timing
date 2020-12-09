@@ -330,7 +330,11 @@ trimFsdbToAltRoute a _ = let DotDirName s d = shape (AltRoute a) in
 -- >>> compToAltScore AltFs (CompInputFile ".flare-timing/comp-input.yaml")
 -- AltScoreFile ".flight-system/gap-score.yaml"
 --
+-- >>> compToAltScore AltAs (CompInputFile ".flare-timing/comp-input.yaml")
+-- AltScoreFile ".air-score/gap-score.yaml"
+--
 -- prop> \s -> compToAltScore AltFs (CompInputFile s) == AltScoreFile ".flight-system/gap-score.yaml"
+-- prop> \s -> compToAltScore AltAs (CompInputFile s) == AltScoreFile ".air-score/gap-score.yaml"
 compToAltScore :: AltDot -> CompInputFile -> AltScoreFile
 compToAltScore a _ = let DotDirName s d = shape (AltScore a) in
     AltScoreFile $ dotDir d s

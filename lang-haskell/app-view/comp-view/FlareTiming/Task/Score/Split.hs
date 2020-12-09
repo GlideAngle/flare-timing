@@ -68,7 +68,7 @@ tableScoreSplit
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
+tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -334,7 +334,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         dfNt
                         pt
                         tp
-                        (Map.fromList <$> sEx))
+                        (Map.fromList <$> sAltFs))
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -409,13 +409,13 @@ pointRow
     -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
+pointRow w cTime cArrival _utcOffset _free dfNt pt tp sAltFs x = do
     let pilot = fst <$> x
     let xB = snd <$> x
 
     (yRank, yScore, yDiff, yDistance, yDistanceDiff, yLeading, yLeadingDiff, yArrival, yArrivalDiff, yTime, yTimeDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p', breakdown = Points{distance = d', leading = l', arrival = a', time = t'}}) ->
-                case Map.lookup pilot' sEx' of
+                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown{total = p', breakdown = Points{distance = d', leading = l', arrival = a', time = t'}}) ->
+                case Map.lookup pilot' sAltFs' of
                     Nothing -> ("", "", "", "", "", "", "", "", "", "", "")
                     Just
                         Alt.AltBreakdown

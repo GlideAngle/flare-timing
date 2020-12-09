@@ -47,7 +47,7 @@ tableScoreArrive
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -91,7 +91,7 @@ tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs
                         utcOffset
                         dfNt
                         pt
-                        (Map.fromList <$> sEx))
+                        (Map.fromList <$> sAltFs))
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -163,7 +163,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w utcOffset dfNt pt sEx x = do
+pointRow w utcOffset dfNt pt sAltFs x = do
     let tz = timeZone <$> utcOffset
     tz' <- sample . current $ timeZone <$> utcOffset
     let pilot = fst <$> x
@@ -178,7 +178,7 @@ pointRow w utcOffset dfNt pt sEx x = do
                            else ("", n))
 
     (yEs, yEsDiff, aPts, aPtsDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown
+                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown
                                                           { velocity = v'
                                                           , breakdown =
                                                               Points{arrival = aPts}
@@ -189,7 +189,7 @@ pointRow w utcOffset dfNt pt sEx x = do
                         Alt.AltBreakdown
                             { es = es'
                             , breakdown = Points{arrival = aPtsN}
-                            } <- Map.lookup pilot' sEx'
+                            } <- Map.lookup pilot' sAltFs'
 
                         return
                             ( maybe "" (showT tz') es'

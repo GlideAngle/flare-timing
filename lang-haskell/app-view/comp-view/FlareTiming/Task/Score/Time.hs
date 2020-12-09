@@ -42,7 +42,7 @@ tableScoreTime
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
+tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -91,7 +91,7 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
                         w
                         dfNt
                         pt
-                        (Map.fromList <$> sEx))
+                        (Map.fromList <$> sAltFs))
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -163,7 +163,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w dfNt pt sEx x = do
+pointRow w dfNt pt sAltFs x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     let v = velocity . snd <$> x
@@ -176,7 +176,7 @@ pointRow w dfNt pt sEx x = do
                            else ("", n))
 
     (yEl, yElDiff, tPts, tPtsDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown
+                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown
                                                           { velocity = v'
                                                           , breakdown =
                                                               Points{time = tPts}
@@ -192,7 +192,7 @@ pointRow w dfNt pt sEx x = do
                     Alt.AltBreakdown
                         { timeElapsed = elap'
                         , breakdown = Points{time = tPtsN}
-                        } <- Map.lookup pilot' sEx'
+                        } <- Map.lookup pilot' sAltFs'
 
                     let elap =
                             case (ss, gs) of

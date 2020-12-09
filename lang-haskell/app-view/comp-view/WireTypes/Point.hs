@@ -313,10 +313,10 @@ showTaskPointsDiffStats es ps =
     in
         T.pack $
             maybe
-                ("Points")
+                ""
                 (\es'' ->
                     let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''
-                    in printf "Points (Δ = %.1f ± %.1f)" (Stats.mean xs) (Stats.stdDev xs))
+                    in printf "Δ = %.1f ± %.1f" (Stats.mean xs) (Stats.stdDev xs))
                 es'
 
 showLinearPoints :: LinearPoints -> T.Text

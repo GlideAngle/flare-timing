@@ -21,7 +21,8 @@ import WireTypes.Cross (TrackFlyingSection(..), TrackScoredSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
-    ( getTaskScore, getTaskAltScore
+    ( AltDot(..)
+    , getTaskScore, getTaskAltScore
     , getTaskBolsterStats, getTaskBonusBolsterStats
     , getTaskReach, getTaskBonusReach
     , getTaskEffort, getTaskLanding, getTaskAltLanding
@@ -212,7 +213,8 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
     let stp = stopped <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
-    sEx <- holdDyn [] =<< getTaskAltScore ix pb
+    sAltFs <- holdDyn [] =<< getTaskAltScore AltFs ix pb
+    sAltAs <- holdDyn [] =<< getTaskAltScore AltAs ix pb
     reachStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBolsterStats ix pb)
     bonusStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusBolsterStats ix pb)
     reach <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
@@ -260,7 +262,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
             tabScore <- tabsScore
             let tableScoreHold =
                     elAttr "div" ("id" =: "score-overview") $
-                        tableScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                        tableScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
             _ <- widgetHold tableScoreHold $
                     (\case
                         ScoreTabOver ->
@@ -268,22 +270,22 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
 
                         ScoreTabSplit ->
                             elAttr "div" ("id" =: "score-points") $
-                                tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                         ScoreTabReach ->
                             elAttr "div" ("id" =: "score-reach") $
-                                tableScoreReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sEx
+                                tableScoreReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
                         ScoreTabEffort ->
                             elAttr "div" ("id" =: "score-effort") $
-                                tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN
+                                tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
                         ScoreTabSpeed ->
                             elAttr "div" ("id" =: "score-speed") $
-                                tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                         ScoreTabTime ->
                             elAttr "div" ("id" =: "score-time") $
-                                tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                         ScoreTabArrive ->
                             elAttr "div" ("id" =: "score-arrival") $
-                                tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
+                                tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
 
                     <$> tabScore
 
@@ -348,17 +350,17 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                     _ <- widgetHold (plotSplit) $
                             (\case
                                 PlotTabSplit -> plotSplit
-                                PlotTabReach -> reachPlot task sEx reach bonusReach
-                                PlotTabEffort -> effortPlot hgOrPg sEx ef
-                                PlotTabTime -> timePlot sgs sEx sd
+                                PlotTabReach -> reachPlot task sAltFs reach bonusReach
+                                PlotTabEffort -> effortPlot hgOrPg sAltFs ef
+                                PlotTabTime -> timePlot sgs sAltFs sd
 
                                 PlotTabLead -> do
                                     tabPlotLead <- tabsPlotLead
-                                    let plotLeadCoef = leadCoefPlot ix tweak sEx ld
+                                    let plotLeadCoef = leadCoefPlot ix tweak sAltFs ld
                                     _ <- widgetHold (plotLeadCoef) $
                                             (\case
                                                 PlotLeadTabPoint -> plotLeadCoef
-                                                PlotLeadTabArea -> leadAreaPlot ix tweak sEx ld
+                                                PlotLeadTabArea -> leadAreaPlot ix tweak sAltFs ld
                                             )
                                             <$> tabPlotLead
                                     return ()
@@ -383,7 +385,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                                         vw vwAlt
                                         reachStats bonusStats
                                         reach bonusReach
-                                        ft dfNt sEx
+                                        ft dfNt sAltFs
                                 BasisTabGeo -> tableGeo ix comp)
 
                             <$> tabBasis
@@ -394,7 +396,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                     tabPenal <- tabsPenal
                     let penalJump =
                             elAttr "div" ("id" =: "score-penal") $
-                                tablePenalJump hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx penalAuto
+                                tablePenalJump hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs penalAuto
 
                     _ <- widgetHold penalJump $
                             (\case
@@ -402,11 +404,11 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
 
                                 PenalTabEssGoal ->
                                     elAttr "div" ("id" =: "score-penal") $
-                                        tablePenalEssGoal hgOrPg tweak early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                        tablePenalEssGoal hgOrPg tweak early sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
 
                                 PenalTabManual ->
                                     elAttr "div" ("id" =: "score-penal") $
-                                        tablePenalManual hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx penal)
+                                        tablePenalManual hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs penal)
 
                             <$> tabPenal
 

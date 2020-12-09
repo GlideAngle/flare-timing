@@ -1,3 +1,4 @@
+import Debug.Trace
 import Prelude hiding (abs)
 import GHC.Records
 import qualified Data.Text as T (Text)
@@ -303,7 +304,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let altFsLandoutFile@(AltLandoutFile altFsLandoutPath) = compToAltLandout AltFs compFile
     let altFsRouteFile@(AltRouteFile altFsRoutePath) = compToAltRoute AltFs compFile
     let altFsScoreFile@(AltScoreFile altFsScorePath) = compToAltScore AltFs compFile
-    let _altAsScoreFile@(AltScoreFile _altAsScorePath) = compToAltScore AltAs compFile
+    let altAsScoreFile@(AltScoreFile altAsScorePath) = compToAltScore AltAs compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
@@ -322,12 +323,13 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading FS land outs from '" ++ takeFileName altFsLandoutPath ++ "'"
     putStrLn $ "Reading FS optimal routes from '" ++ takeFileName altFsRoutePath ++ "'"
     putStrLn $ "Reading FS scores from '" ++ takeFileName altFsScorePath ++ "'"
-    -- putStrLn $ "Reading airScore scores from '" ++ takeFileName altAsScorePath ++ "'"
+    putStrLn $ "Reading airScore scores from '" ++ takeFileName altAsScorePath ++ "'"
 
     compSettings <-
         catchIO
             (Just <$> readComp compFile)
             (const $ return Nothing)
+
     case compSettings of
         Nothing -> putStrLn "Couldn't read the comp settings"
         Just cs -> do
@@ -420,12 +422,15 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
 
             altFsS <-
                 catchIO
-                    (Just <$> readAltScore altFsScoreFile)
+                    (Just <$> readAltScore (traceShowId altFsScoreFile))
                     (const $ return Nothing)
 
             -- WARNING: Reading airScore's scores fails with
             -- AesonException "Error in $.score[0][0][1].landedMade: expected String, encountered Null"
-            let altAsS = Nothing
+            altAsS <-
+                catchIO
+                    (Just <$> readAltScore (traceShowId altAsScoreFile))
+                    (const $ return Nothing)
 
             case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing) of
                 (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _)) ->

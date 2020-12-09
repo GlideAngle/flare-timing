@@ -45,7 +45,7 @@ tableScoreReach
     -> Dynamic t [(Pilot, Bk.Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
+tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -145,7 +145,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
                         stp
                         dfNt
                         pt
-                        (Map.fromList <$> sEx))
+                        (Map.fromList <$> sAltFs))
 
             dnfRows colsDnfPad w dnfPlacing dnf'
             return ()
@@ -223,7 +223,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Bk.Breakdown)
     -> m ()
-pointRow w _utcOffset free _ln stp dfNt pt sEx x = do
+pointRow w _utcOffset free _ln stp dfNt pt sAltFs x = do
     MinimumDistance free' <- sample . current $ free
 
     let pilot = fst <$> x
@@ -251,7 +251,7 @@ pointRow w _utcOffset free _ln stp dfNt pt sEx x = do
         , yF, yDiffF
         , yE, yDiffE
         , rPts, rPtsDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Bk.Breakdown
+                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Bk.Breakdown
                                                         { reach
                                                         , breakdown =
                                                             Points
@@ -272,7 +272,7 @@ pointRow w _utcOffset free _ln stp dfNt pt sEx x = do
                                     { flown = rFN
                                     , extra = rEN
                                     }
-                            } <- Map.lookup pilot' sEx'
+                            } <- Map.lookup pilot' sAltFs'
                         ReachToggle{extra = rE, flown = rF} <- reach
 
                         let quieten s =

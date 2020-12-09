@@ -58,7 +58,7 @@ tableScoreEffort
     -> Dynamic t (Maybe TaskLanding)
     -> Dynamic t (Maybe TaskLanding)
     -> m ()
-tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx lg' lgN' = do
+tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs lg' lgN' = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -170,7 +170,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs s
                         ln
                         dfNt
                         pt
-                        (Map.fromList <$> sEx)
+                        (Map.fromList <$> sAltFs)
                         (Map.fromList <$> pChunks)
                         (Map.fromList <$> pChunksN)
                     )
@@ -250,7 +250,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot IxChunk)
     -> Dynamic t (Pilot, Bk.Breakdown)
     -> m ()
-pointRow w _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
+pointRow w _utcOffset free _ln dfNt pt sAltFs ixChunkMap ixChunkMapN x = do
     MinimumDistance free' <- sample . current $ free
 
     let pilot = fst <$> x
@@ -277,7 +277,7 @@ pointRow w _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
                 pd)
 
     (landed, landedN, landedDiff, ePts, ePtsDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Bk.Breakdown
+                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Bk.Breakdown
                                                           { breakdown =
                                                               Points{effort = ePts}
                                                           , landedMade
@@ -291,7 +291,7 @@ pointRow w _utcOffset free _ln dfNt pt sEx ixChunkMap ixChunkMapN x = do
                                     , distance = dPtsN
                                     }
                             , landedMade = landedN
-                            } <- Map.lookup pilot' sEx'
+                            } <- Map.lookup pilot' sAltFs'
 
                         let quieten s =
                                 case (rPtsN, ePtsN, dPtsN) of
