@@ -32,6 +32,10 @@ of this changelog.
   both integers and floats.
 * Fixed a bug where looking up a chunk for effort failed because of rounding
   then the misplaced pilot got zero points for effort.
+* Only the *.fsdb and folders for track logs are left in the root folder since
+  the input, output and working files of flare-timing moved to the dot folder
+  `.flare-timing`. Likewise files for comparison have moved from the root to
+  `.flight-system` and `.air-score`.
 
 # Plot Selected Pilots
 ## v0.28
