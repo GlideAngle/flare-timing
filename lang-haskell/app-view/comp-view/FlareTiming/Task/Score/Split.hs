@@ -6,7 +6,7 @@ import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
@@ -66,7 +66,7 @@ tableScoreSplit
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
 tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
@@ -79,7 +79,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
             $ lenDfs + 1
 
     let thSpace = elClass "th" "th-space" $ text ""
-    let thNorm = elClass "th" "th-norm" $ text ""
+    let thAlt = elClass "th" "th-norm" $ text ""
 
     let tableClass =
             let tc = "table is-striped is-narrow is-fullwidth" in
@@ -148,8 +148,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> vy
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-time-validity" . dynText $
                     maybe
@@ -159,14 +159,14 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> vy
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
                 thSpace
-                thNorm
-                thNorm
+                thAlt
+                thAlt
                 thSpace
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-task-validity" . dynText $
                     maybe
@@ -176,8 +176,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> vy
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
             elClass "tr" "tr-weight" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
@@ -190,8 +190,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> wg
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-time-weight" . dynText$
                     maybe
@@ -201,8 +201,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> wg
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-leading-weight" . dynText$
                     maybe
@@ -212,8 +212,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> wg
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-arrival-weight" . dynText$
                     maybe
@@ -223,11 +223,11 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> wg
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
                 thSpace
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
@@ -240,8 +240,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> pt
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-time-alloc" . dynText $
                     maybe
@@ -251,8 +251,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> pt
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-leading-alloc" . dynText $
                     maybe
@@ -262,8 +262,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> pt
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-arrival-alloc" . dynText $
                     maybe
@@ -273,8 +273,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> pt
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
@@ -282,8 +282,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
 
-                thNorm
-                thNorm
+                thAlt
+                thAlt
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
@@ -406,7 +406,7 @@ pointRow
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
@@ -418,7 +418,7 @@ pointRow w cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
                 case Map.lookup pilot' sEx' of
                     Nothing -> ("", "", "", "", "", "", "", "", "", "", "")
                     Just
-                        Norm.NormBreakdown
+                        Alt.AltBreakdown
                             { place = nth
                             , total = p@(TaskPoints pts)
                             , breakdown =

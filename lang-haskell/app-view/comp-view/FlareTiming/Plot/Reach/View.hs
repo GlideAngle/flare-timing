@@ -14,7 +14,7 @@ import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import WireTypes.Point (PilotDistance(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.Reach.TableReach (tablePilotReach)
 import FlareTiming.Plot.Reach.TableBonus (tablePilotReachBonus)
@@ -44,7 +44,7 @@ reValue pxs pys =
 reachPlot
     :: MonadWidget t m
     => Dynamic t Task
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()

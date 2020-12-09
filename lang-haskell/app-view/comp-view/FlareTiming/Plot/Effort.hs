@@ -7,12 +7,12 @@ import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Comp (Discipline(..))
 import qualified FlareTiming.Plot.Effort.View as V (effortPlot)
 import WireTypes.Pilot (Pilot(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 
 effortPlot
     :: MonadWidget t m
     => Dynamic t Discipline
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackEffort)])
     -> m ()
 effortPlot hgOrPg sEx rh =

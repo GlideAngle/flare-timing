@@ -8,7 +8,7 @@ import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Bk (Breakdown(..))
 import WireTypes.Point
@@ -43,7 +43,7 @@ tableScoreReach
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t [(Pilot, Bk.Breakdown)]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
 tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
@@ -220,7 +220,7 @@ pointRow
     -> Dynamic t (Maybe TaskStop)
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Bk.Breakdown)
     -> m ()
 pointRow w _utcOffset free _ln stp dfNt pt sEx x = do
@@ -260,7 +260,7 @@ pointRow w _utcOffset free _ln stp dfNt pt sEx x = do
                                                         }
                                                   ) ->
                     fromMaybe ("", "", "", "", "", "", "", "") $ do
-                        Norm.NormBreakdown
+                        Alt.AltBreakdown
                             { breakdown =
                                 Points
                                     { reach = rPtsN

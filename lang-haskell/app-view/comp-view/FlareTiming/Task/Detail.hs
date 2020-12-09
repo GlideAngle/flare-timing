@@ -21,13 +21,13 @@ import WireTypes.Cross (TrackFlyingSection(..), TrackScoredSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
-    ( getTaskScore, getTaskNormScore
+    ( getTaskScore, getTaskAltScore
     , getTaskBolsterStats, getTaskBonusBolsterStats
     , getTaskReach, getTaskBonusReach
-    , getTaskEffort, getTaskLanding, getTaskNormLanding
-    , getTaskArrival, getTaskNormArrival, getTaskLead, getTaskTime
-    , getTaskValidityWorking, getTaskNormValidityWorking
-    , getTaskLengthNormSphere
+    , getTaskEffort, getTaskLanding, getTaskAltLanding
+    , getTaskArrival, getTaskAltArrival, getTaskLead, getTaskTime
+    , getTaskValidityWorking, getTaskAltValidityWorking
+    , getTaskLengthAltSphere
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -199,7 +199,7 @@ taskDetail
     -> Dynamic t (Maybe Allocation)
     -> m (Event t IxTask)
 
-taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
+taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
     let utc = utcOffset <$> comp
     let sb = scoreBack <$> comp
     let hgOrPg = discipline <$> comp
@@ -212,21 +212,21 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     let stp = stopped <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
-    sEx <- holdDyn [] =<< getTaskNormScore ix pb
+    sEx <- holdDyn [] =<< getTaskAltScore ix pb
     reachStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBolsterStats ix pb)
     bonusStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusBolsterStats ix pb)
     reach <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
     bonusReach <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusReach ix pb)
     ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)
     lg <- holdDyn Nothing =<< (getTaskLanding ix pb)
-    lgN <- holdDyn Nothing =<< (getTaskNormLanding ix pb)
+    lgN <- holdDyn Nothing =<< (getTaskAltLanding ix pb)
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
-    avN <- holdDyn Nothing =<< (fmap Just <$> getTaskNormArrival ix pb)
+    avN <- holdDyn Nothing =<< (fmap Just <$> getTaskAltArrival ix pb)
     ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
     sd <- holdDyn Nothing =<< (fmap Just <$> getTaskTime ix pb)
     ft <- holdDyn Nothing =<< (fmap Just <$> getTaskFlyingSectionTimes ix pb)
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
-    vwNorm <- holdDyn Nothing =<< getTaskNormValidityWorking ix pb
+    vwAlt <- holdDyn Nothing =<< getTaskAltValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
     dfNt <- holdDyn (DfNoTrack []) =<< getTaskPilotDfNoTrack ix pb
@@ -243,7 +243,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                 _ -> s)
 
     planarRoute <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
-    normRoute <- holdDyn Nothing =<< getTaskLengthNormSphere ix pb
+    normRoute <- holdDyn Nothing =<< getTaskLengthAltSphere ix pb
 
     let ln = taskLength <$> earthMathRoutes
     let legs = taskLegs <$> earthMathRoutes
@@ -379,8 +379,8 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                 BasisTabValidity ->
                                     viewValidity
                                         utc ln free' task
-                                        vy vyNorm
-                                        vw vwNorm
+                                        vy vyAlt
+                                        vw vwAlt
                                         reachStats bonusStats
                                         reach bonusReach
                                         ft dfNt sEx

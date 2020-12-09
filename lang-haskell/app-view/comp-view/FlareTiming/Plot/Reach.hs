@@ -7,12 +7,12 @@ import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
 import qualified FlareTiming.Plot.Reach.View as V (reachPlot)
 import WireTypes.Pilot (Pilot(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 
 reachPlot
     :: MonadWidget t m
     => Dynamic t Task
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> m ()

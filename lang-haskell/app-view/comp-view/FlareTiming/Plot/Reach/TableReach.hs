@@ -15,13 +15,13 @@ import WireTypes.Fraction
 import WireTypes.Reach (TrackReach(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.Event (rowClass)
 
 tablePilotReach
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    => Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
@@ -54,7 +54,7 @@ rowReach
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot Norm.NormBreakdown
+    -> Map Pilot Alt.AltBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m (Event t Pilot)
@@ -64,7 +64,7 @@ rowReach w select mapN p r = do
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
             $ ffor2 p r (\p' TrackReach{reach, frac} ->
                 fromMaybe ("", "", "", "") $ do
-                    Norm.NormBreakdown
+                    Alt.AltBreakdown
                         { reach = ReachToggle{extra = reachN}
                         , fractions =
                             Frac.Fractions

@@ -15,13 +15,13 @@ import WireTypes.Fraction
 import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point (showPilotDistance, showPilotDistanceDiff)
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.Event (rowClass)
 
 tableEffort
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    => Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackEffort)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
@@ -64,7 +64,7 @@ rowEffort
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot Norm.NormBreakdown
+    -> Map Pilot Alt.AltBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackEffort
     -> m (Event t Pilot)
@@ -74,7 +74,7 @@ rowEffort w select mapN p te = do
     (yEffort, yEffortDiff, yFrac, yFracDiff) <- sample . current
             $ ffor2 p te (\p' TrackEffort{effort, frac} ->
                 fromMaybe ("", "", "", "") $ do
-                    Norm.NormBreakdown
+                    Alt.AltBreakdown
                         { landedMade = effortN
                         , fractions =
                             Frac.Fractions

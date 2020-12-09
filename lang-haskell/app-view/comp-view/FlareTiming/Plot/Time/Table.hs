@@ -9,7 +9,7 @@ import qualified Data.Map.Strict as Map
 
 import qualified WireTypes.Fraction as Frac (Fractions(..))
 import WireTypes.Fraction (showSpeedFrac, showSpeedFracDiff)
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Speed (TrackSpeed(..), PilotTime(..))
 import qualified WireTypes.Speed as Speed (TrackSpeed(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
@@ -22,7 +22,7 @@ import FlareTiming.Plot.Event (rowClass)
 tableSpeed
     :: MonadWidget t m
     => Dynamic t [StartGate]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackSpeed)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
@@ -64,7 +64,7 @@ rowSpeed
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot Norm.NormBreakdown
+    -> Map Pilot Alt.AltBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackSpeed
     -> m (Event t Pilot)
@@ -75,7 +75,7 @@ rowSpeed w select mapN p ts = do
                 $ ffor2 p ts (\p' TrackSpeed{time, frac} ->
                     case Map.lookup p' mapN of
                         Just
-                            Norm.NormBreakdown
+                            Alt.AltBreakdown
                                 { timeElapsed = timeN
                                 , fractions = Frac.Fractions{time = fracN}
                                 } ->

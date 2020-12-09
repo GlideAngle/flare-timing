@@ -8,7 +8,7 @@ import qualified Data.Map.Strict as Map
 import WireTypes.Fraction (Fractions(..), showLeadingFrac, showLeadingFracDiff)
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead (TrackLead(..), showCoef, showCoefDiff)
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.Event (rowClass)
@@ -16,7 +16,7 @@ import FlareTiming.Plot.Event (rowClass)
 tablePilotCoef
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
@@ -78,7 +78,7 @@ rowLeadSimple w select p av = do
 tablePilotCompare
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
@@ -112,7 +112,7 @@ tablePilotCompare _ sEx xs select = do
 rowLeadCompare
     :: MonadWidget t m
     => Dynamic t Int
-    -> Map.Map Pilot Norm.NormBreakdown
+    -> Map.Map Pilot Alt.AltBreakdown
     -> Dynamic t [Pilot]
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
@@ -122,7 +122,7 @@ rowLeadCompare w mapN select p tl = do
                 $ ffor2 p tl (\pilot TrackLead{coef, frac} ->
                     case Map.lookup pilot mapN of
                         Just
-                            Norm.NormBreakdown
+                            Alt.AltBreakdown
                                 { leadingCoef = coef'
                                 , fractions = Fractions{leading = frac'}
                                 } ->

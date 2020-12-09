@@ -6,7 +6,7 @@ import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
@@ -46,7 +46,7 @@ tablePenalJump
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t Penal
     -> m ()
 tablePenalJump hgOrPg early sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sEx penalAuto' = do
@@ -194,7 +194,7 @@ pointRow
     -> Dynamic t JumpTheGunLimit
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Map.Map Pilot (PenaltySeqs, String))
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
@@ -205,7 +205,7 @@ pointRow w earliest dfNt tp sEx pAuto x = do
                 case Map.lookup pilot' sEx' of
                     Nothing -> ("", "", "")
                     Just
-                        Norm.NormBreakdown
+                        Alt.AltBreakdown
                             { place = nth
                             , total = p@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))

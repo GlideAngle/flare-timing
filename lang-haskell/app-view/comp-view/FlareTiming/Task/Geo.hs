@@ -53,11 +53,11 @@ rowSpherical ix = do
     let x = holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
     rowOptimal "Sphere" Haversines x
 
-rowSphericalNorm :: MonadWidget t m => IxTask -> m ()
-rowSphericalNorm ix = do
+rowSphericalAlt :: MonadWidget t m => IxTask -> m ()
+rowSphericalAlt ix = do
     pb <- getPostBuild
-    ln <- holdDyn Nothing =<< getTaskLengthNormSphere ix pb
-    rowNorm "Sphere" Haversines ln
+    ln <- holdDyn Nothing =<< getTaskLengthAltSphere ix pb
+    rowAlt "Sphere" Haversines ln
 
 rowEllipsoid :: MonadWidget t m => IxTask -> EarthMath -> m ()
 rowEllipsoid ix eMath = do
@@ -65,11 +65,11 @@ rowEllipsoid ix eMath = do
     let x = holdDyn emptyRoute =<< getTaskLengthEllipsoidEdge ix pb
     rowOptimal "Ellipsoid" eMath x
 
-rowEllipsoidNorm :: MonadWidget t m => IxTask -> EarthMath -> m ()
-rowEllipsoidNorm ix eMath = do
+rowEllipsoidAlt :: MonadWidget t m => IxTask -> EarthMath -> m ()
+rowEllipsoidAlt ix eMath = do
     pb <- getPostBuild
-    ln <- holdDyn Nothing =<< getTaskLengthNormEllipse ix pb
-    rowNorm "Ellipsoid" eMath ln
+    ln <- holdDyn Nothing =<< getTaskLengthAltEllipse ix pb
+    rowAlt "Ellipsoid" eMath ln
 
 rowTrackLine
     :: MonadWidget t m
@@ -89,13 +89,13 @@ rowTrackLine earthOut eMath ln = do
         elClass "td" "td-geo-distance" $ dynText d
         elClass "td" "td-geo-legs" $ dynText legs
 
-rowNorm
+rowAlt
     :: MonadWidget t m
     => T.Text
     -> EarthMath
     -> Dynamic t (Maybe TrackLine)
     -> m ()
-rowNorm earthOut eMath ln = do
+rowAlt earthOut eMath ln = do
     let d = ffor ln (maybe "" $ \TrackLine{distance = x} -> showTaskDistance x)
 
     let legs =
@@ -176,8 +176,8 @@ tableCmp ix c = do
                     rowSpherical ix
                     rowEllipsoid ix earthMath
 
-                    rowSphericalNorm ix
-                    rowEllipsoidNorm ix earthMath)
+                    rowSphericalAlt ix
+                    rowEllipsoidAlt ix earthMath)
 
             let tr = el "tr" . elAttr "td" ("colspan" =: "6")
             _ <- el "tfoot" $ do

@@ -9,7 +9,7 @@ import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import qualified FlareTiming.Plot.Time.Plot as P (timePlot)
 
 import WireTypes.Fraction (SpeedFraction(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Speed (TrackSpeed(..), PilotTime(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
@@ -34,7 +34,7 @@ timeRange xs =
 timePlot
     :: MonadWidget t m
     => Dynamic t [StartGate]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackSpeed)]
     -> m ()
 timePlot sgs sEx xs = do

@@ -3,7 +3,7 @@ module FlareTiming.Plot.Time (timePlot) where
 import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Point (StartGate)
 import WireTypes.Speed (TrackSpeed(..))
 import WireTypes.Pilot (Pilot(..))
@@ -12,7 +12,7 @@ import qualified FlareTiming.Plot.Time.View as V (timePlot)
 timePlot
     :: MonadWidget t m
     => Dynamic t [StartGate]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackSpeed)])
     -> m ()
 timePlot sgs sEx tm =

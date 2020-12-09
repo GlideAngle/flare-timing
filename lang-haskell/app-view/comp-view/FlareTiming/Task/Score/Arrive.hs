@@ -8,7 +8,7 @@ import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
@@ -45,7 +45,7 @@ tableScoreArrive
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
 tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
@@ -160,7 +160,7 @@ pointRow
     -> Dynamic t UtcOffset
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w utcOffset dfNt pt sEx x = do
@@ -186,7 +186,7 @@ pointRow w utcOffset dfNt pt sEx x = do
                     fromMaybe ("", "", "", "") $ do
                         Velocity{es} <- v'
 
-                        Norm.NormBreakdown
+                        Alt.AltBreakdown
                             { es = es'
                             , breakdown = Points{arrival = aPtsN}
                             } <- Map.lookup pilot' sEx'

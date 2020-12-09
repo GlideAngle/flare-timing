@@ -7,7 +7,7 @@ import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
@@ -49,7 +49,7 @@ tablePenalEssGoal
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
 tablePenalEssGoal hgOrPg tweak early sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
@@ -269,7 +269,7 @@ pointRow
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w _earliest cTime cArrival dfNt pt tp sEx x = do
@@ -279,7 +279,7 @@ pointRow w _earliest cTime cArrival dfNt pt tp sEx x = do
                 case Map.lookup pilot' sEx' of
                     Nothing -> ("", "", "")
                     Just
-                        Norm.NormBreakdown
+                        Alt.AltBreakdown
                             { place = nth
                             , total = p@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))

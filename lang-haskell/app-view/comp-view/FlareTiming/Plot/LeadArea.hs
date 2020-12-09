@@ -4,7 +4,7 @@ import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
 import WireTypes.Comp (Tweak(..), LwScaling(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Lead (TrackLead(..))
 import qualified FlareTiming.Plot.LeadArea.View as V (leadAreaPlot)
 import WireTypes.Pilot (Pilot(..))
@@ -14,7 +14,7 @@ leadAreaPlot
     :: MonadWidget t m
     => IxTask
     -> Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackLead)])
     -> m ()
 leadAreaPlot ix tweak sEx ld =

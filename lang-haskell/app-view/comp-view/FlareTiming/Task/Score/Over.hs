@@ -7,7 +7,7 @@ import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
@@ -55,7 +55,7 @@ tableScoreOver
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
 tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
@@ -117,7 +117,7 @@ tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDf
                     let exs = Map.fromList sEx'
                     in
                         [ let ex = Map.lookup pilot exs
-                          in ((\Norm.NormBreakdown{total = p} -> p) <$> ex, p')
+                          in ((\Alt.AltBreakdown{total = p} -> p) <$> ex, p')
                         | (pilot, Breakdown{total = p'}) <- sDfs'
                         ])
 
@@ -294,7 +294,7 @@ pointRow
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w earliest cTime cArrival utcOffset free dfNt pt tp sEx x = do
@@ -305,7 +305,7 @@ pointRow w earliest cTime cArrival utcOffset free dfNt pt tp sEx x = do
                 case Map.lookup pilot' sEx' of
                     Nothing -> ("", "", "")
                     Just
-                        Norm.NormBreakdown
+                        Alt.AltBreakdown
                             { place = nth
                             , total = p@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))

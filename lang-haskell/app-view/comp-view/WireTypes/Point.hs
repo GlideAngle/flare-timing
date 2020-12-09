@@ -3,7 +3,7 @@
 module WireTypes.Point
     ( StartGate(..)
     , Velocity(..)
-    , NormBreakdown(..)
+    , AltBreakdown(..)
     , Breakdown(..)
     , Allocation(..)
     , GoalRatio(..)
@@ -466,8 +466,8 @@ data ReachToggle a =
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
-data NormBreakdown =
-    NormBreakdown
+data AltBreakdown =
+    AltBreakdown
         { place :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points

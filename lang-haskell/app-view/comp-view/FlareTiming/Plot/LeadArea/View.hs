@@ -14,7 +14,7 @@ import WireTypes.Lead
     , LeadingAreas(..), LeadingAreaSquared(..)
     , nullArea, showAreaSquared
     )
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
@@ -48,7 +48,7 @@ leadAreaPlot
     :: MonadWidget t m
     => IxTask
     -> Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
 leadAreaPlot ix tweak sEx xs = do

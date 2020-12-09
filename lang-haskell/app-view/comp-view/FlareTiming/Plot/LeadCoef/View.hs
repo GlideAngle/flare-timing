@@ -11,7 +11,7 @@ import qualified FlareTiming.Plot.LeadCoef.Plot as P (leadCoefPlot)
 import WireTypes.Fraction (LeadingFraction(..))
 import WireTypes.Comp (Tweak(..))
 import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.LeadCoef.Table (tablePilotCoef)
@@ -36,7 +36,7 @@ leadCoefPlot
     :: MonadWidget t m
     => IxTask
     -> Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
 leadCoefPlot _ix tweak sEx xs = do

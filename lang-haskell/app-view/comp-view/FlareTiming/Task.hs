@@ -7,7 +7,7 @@ import Control.Monad (join)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms
     ( getTasks, getTaskLengths, getStatsPointDiff, getComps, getNominals
-    , getValidity, getNormValidity
+    , getValidity, getAltValidity
     , getAllocation
     )
 import FlareTiming.Comp.Detail (compDetail)
@@ -48,7 +48,7 @@ view () = do
 
     cs <- holdDyn [] . fmap pure =<< getComps pb
     vs <- holdDyn [] =<< getValidity pb
-    nvs <- holdDyn [] =<< getNormValidity pb
+    nvs <- holdDyn [] =<< getAltValidity pb
     as <- holdDyn [] =<< getAllocation pb
 
     el "div" $ mdo

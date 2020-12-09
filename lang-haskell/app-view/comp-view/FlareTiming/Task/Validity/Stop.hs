@@ -34,7 +34,7 @@ import WireTypes.Point
     ( PilotDistance(..), ReachToggle(..)
     , showPilotDistance, showPilotDistanceDiff
     )
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), DfNoTrack(..))
 import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
 import FlareTiming.Pilot (showPilotName, rowDfNtReach)
@@ -213,7 +213,7 @@ viewStop
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t DfNoTrack
-    -> [(Pilot, Norm.NormBreakdown)]
+    -> [(Pilot, Alt.AltBreakdown)]
     -> m ()
 viewStop _ _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ _ = return ()
 viewStop _ _ _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ _ = return ()
@@ -387,7 +387,7 @@ tablePilotReach
     => Dynamic t MinimumDistance
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
-    -> [(Pilot, Norm.NormBreakdown)]
+    -> [(Pilot, Alt.AltBreakdown)]
     -> m ()
 tablePilotReach free reach bonusReach sEx = do
     let tdFoot = elAttr "td" ("colspan" =: "12")
@@ -437,7 +437,7 @@ tablePilotReach free reach bonusReach sEx = do
                     let rs = [d | (_, TrackReach{reach = PilotDistance d}) <- r]
                     let rsO = fOver <$> rs
 
-                    let rsN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{flown = PilotDistance d}}) <- sEx]
+                    let rsN = [d | (_, Alt.AltBreakdown{reach = ReachToggle{flown = PilotDistance d}}) <- sEx]
                     let rsNO = fOver <$> rsN
 
                     let rsB = Stats.max dMin <$> rs
@@ -449,10 +449,10 @@ tablePilotReach free reach bonusReach sEx = do
                     let bsB = Stats.max dMin <$> bs
                     let bsBO = fOver <$> bsB
 
-                    let esN = [d | (_, Norm.NormBreakdown{reach = ReachToggle{extra = PilotDistance d}}) <- sEx]
+                    let esN = [d | (_, Alt.AltBreakdown{reach = ReachToggle{extra = PilotDistance d}}) <- sEx]
                     let esNO = fOver <$> esN
 
-                    let bsN = [d | (_, Norm.NormBreakdown{landedMade = PilotDistance d}) <- sEx]
+                    let bsN = [d | (_, Alt.AltBreakdown{landedMade = PilotDistance d}) <- sEx]
                     let bsNO = fOver <$> bsN
 
                     let ds = zipWith (-) bs rs
@@ -677,7 +677,7 @@ tablePilotReach free reach bonusReach sEx = do
 rowReachBonus
     :: MonadWidget t m
     => MinimumDistance
-    -> Map Pilot Norm.NormBreakdown
+    -> Map Pilot Alt.AltBreakdown
     -> Map Pilot TrackReach
     -> Int
     -> Dynamic t (Pilot, TrackReach)
@@ -701,7 +701,7 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
             $ ffor2 p r (\p' r' ->
                 case (Map.lookup p' mapN, Map.lookup p' mapR) of
                     (Just
-                        Norm.NormBreakdown
+                        Alt.AltBreakdown
                             { reach =
                                 ReachToggle
                                     { extra = extraN

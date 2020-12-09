@@ -14,13 +14,13 @@ import WireTypes.Fraction
 import WireTypes.Reach (TrackReach(..))
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.Event (rowClass)
 
 tablePilotReachBonus
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    => Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [Pilot]
@@ -78,7 +78,7 @@ rowReachBonus
     => Dynamic t Int
     -> Dynamic t [Pilot]
     -> Map Pilot TrackReach
-    -> Map Pilot Norm.NormBreakdown
+    -> Map Pilot Alt.AltBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m (Event t Pilot)
@@ -92,7 +92,7 @@ rowReachBonus w select mapR mapN p tr = do
                 fromMaybe ("", "", "", "", "", "", "") $ do
                     TrackReach{reach = reachE, frac = fracE} <- Map.lookup pilot mapR
 
-                    Norm.NormBreakdown
+                    Alt.AltBreakdown
                         { reach = ReachToggle{extra = reachN}
                         , fractions =
                             Frac.Fractions

@@ -8,13 +8,13 @@ module FlareTiming.Comms
     , getPilots
     , getPilotsStatus
     , getValidity
-    , getNormValidity
+    , getAltValidity
     , getAllocation
     , getTaskScore
     , getTaskValidityWorking
-    , getTaskNormValidityWorking
-    , getTaskLengthNormSphere
-    , getTaskLengthNormEllipse
+    , getTaskAltValidityWorking
+    , getTaskLengthAltSphere
+    , getTaskLengthAltEllipse
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -37,11 +37,11 @@ module FlareTiming.Comms
     , getTaskReach
     , getTaskBonusReach
     , getTaskEffort
-    , getTaskNormLanding
+    , getTaskAltLanding
     , getTaskLanding
-    , getTaskNormScore
+    , getTaskAltScore
     , getTaskArrival
-    , getTaskNormArrival
+    , getTaskAltArrival
     , getTaskLead
     , getTaskTime
     , emptyRoute
@@ -185,8 +185,8 @@ getPilotsStatus = get "/gap-point/pilots-status"
 getValidity :: Get t m [Maybe Validity]
 getValidity = get "/gap-point/validity"
 
-getNormValidity :: Get t m [Maybe Validity]
-getNormValidity = get "/fs-score/validity"
+getAltValidity :: Get t m [Maybe Validity]
+getAltValidity = get "/fs-score/validity"
 
 getAllocation :: Get t m [Maybe Allocation]
 getAllocation = get "/gap-point/allocation"
@@ -209,20 +209,20 @@ getTaskBonusReach = getIxTask "mask-track" "bonus-reach"
 getTaskEffort :: GetIxTask' t m [(Pilot, TrackEffort)]
 getTaskEffort = getIxTask "land-out" "effort"
 
-getTaskNormLanding :: GetIxTask' t m (Maybe TaskLanding)
-getTaskNormLanding = getIxTask "fs-effort" "landing"
+getTaskAltLanding :: GetIxTask' t m (Maybe TaskLanding)
+getTaskAltLanding = getIxTask "fs-effort" "landing"
 
 getTaskLanding :: GetIxTask' t m (Maybe TaskLanding)
 getTaskLanding = getIxTask "land-out" "landing"
 
-getTaskNormScore :: GetIxTask' t m [(Pilot, NormBreakdown)]
-getTaskNormScore = getIxTask "fs-score" "score"
+getTaskAltScore :: GetIxTask' t m [(Pilot, AltBreakdown)]
+getTaskAltScore = getIxTask "fs-score" "score"
 
 getTaskArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
 getTaskArrival = getIxTask "mask-track" "arrival"
 
-getTaskNormArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
-getTaskNormArrival = getIxTask "fs-mask-track" "arrival"
+getTaskAltArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
+getTaskAltArrival = getIxTask "fs-mask-track" "arrival"
 
 getTaskLead :: GetIxTask' t m [(Pilot, TrackLead)]
 getTaskLead = getIxTask "mask-track" "lead"
@@ -236,8 +236,8 @@ getTaskFlyingSectionTimes = getIxTask "cross-zone" "flying-times"
 getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"
 
-getTaskNormValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
-getTaskNormValidityWorking = getIxTask "fs-score" "validity-working"
+getTaskAltValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
+getTaskAltValidityWorking = getIxTask "fs-score" "validity-working"
 
 getFsRoute_ :: T.Text -> IxTask -> Get t m b
 getFsRoute_ = getIxTask "fs-route"
@@ -245,9 +245,9 @@ getFsRoute_ = getIxTask "fs-route"
 getTaskLength_ :: T.Text -> IxTask -> Get t m b
 getTaskLength_ = getIxTask "task-length"
 
-getTaskLengthNormSphere, getTaskLengthNormEllipse :: GetIxTask' t m (Maybe TrackLine)
-getTaskLengthNormSphere = getFsRoute_ "sphere"
-getTaskLengthNormEllipse = getFsRoute_ "ellipse"
+getTaskLengthAltSphere, getTaskLengthAltEllipse :: GetIxTask' t m (Maybe TrackLine)
+getTaskLengthAltSphere = getFsRoute_ "sphere"
+getTaskLengthAltEllipse = getFsRoute_ "ellipse"
 
 getTaskLengthSphericalEdge, getTaskLengthEllipsoidEdge
     :: GetIxTask' t m (OptimalRoute (Maybe TrackLine))

@@ -8,7 +8,7 @@ import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
@@ -39,7 +39,7 @@ tableScoreSpeed
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
 tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sEx = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
@@ -172,7 +172,7 @@ pointRow
     => Dynamic t Int
     -> Dynamic t UtcOffset
     -> Dynamic t DfNoTrack
-    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w utcOffset dfNt sEx x = do
@@ -191,7 +191,7 @@ pointRow w utcOffset dfNt sEx x = do
     (ySs, ySsDiff, yEs, yEsDiff, yEl, yElDiff) <- sample . current
                 $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{velocity = v'}) ->
                 case (v', Map.lookup pilot' sEx') of
-                    (Just Velocity{ss, gs, es, gsElapsed = gsElap, ssElapsed = ssElap}, Just Norm.NormBreakdown {ss = ss', es = es', timeElapsed = elap'}) ->
+                    (Just Velocity{ss, gs, es, gsElapsed = gsElap, ssElapsed = ssElap}, Just Alt.AltBreakdown {ss = ss', es = es', timeElapsed = elap'}) ->
                         let (start, elap) =
                                 case (ss, gs) of
                                     (_, Just (StartGate g)) -> (Just g, gsElap)

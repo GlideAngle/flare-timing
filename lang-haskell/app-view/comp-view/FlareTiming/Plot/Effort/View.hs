@@ -11,7 +11,7 @@ import qualified FlareTiming.Plot.Effort.Plot as P (effortPlot)
 import WireTypes.Fraction (EffortFraction(..))
 import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Point (PilotDistance(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.Effort.Table (tableEffort)
@@ -33,7 +33,7 @@ timeRange xs =
 
 effortPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    => Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackEffort)]
     -> m ()
 effortPlot sEx xs = do
