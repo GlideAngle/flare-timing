@@ -33,7 +33,7 @@ import Flight.Comp
     , Tweak(..)
     , trimFsdbToNormArrival
     , findTrimFsdb
-    , ensureExt
+    , reshape
     )
 import Flight.Zone.MkZones (Discipline(..))
 import "flight-gap-allot" Flight.Score (PilotsAtEss(..))
@@ -46,7 +46,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
+    let lf = LenientFile {coerceFile = reshape TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

@@ -30,7 +30,7 @@ import Flight.Comp
     , Nominal(..)
     , trimFsdbToNormScore
     , findTrimFsdb
-    , ensureExt
+    , reshape
     )
 import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
 import qualified "flight-gap-allot" Flight.Score as Frac (Fractions(..))
@@ -59,7 +59,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
+    let lf = LenientFile {coerceFile = reshape TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

@@ -26,7 +26,7 @@ import Flight.Comp
     , compToMaskEffort
     , compToLand
     , findCompInput
-    , ensureExt
+    , reshape
     )
 import Flight.Distance (unTaskDistanceAsKm)
 import Flight.Track.Distance (TrackDistance(..))
@@ -45,7 +45,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

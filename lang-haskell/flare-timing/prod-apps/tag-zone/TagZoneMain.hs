@@ -30,7 +30,7 @@ import Flight.Comp
     , compToCross
     , crossToTag
     , findCompInput
-    , ensureExt
+    , reshape
     )
 import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
@@ -53,7 +53,7 @@ main = do
                             description
                             (Just $ Extension "*.comp-input.yaml")
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

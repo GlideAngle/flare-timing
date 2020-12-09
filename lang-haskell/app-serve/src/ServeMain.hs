@@ -146,7 +146,7 @@ import Flight.Comp
     , compToPoint
     , crossToTag
     , tagToPeg
-    , ensureExt
+    , reshape
     )
 import Flight.Route
     ( OptimalRoute(..), TaskTrack(..), TrackLine(..), GeoLines(..)
@@ -268,7 +268,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) Opt.description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

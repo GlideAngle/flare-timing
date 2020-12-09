@@ -19,7 +19,7 @@ import Flight.Comp
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , findFsdb
-    , ensureExt
+    , reshape
     )
 import Flight.Scribe (writeCleanFsdb, readCleanFsdb, writeTrimFsdb)
 import FsFilterOptions (description)
@@ -29,7 +29,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt Fsdb}
+    let lf = LenientFile {coerceFile = reshape Fsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

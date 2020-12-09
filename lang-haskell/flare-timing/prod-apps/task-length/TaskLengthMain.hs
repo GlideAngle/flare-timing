@@ -17,7 +17,7 @@ import Flight.Comp
     , CompInputFile(..)
     , compToTaskLength
     , findCompInput
-    , ensureExt
+    , reshape
     )
 import Flight.TaskTrack.Double (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
@@ -38,7 +38,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

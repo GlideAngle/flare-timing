@@ -39,7 +39,7 @@ import Flight.Comp
     , PilotTrackLogFile(..)
     , trimFsdbToComp
     , findTrimFsdb
-    , ensureExt
+    , reshape
     )
 import qualified Flight.Comp as C (Comp(earth, earthMath))
 import Flight.Zone (Radius(..))
@@ -59,7 +59,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
 
-    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
+    let lf = LenientFile {coerceFile = reshape TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

@@ -23,7 +23,7 @@ import Flight.Comp
     , Nominal(..)
     , trimFsdbToNormLandout
     , findTrimFsdb
-    , ensureExt
+    , reshape
     )
 import Flight.Score (MinimumDistance(..))
 import Flight.Scribe (readTrimFsdb, writeNormLandout)
@@ -34,7 +34,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
+    let lf = LenientFile {coerceFile = reshape TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

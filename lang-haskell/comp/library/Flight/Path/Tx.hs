@@ -35,7 +35,7 @@ module Flight.Path.Tx
     , discardFurtherPath
     , pegThenDiscardPath
     , areaStepPath
-    , ensureExt
+    , reshape
     ) where
 
 import Data.Coerce (coerce)
@@ -86,42 +86,42 @@ shape NormLandout = DotDirName "land-out.yaml" DotFs
 shape NormRoute = DotDirName "task-route.yaml" DotFs
 shape NormScore = DotDirName "gap-score.yaml" DotFs
 
-ensureExt :: FileType -> FilePath -> FilePath
-ensureExt Fsdb = flip replaceExtensions "fsdb"
-ensureExt CleanFsdb = coerce . fsdbToCleanFsdb . FsdbFile
-ensureExt TrimFsdb = coerce . cleanFsdbToTrimFsdb . fsdbToCleanFsdb . FsdbFile
+reshape :: FileType -> FilePath -> FilePath
+reshape Fsdb = flip replaceExtensions "fsdb"
+reshape CleanFsdb = coerce . fsdbToCleanFsdb . FsdbFile
+reshape TrimFsdb = coerce . cleanFsdbToTrimFsdb . fsdbToCleanFsdb . FsdbFile
 
-ensureExt Kml = id
-ensureExt Igc = id
+reshape Kml = id
+reshape Igc = id
 
-ensureExt NormArrival = coerce . compToNormArrival . coerce . ensureExt CompInput
-ensureExt NormLandout = coerce . compToNormLandout . coerce . ensureExt CompInput
-ensureExt NormRoute = coerce . compToNormRoute . coerce . ensureExt CompInput
-ensureExt NormScore = coerce . compToNormScore . coerce . ensureExt CompInput
+reshape NormArrival = coerce . compToNormArrival . coerce . reshape CompInput
+reshape NormLandout = coerce . compToNormLandout . coerce . reshape CompInput
+reshape NormRoute = coerce . compToNormRoute . coerce . reshape CompInput
+reshape NormScore = coerce . compToNormScore . coerce . reshape CompInput
 
-ensureExt CompInput = coerce . trimFsdbToComp . coerce . ensureExt TrimFsdb
-ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
-ensureExt CrossZone = coerce . compToCross . coerce . ensureExt CompInput
-ensureExt TagZone = coerce . crossToTag . coerce . ensureExt CrossZone
-ensureExt PegFrame = coerce . tagToPeg . coerce . ensureExt TagZone
-ensureExt LeadArea = flip replaceExtensions "lead-area.yaml"
+reshape CompInput = coerce . trimFsdbToComp . coerce . reshape TrimFsdb
+reshape TaskLength = flip replaceExtensions "task-length.yaml"
+reshape CrossZone = coerce . compToCross . coerce . reshape CompInput
+reshape TagZone = coerce . crossToTag . coerce . reshape CrossZone
+reshape PegFrame = coerce . tagToPeg . coerce . reshape TagZone
+reshape LeadArea = flip replaceExtensions "lead-area.yaml"
 
-ensureExt MaskArrival = coerce . compToMaskArrival . coerce . ensureExt CompInput
-ensureExt MaskEffort = coerce . compToMaskEffort . coerce . ensureExt CompInput
-ensureExt MaskLead = coerce . compToMaskLead . coerce . ensureExt CompInput
-ensureExt MaskReach = coerce . compToMaskReach . coerce . ensureExt CompInput
-ensureExt MaskSpeed = coerce . compToMaskSpeed . coerce . ensureExt CompInput
+reshape MaskArrival = coerce . compToMaskArrival . coerce . reshape CompInput
+reshape MaskEffort = coerce . compToMaskEffort . coerce . reshape CompInput
+reshape MaskLead = coerce . compToMaskLead . coerce . reshape CompInput
+reshape MaskReach = coerce . compToMaskReach . coerce . reshape CompInput
+reshape MaskSpeed = coerce . compToMaskSpeed . coerce . reshape CompInput
 
-ensureExt BonusReach = coerce . compToBonusReach . coerce . ensureExt CompInput
-ensureExt LandOut = coerce . compToLand . coerce . ensureExt CompInput
-ensureExt FarOut = coerce . compToFar . coerce . ensureExt CompInput
-ensureExt GapPoint = coerce . compToPoint . coerce . ensureExt CompInput
+reshape BonusReach = coerce . compToBonusReach . coerce . reshape CompInput
+reshape LandOut = coerce . compToLand . coerce . reshape CompInput
+reshape FarOut = coerce . compToFar . coerce . reshape CompInput
+reshape GapPoint = coerce . compToPoint . coerce . reshape CompInput
 
-ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
-ensureExt AlignTime = flip replaceExtensions "align-time.csv"
-ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"
-ensureExt PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
-ensureExt AreaStep = flip replaceExtensions "area-step.csv"
+reshape UnpackTrack = flip replaceExtensions "unpack-track.csv"
+reshape AlignTime = flip replaceExtensions "align-time.csv"
+reshape DiscardFurther = flip replaceExtensions "discard-further.csv"
+reshape PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
+reshape AreaStep = flip replaceExtensions "area-step.csv"
 
 dotDirTask :: CompDir -> DotFolder -> FilePath -> Int -> FilePath
 dotDirTask (CompDir dir) dotFolder name task

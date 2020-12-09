@@ -24,7 +24,7 @@ import Flight.Comp
     , FsdbXml(..)
     , trimFsdbToNormRoute
     , findTrimFsdb
-    , ensureExt
+    , reshape
     )
 import Flight.Route
 import Flight.TaskTrack.Double
@@ -39,7 +39,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
+    let lf = LenientFile {coerceFile = reshape TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

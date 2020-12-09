@@ -20,7 +20,7 @@ import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
 import Flight.Path.Types
-import Flight.Path.Tx (ensureExt)
+import Flight.Path.Tx (reshape)
 
 data FindDirFile =
     FindDirFile
@@ -153,7 +153,7 @@ findFileType typ finder ctor o = do
         if dde then finder dir else return []
     where
         dir = getField @"dir" o
-        file = ensureExt typ $ getField @"file" o
+        file = reshape typ $ getField @"file" o
 
 ext :: FileType -> FilePath
 ext Fsdb = ".fsdb"
