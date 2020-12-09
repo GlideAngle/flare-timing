@@ -94,7 +94,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
 import Flight.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Comp
-    ( AltDot(AltFs)
+    ( AltDot(AltFs, AltAs)
     , FindDirFile(..)
     , FileType(CompInput)
     , CompSettings(..)
@@ -184,6 +184,7 @@ data Config k
         , altFsLandout :: Maybe Landing
         , altFsRoute :: Maybe [GeoLines]
         , altFsScore :: Maybe Alt.AltPointing
+        , altAsScore :: Maybe Alt.AltPointing
         }
 
 nullConfig :: CompInputFile -> CompSettings k -> Config k
@@ -208,6 +209,7 @@ nullConfig cf cs =
         , altFsLandout = Nothing
         , altFsRoute = Nothing
         , altFsScore = Nothing
+        , altAsScore = Nothing
         }
 
 newtype AppT k m a =
@@ -301,6 +303,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let altFsLandoutFile@(AltLandoutFile altFsLandoutPath) = compToAltLandout AltFs compFile
     let altFsRouteFile@(AltRouteFile altFsRoutePath) = compToAltRoute AltFs compFile
     let altFsScoreFile@(AltScoreFile altFsScorePath) = compToAltScore AltFs compFile
+    let _altAsScoreFile@(AltScoreFile _altAsScorePath) = compToAltScore AltAs compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
@@ -315,10 +318,11 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading bonus reach from '" ++ takeFileName bonusReachPath ++ "'"
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
-    putStrLn $ "Reading expected or altFsative arrivals from '" ++ takeFileName altFsArrivalPath ++ "'"
-    putStrLn $ "Reading expected or altFsative land outs from '" ++ takeFileName altFsLandoutPath ++ "'"
-    putStrLn $ "Reading expected or altFsative optimal routes from '" ++ takeFileName altFsRoutePath ++ "'"
-    putStrLn $ "Reading expected or altFsative scores from '" ++ takeFileName altFsScorePath ++ "'"
+    putStrLn $ "Reading FS arrivals from '" ++ takeFileName altFsArrivalPath ++ "'"
+    putStrLn $ "Reading FS land outs from '" ++ takeFileName altFsLandoutPath ++ "'"
+    putStrLn $ "Reading FS optimal routes from '" ++ takeFileName altFsRoutePath ++ "'"
+    putStrLn $ "Reading FS scores from '" ++ takeFileName altFsScorePath ++ "'"
+    -- putStrLn $ "Reading airScore scores from '" ++ takeFileName altAsScorePath ++ "'"
 
     compSettings <-
         catchIO
@@ -419,13 +423,17 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readAltScore altFsScoreFile)
                     (const $ return Nothing)
 
-            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, altFsS) of
-                (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE dL mL mR mS bR lo gp altFsA altFsL altFsR ns)
-                (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
+            -- WARNING: Reading airScore's scores fails with
+            -- AesonException "Error in $.score[0][0][1].landedMade: expected String, encountered Null"
+            let altAsS = Nothing
+
+            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing) of
+                (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _)) ->
+                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE dL mL mR mS bR lo gp altFsA altFsL altFsR altFsS altAsS)
+                (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs and task lengths"
                     f =<< mkTaskLengthApp cfg{routing = rt}
-                (_, _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
+                (_, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs"
                     f =<< mkCompInputApp cfg
             where
@@ -535,8 +543,9 @@ serverGapPointApi cfg =
         :<|> getTaskAltRouteEllipse
         :<|> getValidity <$> n
         :<|> getAltTaskValidityWorking
-        :<|> getTaskAltScore
+        :<|> getTaskAltScore AltFs
         :<|> getTaskArrivalAlt
+        :<|> getTaskAltScore AltAs
     where
         c = asks compSettings
         p = asks pointing
@@ -1131,16 +1140,21 @@ getTaskBonusReach ii = do
 
         _ -> throwError $ errTaskStep "mask-track" ii
 
-getTaskAltScore :: Int -> AppT k IO [(Pilot, Alt.AltBreakdown)]
-getTaskAltScore ii = do
-    xs' <- fmap Alt.score <$> asks altFsScore
+getTaskAltScore :: AltDot -> Int -> AppT k IO [(Pilot, Alt.AltBreakdown)]
+getTaskAltScore altDot ii = do
+    let (altScore, altSegment) =
+            case altDot of
+                AltFs -> (altFsScore, "fs-score")
+                AltAs -> (altAsScore, "as-score")
+
+    xs' <- fmap Alt.score <$> asks altScore
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
                 x : _ -> return x
                 _ -> throwError $ errTaskBounds ii
 
-        _ -> throwError $ errTaskStep "fs-score" ii
+        _ -> throwError $ errTaskStep altSegment ii
 
 getTaskAltRouteSphere :: Int -> AppT k IO (Maybe TrackLine)
 getTaskAltRouteSphere ii = do

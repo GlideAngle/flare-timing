@@ -192,6 +192,9 @@ type GapPointApi k =
     :<|> "fs-mask-track" :> (Capture "task" Int) :> "arrival"
         :> Get '[JSON] [(Pilot, TrackArrival)]
 
+    :<|> "as-score" :> (Capture "task" Int) :> "score"
+        :> Get '[JSON] [(Pilot, Alt.AltBreakdown)]
+
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy
 
