@@ -32,7 +32,7 @@ settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
         go s@CompSettings{pilots, taskFolders} = do
             return (s, zs)
             where
-                dir = takeDirectory path
+                dir = takeDirectory $ takeDirectory path
                 ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
                 fs = Log.makeAbsolute dir <$> taskFolders
                 zs = zipWith (<$>) fs ys

@@ -35,10 +35,12 @@ module Flight.Path.Tx
     , discardFurtherPath
     , pegThenDiscardPath
     , areaStepPath
+    , ensureExt
     ) where
 
+import Data.Coerce (coerce)
 import Text.Printf (printf)
-import System.FilePath (FilePath, (</>), (<.>), takeDirectory)
+import System.FilePath (FilePath, (</>), (<.>), takeDirectory, replaceExtensions)
 import "flight-gap-allot" Flight.Score (PilotId(..), PilotName(..), Pilot(..))
 import Flight.Path.Types
 
@@ -83,6 +85,43 @@ shape NormArrival = DotDirName "mask-arrival.yaml" DotFs
 shape NormLandout = DotDirName "land-out.yaml" DotFs
 shape NormRoute = DotDirName "task-route.yaml" DotFs
 shape NormScore = DotDirName "gap-score.yaml" DotFs
+
+ensureExt :: FileType -> FilePath -> FilePath
+ensureExt Fsdb = flip replaceExtensions "fsdb"
+ensureExt CleanFsdb = coerce . fsdbToCleanFsdb . FsdbFile
+ensureExt TrimFsdb = coerce . cleanFsdbToTrimFsdb . fsdbToCleanFsdb . FsdbFile
+
+ensureExt Kml = id
+ensureExt Igc = id
+
+ensureExt NormArrival = coerce . compToNormArrival . coerce . ensureExt CompInput
+ensureExt NormLandout = coerce . compToNormLandout . coerce . ensureExt CompInput
+ensureExt NormRoute = coerce . compToNormRoute . coerce . ensureExt CompInput
+ensureExt NormScore = coerce . compToNormScore . coerce . ensureExt CompInput
+
+ensureExt CompInput = coerce . trimFsdbToComp . coerce . ensureExt TrimFsdb
+ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
+ensureExt CrossZone = coerce . compToCross . coerce . ensureExt CompInput
+ensureExt TagZone = coerce . crossToTag . coerce . ensureExt CrossZone
+ensureExt PegFrame = coerce . tagToPeg . coerce . ensureExt TagZone
+ensureExt LeadArea = flip replaceExtensions "lead-area.yaml"
+
+ensureExt MaskArrival = coerce . compToMaskArrival . coerce . ensureExt CompInput
+ensureExt MaskEffort = coerce . compToMaskEffort . coerce . ensureExt CompInput
+ensureExt MaskLead = coerce . compToMaskLead . coerce . ensureExt CompInput
+ensureExt MaskReach = coerce . compToMaskReach . coerce . ensureExt CompInput
+ensureExt MaskSpeed = coerce . compToMaskSpeed . coerce . ensureExt CompInput
+
+ensureExt BonusReach = coerce . compToBonusReach . coerce . ensureExt CompInput
+ensureExt LandOut = coerce . compToLand . coerce . ensureExt CompInput
+ensureExt FarOut = coerce . compToFar . coerce . ensureExt CompInput
+ensureExt GapPoint = coerce . compToPoint . coerce . ensureExt CompInput
+
+ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
+ensureExt AlignTime = flip replaceExtensions "align-time.csv"
+ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"
+ensureExt PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
+ensureExt AreaStep = flip replaceExtensions "area-step.csv"
 
 dotDirTask :: CompDir -> DotFolder -> FilePath -> Int -> FilePath
 dotDirTask (CompDir dir) dotFolder name task

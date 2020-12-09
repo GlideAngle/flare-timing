@@ -11,22 +11,23 @@ module Flight.Path.Find
     , findCrossZone
     , findIgc
     , findKml
-    , ensureExt
     ) where
 
 import GHC.Records
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath (FilePath, replaceExtensions)
+import System.FilePath ((</>), FilePath)
 import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
 import Flight.Path.Types
+import Flight.Path.Tx (ensureExt)
 
-data FindDirFile
-    = FindDirFile
+data FindDirFile =
+    FindDirFile
         { dir :: FilePath
         , file :: FilePath
         }
+    deriving Show
 
 findNormArrival' :: FilePath -> IO [NormArrivalFile]
 findNormArrival' dir = fmap NormArrivalFile <$> findFiles DotFs NormArrival dir
@@ -71,7 +72,7 @@ findCleanFsdb' :: FilePath -> IO [CleanFsdbFile]
 findCleanFsdb' dir = fmap CleanFsdbFile <$> findFiles DotFt Fsdb dir
 
 findTrimFsdb' :: FilePath -> IO [TrimFsdbFile]
-findTrimFsdb' dir = fmap TrimFsdbFile <$> findFiles DotFt TrimFsdb dir
+findTrimFsdb' dir = fmap TrimFsdbFile <$> findFiles DotFs TrimFsdb (dir </> ".flight-system")
 
 findCompInput' :: FilePath -> IO [CompInputFile]
 findCompInput' dir = fmap CompInputFile <$> findFiles DotFt CompInput dir
@@ -184,34 +185,3 @@ ext BonusReach = ".bonus-reach.yaml"
 ext LandOut = ".land-out.yaml"
 ext FarOut = ".far-out.yaml"
 ext GapPoint = ".gap-point.yaml"
-
-ensureExt :: FileType -> FilePath -> FilePath
-ensureExt Fsdb = flip replaceExtensions "fsdb"
-ensureExt CleanFsdb = flip replaceExtensions "clean-fsdb.xml"
-ensureExt TrimFsdb = flip replaceExtensions "trim-fsdb.xml"
-ensureExt Kml = id
-ensureExt Igc = id
-ensureExt NormArrival = flip replaceExtensions "norm-arrival.yaml"
-ensureExt NormLandout = flip replaceExtensions "norm-land-out.yaml"
-ensureExt NormRoute = flip replaceExtensions "norm-route.yaml"
-ensureExt NormScore = flip replaceExtensions "norm-score.yaml"
-ensureExt CompInput = flip replaceExtensions "comp-input.yaml"
-ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
-ensureExt CrossZone = flip replaceExtensions "cross-zone.yaml"
-ensureExt TagZone = flip replaceExtensions "tag-zone.yaml"
-ensureExt PegFrame = flip replaceExtensions "peg-frame.yaml"
-ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
-ensureExt AlignTime = flip replaceExtensions "align-time.csv"
-ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"
-ensureExt PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
-ensureExt AreaStep = flip replaceExtensions "area-step.csv"
-ensureExt LeadArea = flip replaceExtensions "lead-area.yaml"
-ensureExt MaskArrival = flip replaceExtensions "mask-arrival.yaml"
-ensureExt MaskEffort = flip replaceExtensions "mask-effort.yaml"
-ensureExt MaskLead = flip replaceExtensions "mask-lead.yaml"
-ensureExt MaskReach = flip replaceExtensions "mask-reach.yaml"
-ensureExt MaskSpeed = flip replaceExtensions "mask-speed.yaml"
-ensureExt BonusReach = flip replaceExtensions "bonus-reach.yaml"
-ensureExt LandOut = flip replaceExtensions "land-out.yaml"
-ensureExt FarOut = flip replaceExtensions "far-out.yaml"
-ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"

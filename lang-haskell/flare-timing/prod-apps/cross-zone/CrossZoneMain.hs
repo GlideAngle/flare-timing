@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
+import Debug.Trace
 import Prelude hiding (span)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -104,7 +105,7 @@ go CmdBatchOptions{pilot, math, task} compFile@(CompInputFile compPath) = do
                     sequence $
                     [
                         parallel $
-                        [ runExceptT $ pilotTrack ((flown comp math) tasks ixTask) pilotLog
+                        [ runExceptT $ pilotTrack ((flown comp math) tasks ixTask) (traceShowId pilotLog)
                         | pilotLog <- taskLogs
                         ]
 
