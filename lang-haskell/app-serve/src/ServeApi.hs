@@ -80,24 +80,6 @@ type GapPointApi k =
     :<|> "comp-input" :> "pilots"
         :> Get '[JSON] [Pilot]
 
-    :<|> "fs-effort" :> (Capture "task" Int) :> "landing"
-        :> Get '[JSON] (Maybe TaskLanding)
-
-    :<|> "fs-route" :> Capture "task" Int :> "sphere"
-        :> Get '[JSON] (Maybe TrackLine)
-
-    :<|> "fs-route" :> Capture "task" Int :> "ellipse"
-        :> Get '[JSON] (Maybe TrackLine)
-
-    :<|> "fs-score" :> "validity"
-        :> Get '[JSON] [Maybe Vy.Validity]
-
-    :<|> "fs-score" :> Capture "task" Int :> "validity-working"
-        :> Get '[JSON] (Maybe Vw.ValidityWorking)
-
-    :<|> "fs-score" :> (Capture "task" Int) :> "score"
-        :> Get '[JSON] [(Pilot, Alt.AltBreakdown)]
-
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
 
@@ -174,9 +156,6 @@ type GapPointApi k =
     :<|> "mask-track" :> (Capture "task" Int) :> "bonus-reach"
         :> Get '[JSON] [(Pilot, TrackReach)]
 
-    :<|> "fs-mask-track" :> (Capture "task" Int) :> "arrival"
-        :> Get '[JSON] [(Pilot, TrackArrival)]
-
     :<|> "mask-track" :> (Capture "task" Int) :> "arrival"
         :> Get '[JSON] [(Pilot, TrackArrival)]
 
@@ -191,6 +170,27 @@ type GapPointApi k =
 
     :<|> "land-out" :> (Capture "task" Int) :> "landing"
         :> Get '[JSON] (Maybe TaskLanding)
+
+    :<|> "fs-effort" :> (Capture "task" Int) :> "landing"
+        :> Get '[JSON] (Maybe TaskLanding)
+
+    :<|> "fs-route" :> Capture "task" Int :> "sphere"
+        :> Get '[JSON] (Maybe TrackLine)
+
+    :<|> "fs-route" :> Capture "task" Int :> "ellipse"
+        :> Get '[JSON] (Maybe TrackLine)
+
+    :<|> "fs-score" :> "validity"
+        :> Get '[JSON] [Maybe Vy.Validity]
+
+    :<|> "fs-score" :> Capture "task" Int :> "validity-working"
+        :> Get '[JSON] (Maybe Vw.ValidityWorking)
+
+    :<|> "fs-score" :> (Capture "task" Int) :> "score"
+        :> Get '[JSON] [(Pilot, Alt.AltBreakdown)]
+
+    :<|> "fs-mask-track" :> (Capture "task" Int) :> "arrival"
+        :> Get '[JSON] [(Pilot, TrackArrival)]
 
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy

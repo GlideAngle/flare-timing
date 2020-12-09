@@ -180,10 +180,10 @@ data Config k
         , bonusReach :: Maybe MaskingReach
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
-        , normArrival :: Maybe Mask.MaskingArrival
-        , normLandout :: Maybe Landing
-        , normRoute :: Maybe [GeoLines]
-        , normScore :: Maybe Alt.AltPointing
+        , altFsArrival :: Maybe Mask.MaskingArrival
+        , altFsLandout :: Maybe Landing
+        , altFsRoute :: Maybe [GeoLines]
+        , altFsScore :: Maybe Alt.AltPointing
         }
 
 nullConfig :: CompInputFile -> CompSettings k -> Config k
@@ -204,10 +204,10 @@ nullConfig cf cs =
         , bonusReach = Nothing
         , landing = Nothing
         , pointing = Nothing
-        , normArrival = Nothing
-        , normLandout = Nothing
-        , normRoute = Nothing
-        , normScore = Nothing
+        , altFsArrival = Nothing
+        , altFsLandout = Nothing
+        , altFsRoute = Nothing
+        , altFsScore = Nothing
         }
 
 newtype AppT k m a =
@@ -297,10 +297,10 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let landFile@(LandOutFile _landPath) = compToLand compFile
     let farFile@(FarOutFile landPath) = compToFar compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
-    let normArrivalFile@(AltArrivalFile normArrivalPath) = compToAltArrival AltFs compFile
-    let normLandoutFile@(AltLandoutFile normLandoutPath) = compToAltLandout AltFs compFile
-    let normRouteFile@(AltRouteFile normRoutePath) = compToAltRoute AltFs compFile
-    let normScoreFile@(AltScoreFile normScorePath) = compToAltScore AltFs compFile
+    let altFsArrivalFile@(AltArrivalFile altFsArrivalPath) = compToAltArrival AltFs compFile
+    let altFsLandoutFile@(AltLandoutFile altFsLandoutPath) = compToAltLandout AltFs compFile
+    let altFsRouteFile@(AltRouteFile altFsRoutePath) = compToAltRoute AltFs compFile
+    let altFsScoreFile@(AltScoreFile altFsScorePath) = compToAltScore AltFs compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
@@ -315,10 +315,10 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading bonus reach from '" ++ takeFileName bonusReachPath ++ "'"
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
-    putStrLn $ "Reading expected or normative arrivals from '" ++ takeFileName normArrivalPath ++ "'"
-    putStrLn $ "Reading expected or normative land outs from '" ++ takeFileName normLandoutPath ++ "'"
-    putStrLn $ "Reading expected or normative optimal routes from '" ++ takeFileName normRoutePath ++ "'"
-    putStrLn $ "Reading expected or normative scores from '" ++ takeFileName normScorePath ++ "'"
+    putStrLn $ "Reading expected or altFsative arrivals from '" ++ takeFileName altFsArrivalPath ++ "'"
+    putStrLn $ "Reading expected or altFsative land outs from '" ++ takeFileName altFsLandoutPath ++ "'"
+    putStrLn $ "Reading expected or altFsative optimal routes from '" ++ takeFileName altFsRoutePath ++ "'"
+    putStrLn $ "Reading expected or altFsative scores from '" ++ takeFileName altFsScorePath ++ "'"
 
     compSettings <-
         catchIO
@@ -399,29 +399,29 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                     (Just <$> readPointing pointFile)
                     (const $ return Nothing)
 
-            normA <-
+            altFsA <-
                 catchIO
-                    (Just <$> readAltArrival normArrivalFile)
+                    (Just <$> readAltArrival altFsArrivalFile)
                     (const $ return Nothing)
 
-            normL <-
+            altFsL <-
                 catchIO
-                    (Just <$> readAltLandout normLandoutFile)
+                    (Just <$> readAltLandout altFsLandoutFile)
                     (const $ return Nothing)
 
-            normR <-
+            altFsR <-
                 catchIO
-                    (Just <$> readAltRoute normRouteFile)
+                    (Just <$> readAltRoute altFsRouteFile)
                     (const $ return Nothing)
 
-            normS <-
+            altFsS <-
                 catchIO
-                    (Just <$> readAltScore normScoreFile)
+                    (Just <$> readAltScore altFsScoreFile)
                     (const $ return Nothing)
 
-            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, normS) of
+            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, altFsS) of
                 (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE dL mL mR mS bR lo gp normA normL normR ns)
+                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE dL mL mR mS bR lo gp altFsA altFsL altFsR ns)
                 (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs and task lengths"
                     f =<< mkTaskLengthApp cfg{routing = rt}
@@ -496,12 +496,6 @@ serverGapPointApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
-        :<|> getTaskAltLanding
-        :<|> getTaskAltRouteSphere
-        :<|> getTaskAltRouteEllipse
-        :<|> getValidity <$> n
-        :<|> getAltTaskValidityWorking
-        :<|> getTaskAltScore
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
         :<|> getTaskRouteProjectedSphericalEdge
@@ -530,16 +524,23 @@ serverGapPointApi cfg =
         :<|> getTaskBonusBolsterStats
         :<|> getTaskReach
         :<|> getTaskBonusReach
-        :<|> getTaskArrivalAlt
         :<|> getTaskArrival
         :<|> getTaskLead
         :<|> getTaskTime
         :<|> getTaskEffort
         :<|> getTaskLanding
+
+        :<|> getTaskAltLanding
+        :<|> getTaskAltRouteSphere
+        :<|> getTaskAltRouteEllipse
+        :<|> getValidity <$> n
+        :<|> getAltTaskValidityWorking
+        :<|> getTaskAltScore
+        :<|> getTaskArrivalAlt
     where
         c = asks compSettings
         p = asks pointing
-        n = asks normScore
+        n = asks altFsScore
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]
 distinctPilots pss =
@@ -646,10 +647,10 @@ getTaskValidityWorking ii = do
 
 getAltTaskValidityWorking :: Int -> AppT k IO (Maybe Vw.ValidityWorking)
 getAltTaskValidityWorking ii = do
-    ls' <- fmap Alt.validityWorkingLaunch <$> asks normScore
-    ts' <- fmap Alt.validityWorkingTime <$> asks normScore
-    ds' <- fmap Alt.validityWorkingDistance <$> asks normScore
-    ss' <- fmap Alt.validityWorkingStop <$> asks normScore
+    ls' <- fmap Alt.validityWorkingLaunch <$> asks altFsScore
+    ts' <- fmap Alt.validityWorkingTime <$> asks altFsScore
+    ds' <- fmap Alt.validityWorkingDistance <$> asks altFsScore
+    ss' <- fmap Alt.validityWorkingStop <$> asks altFsScore
     case (ls', ts', ds', ss') of
         (Just ls, Just ts, Just ds, Just ss) ->
             case drop (ii - 1) $ zip4 ls ts ds ss of
@@ -765,7 +766,7 @@ getTaskRouteLengths = do
 getTaskPointsDiffStats :: AppT k IO [Maybe (Double, Double)]
 getTaskPointsDiffStats = do
     ps <- fmap (\Pointing{score} -> (fmap . fmap . fmap) (\Breakdown{total} -> total) score) <$> asks pointing
-    exs <- fmap (\Alt.AltPointing{score} -> (fmap . fmap . fmap) (\Alt.AltBreakdown{total} -> total) score) <$> asks normScore
+    exs <- fmap (\Alt.AltPointing{score} -> (fmap . fmap . fmap) (\Alt.AltBreakdown{total} -> total) score) <$> asks altFsScore
     case (ps, exs) of
         (Just ps', Just exs') -> do
             let taskDiffs =
@@ -1132,7 +1133,7 @@ getTaskBonusReach ii = do
 
 getTaskAltScore :: Int -> AppT k IO [(Pilot, Alt.AltBreakdown)]
 getTaskAltScore ii = do
-    xs' <- fmap Alt.score <$> asks normScore
+    xs' <- fmap Alt.score <$> asks altFsScore
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -1143,7 +1144,7 @@ getTaskAltScore ii = do
 
 getTaskAltRouteSphere :: Int -> AppT k IO (Maybe TrackLine)
 getTaskAltRouteSphere ii = do
-    xs' <- asks normRoute
+    xs' <- asks altFsRoute
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -1154,7 +1155,7 @@ getTaskAltRouteSphere ii = do
 
 getTaskAltRouteEllipse :: Int -> AppT k IO (Maybe TrackLine)
 getTaskAltRouteEllipse ii = do
-    xs' <- asks normRoute
+    xs' <- asks altFsRoute
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -1176,7 +1177,7 @@ getTaskEffort ii = do
 
 getTaskAltLanding :: Int -> AppT k IO (Maybe TaskLanding)
 getTaskAltLanding ii = do
-    x <- asks normLandout
+    x <- asks altFsLandout
     return . join $ taskLanding (IxTask ii) <$> x
 
 getTaskLanding :: Int -> AppT k IO (Maybe TaskLanding)
