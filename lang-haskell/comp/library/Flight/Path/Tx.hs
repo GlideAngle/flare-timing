@@ -333,7 +333,7 @@ trimFsdbToNormScore _ = let DotDirName s d = shape NormScore in NormScoreFile $ 
 
 compFileToCompDir :: CompInputFile -> CompDir
 compFileToCompDir (CompInputFile p) =
-    CompDir $ takeDirectory p
+    CompDir . takeDirectory $ takeDirectory p
 
 pilotPath :: Pilot -> FilePath
 pilotPath (Pilot (PilotId k, PilotName s)) =

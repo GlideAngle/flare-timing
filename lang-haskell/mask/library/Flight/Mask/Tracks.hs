@@ -3,7 +3,6 @@ module Flight.Mask.Tracks (checkTracks, settingsLogs) where
 import Control.DeepSeq
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
-import System.FilePath (takeDirectory)
 
 import Flight.Kml (MarkedFixes)
 import Flight.Comp
@@ -13,6 +12,8 @@ import Flight.Comp
     , PilotTrackLogFile(..)
     , TrackFileFail(..)
     , CompInputFile(..)
+    , CompDir(..)
+    , compFileToCompDir
     )
 import Flight.TrackLog as Log
     (pilotTracks, filterPilots, filterTasks, makeAbsolute)
@@ -25,14 +26,14 @@ settingsLogs
     -> [IxTask]
     -> [Pilot]
     -> m (CompSettings k, [[PilotTrackLogFile]])
-settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
+settingsLogs compFile tasks selectPilots = do
     settings <- readComp compFile
     go settings
     where
         go s@CompSettings{pilots, taskFolders} = do
             return (s, zs)
             where
-                dir = takeDirectory $ takeDirectory path
+                CompDir dir = compFileToCompDir compFile
                 ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
                 fs = Log.makeAbsolute dir <$> taskFolders
                 zs = zipWith (<$>) fs ys

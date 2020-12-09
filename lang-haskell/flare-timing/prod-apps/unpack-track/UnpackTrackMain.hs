@@ -3,6 +3,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+import Debug.Trace (traceShowId)
 import Text.Printf (printf)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -90,7 +91,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                     [ do
                         check <-
                             catchIO
-                                (Just <$> (runExceptT $ pilotTrack (dump tasks ixTask) pilotLog))
+                                (Just <$> (runExceptT $ pilotTrack (dump tasks ixTask) (traceShowId pilotLog)))
                                 (const $ return Nothing)
 
                         case check of
