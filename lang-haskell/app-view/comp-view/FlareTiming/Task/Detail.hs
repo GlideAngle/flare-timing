@@ -43,6 +43,14 @@ import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map.View (viewMap)
 import FlareTiming.Map.Track (tableTrack)
+
+import FlareTiming.ViePlot.Reach (reachViePlot)
+import FlareTiming.ViePlot.Effort (effortViePlot)
+import FlareTiming.ViePlot.Time (timeViePlot)
+import FlareTiming.ViePlot.LeadCoef (leadCoefViePlot)
+import FlareTiming.ViePlot.LeadArea (leadAreaViePlot)
+import FlareTiming.ViePlot.Arrival (arrivalViePlot)
+
 import FlareTiming.Plot.Weight (weightPlot)
 import FlareTiming.Plot.Reach (reachPlot)
 import FlareTiming.Plot.Effort (effortPlot)
@@ -51,6 +59,7 @@ import FlareTiming.Plot.LeadCoef (leadCoefPlot)
 import FlareTiming.Plot.LeadArea (leadAreaPlot)
 import FlareTiming.Plot.Arrival (arrivalPlot)
 import FlareTiming.Plot.Valid (validPlot)
+
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
 import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
@@ -477,27 +486,25 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
 
                                 VieTabPlotFs -> do
                                     tabViePlotFs <- tabsViePlotFs
-                                    let plotSplit = weightPlot hgOrPg tweak vy vw alloc ln
-                                    _ <- widgetHold (plotSplit) $
+                                    let plotReach = reachViePlot task sAltFs reach bonusReach
+                                    _ <- widgetHold (plotReach) $
                                             (\case
-                                                ViePlotFsTabSplit -> plotSplit
-                                                ViePlotFsTabReach -> reachPlot task sAltFs reach bonusReach
-                                                ViePlotFsTabEffort -> effortPlot hgOrPg sAltFs ef
-                                                ViePlotFsTabTime -> timePlot sgs sAltFs sd
+                                                ViePlotFsTabReach -> plotReach
+                                                ViePlotFsTabEffort -> effortViePlot hgOrPg sAltFs ef
+                                                ViePlotFsTabTime -> timeViePlot sgs sAltFs sd
 
                                                 ViePlotFsTabLead -> do
                                                     tabViePlotFsLead <- tabsViePlotFsLead
-                                                    let plotLeadCoef = leadCoefPlot ix tweak sAltFs ld
+                                                    let plotLeadCoef = leadCoefViePlot ix tweak sAltFs ld
                                                     _ <- widgetHold (plotLeadCoef) $
                                                             (\case
                                                                 ViePlotFsLeadTabPoint -> plotLeadCoef
-                                                                ViePlotFsLeadTabArea -> leadAreaPlot ix tweak sAltFs ld
+                                                                ViePlotFsLeadTabArea -> leadAreaViePlot ix tweak sAltFs ld
                                                             )
                                                             <$> tabViePlotFsLead
                                                     return ()
 
-                                                ViePlotFsTabArrive -> arrivalPlot hgOrPg tweak av avN
-                                                ViePlotFsTabValid -> validPlot vy vw
+                                                ViePlotFsTabArrive -> arrivalViePlot hgOrPg tweak av avN
                                             )
                                             <$> tabViePlotFs
 

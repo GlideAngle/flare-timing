@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4c20b08d4bdd783404eb0ff6143bbabcdb5de17dda3ef2212584d37f4b89081a
+-- hash: d4fe24189ded4f07a684a6f90f2839f9aad13dc9b3ffa5b05f2cce564fc71524
 
 name:           app-view
 version:        0.1.0
@@ -129,8 +129,44 @@ executable comp-view
       FlareTiming.Task.Validity.Task
       FlareTiming.Task.Validity.Time
       FlareTiming.Task.Validity.Widget
+      FlareTiming.Task.VieScoreBoth.Over
+      FlareTiming.Task.VieScoreFs.Arrive
+      FlareTiming.Task.VieScoreFs.Effort
+      FlareTiming.Task.VieScoreFs.Over
+      FlareTiming.Task.VieScoreFs.Reach
+      FlareTiming.Task.VieScoreFs.Speed
+      FlareTiming.Task.VieScoreFs.Split
+      FlareTiming.Task.VieScoreFs.Time
       FlareTiming.Time
       FlareTiming.Turnpoint
+      FlareTiming.ViePlot.Arrival
+      FlareTiming.ViePlot.ArrivalPosition.Plot
+      FlareTiming.ViePlot.ArrivalPosition.Table
+      FlareTiming.ViePlot.ArrivalPosition.View
+      FlareTiming.ViePlot.ArrivalTime.Plot
+      FlareTiming.ViePlot.ArrivalTime.Table
+      FlareTiming.ViePlot.ArrivalTime.View
+      FlareTiming.ViePlot.Effort
+      FlareTiming.ViePlot.Effort.Plot
+      FlareTiming.ViePlot.Effort.Table
+      FlareTiming.ViePlot.Effort.View
+      FlareTiming.ViePlot.LeadArea
+      FlareTiming.ViePlot.LeadArea.Plot
+      FlareTiming.ViePlot.LeadArea.Table
+      FlareTiming.ViePlot.LeadArea.View
+      FlareTiming.ViePlot.LeadCoef
+      FlareTiming.ViePlot.LeadCoef.Plot
+      FlareTiming.ViePlot.LeadCoef.Table
+      FlareTiming.ViePlot.LeadCoef.View
+      FlareTiming.ViePlot.Reach
+      FlareTiming.ViePlot.Reach.Plot
+      FlareTiming.ViePlot.Reach.TableBonus
+      FlareTiming.ViePlot.Reach.TableReach
+      FlareTiming.ViePlot.Reach.View
+      FlareTiming.ViePlot.Time
+      FlareTiming.ViePlot.Time.Plot
+      FlareTiming.ViePlot.Time.Table
+      FlareTiming.ViePlot.Time.View
       FlareTiming.View
       Reflex.Dom.Contrib.Utils
       WireTypes.Arrival

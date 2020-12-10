@@ -4,26 +4,16 @@ import Reflex
 import Reflex.Dom
 
 data ViePlotFsTab
-    = ViePlotFsTabSplit
-    | ViePlotFsTabReach
+    = ViePlotFsTabReach
     | ViePlotFsTabEffort
     | ViePlotFsTabTime
     | ViePlotFsTabLead
     | ViePlotFsTabArrive
-    | ViePlotFsTabValid
 
 tabsViePlotFs :: MonadWidget t m => m (Event t ViePlotFsTab)
 tabsViePlotFs =
     elClass "div" "tabs" $
         el "ul" $ mdo
-            (split, _) <- elDynClass' "li" splitClass . el "a" $ do
-                            elClass "span" "legend-reach" $ text "▩"
-                            elClass "span" "legend-effort" $ text "▩"
-                            elClass "span" "legend-time" $ text "▩"
-                            elClass "span" "legend-leading" $ text "▩"
-                            elClass "span" "legend-arrival" $ text "▩"
-                            text "Split"
-
             (reach, _) <- elDynClass' "li" reachClass . el "a" $ do
                             elClass "span" "legend-reach" $ text "▩"
                             text "Reach"
@@ -44,94 +34,56 @@ tabsViePlotFs =
                             elClass "span" "legend-arrival" $ text "▩"
                             text "Arrival"
 
-            (valid, _) <- elDynClass' "li" validClass . el "a" $ do
-                            elClass "span" "legend-valid" $ text "▩"
-                            text "Validity"
-
-            let eSplit = (const ViePlotFsTabSplit) <$> domEvent Click split
             let eReach = (const ViePlotFsTabReach) <$> domEvent Click reach
             let eEffort = (const ViePlotFsTabEffort) <$> domEvent Click effort
             let eTime = (const ViePlotFsTabTime) <$> domEvent Click time
             let eLead = (const ViePlotFsTabLead) <$> domEvent Click lead
             let eArrive = (const ViePlotFsTabArrive) <$> domEvent Click arrive
-            let eValid = (const ViePlotFsTabValid) <$> domEvent Click valid
-
-            splitClass <- holdDyn "is-active" . leftmost $
-                            [ "is-active" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eEffort
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
-                            , "" <$ eValid
-                            ]
 
             reachClass <- holdDyn "" . leftmost $
-                            [ "" <$ eSplit
-                            , "is-active" <$ eReach
+                            [ "is-active" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
-                            , "" <$ eValid
                             ]
 
             effortClass <- holdDyn "" . leftmost $
-                            [ "" <$ eSplit
-                            , "" <$ eReach
+                            [ "" <$ eReach
                             , "is-active" <$ eEffort
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
-                            , "" <$ eValid
                             ]
 
             timeClass <- holdDyn "" . leftmost $
-                            [ "" <$ eSplit
-                            , "" <$ eReach
+                            [ "" <$ eReach
                             , "" <$ eEffort
                             , "is-active" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
-                            , "" <$ eValid
                             ]
 
             leadClass <- holdDyn "" . leftmost $
-                            [ "" <$ eSplit
-                            , "" <$ eReach
+                            [ "" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eTime
                             , "is-active" <$ eLead
                             , "" <$ eArrive
-                            , "" <$ eValid
                             ]
 
             arriveClass <- holdDyn "" . leftmost $
-                            [ "" <$ eSplit
-                            , "" <$ eReach
+                            [ "" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eTime
                             , "" <$ eLead
                             , "is-active" <$ eArrive
-                            , "" <$ eValid
-                            ]
-
-            validClass <- holdDyn "" . leftmost $
-                            [ "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eEffort
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
-                            , "is-active" <$ eValid
                             ]
 
             return . leftmost $
-                [ eSplit
-                , eReach
+                [ eReach
                 , eEffort
                 , eTime
                 , eLead
                 , eArrive
-                , eValid
                 ]
