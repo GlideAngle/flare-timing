@@ -63,13 +63,14 @@ import FlareTiming.Nav.TabVieScoreFs (VieScoreFsTab(..), tabsVieScoreFs)
 import FlareTiming.Nav.TabViePlotFs (ViePlotFsTab(..), tabsViePlotFs)
 import FlareTiming.Nav.TabViePlotFsLead (ViePlotFsLeadTab(..), tabsViePlotFsLead)
 
-import FlareTiming.Task.VieScore.Over (tableVieScoreOver)
-import FlareTiming.Task.VieScore.Split (tableVieScoreSplit)
-import FlareTiming.Task.VieScore.Reach (tableVieScoreReach)
-import FlareTiming.Task.VieScore.Effort (tableVieScoreEffort)
-import FlareTiming.Task.VieScore.Speed (tableVieScoreSpeed)
-import FlareTiming.Task.VieScore.Time (tableVieScoreTime)
-import FlareTiming.Task.VieScore.Arrive (tableVieScoreArrive)
+import FlareTiming.Task.VieScoreBoth.Over (tableVieScoreBothOver)
+import FlareTiming.Task.VieScoreFs.Over (tableVieScoreFsOver)
+import FlareTiming.Task.VieScoreFs.Split (tableVieScoreFsSplit)
+import FlareTiming.Task.VieScoreFs.Reach (tableVieScoreFsReach)
+import FlareTiming.Task.VieScoreFs.Effort (tableVieScoreFsEffort)
+import FlareTiming.Task.VieScoreFs.Speed (tableVieScoreFsSpeed)
+import FlareTiming.Task.VieScoreFs.Time (tableVieScoreFsTime)
+import FlareTiming.Task.VieScoreFs.Arrive (tableVieScoreFsArrive)
 
 import FlareTiming.Task.Score.Over (tableScoreOver)
 import FlareTiming.Task.Score.Split (tableScoreSplit)
@@ -434,7 +435,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                     tabVie <- tabsVie
                     let vieHold =
                             elAttr "div" ("id" =: "score-overview") $
-                                tableVieScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
+                                tableVieScoreBothOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
 
                     _ <- widgetHold vieHold $
                             (\case
@@ -442,33 +443,33 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
 
                                 VieTabScoreFs -> do
                                     tabVieScoreFs <- tabsVieScoreFs
-                                    let tableVieScoreHold =
+                                    let tableVieScoreFsHold =
                                             elAttr "div" ("id" =: "score-overview") $
-                                                tableVieScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
+                                                tableVieScoreFsOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
 
-                                    _ <- widgetHold tableVieScoreHold $
+                                    _ <- widgetHold tableVieScoreFsHold $
                                             (\case
                                                 VieScoreFsTabOver ->
-                                                    tableVieScoreHold
+                                                    tableVieScoreFsHold
 
                                                 VieScoreFsTabSplit ->
                                                     elAttr "div" ("id" =: "score-points") $
-                                                        tableVieScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                                        tableVieScoreFsSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                                                 VieScoreFsTabReach ->
                                                     elAttr "div" ("id" =: "score-reach") $
-                                                        tableVieScoreReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
+                                                        tableVieScoreFsReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
                                                 VieScoreFsTabEffort ->
                                                     elAttr "div" ("id" =: "score-effort") $
-                                                        tableVieScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
+                                                        tableVieScoreFsEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
                                                 VieScoreFsTabSpeed ->
                                                     elAttr "div" ("id" =: "score-speed") $
-                                                        tableVieScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                                        tableVieScoreFsSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                                                 VieScoreFsTabTime ->
                                                     elAttr "div" ("id" =: "score-time") $
-                                                        tableVieScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                                        tableVieScoreFsTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                                                 VieScoreFsTabArrive ->
                                                     elAttr "div" ("id" =: "score-arrival") $
-                                                        tableVieScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
+                                                        tableVieScoreFsArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
 
                                             <$> tabVieScoreFs
 
