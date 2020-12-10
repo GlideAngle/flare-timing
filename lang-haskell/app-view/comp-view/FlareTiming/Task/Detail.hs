@@ -420,11 +420,14 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
 
                 TaskTabVie -> do
                     tabVie <- tabsVie
-                    let vie = text "TODO: Vie"
+                    let vieHold =
+                            elAttr "div" ("id" =: "score-overview") $
+                                tableScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
 
-                    _ <- widgetHold vie $
+                    _ <- widgetHold vieHold $
                             (\case
-                                VieTabScore -> text "TODO: Vie Score"
+                                VieTabScore -> vieHold
+
                                 VieTabScoreFs -> do
                                     tabVieScoreFs <- tabsVieScoreFs
                                     let tableVieScoreHold =
