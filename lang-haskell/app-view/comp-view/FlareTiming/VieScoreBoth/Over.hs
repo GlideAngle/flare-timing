@@ -3,7 +3,7 @@ module FlareTiming.VieScoreBoth.Over (tableVieScoreBothOver) where
 import Prelude hiding (min)
 import Text.Printf (printf)
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
@@ -47,7 +47,7 @@ tableVieScoreBothOver
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sAltFs sAltAs = do
+tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sAltFs sAltAs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -64,44 +64,6 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
             ffor2 hgOrPg sgs (\x gs ->
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
-
-    let cTimePoints =
-            let thc = "th-time-points"
-                tdc = "td-time-points"
-            in
-                ffor2 hgOrPg vw (\x vw' ->
-                    maybe
-                        (thc, tdc)
-                        (\ValidityWorking{time = TimeValidityWorking{..}} ->
-                            case (x, gsBestTime) of
-                                (HangGliding, Nothing) ->
-                                    ( ("gr-zero " :: String) <> thc
-                                    , "gr-zero " <> tdc
-                                    )
-                                (HangGliding, Just _) -> (thc, tdc)
-                                (Paragliding, Nothing) ->
-                                    ( ("gr-zero " :: String) <> thc
-                                    , "gr-zero " <> tdc
-                                    )
-                                (Paragliding, Just _) -> (thc, tdc))
-                        vw')
-
-    let cArrivalPoints =
-            let thc = "th-arrival-points"
-                tdc = "td-arrival-points"
-            in
-                ffor2 hgOrPg vw (\x vw' ->
-                    maybe
-                        (thc, tdc)
-                        (\ValidityWorking{time = TimeValidityWorking{..}} ->
-                            case (x, gsBestTime) of
-                                (HangGliding, Nothing) ->
-                                    ( ("gr-zero " :: String) <> thc
-                                    , "gr-zero " <> tdc
-                                    )
-                                (HangGliding, Just _) -> (thc, tdc)
-                                (Paragliding, _) -> (thc, tdc))
-                        vw')
 
     let yDiff = ffor3 sDfs sAltFs sAltAs (\sDfs' sAltFs' sAltAs' ->
                     let mapFs = Map.fromList sAltFs'
