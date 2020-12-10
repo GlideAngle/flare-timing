@@ -83,7 +83,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs _sAl
                         (\ValidityWorking{time = TimeValidityWorking{..}} ->
                             case (x, gsBestTime) of
                                 (HangGliding, Nothing) ->
-                                    ( "gr-zero " <> thc
+                                    ( ("gr-zero " :: String) <> thc
                                     , "gr-zero " <> tdc
                                     )
                                 (HangGliding, Just _) -> (thc, tdc)
@@ -104,7 +104,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs _sAl
                         (\ValidityWorking{time = TimeValidityWorking{..}} ->
                             case (x, gsBestTime) of
                                 (HangGliding, Nothing) ->
-                                    ( "gr-zero " <> thc
+                                    ( ("gr-zero " :: String) <> thc
                                     , "gr-zero " <> tdc
                                     )
                                 (HangGliding, Just _) -> (thc, tdc)
@@ -113,6 +113,15 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs _sAl
 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
+
+            el "tr" $ do
+                elClass "th" "th-placing" $ text "Place"
+                elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
+                elClass "th" "th-distance-points-breakdown" $ text "Distance"
+                elClass "th" "th-time-points" $ text "Time"
+                elClass "th" "th-leading-points" $ text "Lead"
+                elClass "th" "th-arrival-points" $ text "Arrival"
+                elClass "th" "th-total-points" $ text "Total"
 
             elClass "tr" "tr-validity" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $
@@ -230,24 +239,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs _sAl
                         ""
                         (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
-
-            el "tr" $ do
-                elAttr "th" ("colspan" =: "2") $ text ""
-
-                elClass "th" "th-distance-points-breakdown" $ text "Distance"
-                elClass "th" "th-time-points" $ text "Time"
-                elClass "th" "th-leading-points" $ text "Lead"
-                elClass "th" "th-arrival-points" $ text "Arrival"
-                elClass "th" "th-total-points" $ text "Total"
-
-            el "tr" $ do
-                elClass "th" "th-placing" $ text "Place"
-                elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
-                elClass "th" "th-distance-points" $ text ""
-                elDynClass "th" (fst <$> cTimePoints) $ text ""
-                elClass "th" "th-leading-points" $ text ""
-                elDynClass "th" (fst <$> cArrivalPoints) $ text ""
-                elClass "th" "th-total-points" $ text ""
 
         _ <- el "tbody" $ do
             _ <-
