@@ -4,7 +4,6 @@ import Prelude hiding (min)
 import Reflex.Dom
 import Data.List (sortBy)
 import qualified Data.Text as T (pack)
-import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
