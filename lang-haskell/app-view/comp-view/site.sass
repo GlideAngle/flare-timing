@@ -36,35 +36,50 @@ $family-primary: $family-serif
 // 10% — 1A
 // 5% — 0D
 // 0% — 00
-$reach: #377eb8cc;
-$launch: #ff7f00cc;
-$effort: #ff7f00cc;
-$time: #4daf4acc;
-$leading: #e41a1ccc;
-$bolster: #e41a1ccc;
-$stop: #e41a1ccc;
-$arrival: #984ea3cc;
-$valid: #000000cc;
-$time-arrival: #fc8d62cc;
+$reach: #377eb880;
+$launch: #ff7f0080;
+$effort: #ff7f0080;
+$time: #4daf4a80;
+$leading: #e41a1c80;
+$bolster: #e41a1c80;
+$stop: #e41a1c80;
+$arrival: #984ea380;
+$valid: #00000080;
+$time-arrival: #fc8d6280;
 
-$reach-invert: $primary-invert;
-$effort-invert: $primary-invert;
-$time-invert: $primary-invert;
-$leading-invert: $primary-invert;
-$arrival-invert: $primary-invert;
-$time-arrival-invert: $primary-invert;
+// NOTE: If the background colors are dark then using $primary-invert but if
+// they are light then use $default.
+$reach-invert: $black;
+$effort-invert: $black;
+$time-invert: $black;
+$leading-invert: $black;
+$arrival-invert: $black;
+$time-arrival-invert: $black;
 
-$total: #00d1b2cc;
+$total: #00d1b280;
+$as-diff: #bebada80;
+$fs-diff: #66666680;
 
 .is-diff
     @extend .is-black;
-    color: white;
-    background-color: $valid;
-    border-color: $valid;
+    color: black !important;
+    background-color: $fs-diff !important;
+    border-color: $fs-diff !important;
+
+.is-fs-diff
+    @extend .is-black;
+    color: black !important;
+    background-color: $fs-diff !important;
+    border-color: $fs-diff !important;
+
+.is-as-diff
+    @extend .is-black;
+    color: black !important;
+    background-color: $as-diff !important;
+    border-color: $as-diff !important;
 
 body, input, button, select, textarea
     font-family: 'B612 Mono', monospace;
-
 .spacer
     height: 20px;
 
@@ -719,6 +734,12 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-points .th-total-points, #score-points .td-total-points
     @extend .is-primary;
 
+// NOTE: When the background colours are faded, use black for the color.
+#score-overview .td-total-points,
+#score-penal .td-total-points,
+#score-points .td-total-points
+    color: $black !important;
+
 #score-points .th-time-points,
 #score-points .th-leading-points,
 #score-points .th-arrival-points,
@@ -761,6 +782,22 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #hg-plot-valid-stop-by-landed path.origin,
 #hg-plot-valid-stop-by-vary path.origin
     stroke: white;
+
+#score-overview .fs.th-norm.th-placing,
+#score-overview .fs.td-norm.td-placing,
+#score-overview .fs.th-norm.th-diff,
+#score-overview .fs.td-norm.td-diff,
+#score-overview .fs.th-norm.th-total-points,
+#score-overview .fs.td-norm.td-total-points
+    @extend .is-fs-diff;
+
+#score-overview .as.th-norm.th-placing,
+#score-overview .as.td-norm.td-placing,
+#score-overview .as.th-norm.th-diff,
+#score-overview .as.td-norm.td-diff,
+#score-overview .as.th-norm.th-total-points,
+#score-overview .as.td-norm.td-total-points
+    @extend .is-as-diff;
 
 .th-lead-area, .th-lead-frac,
 .th-reach-frac, .th-effort-frac,

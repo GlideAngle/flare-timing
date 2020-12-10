@@ -15,10 +15,6 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
-    , showTaskDistancePoints
-    , showTaskArrivalPoints
-    , showTaskLeadingPoints
-    , showTaskTimePoints
     , showTaskPointsRounded
     , showTaskPointsDiff
     , showTaskPointsDiffStats
@@ -26,9 +22,7 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp
-    ( UtcOffset(..), Discipline(..), MinimumDistance(..)
-    , EarlyStart(..), JumpTheGunLimit(..)
-    )
+    ( UtcOffset(..), Discipline(..), MinimumDistance(..), EarlyStart(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
@@ -53,7 +47,7 @@ tableVieScoreBothOver
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sAltFs sAltAs = do
+tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sAltFs sAltAs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -81,12 +75,12 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
                         (\ValidityWorking{time = TimeValidityWorking{..}} ->
                             case (x, gsBestTime) of
                                 (HangGliding, Nothing) ->
-                                    ( "gr-zero " <> thc
+                                    ( ("gr-zero " :: String) <> thc
                                     , "gr-zero " <> tdc
                                     )
                                 (HangGliding, Just _) -> (thc, tdc)
                                 (Paragliding, Nothing) ->
-                                    ( "gr-zero " <> thc
+                                    ( ("gr-zero " :: String) <> thc
                                     , "gr-zero " <> tdc
                                     )
                                 (Paragliding, Just _) -> (thc, tdc))
@@ -102,7 +96,7 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
                         (\ValidityWorking{time = TimeValidityWorking{..}} ->
                             case (x, gsBestTime) of
                                 (HangGliding, Nothing) ->
-                                    ( "gr-zero " <> thc
+                                    ( ("gr-zero " :: String) <> thc
                                     , "gr-zero " <> tdc
                                     )
                                 (HangGliding, Just _) -> (thc, tdc)
@@ -138,16 +132,16 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
                 elAttr "th" ("colspan" =: "9" <> "class" =: "th-points") $ dynText pointStats
 
             el "tr" $ do
-                elClass "th" "th-norm th-placing" $ text "✓"
-                elClass "th" "th-norm th-placing" $ text "✓"
+                elClass "th" "as th-norm th-placing" $ text "✓"
+                elClass "th" "fs th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
                 elClass "th" "th-total-points" $ text "Total"
-                elClass "th" "th-norm th-total-points" $ text "✓"
-                elClass "th" "th-norm th-total-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "fs th-norm th-total-points" $ text "✓"
+                elClass "th" "as th-norm th-total-points" $ text "✓"
+                elClass "th" "fs th-norm th-diff" $ text "Δ"
+                elClass "th" "as th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points (Units)"
@@ -169,10 +163,7 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
                     sDfs
                     (pointRow
                         w
-                        (snd <$> cTimePoints)
-                        (snd <$> cArrivalPoints)
                         dfNt
-                        pt
                         tp
                         (Map.fromList <$> sAltFs)
                         (Map.fromList <$> sAltAs))
@@ -244,16 +235,13 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
 pointRow
     :: MonadWidget t m
     => Dynamic t Int
-    -> Dynamic t T.Text
-    -> Dynamic t T.Text
     -> Dynamic t DfNoTrack
-    -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w cTime cArrival dfNt pt tp sAltFs sAltAs x = do
+pointRow w dfNt tp sAltFs sAltAs x = do
     let pilot = fst <$> x
     let xB = snd <$> x
 
@@ -278,8 +266,6 @@ pointRow w cTime cArrival dfNt pt tp sAltFs sAltAs x = do
     let yFsDiff = ffor yFs $ \(_, _, yd) -> yd
     let yAsDiff = ffor yAs $ \(_, _, yd) -> yd
 
-    let points = breakdown . snd <$> x
-
     let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
                         let n = showPilot w' p in
                         if p `elem` (Pilot.pilot <$> ps)
@@ -287,18 +273,18 @@ pointRow w cTime cArrival dfNt pt tp sAltFs sAltAs x = do
                            else ("", n))
 
     elDynClass "tr" (fst <$> classPilot) $ do
-        elClass "td" "td-norm td-placing" $ dynText yAsRank
-        elClass "td" "td-norm td-placing" $ dynText yFsRank
+        elClass "td" "as td-norm td-placing" $ dynText yAsRank
+        elClass "td" "fs td-norm td-placing" $ dynText yFsRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
         elClass "td" "td-total-points" . dynText
             $ zipDynWith showTaskPointsRounded tp (total <$> xB)
 
-        elClass "td" "td-norm td-total-points" $ dynText yFsScore
-        elClass "td" "td-norm td-total-points" $ dynText yAsScore
-        elClass "td" "td-norm td-total-points" $ dynText yFsDiff
-        elClass "td" "td-norm td-total-points" $ dynText yAsDiff
+        elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
+        elClass "td" "as td-norm td-total-points" $ dynText yAsScore
+        elClass "td" "fs td-norm td-diff" $ dynText yFsDiff
+        elClass "td" "as td-norm td-diff" $ dynText yAsDiff
 
 dnfRows
     :: MonadWidget t m
@@ -338,14 +324,14 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "2"
+                        <> "colspan" =: "4"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
                     return ()
 
     elClass "tr" "tr-dnf" $ do
-        elClass "td" "td-norm td-placing" $ text ""
+        elAttr "td" ("colspan" =: "2" <> "class" =: "td-norm td-placing") $ text ""
         elClass "td" "td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ ffor2 w pilot showPilot
         elClass "td" "td-total-points" $ text "0"
