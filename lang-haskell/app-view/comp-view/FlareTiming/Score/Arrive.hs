@@ -119,7 +119,7 @@ tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs
                                         text " points.")
                             vw'
                         )
-                Paragliding -> 
+                Paragliding ->
                     dyn_ $ ffor vw (\vw' ->
                         maybe
                             (return ())
