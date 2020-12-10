@@ -49,7 +49,7 @@ tableScoreEffort
     -> Dynamic t (Maybe TaskLanding)
     -> Dynamic t (Maybe TaskLanding)
     -> m ()
-tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs _sAltFs lg' lgN' = do
+tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs _sAltFs lg' _lgN' = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -79,7 +79,6 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs _
                         <> (T.pack $ printf " looking ahead %.1f km" (0.1 * fromIntegral n :: Double))
             _ -> ""
 
-    let msgChunkingN = ffor lgN' describeChunking
     let msgChunking = ffor lg' describeChunking
 
     let pilotChunk = \case
