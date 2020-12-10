@@ -3,7 +3,6 @@ module FlareTiming.Score.Split (tableScoreSplit) where
 import Prelude hiding (min)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
-import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
@@ -14,24 +13,12 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
-    , Points(..)
-
-    , showDistancePoints
-    , showDistancePointsDiff
-    , showLeadingPoints
-    , showLeadingPointsDiff
-    , showArrivalPoints
-    , showArrivalPointsDiff
-    , showTimePoints
-    , showTimePointsDiff
 
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
     , showTaskTimePoints
     , showTaskPointsRounded
-    , showTaskPointsDiff
-    , showRounded
 
     , showDistanceWeight
     , showArrivalWeight
@@ -68,7 +55,7 @@ tableScoreSplit
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAltFs = do
+tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs _sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -79,7 +66,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
             $ lenDfs + 1
 
     let thSpace = elClass "th" "th-space" $ text ""
-    let thAlt = elClass "th" "th-norm" $ text ""
 
     let tableClass =
             let tc = "table is-striped is-narrow is-fullwidth" in
@@ -129,7 +115,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
         el "thead" $ do
 
             elClass "tr" "tr-validity" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $
                     maybe
                         ""
                         ( (\v ->
@@ -148,9 +134,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> vy
 
-                thAlt
-                thAlt
-
                 elClass "th" "th-time-validity" . dynText $
                     maybe
                         ""
@@ -159,14 +142,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> vy
 
-                thAlt
-                thAlt
                 thSpace
-                thAlt
-                thAlt
                 thSpace
-                thAlt
-                thAlt
 
                 elClass "th" "th-task-validity" . dynText $
                     maybe
@@ -176,11 +153,8 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> vy
 
-                thAlt
-                thAlt
-
             elClass "tr" "tr-weight" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
 
                 elClass "th" "th-distance-weight" . dynText $
                     maybe
@@ -190,9 +164,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> wg
 
-                thAlt
-                thAlt
-
                 elClass "th" "th-time-weight" . dynText$
                     maybe
                         ""
@@ -200,9 +171,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         . Wg.time
                         )
                     <$> wg
-
-                thAlt
-                thAlt
 
                 elClass "th" "th-leading-weight" . dynText$
                     maybe
@@ -212,9 +180,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> wg
 
-                thAlt
-                thAlt
-
                 elClass "th" "th-arrival-weight" . dynText$
                     maybe
                         ""
@@ -223,14 +188,10 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> wg
 
-                thAlt
-                thAlt
                 thSpace
-                thAlt
-                thAlt
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points"
 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
@@ -240,9 +201,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> pt
 
-                thAlt
-                thAlt
-
                 elClass "th" "th-time-alloc" . dynText $
                     maybe
                         ""
@@ -250,9 +208,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         . Pt.time
                         )
                     <$> pt
-
-                thAlt
-                thAlt
 
                 elClass "th" "th-leading-alloc" . dynText $
                     maybe
@@ -262,9 +217,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> pt
 
-                thAlt
-                thAlt
-
                 elClass "th" "th-arrival-alloc" . dynText $
                     maybe
                         ""
@@ -273,53 +225,29 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         )
                     <$> pt
 
-                thAlt
-                thAlt
-
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
                         ""
                         (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
 
-                thAlt
-                thAlt
+            el "tr" $ do
+                elAttr "th" ("colspan" =: "2") $ text ""
+
+                elClass "th" "th-distance-points-breakdown" $ text "Distance"
+                elClass "th" "th-time-points" $ text "Time"
+                elClass "th" "th-leading-points" $ text "Lead"
+                elClass "th" "th-arrival-points" $ text "Arrival"
+                elClass "th" "th-total-points" $ text "Total"
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text ""
-
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown")
-                    $ text "Distance"
-
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points") $ text "Time"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-leading-points") $ text "Lead"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points") $ text "Arrival"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-total-points") $ text "Total"
-
-            el "tr" $ do
-                elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
-
                 elClass "th" "th-distance-points" $ text ""
-                elClass "th" "th-norm th-distance-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-
                 elDynClass "th" (fst <$> cTimePoints) $ text ""
-                elClass "th" "th-norm th-time-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-
                 elClass "th" "th-leading-points" $ text ""
-                elClass "th" "th-norm th-leading-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-
                 elDynClass "th" (fst <$> cArrivalPoints) $ text ""
-                elClass "th" "th-norm th-arrival-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-
                 elClass "th" "th-total-points" $ text ""
-                elClass "th" "th-norm th-total-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
 
         _ <- el "tbody" $ do
             _ <-
@@ -333,13 +261,12 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAlt
                         free
                         dfNt
                         pt
-                        tp
-                        (Map.fromList <$> sAltFs))
+                        tp)
 
             dnfRows w dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "21")
+        let tdFoot = elAttr "td" ("colspan" =: "10")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -406,41 +333,11 @@ pointRow
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w cTime cArrival _utcOffset _free dfNt pt tp sAltFs x = do
+pointRow w cTime cArrival _utcOffset _free dfNt pt tp x = do
     let pilot = fst <$> x
     let xB = snd <$> x
-
-    (yRank, yScore, yDiff, yDistance, yDistanceDiff, yLeading, yLeadingDiff, yArrival, yArrivalDiff, yTime, yTimeDiff) <- sample . current
-                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown{total = p', breakdown = Points{distance = d', leading = l', arrival = a', time = t'}}) ->
-                case Map.lookup pilot' sAltFs' of
-                    Nothing -> ("", "", "", "", "", "", "", "", "", "", "")
-                    Just
-                        Alt.AltBreakdown
-                            { place = nth
-                            , total = p@(TaskPoints pts)
-                            , breakdown =
-                                Points
-                                    { distance = d
-                                    , leading = l
-                                    , arrival = a
-                                    , time = t
-                                    }
-                            } ->
-                        ( showRank nth
-                        , showRounded pts
-                        , showTaskPointsDiff p p'
-                        , showDistancePoints d
-                        , showDistancePointsDiff d d'
-                        , showLeadingPoints l
-                        , showLeadingPointsDiff l l'
-                        , showArrivalPoints a
-                        , showArrivalPointsDiff a a'
-                        , showTimePoints t
-                        , showTimePointsDiff t t'
-                        ))
 
     let points = breakdown . snd <$> x
 
@@ -451,35 +348,23 @@ pointRow w cTime cArrival _utcOffset _free dfNt pt tp sAltFs x = do
                            else ("", n))
 
     elDynClass "tr" (fst <$> classPilot) $ do
-        elClass "td" "td-norm td-placing" . text $ yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
-        elClass "td" "td-norm td-distance-points" . text $ yDistance
-        elClass "td" "td-norm td-distance-points" . text $ yDistanceDiff
 
         elDynClass "td" cTime . dynText
             $ showMax Pt.time showTaskTimePoints pt points
-        elClass "td" "td-norm td-time-points" . text $ yTime
-        elClass "td" "td-norm td-time-points" . text $ yTimeDiff
 
         elClass "td" "td-leading-points" . dynText
             $ showMax Pt.leading showTaskLeadingPoints pt points
-        elClass "td" "td-norm td-leading-points" . text $ yLeading
-        elClass "td" "td-norm td-leading-points" . text $ yLeadingDiff
 
         elDynClass "td" cArrival . dynText
             $ showMax Pt.arrival showTaskArrivalPoints pt points
-        elClass "td" "td-norm td-arrival-points" . text $ yArrival
-        elClass "td" "td-norm td-arrival-points" . text $ yArrivalDiff
 
         elClass "td" "td-total-points" . dynText
             $ zipDynWith showTaskPointsRounded tp (total <$> xB)
-
-        elClass "td" "td-norm td-total-points" . text $ yScore
-        elClass "td" "td-norm td-total-points" . text $ yDiff
 
 dnfRows
     :: MonadWidget t m
@@ -519,7 +404,6 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "12"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
