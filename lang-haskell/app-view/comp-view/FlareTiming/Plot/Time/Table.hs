@@ -16,7 +16,7 @@ import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import WireTypes.Point (StartGate)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
-import FlareTiming.Task.Score.Show (showPilotTime, showPilotTimeDiff)
+import FlareTiming.Score.Show (showPilotTime, showPilotTimeDiff)
 import FlareTiming.Plot.Event (rowClass)
 
 tableSpeed

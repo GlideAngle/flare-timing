@@ -1,9 +1,9 @@
-module FlareTiming.Task.Score.Time (tableScoreTime) where
+module FlareTiming.Score.Arrive (tableScoreArrive) where
 
 import Prelude hiding (min)
-import Reflex.Dom
-import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
+import Data.List (sortBy)
+import Reflex.Dom
 import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
@@ -13,19 +13,24 @@ import qualified WireTypes.Point as Pt (Points(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.Point
-    ( TaskPlacing(..), TaskPoints(..), Breakdown(..), Velocity(..), StartGate(..)
+    ( TaskPlacing(..)
+    , TaskPoints(..)
+    , Breakdown(..)
+    , Velocity(..)
+    , StartGate(..)
     , Points(..)
-    , showTimePoints, showTimePointsDiff, showTaskTimePoints
-    , cmpTime
+    , showArrivalPoints, showArrivalPointsDiff, showTaskArrivalPoints
+    , cmpArrival
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
-import FlareTiming.Task.Score.Show
+import FlareTiming.Time (timeZone, showT, showTDiff)
+import FlareTiming.Score.Show
 
-tableScoreTime
+tableScoreArrive
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
@@ -42,7 +47,7 @@ tableScoreTime
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs = do
+tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -62,33 +67,28 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "6") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points-breakdown") $ text "Points for Time (Descending)"
+                elAttr "th" ("colspan" =: "5") $ text ""
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points-breakdown") $ text "Points for Arrival (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-time" $ text "Time †"
+                elClass "th" "th-time-end" $ text "End"
+                elClass "th" "th-norm th-time-end" $ text "✓-End"
+                elClass "th" "th-norm th-time-diff" $ text "Δ-End"
 
-                elClass "th" "th-norm th-time" . dynText
-                    $ ffor sgs (\case [] -> "✓-Pace"; _ -> "✓-Time")
-
-                elClass "th" "th-norm th-time-diff" $ dynText
-                    $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
-
-                elClass "th" "th-pace" $ text "Pace ‡"
-
-                elClass "th" "th-time-points" $ text "Time"
-                elClass "th" "th-norm th-time-points" $ text "✓"
+                elClass "th" "th-arrival-points" $ text "Arrival"
+                elClass "th" "th-norm th-arrival-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         _ <- el "tbody" $ do
             _ <-
                 simpleList
-                    (sortBy cmpTime <$> sDfs)
+                    (sortBy cmpArrival <$> sDfs)
                     (pointRow
                         w
+                        utcOffset
                         dfNt
                         pt
                         (Map.fromList <$> sAltFs))
@@ -100,8 +100,7 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
-            foot "† \"Time\" is the time across the speed section from time zero of the start gate taken."
-            foot "‡ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
+            foot "* Any points so annotated are the maximum attainable."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
@@ -158,12 +157,15 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
 pointRow
     :: MonadWidget t m
     => Dynamic t Int
+    -> Dynamic t UtcOffset
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w dfNt pt sAltFs x = do
+pointRow w utcOffset dfNt pt sAltFs x = do
+    let tz = timeZone <$> utcOffset
+    tz' <- sample . current $ timeZone <$> utcOffset
     let pilot = fst <$> x
     let xB = snd <$> x
     let v = velocity . snd <$> x
@@ -175,52 +177,39 @@ pointRow w dfNt pt sAltFs x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    (yEl, yElDiff, tPts, tPtsDiff) <- sample . current
+    (yEs, yEsDiff, aPts, aPtsDiff) <- sample . current
                 $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown
                                                           { velocity = v'
                                                           , breakdown =
-                                                              Points{time = tPts}
+                                                              Points{arrival = aPts}
                                                           }) ->
-                fromMaybe ("", "", "", "") $ do
-                    Velocity
-                        { ss
-                        , gs
-                        , gsElapsed = gsElap
-                        , ssElapsed = ssElap
-                        } <- v'
+                    fromMaybe ("", "", "", "") $ do
+                        Velocity{es} <- v'
 
-                    Alt.AltBreakdown
-                        { timeElapsed = elap'
-                        , breakdown = Points{time = tPtsN}
-                        } <- Map.lookup pilot' sAltFs'
+                        Alt.AltBreakdown
+                            { es = es'
+                            , breakdown = Points{arrival = aPtsN}
+                            } <- Map.lookup pilot' sAltFs'
 
-                    let elap =
-                            case (ss, gs) of
-                                (_, Just _) -> gsElap
-                                (Just _, _) -> ssElap
-                                _ -> Nothing
-
-                    return
-                        ( maybe "" showPilotTime elap'
-                        , fromMaybe "" (showPilotTimeDiff <$> elap' <*> elap)
-                        , showTimePoints tPtsN
-                        , showTimePointsDiff tPtsN tPts
-                        ))
+                        return
+                            ( maybe "" (showT tz') es'
+                            , fromMaybe "" (showTDiff <$> es' <*> es)
+                            , showArrivalPoints aPtsN
+                            , showArrivalPointsDiff aPtsN aPts
+                            ))
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
-        elClass "td" "td-norm td-time" . text $ yEl
-        elClass "td" "td-norm td-time-diff" . text $ yElDiff
+        elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
+        elClass "td" "td-norm td-time-end" . text $ yEs
+        elClass "td" "td-norm td-time-diff" . text $ yEsDiff
 
-        elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
-
-        elClass "td" "td-effort-points" . dynText
-            $ showMax Pt.time showTaskTimePoints pt points
-        elClass "td" "td-norm td-arrival-points" . text $ tPts
-        elClass "td" "td-norm td-arrival-points" . text $ tPtsDiff
+        elClass "td" "td-arrival-points" . dynText
+            $ showMax Pt.arrival showTaskArrivalPoints pt points
+        elClass "td" "td-norm td-arrival-points" . text $ aPts
+        elClass "td" "td-norm td-arrival-points" . text $ aPtsDiff
 
 dnfRows
     :: MonadWidget t m
@@ -260,7 +249,7 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "7"
+                        <> "colspan" =: "6"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"

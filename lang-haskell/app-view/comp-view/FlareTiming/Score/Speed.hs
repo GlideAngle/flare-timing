@@ -1,4 +1,4 @@
-module FlareTiming.Task.VieScoreFs.Time (tableVieScoreFsTime) where
+module FlareTiming.Score.Speed (tableScoreSpeed) where
 
 import Prelude hiding (min)
 import Reflex.Dom
@@ -14,8 +14,6 @@ import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.Point
     ( TaskPlacing(..), TaskPoints(..), Breakdown(..), Velocity(..), StartGate(..)
-    , Points(..)
-    , showTimePoints, showTimePointsDiff, showTaskTimePoints
     , cmpTime
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
@@ -23,9 +21,10 @@ import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
-import FlareTiming.Task.Score.Show
+import FlareTiming.Time (timeZone, showT, showTDiff)
+import FlareTiming.Score.Show
 
-tableVieScoreFsTime
+tableScoreSpeed
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
@@ -42,7 +41,7 @@ tableVieScoreFsTime
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreFsTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs = do
+tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -62,12 +61,28 @@ tableVieScoreFsTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp 
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "6") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points-breakdown") $ text "Points for Time (Descending)"
+                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "11" <> "class" =: "th-speed-section") . dynText
+                    $ showSpeedSection <$> ln
+
+                elClass "th" "th-speed" $ text "Speed"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
+                elClass "th" "th-start-start" $ text "Start"
+
+                elClass "th" "th-norm th-start" . dynText
+                    $ ffor sgs (\case [] -> "✓-Start"; _ -> "✓-Gate")
+
+                elClass "th" "th-norm th-time-diff" . dynText
+                    $ ffor sgs (\case [] -> "Δ-Start"; _ -> "Δ-Gate")
+
+                elClass "th" "th-start-gate" $ text "Gate"
+
+                elClass "th" "th-time-end" $ text "End"
+                elClass "th" "th-norm th-time-end" $ text "✓-End"
+                elClass "th" "th-norm th-time-diff" $ text "Δ-End"
 
                 elClass "th" "th-time" $ text "Time †"
 
@@ -78,10 +93,7 @@ tableVieScoreFsTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp 
                     $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
 
                 elClass "th" "th-pace" $ text "Pace ‡"
-
-                elClass "th" "th-time-points" $ text "Time"
-                elClass "th" "th-norm th-time-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-speed-units" $ text "(km/h)"
 
         _ <- el "tbody" $ do
             _ <-
@@ -89,8 +101,8 @@ tableVieScoreFsTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp 
                     (sortBy cmpTime <$> sDfs)
                     (pointRow
                         w
+                        utcOffset
                         dfNt
-                        pt
                         (Map.fromList <$> sAltFs))
 
             dnfRows w dnfPlacing dnf'
@@ -158,16 +170,17 @@ tableVieScoreFsTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp 
 pointRow
     :: MonadWidget t m
     => Dynamic t Int
+    -> Dynamic t UtcOffset
     -> Dynamic t DfNoTrack
-    -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow w dfNt pt sAltFs x = do
+pointRow w utcOffset dfNt sAltFs x = do
+    let tz = timeZone <$> utcOffset
+    tz' <- sample . current $ timeZone <$> utcOffset
     let pilot = fst <$> x
     let xB = snd <$> x
     let v = velocity . snd <$> x
-    let points = breakdown <$> xB
 
     let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
                         let n = showPilot w' p in
@@ -175,52 +188,46 @@ pointRow w dfNt pt sAltFs x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    (yEl, yElDiff, tPts, tPtsDiff) <- sample . current
-                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown
-                                                          { velocity = v'
-                                                          , breakdown =
-                                                              Points{time = tPts}
-                                                          }) ->
-                fromMaybe ("", "", "", "") $ do
-                    Velocity
-                        { ss
-                        , gs
-                        , gsElapsed = gsElap
-                        , ssElapsed = ssElap
-                        } <- v'
+    (ySs, ySsDiff, yEs, yEsDiff, yEl, yElDiff) <- sample . current
+                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown{velocity = v'}) ->
+                case (v', Map.lookup pilot' sAltFs') of
+                    (Just Velocity{ss, gs, es, gsElapsed = gsElap, ssElapsed = ssElap}, Just Alt.AltBreakdown {ss = ss', es = es', timeElapsed = elap'}) ->
+                        let (start, elap) =
+                                case (ss, gs) of
+                                    (_, Just (StartGate g)) -> (Just g, gsElap)
+                                    (Just _, _) -> (ss, ssElap)
+                                    _ -> (Nothing, Nothing)
+                        in
+                            ( maybe "" (showT tz') ss'
+                            , fromMaybe "" (showTDiff <$> ss' <*> start)
+                            , maybe "" (showT tz') es'
+                            , fromMaybe "" (showTDiff <$> es' <*> es)
+                            , maybe "" showPilotTime elap'
+                            , fromMaybe "" (showPilotTimeDiff <$> elap' <*> elap)
+                            )
 
-                    Alt.AltBreakdown
-                        { timeElapsed = elap'
-                        , breakdown = Points{time = tPtsN}
-                        } <- Map.lookup pilot' sAltFs'
-
-                    let elap =
-                            case (ss, gs) of
-                                (_, Just _) -> gsElap
-                                (Just _, _) -> ssElap
-                                _ -> Nothing
-
-                    return
-                        ( maybe "" showPilotTime elap'
-                        , fromMaybe "" (showPilotTimeDiff <$> elap' <*> elap)
-                        , showTimePoints tPtsN
-                        , showTimePointsDiff tPtsN tPts
-                        ))
+                    _ -> ("", "", "", "", "", ""))
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
+
+        elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
+        elClass "td" "td-norm td-start-gate" . text $ ySs
+        elClass "td" "td-norm td-time-diff" . text $ ySsDiff
+
+        elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
+
+        elClass "td" "td-time-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
+        elClass "td" "td-norm td-time-end" . text $ yEs
+        elClass "td" "td-norm td-time-diff" . text $ yEsDiff
 
         elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
         elClass "td" "td-norm td-time" . text $ yEl
         elClass "td" "td-norm td-time-diff" . text $ yElDiff
 
         elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
-
-        elClass "td" "td-effort-points" . dynText
-            $ showMax Pt.time showTaskTimePoints pt points
-        elClass "td" "td-norm td-arrival-points" . text $ tPts
-        elClass "td" "td-norm td-arrival-points" . text $ tPtsDiff
+        elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
 
 dnfRows
     :: MonadWidget t m
@@ -260,7 +267,7 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "7"
+                        <> "colspan" =: "12"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"

@@ -30,7 +30,7 @@ import WireTypes.Comp
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), Penal(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot, classOfEarlyStart)
-import FlareTiming.Task.Score.Show
+import FlareTiming.Score.Show
 
 tablePenalJump
     :: MonadWidget t m

@@ -1,4 +1,4 @@
-module FlareTiming.Task.VieScoreFs.Reach (tableVieScoreFsReach) where
+module FlareTiming.VieScoreFs.Reach (tableVieScoreFsReach) where
 
 import Data.List (sortBy)
 import Data.Maybe (fromMaybe, isJust)
@@ -28,7 +28,7 @@ import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..), TaskS
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
-import FlareTiming.Task.Score.Show
+import FlareTiming.Score.Show
 
 tableVieScoreFsReach
     :: MonadWidget t m

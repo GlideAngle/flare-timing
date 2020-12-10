@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Show
+module FlareTiming.Score.Show
     ( showSpeedSection
     , showMax
     , showRank

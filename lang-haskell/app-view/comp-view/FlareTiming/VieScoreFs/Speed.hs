@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Speed (tableScoreSpeed) where
+module FlareTiming.VieScoreFs.Speed (tableVieScoreFsSpeed) where
 
 import Prelude hiding (min)
 import Reflex.Dom
@@ -22,9 +22,9 @@ import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (timeZone, showT, showTDiff)
-import FlareTiming.Task.Score.Show
+import FlareTiming.Score.Show
 
-tableScoreSpeed
+tableVieScoreFsSpeed
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
@@ -41,7 +41,7 @@ tableScoreSpeed
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sAltFs = do
+tableVieScoreFsSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf

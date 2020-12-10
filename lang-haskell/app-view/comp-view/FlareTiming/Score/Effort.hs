@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score.Effort (tableScoreEffort) where
+module FlareTiming.Score.Effort (tableScoreEffort) where
 
 import Prelude hiding (map)
 import Data.List (sortBy)
@@ -37,7 +37,7 @@ import WireTypes.Effort
     )
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
-import FlareTiming.Task.Score.Show
+import FlareTiming.Score.Show
 
 tableScoreEffort
     :: MonadWidget t m
