@@ -55,9 +55,13 @@ import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
 import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
 import FlareTiming.Nav.TabPenal (PenalTab(..), tabsPenal)
+import FlareTiming.Nav.TabVie (VieTab(..), tabsVie)
 import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
 import FlareTiming.Nav.TabPlotLead (PlotLeadTab(..), tabsPlotLead)
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
+import FlareTiming.Nav.TabVieScoreFs (VieScoreFsTab(..), tabsVieScoreFs)
+import FlareTiming.Nav.TabViePlotFs (ViePlotFsTab(..), tabsViePlotFs)
+import FlareTiming.Nav.TabViePlotFsLead (ViePlotFsLeadTab(..), tabsViePlotFsLead)
 import FlareTiming.Task.Score.Over (tableScoreOver)
 import FlareTiming.Task.Penal.Jump (tablePenalJump)
 import FlareTiming.Task.Penal.EssGoal (tablePenalEssGoal)
@@ -411,6 +415,80 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                                         tablePenalManual hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs penal)
 
                             <$> tabPenal
+
+                    return ()
+
+                TaskTabVie -> do
+                    tabVie <- tabsVie
+                    let vie = text "TODO: Vie"
+
+                    _ <- widgetHold vie $
+                            (\case
+                                VieTabScore -> text "TODO: Vie Score"
+                                VieTabScoreFs -> do
+                                    tabVieScoreFs <- tabsVieScoreFs
+                                    let tableVieScoreHold =
+                                            elAttr "div" ("id" =: "score-overview") $
+                                                tableScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
+
+                                    _ <- widgetHold tableVieScoreHold $
+                                            (\case
+                                                VieScoreFsTabOver ->
+                                                    tableVieScoreHold
+
+                                                VieScoreFsTabSplit ->
+                                                    elAttr "div" ("id" =: "score-points") $
+                                                        tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                                VieScoreFsTabReach ->
+                                                    elAttr "div" ("id" =: "score-reach") $
+                                                        tableScoreReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
+                                                VieScoreFsTabEffort ->
+                                                    elAttr "div" ("id" =: "score-effort") $
+                                                        tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
+                                                VieScoreFsTabSpeed ->
+                                                    elAttr "div" ("id" =: "score-speed") $
+                                                        tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                                VieScoreFsTabTime ->
+                                                    elAttr "div" ("id" =: "score-time") $
+                                                        tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                                VieScoreFsTabArrive ->
+                                                    elAttr "div" ("id" =: "score-arrival") $
+                                                        tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
+
+                                            <$> tabVieScoreFs
+
+                                    return ()
+
+                                VieTabPlotFs -> do
+                                    tabViePlotFs <- tabsViePlotFs
+                                    let plotSplit = weightPlot hgOrPg tweak vy vw alloc ln
+                                    _ <- widgetHold (plotSplit) $
+                                            (\case
+                                                ViePlotFsTabSplit -> plotSplit
+                                                ViePlotFsTabReach -> reachPlot task sAltFs reach bonusReach
+                                                ViePlotFsTabEffort -> effortPlot hgOrPg sAltFs ef
+                                                ViePlotFsTabTime -> timePlot sgs sAltFs sd
+
+                                                ViePlotFsTabLead -> do
+                                                    tabViePlotFsLead <- tabsViePlotFsLead
+                                                    let plotLeadCoef = leadCoefPlot ix tweak sAltFs ld
+                                                    _ <- widgetHold (plotLeadCoef) $
+                                                            (\case
+                                                                ViePlotFsLeadTabPoint -> plotLeadCoef
+                                                                ViePlotFsLeadTabArea -> leadAreaPlot ix tweak sAltFs ld
+                                                            )
+                                                            <$> tabViePlotFsLead
+                                                    return ()
+
+                                                ViePlotFsTabArrive -> arrivalPlot hgOrPg tweak av avN
+                                                ViePlotFsTabValid -> validPlot vy vw
+                                            )
+                                            <$> tabViePlotFs
+
+                                    return ()
+                            )
+
+                            <$> tabVie
 
                     return ())
 
