@@ -63,7 +63,7 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "6") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points-breakdown") $ text "Points for Time (Descending)"
+                elClass "th" "th-time-points-breakdown" $ text "Points for Time (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
@@ -80,8 +80,6 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
                 elClass "th" "th-pace" $ text "Pace ‡"
 
                 elClass "th" "th-time-points" $ text "Time"
-                elClass "th" "th-norm th-time-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
 
         _ <- el "tbody" $ do
             _ <-
@@ -96,7 +94,7 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
             dnfRows w dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "16")
+        let tdFoot = elAttr "td" ("colspan" =: "13")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -175,13 +173,13 @@ pointRow w dfNt pt sAltFs x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    (yEl, yElDiff, tPts, tPtsDiff) <- sample . current
+    (yEl, yElDiff) <- sample . current
                 $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown
                                                           { velocity = v'
                                                           , breakdown =
                                                               Points{time = tPts}
                                                           }) ->
-                fromMaybe ("", "", "", "") $ do
+                fromMaybe ("", "") $ do
                     Velocity
                         { ss
                         , gs
@@ -203,8 +201,6 @@ pointRow w dfNt pt sAltFs x = do
                     return
                         ( maybe "" showPilotTime elap'
                         , fromMaybe "" (showPilotTimeDiff <$> elap' <*> elap)
-                        , showTimePoints tPtsN
-                        , showTimePointsDiff tPtsN tPts
                         ))
 
     elDynClass "tr" (fst <$> classPilot) $ do
@@ -219,8 +215,6 @@ pointRow w dfNt pt sAltFs x = do
 
         elClass "td" "td-effort-points" . dynText
             $ showMax Pt.time showTaskTimePoints pt points
-        elClass "td" "td-norm td-arrival-points" . text $ tPts
-        elClass "td" "td-norm td-arrival-points" . text $ tPtsDiff
 
 dnfRows
     :: MonadWidget t m
@@ -260,7 +254,7 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "7"
+                        <> "colspan" =: "5"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
