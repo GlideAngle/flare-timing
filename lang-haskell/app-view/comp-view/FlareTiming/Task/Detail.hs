@@ -89,9 +89,9 @@ import FlareTiming.Score.Speed (tableScoreSpeed)
 import FlareTiming.Score.Time (tableScoreTime)
 import FlareTiming.Score.Arrive (tableScoreArrive)
 
-import FlareTiming.Task.Penal.Jump (tablePenalJump)
-import FlareTiming.Task.Penal.EssGoal (tablePenalEssGoal)
-import FlareTiming.Task.Penal.Manual (tablePenalManual)
+import FlareTiming.Penal.Jump (tablePenalJump)
+import FlareTiming.Penal.EssGoal (tablePenalEssGoal)
+import FlareTiming.Penal.Manual (tablePenalManual)
 
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Geo (tableGeo)

@@ -18,12 +18,12 @@ import WireTypes.Reach (TrackReach(..), BolsterStats(..))
 import WireTypes.Pilot (Pilot(..), DfNoTrack(..))
 import WireTypes.Comp (MinimumDistance(..), Task(..), UtcOffset(..), TaskStop(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
-import FlareTiming.Task.Validity.Widget (spacer)
-import FlareTiming.Task.Validity.Launch (viewLaunch, launchWorking)
-import FlareTiming.Task.Validity.Time (viewTime, timeWorking)
-import FlareTiming.Task.Validity.Distance(viewDistance, distanceWorking)
-import FlareTiming.Task.Validity.Stop (viewStop, stopWorking)
-import FlareTiming.Task.Validity.Task (viewTask, taskWorking)
+import FlareTiming.Validity.Widget (spacer)
+import FlareTiming.Validity.Launch (viewLaunch, launchWorking)
+import FlareTiming.Validity.Time (viewTime, timeWorking)
+import FlareTiming.Validity.Distance(viewDistance, distanceWorking)
+import FlareTiming.Validity.Stop (viewStop, stopWorking)
+import FlareTiming.Validity.Task (viewTask, taskWorking)
 
 hookWorking
     :: Vy.Validity

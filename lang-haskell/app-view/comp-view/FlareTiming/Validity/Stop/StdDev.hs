@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Stop.Max (viewStopMax) where
+module FlareTiming.Validity.Stop.StdDev (viewStopStdDev) where
 
 import Prelude hiding (sum)
 import Reflex.Dom
@@ -8,28 +8,28 @@ import WireTypes.ValidityWorking
     , ReachStats(..)
     , StopValidityWorking(..)
     )
-import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
-import FlareTiming.Task.Validity.Widget (elV, elN, elD, elVSelect, elNSelect)
+import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
+import FlareTiming.Validity.Widget (elV, elN, elD, elVSelect, elNSelect)
 
-viewStopMax
+viewStopStdDev
     :: MonadWidget t m
     => ValidityWorking
     -> ValidityWorking
     -> Stats.BolsterStats
     -> Stats.BolsterStats
     -> m ()
-viewStopMax ValidityWorking{stop = Nothing} _ _ _ = return ()
-viewStopMax _ ValidityWorking{stop = Nothing} _ _ = return ()
-viewStopMax ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ _ = return ()
-viewStopMax ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ _ = return ()
-viewStopMax _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ = return ()
-viewStopMax _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ = return ()
-viewStopMax _ _ Stats.BolsterStats{bolster = Nothing} _ = return ()
-viewStopMax _ _ Stats.BolsterStats{reach = Nothing} _ = return ()
-viewStopMax _ _ _ Stats.BolsterStats{bolster = Nothing} = return ()
-viewStopMax _ _ _ Stats.BolsterStats{reach = Nothing} = return ()
-viewStopMax
+viewStopStdDev ValidityWorking{stop = Nothing} _ _ _ = return ()
+viewStopStdDev _ ValidityWorking{stop = Nothing} _ _ = return ()
+viewStopStdDev ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ _ = return ()
+viewStopStdDev ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ _ = return ()
+viewStopStdDev _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{extra = Nothing}}} _ _ = return ()
+viewStopStdDev _ ValidityWorking{stop = Just StopValidityWorking{reachStats = ReachToggle{flown = Nothing}}} _ _ = return ()
+viewStopStdDev _ _ Stats.BolsterStats{bolster = Nothing} _ = return ()
+viewStopStdDev _ _ Stats.BolsterStats{reach = Nothing} _ = return ()
+viewStopStdDev _ _ _ Stats.BolsterStats{bolster = Nothing} = return ()
+viewStopStdDev _ _ _ Stats.BolsterStats{reach = Nothing} = return ()
+viewStopStdDev
     -- | Working from flare-timing.
     ValidityWorking
         { stop =
@@ -39,12 +39,12 @@ viewStopMax
                         { extra =
                             Just
                             ReachStats
-                                { max = maxE
+                                { stdDev = sdE
                                 }
                         , flown =
                             Just
                             ReachStats
-                                { max = maxF
+                                { stdDev = sdF
                                 }
                         }
                 }
@@ -58,12 +58,12 @@ viewStopMax
                         { extra =
                             Just
                             ReachStats
-                                { max = maxEN
+                                { stdDev = sdEN
                                 }
                         , flown =
                             Just
                             ReachStats
-                                { max = maxFN
+                                { stdDev = sdFN
                                 }
                         }
                 }
@@ -73,12 +73,12 @@ viewStopMax
         { bolster =
             Just
             ReachStats
-                { max = maxB
+                { stdDev = sdB
                 }
         , reach =
             Just
             ReachStats
-                { max = _maxF
+                { stdDev = _sdF
                 }
         }
     -- | With extra altitude converted by way of glide to extra reach.
@@ -86,12 +86,12 @@ viewStopMax
         { bolster =
             Just
             ReachStats
-                { max = maxBE
+                { stdDev = sdBE
                 }
         , reach =
             Just
             ReachStats
-                { max = _maxE
+                { stdDev = _sdE
                 }
         }
     = do
@@ -100,42 +100,33 @@ viewStopMax
         el "thead" $ do
             el "tr" $ do
                 el "th" $ text ""
-                elClass "th" "th-valid-reach-col" $ text "Reach †"
+                elClass "th" "th-valid-reach-col" $ text "Reach"
 
                 elClass "th" "th-norm validity" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elClass "th" "th-valid-bolster-col" $ text "Bolster ‡"
+                elClass "th" "th-valid-bolster-col" $ text "Bolster"
 
         el "tbody" $ do
             el "tr" $ do
                 el "th" $ text "Flown"
-                elVSelect $ showPilotDistance 3 maxF
+                elVSelect $ showPilotDistance 3 sdF
 
-                elNSelect $ showPilotDistance 3 maxFN
-                elD $ showPilotDistanceDiff 3 maxFN maxF
+                elNSelect $ showPilotDistance 3 sdFN
+                elD $ showPilotDistanceDiff 3 sdFN sdF
 
-                elV $ showPilotDistance 3 maxB
+                elV $ showPilotDistance 3 sdB
                 return ()
 
             el "tr" $ do
                 el "th" $ text "Extra"
                 elClass "td" "td-valid-reach-extra" . text
-                    $ showPilotDistance 3 maxE
+                    $ showPilotDistance 3 sdE
 
-                elN $ showPilotDistance 3 maxEN
-                elD $ showPilotDistanceDiff 3 maxEN maxE
+                elN $ showPilotDistance 3 sdEN
+                elD $ showPilotDistanceDiff 3 sdEN sdE
 
-                -- NOTE: bolsterMaxE == extraMax
                 elClass "td" "td-valid-bolster-extra" . text
-                    $ showPilotDistance 3 maxBE
+                    $ showPilotDistance 3 sdBE
 
                 return ()
-
-        let tdFoot = elAttr "td" ("colspan" =: "5")
-        let foot = el "tr" . tdFoot . text
-
-        el "tfoot" $ do
-            foot "† Raw reach, unbolstered."
-            foot "‡ Bolstered, no smaller than minimum distance."
-            return ()

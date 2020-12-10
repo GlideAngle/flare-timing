@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Stop.Counts (viewStopCounts) where
+module FlareTiming.Validity.Stop.Counts (viewStopCounts) where
 
 import Prelude hiding (sum)
 import Reflex.Dom
@@ -17,7 +17,7 @@ import WireTypes.ValidityWorking
     , showPilotsAtEssDiff
     , showLaunchToEss, showLaunchToEssDiff
     )
-import FlareTiming.Task.Validity.Widget (elV, elN, elD)
+import FlareTiming.Validity.Widget (elV, elN, elD)
 
 viewStopCounts
     :: MonadWidget t m

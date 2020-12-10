@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Distance
+module FlareTiming.Validity.Distance
     ( viewDistance
     , distanceWorking
     ) where
@@ -32,7 +32,7 @@ import WireTypes.Point
     ( PilotDistance(..), ReachToggle(..)
     , showPilotDistance, showPilotDistanceDiff
     )
-import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
+import FlareTiming.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 distanceWorkingSubA :: DistanceValidityWorking -> T.Text

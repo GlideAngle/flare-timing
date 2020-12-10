@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Launch
+module FlareTiming.Validity.Launch
     ( viewLaunch
     , launchWorking
     ) where
@@ -21,7 +21,7 @@ import WireTypes.ValidityWorking
     , showPilotsFlyingDiff
     , showNominalLaunchDiff
     )
-import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
+import FlareTiming.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 launchWorking :: ElementId -> Vy.Validity -> LaunchValidityWorking -> T.Text

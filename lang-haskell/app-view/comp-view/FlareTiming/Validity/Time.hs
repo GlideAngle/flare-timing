@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Time
+module FlareTiming.Validity.Time
     ( viewTime
     , timeWorking
     ) where
@@ -27,7 +27,7 @@ import WireTypes.Point
     ( PilotDistance(..), ReachToggle(..)
     , showPilotDistance, showPilotDistanceDiff
     )
-import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
+import FlareTiming.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 timeWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p

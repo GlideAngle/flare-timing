@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Stop.Mean (viewStopMean) where
+module FlareTiming.Validity.Stop.Mean (viewStopMean) where
 
 import Prelude hiding (sum)
 import Reflex.Dom
@@ -10,7 +10,7 @@ import WireTypes.ValidityWorking
     )
 import qualified WireTypes.Reach as Stats (BolsterStats(..))
 import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
-import FlareTiming.Task.Validity.Widget (elV, elN, elD, elVSelect, elNSelect)
+import FlareTiming.Validity.Widget (elV, elN, elD, elVSelect, elNSelect)
 
 viewStopMean
     :: MonadWidget t m

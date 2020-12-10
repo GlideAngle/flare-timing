@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Widget
+module FlareTiming.Validity.Widget
     ( ElementId
     , spacer
     , elV

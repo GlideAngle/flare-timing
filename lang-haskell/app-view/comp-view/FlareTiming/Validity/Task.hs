@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Task
+module FlareTiming.Validity.Task
     ( viewTask
     , taskWorking
     ) where
@@ -23,7 +23,7 @@ import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
     )
-import FlareTiming.Task.Validity.Widget (ElementId, elV, elN, elD)
+import FlareTiming.Validity.Widget (ElementId, elV, elN, elD)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 taskWorking :: ElementId -> Vy.Validity -> T.Text

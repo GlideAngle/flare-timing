@@ -1,4 +1,4 @@
-module FlareTiming.Task.Validity.Stop
+module FlareTiming.Validity.Stop
     ( viewStop
     , stopWorking
     ) where
@@ -40,11 +40,11 @@ import WireTypes.Comp (UtcOffset(..), MinimumDistance(..))
 import FlareTiming.Pilot (showPilotName, rowDfNtReach)
 import FlareTiming.Time (timeZone, showTime)
 import qualified FlareTiming.Statistics as Stats (mean, stdDev)
-import FlareTiming.Task.Validity.Stop.Counts (viewStopCounts)
-import FlareTiming.Task.Validity.Stop.Max (viewStopMax)
-import FlareTiming.Task.Validity.Stop.Mean (viewStopMean)
-import FlareTiming.Task.Validity.Stop.StdDev (viewStopStdDev)
-import FlareTiming.Task.Validity.Widget (ElementId)
+import FlareTiming.Validity.Stop.Counts (viewStopCounts)
+import FlareTiming.Validity.Stop.Max (viewStopMax)
+import FlareTiming.Validity.Stop.Mean (viewStopMean)
+import FlareTiming.Validity.Stop.StdDev (viewStopStdDev)
+import FlareTiming.Validity.Widget (ElementId)
 import FlareTiming.Katex (Expect(..), Recalc(..), ppr, katexNewLine, katexCheck)
 
 stopWorkingCase :: Vy.StopValidity -> Maybe _bestTime -> Double -> Double -> T.Text
