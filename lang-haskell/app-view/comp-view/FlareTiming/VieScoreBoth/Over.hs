@@ -135,7 +135,6 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "4") $ text ""
                 elAttr "th" ("colspan" =: "9" <> "class" =: "th-points") $ dynText pointStats
 
             el "tr" $ do
@@ -144,10 +143,6 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-distance-points" $ text "Distance"
-                elDynClass "th" (fst <$> cTimePoints) $ text "Time"
-                elClass "th" "th-leading-points" $ text "Lead"
-                elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
                 elClass "th" "th-norm th-total-points" $ text "✓"
                 elClass "th" "th-norm th-total-points" $ text "✓"
@@ -156,38 +151,6 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-
-                elClass "th" "th-distance-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskDistancePoints (Just x) x)
-                        . Pt.distance
-                        )
-                    <$> pt
-
-                elClass "th" "th-time-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskTimePoints (Just x) x)
-                        . Pt.time
-                        )
-                    <$> pt
-
-                elClass "th" "th-leading-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskLeadingPoints (Just x) x)
-                        . Pt.leading
-                        )
-                    <$> pt
-
-                elClass "th" "th-arrival-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskArrivalPoints (Just x) x)
-                        . Pt.arrival
-                        )
-                    <$> pt
 
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
@@ -217,7 +180,7 @@ tableVieScoreBothOver utcOffset hgOrPg early free sgs _ln dnf' dfNt _vy vw _wg p
             dnfRows w dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "13")
+        let tdFoot = elAttr "td" ("colspan" =: "9")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -329,15 +292,6 @@ pointRow w cTime cArrival dfNt pt tp sAltFs sAltAs x = do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-distance-points" . dynText
-            $ showMax Pt.distance showTaskDistancePoints pt points
-        elDynClass "td" cTime . dynText
-            $ showMax Pt.time showTaskTimePoints pt points
-        elClass "td" "td-leading-points" . dynText
-            $ showMax Pt.leading showTaskLeadingPoints pt points
-        elDynClass "td" cArrival . dynText
-            $ showMax Pt.arrival showTaskArrivalPoints pt points
-
         elClass "td" "td-total-points" . dynText
             $ zipDynWith showTaskPointsRounded tp (total <$> xB)
 
@@ -377,19 +331,6 @@ dnfRow
     -> Dynamic t Pilot
     -> m ()
 dnfRow w place rows pilot = do
-    let dnfMajor =
-            case rows of
-                Nothing -> return ()
-                Just n -> do
-                    elAttr
-                        "td"
-                        ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "7"
-                        <> "class" =: "td-dnf"
-                        )
-                        $ text "DNF"
-                    return ()
-
     let dnfMinor =
             case rows of
                 Nothing -> return ()
@@ -407,7 +348,6 @@ dnfRow w place rows pilot = do
         elClass "td" "td-norm td-placing" $ text ""
         elClass "td" "td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ ffor2 w pilot showPilot
-        dnfMajor
         elClass "td" "td-total-points" $ text "0"
         dnfMinor
         return ()
