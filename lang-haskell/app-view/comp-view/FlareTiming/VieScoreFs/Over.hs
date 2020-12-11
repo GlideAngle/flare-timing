@@ -325,14 +325,14 @@ pointRow w earliest cTime cArrival utcOffset free dfNt pt tp sAltFs sAltAs x = d
     let pilot = fst <$> x
     let xB = snd <$> x
 
-    let yAlt pilot' sAltFs' (_, Breakdown{total = p'}) =
+    let yAlt pilot' sAltFs' (_, Breakdown{total = pFt}) =
             case Map.lookup pilot' sAltFs' of
                 Nothing -> ("", "", "")
                 Just
                     Alt.AltBreakdown
                         { place = nth
-                        , total = p@(TaskPoints pts)
-                        } -> (showRank nth, showRounded pts, showTaskPointsDiff p p')
+                        , total = pFs@(TaskPoints pts)
+                        } -> (showRank nth, showRounded pts, showTaskPointsDiff pFs pFt)
 
     let yFs = ffor3 pilot sAltFs x yAlt
     let yAs = ffor3 pilot sAltAs x yAlt

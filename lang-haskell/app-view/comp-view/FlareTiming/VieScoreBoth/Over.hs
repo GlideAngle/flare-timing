@@ -88,14 +88,14 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
                                 -- zero for those scores.
                                 as = Just $ maybe (TaskPoints 0) id <$> as'
 
-                                dFsFt = showTaskPointsDiffStats fs ft
-                                dAsFt = showTaskPointsDiffStats as ft
-                                dAsFs = maybe "" (showTaskPointsDiffStats as) fs
+                                dFtFs = showTaskPointsDiffStats fs ft
+                                dFtAs = showTaskPointsDiffStats as ft
+                                dAsFs = maybe "" (showTaskPointsDiffStats fs) as
                             in
-                                ( T.pack $ printf "Total Points Fs/Ft %s" dFsFt
+                                ( T.pack $ printf "Total Points Ft-Fs %s" dFtFs
                                 ,
-                                    ( T.pack $ printf "Total Points As/Ft %s" dAsFt
-                                    , T.pack $ printf "Total Points As/Fs %s" dAsFs
+                                    ( T.pack $ printf "Total Points Ft-As %s" dFtAs
+                                    , T.pack $ printf "Total Points As-Fs %s" dAsFs
                                     )
                                 ))
                         . unzip3)
@@ -121,15 +121,15 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
 
                 elClass "th" "th-total-points" $ text "Ft"
                 elClass "th" "fs th-norm th-total-points" $ text "Fs"
-                elClass "th" "th-diff" $ text "Δ Fs/Ft"
+                elClass "th" "th-diff" $ text "Δ Ft-Fs"
 
                 elClass "th" "th-total-points" $ text "Ft"
                 elClass "th" "as th-norm th-total-points" $ text "As"
-                elClass "th" "th-diff" $ text "Δ As/Ft"
+                elClass "th" "th-diff" $ text "Δ Ft-As"
 
-                elClass "th" "fs th-norm th-total-points" $ text "Fs"
                 elClass "th" "as th-norm th-total-points" $ text "As"
-                elClass "th" "th-diff" $ text "Δ As/Fs"
+                elClass "th" "fs th-norm th-total-points" $ text "Fs"
+                elClass "th" "th-diff" $ text "Δ As-Fs"
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points (Units)"
@@ -237,14 +237,14 @@ pointRow w dfNt tp sAltFs sAltAs x = do
     let pilot = fst <$> x
     let xB = snd <$> x
 
-    let yAlt pilot' sAltFs' (_, Breakdown{total = p'}) =
+    let yAlt pilot' sAltFs' (_, Breakdown{total = pFt}) =
             case Map.lookup pilot' sAltFs' of
                 Nothing -> ("", "", "")
                 Just
                     Alt.AltBreakdown
                         { place = nth
-                        , total = p@(TaskPoints pts)
-                        } -> (showRank nth, showRounded pts, showTaskPointsDiff p' p)
+                        , total = pFs@(TaskPoints pts)
+                        } -> (showRank nth, showRounded pts, showTaskPointsDiff pFs pFt)
 
     let zAlt pilot' sAltAs' sAltFs' =
             case (Map.lookup pilot' sAltAs', Map.lookup pilot' sAltFs') of
@@ -288,8 +288,8 @@ pointRow w dfNt tp sAltFs sAltAs x = do
         elClass "td" "as td-norm td-total-points" $ dynText yAsScore
         elClass "td" "td-diff" $ dynText yFtAsDiff
 
-        elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
         elClass "td" "as td-norm td-total-points" $ dynText yAsScore
+        elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
         elClass "td" "td-diff" $ dynText zAsFsDiff
 
 dnfRows

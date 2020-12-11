@@ -741,7 +741,8 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-overview .td-total-points,
 #score-penal .td-total-points,
 #score-points .td-total-points,
-#vie-with-both .ft.td-placing
+#vie-with-both .ft.td-placing,
+#vie-with-both .td-total-points
     color: $black !important;
 
 #score-points .th-time-points,
@@ -807,9 +808,11 @@ table td.td-geo-plane, table td.td-geo-pythagorus
     @extend .has-text-right;
 
 .as.th-placing, .as.td-placing,
-.as.th-total-points, .as.td-total-points,
-.as-ft.th-points
+.as.th-total-points, .as.td-total-points
     @extend .is-as-diff;
+
+.as-ft.th-points
+    @extend .is-white;
 
 .th-place, .fs-ft.th-points, .as-fs.th-points,
 .th-lead-area, .th-lead-frac,
