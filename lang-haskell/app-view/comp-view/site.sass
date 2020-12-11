@@ -732,13 +732,16 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 
 #score-overview .th-total-points, #score-overview .td-total-points,
 #score-penal .th-total-points, #score-penal .td-total-points,
-#score-points .th-total-points, #score-points .td-total-points
+#score-points .th-total-points, #score-points .td-total-points,
+#vie-with-both .th-total-points, #vie-with-both .td-total-points,
+#vie-with-both .ft.th-placing, #vie-with-both .ft.td-placing
     @extend .is-primary;
 
 // NOTE: When the background colours are faded, use black for the color.
 #score-overview .td-total-points,
 #score-penal .td-total-points,
-#score-points .td-total-points
+#score-points .td-total-points,
+#vie-with-both .ft.td-placing
     color: $black !important;
 
 #score-points .th-time-points,
@@ -800,6 +803,12 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #score-overview .as.td-norm.td-total-points
     @extend .is-as-diff;
 
+.as.th-placing, .as.td-placing,
+.as.th-total-points, .as.td-total-points,
+.as-ft.th-points
+    @extend .is-as-diff;
+
+.th-place, .fs-ft.th-points, .as-fs.th-points,
 .th-lead-area, .th-lead-frac,
 .th-reach-frac, .th-effort-frac,
 .th-time-frac

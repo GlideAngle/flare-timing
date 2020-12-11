@@ -78,37 +78,57 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
                         | (pilot, Breakdown{total = p'}) <- sDfs'
                         ])
 
-    let pointStats = ffor
+    let stats = ffor
                         yDiff
-                        ((\(f, a, p) ->
-                            let dFs = showTaskPointsDiffStats f p
-                                dAs = showTaskPointsDiffStats a p
+                        ((\(fs', as', ft) ->
+                            let fs = sequence fs'
+
+                                -- NOTE: For some pilots, airScore is giving
+                                -- a null score. To do the stats, substitute
+                                -- zero for those scores.
+                                as = Just $ maybe (TaskPoints 0) id <$> as'
+
+                                dFsFt = showTaskPointsDiffStats fs ft
+                                dAsFt = showTaskPointsDiffStats as ft
+                                dAsFs = maybe "" (showTaskPointsDiffStats as) fs
                             in
-                                T.pack $ printf "Points (FS %s, AS %s)" dFs dAs)
+                                ( T.pack $ printf "Total Points Fs/Ft %s" dFsFt
+                                ,
+                                    ( T.pack $ printf "Total Points As/Ft %s" dAsFt
+                                    , T.pack $ printf "Total Points As/Fs %s" dAsFs
+                                    )
+                                ))
                         . unzip3)
 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "13" <> "class" =: "th-points") $ dynText pointStats
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-place") $ text "Place"
+                thSpace
+                elAttr "th" ("colspan" =: "3" <> "class" =: "fs-ft th-points") . dynText
+                    $ fst <$> stats
+                elAttr "th" ("colspan" =: "3" <> "class" =: "as-ft th-points") . dynText
+                    $ fst . snd <$> stats
+                elAttr "th" ("colspan" =: "3" <> "class" =: "as-fs th-points") . dynText
+                    $ snd . snd <$> stats
 
             el "tr" $ do
-                elClass "th" "as th-norm th-placing" $ text "As-Place"
-                elClass "th" "fs th-norm th-placing" $ text "Fs-Place"
-                elClass "th" "th-placing" $ text "Ft-Place"
+                elClass "th" "as th-norm th-placing" $ text "As"
+                elClass "th" "fs th-norm th-placing" $ text "Fs"
+                elClass "th" "ft th-placing" $ text "Ft"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-total-points" $ text "Ft-Total"
-                elClass "th" "fs th-norm th-total-points" $ text "Fs-Total"
+                elClass "th" "th-total-points" $ text "Ft"
+                elClass "th" "fs th-norm th-total-points" $ text "Fs"
                 elClass "th" "th-diff" $ text "Δ Fs/Ft"
 
-                elClass "th" "th-total-points" $ text "Ft-Total"
-                elClass "th" "as th-norm th-total-points" $ text "As-Total"
+                elClass "th" "th-total-points" $ text "Ft"
+                elClass "th" "as th-norm th-total-points" $ text "As"
                 elClass "th" "th-diff" $ text "Δ As/Ft"
 
-                elClass "th" "fs th-norm th-total-points" $ text "Fs-Total"
-                elClass "th" "as th-norm th-total-points" $ text "As-Total"
+                elClass "th" "fs th-norm th-total-points" $ text "Fs"
+                elClass "th" "as th-norm th-total-points" $ text "As"
                 elClass "th" "th-diff" $ text "Δ As/Fs"
 
             elClass "tr" "tr-allocation" $ do
@@ -255,7 +275,7 @@ pointRow w dfNt tp sAltFs sAltAs x = do
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "as td-norm td-placing" $ dynText yAsRank
         elClass "td" "fs td-norm td-placing" $ dynText yFsRank
-        elClass "td" "td-placing" . dynText $ showRank . place <$> xB
+        elClass "td" "ft td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
         elClass "td" "td-total-points" . dynText

@@ -443,7 +443,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                 TaskTabVie -> do
                     tabVie <- tabsVie
                     let vieHold =
-                            elAttr "div" ("id" =: "score-overview") $
+                            elAttr "div" ("id" =: "vie-with-both") $
                                 tableVieScoreBothOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
 
                     _ <- widgetHold vieHold $

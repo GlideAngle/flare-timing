@@ -306,18 +306,15 @@ showDemeritPointsNonZero dp (TaskPoints p)
     | p == 0 = ""
     | otherwise = showTaskPoints dp (TaskPoints $ negate p)
 
-showTaskPointsDiffStats :: [Maybe TaskPoints] -> [TaskPoints] -> T.Text
+showTaskPointsDiffStats :: Maybe [TaskPoints] -> [TaskPoints] -> T.Text
 showTaskPointsDiffStats es ps =
-    let es' :: Maybe [TaskPoints]
-        es' = sequence es
-    in
-        T.pack $
-            maybe
-                ""
-                (\es'' ->
-                    let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''
-                    in printf "Δ = %.1f ± %.1f" (Stats.mean xs) (Stats.stdDev xs))
-                es'
+    T.pack $
+        maybe
+            ""
+            (\es' ->
+                let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es'
+                in printf "Δ = %.1f ± %.1f" (Stats.mean xs) (Stats.stdDev xs))
+            es
 
 showLinearPoints :: LinearPoints -> T.Text
 showLinearPoints (LinearPoints p) = T.pack $ printf "%.1f" p

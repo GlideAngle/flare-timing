@@ -129,9 +129,12 @@ tableVieScoreFsOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt t
 
     let pointStats = ffor
                         yDiff
-                        ((\(f, a, p) ->
-                            let dFs = showTaskPointsDiffStats f p
-                                dAs = showTaskPointsDiffStats a p
+                        ((\(fs', as', p) ->
+                            let fs = sequence fs'
+                                as = sequence as'
+
+                                dFs = showTaskPointsDiffStats fs p
+                                dAs = showTaskPointsDiffStats as p
                             in
                                 T.pack $ printf "Points (FS %s, AS %s)" dFs dAs)
                         . unzip3)
