@@ -91,19 +91,25 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "9" <> "class" =: "th-points") $ dynText pointStats
+                elAttr "th" ("colspan" =: "13" <> "class" =: "th-points") $ dynText pointStats
 
             el "tr" $ do
-                elClass "th" "as th-norm th-placing" $ text "✓"
-                elClass "th" "fs th-norm th-placing" $ text "✓"
-                elClass "th" "th-placing" $ text "Place"
+                elClass "th" "as th-norm th-placing" $ text "As-Place"
+                elClass "th" "fs th-norm th-placing" $ text "Fs-Place"
+                elClass "th" "th-placing" $ text "Ft-Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-total-points" $ text "Total"
-                elClass "th" "fs th-norm th-total-points" $ text "✓"
-                elClass "th" "as th-norm th-total-points" $ text "✓"
-                elClass "th" "fs th-norm th-diff" $ text "Δ"
-                elClass "th" "as th-norm th-diff" $ text "Δ"
+                elClass "th" "th-total-points" $ text "Ft-Total"
+                elClass "th" "fs th-norm th-total-points" $ text "Fs-Total"
+                elClass "th" "th-diff" $ text "Δ Fs/Ft"
+
+                elClass "th" "th-total-points" $ text "Ft-Total"
+                elClass "th" "as th-norm th-total-points" $ text "As-Total"
+                elClass "th" "th-diff" $ text "Δ As/Ft"
+
+                elClass "th" "fs th-norm th-total-points" $ text "Fs-Total"
+                elClass "th" "as th-norm th-total-points" $ text "As-Total"
+                elClass "th" "th-diff" $ text "Δ As/Fs"
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points (Units)"
@@ -114,6 +120,10 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
                         (\x -> showTaskPointsRounded (Just x) x)
                     <$> tp
 
+                thSpace
+                thSpace
+                thSpace
+                thSpace
                 thSpace
                 thSpace
                 thSpace
@@ -133,7 +143,7 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
             dnfRows w dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "9")
+        let tdFoot = elAttr "td" ("colspan" =: "13")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -214,10 +224,18 @@ pointRow w dfNt tp sAltFs sAltAs x = do
                     Alt.AltBreakdown
                         { place = nth
                         , total = p@(TaskPoints pts)
-                        } -> (showRank nth, showRounded pts, showTaskPointsDiff p p')
+                        } -> (showRank nth, showRounded pts, showTaskPointsDiff p' p)
+
+    let zAlt pilot' sAltAs' sAltFs' =
+            case (Map.lookup pilot' sAltAs', Map.lookup pilot' sAltFs') of
+                (Nothing, _) -> ""
+                (_, Nothing) -> ""
+                (Just Alt.AltBreakdown{total = pAs}, Just Alt.AltBreakdown{total = pFs}) ->
+                    showTaskPointsDiff pFs pAs
 
     let yFs = ffor3 pilot sAltFs x yAlt
     let yAs = ffor3 pilot sAltAs x yAlt
+    let zAsFsDiff = ffor3 pilot sAltAs sAltFs zAlt
 
     let yFsRank = ffor yFs $ \(yr, _, _) -> yr
     let yAsRank = ffor yAs $ \(yr, _, _) -> yr
@@ -225,8 +243,8 @@ pointRow w dfNt tp sAltFs sAltAs x = do
     let yFsScore = ffor yFs $ \(_, ys, _) -> ys
     let yAsScore = ffor yAs $ \(_, ys, _) -> ys
 
-    let yFsDiff = ffor yFs $ \(_, _, yd) -> yd
-    let yAsDiff = ffor yAs $ \(_, _, yd) -> yd
+    let yFtFsDiff = ffor yFs $ \(_, _, yd) -> yd
+    let yFtAsDiff = ffor yAs $ \(_, _, yd) -> yd
 
     let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
                         let n = showPilot w' p in
@@ -242,11 +260,17 @@ pointRow w dfNt tp sAltFs sAltAs x = do
 
         elClass "td" "td-total-points" . dynText
             $ zipDynWith showTaskPointsRounded tp (total <$> xB)
+        elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
+        elClass "td" "td-diff" $ dynText yFtFsDiff
+
+        elClass "td" "td-total-points" . dynText
+            $ zipDynWith showTaskPointsRounded tp (total <$> xB)
+        elClass "td" "as td-norm td-total-points" $ dynText yAsScore
+        elClass "td" "td-diff" $ dynText yFtAsDiff
 
         elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
         elClass "td" "as td-norm td-total-points" $ dynText yAsScore
-        elClass "td" "fs td-norm td-diff" $ dynText yFsDiff
-        elClass "td" "as td-norm td-diff" $ dynText yAsDiff
+        elClass "td" "td-diff" $ dynText zAsFsDiff
 
 dnfRows
     :: MonadWidget t m
@@ -286,7 +310,7 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "4"
+                        <> "colspan" =: "8"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
