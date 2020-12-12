@@ -58,7 +58,7 @@ tableVieScoreFsArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp
             $ lenDfs + 1
 
     let tableClass =
-            let tc = "table is-striped is-narrow is-fullwidth" in
+            let tc = "table is-striped is-narrow" in
             ffor2 hgOrPg sgs (\x gs ->
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
