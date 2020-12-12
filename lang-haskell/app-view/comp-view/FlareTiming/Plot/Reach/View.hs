@@ -127,7 +127,7 @@ reachPlot task sEx xs xsBonus = do
             <- selectPilots dPilots (\dPilots' ->
                     elClass "div" "tile is-child" $ do
                         ev <- dyn $ ffor task (\case
-                                Task{stopped = Nothing} -> tablePilotReach sEx xs dPilots'
+                                Task{stopped = Nothing} -> tablePilotReach xs dPilots'
                                 Task{stopped = Just _} -> tablePilotReachBonus sEx xs xsBonus dPilots')
                         ePilot <- switchHold never ev
                         return ePilot)
