@@ -452,7 +452,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                             (\case
                                 PlotTabSplit -> plotSplit
                                 PlotTabReach -> reachPlot task reach bonusReach
-                                PlotTabEffort -> effortPlot hgOrPg sAltFs ef
+                                PlotTabEffort -> effortPlot hgOrPg ef
                                 PlotTabTime -> timePlot sgs sAltFs sd
 
                                 PlotTabLead -> do

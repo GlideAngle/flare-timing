@@ -11,7 +11,6 @@ import qualified FlareTiming.Plot.Effort.Plot as P (effortPlot)
 import WireTypes.Fraction (EffortFraction(..))
 import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Point (PilotDistance(..))
-import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.Effort.Table (tableEffort)
@@ -33,10 +32,9 @@ timeRange xs =
 
 effortPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Alt.AltBreakdown)]
-    -> Dynamic t [(Pilot, TrackEffort)]
+    => Dynamic t [(Pilot, TrackEffort)]
     -> m ()
-effortPlot sEx xs = do
+effortPlot xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
 
     elClass "div" "tile is-ancestor" $ mdo
@@ -88,7 +86,7 @@ effortPlot sEx xs = do
         let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
-            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableEffort sEx xs dPilots')
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableEffort xs dPilots')
 
         return ()
 
