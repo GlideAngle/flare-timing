@@ -317,7 +317,82 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
 
             return ()
 
-    _ <- widgetHold taskTabScoreContent $
+    let taskTabVieContent = do
+            tabVie <- tabsVie
+            let vieHold =
+                    elAttr "div" ("id" =: "vie-with-both") $
+                        tableVieScoreBothOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
+
+            _ <- widgetHold vieHold $
+                    (\case
+                        VieTabScore -> vieHold
+
+                        VieTabScoreFs -> do
+                            tabVieScoreFs <- tabsVieScoreFs
+                            let tableVieScoreFsHold =
+                                    elAttr "div" ("id" =: "vie-with-both") $
+                                        tableVieScoreFsOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
+
+                            _ <- widgetHold tableVieScoreFsHold $
+                                    (\case
+                                        VieScoreFsTabOver ->
+                                            tableVieScoreFsHold
+
+                                        VieScoreFsTabSplit ->
+                                            elAttr "div" ("id" =: "score-points") $
+                                                tableVieScoreFsSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                        VieScoreFsTabReach ->
+                                            elAttr "div" ("id" =: "score-reach") $
+                                                tableVieScoreFsReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
+                                        VieScoreFsTabEffort ->
+                                            elAttr "div" ("id" =: "score-effort") $
+                                                tableVieScoreFsEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
+                                        VieScoreFsTabSpeed ->
+                                            elAttr "div" ("id" =: "score-speed") $
+                                                tableVieScoreFsSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                        VieScoreFsTabTime ->
+                                            elAttr "div" ("id" =: "score-time") $
+                                                tableVieScoreFsTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                        VieScoreFsTabArrive ->
+                                            elAttr "div" ("id" =: "score-arrival") $
+                                                tableVieScoreFsArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
+
+                                    <$> tabVieScoreFs
+
+                            return ()
+
+                        VieTabPlotFs -> do
+                            tabViePlotFs <- tabsViePlotFs
+                            let plotReach = reachViePlot task sAltFs reach bonusReach
+                            _ <- widgetHold (plotReach) $
+                                    (\case
+                                        ViePlotFsTabReach -> plotReach
+                                        ViePlotFsTabEffort -> effortViePlot hgOrPg sAltFs ef
+                                        ViePlotFsTabTime -> timeViePlot sgs sAltFs sd
+
+                                        ViePlotFsTabLead -> do
+                                            tabViePlotFsLead <- tabsViePlotFsLead
+                                            let plotLeadCoef = leadCoefViePlot ix tweak sAltFs ld
+                                            _ <- widgetHold (plotLeadCoef) $
+                                                    (\case
+                                                        ViePlotFsLeadTabPoint -> plotLeadCoef
+                                                        ViePlotFsLeadTabArea -> leadAreaViePlot ix tweak sAltFs ld
+                                                    )
+                                                    <$> tabViePlotFsLead
+                                            return ()
+
+                                        ViePlotFsTabArrive -> arrivalViePlot hgOrPg tweak av avN
+                                    )
+                                    <$> tabViePlotFs
+
+                            return ()
+                    )
+
+                    <$> tabVie
+
+            return ()
+
+    _ <- widgetHold taskTabVieContent $
             (\case
                 TaskTabTask -> tableTask utc task legs
 
@@ -440,80 +515,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
 
                     return ()
 
-                TaskTabVie -> do
-                    tabVie <- tabsVie
-                    let vieHold =
-                            elAttr "div" ("id" =: "vie-with-both") $
-                                tableVieScoreBothOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
-
-                    _ <- widgetHold vieHold $
-                            (\case
-                                VieTabScore -> vieHold
-
-                                VieTabScoreFs -> do
-                                    tabVieScoreFs <- tabsVieScoreFs
-                                    let tableVieScoreFsHold =
-                                            elAttr "div" ("id" =: "vie-with-both") $
-                                                tableVieScoreFsOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
-
-                                    _ <- widgetHold tableVieScoreFsHold $
-                                            (\case
-                                                VieScoreFsTabOver ->
-                                                    tableVieScoreFsHold
-
-                                                VieScoreFsTabSplit ->
-                                                    elAttr "div" ("id" =: "score-points") $
-                                                        tableVieScoreFsSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
-                                                VieScoreFsTabReach ->
-                                                    elAttr "div" ("id" =: "score-reach") $
-                                                        tableVieScoreFsReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
-                                                VieScoreFsTabEffort ->
-                                                    elAttr "div" ("id" =: "score-effort") $
-                                                        tableVieScoreFsEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
-                                                VieScoreFsTabSpeed ->
-                                                    elAttr "div" ("id" =: "score-speed") $
-                                                        tableVieScoreFsSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
-                                                VieScoreFsTabTime ->
-                                                    elAttr "div" ("id" =: "score-time") $
-                                                        tableVieScoreFsTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
-                                                VieScoreFsTabArrive ->
-                                                    elAttr "div" ("id" =: "score-arrival") $
-                                                        tableVieScoreFsArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
-
-                                            <$> tabVieScoreFs
-
-                                    return ()
-
-                                VieTabPlotFs -> do
-                                    tabViePlotFs <- tabsViePlotFs
-                                    let plotReach = reachViePlot task sAltFs reach bonusReach
-                                    _ <- widgetHold (plotReach) $
-                                            (\case
-                                                ViePlotFsTabReach -> plotReach
-                                                ViePlotFsTabEffort -> effortViePlot hgOrPg sAltFs ef
-                                                ViePlotFsTabTime -> timeViePlot sgs sAltFs sd
-
-                                                ViePlotFsTabLead -> do
-                                                    tabViePlotFsLead <- tabsViePlotFsLead
-                                                    let plotLeadCoef = leadCoefViePlot ix tweak sAltFs ld
-                                                    _ <- widgetHold (plotLeadCoef) $
-                                                            (\case
-                                                                ViePlotFsLeadTabPoint -> plotLeadCoef
-                                                                ViePlotFsLeadTabArea -> leadAreaViePlot ix tweak sAltFs ld
-                                                            )
-                                                            <$> tabViePlotFsLead
-                                                    return ()
-
-                                                ViePlotFsTabArrive -> arrivalViePlot hgOrPg tweak av avN
-                                            )
-                                            <$> tabViePlotFs
-
-                                    return ()
-                            )
-
-                            <$> tabVie
-
-                    return ())
+                TaskTabVie -> taskTabVieContent)
 
             <$> tabTask
 

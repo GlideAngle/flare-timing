@@ -52,7 +52,7 @@ tabsTask =
                             , "" <$ eVie
                             ]
 
-            scoreClass <- holdDyn "is-active" . leftmost $
+            scoreClass <- holdDyn "" . leftmost $
                             [ "" <$ eTask
                             , "" <$ eMap
                             , "is-active" <$ eScore
@@ -92,7 +92,7 @@ tabsTask =
                             , "" <$ eVie
                             ]
 
-            vieClass <- holdDyn "" . leftmost $
+            vieClass <- holdDyn "is-active" . leftmost $
                             [ "" <$ eTask
                             , "" <$ eMap
                             , "" <$ eScore
