@@ -21,9 +21,8 @@ arrivalPlot
     => Dynamic t Discipline
     -> Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe [(Pilot, TrackArrival)])
-    -> Dynamic t (Maybe [(Pilot, TrackArrival)])
     -> m ()
-arrivalPlot hgOrPg tweak av avN = do
+arrivalPlot hgOrPg tweak av = do
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -67,19 +66,13 @@ arrivalPlot hgOrPg tweak av avN = do
                                             notice
 
                                         Just Tweak{arrivalTime = True, arrivalRank = False} ->
-                                            V.arrivalTimePlot
-                                                (fromMaybe [] <$> av)
-                                                (fromMaybe [] <$> avN)
+                                            V.arrivalTimePlot (fromMaybe [] <$> av)
 
                                         Just Tweak{arrivalTime = False, arrivalRank = True} ->
-                                            V.arrivalPositionPlot
-                                                (fromMaybe [] <$> av)
-                                                (fromMaybe [] <$> avN)
+                                            V.arrivalPositionPlot (fromMaybe [] <$> av)
 
                                         _ ->
-                                            V.arrivalPositionPlot
-                                                (fromMaybe [] <$> av)
-                                                (fromMaybe [] <$> avN))
+                                            V.arrivalPositionPlot (fromMaybe [] <$> av))
 
                                 return ())
 

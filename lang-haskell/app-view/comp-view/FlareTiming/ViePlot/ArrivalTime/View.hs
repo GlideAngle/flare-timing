@@ -11,8 +11,8 @@ import WireTypes.Fraction (ArrivalFraction(..))
 import WireTypes.Arrival (TrackArrival(..), ArrivalLag(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
-import qualified FlareTiming.Plot.ArrivalTime.Plot as P (hgPlotTime)
-import FlareTiming.Plot.ArrivalTime.Table (tableArrivalTime)
+import qualified FlareTiming.ViePlot.ArrivalTime.Plot as P (hgViePlotTime)
+import FlareTiming.ViePlot.ArrivalTime.Table (tableVieArrivalTime)
 import FlareTiming.Plot.Event
     (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
@@ -48,7 +48,7 @@ arrivalTimeViePlot xs xsN = do
                                 | Pilot (pid, _) <- ps
                                 ]
 
-                        _ <- P.hgPlotTime (_element_raw elPlot) (lagMax arrivals) (lags arrivals) (lags arrivals')
+                        _ <- P.hgViePlotTime (_element_raw elPlot) (lagMax arrivals) (lags arrivals) (lags arrivals')
                         return ())
 
                     elAttr "div" ("id" =: "legend-arrival-time" <> "class" =: "level") $
@@ -75,7 +75,7 @@ arrivalTimeViePlot xs xsN = do
         let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
-            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableArrivalTime xs xsN dPilots')
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableVieArrivalTime xs xsN dPilots')
 
         return ()
     return ()

@@ -466,7 +466,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                                             <$> tabPlotLead
                                     return ()
 
-                                PlotTabArrive -> arrivalPlot hgOrPg tweak av avN
+                                PlotTabArrive -> arrivalPlot hgOrPg tweak av
                                 PlotTabValid -> validPlot vy vw
                             )
                             <$> tabPlot

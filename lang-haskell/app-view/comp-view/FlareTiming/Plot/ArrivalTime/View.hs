@@ -28,9 +28,8 @@ xyLag TrackArrival{lag = ArrivalLag x, frac = ArrivalFraction y} = [x, y]
 arrivalTimePlot
     :: MonadWidget t m
     => Dynamic t [(Pilot, TrackArrival)]
-    -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-arrivalTimePlot xs xsN = do
+arrivalTimePlot xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
 
     elClass "div" "tile is-ancestor" $ mdo
@@ -75,7 +74,7 @@ arrivalTimePlot xs xsN = do
         let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
-            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableArrivalTime xs xsN dPilots')
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableArrivalTime xs dPilots')
 
         return ()
     return ()

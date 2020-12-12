@@ -6,8 +6,8 @@ import qualified Data.Text as T (Text)
 
 import WireTypes.Arrival (TrackArrival(..))
 import WireTypes.Comp (Discipline(..), Tweak(..))
-import qualified FlareTiming.Plot.ArrivalPosition.View as V (arrivalPositionPlot)
-import qualified FlareTiming.Plot.ArrivalTime.View as V (arrivalTimePlot)
+import qualified FlareTiming.ViePlot.ArrivalPosition.View as V (arrivalPositionViePlot)
+import qualified FlareTiming.ViePlot.ArrivalTime.View as V (arrivalTimeViePlot)
 import WireTypes.Pilot (Pilot(..))
 
 noPg :: T.Text
@@ -67,17 +67,17 @@ arrivalViePlot hgOrPg tweak av avN = do
                                             notice
 
                                         Just Tweak{arrivalTime = True, arrivalRank = False} ->
-                                            V.arrivalTimePlot
+                                            V.arrivalTimeViePlot
                                                 (fromMaybe [] <$> av)
                                                 (fromMaybe [] <$> avN)
 
                                         Just Tweak{arrivalTime = False, arrivalRank = True} ->
-                                            V.arrivalPositionPlot
+                                            V.arrivalPositionViePlot
                                                 (fromMaybe [] <$> av)
                                                 (fromMaybe [] <$> avN)
 
                                         _ ->
-                                            V.arrivalPositionPlot
+                                            V.arrivalPositionViePlot
                                                 (fromMaybe [] <$> av)
                                                 (fromMaybe [] <$> avN))
 
