@@ -62,14 +62,14 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs _sAltFs = 
 
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text ""
+                elAttr "th" ("colspan" =: "2") $ text ""
 
                 dyn_ $ ffor stp (\case
                     Just _ -> do
-                        elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $
+                        elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance-points-breakdown") $
                             text "Points for Reach (Descending)"
                     Nothing ->
-                        elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance-points-breakdown") $
+                        elAttr "th" ("colspan" =: "5" <> "class" =: "th-distance-points-breakdown") $
                             text "Points for Reach (Descending)")
 
             el "tr" $ do
@@ -84,7 +84,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs _sAltFs = 
                     Nothing -> do
                         elClass "th" "th-distance-flown" $ text "Flown †")
 
-                elClass "th" "th-reach-points" $ text "Reach ¶"
+                elClass "th" "th-reach-points" $ text "Points ¶"
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"

@@ -67,7 +67,7 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
                 elClass "th" "th-time" $ text "Time †"
                 elClass "th" "th-pace" $ text "Pace ‡"
-                elClass "th" "th-time-points" $ text "Time"
+                elClass "th" "th-time-points" $ text "Points"
 
         _ <- el "tbody" $ do
             _ <-
@@ -159,7 +159,7 @@ pointRow w dfNt pt x = do
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
         elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
-        elClass "td" "td-effort-points" . dynText
+        elClass "td" "td-time-points" . dynText
             $ showMax Pt.time showTaskTimePoints pt points
 
 dnfRows

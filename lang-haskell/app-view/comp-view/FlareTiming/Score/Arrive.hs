@@ -67,7 +67,7 @@ tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
                 elClass "th" "th-time-end" $ text "End"
-                elClass "th" "th-arrival-points" $ text "Arrival"
+                elClass "th" "th-arrival-points" $ text "Points"
 
         _ <- el "tbody" $ do
             _ <-

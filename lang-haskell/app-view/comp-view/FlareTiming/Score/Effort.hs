@@ -113,7 +113,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs _
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
                 elClass "th" "th-landed-distance" $ text "Landed"
                 elClass "th" "th-chunk" $ text "Chunk"
-                elClass "th" "th-effort-points" $ text "Effort †"
+                elClass "th" "th-effort-points" $ text "Points †"
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
