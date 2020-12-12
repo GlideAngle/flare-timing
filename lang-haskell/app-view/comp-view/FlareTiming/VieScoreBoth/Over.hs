@@ -19,7 +19,7 @@ import WireTypes.Point
     , showTaskPointsDiffStats
     , showRounded
     )
-import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
+import WireTypes.ValidityWorking (ValidityWorking(..))
 import WireTypes.Comp
     ( UtcOffset(..), Discipline(..), MinimumDistance(..), EarlyStart(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
@@ -46,7 +46,7 @@ tableVieScoreBothOver
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _wg _pt tp sDfs sAltFs sAltAs = do
+tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _wg _pt tp sDfs sAltFs sAltAs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -167,59 +167,8 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
 
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
-            foot "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
-            foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
-            foot "¶ \"Early\" how much earlier than the start did this pilot jump the gun?"
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
-            foot "✓ An expected value as calculated by the official scoring program, FS."
-            foot "Δ A difference between a value and an expected value."
-            dyn_ $ ffor hgOrPg (\case
-                HangGliding -> return ()
-                Paragliding -> do
-                    el "tr" . tdFoot $ do
-                            elClass "span" "pg not" $ text "Arrival"
-                            text " points are not scored for paragliding."
-                    el "tr" . tdFoot $ do
-                            elClass "span" "pg not" $ text "Effort"
-                            text " or distance difficulty is not scored for paragliding.")
-            dyn_ $ ffor sgs (\gs ->
-                if null gs then do
-                    el "tr" . tdFoot $ do
-                            text "With no "
-                            elClass "span" "sg not" $ text "gate"
-                            text " to start the speed section "
-                            elClass "span" "sg not" $ text "time"
-                            text ", the pace clock starts ticking whenever the pilot starts."
-                else return ())
-            dyn_ $ ffor hgOrPg (\case
-                HangGliding ->
-                    dyn_ $ ffor vw (\vw' ->
-                        maybe
-                            (return ())
-                            (\ValidityWorking{time = TimeValidityWorking{..}} ->
-                                case gsBestTime of
-                                    Just _ -> return ()
-                                    Nothing -> el "tr" . tdFoot $ do
-                                        text "No one made it through the speed section to get "
-                                        elClass "span" "gr-zero" $ text "time"
-                                        text " and "
-                                        elClass "span" "gr-zero" $ text "arrival"
-                                        text " points.")
-                            vw'
-                        )
-                Paragliding ->
-                    dyn_ $ ffor vw (\vw' ->
-                        maybe
-                            (return ())
-                            (\ValidityWorking{time = TimeValidityWorking{..}} ->
-                                case gsBestTime of
-                                    Just _ -> return ()
-                                    Nothing -> el "tr" . tdFoot $ do
-                                        text "No one made it through the speed section to get "
-                                        elClass "span" "gr-zero" $ text "time"
-                                        text " points.")
-                            vw'
-                        ))
+            foot "Δ A difference between total points, mean ± standard deviation."
 
     return ()
 
@@ -336,8 +285,9 @@ dnfRow w place rows pilot = do
                     return ()
 
     elClass "tr" "tr-dnf" $ do
-        elAttr "td" ("colspan" =: "2" <> "class" =: "td-norm td-placing") $ text ""
-        elClass "td" "td-placing" . text $ showRank place
+        elClass "td" "as td-norm td-placing" $ text ""
+        elClass "td" "fs td-norm td-placing" $ text ""
+        elClass "td" "ft td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ ffor2 w pilot showPilot
         elClass "td" "td-total-points" $ text "0"
         dnfMinor
