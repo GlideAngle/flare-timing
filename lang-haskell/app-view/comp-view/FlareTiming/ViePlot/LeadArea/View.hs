@@ -5,7 +5,7 @@ module FlareTiming.ViePlot.LeadArea.View (leadAreaViePlot) where
 import Reflex.Dom
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
-import qualified FlareTiming.Plot.LeadArea.Plot as P (leadAreaPlot)
+import qualified FlareTiming.ViePlot.LeadArea.Plot as P (leadAreaViePlot)
 
 import WireTypes.Comp (Tweak(..))
 import WireTypes.Route (TaskDistance(..))
@@ -17,7 +17,7 @@ import WireTypes.Lead
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
-import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
+import FlareTiming.ViePlot.LeadArea.Table (tableViePilotArea)
 import FlareTiming.Comms (getTaskPilotArea)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Plot.Event (tableClass, mkMsg, legendClasses, numLegendPilots)
@@ -94,7 +94,7 @@ leadAreaViePlot ix tweak sEx xs = do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 640px;width: 700px")) $ return ()
                     performEvent_ $ leftmost
                             [ ffor eAreas (\as -> liftIO $ do
-                                _ <- P.leadAreaPlot
+                                _ <- P.leadAreaViePlot
                                         (_element_raw elPlot)
                                         (seriesRangeOrDefault as)
                                         (distanceTime <$> as)
@@ -130,7 +130,7 @@ leadAreaViePlot ix tweak sEx xs = do
                                 return ()
                     return ()
 
-        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx xs dPilots
+        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tableViePilotArea tweak sEx xs dPilots
         dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
 
         area :: Event _ RawLeadingArea <- getTaskPilotArea ix (updated dPilot)

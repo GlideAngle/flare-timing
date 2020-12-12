@@ -6,7 +6,7 @@ import Reflex.Dom
 import Data.List (find)
 import Data.Maybe (catMaybes)
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
-import qualified FlareTiming.Plot.LeadCoef.Plot as P (leadCoefPlot)
+import qualified FlareTiming.ViePlot.LeadCoef.Plot as P (leadCoefViePlot)
 
 import WireTypes.Fraction (LeadingFraction(..))
 import WireTypes.Comp (Tweak(..))
@@ -14,7 +14,7 @@ import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
-import FlareTiming.Plot.LeadCoef.Table (tablePilotCoef)
+import FlareTiming.ViePlot.LeadCoef.Table (tableViePilotCoef)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Plot.Event
     (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
@@ -57,7 +57,7 @@ leadCoefViePlot _ix tweak sEx xs = do
                                 | Pilot (pid, _) <- ps
                                 ]
 
-                        _ <- P.leadCoefPlot (_element_raw elPlot) (lcRange leads) (placings leads) (placings leads')
+                        _ <- P.leadCoefViePlot (_element_raw elPlot) (lcRange leads) (placings leads) (placings leads')
                         return ())
 
                     elAttr "div" ("id" =: "legend-lead-coef" <> "class" =: "level") $
@@ -96,7 +96,7 @@ leadCoefViePlot _ix tweak sEx xs = do
         let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
-            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots')
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableViePilotCoef tweak sEx xs dPilots')
 
         return ()
 

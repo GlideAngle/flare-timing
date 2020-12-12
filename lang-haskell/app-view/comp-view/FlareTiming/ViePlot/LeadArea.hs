@@ -6,7 +6,7 @@ import Reflex.Dom
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Lead (TrackLead(..))
-import qualified FlareTiming.Plot.LeadArea.View as V (leadAreaPlot)
+import qualified FlareTiming.ViePlot.LeadArea.View as V (leadAreaViePlot)
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Events (IxTask(..))
 
@@ -43,6 +43,6 @@ leadAreaViePlot ix tweak sEx ld =
                                         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> notice
                                         _ -> return ())
 
-                                    V.leadAreaPlot ix tweak sEx (fromMaybe [] <$> ld))
+                                    V.leadAreaViePlot ix tweak sEx (fromMaybe [] <$> ld))
 
                     return ()

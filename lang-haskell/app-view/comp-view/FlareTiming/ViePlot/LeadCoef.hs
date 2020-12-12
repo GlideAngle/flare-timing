@@ -6,7 +6,7 @@ import Reflex.Dom
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Lead (TrackLead(..))
-import qualified FlareTiming.Plot.LeadCoef.View as V (leadCoefPlot)
+import qualified FlareTiming.ViePlot.LeadCoef.View as V (leadCoefViePlot)
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Events (IxTask(..))
 
@@ -43,6 +43,6 @@ leadCoefViePlot ix tweak sEx ld =
                                         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> notice
                                         _ -> return ())
 
-                                    V.leadCoefPlot ix tweak sEx (fromMaybe [] <$> ld))
+                                    V.leadCoefViePlot ix tweak sEx (fromMaybe [] <$> ld))
 
                     return ()

@@ -151,4 +151,4 @@ leadAreaViePlot
 
     Plot <$> plot_ (unElement . toElement $ e) xMin' xMax' yMin' yMax' xs0' xs1' xs2' xs3' xs4' ys0' ys1' ys2' ys3' ys4' zs0' zs1' zs2' zs3' zs4'
 
-leadAreaPlot e r _ _ _ = let zs = take 4 (repeat []) in leadAreaPlot e r zs zs zs
+leadAreaViePlot e r _ _ _ = let zs = take 4 (repeat []) in leadAreaViePlot e r zs zs zs

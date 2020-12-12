@@ -23,11 +23,11 @@ tableViePilotCoef
 tableViePilotCoef tweak sEx xs select = do
     ev <- dyn $ ffor tweak (\case
         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> do
-            ePilot <- tablePilotSimple xs select
+            ePilot <- tableViePilotSimple xs select
             return ePilot
 
         _ -> do
-            ePilot <- tablePilotCompare tweak sEx xs select
+            ePilot <- tableViePilotCompare tweak sEx xs select
             return ePilot)
 
     switchHold never ev
@@ -75,14 +75,14 @@ rowLeadSimple w select p av = do
 
     return $ const pilot <$> domEvent Click eRow
 
-tablePilotCompare
+tableViePilotCompare
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
-tablePilotCompare _ sEx xs select = do
+tableViePilotCompare _ sEx xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
     ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do

@@ -14,7 +14,6 @@ import WireTypes.Lead
     , LeadingAreas(..), LeadingAreaSquared(..)
     , nullArea, showAreaSquared
     )
-import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.LeadArea.Table (tablePilotArea)
@@ -48,10 +47,9 @@ leadAreaPlot
     :: MonadWidget t m
     => IxTask
     -> Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-leadAreaPlot ix tweak sEx xs = do
+leadAreaPlot ix tweak xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
 
     let mkLegend classes (pp, areas) = when (pp /= nullPilot) $ do
@@ -130,7 +128,7 @@ leadAreaPlot ix tweak sEx xs = do
                                 return ()
                     return ()
 
-        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak sEx xs dPilots
+        ePilot :: Event _ Pilot <- elClass "div" "tile is-child" $ tablePilotArea tweak xs dPilots
         dPilot :: Dynamic _ Pilot <- holdDyn nullPilot ePilot
 
         area :: Event _ RawLeadingArea <- getTaskPilotArea ix (updated dPilot)
