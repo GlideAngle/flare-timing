@@ -7,16 +7,14 @@ import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
 import qualified FlareTiming.Plot.Reach.View as V (reachPlot)
 import WireTypes.Pilot (Pilot(..))
-import qualified WireTypes.Point as Alt (AltBreakdown(..))
 
 reachPlot
     :: MonadWidget t m
     => Dynamic t Task
-    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> m ()
-reachPlot task sEx reach' bonusReach' =
+reachPlot task reach' bonusReach' =
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -47,7 +45,6 @@ reachPlot task sEx reach' bonusReach' =
                                     elClass "article" "tile is-child" $
                                         V.reachPlot
                                             task
-                                            sEx
                                             (fromMaybe [] <$> reach')
                                             (fromMaybe [] <$> bonusReach'))
 

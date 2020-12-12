@@ -16,8 +16,8 @@ import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import WireTypes.Point (PilotDistance(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import FlareTiming.Pilot (hashIdHyphenPilot)
-import FlareTiming.Plot.Reach.TableReach (tablePilotReach)
-import FlareTiming.Plot.Reach.TableBonus (tablePilotReachBonus)
+import FlareTiming.ViePlot.Reach.TableReach (tableViePilotReach)
+import FlareTiming.ViePlot.Reach.TableBonus (tableViePilotReachBonus)
 import FlareTiming.Plot.Event
     (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
@@ -127,8 +127,12 @@ reachViePlot task sEx xs xsBonus = do
             <- selectPilots dPilots (\dPilots' ->
                     elClass "div" "tile is-child" $ do
                         ev <- dyn $ ffor task (\case
-                                Task{stopped = Nothing} -> tablePilotReach sEx xs dPilots'
-                                Task{stopped = Just _} -> tablePilotReachBonus sEx xs xsBonus dPilots')
+                                Task{stopped = Nothing} ->
+                                    tableViePilotReach sEx xs dPilots'
+
+                                Task{stopped = Just _} ->
+                                    tableViePilotReachBonus sEx xs xsBonus dPilots')
+
                         ePilot <- switchHold never ev
                         return ePilot)
 

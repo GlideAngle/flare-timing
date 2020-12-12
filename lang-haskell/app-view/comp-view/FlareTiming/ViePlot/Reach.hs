@@ -5,7 +5,7 @@ import Reflex.Dom
 
 import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
-import qualified FlareTiming.Plot.Reach.View as V (reachPlot)
+import qualified FlareTiming.ViePlot.Reach.View as V (reachViePlot)
 import WireTypes.Pilot (Pilot(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 
@@ -45,7 +45,7 @@ reachViePlot task sEx reach' bonusReach' =
 
                                 _ ->
                                     elClass "article" "tile is-child" $
-                                        V.reachPlot
+                                        V.reachViePlot
                                             task
                                             sEx
                                             (fromMaybe [] <$> reach')
