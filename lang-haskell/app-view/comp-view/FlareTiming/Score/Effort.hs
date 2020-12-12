@@ -92,7 +92,7 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs _
     let pChunks = ffor lg' pilotChunk
 
     let tableClass =
-            let tc = "table is-striped is-narrow is-fullwidth" in
+            let tc = "table is-striped is-narrow" in
             ffor2 hgOrPg sgs (\x gs ->
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
@@ -104,8 +104,9 @@ tableScoreEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs _
                 elAttr "th" ("colspan" =: "7") $ dynText msgChunking
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "4") $ text ""
-                elClass "th" "th-distance-points-breakdown" $ text "Points for Effort (Descending)"
+                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown")
+                    $ text "Points for Effort (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"

@@ -49,7 +49,7 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
             $ lenDfs + 1
 
     let tableClass =
-            let tc = "table is-striped is-narrow is-fullwidth" in
+            let tc = "table is-striped is-narrow" in
             ffor2 hgOrPg sgs (\x gs ->
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
@@ -58,8 +58,9 @@ tableScoreTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs 
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "4") $ text ""
-                elClass "th" "th-time-points-breakdown" $ text "Points for Time (Descending)"
+                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points-breakdown")
+                    $ text "Points for Time (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"

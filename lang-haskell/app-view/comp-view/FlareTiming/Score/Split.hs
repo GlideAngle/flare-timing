@@ -68,7 +68,7 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs _sAl
     let thSpace = elClass "th" "th-space" $ text ""
 
     let tableClass =
-            let tc = "table is-striped is-narrow is-fullwidth" in
+            let tc = "table is-striped is-narrow" in
             ffor2 hgOrPg sgs (\x gs ->
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)

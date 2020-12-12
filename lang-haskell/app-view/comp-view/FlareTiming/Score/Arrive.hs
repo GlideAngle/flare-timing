@@ -50,7 +50,7 @@ tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs
             $ lenDfs + 1
 
     let tableClass =
-            let tc = "table is-striped is-narrow is-fullwidth" in
+            let tc = "table is-striped is-narrow" in
             ffor2 hgOrPg sgs (\x gs ->
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
@@ -59,8 +59,9 @@ tableScoreArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text ""
-                elClass "th" "th-arrival-points-breakdown" $ text "Points for Arrival (Descending)"
+                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-arrival-points-breakdown")
+                    $ text "Points for Arrival (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"

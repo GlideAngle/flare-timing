@@ -52,7 +52,7 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs _sAltFs = 
                                    else ("14", "3"))
 
     let tableClass =
-            let tc = "table is-striped is-narrow is-fullwidth" in
+            let tc = "table is-striped is-narrow" in
             ffor2 hgOrPg sgs (\x gs ->
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
@@ -66,14 +66,11 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs _sAltFs = 
 
                 dyn_ $ ffor stp (\case
                     Just _ -> do
-                        el "th" $ text ""
-                        elClass "th" "th-stopped" $
-                            text "Extra reach via glide, only with stopped tasks"
+                        elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $
+                            text "Points for Reach (Descending)"
                     Nothing ->
-                        el "th" $ text "")
-
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $
-                    text "Points for Reach (Descending)"
+                        elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance-points-breakdown") $
+                            text "Points for Reach (Descending)")
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
