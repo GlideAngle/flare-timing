@@ -131,7 +131,7 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                 elClass "th" "th-diff" $ text "Δ As-Fs"
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+                elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points"
 
                 elClass "th" "th-task-alloc" . dynText $
                     maybe
