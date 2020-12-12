@@ -395,29 +395,15 @@ dnfRow w place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "class" =: "td-dnf"
-                        )
-                        $ text "DNF"
-                    return ()
-
-    let dnfMinor =
-            case rows of
-                Nothing -> return ()
-                Just n -> do
-                    elAttr
-                        "td"
-                        ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "2"
+                        <> "colspan" =: "4"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
                     return ()
 
     elClass "tr" "tr-dnf" $ do
-        elClass "td" "td-norm td-placing" $ text ""
         elClass "td" "td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ ffor2 w pilot showPilot
         dnfMajor
         elClass "td" "td-total-points" $ text "0"
-        dnfMinor
         return ()
