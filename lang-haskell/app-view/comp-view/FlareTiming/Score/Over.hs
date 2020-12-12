@@ -138,8 +138,14 @@ tableScoreOver utcOffset hgOrPg early free sgs ln dnf' dfNt _vy vw _wg pt tp sDf
                 elClass "th" "th-total-points" $ text "Total"
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                elAttr "th" ("colspan" =: "4") $ text ""
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+
                 elClass "th" "th-speed-units" $ text "(km/h)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"

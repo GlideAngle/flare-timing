@@ -63,17 +63,6 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
 
-            elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation")
-                    $ text "(Units)"
-
-                elClass "th" "th-hms" $ text "(HH:MM:SS)"
-                elClass "th" "th-hms" $ text "(HH:MM:SS)"
-                elClass "th" "th-hms" $ text "(HH:MM:SS)"
-                elClass "th" "th-hms" $ text "(HH:MM:SS)"
-                elClass "th" "th-hms" $ text "(HH:MM:SS)"
-                elClass "th" "th-speed" $ text "(km/h)"
-
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
@@ -84,6 +73,16 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
                 elClass "th" "th-pace" $ text "Pace ‡"
                 elClass "th" "th-speed" $ text "Speed"
 
+            elClass "tr" "tr-allocation" $ do
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation")
+                    $ text "(Units)"
+
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-speed" $ text "(km/h)"
 
         _ <- el "tbody" $ do
             _ <-
