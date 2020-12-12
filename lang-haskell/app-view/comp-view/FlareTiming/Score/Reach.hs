@@ -126,8 +126,6 @@ tableScoreReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs _sAltFs = 
             foot "‡ With altitude above goal converted to extra reach via glide."
             foot "¶ Points awarded for reach are also called linear distance points."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
-            foot "✓ An expected value as calculated by the official scoring program, FS."
-            foot "Δ A difference between a value and an expected value."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
                 Paragliding -> do

@@ -262,8 +262,6 @@ tableScoreSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs _sAl
 
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
-            foot "✓ An expected value as calculated by the official scoring program, FS."
-            foot "Δ A difference between a value and an expected value."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
                 Paragliding -> do
