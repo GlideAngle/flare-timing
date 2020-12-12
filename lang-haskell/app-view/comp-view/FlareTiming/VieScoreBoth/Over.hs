@@ -1,7 +1,6 @@
 module FlareTiming.VieScoreBoth.Over (tableVieScoreBothOver) where
 
 import Prelude hiding (min)
-import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
@@ -92,16 +91,16 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy vw _w
                                 dFtAs = showTaskPointsDiffStats as ft
                                 dAsFs = maybe "" (showTaskPointsDiffStats fs) as
                             in
-                                ( T.pack $ printf "Total Points Ft-Fs %s" dFtFs
-                                ,
-                                    ( T.pack $ printf "Total Points Ft-As %s" dFtAs
-                                    , T.pack $ printf "Total Points As-Fs %s" dAsFs
-                                    )
-                                ))
+                                (dFtFs, (dFtAs, dAsFs)))
                         . unzip3)
 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
+
+            el "tr" $ do
+                elAttr "th" ("colspan" =: "4") $ text ""
+                elAttr "th" ("colspan" =: "12" <> "class" =: "fs-ft th-points")
+                    $ text "Total Point Comparisons"
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-place") $ text "Place"

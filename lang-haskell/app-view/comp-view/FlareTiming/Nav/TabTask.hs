@@ -22,7 +22,7 @@ tabsTask =
             (plot, _) <- elDynClass' "li" plotClass $ el "a" (text "Plot")
             (basis, _) <- elDynClass' "li" basisClass $ el "a" (text "Basis")
             (penal, _) <- elDynClass' "li" penalClass $ el "a" (text "Penal")
-            (vie, _) <- elDynClass' "li" vieClass $ el "a" (text "Vie")
+            (vie, _) <- elDynClass' "li" vieClass $ el "a" (text "Compare")
 
             let eTask = (const TaskTabTask) <$> domEvent Click task
             let eMap = (const TaskTabMap) <$> domEvent Click map

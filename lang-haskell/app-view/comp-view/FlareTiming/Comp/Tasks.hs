@@ -35,6 +35,11 @@ taskList ds' stats' xs = do
                 elClass "table" "table" $ do
                     el "thead" $ do
                         el "tr" $ do
+                            elAttr "th" ("colspan" =: "6") $ text ""
+                            elAttr "th" ("colspan" =: "2" <> "class" =: "compare-fs")
+                                $ text "Compare to Flight System"
+
+                        el "tr" $ do
                             el "th" $ text "#"
                             elClass "th" "th-task-name" $ text "Name"
                             elClass "th" "th-task-tps" $ text "Turnpoints"

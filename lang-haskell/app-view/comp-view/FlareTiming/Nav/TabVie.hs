@@ -12,9 +12,9 @@ tabsVie :: MonadWidget t m => m (Event t VieTab)
 tabsVie =
     elClass "div" "tabs" $
         el "ul" $ mdo
-            (score, _) <- elDynClass' "li" scoreClass $ el "a" (text "Vie with Both")
-            (scoreFs, _) <- elDynClass' "li" scoreFsClass $ el "a" (text "Vie with FS")
-            (plotFs, _) <- elDynClass' "li" plotFsClass $ el "a" (text "Plot with FS")
+            (score, _) <- elDynClass' "li" scoreClass $ el "a" (text "3-Way (Ft,Fs,As)")
+            (scoreFs, _) <- elDynClass' "li" scoreFsClass $ el "a" (text "Flight System (Fs)")
+            (plotFs, _) <- elDynClass' "li" plotFsClass $ el "a" (text " Plot Fs")
 
             let eScore = (const VieTabScore) <$> domEvent Click score
             let eScoreFs = (const VieTabScoreFs) <$> domEvent Click scoreFs
