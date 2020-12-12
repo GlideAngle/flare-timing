@@ -60,10 +60,19 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "5" <> "class" =: "th-speed-section") . dynText
+                elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
 
-                elClass "th" "th-speed" $ text "Speed"
+            elClass "tr" "tr-allocation" $ do
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation")
+                    $ text "(Units)"
+
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-speed" $ text "(km/h)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
@@ -73,7 +82,8 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
                 elClass "th" "th-time-end" $ text "End"
                 elClass "th" "th-time" $ text "Time †"
                 elClass "th" "th-pace" $ text "Pace ‡"
-                elClass "th" "th-speed-units" $ text "(km/h)"
+                elClass "th" "th-speed" $ text "Speed"
+
 
         _ <- el "tbody" $ do
             _ <-
