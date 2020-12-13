@@ -32,17 +32,6 @@ import WireTypes.Point
     , showTaskPointsRounded
     , showTaskPointsDiff
     , showRounded
-
-    , showDistanceWeight
-    , showArrivalWeight
-    , showLeadingWeight
-    , showTimeWeight
-    )
-import WireTypes.Validity
-    ( showLaunchValidity
-    , showDistanceValidity
-    , showTimeValidity
-    , showTaskValidity
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -68,7 +57,7 @@ tableVieScoreFsSplit
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sAltFs = do
+tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -143,24 +132,24 @@ tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-distance-points" $ text ""
-                elClass "th" "th-norm th-distance-points" $ text "✓"
+                elClass "th" "th-distance-points" $ text "Ft"
+                elClass "th" "th-norm th-distance-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elDynClass "th" (fst <$> cTimePoints) $ text ""
-                elClass "th" "th-norm th-time-points" $ text "✓"
+                elDynClass "th" (fst <$> cTimePoints) $ text "Ft"
+                elClass "th" "th-norm th-time-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elClass "th" "th-leading-points" $ text ""
-                elClass "th" "th-norm th-leading-points" $ text "✓"
+                elClass "th" "th-leading-points" $ text "Ft"
+                elClass "th" "th-norm th-leading-points" $ text "Ft"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elDynClass "th" (fst <$> cArrivalPoints) $ text ""
-                elClass "th" "th-norm th-arrival-points" $ text "✓"
+                elDynClass "th" (fst <$> cArrivalPoints) $ text "Ft"
+                elClass "th" "th-norm th-arrival-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elClass "th" "th-total-points" $ text ""
-                elClass "th" "th-norm th-total-points" $ text "✓"
+                elClass "th" "th-total-points" $ text "Ft"
+                elClass "th" "th-norm th-total-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
@@ -242,8 +231,7 @@ tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs
 
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
-            foot "✓ An expected value as calculated by the official scoring program, FS."
-            foot "Δ A difference between a value and an expected value."
+            foot "Δ A difference between total points, mean ± standard deviation."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
                 Paragliding -> do
