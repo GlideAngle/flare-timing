@@ -57,15 +57,15 @@ tableVieScoreFsSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp 
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
 
+    let thSpace = elClass "th" "th-space" $ text ""
+
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "11" <> "class" =: "th-speed-section") . dynText
+                elAttr "th" ("colspan" =: "12" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
-
-                elClass "th" "th-speed" $ text "Speed"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
@@ -93,7 +93,28 @@ tableVieScoreFsSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp 
                     $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
 
                 elClass "th" "th-pace" $ text "Pace ‡"
-                elClass "th" "th-speed-units" $ text "(km/h)"
+                elClass "th" "th-speed" $ text "Speed"
+
+            elClass "tr" "tr-allocation" $ do
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation")
+                    $ text "(Units)"
+
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                thSpace
+
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                thSpace
+
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                thSpace
+
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+
+                elClass "th" "th-speed" $ text "(km/h)"
 
         _ <- el "tbody" $ do
             _ <-
