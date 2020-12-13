@@ -382,6 +382,63 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                                     <$> tabViePlotFs
 
                             return ()
+
+                        VieTabScoreAs -> do
+                            tabVieScoreFs <- tabsVieScoreFs
+                            let tableVieScoreFsHold =
+                                    elAttr "div" ("id" =: "score-compare-split") $
+                                        tableVieScoreFsSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs
+
+                            _ <- widgetHold tableVieScoreFsHold $
+                                    (\case
+                                        VieScoreFsTabSplit ->
+                                            tableVieScoreFsHold
+
+                                        VieScoreFsTabReach ->
+                                            elAttr "div" ("id" =: "score-compare-reach") $
+                                                tableVieScoreFsReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltAs
+                                        VieScoreFsTabEffort ->
+                                            elAttr "div" ("id" =: "score-compare-effort") $
+                                                tableVieScoreFsEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs lg lgN
+                                        VieScoreFsTabSpeed ->
+                                            elAttr "div" ("id" =: "score-compare-speed") $
+                                                tableVieScoreFsSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs
+                                        VieScoreFsTabTime ->
+                                            elAttr "div" ("id" =: "score-compare-time") $
+                                                tableVieScoreFsTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs
+                                        VieScoreFsTabArrive ->
+                                            elAttr "div" ("id" =: "score-compare-arrival") $
+                                                tableVieScoreFsArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs)
+
+                                    <$> tabVieScoreFs
+
+                            return ()
+
+                        VieTabPlotAs -> do
+                            tabViePlotFs <- tabsViePlotFs
+                            let plotReach = reachViePlot task sAltAs reach bonusReach
+                            _ <- widgetHold (plotReach) $
+                                    (\case
+                                        ViePlotFsTabReach -> plotReach
+                                        ViePlotFsTabEffort -> effortViePlot hgOrPg sAltAs ef
+                                        ViePlotFsTabTime -> timeViePlot sgs sAltAs sd
+
+                                        ViePlotFsTabLead -> do
+                                            tabViePlotFsLead <- tabsViePlotFsLead
+                                            let plotLeadCoef = leadCoefViePlot ix tweak sAltAs ld
+                                            _ <- widgetHold (plotLeadCoef) $
+                                                    (\case
+                                                        ViePlotFsLeadTabPoint -> plotLeadCoef
+                                                        ViePlotFsLeadTabArea -> leadAreaViePlot ix tweak sAltAs ld
+                                                    )
+                                                    <$> tabViePlotFsLead
+                                            return ()
+
+                                        ViePlotFsTabArrive -> arrivalViePlot hgOrPg tweak av avN
+                                    )
+                                    <$> tabViePlotFs
+
+                            return ()
                     )
 
                     <$> tabVie
