@@ -115,22 +115,24 @@ tableVieScoreFsEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp s
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "9" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort (Descending)"
+                elAttr "th" ("colspan" =: "3") $ text "Landed"
+                elAttr "th" ("colspan" =: "3") $ text "Chunk"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points † for Effort (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-landed-distance" $ text "Landed"
-                elClass "th" "th-norm th-effort-points" $ text "✓"
+                elClass "th" "th-landed-distance" $ text "Ft"
+                elClass "th" "th-norm th-effort-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elClass "th" "th-chunk" $ text "Chunk"
-                elClass "th" "th-norm th-chunk" $ text "✓"
+                elClass "th" "th-chunk" $ text "Ft"
+                elClass "th" "th-norm th-chunk" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elClass "th" "th-effort-points" $ text "Effort †"
-                elClass "th" "th-norm th-effort-points" $ text "✓"
+                elClass "th" "th-effort-points" $ text "Ft"
+                elClass "th" "th-norm th-effort-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
@@ -183,7 +185,6 @@ tableVieScoreFsEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp s
             foot "* Any points so annotated are the maximum attainable."
             foot "† Points awarded for effort are also called distance difficulty points."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
-            foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()

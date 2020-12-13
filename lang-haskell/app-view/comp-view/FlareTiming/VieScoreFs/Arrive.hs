@@ -67,19 +67,20 @@ tableVieScoreFsArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "5") $ text ""
+                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "3") $ text "End"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points-breakdown") $ text "Points for Arrival (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                elClass "th" "th-time-end" $ text "End"
-                elClass "th" "th-norm th-time-end" $ text "✓-End"
-                elClass "th" "th-norm th-time-diff" $ text "Δ-End"
+                elClass "th" "th-time-end" $ text "Ft"
+                elClass "th" "th-norm th-time-end" $ text "Fs"
+                elClass "th" "th-norm th-time-diff" $ text "Δ"
 
-                elClass "th" "th-arrival-points" $ text "Arrival"
-                elClass "th" "th-norm th-arrival-points" $ text "✓"
+                elClass "th" "th-arrival-points" $ text "Ft"
+                elClass "th" "th-norm th-arrival-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
         _ <- el "tbody" $ do
@@ -102,7 +103,6 @@ tableVieScoreFsArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp
         el "tfoot" $ do
             foot "* Any points so annotated are the maximum attainable."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
-            foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()

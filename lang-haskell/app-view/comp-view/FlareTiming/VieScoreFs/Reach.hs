@@ -73,18 +73,20 @@ tableVieScoreFsReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltF
 
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text ""
 
                 dyn_ $ ffor stp (\case
                     Just _ -> do
-                        el "th" $ text ""
+                        elAttr "th" ("colspan" =: "3") $ text ""
+                        elClass "th" "th-distance-flown" $ text "Flown †"
                         elAttr "th" ("colspan" =: "3" <> "class" =: "th-stopped") $
-                            text "Extra reach via glide, only with stopped tasks"
-                    Nothing ->
-                        elAttr "th" ("colspan" =: "3") $ text "")
+                            text "Extra ‡ reach via glide"
+                    Nothing -> do
+                        elAttr "th" ("colspan" =: "3") $ text ""
+                        elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-flown") $
+                            text "Flown †")
 
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $
-                    text "Points for Reach (Descending)"
+                    text "Points ¶ for Reach (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
@@ -93,17 +95,17 @@ tableVieScoreFsReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltF
 
                 dyn_ $ ffor stp (\case
                     Just _ -> do
-                        elClass "th" "th-distance-flown" $ text "Flown †"
-                        elClass "th" "th-distance-extra" $ text "Extra ‡"
-                        elClass "th" "th-norm th-best-distance" $ text "✓"
+                        elClass "th" "th-distance-flown" $ text "Ft"
+                        elClass "th" "th-distance-extra" $ text "Ft"
+                        elClass "th" "th-norm th-best-distance" $ text "Fs"
                         elClass "th" "th-norm th-diff" $ text "Δ"
                     Nothing -> do
-                        elClass "th" "th-distance-flown" $ text "Flown †"
-                        elClass "th" "th-norm th-best-distance" $ text "✓"
+                        elClass "th" "th-distance-flown" $ text "Ft"
+                        elClass "th" "th-norm th-best-distance" $ text "Fs"
                         elClass "th" "th-norm th-diff" $ text "Δ")
 
-                elClass "th" "th-reach-points" $ text "Reach ¶"
-                elClass "th" "th-norm th-reach-points" $ text "✓"
+                elClass "th" "th-reach-points" $ text "Ft"
+                elClass "th" "th-norm th-reach-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
@@ -159,7 +161,6 @@ tableVieScoreFsReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltF
             foot "‡ With altitude above goal converted to extra reach via glide."
             foot "¶ Points awarded for reach are also called linear distance points."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
-            foot "✓ An expected value as calculated by the official scoring program, FS."
             foot "Δ A difference between a value and an expected value."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
