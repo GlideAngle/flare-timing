@@ -115,7 +115,7 @@ tableVieScoreFsEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp s
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "3") $ text "Landed"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "is-light") $ text "Landed"
                 elAttr "th" ("colspan" =: "3") $ text "Chunk"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points † for Effort (Descending)"
 

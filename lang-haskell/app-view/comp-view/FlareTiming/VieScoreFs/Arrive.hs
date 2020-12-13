@@ -68,7 +68,7 @@ tableVieScoreFsArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "3") $ text "End"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "is-light") $ text "End"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points-breakdown") $ text "Points for Arrival (Descending)"
 
             el "tr" $ do

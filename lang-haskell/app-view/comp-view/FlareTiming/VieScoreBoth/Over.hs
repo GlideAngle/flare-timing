@@ -99,13 +99,13 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "4") $ text ""
-                elAttr "th" ("colspan" =: "12" <> "class" =: "fs-ft th-points")
+                elAttr "th" ("colspan" =: "12" <> "class" =: "ft-fs th-points")
                     $ text "Total Point Comparisons"
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-place") $ text "Place"
                 thSpace
-                elAttr "th" ("colspan" =: "3" <> "class" =: "fs-ft th-points") . dynText
+                elAttr "th" ("colspan" =: "3" <> "class" =: "ft-fs th-points") . dynText
                     $ fst <$> stats
                 elAttr "th" ("colspan" =: "3" <> "class" =: "as-ft th-points") . dynText
                     $ fst . snd <$> stats

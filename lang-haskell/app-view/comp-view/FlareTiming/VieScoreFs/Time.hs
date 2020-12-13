@@ -63,7 +63,7 @@ tableVieScoreFsTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp 
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "2") $ text ""
-                elAttr "th" ("colspan" =: "3") . dynText
+                elAttr "th" ("colspan" =: "3" <> "class" =: "is-light") . dynText
                     $ ffor sgs (\case [] -> "Pace"; _ -> "Time †")
                 el "th" $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points-breakdown") $ text "Points for Time (Descending)"
