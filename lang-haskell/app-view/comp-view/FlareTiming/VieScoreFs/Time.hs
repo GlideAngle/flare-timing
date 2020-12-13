@@ -217,7 +217,7 @@ pointRow w dfNt pt sAltFs x = do
 
         elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
 
-        elClass "td" "td-effort-points" . dynText
+        elClass "td" "td-time-points" . dynText
             $ showMax Pt.time showTaskTimePoints pt points
         elClass "td" "td-norm td-arrival-points" . text $ tPts
         elClass "td" "td-norm td-arrival-points" . text $ tPtsDiff
