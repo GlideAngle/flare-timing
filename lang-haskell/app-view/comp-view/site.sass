@@ -300,13 +300,10 @@ tr.pilot-dfnt .td-pilot
 .td-start-start
     @extend .has-text-centered;
 
-table:not(.sg) .td-start-start
-    @extend .has-text-success;
-
 .td-start-gate
     @extend .has-text-centered;
 
-table.sg .td-start-gate
+table :not(.td-norm).td-start-gate
     @extend .has-text-success;
 
 .td-awarded-start
@@ -328,7 +325,7 @@ table:not(.sg) .td-pace
 .td-time
     @extend .has-text-centered;
 
-table.sg .td-time
+table.sg :not(.td-norm).td-time
     @extend .has-text-info;
 
 table:not(.sg) .td-time
