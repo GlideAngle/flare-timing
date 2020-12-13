@@ -58,6 +58,8 @@ tableVieScoreFsTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp 
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
 
+    let thSpace = elClass "th" "th-space" $ text ""
+
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
@@ -81,6 +83,26 @@ tableVieScoreFsTime _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp 
                 elClass "th" "th-time-points" $ text "Ft"
                 elClass "th" "th-norm th-time-points" $ text "Fs"
                 elClass "th" "th-norm th-diff" $ text "Δ"
+
+            elClass "tr" "tr-allocation" $ do
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation")
+                    $ text "Available Points (Units)"
+
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                elClass "th" "th-hms" $ text "(HH:MM:SS)"
+                thSpace
+                thSpace
+
+                elClass "th" "th-arrival-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showTaskTimePoints (Just x) x)
+                        . Pt.time
+                        )
+                    <$> pt
+
+                thSpace
+                thSpace
 
         _ <- el "tbody" $ do
             _ <-
