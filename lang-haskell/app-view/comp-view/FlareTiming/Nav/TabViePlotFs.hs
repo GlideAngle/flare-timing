@@ -40,7 +40,7 @@ tabsViePlotFs =
             let eLead = (const ViePlotFsTabLead) <$> domEvent Click lead
             let eArrive = (const ViePlotFsTabArrive) <$> domEvent Click arrive
 
-            reachClass <- holdDyn "" . leftmost $
+            reachClass <- holdDyn "is-active" . leftmost $
                             [ "is-active" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eTime
