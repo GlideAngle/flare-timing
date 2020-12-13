@@ -117,7 +117,8 @@ tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sD
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text ""
+                elAttr "th" ("colspan" =: "2" <> "class" =: "is-light") $ text "Place"
+                el "th" $ text ""
 
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points")
                     $ text "Distance"
@@ -135,8 +136,8 @@ tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sD
                     $ text "Total"
 
             el "tr" $ do
-                elClass "th" "th-norm th-placing" $ text "✓"
-                elClass "th" "th-placing" $ text "Place"
+                elClass "th" "th-norm th-placing" $ text "Ft"
+                elClass "th" "th-placing" $ text "Fs"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
                 elClass "th" "th-distance-points" $ text "Ft"
