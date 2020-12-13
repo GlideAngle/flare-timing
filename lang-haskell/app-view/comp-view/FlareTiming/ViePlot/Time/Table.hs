@@ -96,7 +96,7 @@ rowSpeed w select mapN p ts = do
         el "td" . dynText $ showSpeedFrac . frac <$> ts
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 

@@ -149,7 +149,7 @@ rowLeadCompare w mapN select p tl = do
         elClass "td" "td-norm td-norm" . text $ yArea
         elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 

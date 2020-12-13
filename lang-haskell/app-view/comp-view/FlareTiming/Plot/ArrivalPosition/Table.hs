@@ -43,7 +43,7 @@ rowArrivalPosition w select p ta = do
     (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         el "td" . dynText $ showRank . rank <$> ta
         el "td" . dynText $ showArrivalFrac . frac <$> ta
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 

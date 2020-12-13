@@ -53,7 +53,7 @@ rowArrivalTime w select p ta = do
         el "td" . dynText $ showHms . lag <$> ta
         el "td" . dynText $ showHr . lag <$> ta
         el "td" . dynText $ showArrivalFrac . frac <$> ta
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
     return $ const pilot <$> domEvent Click eRow
 

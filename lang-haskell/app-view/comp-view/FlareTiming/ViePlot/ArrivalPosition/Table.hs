@@ -64,7 +64,7 @@ rowArrivalPosition w select mapT p ta = do
         el "td" . dynText $ showArrivalFrac . frac <$> ta
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 

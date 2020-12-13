@@ -69,7 +69,7 @@ rowLeadSimple w select p av = do
     (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         el "td" . dynText $ showCoef . coef <$> av
         el "td" . dynText $ showLeadingFrac . frac <$> av
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 
@@ -142,7 +142,7 @@ rowLeadCompare w mapN select p tl = do
         elClass "td" "td-lead-frac" . dynText $ showLeadingFrac . frac <$> tl
         elClass "td" "td-norm" . text $ yFrac
         elClass "td" "td-norm" . text $ yFracDiff
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 

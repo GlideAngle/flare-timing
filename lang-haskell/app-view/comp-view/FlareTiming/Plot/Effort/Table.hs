@@ -43,7 +43,7 @@ rowEffort w select p te = do
     (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> te
         el "td" . dynText $ showEffortFrac . frac <$> te
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 

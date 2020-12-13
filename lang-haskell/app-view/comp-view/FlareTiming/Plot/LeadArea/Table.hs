@@ -70,7 +70,7 @@ rowLeadSimple w select p av = do
     (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         el "td" . dynText $ showArea . area <$> av
         el "td" . dynText $ showCoef . coef <$> av
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 
@@ -109,7 +109,7 @@ rowLeadCompare w select p tl = do
     (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         elClass "td" "td-lead-area" . dynText $ showArea . area <$> tl
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 
