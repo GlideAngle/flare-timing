@@ -97,11 +97,11 @@ tableVieScoreFsReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltF
                     Just _ -> do
                         elClass "th" "th-distance-flown" $ text "Ft"
                         elClass "th" "th-distance-extra" $ text "Ft"
-                        elClass "th" "th-norm th-best-distance" $ text "Fs"
+                        elClass "th" "th-norm th-best-distance-flown" $ text "Fs"
                         elClass "th" "th-norm th-diff" $ text "Δ"
                     Nothing -> do
                         elClass "th" "th-distance-flown" $ text "Ft"
-                        elClass "th" "th-norm th-best-distance" $ text "Fs"
+                        elClass "th" "th-norm th-best-distance-flown" $ text "Fs"
                         elClass "th" "th-norm th-diff" $ text "Δ")
 
                 elClass "th" "th-reach-points" $ text "Ft"
@@ -239,8 +239,7 @@ pointRow w _utcOffset free _ln stp dfNt pt sAltFs x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let awardFree = ffor extraReach (\pd ->
-            let c = "td-best-distance" in
+    let awardFree c = ffor extraReach (\pd ->
             maybe
                 (c, "")
                 (\(PilotDistance r) ->
@@ -297,17 +296,17 @@ pointRow w _utcOffset free _ln stp dfNt pt sAltFs x = do
         elClass "td" "td-placing" . dynText $ showRank . Bk.place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
+        elClass "td" "td-min-distance" . dynText $ snd <$> awardFree "td-min-distance"
 
         dyn_ $ ffor stp (\case
             Just _ -> do
-                elDynClass "td" (fst <$> awardFree) $ text xF
-                elDynClass "td" (fst <$> awardFree) $ text xE
-                elClass "td" "td-norm td-best-distance" $ text yE
+                elDynClass "td" (fst <$> awardFree "td-best-distance-flown") $ text xF
+                elDynClass "td" (fst <$> awardFree "td-best-distance-extra") $ text xE
+                elClass "td" "td-norm td-best-distance-flown" $ text yE
                 elClass "td" "td-norm td-diff" $ text yDiffE
             Nothing -> do
-                elDynClass "td" (fst <$> awardFree) $ text xF
-                elClass "td" "td-norm td-best-distance" $ text yF
+                elDynClass "td" (fst <$> awardFree "td-best-distance-flown") $ text xF
+                elClass "td" "td-norm td-best-distance-flown" $ text yF
                 elClass "td" "td-norm td-diff" $ text yDiffF)
 
         elClass "td" "td-reach-points" . dynText
