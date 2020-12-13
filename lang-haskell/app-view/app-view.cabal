@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d4fe24189ded4f07a684a6f90f2839f9aad13dc9b3ffa5b05f2cce564fc71524
+-- hash: 48cf363384a7633d6172df6539e98f69ae59b4ef2d1055e5ccceda05e82cc68b
 
 name:           app-view
 version:        0.1.0
@@ -63,6 +63,9 @@ executable comp-view
       FlareTiming.Nav.TabViePlotFs
       FlareTiming.Nav.TabViePlotFsLead
       FlareTiming.Nav.TabVieScoreFs
+      FlareTiming.Penal.EssGoal
+      FlareTiming.Penal.Jump
+      FlareTiming.Penal.Manual
       FlareTiming.Pilot
       FlareTiming.Plot.Arrival
       FlareTiming.Plot.ArrivalPosition.Plot
@@ -101,44 +104,33 @@ executable comp-view
       FlareTiming.Plot.Weight.Plot
       FlareTiming.Plot.Weight.View
       FlareTiming.Plot.Weight.Working
+      FlareTiming.Score.Arrive
+      FlareTiming.Score.Effort
+      FlareTiming.Score.Over
+      FlareTiming.Score.Reach
+      FlareTiming.Score.Show
+      FlareTiming.Score.Speed
+      FlareTiming.Score.Split
+      FlareTiming.Score.Time
       FlareTiming.Statistics
       FlareTiming.Task
       FlareTiming.Task.Absent
       FlareTiming.Task.Detail
       FlareTiming.Task.Geo
-      FlareTiming.Task.Penal.EssGoal
-      FlareTiming.Task.Penal.Jump
-      FlareTiming.Task.Penal.Manual
-      FlareTiming.Task.Score.Arrive
-      FlareTiming.Task.Score.Effort
-      FlareTiming.Task.Score.Over
-      FlareTiming.Task.Score.Reach
-      FlareTiming.Task.Score.Show
-      FlareTiming.Task.Score.Speed
-      FlareTiming.Task.Score.Split
-      FlareTiming.Task.Score.Time
       FlareTiming.Task.Turnpoints
       FlareTiming.Task.Validity
-      FlareTiming.Task.Validity.Distance
-      FlareTiming.Task.Validity.Launch
-      FlareTiming.Task.Validity.Stop
-      FlareTiming.Task.Validity.Stop.Counts
-      FlareTiming.Task.Validity.Stop.Max
-      FlareTiming.Task.Validity.Stop.Mean
-      FlareTiming.Task.Validity.Stop.StdDev
-      FlareTiming.Task.Validity.Task
-      FlareTiming.Task.Validity.Time
-      FlareTiming.Task.Validity.Widget
-      FlareTiming.Task.VieScoreBoth.Over
-      FlareTiming.Task.VieScoreFs.Arrive
-      FlareTiming.Task.VieScoreFs.Effort
-      FlareTiming.Task.VieScoreFs.Over
-      FlareTiming.Task.VieScoreFs.Reach
-      FlareTiming.Task.VieScoreFs.Speed
-      FlareTiming.Task.VieScoreFs.Split
-      FlareTiming.Task.VieScoreFs.Time
       FlareTiming.Time
       FlareTiming.Turnpoint
+      FlareTiming.Validity.Distance
+      FlareTiming.Validity.Launch
+      FlareTiming.Validity.Stop
+      FlareTiming.Validity.Stop.Counts
+      FlareTiming.Validity.Stop.Max
+      FlareTiming.Validity.Stop.Mean
+      FlareTiming.Validity.Stop.StdDev
+      FlareTiming.Validity.Task
+      FlareTiming.Validity.Time
+      FlareTiming.Validity.Widget
       FlareTiming.ViePlot.Arrival
       FlareTiming.ViePlot.ArrivalPosition.Plot
       FlareTiming.ViePlot.ArrivalPosition.Table
@@ -167,6 +159,13 @@ executable comp-view
       FlareTiming.ViePlot.Time.Plot
       FlareTiming.ViePlot.Time.Table
       FlareTiming.ViePlot.Time.View
+      FlareTiming.VieScoreBoth.Over
+      FlareTiming.VieScoreFs.Arrive
+      FlareTiming.VieScoreFs.Effort
+      FlareTiming.VieScoreFs.Reach
+      FlareTiming.VieScoreFs.Speed
+      FlareTiming.VieScoreFs.Split
+      FlareTiming.VieScoreFs.Time
       FlareTiming.View
       Reflex.Dom.Contrib.Utils
       WireTypes.Arrival

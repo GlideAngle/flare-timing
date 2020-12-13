@@ -4,8 +4,7 @@ import Reflex
 import Reflex.Dom
 
 data VieScoreFsTab
-    = VieScoreFsTabOver
-    | VieScoreFsTabSplit
+    = VieScoreFsTabSplit
     | VieScoreFsTabReach
     | VieScoreFsTabEffort
     | VieScoreFsTabSpeed
@@ -16,8 +15,6 @@ tabsVieScoreFs :: MonadWidget t m => m (Event t VieScoreFsTab)
 tabsVieScoreFs =
     elClass "div" "tabs" $
         el "ul" $ mdo
-            (over, _) <- elDynClass' "li" overClass $ el "a" (text "Overview")
-
             (split, _) <- elDynClass' "li" splitClass . el "a" $ do
                             elClass "span" "legend-reach" $ text "▩"
                             elClass "span" "legend-effort" $ text "▩"
@@ -46,7 +43,6 @@ tabsVieScoreFs =
                             elClass "span" "legend-arrival" $ text "▩"
                             text "Arrival"
 
-            let eOver = (const VieScoreFsTabOver) <$> domEvent Click over
             let eSplit = (const VieScoreFsTabSplit) <$> domEvent Click split
             let eReach = (const VieScoreFsTabReach) <$> domEvent Click reach
             let eEffort = (const VieScoreFsTabEffort) <$> domEvent Click effort
@@ -54,19 +50,8 @@ tabsVieScoreFs =
             let eTime = (const VieScoreFsTabTime) <$> domEvent Click time
             let eArrive = (const VieScoreFsTabArrive) <$> domEvent Click arrive
 
-            overClass <- holdDyn "is-active" . leftmost $
-                            [ "is-active" <$ eOver
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eEffort
-                            , "" <$ eSpeed
-                            , "" <$ eTime
-                            , "" <$ eArrive
-                            ]
-
-            splitClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
-                            , "is-active" <$ eSplit
+            splitClass <- holdDyn "is-active" . leftmost $
+                            [ "is-active" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eSpeed
@@ -75,8 +60,7 @@ tabsVieScoreFs =
                             ]
 
             reachClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
-                            , "" <$ eSplit
+                            [ "" <$ eSplit
                             , "is-active" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eSpeed
@@ -85,8 +69,7 @@ tabsVieScoreFs =
                             ]
 
             effortClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
-                            , "" <$ eSplit
+                            [ "" <$ eSplit
                             , "" <$ eReach
                             , "is-active" <$ eEffort
                             , "" <$ eSpeed
@@ -95,8 +78,7 @@ tabsVieScoreFs =
                             ]
 
             speedClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
-                            , "" <$ eSplit
+                            [ "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
                             , "is-active" <$ eSpeed
@@ -105,8 +87,7 @@ tabsVieScoreFs =
                             ]
 
             timeClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
-                            , "" <$ eSplit
+                            [ "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eSpeed
@@ -115,8 +96,7 @@ tabsVieScoreFs =
                             ]
 
             arriveClass <- holdDyn "" . leftmost $
-                            [ "" <$ eOver
-                            , "" <$ eSplit
+                            [ "" <$ eSplit
                             , "" <$ eReach
                             , "" <$ eEffort
                             , "" <$ eSpeed
@@ -125,8 +105,7 @@ tabsVieScoreFs =
                             ]
 
             return . leftmost $
-                [ eOver
-                , eSplit
+                [ eSplit
                 , eReach
                 , eEffort
                 , eSpeed

@@ -73,7 +73,6 @@ import FlareTiming.Nav.TabViePlotFs (ViePlotFsTab(..), tabsViePlotFs)
 import FlareTiming.Nav.TabViePlotFsLead (ViePlotFsLeadTab(..), tabsViePlotFsLead)
 
 import FlareTiming.VieScoreBoth.Over (tableVieScoreBothOver)
-import FlareTiming.VieScoreFs.Over (tableVieScoreFsOver)
 import FlareTiming.VieScoreFs.Split (tableVieScoreFsSplit)
 import FlareTiming.VieScoreFs.Reach (tableVieScoreFsReach)
 import FlareTiming.VieScoreFs.Effort (tableVieScoreFsEffort)
@@ -330,17 +329,14 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                         VieTabScoreFs -> do
                             tabVieScoreFs <- tabsVieScoreFs
                             let tableVieScoreFsHold =
-                                    elAttr "div" ("id" =: "vie-with-both") $
-                                        tableVieScoreFsOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
+                                    elAttr "div" ("id" =: "score-points") $
+                                        tableVieScoreFsSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
 
                             _ <- widgetHold tableVieScoreFsHold $
                                     (\case
-                                        VieScoreFsTabOver ->
+                                        VieScoreFsTabSplit ->
                                             tableVieScoreFsHold
 
-                                        VieScoreFsTabSplit ->
-                                            elAttr "div" ("id" =: "score-points") $
-                                                tableVieScoreFsSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                                         VieScoreFsTabReach ->
                                             elAttr "div" ("id" =: "score-reach") $
                                                 tableVieScoreFsReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
