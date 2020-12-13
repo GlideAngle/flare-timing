@@ -5,7 +5,7 @@ import Data.List (sortBy)
 import Data.Maybe (fromMaybe)
 import Text.Printf (printf)
 import Reflex.Dom
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (pack, unpack)
 import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
@@ -80,12 +80,12 @@ tableVieScoreFsEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp s
                                 , endChunk = (IxChunk ixN, Chunk (PilotDistance ec))
                                 }
                     } ->
-                        (T.pack $ printf "%d landouts over " landout)
-                        <> (showPilotDistance 1 (PilotDistance $ ec + 0.1)) <> " km"
-                        <> (T.pack $ printf " or %d chunks" ixN)
+                        (printf "%d landouts over " landout)
+                        <> (T.unpack $ showPilotDistance 1 (PilotDistance $ ec + 0.1)) <> " km"
+                        <> printf " or %d chunks" ixN
                         <> " sum to "
-                        <> T.pack (show diff)
-                        <> (T.pack $ printf " looking ahead %.1f km" (0.1 * fromIntegral n :: Double))
+                        <> show diff
+                        <> printf " looking ahead %.1f km" (0.1 * fromIntegral n :: Double)
             _ -> ""
 
     let msgChunkingN = ffor lgN' describeChunking
@@ -114,12 +114,8 @@ tableVieScoreFsEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp s
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "8") $ dynText msgChunking
-                elAttr "th" ("colspan" =: "3") $ text ""
-
-            el "tr" $ do
-                elAttr "th" ("colspan" =: "8" <> "class" =: "th-norm chunking") $ dynText msgChunkingN
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort (Descending)"
+                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "9" <> "class" =: "th-distance-points-breakdown") $ text "Points for Effort (Descending)"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "Place"
@@ -182,6 +178,8 @@ tableVieScoreFsEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp s
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
+            dyn_ $ ffor msgChunking (foot . T.pack . printf "Ft %s")
+            dyn_ $ ffor msgChunkingN (foot . T.pack . printf "Fs %s")
             foot "* Any points so annotated are the maximum attainable."
             foot "† Points awarded for effort are also called distance difficulty points."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
