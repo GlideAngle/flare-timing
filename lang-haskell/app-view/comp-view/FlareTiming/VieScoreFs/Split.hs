@@ -119,13 +119,20 @@ tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sD
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
 
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown")
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points")
                     $ text "Distance"
 
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points") $ text "Time"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-leading-points") $ text "Lead"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points") $ text "Arrival"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-total-points") $ text "Total"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points")
+                    $ text "Time"
+
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-leading-points")
+                    $ text "Lead"
+
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points")
+                    $ text "Arrival"
+
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-total-points")
+                    $ text "Total"
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"

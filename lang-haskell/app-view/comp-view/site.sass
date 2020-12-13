@@ -637,33 +637,44 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 .legend.table td
     border: none;
 
+#score-compare-split .th-reach-points, #score-compare-split .td-reach-points,
+#score-compare-split .th-distance-points, #score-compare-split .td-distance-points,
+#score-compare-reach .th-reach-points, #score-compare-reach .td-reach-points,
 #score-reach .th-reach-points, #score-reach .td-reach-points,
 #score-overview .th-distance-points, #score-overview .td-distance-points,
 #score-penal .th-distance-points, #score-penal .td-distance-points,
 #score-points .th-distance-points-breakdown,
 #score-points .th-distance-points, #score-points .td-distance-points,
+#score-compare-reach .th-distance-points-breakdown,
 #score-reach .th-distance-points-breakdown,
 #score-reach .th-distance-points, #score-reach .td-distance-points
     color: $reach-invert;
     border-color: $reach;
     background-color: $reach;
 
+#score-compare-split .th-effort-points, #score-compare-split .td-effort-points,
+#score-compare-effort .th-effort-points, #score-compare-effort .td-effort-points,
 #score-effort .th-effort-points, #score-effort .td-effort-points,
+#score-compare-effort .th-distance-points-breakdown,
 #score-effort .th-distance-points-breakdown,
 #score-effort .th-distance-points, #score-effort .td-distance-points
     color: $effort-invert;
     border-color: $effort;
     background-color: $effort;
 
+#score-compare-split .th-time-points, #score-compare-split .td-time-points,
+#score-compare-time .th-time-points, #score-compare-time .td-time-points,
 #score-time .th-time-points, #score-time .td-time-points,
 #score-overview .th-time-points, #score-overview .td-time-points,
 #score-penal .th-time-points, #score-penal .td-time-points,
+#score-compare-time .th-time-points-breakdown,
 #score-time .th-time-points-breakdown,
 #score-points .th-time-points, #score-points .td-time-points
     color: $time-invert;
     border-color: $time;
     background-color: $time;
 
+#score-compare-split .th-leading-points, #score-compare-split .td-leading-points,
 #score-overview .th-leading-points, #score-overview .td-leading-points,
 #score-penal .th-leading-points, #score-penal .td-leading-points,
 #score-points .th-leading-points, #score-points .td-leading-points
@@ -671,9 +682,12 @@ table td.td-geo-plane, table td.td-geo-pythagorus
     border-color: $leading;
     background-color: $leading;
 
+#score-compare-split .th-arrival-points, #score-compare-split .td-arrival-points,
+#score-compare-arrival .th-arrival-points, #score-compare-arrival .td-arrival-points,
 #score-arrival .th-arrival-points, #score-arrival .td-arrival-points,
 #score-overview .th-arrival-points, #score-overview .td-arrival-points,
 #score-penal .th-arrival-points, #score-penal .td-arrival-points,
+#score-compare-arrival .th-arrival-points-breakdown,
 #score-arrival .th-arrival-points-breakdown,
 #score-points .th-arrival-points, #score-points .td-arrival-points
     color: $arrival-invert;
@@ -685,6 +699,7 @@ table td.td-geo-plane, table td.td-geo-pythagorus
     border-color: $time-arrival;
     background-color: $time-arrival;
 
+#score-compare-split .th-total-points, #score-compare-split .td-total-points,
 #score-overview .th-total-points, #score-overview .td-total-points,
 #score-penal .th-total-points, #score-penal .td-total-points,
 #score-points .th-total-points, #score-points .td-total-points,
@@ -693,6 +708,7 @@ table td.td-geo-plane, table td.td-geo-pythagorus
     @extend .is-primary;
 
 // NOTE: When the background colours are faded, use black for the color.
+#score-compare-split .td-total-points,
 #score-overview .td-total-points,
 #score-penal .td-total-points,
 #score-points .td-total-points,

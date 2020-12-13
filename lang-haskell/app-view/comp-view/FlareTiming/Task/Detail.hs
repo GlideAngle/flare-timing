@@ -329,7 +329,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                         VieTabScoreFs -> do
                             tabVieScoreFs <- tabsVieScoreFs
                             let tableVieScoreFsHold =
-                                    elAttr "div" ("id" =: "score-points") $
+                                    elAttr "div" ("id" =: "score-compare-split") $
                                         tableVieScoreFsSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
 
                             _ <- widgetHold tableVieScoreFsHold $
@@ -338,19 +338,19 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                                             tableVieScoreFsHold
 
                                         VieScoreFsTabReach ->
-                                            elAttr "div" ("id" =: "score-reach") $
+                                            elAttr "div" ("id" =: "score-compare-reach") $
                                                 tableVieScoreFsReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
                                         VieScoreFsTabEffort ->
-                                            elAttr "div" ("id" =: "score-effort") $
+                                            elAttr "div" ("id" =: "score-compare-effort") $
                                                 tableVieScoreFsEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
                                         VieScoreFsTabSpeed ->
-                                            elAttr "div" ("id" =: "score-speed") $
+                                            elAttr "div" ("id" =: "score-compare-speed") $
                                                 tableVieScoreFsSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                                         VieScoreFsTabTime ->
-                                            elAttr "div" ("id" =: "score-time") $
+                                            elAttr "div" ("id" =: "score-compare-time") $
                                                 tableVieScoreFsTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                                         VieScoreFsTabArrive ->
-                                            elAttr "div" ("id" =: "score-arrival") $
+                                            elAttr "div" ("id" =: "score-compare-arrival") $
                                                 tableVieScoreFsArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
 
                                     <$> tabVieScoreFs
