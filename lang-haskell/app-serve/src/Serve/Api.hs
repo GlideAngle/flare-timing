@@ -1,4 +1,11 @@
-module ServeApi where
+module Serve.Api
+    ( CompInputApi
+    , TaskLengthApi
+    , GapPointApi
+    , compInputApi
+    , taskLengthApi
+    , gapPointApi
+    ) where
 
 import Data.Time.Clock (UTCTime)
 import Data.UnitsOfMeasure (u)
@@ -29,8 +36,8 @@ import Flight.Comp
     )
 import Flight.Route (OptimalRoute(..), TrackLine(..) , PlanarTrackLine(..))
 import Flight.Distance (QTaskDistance)
-import ServeTrack (RawLatLngTrack(..), BolsterStats(..))
-import ServeArea (RawLeadingArea(..))
+import Serve.Track (RawLatLngTrack(..), BolsterStats(..))
+import Serve.Area (RawLeadingArea(..))
 
 type CompInputApi k =
     "comp-input" :> "comps"

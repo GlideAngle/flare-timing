@@ -51,8 +51,8 @@ import Flight.Track.Cross
 import Flight.Track.Stop
 import Flight.EastNorth
 import qualified Flight.Kml as Kml
-import ServeTrack (RawLatLngTrack(..), BolsterStats(..))
-import ServeArea (RawLeadingArea(..))
+import Serve.Track (RawLatLngTrack(..), BolsterStats(..))
+import Serve.Area (RawLeadingArea(..))
 
 type SwagUiApi = SwaggerSchemaUI "swagger-ui" "swagger.json"
 

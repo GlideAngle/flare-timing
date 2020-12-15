@@ -6,7 +6,7 @@
 module Main where
 
 import Servant.PY
-import ServeApi
+import Serve.Api
 
 main :: IO ()
 main = do

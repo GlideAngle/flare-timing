@@ -1,4 +1,4 @@
-module ServeTrack
+module Serve.Track
     ( RawLatLngTrack(..)
     , BolsterStats(..)
     , crossToTrack

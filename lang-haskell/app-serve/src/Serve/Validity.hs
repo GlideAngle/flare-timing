@@ -1,4 +1,4 @@
-module ServeValidity (nullValidityWorking) where
+module Serve.Validity (nullValidityWorking) where
 
 import Data.UnitsOfMeasure (u)
 import "flight-gap-allot" Flight.Score

@@ -1,4 +1,4 @@
-module ServeArea (RawLeadingArea(..)) where
+module Serve.Area (RawLeadingArea(..)) where
 
 import GHC.Generics (Generic)
 import Data.Maybe (catMaybes)

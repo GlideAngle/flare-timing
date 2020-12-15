@@ -72,12 +72,16 @@ in    defs
               { dependencies =
                   deps # [ "servant-py" ]
               , other-modules =
-                  [ "ServeApi"
-                  , "ServeArea"
+                  [ "Serve.Api"
+                  , "Serve.App"
+                  , "Serve.Area"
+                  , "Serve.Config"
+                  , "Serve.Error"
+                  , "Serve.PointDiff"
+                  , "Serve.Track"
+                  , "Serve.Validity"
                   , "ServeOptions"
                   , "ServeSwagger"
-                  , "ServeTrack"
-                  , "ServeValidity"
                   ]
               , main =
                   "GenPyClient.hs"
@@ -90,12 +94,16 @@ in    defs
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , other-modules =
-                  [ "ServeApi"
-                  , "ServeArea"
+                  [ "Serve.Api"
+                  , "Serve.App"
+                  , "Serve.Area"
+                  , "Serve.Config"
+                  , "Serve.Error"
+                  , "Serve.PointDiff"
+                  , "Serve.Track"
+                  , "Serve.Validity"
                   , "ServeOptions"
                   , "ServeSwagger"
-                  , "ServeTrack"
-                  , "ServeValidity"
                   ]
               , main =
                   "ServeMain.hs"
