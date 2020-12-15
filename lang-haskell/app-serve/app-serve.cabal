@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 367333e320ddbaf1e4f8debf9cf4cf7ecb92a37219e703f997a4fce79554b1ac
+-- hash: 396b79a6911a28d7ffab4e3f62436f0ae70f0468d8057cd86e0d7b48f08c9728
 
 name:           app-serve
 version:        0.1.0
@@ -36,6 +36,7 @@ flag suppress-failing-tests
 executable ft-comp-py
   main-is: GenPyClient.hs
   other-modules:
+      Serve.Alt
       Serve.Api
       Serve.App
       Serve.Area
@@ -44,6 +45,7 @@ executable ft-comp-py
       Serve.Pilot
       Serve.PointDiff
       Serve.Route
+      Serve.Task
       Serve.Track
       Serve.Validity
       ServeOptions
@@ -108,6 +110,7 @@ executable ft-comp-py
 executable ft-comp-serve
   main-is: ServeMain.hs
   other-modules:
+      Serve.Alt
       Serve.Api
       Serve.App
       Serve.Area
@@ -116,6 +119,7 @@ executable ft-comp-serve
       Serve.Pilot
       Serve.PointDiff
       Serve.Route
+      Serve.Task
       Serve.Track
       Serve.Validity
       ServeOptions

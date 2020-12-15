@@ -72,7 +72,8 @@ in    defs
               { dependencies =
                   deps # [ "servant-py" ]
               , other-modules =
-                  [ "Serve.Api"
+                  [ "Serve.Alt"
+                  , "Serve.Api"
                   , "Serve.App"
                   , "Serve.Area"
                   , "Serve.Config"
@@ -80,6 +81,7 @@ in    defs
                   , "Serve.Pilot"
                   , "Serve.PointDiff"
                   , "Serve.Route"
+                  , "Serve.Task"
                   , "Serve.Track"
                   , "Serve.Validity"
                   , "ServeOptions"
@@ -96,7 +98,8 @@ in    defs
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , other-modules =
-                  [ "Serve.Api"
+                  [ "Serve.Alt"
+                  , "Serve.Api"
                   , "Serve.App"
                   , "Serve.Area"
                   , "Serve.Config"
@@ -104,6 +107,7 @@ in    defs
                   , "Serve.Pilot"
                   , "Serve.PointDiff"
                   , "Serve.Route"
+                  , "Serve.Task"
                   , "Serve.Track"
                   , "Serve.Validity"
                   , "ServeOptions"
