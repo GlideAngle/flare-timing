@@ -6,7 +6,8 @@ import Control.Monad (join)
 
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms
-    ( getTasks, getTaskLengths, getStatsPointDiff, getComps, getNominals
+    ( DiffWay(..)
+    , getTasks, getTaskLengths, getStatsPointDiff, getComps, getNominals
     , getValidity, getAltValidity
     , getAllocation
     )
@@ -30,7 +31,9 @@ view () = do
     ns <- holdDyn [] . fmap pure =<< getNominals pb
     ls <- holdDyn [] =<< getTaskLengths pb
     xs <- holdDyn [] =<< getTasks pb
-    stats <- holdDyn [] =<< getStatsPointDiff pb
+    diffFtFs <- holdDyn [] =<< getStatsPointDiff DiffWayFtFs pb
+    diffFtAs <- holdDyn [] =<< getStatsPointDiff DiffWayFtAs pb
+    diffAsFs <- holdDyn [] =<< getStatsPointDiff DiffWayAsFs pb
 
     let bothLists = zipDynWith (,) ls xs
     let xsNotNull = ffor xs (\xs' -> not $ null xs')
@@ -54,10 +57,11 @@ view () = do
     el "div" $ mdo
 
         let eIx = switchDyn deIx
+        let compHold = compDetail ls' cs ns diffFtFs diffFtAs diffAsFs xs'
 
-        deIx <- widgetHold (compDetail ls' cs ns stats xs') $
+        deIx <- widgetHold compHold $
                     (\ix -> case ix of
-                        IxTaskNone -> compDetail ls' cs ns stats xs'
+                        IxTaskNone -> compHold
                         (IxTask ii) -> do
                             taskDetail
                                 ix

@@ -1,6 +1,7 @@
 module FlareTiming.Comms
     ( GetConstraint
     , AltDot(..)
+    , DiffWay(..)
     , getComps
     , getNominals
     , getTasks
@@ -169,8 +170,12 @@ getTasks = get "/comp-input/tasks"
 getTaskLengths :: Get t m [TaskDistance]
 getTaskLengths = get "/task-length/task-lengths"
 
-getStatsPointDiff :: Get t m [Maybe (Double, Double)]
-getStatsPointDiff = get "/stats/point-diff"
+data DiffWay = DiffWayFtFs | DiffWayFtAs | DiffWayAsFs
+
+getStatsPointDiff :: DiffWay -> Get t m [Maybe (Double, Double)]
+getStatsPointDiff DiffWayFtFs = get "/stats/point-diff-ft-fs"
+getStatsPointDiff DiffWayFtAs = get "/stats/point-diff-ft-as"
+getStatsPointDiff DiffWayAsFs = get "/stats/point-diff-as-fs"
 
 getComps :: Get t m Comp
 getComps = get "/comp-input/comps"

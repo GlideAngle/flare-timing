@@ -105,9 +105,6 @@ type GapPointApi k =
     :<|> "task-length" :> "task-lengths"
         :> Get '[JSON] [QTaskDistance Double [u| m |]]
 
-    :<|> "stats" :> "point-diff"
-        :> Get '[JSON] [Maybe (Double, Double)]
-
     :<|> "gap-point" :> "pilots-status"
         :> Get '[JSON] [(Pilot, [PilotTaskStatus])]
     :<|> "gap-point" :> "validity"
@@ -201,6 +198,15 @@ type GapPointApi k =
 
     :<|> "as-score" :> (Capture "task" Int) :> "score"
         :> Get '[JSON] [(Pilot, Alt.AltBreakdown)]
+
+    :<|> "stats" :> "point-diff-ft-fs"
+        :> Get '[JSON] [Maybe (Double, Double)]
+
+    :<|> "stats" :> "point-diff-ft-as"
+        :> Get '[JSON] [Maybe (Double, Double)]
+
+    :<|> "stats" :> "point-diff-as-fs"
+        :> Get '[JSON] [Maybe (Double, Double)]
 
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy

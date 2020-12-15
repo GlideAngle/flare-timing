@@ -19,10 +19,12 @@ taskList
     :: MonadWidget t m
     => Dynamic t [TaskDistance]
     -> Dynamic t [Maybe (Double, Double)]
+    -> Dynamic t [Maybe (Double, Double)]
+    -> Dynamic t [Maybe (Double, Double)]
     -> Dynamic t [Task]
     -> m (Event t IxTask)
-taskList ds' stats' xs = do
-    ev <- dyn $ ffor2 ds' stats' (\ds stats -> do
+taskList ds' diffFtFs' _diffFtAs' _diffAsFs' xs = do
+    ev <- dyn $ ffor2 ds' diffFtFs' (\ds diffFtFs -> do
             if null ds
                 then
                     elClass "article" "notification is-warning" $
@@ -51,7 +53,7 @@ taskList ds' stats' xs = do
                             elClass "th" "th-task-stats-mean" $ text "Δ Mean"
                             elClass "th" "th-task-stats-stddev" $ text "± Std Dev"
 
-                    rows <- el "tbody" $ simpleList ixs (rowTask ds stats)
+                    rows <- el "tbody" $ simpleList ixs (rowTask ds diffFtFs)
 
                     let tdFoot = elAttr "td" ("colspan" =: "8")
                     let foot = el "tr" . tdFoot . text
@@ -72,7 +74,7 @@ rowTask
     -> [Maybe (Double, Double)]
     -> Dynamic t (IxTask, Task)
     -> m (Event t ())
-rowTask ds stats x' = do
+rowTask ds diffFtFs x' = do
     ev <- dyn $ ffor x' (\(ix, x@Task{taskName, stopped, cancelled}) ->
                 let isStopped = case stopped of Just TaskStop{} -> True; _ -> False in
 
@@ -85,7 +87,7 @@ rowTask ds stats x' = do
                                     dTask : _ -> showTaskDistance dTask
                                     _ -> ""
 
-                        let (mn, stddev, meanClass, sdClass) = case drop (i - 1) stats of
+                        let (mn, stddev, meanClass, sdClass) = case drop (i - 1) diffFtFs of
                                     Just (m, sd) : _ ->
                                         let (m', sd') = (abs m, abs sd) in
                                         ( printf "%+03.1f" m

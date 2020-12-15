@@ -42,7 +42,7 @@ import Serve.Api
     ( CompInputApi, TaskLengthApi, GapPointApi
     , compInputApi, taskLengthApi, gapPointApi
     )
-import Serve.PointDiff (getTaskPointsDiffStats)
+import Serve.PointDiff (DiffWay(..), getTaskPointsDiffStats)
 import Serve.Route
     ( getTaskRouteSphericalEdge
     , getTaskRouteEllipsoidEdge
@@ -192,7 +192,6 @@ serverGapPointApi cfg =
         :<|> getTaskRouteProjectedEllipsoidEdge
         :<|> getTaskRouteProjectedPlanarEdge
         :<|> getTaskRouteLengths
-        :<|> getTaskPointsDiffStats
         :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
@@ -228,6 +227,10 @@ serverGapPointApi cfg =
         :<|> getAltTaskScore AltFs
         :<|> getAltTaskArrival
         :<|> getAltTaskScore AltAs
+
+        :<|> getTaskPointsDiffStats DiffWayFtFs
+        :<|> getTaskPointsDiffStats DiffWayFtAs
+        :<|> getTaskPointsDiffStats DiffWayAsFs
     where
         c = asks compSettings
         p = asks pointing
