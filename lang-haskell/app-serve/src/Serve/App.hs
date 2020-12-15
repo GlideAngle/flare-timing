@@ -21,7 +21,7 @@ module Serve.App
 import GHC.Records
 import qualified Data.Text as T (Text)
 import Data.Time.Clock (UTCTime)
-import Data.Maybe (isNothing, catMaybes)
+import Data.Maybe (catMaybes)
 import Data.List ((\\), nub, sort, sortOn, find, zip4)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -79,7 +79,6 @@ import "flight-gap-weight" Flight.Score
     , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     )
 import Flight.Scribe (readPilotDiscardFurther)
-import Flight.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Comp
     ( AltDot(AltFs, AltAs)
     , IxTask(..)
@@ -91,16 +90,11 @@ import Flight.Comp
     , DfNoTrackPilot(..)
     , DfNoTrack(..)
     , Nyp(..)
-    , Comp(..)
     , CompSettings(..)
     )
-import Flight.Route
-    ( OptimalRoute(..), TaskTrack(..), TrackLine(..), GeoLines(..)
-    , ProjectedTrackLine(..), PlanarTrackLine(..)
-    )
+import Flight.Route (TrackLine(..), GeoLines(..))
 import Flight.Mask (checkTracks)
 import Data.Ratio.Rounding (dpRound)
-import Flight.Distance (QTaskDistance)
 import Serve.Track (RawLatLngTrack(..), BolsterStats(..), crossToTrack, tagToTrack)
 import Serve.Area (RawLeadingArea(..))
 import Serve.Validity (nullValidityWorking)
@@ -110,9 +104,16 @@ import Serve.Api
     ( CompInputApi, TaskLengthApi, GapPointApi
     , compInputApi, taskLengthApi, gapPointApi
     )
-import Serve.Error
-    (errTaskStep, errTaskBounds, errPilotNotFound, errPilotTrackNotFound, errTaskLengths)
+import Serve.Error (errTaskStep, errTaskBounds, errPilotNotFound, errPilotTrackNotFound)
 import Serve.PointDiff (getTaskPointsDiffStats)
+import Serve.Route
+    ( getTaskRouteSphericalEdge
+    , getTaskRouteEllipsoidEdge
+    , getTaskRouteProjectedSphericalEdge
+    , getTaskRouteProjectedEllipsoidEdge
+    , getTaskRouteProjectedPlanarEdge
+    , getTaskRouteLengths
+    )
 
 type CompInputSwagUiApi k = SwagUiApi :<|> CompInputApi k
 type TaskLengthSwagUiApi k = SwagUiApi :<|> TaskLengthApi k
@@ -383,144 +384,6 @@ getAltTaskValidityWorking ii = do
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "gap-point" ii
-
-getTaskRouteSphericalEdge :: Int -> AppT k IO (OptimalRoute (Maybe TrackLine))
-getTaskRouteSphericalEdge ii = do
-    xs' <- asks routing
-    case xs' of
-        Just xs ->
-            case drop (ii - 1) xs of
-                Just TaskTrack{sphericalEdgeToEdge = x} : _ -> return x
-                _ -> throwError $ errTaskBounds ii
-
-        _ -> throwError $ errTaskStep "task-length" ii
-
-getTaskRouteEllipsoidEdge :: Int -> AppT k IO (OptimalRoute (Maybe TrackLine))
-getTaskRouteEllipsoidEdge ii = do
-    xs' <- asks routing
-    case xs' of
-        Just xs ->
-            case drop (ii - 1) xs of
-                Just TaskTrack{ellipsoidEdgeToEdge = x} : _ -> return x
-                _ -> throwError $ errTaskBounds ii
-
-        _ -> throwError $ errTaskStep "task-length" ii
-
-getTaskRouteProjectedSphericalEdge :: Int -> AppT k IO TrackLine
-getTaskRouteProjectedSphericalEdge ii = do
-    xs' <- asks routing
-    case xs' of
-        Just xs ->
-            case drop (ii - 1) xs of
-                Just
-                   TaskTrack
-                       { projection =
-                           OptimalRoute
-                               { taskRoute =
-                                   Just
-                                       ProjectedTrackLine
-                                           { spherical = x }}} : _ -> return x
-
-                _ -> throwError $ errTaskBounds ii
-
-        _ -> throwError $ errTaskStep "task-length" ii
-
-getTaskRouteProjectedEllipsoidEdge :: Int -> AppT k IO TrackLine
-getTaskRouteProjectedEllipsoidEdge ii = do
-    xs' <- asks routing
-    case xs' of
-        Just xs ->
-            case drop (ii - 1) xs of
-                Just
-                   TaskTrack
-                       { projection =
-                           OptimalRoute
-                               { taskRoute =
-                                   Just
-                                       ProjectedTrackLine
-                                           { ellipsoid = x }}} : _ -> return x
-
-                _ -> throwError $ errTaskBounds ii
-
-        _ -> throwError $ errTaskStep "task-length" ii
-
-getTaskRouteProjectedPlanarEdge :: Int -> AppT k IO PlanarTrackLine
-getTaskRouteProjectedPlanarEdge ii = do
-    xs' <- asks routing
-    case xs' of
-        Just xs ->
-            case drop (ii - 1) xs of
-                Just
-                   TaskTrack
-                       { projection =
-                           OptimalRoute
-                               { taskRoute =
-                                   Just
-                                       ProjectedTrackLine
-                                           { planar = x }}} : _ -> return x
-
-                _ -> throwError $ errTaskBounds ii
-
-        _ -> throwError $ errTaskStep "task-length" ii
-
-getTaskRouteLengths :: AppT k IO [QTaskDistance Double [u| m |]]
-getTaskRouteLengths = do
-    Comp{earth = e, earthMath = m} <- comp <$> asks compSettings
-    xs' <- asks routing
-    case xs' of
-        Just xs -> do
-            let ds = [join $ fmap (getRouteLength e m) x | x <- xs]
-
-            if any isNothing ds
-               then throwError errTaskLengths
-               else return $ catMaybes ds
-
-        _ -> throwError errTaskLengths
-
-ellipsoidRouteLength :: TaskTrack -> Maybe (QTaskDistance Double [u| m |])
-ellipsoidRouteLength
-    TaskTrack
-        { ellipsoidEdgeToEdge =
-            OptimalRoute{taskRoute = Just TrackLine{distance = d}}} = Just d
-ellipsoidRouteLength
-    TaskTrack
-        { ellipsoidEdgeToEdge =
-            OptimalRoute{taskRoute = Nothing}} = Nothing
-
-flatRouteLength :: TaskTrack -> Maybe (QTaskDistance Double [u| m |])
-flatRouteLength
-    TaskTrack
-        { projection =
-            OptimalRoute
-                { taskRoute =
-                    Just
-                        ProjectedTrackLine
-                            {spherical =
-                                TrackLine
-                                    {distance = d}}}} = Just d
-flatRouteLength
-    TaskTrack
-        { projection = OptimalRoute{taskRoute = Nothing} } = Nothing
-
-getRouteLength
-    :: EarthModel Double
-    -> EarthMath
-    -> TaskTrack
-    -> Maybe (QTaskDistance Double [u| m |])
-getRouteLength (EarthAsSphere _) Haversines
-    TaskTrack
-        { sphericalEdgeToEdge =
-            OptimalRoute
-                { taskRoute =
-                    Just
-                        TrackLine
-                            {distance = d}}} = Just d
-getRouteLength (EarthAsEllipsoid _) Vincenty track = ellipsoidRouteLength track
-getRouteLength (EarthAsEllipsoid _) AndoyerLambert track = ellipsoidRouteLength track
-getRouteLength (EarthAsEllipsoid _) ForsytheAndoyerLambert track = ellipsoidRouteLength track
-getRouteLength (EarthAsEllipsoid _) FsAndoyer track = ellipsoidRouteLength track
-getRouteLength (EarthAsFlat _) Pythagorus track = flatRouteLength track
-getRouteLength _ _ _ = Nothing
 
 getTaskPilotAbs :: Int -> AppT k IO [Pilot]
 getTaskPilotAbs ii = do

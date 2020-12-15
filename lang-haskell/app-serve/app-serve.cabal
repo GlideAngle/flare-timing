@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 704b2e2eb42f795ef5ef5dd4676bce6bf90528cbc70c33289e243aac188da3b8
+-- hash: 592c8143f8e9c8c77495320f6bc44d99127dc98ffe1bc9a748fdd2e38cd7896d
 
 name:           app-serve
 version:        0.1.0
@@ -42,6 +42,7 @@ executable ft-comp-py
       Serve.Config
       Serve.Error
       Serve.PointDiff
+      Serve.Route
       Serve.Track
       Serve.Validity
       ServeOptions
@@ -112,6 +113,7 @@ executable ft-comp-serve
       Serve.Config
       Serve.Error
       Serve.PointDiff
+      Serve.Route
       Serve.Track
       Serve.Validity
       ServeOptions
