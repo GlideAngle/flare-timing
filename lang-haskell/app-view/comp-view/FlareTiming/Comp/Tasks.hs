@@ -38,11 +38,16 @@ taskList ds' diffFtFs diffFtAs diffAsFs xs = do
                     el "thead" $ do
                         el "tr" $ do
                             elAttr "th" ("colspan" =: "6") $ text ""
-                            elAttr "th" ("colspan" =: "2" <> "class" =: "ft-fs th-points")
+                            elAttr "th" ("colspan" =: "6" <> "class" =: "has-text-centered has-text-weight-bold is-light")
+                                $ text "3-Way (Ft,Fs,As) Comparison"
+
+                        el "tr" $ do
+                            elAttr "th" ("colspan" =: "6") $ text ""
+                            elAttr "th" ("colspan" =: "2" <> "class" =: "ft-fs th-points is-light")
                                 $ text "Ft with Fs"
                             elAttr "th" ("colspan" =: "2" <> "class" =: "ft-as th-points")
                                 $ text "Ft with As"
-                            elAttr "th" ("colspan" =: "2" <> "class" =: "as-fs th-points")
+                            elAttr "th" ("colspan" =: "2" <> "class" =: "as-fs th-points is-light")
                                 $ text "As with Fs"
 
                         el "tr" $ do
