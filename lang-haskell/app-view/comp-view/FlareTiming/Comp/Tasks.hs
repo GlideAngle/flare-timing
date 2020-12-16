@@ -34,15 +34,15 @@ taskList ds' diffFtFs diffFtAs diffAsFs xs = do
 
             let ixs = zip (IxTask <$> [1..]) <$> xs
             ys <-
-                elClass "table" "table" $ do
+                elClass "table" "table is-striped" $ do
                     el "thead" $ do
                         el "tr" $ do
                             elAttr "th" ("colspan" =: "6") $ text ""
-                            elAttr "th" ("colspan" =: "2" <> "class" =: "compare-fs")
+                            elAttr "th" ("colspan" =: "2" <> "class" =: "ft-fs th-points")
                                 $ text "Ft with Fs"
-                            elAttr "th" ("colspan" =: "2" <> "class" =: "is-light-gray")
+                            elAttr "th" ("colspan" =: "2" <> "class" =: "ft-as th-points")
                                 $ text "Ft with As"
-                            elAttr "th" ("colspan" =: "2" <> "class" =: "compare-fs")
+                            elAttr "th" ("colspan" =: "2" <> "class" =: "as-fs th-points")
                                 $ text "As with Fs"
 
                         el "tr" $ do

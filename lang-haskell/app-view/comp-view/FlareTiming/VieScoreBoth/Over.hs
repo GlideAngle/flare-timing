@@ -107,7 +107,7 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                 thSpace
                 elAttr "th" ("colspan" =: "3" <> "class" =: "ft-fs th-points") . dynText
                     $ fst <$> stats
-                elAttr "th" ("colspan" =: "3" <> "class" =: "as-ft th-points") . dynText
+                elAttr "th" ("colspan" =: "3" <> "class" =: "ft-as th-points") . dynText
                     $ fst . snd <$> stats
                 elAttr "th" ("colspan" =: "3" <> "class" =: "as-fs th-points") . dynText
                     $ snd . snd <$> stats
