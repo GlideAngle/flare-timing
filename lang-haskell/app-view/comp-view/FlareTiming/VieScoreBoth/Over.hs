@@ -89,7 +89,7 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
 
                                 dFtFs = showTaskPointsDiffStats fs ft
                                 dFtAs = showTaskPointsDiffStats as ft
-                                dAsFs = maybe "" (showTaskPointsDiffStats fs) as
+                                dAsFs = maybe "" (showTaskPointsDiffStats as) fs
                             in
                                 (dFtFs, (dFtAs, dAsFs)))
                         . unzip3)
