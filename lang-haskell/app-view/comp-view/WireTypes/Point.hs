@@ -470,11 +470,11 @@ data AltBreakdown =
         , breakdown :: Points
         , fractions :: Fractions
         , reach :: ReachToggle PilotDistance
-        , landedMade :: PilotDistance
+        , landedMade :: Maybe PilotDistance
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe PilotTime
-        , leadingArea :: LeadingArea
+        , leadingArea :: Maybe LeadingArea
         , leadingCoef :: LeadingCoefficient
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)

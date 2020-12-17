@@ -91,9 +91,8 @@ rowEffort w select mapN p te = do
                                 _ -> s
 
                     return
-                        ( showPilotDistance 1 effortN
-                        , showPilotDistanceDiff 1 effortN effort
-
+                        ( maybe "" (showPilotDistance 1) effortN
+                        , maybe "" (flip (showPilotDistanceDiff 1) $ effort) effortN
                         , quieten $ showEffortFrac eFracN
                         , quieten $ showEffortFracDiff eFracN frac
                         ))

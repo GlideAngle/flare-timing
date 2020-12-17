@@ -90,11 +90,14 @@ data AltBreakdown =
         , breakdown :: Points
         , fractions :: Fractions
         , reach :: ReachToggle Effort
-        , landedMade :: Effort
+        , landedMade :: Maybe Effort
+        -- ^ Reported by FS but not by airScore. Not actually used in
+        -- calculating points in GAP.
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
-        , leadingArea :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        , leadingArea :: Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
+        -- ^ Reported by FS but not by airScore.
         , leadingCoef :: LeadingCoef (Quantity Double [u| 1 |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

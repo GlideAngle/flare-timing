@@ -11,6 +11,7 @@ import Reflex
 import Reflex.Dom
 import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
+import Data.Maybe (fromMaybe)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 
@@ -452,7 +453,11 @@ tablePilotReach free reach bonusReach sEx = do
                     let esN = [d | (_, Alt.AltBreakdown{reach = ReachToggle{extra = PilotDistance d}}) <- sEx]
                     let esNO = fOver <$> esN
 
-                    let bsN = [d | (_, Alt.AltBreakdown{landedMade = PilotDistance d}) <- sEx]
+                    let bsN =
+                            [ maybe 0 (\(PilotDistance d) -> d) landedMade
+                            | (_, Alt.AltBreakdown{landedMade}) <- sEx
+                            ]
+
                     let bsNO = fOver <$> bsN
 
                     let ds = zipWith (-) bs rs
@@ -718,6 +723,7 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
 
                             f = showPilotDistance 3
                             fDiff = showPilotDistanceDiff 3
+                            landedMadeN' = fromMaybe (PilotDistance 0) landedMadeN
                         in
                             ( f reachF
                             , f bolsterF
@@ -728,9 +734,9 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                             , fDiff reachF reachN
                             , fDiff bolsterF bolsterE
                             , f extraN
-                            , f landedMadeN
+                            , f landedMadeN'
                             , fDiff bolsterE extraN
-                            , fDiff bolsterF landedMadeN
+                            , fDiff bolsterF landedMadeN'
                             )
 
                     _ -> ("", "", "", "", "", "", "", "", "", "", "", ""))

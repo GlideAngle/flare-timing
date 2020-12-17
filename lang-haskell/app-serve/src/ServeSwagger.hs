@@ -498,11 +498,11 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, AltBreakdown) where
                               { extra = TaskDistance $ convert [u| 99.531000 km |]
                               , flown = TaskDistance $ convert [u| 99.531000 km |]
                               }
-                      , landedMade = TaskDistance $ convert [u| 99.530000 km |]
+                      , landedMade = Just $ TaskDistance $ convert [u| 99.530000 km |]
                       , ss = Just $ read "2017-04-09 03:40:00 UTC"
                       , es = Just $ read "2017-04-09 06:08:09 UTC"
                       , timeElapsed = Just $ PilotTime [u| 2.469167 h |]
-                      , leadingArea = LeadingArea [u| 0 km^2 s |]
+                      , leadingArea = Just $ LeadingArea [u| 0 km^2 s |]
                       , leadingCoef = LeadingCoef 0
                       }
                 )

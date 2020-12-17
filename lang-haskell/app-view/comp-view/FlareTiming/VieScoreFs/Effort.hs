@@ -300,8 +300,8 @@ pointRow w _utcOffset free _ln dfNt pt sAltFs ixChunkMap ixChunkMapN x = do
 
                         return
                             ( maybe "" (showPilotDistance 3) landedMade
-                            , showPilotDistance 3 landedN
-                            , maybe "" (showPilotDistanceDiff 3 landedN) landedMade
+                            , maybe "" (showPilotDistance 3) landedN
+                            , fromMaybe "" $ showPilotDistanceDiff 3 <$> landedN <*> landedMade
                             , quieten $ showDifficultyPoints ePtsN
                             , quieten $ showDifficultyPointsDiff ePtsN ePts
                             ))

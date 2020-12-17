@@ -138,8 +138,8 @@ rowLeadCompare w mapN select p tl = do
                         Just
                             Alt.AltBreakdown{leadingArea = area'} ->
                             ( pilot
-                            , showArea area'
-                            , showAreaDiff area' area
+                            , maybe "" showArea area'
+                            , maybe "" (flip showAreaDiff $ area) area'
                             )
 
                         _ -> (pilot, "", ""))

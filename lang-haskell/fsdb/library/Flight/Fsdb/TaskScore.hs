@@ -161,7 +161,7 @@ xpRankScore =
                 -- WARNING: Sometimes FS writes min double to last_distance.
                 -- last_distance="-1.79769313486232E+305"
                 , landedMade =
-                    taskKmToMetres . TaskDistance . MkQuantity
+                    Just . taskKmToMetres . TaskDistance . MkQuantity
                     $ Stats.max 0 dL
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
@@ -174,7 +174,7 @@ xpRankScore =
                        | ssE == Just "" -> Nothing
                        | otherwise -> toPilotTime . parseHmsTime <$> ssE
 
-                , leadingArea = LeadingArea zero
+                , leadingArea = Nothing
                 , leadingCoef = LeadingCoef zero
                 }
         , \AltBreakdown
@@ -194,7 +194,7 @@ xpRankScore =
                         { flown = TaskDistance (MkQuantity dM)
                         , extra = TaskDistance (MkQuantity dE)
                         }
-                , landedMade = TaskDistance (MkQuantity dL)
+                , landedMade
                 , ss
                 , es
                 , timeElapsed
@@ -209,7 +209,7 @@ xpRankScore =
                     , fromRational t
                     , dE
                     , dM
-                    , dL
+                    , maybe 0 (\(TaskDistance (MkQuantity dL)) -> dL) landedMade
                     , show <$> ss
                     , show <$> es
                     , show <$> timeElapsed
@@ -573,7 +573,10 @@ getScore pilots =
                                     norm
                                     (\(a, c) ->
                                         norm
-                                            { leadingArea = LeadingArea . MkQuantity . fromIntegral $ a
+                                            { leadingArea =
+                                                Just . LeadingArea . MkQuantity
+                                                $ fromIntegral a
+
                                             , leadingCoef = LeadingCoef . MkQuantity $ c
                                             })
                                     ld
