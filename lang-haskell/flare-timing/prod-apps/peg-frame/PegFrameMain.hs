@@ -13,7 +13,6 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Monad (join)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
@@ -36,7 +35,6 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , CrossZoneFile(..)
     , TagZoneFile(..)
     , CompSettings(..)
     , TaskStop(..)
@@ -79,12 +77,12 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Pegging the scoring frame completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
-    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
-    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
+go CmdBatchOptions{..} compFile = do
+    let crossFile = compToCross compFile
+    let tagFile = crossToTag . compToCross $ compFile
+    putStrLn $ "Reading competition from " ++ show compFile
+    putStrLn $ "Reading flying time range from " ++ show crossFile
+    putStrLn $ "Reading zone tags from " ++ show tagFile
 
     compSettings <-
         catchIO
@@ -308,7 +306,7 @@ writeStop
                             (_, t1) <- racingGateTimes
                             tags' <- tagTimes ptt
                             tS <- starting ss tags'
-                            
+
                             let track = Map.lookup p tracks
 
                             let rst = Just (tS, t1)
@@ -352,7 +350,9 @@ writeStop
                 , tagging = tagss
                 }
 
-    writeFraming (tagToPeg tagFile) frame
+    let pegFile = tagToPeg tagFile
+    putStrLn $ "Writing framing to " ++ show pegFile
+    writeFraming pegFile frame
 
 clipByTime :: FlyingSection UTCTime -> Maybe ZoneTag -> Maybe ZoneTag
 clipByTime Nothing x = x
