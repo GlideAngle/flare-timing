@@ -668,7 +668,7 @@ getValidity ng nl nd md nt =
 
 parseAltScores :: Nominal -> String -> IO (Either String AltPointing)
 parseAltScores
-    Nominaltype QTaskDistance a u = TaskDistance (Quantity a u)
+    Nominal
         { goal = ng
         , launch = nl
         , distance = nd
