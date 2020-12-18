@@ -1,7 +1,6 @@
 ﻿{-# LANGUAGE BangPatterns #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Debug.Trace (traceShowId)
 import Text.Printf (printf)
@@ -17,7 +16,7 @@ import Control.Concurrent.ParallelIO (parallel_)
 import Control.Exception.Safe (catchIO)
 import Control.Monad.Except (runExceptT)
 import System.Directory (createDirectoryIfMissing, getCurrentDirectory)
-import System.FilePath ((</>), takeFileName)
+import System.FilePath ((</>))
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -71,8 +70,8 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Unpacking tracks completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+go CmdBatchOptions{..} compFile = do
+    putStrLn $ "Reading competition from " ++ show compFile
 
     compSettings <-
         catchIO

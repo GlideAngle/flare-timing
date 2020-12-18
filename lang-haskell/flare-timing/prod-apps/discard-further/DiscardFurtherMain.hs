@@ -11,7 +11,6 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -23,7 +22,6 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , PegFrameFile(..)
     , CompSettings(..)
     , Comp(..)
     , Task(..)
@@ -70,11 +68,11 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Filtering times completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
+go CmdBatchOptions{..} compFile = do
     let tagFile = crossToTag . compToCross $ compFile
-    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
+    let stopFile = tagToPeg tagFile
+    putStrLn $ "Reading competition from " ++ show compFile
+    putStrLn $ "Reading scored times from " ++ show stopFile
 
     compSettings <-
         catchIO

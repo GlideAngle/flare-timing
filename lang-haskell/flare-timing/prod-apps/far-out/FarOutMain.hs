@@ -9,7 +9,6 @@ import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
 import Control.Monad.Zip (munzip)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -23,10 +22,8 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , TaskLengthFile(..)
     , CompSettings(..)
     , Nominal(..)
-    , MaskReachFile(..)
     , PilotGroup(didFlyNoTracklog)
     , IxTask(..)
     , compToTaskLength
@@ -74,13 +71,13 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Far outs counted for distance difficulty completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
-    let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
+go CmdBatchOptions{..} compFile = do
+    let lenFile = compToTaskLength compFile
+    let maskReachFile = compToMaskReach compFile
     let farFile = compToFar compFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-    putStrLn $ "Reading far outs from '" ++ takeFileName maskReachPath ++ "'"
+    putStrLn $ "Reading competition from " ++ show compFile
+    putStrLn $ "Reading task length from " ++ show lenFile
+    putStrLn $ "Reading far outs from " ++ show maskReachFile
 
     compSettings <-
         catchIO

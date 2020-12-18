@@ -1,5 +1,4 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -8,7 +7,6 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -19,8 +17,6 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , TagZoneFile(..)
-    , PegFrameFile(..)
     , PilotName(..)
     , IxTask(..)
     , CompSettings(..)
@@ -66,11 +62,11 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
-    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
+    let tagFile = crossToTag . compToCross $ compFile
+    let stopFile = tagToPeg tagFile
+    putStrLn $ "Reading competition from " ++ show compFile
+    putStrLn $ "Reading zone tags from " ++ show tagFile
+    putStrLn $ "Reading scored times from " ++ show stopFile
 
     compSettings <-
         catchIO

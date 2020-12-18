@@ -1,4 +1,3 @@
-import Debug.Trace
 import Prelude hiding (abs)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -7,7 +6,6 @@ import Network.Wai.Handler.Warp
 import Network.Wai.Middleware.Gzip (gzip, def)
 import System.IO (hPutStrLn, stderr)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 
 import Flight.Units ()
@@ -31,24 +29,6 @@ import Flight.Comp
     , FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , TaskLengthFile(..)
-    , CrossZoneFile(..)
-    , TagZoneFile(..)
-    , PegFrameFile(..)
-    , MaskArrivalFile(..)
-    , MaskEffortFile(..)
-    , MaskLeadFile(..)
-    , LeadAreaFile(..)
-    , MaskReachFile(..)
-    , MaskSpeedFile(..)
-    , BonusReachFile(..)
-    , LandOutFile(..)
-    , FarOutFile(..)
-    , GapPointFile(..)
-    , AltArrivalFile(..)
-    , AltLandoutFile(..)
-    , AltRouteFile(..)
-    , AltScoreFile(..)
     , findCompInput
     , compToAltArrival
     , compToAltLandout
@@ -92,45 +72,45 @@ drive o@CmdServeOptions{file} = do
                   else mapM_ (go o) files
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
-go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
-    let tagFile@(TagZoneFile tagPath) = crossToTag crossFile
-    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
-    let maskEffortFile@(MaskEffortFile maskEffortPath) = compToMaskEffort compFile
-    let leadAreaFile@(LeadAreaFile leadAreaPath) = compToLeadArea compFile
-    let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
-    let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
-    let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
-    let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
-    let landFile@(LandOutFile _landPath) = compToLand compFile
-    let farFile@(FarOutFile landPath) = compToFar compFile
-    let pointFile@(GapPointFile pointPath) = compToPoint compFile
-    let altFsArrivalFile@(AltArrivalFile altFsArrivalPath) = compToAltArrival AltFs compFile
-    let altFsLandoutFile@(AltLandoutFile altFsLandoutPath) = compToAltLandout AltFs compFile
-    let altFsRouteFile@(AltRouteFile altFsRoutePath) = compToAltRoute AltFs compFile
-    let altFsScoreFile@(AltScoreFile altFsScorePath) = compToAltScore AltFs compFile
-    let altAsScoreFile@(AltScoreFile altAsScorePath) = compToAltScore AltAs compFile
-    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-    putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
-    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
-    putStrLn $ "Reading scored section from '" ++ takeFileName stopPath ++ "'"
-    putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
-    putStrLn $ "Reading effort from '" ++ takeFileName maskEffortPath ++ "'"
-    putStrLn $ "Reading leading area from '" ++ takeFileName leadAreaPath ++ "'"
-    putStrLn $ "Reading leading from '" ++ takeFileName maskLeadPath ++ "'"
-    putStrLn $ "Reading reach from '" ++ takeFileName maskReachPath ++ "'"
-    putStrLn $ "Reading speed from '" ++ takeFileName maskSpeedPath ++ "'"
-    putStrLn $ "Reading bonus reach from '" ++ takeFileName bonusReachPath ++ "'"
-    putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
-    putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
-    putStrLn $ "Reading FS arrivals from '" ++ takeFileName altFsArrivalPath ++ "'"
-    putStrLn $ "Reading FS land outs from '" ++ takeFileName altFsLandoutPath ++ "'"
-    putStrLn $ "Reading FS optimal routes from '" ++ takeFileName altFsRoutePath ++ "'"
-    putStrLn $ "Reading FS scores from '" ++ takeFileName altFsScorePath ++ "'"
-    putStrLn $ "Reading airScore scores from '" ++ takeFileName altAsScorePath ++ "'"
+go CmdServeOptions{..} compFile = do
+    let lenFile = compToTaskLength compFile
+    let crossFile = compToCross compFile
+    let tagFile = crossToTag crossFile
+    let stopFile= tagToPeg tagFile
+    let maskArrivalFile = compToMaskArrival compFile
+    let maskEffortFile = compToMaskEffort compFile
+    let leadAreaFile = compToLeadArea compFile
+    let maskLeadFile = compToMaskLead compFile
+    let maskReachFile = compToMaskReach compFile
+    let maskSpeedFile = compToMaskSpeed compFile
+    let bonusReachFile = compToBonusReach compFile
+    let landFile = compToLand compFile
+    let farFile = compToFar compFile
+    let pointFile = compToPoint compFile
+    let altFsArrivalFile = compToAltArrival AltFs compFile
+    let altFsLandoutFile = compToAltLandout AltFs compFile
+    let altFsRouteFile = compToAltRoute AltFs compFile
+    let altFsScoreFile = compToAltScore AltFs compFile
+    let altAsScoreFile = compToAltScore AltAs compFile
+    putStrLn $ "Reading task length from " ++ show lenFile
+    putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
+    putStrLn $ "Reading flying time range from " ++ show crossFile
+    putStrLn $ "Reading zone tags from " ++ show tagFile
+    putStrLn $ "Reading scored section from " ++ show stopFile
+    putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
+    putStrLn $ "Reading effort from " ++ show maskEffortFile
+    putStrLn $ "Reading leading area from " ++ show leadAreaFile
+    putStrLn $ "Reading leading from " ++ show maskLeadFile
+    putStrLn $ "Reading reach from " ++ show maskReachFile
+    putStrLn $ "Reading speed from " ++ show maskSpeedFile
+    putStrLn $ "Reading bonus reach from " ++ show bonusReachFile
+    putStrLn $ "Reading land outs from " ++ show landFile
+    putStrLn $ "Reading scores from " ++ show pointFile
+    putStrLn $ "Reading FS arrivals from " ++ show altFsArrivalFile
+    putStrLn $ "Reading FS land outs from " ++ show altFsLandoutFile
+    putStrLn $ "Reading FS optimal routes from " ++ show altFsRouteFile
+    putStrLn $ "Reading FS scores from " ++ show altFsScoreFile
+    putStrLn $ "Reading airScore scores from " ++ show altAsScoreFile
 
     compSettings <-
         catchIO
@@ -229,14 +209,14 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
 
             altFsS <-
                 catchIO
-                    (Just <$> readAltScore (traceShowId altFsScoreFile))
+                    (Just <$> readAltScore altFsScoreFile)
                     (const $ return Nothing)
 
             -- WARNING: Reading airScore's scores fails with
             -- AesonException "Error in $.score[0][0][1].landedMade: expected String, encountered Null"
             altAsS <-
                 catchIO
-                    (Just <$> readAltScore (traceShowId altAsScoreFile))
+                    (Just <$> readAltScore altAsScoreFile)
                     (const $ return Nothing)
 
             case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing) of

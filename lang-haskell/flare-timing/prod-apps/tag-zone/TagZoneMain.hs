@@ -7,7 +7,6 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -24,7 +23,6 @@ import Flight.Comp
     , FileType(CompInput)
     , CompSettings(..)
     , CompInputFile(..)
-    , CrossZoneFile(..)
     , Comp(..)
     , Task(..)
     , compToCross
@@ -70,10 +68,10 @@ drive CmdBatchOptions{math, file} = do
     fprint ("Tagging zones completed in " % timeSpecs % "\n") start end
 
 go :: Math -> CompInputFile -> IO ()
-go math compFile@(CompInputFile compPath) = do
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
-    putStrLn $ "Reading tasks from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
+go math compFile = do
+    let crossFile = compToCross compFile
+    putStrLn $ "Reading tasks from " ++ show compFile
+    putStrLn $ "Reading zone crossings from " ++ show crossFile
 
     cs <-
         catchIO

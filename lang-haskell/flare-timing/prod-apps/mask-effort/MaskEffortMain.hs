@@ -1,5 +1,4 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -7,7 +6,6 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 
 import Flight.Route (OptimalRoute(..))
@@ -15,10 +13,6 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , TaskLengthFile(..)
-    , TagZoneFile(..)
-    , PegFrameFile(..)
-    , MaskArrivalFile(..)
     , PilotName(..)
     , IxTask(..)
     , CompSettings(..)
@@ -67,16 +61,16 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
-    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
-    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
-    putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
+go CmdBatchOptions{..} compFile = do
+    let lenFile = compToTaskLength compFile
+    let tagFile = crossToTag . compToCross $ compFile
+    let stopFile = tagToPeg tagFile
+    let maskArrivalFile = compToMaskArrival compFile
+    putStrLn $ "Reading competition from " ++ show compFile
+    putStrLn $ "Reading task length from " ++ show lenFile
+    putStrLn $ "Reading zone tags from " ++ show tagFile
+    putStrLn $ "Reading scored times from " ++ show stopFile
+    putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
 
     compSettings <-
         catchIO

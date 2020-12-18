@@ -25,7 +25,6 @@ import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_, join)
 import Control.Monad.Zip (mzip)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity, zero)
@@ -42,22 +41,10 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , TaskLengthFile(..)
     , CompSettings(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
-    , CrossZoneFile(..)
-    , TagZoneFile(..)
-    , PegFrameFile(..)
-    , MaskArrivalFile(..)
-    , MaskEffortFile(..)
-    , MaskLeadFile(..)
-    , MaskReachFile(..)
-    , MaskSpeedFile(..)
-    , BonusReachFile(..)
-    , LandOutFile(..)
-    , FarOutFile(..)
     , Pilot
     , PilotGroup(dnf, didFlyNoTracklog)
     , StartGate(..)
@@ -198,32 +185,32 @@ drive o@CmdBatchOptions{file} = do
     Fmt.fprint ("Tallying points completed in " Fmt.% timeSpecs Fmt.% "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
-    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
-    let maskEffortFile@(MaskEffortFile maskEffortPath) = compToMaskEffort compFile
-    let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
-    let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
-    let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
-    let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
-    let landFile@(LandOutFile _landPath) = compToLand compFile
-    let farFile@(FarOutFile landPath) = compToFar compFile
+go CmdBatchOptions{..} compFile = do
+    let lenFile = compToTaskLength compFile
+    let crossFile = compToCross compFile
+    let tagFile = crossToTag . compToCross $ compFile
+    let stopFile = tagToPeg tagFile
+    let maskArrivalFile = compToMaskArrival compFile
+    let maskEffortFile = compToMaskEffort compFile
+    let maskLeadFile = compToMaskLead compFile
+    let maskReachFile = compToMaskReach compFile
+    let maskSpeedFile = compToMaskSpeed compFile
+    let bonusReachFile = compToBonusReach compFile
+    let landFile = compToLand compFile
+    let farFile = compToFar compFile
     let pointFile = compToPoint compFile
-    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-    putStrLn $ "Reading pilots ABS & DNF from task from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
-    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
-    putStrLn $ "Reading start and end zone tagging from '" ++ takeFileName tagPath ++ "'"
-    putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
-    putStrLn $ "Reading effort from '" ++ takeFileName maskEffortPath ++ "'"
-    putStrLn $ "Reading leading from '" ++ takeFileName maskLeadPath ++ "'"
-    putStrLn $ "Reading reach from '" ++ takeFileName maskReachPath ++ "'"
-    putStrLn $ "Reading bonus reach from '" ++ takeFileName bonusReachPath ++ "'"
-    putStrLn $ "Reading speed from '" ++ takeFileName maskSpeedPath ++ "'"
-    putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
+    putStrLn $ "Reading task length from " ++ show lenFile
+    putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
+    putStrLn $ "Reading zone crossings from " ++ show crossFile
+    putStrLn $ "Reading scored times from " ++ show stopFile
+    putStrLn $ "Reading start and end zone tagging from " ++ show tagFile
+    putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
+    putStrLn $ "Reading effort from " ++ show maskEffortFile
+    putStrLn $ "Reading leading from " ++ show maskLeadFile
+    putStrLn $ "Reading reach from " ++ show maskReachFile
+    putStrLn $ "Reading bonus reach from " ++ show bonusReachFile
+    putStrLn $ "Reading speed from " ++ show maskSpeedFile
+    putStrLn $ "Reading distance difficulty from " ++ show landFile
 
     compSettings <-
         catchIO

@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 import Debug.Trace (traceShowId)
 import Prelude hiding (span)
 import System.Environment (getProgName)
@@ -14,7 +12,6 @@ import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 import Control.Concurrent.ParallelIO (parallel)
 
@@ -86,8 +83,8 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{pilot, math, task} compFile@(CompInputFile compPath) = do
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+go CmdBatchOptions{pilot, math, task} compFile = do
+    putStrLn $ "Reading competition from " ++ show compFile
 
     compSettings <-
         catchIO

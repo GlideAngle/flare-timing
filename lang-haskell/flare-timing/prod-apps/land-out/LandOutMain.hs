@@ -8,7 +8,6 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Zip (munzip)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -22,7 +21,6 @@ import Flight.Comp
     , CompInputFile(..)
     , CompSettings(..)
     , Nominal(..)
-    , MaskEffortFile(..)
     , compToMaskEffort
     , compToLand
     , findCompInput
@@ -63,9 +61,9 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let maskFile@(MaskEffortFile maskPath) = compToMaskEffort compFile
+    let maskFile = compToMaskEffort compFile
     let landFile = compToLand compFile
-    putStrLn $ "Reading land outs from '" ++ takeFileName maskPath ++ "'"
+    putStrLn $ "Reading land outs from " ++ show maskFile
 
     compSettings <-
         catchIO

@@ -4,7 +4,6 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 
 import Flight.Route (OptimalRoute(..))
@@ -12,9 +11,6 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , TaskLengthFile(..)
-    , TagZoneFile(..)
-    , PegFrameFile(..)
     , PilotName(..)
     , IxTask(..)
     , compToTaskLength
@@ -57,14 +53,14 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Masking tracks for arrivals completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{math, task, pilot} compFile@(CompInputFile compPath) = do
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
-    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
-    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
+go CmdBatchOptions{math, task, pilot} compFile = do
+    let lenFile = compToTaskLength compFile
+    let tagFile = crossToTag . compToCross $ compFile
+    let stopFile = tagToPeg tagFile
+    putStrLn $ "Reading competition from " ++ show compFile
+    putStrLn $ "Reading task length from " ++ show lenFile
+    putStrLn $ "Reading zone tags from " ++ show tagFile
+    putStrLn $ "Reading scored times from " ++ show stopFile
 
     compSettings <-
         catchIO
