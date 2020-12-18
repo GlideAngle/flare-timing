@@ -38,10 +38,12 @@ import WireTypes.Effort
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
+import FlareTiming.Comms (AltDot)
 
 tableVieScoreFsEffort
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => AltDot
+    -> Dynamic t UtcOffset
     -> Dynamic t Discipline
     -> Dynamic t MinimumDistance
     -> Dynamic t [Pt.StartGate]
@@ -58,7 +60,7 @@ tableVieScoreFsEffort
     -> Dynamic t (Maybe TaskLanding)
     -> Dynamic t (Maybe TaskLanding)
     -> m ()
-tableVieScoreFsEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs lg' lgN' = do
+tableVieScoreFsEffort altDot utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs lg' lgN' = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -120,19 +122,21 @@ tableVieScoreFsEffort utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp s
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points † for Effort (Descending)"
 
             el "tr" $ do
+                let altName = T.pack $ show altDot
+
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
                 elClass "th" "th-landed-distance" $ text "Ft"
-                elClass "th" "th-norm th-effort-points" $ text "Fs"
+                elClass "th" "th-norm th-effort-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-chunk" $ text "Ft"
-                elClass "th" "th-norm th-chunk" $ text "Fs"
+                elClass "th" "th-norm th-chunk" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-effort-points" $ text "Ft"
-                elClass "th" "th-norm th-effort-points" $ text "Fs"
+                elClass "th" "th-norm th-effort-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do

@@ -23,10 +23,12 @@ import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (timeZone, showT, showTDiff)
 import FlareTiming.Score.Show
+import FlareTiming.Comms (AltDot)
 
 tableVieScoreFsSpeed
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => AltDot
+    -> Dynamic t UtcOffset
     -> Dynamic t Discipline
     -> Dynamic t MinimumDistance
     -> Dynamic t [StartGate]
@@ -41,7 +43,7 @@ tableVieScoreFsSpeed
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreFsSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sAltFs = do
+tableVieScoreFsSpeed altDot utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -68,12 +70,14 @@ tableVieScoreFsSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp 
                     $ showSpeedSection <$> ln
 
             el "tr" $ do
+                let altName = T.pack $ show altDot
+
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
                 elClass "th" "th-start-start" $ text "Ft Start"
 
                 elClass "th" "th-norm th-start" . dynText
-                    $ ffor sgs (\case [] -> "Fs Start"; _ -> "Fs Gate")
+                    $ ffor sgs (\case [] -> altName <> " Start"; _ -> altName <> " Gate")
 
                 elClass "th" "th-norm th-time-diff" . dynText
                     $ ffor sgs (\case [] -> "Δ Start"; _ -> "Δ Gate")
@@ -81,13 +85,13 @@ tableVieScoreFsSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp 
                 elClass "th" "th-start-gate" $ text "Ft Gate"
 
                 elClass "th" "th-time-end" $ text "Ft End"
-                elClass "th" "th-norm th-time-end" $ text "Fs End"
+                elClass "th" "th-norm th-time-end" $ text (altName <> " End")
                 elClass "th" "th-norm th-time-diff" $ text "Δ End"
 
                 elClass "th" "th-time" $ text "Ft Time †"
 
                 elClass "th" "th-norm th-time" . dynText
-                    $ ffor sgs (\case [] -> "Fs Pace"; _ -> "Fs Time")
+                    $ ffor sgs (\case [] -> altName <> " Pace"; _ -> altName <> " Time")
 
                 elClass "th" "th-norm th-time-diff" $ dynText
                     $ ffor sgs (\case [] -> "Δ Pace"; _ -> "Δ Time")

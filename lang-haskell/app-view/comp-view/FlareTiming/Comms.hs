@@ -418,6 +418,10 @@ getTaskPilotTag (IxTask ii) ev = do
 
 data AltDot = AltFs | AltAs
 
+instance Show AltDot where
+    show AltFs = "Fs"
+    show AltAs = "As"
+
 getAltValidity :: Get t m [Maybe Validity]
 getAltValidity = get "/fs-score/validity"
 

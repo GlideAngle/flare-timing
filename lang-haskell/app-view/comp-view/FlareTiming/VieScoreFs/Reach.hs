@@ -29,10 +29,12 @@ import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
+import FlareTiming.Comms (AltDot)
 
 tableVieScoreFsReach
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => AltDot
+    -> Dynamic t UtcOffset
     -> Dynamic t Discipline
     -> Dynamic t MinimumDistance
     -> Dynamic t [Pt.StartGate]
@@ -45,7 +47,7 @@ tableVieScoreFsReach
     -> Dynamic t [(Pilot, Bk.Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreFsReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltFs = do
+tableVieScoreFsReach altDot utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -89,6 +91,8 @@ tableVieScoreFsReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltF
                     text "Points ¶ for Reach (Descending)"
 
             el "tr" $ do
+                let altName = T.pack $ show altDot
+
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
                 elClass "th" "th-min-distance" $ text "Min"
@@ -97,15 +101,15 @@ tableVieScoreFsReach utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDfs sAltF
                     Just _ -> do
                         elClass "th" "th-distance-flown" $ text "Ft"
                         elClass "th" "th-distance-extra" $ text "Ft"
-                        elClass "th" "th-norm th-best-distance-flown" $ text "Fs"
+                        elClass "th" "th-norm th-best-distance-flown" $ text altName
                         elClass "th" "th-norm th-diff" $ text "Δ"
                     Nothing -> do
                         elClass "th" "th-distance-flown" $ text "Ft"
-                        elClass "th" "th-norm th-best-distance-flown" $ text "Fs"
+                        elClass "th" "th-norm th-best-distance-flown" $ text altName
                         elClass "th" "th-norm th-diff" $ text "Δ")
 
                 elClass "th" "th-reach-points" $ text "Ft"
-                elClass "th" "th-norm th-reach-points" $ text "Fs"
+                elClass "th" "th-norm th-reach-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do

@@ -29,10 +29,12 @@ import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (timeZone, showT, showTDiff)
 import FlareTiming.Score.Show
+import FlareTiming.Comms (AltDot)
 
 tableVieScoreFsArrive
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => AltDot
+    -> Dynamic t UtcOffset
     -> Dynamic t Discipline
     -> Dynamic t MinimumDistance
     -> Dynamic t [StartGate]
@@ -47,7 +49,7 @@ tableVieScoreFsArrive
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreFsArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs = do
+tableVieScoreFsArrive altDot utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -74,15 +76,17 @@ tableVieScoreFsArrive utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg pt _tp
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points-breakdown") $ text "Points for Arrival (Descending)"
 
             el "tr" $ do
+                let altName = T.pack $ show altDot
+
                 elClass "th" "th-placing" $ text "Place"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
                 elClass "th" "th-time-end" $ text "Ft"
-                elClass "th" "th-norm th-time-end" $ text "Fs"
+                elClass "th" "th-norm th-time-end" $ text altName
                 elClass "th" "th-norm th-time-diff" $ text "Δ"
 
                 elClass "th" "th-arrival-points" $ text "Ft"
-                elClass "th" "th-norm th-arrival-points" $ text "Fs"
+                elClass "th" "th-norm th-arrival-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do

@@ -39,10 +39,12 @@ import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
+import FlareTiming.Comms (AltDot)
 
 tableVieScoreFsSplit
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => AltDot
+    -> Dynamic t UtcOffset
     -> Dynamic t Discipline
     -> Dynamic t MinimumDistance
     -> Dynamic t [Pt.StartGate]
@@ -57,7 +59,7 @@ tableVieScoreFsSplit
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sAltFs = do
+tableVieScoreFsSplit altDot utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sDfs sAltFs = do
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -136,16 +138,18 @@ tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sD
                     $ text "Total"
 
             el "tr" $ do
+                let altName = T.pack $ show altDot
+
                 elClass "th" "th-norm th-placing" $ text "Ft"
-                elClass "th" "th-placing" $ text "Fs"
+                elClass "th" "th-placing" $ text altName
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
                 elClass "th" "th-distance-points" $ text "Ft"
-                elClass "th" "th-norm th-distance-points" $ text "Fs"
+                elClass "th" "th-norm th-distance-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elDynClass "th" (fst <$> cTimePoints) $ text "Ft"
-                elClass "th" "th-norm th-time-points" $ text "Fs"
+                elClass "th" "th-norm th-time-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-leading-points" $ text "Ft"
@@ -153,11 +157,11 @@ tableVieScoreFsSplit utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg pt tp sD
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Ft"
-                elClass "th" "th-norm th-arrival-points" $ text "Fs"
+                elClass "th" "th-norm th-arrival-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-total-points" $ text "Ft"
-                elClass "th" "th-norm th-total-points" $ text "Fs"
+                elClass "th" "th-norm th-total-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
