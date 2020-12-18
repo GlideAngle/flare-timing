@@ -81,8 +81,8 @@ rowReach w select mapN p r = do
                                 _ -> s
 
                     return
-                        ( showPilotDistance 1 reachN
-                        , showPilotDistanceDiff 1 reachN reach
+                        ( maybe "" (showPilotDistance 1) reachN
+                        , maybe "" (flip (showPilotDistanceDiff 1) $ reach) reachN
 
                         , quieten $ showReachFrac rFracN
                         , quieten $ showReachFracDiff rFracN frac

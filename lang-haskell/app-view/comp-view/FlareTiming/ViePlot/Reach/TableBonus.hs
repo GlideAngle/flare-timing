@@ -113,8 +113,8 @@ rowReachBonus w select mapR mapN p tr = do
                         , showPilotDistanceDiff 1 reachF reachE
                         , showReachFrac fracE
 
-                        , showPilotDistance 1 reachN
-                        , showPilotDistanceDiff 1 reachN reachE
+                        , maybe "" (showPilotDistance 1) reachN
+                        , maybe "" (flip (showPilotDistanceDiff 1) $ reachE) reachN
 
                         , quieten $ showReachFrac rFracN
                         , quieten $ showReachFracDiff rFracN fracE

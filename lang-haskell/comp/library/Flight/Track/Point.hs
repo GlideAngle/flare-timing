@@ -89,7 +89,8 @@ data AltBreakdown =
         , total :: TaskPoints
         , breakdown :: Points
         , fractions :: Fractions
-        , reach :: ReachToggle Effort
+        , reach :: ReachToggle (Maybe Effort)
+        -- ^ Most pilots have reach but some get nulls from airScore.
         , landedMade :: Maybe Effort
         -- ^ Reported by FS but not by airScore. Not actually used in
         -- calculating points in GAP.

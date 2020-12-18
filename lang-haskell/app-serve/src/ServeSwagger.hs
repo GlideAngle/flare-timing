@@ -495,8 +495,8 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, AltBreakdown) where
                                 }
                       , reach =
                           ReachToggle
-                              { extra = TaskDistance $ convert [u| 99.531000 km |]
-                              , flown = TaskDistance $ convert [u| 99.531000 km |]
+                              { extra = Just . TaskDistance $ convert [u| 99.531000 km |]
+                              , flown = Just . TaskDistance $ convert [u| 99.531000 km |]
                               }
                       , landedMade = Just $ TaskDistance $ convert [u| 99.530000 km |]
                       , ss = Just $ read "2017-04-09 03:40:00 UTC"
@@ -584,10 +584,14 @@ instance ToSchema TimeValidityWorking
 instance ToSchema StopValidityWorking
 instance ToSchema ReachStats
 instance ToSchema (ReachToggle (Maybe ReachStats))
+
+-- NOTE: type Effort = TaskDistance (Quantity Double [u| m |])
+instance ToSchema (TaskDistance q) => ToSchema (ReachToggle (Maybe (TaskDistance q)))
+instance ToSchema (TaskDistance q) => ToSchema (ReachToggle (TaskDistance q))
+
 instance ToSchema PilotsAtEss
 instance ToSchema PilotsLanded
 instance ToSchema AltBreakdown
-instance ToSchema (TaskDistance q) => ToSchema (ReachToggle (TaskDistance q))
 instance ToSchema q => ToSchema (PilotTime q)
 instance ToSchema q => ToSchema (LeadingArea q)
 instance ToSchema q => ToSchema (LeadingCoef q)

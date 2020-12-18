@@ -284,10 +284,10 @@ pointRow w _utcOffset free _ln stp dfNt pt sAltFs x = do
                         return
                             ( showPilotDistance 3 rF
                             , showPilotDistance 3 rE
-                            , showPilotDistance 3 rFN
-                            , showPilotDistanceDiff 3 rFN rF
-                            , showPilotDistance 3 rEN
-                            , showPilotDistanceDiff 3 rEN rE
+                            , maybe "" (showPilotDistance 3) rFN
+                            , maybe "" (flip (showPilotDistanceDiff 3) $ rF) rFN
+                            , maybe "" (showPilotDistance 3) rEN
+                            , maybe "" (flip (showPilotDistanceDiff 3) $ rE) rEN
                             , quieten $ showLinearPoints rPtsN
                             , quieten $ showLinearPointsDiff rPtsN rPts
                             ))

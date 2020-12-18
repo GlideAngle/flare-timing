@@ -438,7 +438,11 @@ tablePilotReach free reach bonusReach sEx = do
                     let rs = [d | (_, TrackReach{reach = PilotDistance d}) <- r]
                     let rsO = fOver <$> rs
 
-                    let rsN = [d | (_, Alt.AltBreakdown{reach = ReachToggle{flown = PilotDistance d}}) <- sEx]
+                    let rsN =
+                            [ maybe 0 (\(PilotDistance d) -> d) flown
+                              | (_, Alt.AltBreakdown{reach = ReachToggle{flown}}) <- sEx
+                            ]
+
                     let rsNO = fOver <$> rsN
 
                     let rsB = Stats.max dMin <$> rs
@@ -450,7 +454,11 @@ tablePilotReach free reach bonusReach sEx = do
                     let bsB = Stats.max dMin <$> bs
                     let bsBO = fOver <$> bsB
 
-                    let esN = [d | (_, Alt.AltBreakdown{reach = ReachToggle{extra = PilotDistance d}}) <- sEx]
+                    let esN =
+                            [ maybe 0 (\(PilotDistance d) -> d) extra
+                            | (_, Alt.AltBreakdown{reach = ReachToggle{extra}}) <- sEx
+                            ]
+
                     let esNO = fOver <$> esN
 
                     let bsN =
@@ -728,14 +736,14 @@ rowReachBonus (MinimumDistance dMin) mapN mapR i pr = do
                             ( f reachF
                             , f bolsterF
                             , f reachE
-                            , f reachN
+                            , maybe "" f reachN
                             , f bolsterE
                             , fDiff reachF reachE
-                            , fDiff reachF reachN
+                            , maybe "" (fDiff reachF) reachN
                             , fDiff bolsterF bolsterE
-                            , f extraN
+                            , maybe "" f extraN
                             , f landedMadeN'
-                            , fDiff bolsterE extraN
+                            , maybe "" (fDiff bolsterE) extraN
                             , fDiff bolsterF landedMadeN'
                             )
 

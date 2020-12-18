@@ -155,8 +155,8 @@ xpRankScore =
 
                 , reach =
                     ReachToggle
-                        { flown = taskKmToMetres . TaskDistance . MkQuantity $ dM
-                        , extra = taskKmToMetres . TaskDistance . MkQuantity $ dE
+                        { flown = Just . taskKmToMetres . TaskDistance $ MkQuantity dM
+                        , extra = Just . taskKmToMetres . TaskDistance $ MkQuantity dE
                         }
                 -- WARNING: Sometimes FS writes min double to last_distance.
                 -- last_distance="-1.79769313486232E+305"
@@ -189,11 +189,7 @@ xpRankScore =
                         , arrival = ArrivalPoints a
                         , time = TimePoints t
                         }
-                , reach =
-                    ReachToggle
-                        { flown = TaskDistance (MkQuantity dM)
-                        , extra = TaskDistance (MkQuantity dE)
-                        }
+                , reach = ReachToggle{flown, extra}
                 , landedMade
                 , ss
                 , es
@@ -207,8 +203,8 @@ xpRankScore =
                     , fromRational l
                     , fromRational a
                     , fromRational t
-                    , dE
-                    , dM
+                    , maybe 0 (\(TaskDistance (MkQuantity dE)) -> dE) extra
+                    , maybe 0 (\(TaskDistance (MkQuantity dM)) -> dM) flown
                     , maybe 0 (\(TaskDistance (MkQuantity dL)) -> dL) landedMade
                     , show <$> ss
                     , show <$> es
@@ -503,7 +499,7 @@ getScore pilots =
             [
                 (,) p $ do
                     n@AltBreakdown{reach = r@ReachToggle{flown = dm}, fractions = fracs} <- x
-                    let dKm = taskMetresToKm dm
+                    dKm <- taskMetresToKm <$> dm
                     AwardedDistance{awardedFrac = dFrac} <- asAwardReach t (Just dKm)
                     return
                         n
@@ -513,12 +509,18 @@ getScore pilots =
                                     r
                                     (\(TaskDistance (d :: Quantity _ [u| m |])
                                           , ReachToggle
-                                              { flown = AwardedDistance{awardedFrac = fracF}
-                                              , extra = AwardedDistance{awardedFrac = fracE}
+                                              { flown = fracFlown
+                                              , extra = fracExtra
                                               }) ->
                                         r
-                                            { flown = TaskDistance $ MkQuantity fracF *: d
-                                            , extra = TaskDistance $ MkQuantity fracE *: d
+                                            { flown = Just $
+                                                (\AwardedDistance{awardedFrac = fracF} ->
+                                                    TaskDistance $ MkQuantity fracF *: d)
+                                                $ fracFlown
+                                            , extra = Just $
+                                                (\AwardedDistance{awardedFrac = fracE} ->
+                                                    TaskDistance $ MkQuantity fracE *: d)
+                                                $ fracExtra
                                             })
                                     (do
                                         TaskDistance td' <- td
@@ -666,7 +668,7 @@ getValidity ng nl nd md nt =
 
 parseAltScores :: Nominal -> String -> IO (Either String AltPointing)
 parseAltScores
-    Nominal
+    Nominaltype QTaskDistance a u = TaskDistance (Quantity a u)
         { goal = ng
         , launch = nl
         , distance = nd
@@ -686,9 +688,9 @@ parseAltScores
     xss <- runX $ doc >>> getScore ps
 
     let yss :: [[(Pilot, AltBreakdown)]] = [catMaybes $ sequence <$> xs| xs <- xss]
-    let tss = const Nothing <$> yss
+    let tss :: [Maybe (BestTime (Quantity Double [u| h |]))] = const Nothing <$> yss
 
-    let rss =
+    let rss :: [([Maybe (QTaskDistance Double [u| m |])], [Maybe (QTaskDistance Double [u| m |])])] =
             [
                 unzip
                 [ (extra, flown)
@@ -697,34 +699,36 @@ parseAltScores
             | ys <- (fmap . fmap) snd yss
             ]
 
-    let es =
-            [
+    let es :: [Maybe ReachStats] =
+            [ do
+                xs <- Just $ maybe (TaskDistance zero) id <$> xs'
                 let ys = V.fromList $ unTaskDistanceAsKm <$> xs
-                    (ysMean, ysVar) = Stats.meanVariance ys
-                in
+                let (ysMean, ysVar) = Stats.meanVariance ys
+                return $
                     ReachStats
                         { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
                         , mean = FlownMean $ MkQuantity ysMean
                         , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
                         }
-            | (xs, _) <- rss
+            | (xs', _) <- rss
             ]
 
-    let rs =
-            [
+    let rs :: [Maybe ReachStats] =
+            [ do
+                xs <- Just $ maybe (TaskDistance zero) id <$> xs'
                 let ys = V.fromList $ unTaskDistanceAsKm <$> xs
-                    (ysMean, ysVar) = Stats.meanVariance ys
-                in
+                let (ysMean, ysVar) = Stats.meanVariance ys
+                return $
                     ReachStats
                         { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
                         , mean = FlownMean $ MkQuantity ysMean
                         , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
                         }
-            | (_, xs) <- rss
+            | (_, xs') <- rss
             ]
 
     gvs <- runX $ doc >>> getValidity ng nl nd md nt
-    let vws =
+    let vws :: [Either String (Maybe _, Maybe _, Maybe _, Maybe _, Maybe _)] =
             [
                 (\(vs, lw, tw, dw, sw') ->
                     ( vs
@@ -732,7 +736,7 @@ parseAltScores
                     , tw
                     , dw
                     ,
-                        (\sw -> sw{reachStats = ReachToggle{extra = Just e, flown = Just r}})
+                        (\sw -> sw{reachStats = ReachToggle{extra = e, flown = r}})
                         <$> sw'
                     )
                 )

@@ -469,12 +469,16 @@ data AltBreakdown =
         , total :: TaskPoints
         , breakdown :: Points
         , fractions :: Fractions
-        , reach :: ReachToggle PilotDistance
+        , reach :: ReachToggle (Maybe PilotDistance)
+        -- ^ Most pilots have reach but some get nulls from airScore.
         , landedMade :: Maybe PilotDistance
+        -- ^ Reported by FS but not by airScore. Not actually used in
+        -- calculating points in GAP.
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe PilotTime
         , leadingArea :: Maybe LeadingArea
+        -- ^ Reported by FS but not by airScore.
         , leadingCoef :: LeadingCoefficient
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
