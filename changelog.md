@@ -35,7 +35,8 @@ of this changelog.
 * Only the *.fsdb and folders for track logs are left in the root folder since
   the input, output and working files of flare-timing moved to the dot folder
   `.flare-timing`. Likewise files for comparison have moved from the root to
-  `.flight-system` and `.air-score`.
+  `.flight-system` and `.air-score`. Add a `Compare` top-level tab for the
+  comparisons between scores.
 
 # Plot Selected Pilots
 ## v0.28
