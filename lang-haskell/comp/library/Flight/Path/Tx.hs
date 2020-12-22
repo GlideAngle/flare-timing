@@ -53,8 +53,8 @@ dotDir DotAs = (</>) ".air-score"
 shape :: FileType -> FileShape
 
 shape Fsdb = Ext ".fsdb"
-shape CleanFsdb = DotDirName "clean-fsdb.xml" DotFs
-shape TrimFsdb = DotDirName "trim-fsdb.xml" DotFs
+shape CleanFsdb = Ext ".clean-fsdb.xml"
+shape TrimFsdb = DotDirName "trim-fsdb.xml" DotFt
 
 shape Kml = Ext ".kml"
 shape Igc = Ext ".igc"
@@ -93,7 +93,7 @@ shape (AltScore AltAs) = DotDirName "gap-score.yaml" DotAs
 
 reshape :: FileType -> FilePath -> FilePath
 reshape Fsdb = flip replaceExtensions "fsdb"
-reshape CleanFsdb = coerce . fsdbToCleanFsdb . FsdbFile
+reshape CleanFsdb = flip replaceExtensions "clean-fsdb.xml"
 reshape TrimFsdb = coerce . cleanFsdbToTrimFsdb . fsdbToCleanFsdb . FsdbFile
 
 reshape Kml = id
@@ -138,23 +138,23 @@ dotDirTask (CompDir dir) dotFolder name task
 
 -- |
 -- >>> fsdbToCleanFsdb (FsdbFile "a.fsdb")
--- CleanFsdbFile ".flight-system/clean-fsdb.xml"
+-- "a.clean-fsdb.xml"
 --
--- prop> \s -> fsdbToCleanFsdb (FsdbFile s) == CleanFsdbFile ".flight-system/clean-fsdb.xml"
+-- prop> \s -> not (elem '.' s) ==> fsdbToCleanFsdb (FsdbFile $ s ++ ".fsdb") == (CleanFsdbFile $ s ++ ".clean-fsdb.xml")
 fsdbToCleanFsdb :: FsdbFile -> CleanFsdbFile
-fsdbToCleanFsdb _ = let DotDirName s d = shape CleanFsdb in CleanFsdbFile $ dotDir d s
+fsdbToCleanFsdb (FsdbFile x) = CleanFsdbFile $ reshape CleanFsdb x
 
 -- |
--- >>> cleanFsdbToTrimFsdb (CleanFsdbFile ".flight-system/clean-fsdb.xml")
--- TrimFsdbFile ".flight-system/trim-fsdb.xml"
+-- >>> cleanFsdbToTrimFsdb (CleanFsdbFile "a.clean-fsdb.xml")
+-- ".flare-timing/trim-fsdb.xml"
 --
--- prop> \s -> cleanFsdbToTrimFsdb (CleanFsdbFile s) == TrimFsdbFile ".flight-system/trim-fsdb.xml"
+-- prop> \s -> cleanFsdbToTrimFsdb (CleanFsdbFile s) == TrimFsdbFile ".flare-timing/trim-fsdb.xml"
 cleanFsdbToTrimFsdb :: CleanFsdbFile -> TrimFsdbFile
 cleanFsdbToTrimFsdb _ = let DotDirName s d = shape TrimFsdb in TrimFsdbFile $ dotDir d s
 
 -- |
 -- >>> trimFsdbToComp (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- CompInputFile ".flare-timing/comp-input.yaml"
+-- ".flare-timing/comp-input.yaml"
 --
 -- prop> \s -> trimFsdbToComp (TrimFsdbFile s) == CompInputFile ".flare-timing/comp-input.yaml"
 trimFsdbToComp :: TrimFsdbFile -> CompInputFile
@@ -162,7 +162,7 @@ trimFsdbToComp _ = let DotDirName s d = shape CompInput in CompInputFile $ dotDi
 
 -- |
 -- >>> compToTaskLength (CompInputFile ".flare-timing/comp-input.yaml")
--- TaskLengthFile ".flare-timing/task-length.yaml"
+-- ".flare-timing/task-length.yaml"
 --
 -- prop> \s -> compToTaskLength (CompInputFile s) == TaskLengthFile ".flare-timing/task-length.yaml"
 compToTaskLength :: CompInputFile -> TaskLengthFile
@@ -170,7 +170,7 @@ compToTaskLength _ = let DotDirName s d = shape TaskLength in TaskLengthFile $ d
 
 -- |
 -- >>> compToCross (CompInputFile ".flare-timing/comp-input.yaml")
--- CrossZoneFile ".flare-timing/cross-zone.yaml"
+-- ".flare-timing/cross-zone.yaml"
 --
 -- prop> \s -> compToCross (CompInputFile s) == CrossZoneFile ".flare-timing/cross-zone.yaml"
 compToCross :: CompInputFile -> CrossZoneFile
@@ -178,7 +178,7 @@ compToCross _ = let DotDirName s d = shape CrossZone in CrossZoneFile $ dotDir d
 
 -- |
 -- >>> crossToTag (CrossZoneFile ".flare-timing/cross-zone.yaml")
--- TagZoneFile ".flare-timing/tag-zone.yaml"
+-- ".flare-timing/tag-zone.yaml"
 --
 -- prop> \s -> crossToTag (CrossZoneFile s) == TagZoneFile ".flare-timing/tag-zone.yaml"
 crossToTag :: CrossZoneFile -> TagZoneFile
@@ -186,7 +186,7 @@ crossToTag _ = let DotDirName s d = shape TagZone in TagZoneFile $ dotDir d s
 
 -- |
 -- >>> tagToPeg (TagZoneFile ".flare-timing/tag-zone.yaml")
--- PegFrameFile ".flare-timing/peg-frame.yaml"
+-- ".flare-timing/peg-frame.yaml"
 --
 -- prop> \s -> tagToPeg (TagZoneFile s) == PegFrameFile ".flare-timing/peg-frame.yaml"
 tagToPeg :: TagZoneFile -> PegFrameFile
@@ -194,7 +194,7 @@ tagToPeg _ = let DotDirName s d = shape PegFrame in PegFrameFile $ dotDir d s
 
 -- |
 -- >>> compToMaskArrival (CompInputFile ".flare-timing/comp-input.yaml")
--- MaskArrivalFile ".flare-timing/mask-arrival.yaml"
+-- ".flare-timing/mask-arrival.yaml"
 --
 -- prop> \s -> compToMaskArrival (CompInputFile s) == MaskArrivalFile ".flare-timing/mask-arrival.yaml"
 compToMaskArrival :: CompInputFile -> MaskArrivalFile
@@ -202,7 +202,7 @@ compToMaskArrival _ = let DotDirName s d = shape MaskArrival in MaskArrivalFile 
 
 -- |
 -- >>> compToMaskEffort (CompInputFile ".flare-timing/comp-input.yaml")
--- MaskEffortFile ".flare-timing/mask-effort.yaml"
+-- ".flare-timing/mask-effort.yaml"
 --
 -- prop> \s -> compToMaskEffort (CompInputFile s) == MaskEffortFile ".flare-timing/mask-effort.yaml"
 compToMaskEffort :: CompInputFile -> MaskEffortFile
@@ -210,7 +210,7 @@ compToMaskEffort _ = let DotDirName s d = shape MaskEffort in MaskEffortFile $ d
 
 -- |
 -- >>> compToMaskLead (CompInputFile ".flare-timing/comp-input.yaml")
--- MaskLeadFile ".flare-timing/mask-lead.yaml"
+-- ".flare-timing/mask-lead.yaml"
 --
 -- prop> \s -> compToMaskLead (CompInputFile s) == MaskLeadFile ".flare-timing/mask-lead.yaml"
 compToMaskLead :: CompInputFile -> MaskLeadFile
@@ -218,7 +218,7 @@ compToMaskLead _ = let DotDirName s d = shape MaskLead in MaskLeadFile $ dotDir 
 
 -- |
 -- >>> compToMaskReach (CompInputFile ".flare-timing/comp-input.yaml")
--- MaskReachFile ".flare-timing/mask-reach.yaml"
+-- ".flare-timing/mask-reach.yaml"
 --
 -- prop> \s -> compToMaskReach (CompInputFile s) == MaskReachFile ".flare-timing/mask-reach.yaml"
 compToMaskReach :: CompInputFile -> MaskReachFile
@@ -226,7 +226,7 @@ compToMaskReach _ = let DotDirName s d = shape MaskReach in MaskReachFile $ dotD
 
 -- |
 -- >>> compToMaskSpeed (CompInputFile ".flare-timing/comp-input.yaml")
--- MaskSpeedFile ".flare-timing/mask-speed.yaml"
+-- ".flare-timing/mask-speed.yaml"
 --
 -- prop> \s -> compToMaskSpeed (CompInputFile s) == MaskSpeedFile ".flare-timing/mask-speed.yaml"
 compToMaskSpeed :: CompInputFile -> MaskSpeedFile
@@ -234,7 +234,7 @@ compToMaskSpeed _ = let DotDirName s d = shape MaskSpeed in MaskSpeedFile $ dotD
 
 -- |
 -- >>> compToBonusReach (CompInputFile ".flare-timing/comp-input.yaml")
--- BonusReachFile ".flare-timing/bonus-reach.yaml"
+-- ".flare-timing/bonus-reach.yaml"
 --
 -- prop> \s -> compToBonusReach (CompInputFile s) == BonusReachFile ".flare-timing/bonus-reach.yaml"
 compToBonusReach :: CompInputFile -> BonusReachFile
@@ -242,7 +242,7 @@ compToBonusReach _ = let DotDirName s d = shape BonusReach in BonusReachFile $ d
 
 -- |
 -- >>> compToLeadArea (CompInputFile ".flare-timing/comp-input.yaml")
--- LeadAreaFile ".flare-timing/lead-area.yaml"
+-- ".flare-timing/lead-area.yaml"
 --
 -- prop> \s -> compToLeadArea (CompInputFile s) == LeadAreaFile ".flare-timing/lead-area.yaml"
 compToLeadArea :: CompInputFile -> LeadAreaFile
@@ -250,7 +250,7 @@ compToLeadArea _ = let DotDirName s d = shape LeadArea in LeadAreaFile $ dotDir 
 
 -- |
 -- >>> compToLand (CompInputFile ".flare-timing/comp-input.yaml")
--- LandOutFile ".flare-timing/land-out.yaml"
+-- ".flare-timing/land-out.yaml"
 --
 -- prop> \s -> compToLand (CompInputFile s) == LandOutFile ".flare-timing/land-out.yaml"
 compToLand :: CompInputFile -> LandOutFile
@@ -258,7 +258,7 @@ compToLand _ = let DotDirName s d = shape LandOut in LandOutFile $ dotDir d s
 
 -- |
 -- >>> compToFar (CompInputFile ".flare-timing/comp-input.yaml")
--- FarOutFile ".flare-timing/far-out.yaml"
+-- ".flare-timing/far-out.yaml"
 --
 -- prop> \s -> compToFar (CompInputFile s) == FarOutFile ".flare-timing/far-out.yaml"
 compToFar :: CompInputFile -> FarOutFile
@@ -266,7 +266,7 @@ compToFar _ = let DotDirName s d = shape FarOut in FarOutFile $ dotDir d s
 
 -- |
 -- >>> compToPoint (CompInputFile ".flare-timing/comp-input.yaml")
--- GapPointFile ".flare-timing/gap-point.yaml"
+-- ".flare-timing/gap-point.yaml"
 --
 -- prop> \s -> compToPoint (CompInputFile s) == GapPointFile ".flare-timing/gap-point.yaml"
 compToPoint :: CompInputFile -> GapPointFile
@@ -274,7 +274,7 @@ compToPoint _ = let DotDirName s d = shape GapPoint in GapPointFile $ dotDir d s
 
 -- |
 -- >>> compToAltArrival AltFs (CompInputFile ".flare-timing/comp-input.yaml")
--- AltArrivalFile ".flight-system/mask-arrival.yaml"
+-- ".flight-system/mask-arrival.yaml"
 --
 -- prop> \s -> compToAltArrival AltFs (CompInputFile s) == AltArrivalFile ".flight-system/mask-arrival.yaml"
 compToAltArrival :: AltDot -> CompInputFile -> AltArrivalFile
@@ -283,7 +283,7 @@ compToAltArrival a _ = let DotDirName s d = shape (AltArrival a) in
 
 -- |
 -- >>> compToAltLandout AltFs (CompInputFile ".flare-timing/comp-input.yaml")
--- AltLandoutFile ".flight-system/land-out.yaml"
+-- ".flight-system/land-out.yaml"
 --
 -- prop> \s -> compToAltLandout AltFs (CompInputFile s) == AltLandoutFile ".flight-system/land-out.yaml"
 compToAltLandout :: AltDot -> CompInputFile -> AltLandoutFile
@@ -292,7 +292,7 @@ compToAltLandout a _ = let DotDirName s d = shape (AltLandout a) in
 
 -- |
 -- >>> trimFsdbToAltArrival AltFs (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- AltArrivalFile ".flight-system/mask-arrival.yaml"
+-- ".flight-system/mask-arrival.yaml"
 --
 -- prop> \s -> trimFsdbToAltArrival AltFs (TrimFsdbFile s) == AltArrivalFile ".flight-system/mask-arrival.yaml"
 trimFsdbToAltArrival :: AltDot -> TrimFsdbFile -> AltArrivalFile
@@ -301,7 +301,7 @@ trimFsdbToAltArrival a _ = let DotDirName s d = shape (AltArrival a) in
 
 -- |
 -- >>> trimFsdbToAltLandout AltFs (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- AltLandoutFile ".flight-system/land-out.yaml"
+-- ".flight-system/land-out.yaml"
 --
 -- prop> \s -> trimFsdbToAltLandout AltFs (TrimFsdbFile s) == AltLandoutFile ".flight-system/land-out.yaml"
 trimFsdbToAltLandout :: AltDot -> TrimFsdbFile -> AltLandoutFile
@@ -310,7 +310,7 @@ trimFsdbToAltLandout a _ = let DotDirName s d = shape (AltLandout a) in
 
 -- |
 -- >>> compToAltRoute AltFs (CompInputFile ".flare-timing/comp-input.yaml")
--- AltRouteFile ".flight-system/task-route.yaml"
+-- ".flight-system/task-route.yaml"
 --
 -- prop> \s -> compToAltRoute AltFs (CompInputFile s) == AltRouteFile ".flight-system/task-route.yaml"
 compToAltRoute :: AltDot -> CompInputFile -> AltRouteFile
@@ -319,7 +319,7 @@ compToAltRoute a _ = let DotDirName s d = shape (AltRoute a) in
 
 -- |
 -- >>> trimFsdbToAltRoute AltFs (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- AltRouteFile ".flight-system/task-route.yaml"
+-- ".flight-system/task-route.yaml"
 --
 -- prop> \s -> trimFsdbToAltRoute AltFs (TrimFsdbFile s) == AltRouteFile ".flight-system/task-route.yaml"
 trimFsdbToAltRoute :: AltDot -> TrimFsdbFile -> AltRouteFile
@@ -328,10 +328,10 @@ trimFsdbToAltRoute a _ = let DotDirName s d = shape (AltRoute a) in
 
 -- |
 -- >>> compToAltScore AltFs (CompInputFile ".flare-timing/comp-input.yaml")
--- AltScoreFile ".flight-system/gap-score.yaml"
+-- ".flight-system/gap-score.yaml"
 --
 -- >>> compToAltScore AltAs (CompInputFile ".flare-timing/comp-input.yaml")
--- AltScoreFile ".air-score/gap-score.yaml"
+-- ".air-score/gap-score.yaml"
 --
 -- prop> \s -> compToAltScore AltFs (CompInputFile s) == AltScoreFile ".flight-system/gap-score.yaml"
 -- prop> \s -> compToAltScore AltAs (CompInputFile s) == AltScoreFile ".air-score/gap-score.yaml"
@@ -341,7 +341,7 @@ compToAltScore a _ = let DotDirName s d = shape (AltScore a) in
 
 -- |
 -- >>> trimFsdbToAltScore AltFs (TrimFsdbFile ".flight-system/trim-fsdb.xml")
--- AltScoreFile ".flight-system/gap-score.yaml"
+-- ".flight-system/gap-score.yaml"
 --
 -- prop> \s -> trimFsdbToAltScore AltFs (TrimFsdbFile s) == AltScoreFile ".flight-system/gap-score.yaml"
 trimFsdbToAltScore :: AltDot -> TrimFsdbFile -> AltScoreFile
@@ -358,7 +358,7 @@ pilotPath (Pilot (PilotId k, PilotName s)) =
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- (UnpackTrackDir "a/.flare-timing/unpack-track/task-1",UnpackTrackFile "Frodo 101.csv")
+-- ("a/.flare-timing/unpack-track/task-1","Frodo 101.csv")
 unpackTrackPath :: CompDir -> Int -> Pilot -> (UnpackTrackDir, UnpackTrackFile)
 unpackTrackPath dir task pilot =
     (unpackTrackDir dir task, UnpackTrackFile $ pilotPath pilot <.> "csv")
@@ -369,7 +369,7 @@ unpackTrackDir comp task =
 
 -- |
 -- >>> alignTimePath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- (AlignTimeDir "a/.flare-timing/align-time/task-1",AlignTimeFile "Frodo 101.csv")
+-- ("a/.flare-timing/align-time/task-1","Frodo 101.csv")
 alignTimePath :: CompDir -> Int -> Pilot -> (AlignTimeDir, AlignTimeFile)
 alignTimePath dir task pilot =
     (alignTimeDir dir task, AlignTimeFile $ pilotPath pilot <.> "csv")
@@ -380,7 +380,7 @@ alignTimeDir comp task =
 
 -- |
 -- >>> discardFurtherPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- (DiscardFurtherDir "a/.flare-timing/discard-further/task-1",DiscardFurtherFile "Frodo 101.csv")
+-- ("a/.flare-timing/discard-further/task-1","Frodo 101.csv")
 discardFurtherPath :: CompDir -> Int -> Pilot -> (DiscardFurtherDir, DiscardFurtherFile)
 discardFurtherPath dir task pilot =
     (discardFurtherDir dir task, DiscardFurtherFile $ pilotPath pilot <.> "csv")
@@ -391,7 +391,7 @@ discardFurtherDir comp task =
 
 -- |
 -- >>> pegThenDiscardPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- (PegThenDiscardDir "a/.flare-timing/peg-then-discard/task-1",PegThenDiscardFile "Frodo 101.csv")
+-- ("a/.flare-timing/peg-then-discard/task-1","Frodo 101.csv")
 pegThenDiscardPath :: CompDir -> Int -> Pilot -> (PegThenDiscardDir, PegThenDiscardFile)
 pegThenDiscardPath dir task pilot =
     (pegThenDiscardDir dir task, PegThenDiscardFile $ pilotPath pilot <.> "csv")
@@ -402,7 +402,7 @@ pegThenDiscardDir comp task =
 
 -- |
 -- >>> areaStepPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- (AreaStepDir "a/.flare-timing/area-step/task-1",AreaStepFile "Frodo 101.csv")
+-- ("a/.flare-timing/area-step/task-1","Frodo 101.csv")
 areaStepPath :: CompDir -> Int -> Pilot -> (AreaStepDir, AreaStepFile)
 areaStepPath dir task pilot =
     (areaStepDir dir task, AreaStepFile $ pilotPath pilot <.> "csv")

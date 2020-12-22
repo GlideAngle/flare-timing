@@ -9,7 +9,9 @@ arguments =
     , "library/Flight/Path/Tx.hs"
     --, "library/Flight/Track/Place.hs"
     , "-XDataKinds"
+    , "-XDerivingStrategies"
     , "-XFlexibleContexts"
+    , "-XGeneralizedNewtypeDeriving"
     , "-XPackageImports"
     , "-XTypeApplications"
 

@@ -2,6 +2,13 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/changelog.md)
 of this changelog.
 
+# Moved Files
+## v0.30
+
+* Moved the file `.flight-system/clean-fsdb.xml` back to the root folder with
+  as `*.clean-fsdb.xml`. Moved the trimmed XML to
+  `.flare-timing/trim-fsdb.xml`.
+
 # Ess ≠ Goal
 ## v0.29
 
