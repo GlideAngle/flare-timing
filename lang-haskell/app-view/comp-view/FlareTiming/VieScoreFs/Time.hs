@@ -20,7 +20,7 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..), fstPilotId, pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
@@ -116,7 +116,7 @@ tableVieScoreFsTime altDot _utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg 
                         w
                         dfNt
                         pt
-                        (Map.fromList <$> sAltFs))
+                        (Map.fromList . fmap fstPilotId <$> sAltFs))
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -184,7 +184,7 @@ pointRow
     => Dynamic t Int
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
+    -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w dfNt pt sAltFs x = do
@@ -200,7 +200,7 @@ pointRow w dfNt pt sAltFs x = do
                            else ("", n))
 
     (yEl, yElDiff, tPts, tPtsDiff) <- sample . current
-                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown
+                $ ffor3 pilot sAltFs x (\(Pilot (pid, _)) sAltFs' (_, Breakdown
                                                           { velocity = v'
                                                           , breakdown =
                                                               Points{time = tPts}
@@ -216,7 +216,7 @@ pointRow w dfNt pt sAltFs x = do
                     Alt.AltBreakdown
                         { timeElapsed = elap'
                         , breakdown = Points{time = tPtsN}
-                        } <- Map.lookup pilot' sAltFs'
+                        } <- Map.lookup pid sAltFs'
 
                     let elap =
                             case (ss, gs) of

@@ -29,7 +29,7 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..), fstPilotId, pilotIdsWidth)
 import WireTypes.Effort
     ( TaskLanding(..), Lookahead(..)
     , Chunking(..), IxChunk(..), Chunk(..)
@@ -172,7 +172,7 @@ tableVieScoreFsEffort altDot utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg p
                         ln
                         dfNt
                         pt
-                        (Map.fromList <$> sAltFs)
+                        (Map.fromList . fmap fstPilotId <$> sAltFs)
                         (Map.fromList <$> pChunks)
                         (Map.fromList <$> pChunksN)
                     )
@@ -224,7 +224,7 @@ tableVieScoreFsEffort altDot utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg p
                                         text " points.")
                             vw'
                         )
-                Paragliding -> 
+                Paragliding ->
                     dyn_ $ ffor vw (\vw' ->
                         maybe
                             (return ())
@@ -248,7 +248,7 @@ pointRow
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
+    -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t (Map.Map Pilot IxChunk)
     -> Dynamic t (Map.Map Pilot IxChunk)
     -> Dynamic t (Pilot, Bk.Breakdown)
@@ -280,7 +280,7 @@ pointRow w _utcOffset free _ln dfNt pt sAltFs ixChunkMap ixChunkMapN x = do
                 pd)
 
     (landed, landedN, landedDiff, ePts, ePtsDiff) <- sample . current
-                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Bk.Breakdown
+                $ ffor3 pilot sAltFs x (\(Pilot (pid, _)) sAltFs' (_, Bk.Breakdown
                                                           { breakdown =
                                                               Points{effort = ePts}
                                                           , landedMade
@@ -294,7 +294,7 @@ pointRow w _utcOffset free _ln dfNt pt sAltFs ixChunkMap ixChunkMapN x = do
                                     , distance = dPtsN
                                     }
                             , landedMade = landedN
-                            } <- Map.lookup pilot' sAltFs'
+                            } <- Map.lookup pid sAltFs'
 
                         let quieten s =
                                 case (rPtsN, ePtsN, dPtsN) of

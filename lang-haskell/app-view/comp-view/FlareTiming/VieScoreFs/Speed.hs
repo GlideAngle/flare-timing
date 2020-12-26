@@ -18,7 +18,7 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..), fstPilotId, pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (timeZone, showT, showTDiff)
@@ -128,7 +128,7 @@ tableVieScoreFsSpeed altDot utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _
                         w
                         utcOffset
                         dfNt
-                        (Map.fromList <$> sAltFs))
+                        (Map.fromList . fmap fstPilotId <$> sAltFs))
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -175,7 +175,7 @@ tableVieScoreFsSpeed altDot utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _
                                         text " points.")
                             vw'
                         )
-                Paragliding -> 
+                Paragliding ->
                     dyn_ $ ffor vw (\vw' ->
                         maybe
                             (return ())
@@ -196,7 +196,7 @@ pointRow
     => Dynamic t Int
     -> Dynamic t UtcOffset
     -> Dynamic t DfNoTrack
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
+    -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w utcOffset dfNt sAltFs x = do
@@ -213,8 +213,8 @@ pointRow w utcOffset dfNt sAltFs x = do
                            else ("", n))
 
     (ySs, ySsDiff, yEs, yEsDiff, yEl, yElDiff) <- sample . current
-                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown{velocity = v'}) ->
-                case (v', Map.lookup pilot' sAltFs') of
+                $ ffor3 pilot sAltFs x (\(Pilot (pid, _)) sAltFs' (_, Breakdown{velocity = v'}) ->
+                case (v', Map.lookup pid sAltFs') of
                     (Just Velocity{ss, gs, es, gsElapsed = gsElap, ssElapsed = ssElap}, Just Alt.AltBreakdown {ss = ss', es = es', timeElapsed = elap'}) ->
                         let (start, elap) =
                                 case (ss, gs) of

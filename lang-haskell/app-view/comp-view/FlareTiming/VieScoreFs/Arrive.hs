@@ -24,7 +24,7 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..), fstPilotId, pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (timeZone, showT, showTDiff)
@@ -117,7 +117,7 @@ tableVieScoreFsArrive altDot utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg
                         utcOffset
                         dfNt
                         pt
-                        (Map.fromList <$> sAltFs))
+                        (Map.fromList . fmap fstPilotId <$> sAltFs))
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -163,7 +163,7 @@ tableVieScoreFsArrive altDot utcOffset hgOrPg _free sgs _ln dnf' dfNt _vy vw _wg
                                         text " points.")
                             vw'
                         )
-                Paragliding -> 
+                Paragliding ->
                     dyn_ $ ffor vw (\vw' ->
                         maybe
                             (return ())
@@ -185,7 +185,7 @@ pointRow
     -> Dynamic t UtcOffset
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
+    -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w utcOffset dfNt pt sAltFs x = do
@@ -203,7 +203,7 @@ pointRow w utcOffset dfNt pt sAltFs x = do
                            else ("", n))
 
     (yEs, yEsDiff, aPts, aPtsDiff) <- sample . current
-                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown
+                $ ffor3 pilot sAltFs x (\(Pilot (pid, _)) sAltFs' (_, Breakdown
                                                           { velocity = v'
                                                           , breakdown =
                                                               Points{arrival = aPts}
@@ -214,7 +214,7 @@ pointRow w utcOffset dfNt pt sAltFs x = do
                         Alt.AltBreakdown
                             { es = es'
                             , breakdown = Points{arrival = aPtsN}
-                            } <- Map.lookup pilot' sAltFs'
+                            } <- Map.lookup pid sAltFs'
 
                         return
                             ( maybe "" (showT tz') es'

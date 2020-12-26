@@ -35,7 +35,7 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..), fstPilotId, pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
@@ -233,7 +233,7 @@ tableVieScoreFsSplit altDot utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg p
                         dfNt
                         pt
                         tp
-                        (Map.fromList <$> sAltFs))
+                        (Map.fromList . fmap fstPilotId <$> sAltFs))
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -278,7 +278,7 @@ tableVieScoreFsSplit altDot utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg p
                                         text " points.")
                             vw'
                         )
-                Paragliding -> 
+                Paragliding ->
                     dyn_ $ ffor vw (\vw' ->
                         maybe
                             (return ())
@@ -304,7 +304,7 @@ pointRow
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
+    -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w cTime cArrival _utcOffset _free dfNt pt tp sAltFs x = do
@@ -312,8 +312,8 @@ pointRow w cTime cArrival _utcOffset _free dfNt pt tp sAltFs x = do
     let xB = snd <$> x
 
     (yRank, yScore, yDiff, yDistance, yDistanceDiff, yLeading, yLeadingDiff, yArrival, yArrivalDiff, yTime, yTimeDiff) <- sample . current
-                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Breakdown{total = p', breakdown = Points{distance = d', leading = l', arrival = a', time = t'}}) ->
-                case Map.lookup pilot' sAltFs' of
+                $ ffor3 pilot sAltFs x (\(Pilot (pid, _)) sAltFs' (_, Breakdown{total = p', breakdown = Points{distance = d', leading = l', arrival = a', time = t'}}) ->
+                case Map.lookup pid sAltFs' of
                     Nothing -> ("", "", "", "", "", "", "", "", "", "", "")
                     Just
                         Alt.AltBreakdown

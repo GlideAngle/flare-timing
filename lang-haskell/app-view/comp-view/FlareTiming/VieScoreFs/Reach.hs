@@ -25,7 +25,7 @@ import WireTypes.Point
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..), TaskStop(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..), fstPilotId, pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
@@ -151,7 +151,7 @@ tableVieScoreFsReach altDot utcOffset hgOrPg free sgs ln stp dnf' dfNt vw pt sDf
                         stp
                         dfNt
                         pt
-                        (Map.fromList <$> sAltFs))
+                        (Map.fromList . fmap fstPilotId <$> sAltFs))
 
             dnfRows colsDnfPad w dnfPlacing dnf'
             return ()
@@ -225,7 +225,7 @@ pointRow
     -> Dynamic t (Maybe TaskStop)
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
+    -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t (Pilot, Bk.Breakdown)
     -> m ()
 pointRow w _utcOffset free _ln stp dfNt pt sAltFs x = do
@@ -255,7 +255,7 @@ pointRow w _utcOffset free _ln stp dfNt pt sAltFs x = do
         , yF, yDiffF
         , yE, yDiffE
         , rPts, rPtsDiff) <- sample . current
-                $ ffor3 pilot sAltFs x (\pilot' sAltFs' (_, Bk.Breakdown
+                $ ffor3 pilot sAltFs x (\(Pilot (pid, _)) sAltFs' (_, Bk.Breakdown
                                                         { reach
                                                         , breakdown =
                                                             Points
@@ -276,7 +276,7 @@ pointRow w _utcOffset free _ln stp dfNt pt sAltFs x = do
                                     { flown = rFN
                                     , extra = rEN
                                     }
-                            } <- Map.lookup pilot' sAltFs'
+                            } <- Map.lookup pid sAltFs'
                         ReachToggle{extra = rE, flown = rF} <- reach
 
                         let quieten s =
