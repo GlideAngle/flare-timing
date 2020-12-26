@@ -431,6 +431,9 @@ getFsRoute_ = getIxTask "fs-route"
 getTaskAltLanding :: GetIxTask' t m (Maybe TaskLanding)
 getTaskAltLanding = getIxTask "fs-effort" "landing"
 
+-- WARNING: I found that airScore was changing the capitalisation of pilots'
+-- names, uppercasing the first letter of each word. To avoid misses, lookup by
+-- @PilotId@ instead of by @Pilot@.
 getTaskAltScore :: AltDot -> GetIxTask' t m [(Pilot, AltBreakdown)]
 getTaskAltScore AltFs = getIxTask "fs-score" "score"
 getTaskAltScore AltAs = getIxTask "as-score" "score"

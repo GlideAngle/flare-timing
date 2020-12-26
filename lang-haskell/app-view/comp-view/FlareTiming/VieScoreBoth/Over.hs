@@ -22,7 +22,7 @@ import WireTypes.Point
 import WireTypes.ValidityWorking (ValidityWorking(..))
 import WireTypes.Comp
     ( UtcOffset(..), Discipline(..), MinimumDistance(..), EarlyStart(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..), fstPilotId, pilotIdsWidth)
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
@@ -65,16 +65,16 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                 y <> (if null gs then " " else " sg ") <> tc)
 
     let yDiff = ffor3 sDfs sAltFs sAltAs (\sDfs' sAltFs' sAltAs' ->
-                    let mapFs = Map.fromList sAltFs'
-                        mapAs = Map.fromList sAltAs'
+                    let mapFs = Map.fromList $ fstPilotId <$> sAltFs'
+                        mapAs = Map.fromList $ fstPilotId <$> sAltAs'
                         altTotal Alt.AltBreakdown{total = p} = p
                     in
                         [
-                            ( altTotal <$> Map.lookup pilot mapFs
-                            , altTotal <$> Map.lookup pilot mapAs
+                            ( altTotal <$> Map.lookup pid mapFs
+                            , altTotal <$> Map.lookup pid mapAs
                             , p'
                             )
-                        | (pilot, Breakdown{total = p'}) <- sDfs'
+                        | (Pilot (pid, _), Breakdown{total = p'}) <- sDfs'
                         ])
 
     let stats = ffor
@@ -156,8 +156,8 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                         w
                         dfNt
                         tp
-                        (Map.fromList <$> sAltFs)
-                        (Map.fromList <$> sAltAs))
+                        (Map.fromList . fmap fstPilotId <$> sAltFs)
+                        (Map.fromList . fmap fstPilotId <$> sAltAs))
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -177,16 +177,16 @@ pointRow
     => Dynamic t Int
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe TaskPoints)
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
-    -> Dynamic t (Map.Map Pilot Alt.AltBreakdown)
+    -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
+    -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 pointRow w dfNt tp sAltFs sAltAs x = do
     let pilot = fst <$> x
     let xB = snd <$> x
 
-    let yAlt pilot' sAltFs' (_, Breakdown{total = pFt}) =
-            case Map.lookup pilot' sAltFs' of
+    let yAlt (Pilot (pid, _)) sAltFs' (_, Breakdown{total = pFt}) =
+            case Map.lookup pid sAltFs' of
                 Nothing -> ("", "", "")
                 Just
                     Alt.AltBreakdown
@@ -194,8 +194,8 @@ pointRow w dfNt tp sAltFs sAltAs x = do
                         , total = pFs@(TaskPoints pts)
                         } -> (showRank nth, showRounded pts, showTaskPointsDiff pFs pFt)
 
-    let zAlt pilot' sAltAs' sAltFs' =
-            case (Map.lookup pilot' sAltAs', Map.lookup pilot' sAltFs') of
+    let zAlt (Pilot (pid, _)) sAltAs' sAltFs' =
+            case (Map.lookup pid sAltAs', Map.lookup pid sAltFs') of
                 (Nothing, _) -> ""
                 (_, Nothing) -> ""
                 (Just Alt.AltBreakdown{total = pAs}, Just Alt.AltBreakdown{total = pFs}) ->
