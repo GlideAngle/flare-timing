@@ -90,7 +90,9 @@ a zone with [`ft-tag-zone`](lang-haskell/flare-timing/prod-apps/tag-zone).
     * [`ft-mask-reach`](lang-haskell/flare-timing/prod-apps/mask-reach).  
 11. Group and count land outs with
 [`ft-land-out`](lang-haskell/flare-timing/prod-apps/land-out).  
-12. Score the competition with [`ft-gap-point`](lang-haskell/flare-timing/prod-apps/gap-point).  
+12. Group and count far outs with
+[`ft-far-out`](lang-haskell/flare-timing/prod-apps/far-out).  
+13. Score the competition with [`ft-gap-point`](lang-haskell/flare-timing/prod-apps/gap-point).  
 
 To get the backend server for hosting the comp data running locally:
 
