@@ -486,6 +486,7 @@ getScore pilots =
     &&& getDidFly kps
     &&& getDidFlyNoTracklog kps
     &&& getPoint
+    -- NOTE: wt = with track, nt = no track.
     >>> arr (\(_name, (t, (wt, (nt, xs)))) ->
         let td :: Maybe (QTaskDistance _ [u| km |]) = asTaskKm t
             dfwt = asAward t <$> wt
@@ -512,16 +513,18 @@ getScore pilots =
                                               { flown = fracFlown
                                               , extra = fracExtra
                                               }) ->
-                                        r
-                                            { flown = Just $
-                                                (\AwardedDistance{awardedFrac = fracF} ->
-                                                    TaskDistance $ MkQuantity fracF *: d)
-                                                $ fracFlown
-                                            , extra = Just $
-                                                (\AwardedDistance{awardedFrac = fracE} ->
-                                                    TaskDistance $ MkQuantity fracE *: d)
-                                                $ fracExtra
-                                            })
+                                        let fracDistance AwardedDistance{awardedFrac} =
+                                                    TaskDistance $ MkQuantity awardedFrac *: d
+
+                                            f = fracDistance fracFlown
+
+    -- WARNING: FS will set FsFlightData/@bonus_distance="0" in cases where the
+    -- task is using barometric altitude but the track only has GPS altitude.
+    -- Despite this, FS scores reach on the max of FsFlight/@distance and
+    -- FsFlightData/@bonus_distance.
+                                            e = fracDistance $ Stats.max fracFlown fracExtra
+                                        in
+                                            r{flown = Just f, extra = Just e})
                                     (do
                                         TaskDistance td' <- td
                                         let td'' :: Quantity _ [u| m |] = convert td'

@@ -9,6 +9,8 @@ of this changelog.
   as `*.clean-fsdb.xml`. Moved the trimmed XML to
   `.flare-timing/trim-fsdb.xml`.
 * For comparisons, lookup pilots by ID and not by name.
+* When parsing extra reach from `*.fsdb` avoid zeroing it or making it less
+  than reach.
 
 # Ess ≠ Goal
 ## v0.29
