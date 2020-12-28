@@ -9,7 +9,7 @@ import qualified Data.Map.Strict as Map
 
 import WireTypes.Fraction (showArrivalFrac, showArrivalFracDiff)
 import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..))
-import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), fstPilotId, pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.Event (rowClass)
 
@@ -33,7 +33,7 @@ tableVieArrivalPosition xs xsN select = do
                     return ()
 
             dyn $ ffor xsN (\xsN' -> do
-                    let mapN = Map.fromList xsN'
+                    let mapN = Map.fromList $ fstPilotId <$> xsN'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowArrivalPosition w select mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
@@ -43,15 +43,15 @@ rowArrivalPosition
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot TrackArrival
+    -> Map PilotId TrackArrival
     -> Dynamic t Pilot
     -> Dynamic t TrackArrival
     -> m (Event t Pilot)
 rowArrivalPosition w select mapT p ta = do
     pilot <- sample $ current p
     (yFrac, yFracDiff) <- sample . current
-                $ ffor2 p ta (\p' TrackArrival{frac} ->
-                    case Map.lookup p' mapT of
+                $ ffor2 p ta (\(Pilot (pid, _)) TrackArrival{frac} ->
+                    case Map.lookup pid mapT of
                         Just TrackArrival{frac = fracN} ->
                             ( showArrivalFrac fracN
                             , showArrivalFracDiff fracN frac

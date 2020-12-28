@@ -9,7 +9,7 @@ import WireTypes.Fraction (Fractions(..), showLeadingFrac, showLeadingFracDiff)
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead (TrackLead(..), showCoef, showCoefDiff)
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
-import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), fstPilotId, pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.Event (rowClass)
 
@@ -103,7 +103,7 @@ tableViePilotCompare _ sEx xs select = do
                     return ()
 
             dyn $ ffor sEx (\sEx' -> do
-                    let mapN = Map.fromList sEx'
+                    let mapN = Map.fromList $ fstPilotId <$> sEx'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowLeadCompare w mapN select) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
@@ -112,15 +112,15 @@ tableViePilotCompare _ sEx xs select = do
 rowLeadCompare
     :: MonadWidget t m
     => Dynamic t Int
-    -> Map.Map Pilot Alt.AltBreakdown
+    -> Map.Map PilotId Alt.AltBreakdown
     -> Dynamic t [Pilot]
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m (Event t Pilot)
 rowLeadCompare w mapN select p tl = do
     (pilot, yCoef, yCoefDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p tl (\pilot TrackLead{coef, frac} ->
-                    case Map.lookup pilot mapN of
+                $ ffor2 p tl (\pilot@(Pilot (pid, _)) TrackLead{coef, frac} ->
+                    case Map.lookup pid mapN of
                         Just
                             Alt.AltBreakdown
                                 { leadingCoef = coef'

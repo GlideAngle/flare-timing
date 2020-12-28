@@ -8,6 +8,7 @@ of this changelog.
 * Moved the file `.flight-system/clean-fsdb.xml` back to the root folder with
   as `*.clean-fsdb.xml`. Moved the trimmed XML to
   `.flare-timing/trim-fsdb.xml`.
+* For comparisons, lookup pilots by ID and not by name.
 
 # Ess ≠ Goal
 ## v0.29

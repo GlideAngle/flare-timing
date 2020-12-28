@@ -13,7 +13,7 @@ import WireTypes.Fraction
     , showReachFrac, showReachFracDiff
     )
 import WireTypes.Reach (TrackReach(..))
-import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), fstPilotId, pilotIdsWidth)
 import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
@@ -44,7 +44,7 @@ tableViePilotReach sEx xs select = do
                     return ()
 
             dyn $ ffor sEx (\sEx' -> do
-                    let mapN = Map.fromList sEx'
+                    let mapN = Map.fromList $ fstPilotId <$> sEx'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowReach w select mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
@@ -54,7 +54,7 @@ rowReach
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot Alt.AltBreakdown
+    -> Map PilotId Alt.AltBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m (Event t Pilot)
@@ -62,7 +62,7 @@ rowReach w select mapN p r = do
     pilot <- sample $ current p
 
     (yReach, yReachDiff, yFrac, yFracDiff) <- sample . current
-            $ ffor2 p r (\p' TrackReach{reach, frac} ->
+            $ ffor2 p r (\(Pilot (pid, _)) TrackReach{reach, frac} ->
                 fromMaybe ("", "", "", "") $ do
                     Alt.AltBreakdown
                         { reach = ReachToggle{extra = reachN}
@@ -72,7 +72,7 @@ rowReach w select mapN p r = do
                                 , effort = eFracN
                                 , distance = dFracN
                                 }
-                        } <- Map.lookup p' mapN
+                        } <- Map.lookup pid mapN
 
                     let quieten s =
                             case (rFracN, eFracN, dFracN) of

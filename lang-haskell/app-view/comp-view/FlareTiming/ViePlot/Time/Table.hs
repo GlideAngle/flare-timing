@@ -12,7 +12,7 @@ import WireTypes.Fraction (showSpeedFrac, showSpeedFracDiff)
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Speed (TrackSpeed(..), PilotTime(..))
 import qualified WireTypes.Speed as Speed (TrackSpeed(..))
-import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), fstPilotId, pilotIdsWidth)
 import WireTypes.Point (StartGate)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
@@ -54,7 +54,7 @@ tableSpeed sgs sEx xs select = do
                     return ()
 
             dyn $ ffor sEx (\sEx' -> do
-                    let mapN = Map.fromList sEx'
+                    let mapN = Map.fromList $ fstPilotId <$> sEx'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowSpeed w select mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
@@ -64,7 +64,7 @@ rowSpeed
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot Alt.AltBreakdown
+    -> Map PilotId Alt.AltBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackSpeed
     -> m (Event t Pilot)
@@ -72,8 +72,8 @@ rowSpeed w select mapN p ts = do
     pilot <- sample $ current p
 
     (yTime, yTimeDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p ts (\p' TrackSpeed{time, frac} ->
-                    case Map.lookup p' mapN of
+                $ ffor2 p ts (\(Pilot (pid, _)) TrackSpeed{time, frac} ->
+                    case Map.lookup pid mapN of
                         Just
                             Alt.AltBreakdown
                                 { timeElapsed = timeN

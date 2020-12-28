@@ -12,7 +12,7 @@ import WireTypes.Fraction
     , showReachFrac, showReachFracDiff
     )
 import WireTypes.Reach (TrackReach(..))
-import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), fstPilotId, pilotIdsWidth)
 import WireTypes.Point (ReachToggle(..), showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
@@ -60,8 +60,8 @@ tableViePilotReachBonus sEx xs xsBonus select = do
                     return ()
 
             ev <- dyn $ ffor2 xsBonus sEx (\br sEx' -> do
-                    let mapR = Map.fromList br
-                    let mapN = Map.fromList sEx'
+                    let mapR = Map.fromList $ fstPilotId <$> br
+                    let mapN = Map.fromList $ fstPilotId <$> sEx'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowReachBonus w select mapR mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
@@ -77,8 +77,8 @@ rowReachBonus
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot TrackReach
-    -> Map Pilot Alt.AltBreakdown
+    -> Map PilotId TrackReach
+    -> Map PilotId Alt.AltBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m (Event t Pilot)
@@ -88,9 +88,9 @@ rowReachBonus w select mapR mapN p tr = do
     (eReach, eReachDiff, eFrac
         , yReach, yReachDiff
         , yFrac, yFracDiff) <- sample . current
-            $ ffor2 p tr (\p' TrackReach{reach = reachF} ->
+            $ ffor2 p tr (\(Pilot (pid, _)) TrackReach{reach = reachF} ->
                 fromMaybe ("", "", "", "", "", "", "") $ do
-                    TrackReach{reach = reachE, frac = fracE} <- Map.lookup pilot mapR
+                    TrackReach{reach = reachE, frac = fracE} <- Map.lookup pid mapR
 
                     Alt.AltBreakdown
                         { reach = ReachToggle{extra = reachN}
@@ -100,7 +100,7 @@ rowReachBonus w select mapR mapN p tr = do
                                 , effort = eFracN
                                 , distance = dFracN
                                 }
-                        } <- Map.lookup p' mapN
+                        } <- Map.lookup pid mapN
 
                     let quieten s =
                             case (rFracN, eFracN, dFracN) of

@@ -13,7 +13,7 @@ import WireTypes.Fraction
     , showEffortFrac, showEffortFracDiff
     )
 import WireTypes.Effort (TrackEffort(..))
-import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), fstPilotId, pilotIdsWidth)
 import WireTypes.Point (showPilotDistance, showPilotDistanceDiff)
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
@@ -54,7 +54,7 @@ tableVieEffort sEx xs select = do
                     return ()
 
             dyn $ ffor sEx (\sEx' -> do
-                    let mapN = Map.fromList sEx'
+                    let mapN = Map.fromList $ fstPilotId <$> sEx'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowEffort w select mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
@@ -64,7 +64,7 @@ rowEffort
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot Alt.AltBreakdown
+    -> Map PilotId Alt.AltBreakdown
     -> Dynamic t Pilot
     -> Dynamic t TrackEffort
     -> m (Event t Pilot)
@@ -72,7 +72,7 @@ rowEffort w select mapN p te = do
     pilot <- sample $ current p
 
     (yEffort, yEffortDiff, yFrac, yFracDiff) <- sample . current
-            $ ffor2 p te (\p' TrackEffort{effort, frac} ->
+            $ ffor2 p te (\(Pilot (pid, _)) TrackEffort{effort, frac} ->
                 fromMaybe ("", "", "", "") $ do
                     Alt.AltBreakdown
                         { landedMade = effortN
@@ -82,7 +82,7 @@ rowEffort w select mapN p te = do
                                 , effort = eFracN
                                 , distance = dFracN
                                 }
-                        } <- Map.lookup p' mapN
+                        } <- Map.lookup pid mapN
 
                     let quieten s =
                             case (rFracN, eFracN, dFracN) of

@@ -11,7 +11,7 @@ import WireTypes.Fraction (showArrivalFrac, showArrivalFracDiff)
 import WireTypes.Arrival
     ( TrackArrival(..), ArrivalPlacing(..), ArrivalLag(..)
     , showArrivalLagDiff)
-import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
+import WireTypes.Pilot (Pilot(..), PilotId(..), fstPilotId, pilotIdsWidth)
 import FlareTiming.Pilot (showPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
 import FlareTiming.Plot.Event (rowClass)
@@ -45,7 +45,7 @@ tableVieArrivalTime xs xsN select = do
                     return ()
 
             dyn $ ffor xsN (\xsN' -> do
-                    let mapN = Map.fromList xsN'
+                    let mapN = Map.fromList $ fstPilotId <$> xsN'
                     ePilots <- el "tbody" $ simpleList xs (uncurry (rowArrivalTime w select mapN) . splitDynPure)
                     return $ switchDyn $ leftmost <$> ePilots)
 
@@ -55,7 +55,7 @@ rowArrivalTime
     :: MonadWidget t m
     => Dynamic t Int
     -> Dynamic t [Pilot]
-    -> Map Pilot TrackArrival
+    -> Map PilotId TrackArrival
     -> Dynamic t Pilot
     -> Dynamic t TrackArrival
     -> m (Event t Pilot)
@@ -63,8 +63,8 @@ rowArrivalTime w select mapT p ta = do
     pilot <- sample $ current p
 
     (yLag, yLagDiff, yFrac, yFracDiff) <- sample . current
-                $ ffor2 p ta (\p' TrackArrival{frac, lag} ->
-                    case Map.lookup p' mapT of
+                $ ffor2 p ta (\(Pilot (pid, _)) TrackArrival{frac, lag} ->
+                    case Map.lookup pid mapT of
                         Just TrackArrival{frac = fracN, lag = lagN} ->
                             ( showHr lagN
                             , showArrivalLagDiff lagN lag
