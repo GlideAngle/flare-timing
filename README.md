@@ -47,15 +47,17 @@ sensitive personal information such as birthdays, phone numbers and notes that
 we'll want to avoid publishing. We'll also want some output data for making
 comparisons between flare-timing and FS.
 
-1. Clean out the sensitive stuff and trim away data we don't need with
-[`fs-filter`](lang-haskell/flare-timing/prod-apps/fs-filter).  
-2. Grab the optimal route around the tasks found by FS with
+1. Clean out the sensitive pilot personal stuff we don't need with
+[`fs-clean`](lang-haskell/flare-timing/prod-apps/fs-clean).  
+2. Trim away data we don't need with
+[`fs-trim`](lang-haskell/flare-timing/prod-apps/fs-trim).  
+3. Grab the optimal route around the tasks found by FS with
 [`fs-route`](lang-haskell/flare-timing/prod-apps/fs-route).  
-3. Grab the arrival times and positions from FS with
+4. Grab the arrival times and positions from FS with
 [`fs-arrival`](lang-haskell/flare-timing/prod-apps/fs-arrival).  
-4. Grab the landouts from FS with
+5. Grab the landouts from FS with
 [`fs-effort`](lang-haskell/flare-timing/prod-apps/fs-effort).  
-5. Grab the scores from FS with
+6. Grab the scores from FS with
 [`fs-score`](lang-haskell/flare-timing/prod-apps/fs-score).  
 
 That's the `*.fsdb` file done with. From here on, flare-timing deals with the

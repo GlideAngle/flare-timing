@@ -1,12 +1,12 @@
-### Filter the FSDB
+### Clean the FSDB
 
 ```
-> fs-filter --help
+> fs-clean --help
 
-Filters a competition *.fsdb file keeping only the XML nodes needed for scoring
-comparison.
+Cleans a competition *.fsdb file of participant (pilot) information, keeping
+only their name.
 
-fs-filter [OPTIONS]
+fs-clean [OPTIONS]
 
 Source:
   -f --file=ITEM                 With this one competition *.comp.yaml file

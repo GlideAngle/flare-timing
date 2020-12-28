@@ -10,19 +10,18 @@ import System.Directory (getCurrentDirectory)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import qualified Flight.Fsdb as Fsdb (cleanComp, trimComp)
+import qualified Flight.Fsdb as Fsdb (cleanComp)
 import Flight.Comp
     ( FindDirFile(..)
     , FileType(Fsdb)
     , FsdbFile(..)
     , FsdbXml(..)
     , fsdbToCleanFsdb
-    , cleanFsdbToTrimFsdb
     , findFsdb
     , reshape
     )
-import Flight.Scribe (writeCleanFsdb, readCleanFsdb, writeTrimFsdb)
-import FsFilterOptions (description)
+import Flight.Scribe (writeCleanFsdb)
+import FsCleanOptions (description)
 
 main :: IO ()
 main = do
@@ -54,19 +53,7 @@ go fsdbFile@(FsdbFile fsdbPath) = do
     cleanXml :: Either String FsdbXml <- runExceptT $ cleanComp (FsdbXml rawXml)
     either print (writeCleanFsdb (fsdbToCleanFsdb fsdbFile)) cleanXml
 
-    let cleanFsdbFile =  fsdbToCleanFsdb fsdbFile
-    FsdbXml cleanContents <- readCleanFsdb cleanFsdbFile
-    let cleanXml' = dropWhile (/= '<') cleanContents
-
-    trimXml :: Either String FsdbXml <- runExceptT $ trimComp (FsdbXml cleanXml')
-    either print (writeTrimFsdb (cleanFsdbToTrimFsdb cleanFsdbFile)) trimXml
-
 cleanComp :: FsdbXml -> ExceptT String IO FsdbXml
 cleanComp fsdbXml = do
     x <- lift $ Fsdb.cleanComp fsdbXml
-    ExceptT $ return x
-
-trimComp :: FsdbXml -> ExceptT String IO FsdbXml
-trimComp fsdbXml = do
-    x <- lift $ Fsdb.trimComp fsdbXml
     ExceptT $ return x

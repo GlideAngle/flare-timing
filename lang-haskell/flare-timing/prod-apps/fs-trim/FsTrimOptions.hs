@@ -1,4 +1,4 @@
-module FsFilterOptions (description) where
+module FsTrimOptions (description) where
 
 import Text.RawString.QQ (r)
 import Flight.Cmd.Options (Description(..))

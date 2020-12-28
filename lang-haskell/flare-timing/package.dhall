@@ -107,7 +107,7 @@ in    defs
               , source-dirs =
                   "prod-apps/fs-effort"
               }
-          , fs-filter =
+          , fs-clean =
               { dependencies =
                     deps
                   # [ "containers"
@@ -121,9 +121,27 @@ in    defs
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
-                  "FsFilterMain.hs"
+                  "FsCleanMain.hs"
               , source-dirs =
-                  "prod-apps/fs-filter"
+                  "prod-apps/fs-clean"
+              }
+          , fs-trim =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "flight-earth"
+                    , "flight-fsdb"
+                    , "flight-gap-allot"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+              , main =
+                  "FsTrimMain.hs"
+              , source-dirs =
+                  "prod-apps/fs-trim"
               }
           , fs-route =
               { dependencies =

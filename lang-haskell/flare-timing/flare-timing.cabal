@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2a6e68da54a282e5ca53945f0777a74ac3a4585ba6d5460140b02f5e9edd726d
+-- hash: 8de56361901e79484a6fad75a3c48cd1e48b65efcf130f60ce30a877e7bb3551
 
 name:           flare-timing
 version:        0.1.0
@@ -76,13 +76,13 @@ executable fs-arrival
     , yaml
   default-language: Haskell2010
 
-executable fs-effort
-  main-is: FsEffortMain.hs
+executable fs-clean
+  main-is: FsCleanMain.hs
   other-modules:
-      FsEffortOptions
+      FsCleanOptions
       Paths_flare_timing
   hs-source-dirs:
-      prod-apps/fs-effort
+      prod-apps/fs-clean
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
@@ -114,13 +114,13 @@ executable fs-effort
     , yaml
   default-language: Haskell2010
 
-executable fs-filter
-  main-is: FsFilterMain.hs
+executable fs-effort
+  main-is: FsEffortMain.hs
   other-modules:
-      FsFilterOptions
+      FsEffortOptions
       Paths_flare_timing
   hs-source-dirs:
-      prod-apps/fs-filter
+      prod-apps/fs-effort
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
@@ -217,6 +217,44 @@ executable fs-score
     , flight-gap-math
     , flight-latlng
     , flight-mask
+    , flight-scribe
+    , flight-time
+    , flight-zone
+    , formatting
+    , mtl
+    , raw-strings-qq
+    , transformers
+    , uom-plugin
+    , yaml
+  default-language: Haskell2010
+
+executable fs-trim
+  main-is: FsTrimMain.hs
+  other-modules:
+      FsTrimOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/fs-trim
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , containers
+    , directory
+    , filemanip
+    , filepath
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-fsdb
+    , flight-gap-allot
+    , flight-latlng
+    , flight-mask
+    , flight-route
     , flight-scribe
     , flight-time
     , flight-zone

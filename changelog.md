@@ -11,6 +11,7 @@ of this changelog.
 * For comparisons, lookup pilots by ID and not by name.
 * When parsing extra reach from `*.fsdb` avoid zeroing it or making it less
   than reach.
+* Split `fs-filter` into `fs-clean` and `fs-trim`.
 
 # Ess ≠ Goal
 ## v0.29
