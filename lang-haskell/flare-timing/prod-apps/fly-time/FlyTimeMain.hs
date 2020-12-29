@@ -2,11 +2,11 @@ import Debug.Trace (traceShowId)
 import Prelude hiding (span)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.Coerce (coerce)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, isNothing)
+import Data.List (nub, sort)
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
@@ -28,17 +28,15 @@ import Flight.Comp
     , IxTask(..)
     , Task(..)
     , Comp(..)
-    , compToCross
+    , compToFly
     , findCompInput
     , reshape
     , pilotNamed
     )
 import Flight.Units ()
 import Flight.Track.Cross
-    ( TrackCross(..)
-    , PilotTrackCross(..)
-    , Crossing(..)
-    , trackLogErrors
+    ( TrackFlyingSection(..)
+    , Flying(..)
     )
 import Flight.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Mask
@@ -55,8 +53,8 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (readComp, writeCrossing)
-import CrossZoneOptions (description)
+import Flight.Scribe (readComp, writeFlying)
+import FlyTimeOptions (description)
 import Flight.Span.Math (Math(..))
 
 main :: IO ()
@@ -108,14 +106,14 @@ go CmdBatchOptions{pilot, math, task} compFile = do
                     | taskLogs <- selectedCompLogs
                     ]
 
-            writeCrossings compFile tasks tracks
+            writeFlyings compFile tasks tracks
 
-writeCrossings
+writeFlyings
     :: CompInputFile
     -> [Task k]
     -> [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
     -> IO ()
-writeCrossings compFile _ xs = do
+writeFlyings compFile _ xs = do
     let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
             unzip <$>
             (fmap . fmap)
@@ -130,27 +128,45 @@ writeCrossings compFile _ xs = do
     let pss = fst <$> ys
     let ess = catMaybes . snd <$> ys
 
-    let crossZone =
-            Crossing
-                { crossing = (fmap . fmap) crossings pss
-                , trackLogError = trackLogErrors <$> ess
+    let pErrs :: [[Pilot]] =
+            [ fst <$> filter ((/= TrackLogFileNotSet) . snd) es
+            | es <- ess
+            ]
+
+    let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying pss
+
+    let notFlys :: [[Pilot]] =
+            [ fmap fst . filter snd
+              $ (fmap . fmap) (maybe False (not . flew)) fs
+            | fs <- flying
+            ]
+
+    let dnfs =
+            [ sort . nub $ es ++ ns
+            | es <- pErrs
+            | ns <- notFlys
+            ]
+
+    let flyTime =
+            Flying
+                { suspectDnf = dnfs
+                , flying = flying
                 }
 
-    writeCrossing (compToCross compFile) crossZone
+    writeFlying (compToFly compFile) flyTime
 
-madeZonesToCross :: MadeZones -> TrackCross
-madeZonesToCross x =
-    TrackCross
-        { zonesCrossSelected = coerce $ selectedCrossings x
-        , zonesCrossNominees = coerce $ nomineeCrossings x
-        , startSelected = coerce $ selectedStart x
-        , startNominees = coerce $ nomineeStarts x
-        , zonesCrossExcluded = coerce $ excludedCrossings x
-        }
+flew :: TrackFlyingSection -> Bool
+flew TrackFlyingSection{flyingFixes, flyingSeconds}
+    | isNothing flyingFixes = False
+    | isNothing flyingSeconds = False
+    | otherwise = f flyingFixes || f flyingSeconds
+    where
+        f :: Ord a => Maybe (a, a) -> Bool
+        f Nothing = False
+        f (Just (a, b)) = a < b
 
-crossings :: (Pilot, Maybe MadeZones) -> PilotTrackCross
-crossings (p, x) =
-    PilotTrackCross p $ madeZonesToCross <$> x
+madeZonesToFlying :: MadeZones -> TrackFlyingSection
+madeZonesToFlying MadeZones{flying} = flying
 
 flown :: Comp -> Math -> FnIxTask k MadeZones
 flown c math tasks (IxTask i) fs =

@@ -57,6 +57,7 @@ import Flight.Comp
     , IxTask(..)
     , EarlyStart(..)
     , compToTaskLength
+    , compToFly
     , compToCross
     , crossToTag
     , tagToPeg
@@ -73,7 +74,7 @@ import Flight.Comp
     , reshape
     )
 import Flight.Track.Cross
-    (InterpolatedFix(..), Crossing(..), ZoneTag(..), TrackFlyingSection(..))
+    (InterpolatedFix(..), Flying(..), ZoneTag(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Distance
@@ -97,7 +98,7 @@ import Flight.Track.Point
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     ( readComp, readRoute
-    , readCrossing, readTagging, readFraming
+    , readFlying, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readMaskingLead
@@ -187,7 +188,7 @@ drive o@CmdBatchOptions{file} = do
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
     let lenFile = compToTaskLength compFile
-    let crossFile = compToCross compFile
+    let flyFile = compToFly compFile
     let tagFile = crossToTag . compToCross $ compFile
     let stopFile = tagToPeg tagFile
     let maskArrivalFile = compToMaskArrival compFile
@@ -201,7 +202,7 @@ go CmdBatchOptions{..} compFile = do
     let pointFile = compToPoint compFile
     putStrLn $ "Reading task length from " ++ show lenFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
-    putStrLn $ "Reading zone crossings from " ++ show crossFile
+    putStrLn $ "Reading flying times from " ++ show flyFile
     putStrLn $ "Reading scored times from " ++ show stopFile
     putStrLn $ "Reading start and end zone tagging from " ++ show tagFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
@@ -217,9 +218,9 @@ go CmdBatchOptions{..} compFile = do
             (Just <$> readComp compFile)
             (const $ return Nothing)
 
-    cgs <-
+    fys <-
         catchIO
-            (Just <$> readCrossing crossFile)
+            (Just <$> readFlying flyFile)
             (const $ return Nothing)
 
     tgs <-
@@ -285,9 +286,9 @@ go CmdBatchOptions{..} compFile = do
                 startRoute
                 routes
 
-    case (compSettings, cgs, tgs, stps, ma, me, ml2, mr, br, ms, landing, routes) of
+    case (compSettings, fys, tgs, stps, ma, me, ml2, mr, br, ms, landing, routes) of
         (Nothing, _, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the crossings."
+        (_, Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the flying times."
         (_, _, Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
         (_, _, _, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the scored frames."
         (_, _, _, _, Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking arrivals."
@@ -331,7 +332,7 @@ toBothWays d =
 points'
     :: CompSettings k
     -> RoutesLookupTaskDistance
-    -> Crossing
+    -> Flying
     -> Tagging
     -> MaskingArrival
     -> MaskingEffort
@@ -357,7 +358,7 @@ points'
         , pilotGroups
         }
     routes
-    Crossing{flying}
+    Flying{flying}
     Tagging{tagging}
     MaskingArrival
         { pilotsAtEss

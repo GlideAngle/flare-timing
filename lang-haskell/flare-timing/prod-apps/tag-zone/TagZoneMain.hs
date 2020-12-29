@@ -25,18 +25,19 @@ import Flight.Comp
     , CompInputFile(..)
     , Comp(..)
     , Task(..)
+    , compToFly
     , compToCross
     , crossToTag
     , findCompInput
     , reshape
     )
 import Flight.Track.Cross
-    (Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
+    (Flying(..), Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
 import Flight.Track.Tag
     ( Tagging(..), TrackTag(..), PilotTrackTag(..)
     , timed
     )
-import Flight.Scribe (readComp, readCrossing, writeTagging)
+import Flight.Scribe (readComp, readFlying, readCrossing, writeTagging)
 import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -69,8 +70,10 @@ drive CmdBatchOptions{math, file} = do
 
 go :: Math -> CompInputFile -> IO ()
 go math compFile = do
+    let flyFile = compToFly compFile
     let crossFile = compToCross compFile
     putStrLn $ "Reading tasks from " ++ show compFile
+    putStrLn $ "Reading zone crossings from " ++ show crossFile
     putStrLn $ "Reading zone crossings from " ++ show crossFile
 
     cs <-
@@ -78,19 +81,29 @@ go math compFile = do
             (Just <$> readComp compFile)
             (const $ return Nothing)
 
+    fys <-
+        catchIO
+            (Just <$> readFlying flyFile)
+            (const $ return Nothing)
+
     cgs <-
         catchIO
             (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
-    case (cs, cgs) of
-        (Nothing, _) ->
+    case (cs, fys, cgs) of
+        (Nothing, _, _) ->
             putStrLn "Couldn't read the comp settings."
 
-        (_, Nothing) ->
+        (_, Nothing, _) ->
+            putStrLn "Couldn't read the flyings."
+
+        (_, _, Nothing) ->
             putStrLn "Couldn't read the crossings."
 
-        (Just CompSettings{tasks, comp = Comp{earthMath, give}}, Just Crossing{crossing, flying}) -> do
+        ( Just CompSettings{tasks, comp = Comp{earthMath, give}}
+            , Just Flying{flying}
+            , Just Crossing{crossing}) -> do
             let pss :: [[PilotTrackTag]] =
                     [
                         (\case

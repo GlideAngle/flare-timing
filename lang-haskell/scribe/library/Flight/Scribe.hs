@@ -5,6 +5,7 @@ module Flight.Scribe
     , readAltScore, writeAltScore
     , readComp, writeComp
     , readRoute, writeRoute
+    , readFlying , writeFlying
     , readCrossing , writeCrossing
     , readTagging, writeTagging
     , readFraming, writeFraming
@@ -38,7 +39,7 @@ import qualified Data.Yaml.Pretty as Y
 import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
 import Flight.Route (TaskTrack(..), cmpFields)
-import Flight.Track.Cross (Crossing)
+import Flight.Track.Cross (Flying, Crossing)
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Stop (Framing(..))
 import Flight.Track.Mask
@@ -57,6 +58,7 @@ import Flight.Comp
     , AltScoreFile(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
+    , FlyTimeFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
     , PegFrameFile(..)
@@ -184,6 +186,20 @@ writeRoute (TaskLengthFile lenPath) route =
     where
         cfg = Y.setConfCompare cmpFields Y.defConfig
         yaml = Y.encodePretty cfg route
+
+readFlying
+    :: (MonadThrow m, MonadIO m)
+    => FlyTimeFile
+    -> m Flying
+readFlying (FlyTimeFile path) = do
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
+
+writeFlying :: FlyTimeFile -> Flying -> IO ()
+writeFlying (FlyTimeFile path) flyTime = do
+    let cfg = Y.setConfCompare (fieldOrder flyTime) Y.defConfig
+    let yaml = Y.encodePretty cfg flyTime
+    BS.writeFile path yaml
 
 readCrossing
     :: (MonadThrow m, MonadIO m)

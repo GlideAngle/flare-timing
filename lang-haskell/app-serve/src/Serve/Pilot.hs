@@ -25,7 +25,7 @@ import Control.Monad.Reader (asks)
 import Numeric.Sampling
 
 import Flight.Units ()
-import qualified Flight.Track.Cross as Cg (Crossing(..), PilotTrackCross(..))
+import qualified Flight.Track.Cross as Cg (Flying(..), Crossing(..), PilotTrackCross(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
 import qualified Flight.Track.Stop as Sp (Framing(..))
 import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..), TrackCross(..))
@@ -234,7 +234,7 @@ getTaskPilotTrackFlyingSection ii pilotId = do
     let jj = ii - 1
     let ix = IxTask ii
     let pilot = PilotId pilotId
-    fss <- fmap Cg.flying <$> asks crossing
+    fss <- fmap Cg.flying <$> asks flying
     let isPilot (Pilot (pid, _)) = pid == PilotId pilotId
 
     case fss of

@@ -11,6 +11,7 @@ module Flight.Path.Tx
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
     , compToTaskLength
+    , compToFly
     , compToCross
     , compToLeadArea
     , compToMaskArrival
@@ -61,6 +62,7 @@ shape Igc = Ext ".igc"
 
 shape CompInput = DotDirName "comp-input.yaml" DotFt
 shape TaskLength = DotDirName "task-length.yaml" DotFt
+shape FlyTime = DotDirName "fly-time.yaml" DotFt
 shape CrossZone = DotDirName "cross-zone.yaml" DotFt
 shape TagZone = DotDirName "tag-zone.yaml" DotFt
 shape PegFrame = DotDirName "peg-frame.yaml" DotFt
@@ -101,6 +103,7 @@ reshape Igc = id
 
 reshape CompInput = coerce . trimFsdbToComp . coerce . reshape TrimFsdb
 reshape TaskLength = flip replaceExtensions "task-length.yaml"
+reshape FlyTime = coerce . compToFly . coerce . reshape CompInput
 reshape CrossZone = coerce . compToCross . coerce . reshape CompInput
 reshape TagZone = coerce . crossToTag . coerce . reshape CrossZone
 reshape PegFrame = coerce . tagToPeg . coerce . reshape TagZone
@@ -167,6 +170,14 @@ trimFsdbToComp _ = let DotDirName s d = shape CompInput in CompInputFile $ dotDi
 -- prop> \s -> compToTaskLength (CompInputFile s) == TaskLengthFile ".flare-timing/task-length.yaml"
 compToTaskLength :: CompInputFile -> TaskLengthFile
 compToTaskLength _ = let DotDirName s d = shape TaskLength in TaskLengthFile $ dotDir d s
+
+-- |
+-- >>> compToFly (CompInputFile ".flare-timing/comp-input.yaml")
+-- ".flare-timing/fly-time.yaml"
+--
+-- prop> \s -> compToFly (CompInputFile s) == FlyTimeFile ".flare-timing/fly-time.yaml"
+compToFly :: CompInputFile -> FlyTimeFile
+compToFly _ = let DotDirName s d = shape FlyTime in FlyTimeFile $ dotDir d s
 
 -- |
 -- >>> compToCross (CompInputFile ".flare-timing/comp-input.yaml")

@@ -25,7 +25,7 @@ import Control.Monad.Reader (asks)
 
 import Flight.Units ()
 import Flight.Clip (FlyingSection)
-import qualified Flight.Track.Cross as Cg (Crossing(..))
+import qualified Flight.Track.Cross as Cg (Flying(..))
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Distance (TrackReach(..))
 import Flight.Track.Land
@@ -140,7 +140,7 @@ getTaskValidityWorking ii = do
 getTaskFlyingSectionTimes :: Int -> AppT k IO [(Pilot, FlyingSection UTCTime)]
 getTaskFlyingSectionTimes ii = do
     let jj = ii - 1
-    fss <- fmap Cg.flying <$> asks crossing
+    fss <- fmap Cg.flying <$> asks flying
 
     case fss of
         Just fss' -> do

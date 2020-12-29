@@ -19,7 +19,7 @@ import qualified Data.Map.Strict as Map
 
 import Flight.Clip (FlyingSection)
 import Flight.Track.Cross
-    ( Crossing(..), Seconds(..), TrackFlyingSection(..)
+    ( Flying(..), Seconds(..), TrackFlyingSection(..)
     , ZoneTag(..), InterpolatedFix(..)
     )
 import Flight.Track.Tag
@@ -42,6 +42,7 @@ import Flight.Comp
     , StartGate(..)
     , LastStart(..)
     , Pilot
+    , compToFly
     , compToCross
     , crossToTag
     , tagToPeg
@@ -52,7 +53,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
-    (readComp, readCrossing, readTagging, writeFraming, readCompTrackRows)
+    (readComp, readFlying, readTagging, writeFraming, readCompTrackRows)
 import PegFrameOptions (description)
 
 main :: IO ()
@@ -78,10 +79,10 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let crossFile = compToCross compFile
+    let flyFile = compToFly compFile
     let tagFile = crossToTag . compToCross $ compFile
     putStrLn $ "Reading competition from " ++ show compFile
-    putStrLn $ "Reading flying time range from " ++ show crossFile
+    putStrLn $ "Reading flying time range from " ++ show flyFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
 
     compSettings <-
@@ -89,9 +90,9 @@ go CmdBatchOptions{..} compFile = do
             (Just <$> readComp compFile)
             (const $ return Nothing)
 
-    crossing <-
+    flying <-
         catchIO
-            (Just <$> readCrossing crossFile)
+            (Just <$> readFlying flyFile)
             (const $ return Nothing)
 
     tagging <-
@@ -99,24 +100,24 @@ go CmdBatchOptions{..} compFile = do
             (Just <$> readTagging tagFile)
             (const $ return Nothing)
 
-    case (compSettings, crossing, tagging) of
+    case (compSettings, flying, tagging) of
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _) -> putStrLn "Couldn't read the crossings."
+        (_, Nothing, _) -> putStrLn "Couldn't read the flying times."
         (_, _, Nothing) -> putStrLn "Couldn't read the taggings."
-        (Just cs, Just cg, Just tg) -> writeStop cs compFile tagFile cg tg
+        (Just cs, Just fy, Just tg) -> writeStop cs compFile tagFile fy tg
 
 writeStop
     :: CompSettings k
     -> CompInputFile
     -> TagZoneFile
-    -> Crossing
+    -> Flying
     -> Tagging
     -> IO ()
 writeStop
     CompSettings{tasks}
     compFile
     tagFile
-    Crossing{flying}
+    Flying{flying}
     Tagging{timing, tagging} = do
 
     let sws :: [Maybe StopWindow] =

@@ -8,6 +8,7 @@ module Flight.Path.Find
     , findCleanFsdb
     , findTrimFsdb
     , findCompInput
+    , findFlyTime
     , findCrossZone
     , findIgc
     , findKml
@@ -85,6 +86,9 @@ findTrimFsdb' dir = fmap TrimFsdbFile <$> findFiles DotFs TrimFsdb (dir </> ".fl
 findCompInput' :: FilePath -> IO [CompInputFile]
 findCompInput' dir = fmap CompInputFile <$> findFiles DotFt CompInput dir
 
+findFlyTime' :: FilePath -> IO [FlyTimeFile]
+findFlyTime' dir = fmap FlyTimeFile <$> findFiles DotFt FlyTime dir
+
 findCrossZone' :: FilePath -> IO [CrossZoneFile]
 findCrossZone' dir = fmap CrossZoneFile <$> findFiles DotFt CrossZone dir
 
@@ -128,6 +132,12 @@ findCompInput
     => o
     -> IO [CompInputFile]
 findCompInput = findFileType CompInput findCompInput' CompInputFile
+
+findFlyTime
+    :: (HasField "dir" o String, HasField "file" o String)
+    => o
+    -> IO [FlyTimeFile]
+findFlyTime = findFileType FlyTime findFlyTime' FlyTimeFile
 
 findCrossZone
     :: (HasField "dir" o String, HasField "file" o String)
@@ -176,6 +186,7 @@ ext Igc = ".igc"
 
 ext CompInput = ".comp-input.yaml"
 ext TaskLength = ".task-length.yaml"
+ext FlyTime = ".fly-time.yaml"
 ext CrossZone = ".cross-zone.yaml"
 ext TagZone = ".tag-zone.yaml"
 ext PegFrame = ".peg-frame.yaml"

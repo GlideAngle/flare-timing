@@ -10,7 +10,8 @@ Stability   : experimental
 Tracks crossing task control zones.
 -}
 module Flight.Track.Cross
-    ( Crossing(..)
+    ( Flying(..)
+    , Crossing(..)
     , Seconds(..)
     , TrackFlyingSection(..)
     , TrackCross(..)
@@ -39,15 +40,22 @@ import Flight.Field (FieldOrdering(..))
 import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Comp (StartGate(..))
 
--- | For each task, the crossing for that task.
-data Crossing =
-    Crossing
+-- | For each task, the flying for that task.
+data Flying =
+    Flying
         { suspectDnf :: [[Pilot]]
         -- ^ For each task, the pilots whose tracklogs suggest they did not fly
         -- such as by having no fixes.
         , flying :: [[(Pilot, Maybe TrackFlyingSection)]]
         -- ^ For each task, the pilots' flying sections.
-        , crossing :: [[PilotTrackCross]]
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | For each task, the crossing for that task.
+data Crossing =
+    Crossing
+        { crossing :: [[PilotTrackCross]]
         -- ^ For each task, for each made zone, the pair of fixes cross it.
         , trackLogError :: [TrackLogError]
         -- ^ For each task, the pilots with track log problems. Note that
@@ -224,6 +232,9 @@ data PilotTrackCross =
         -- ^ The cross should be Just if the pilot launched.
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+instance FieldOrdering Flying where
+    fieldOrder _ = cmp
 
 instance FieldOrdering Crossing where
     fieldOrder _ = cmp

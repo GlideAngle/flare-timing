@@ -12,6 +12,7 @@ of this changelog.
 * When parsing extra reach from `*.fsdb` avoid zeroing it or making it less
   than reach.
 * Split `fs-filter` into `fs-clean` and `fs-trim`.
+* Split `ft-fly-time` from `ft-cross-zone`.
 
 # Ess ≠ Goal
 ## v0.29

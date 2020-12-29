@@ -11,7 +11,7 @@ import System.Directory (getCurrentDirectory)
 import Flight.Units ()
 import Flight.Scribe
     ( readComp, readAltArrival, readAltLandout, readAltRoute, readAltScore
-    , readRoute, readCrossing, readTagging, readFraming
+    , readRoute, readFlying, readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readDiscardingLead
@@ -35,6 +35,7 @@ import Flight.Comp
     , compToAltRoute
     , compToAltScore
     , compToTaskLength
+    , compToFly
     , compToCross
     , compToMaskArrival
     , compToMaskEffort
@@ -74,6 +75,7 @@ drive o@CmdServeOptions{file} = do
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
     let lenFile = compToTaskLength compFile
+    let flyFile = compToFly compFile
     let crossFile = compToCross compFile
     let tagFile = crossToTag crossFile
     let stopFile= tagToPeg tagFile
@@ -94,7 +96,7 @@ go CmdServeOptions{..} compFile = do
     let altAsScoreFile = compToAltScore AltAs compFile
     putStrLn $ "Reading task length from " ++ show lenFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
-    putStrLn $ "Reading flying time range from " ++ show crossFile
+    putStrLn $ "Reading flying time range from " ++ show flyFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
     putStrLn $ "Reading scored section from " ++ show stopFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
@@ -125,6 +127,11 @@ go CmdServeOptions{..} compFile = do
             routes <-
                 catchIO
                     (Just <$> readRoute lenFile)
+                    (const $ return Nothing)
+
+            flying <-
+                catchIO
+                    (Just <$> readFlying flyFile)
                     (const $ return Nothing)
 
             crossing <-
@@ -219,13 +226,13 @@ go CmdServeOptions{..} compFile = do
                     (Just <$> readAltScore altAsScoreFile)
                     (const $ return Nothing)
 
-            case (routes, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing) of
-                (rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _)) ->
-                    f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE dL mL mR mS bR lo gp altFsA altFsL altFsR altFsS altAsS)
-                (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _) -> do
+            case (routes, flying, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing) of
+                (rt@(Just _), fy@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _)) ->
+                    f =<< mkGapPointApp (Config compFile cs rt fy cg tg fm mA mE dL mL mR mS bR lo gp altFsA altFsL altFsR altFsS altAsS)
+                (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs and task lengths"
                     f =<< mkTaskLengthApp cfg{routing = rt}
-                (_, _, _, _, _, _, _, _, _, _, _, _, _) -> do
+                (_, _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs"
                     f =<< mkCompInputApp cfg
             where

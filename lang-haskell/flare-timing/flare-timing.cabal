@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8de56361901e79484a6fad75a3c48cd1e48b65efcf130f60ce30a877e7bb3551
+-- hash: edcc540c9fc7d510f3825cf80ed18e8f05165eaa255b0d5fbb880c6b98ffecbe
 
 name:           flare-timing
 version:        0.1.0
@@ -499,6 +499,48 @@ executable ft-far-out
     , raw-strings-qq
     , safe-exceptions
     , time
+    , transformers
+    , uom-plugin
+    , yaml
+  default-language: Haskell2010
+
+executable ft-fly-time
+  main-is: FlyTimeMain.hs
+  other-modules:
+      FlyTimeOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/fly-time
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , deepseq
+    , directory
+    , filemanip
+    , filepath
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-latlng
+    , flight-mask
+    , flight-scribe
+    , flight-span
+    , flight-time
+    , flight-track
+    , flight-units
+    , flight-zone
+    , formatting
+    , lens
+    , mtl
+    , parallel-io
+    , raw-strings-qq
+    , safe-exceptions
+    , siggy-chardust
     , transformers
     , uom-plugin
     , yaml

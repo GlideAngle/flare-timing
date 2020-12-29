@@ -23,6 +23,7 @@ module Flight.Path.Types
     , AltScoreFile(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
+    , FlyTimeFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
     , PegFrameFile(..)
@@ -65,6 +66,7 @@ data FileType
 
     | CompInput
     | TaskLength
+    | FlyTime
     | CrossZone
     | TagZone
     | PegFrame
@@ -158,6 +160,11 @@ newtype CompInputFile = CompInputFile FilePath
 
 -- | The path to a task length file.
 newtype TaskLengthFile = TaskLengthFile FilePath
+    deriving Eq
+    deriving newtype Show
+
+-- | The path to a fly time file.
+newtype FlyTimeFile = FlyTimeFile FilePath
     deriving Eq
     deriving newtype Show
 

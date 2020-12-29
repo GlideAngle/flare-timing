@@ -200,6 +200,33 @@ in    defs
               , source-dirs =
                   "prod-apps/task-length"
               }
+          , ft-fly-time =
+              { dependencies =
+                    deps
+                  # [ "lens"
+                    , "deepseq"
+                    , "parallel-io"
+                    , "safe-exceptions"
+                    , "siggy-chardust"
+                    , "flight-earth"
+                    , "flight-mask"
+                    , "flight-span"
+                    , "flight-track"
+                    , "flight-units"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "FlyTimeMain.hs"
+              , source-dirs =
+                  "prod-apps/fly-time"
+              }
           , ft-cross-zone =
               { dependencies =
                     deps
