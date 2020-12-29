@@ -134,7 +134,7 @@ reshape (AltScore x) = coerce . compToAltScore x . coerce . reshape CompInput
 dotDirTask :: CompDir -> DotFolder -> FilePath -> Int -> FilePath
 dotDirTask (CompDir dir) dotFolder name task
     | DotFt <- dotFolder =
-        dir </> ".flare-timing" </> name </> "task-" ++ show task
+        dir </> ".flare-timing" </> "task-" ++ show task </> name 
     | otherwise =
         error
         $ printf "Only %s has task folders but given %s" (show DotFt) (show dotFolder)
@@ -369,7 +369,7 @@ pilotPath (Pilot (PilotId k, PilotName s)) =
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- ("a/.flare-timing/unpack-track/task-1","Frodo 101.csv")
+-- ("a/.flare-timing/task-1/unpack-track","Frodo 101.csv")
 unpackTrackPath :: CompDir -> Int -> Pilot -> (UnpackTrackDir, UnpackTrackFile)
 unpackTrackPath dir task pilot =
     (unpackTrackDir dir task, UnpackTrackFile $ pilotPath pilot <.> "csv")
@@ -380,7 +380,7 @@ unpackTrackDir comp task =
 
 -- |
 -- >>> alignTimePath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- ("a/.flare-timing/align-time/task-1","Frodo 101.csv")
+-- ("a/.flare-timing/task-1/align-time","Frodo 101.csv")
 alignTimePath :: CompDir -> Int -> Pilot -> (AlignTimeDir, AlignTimeFile)
 alignTimePath dir task pilot =
     (alignTimeDir dir task, AlignTimeFile $ pilotPath pilot <.> "csv")
@@ -391,7 +391,7 @@ alignTimeDir comp task =
 
 -- |
 -- >>> discardFurtherPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- ("a/.flare-timing/discard-further/task-1","Frodo 101.csv")
+-- ("a/.flare-timing/task-1/discard-further","Frodo 101.csv")
 discardFurtherPath :: CompDir -> Int -> Pilot -> (DiscardFurtherDir, DiscardFurtherFile)
 discardFurtherPath dir task pilot =
     (discardFurtherDir dir task, DiscardFurtherFile $ pilotPath pilot <.> "csv")
@@ -402,7 +402,7 @@ discardFurtherDir comp task =
 
 -- |
 -- >>> pegThenDiscardPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- ("a/.flare-timing/peg-then-discard/task-1","Frodo 101.csv")
+-- ("a/.flare-timing/task-1/peg-then-discard","Frodo 101.csv")
 pegThenDiscardPath :: CompDir -> Int -> Pilot -> (PegThenDiscardDir, PegThenDiscardFile)
 pegThenDiscardPath dir task pilot =
     (pegThenDiscardDir dir task, PegThenDiscardFile $ pilotPath pilot <.> "csv")
@@ -413,7 +413,7 @@ pegThenDiscardDir comp task =
 
 -- |
 -- >>> areaStepPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- ("a/.flare-timing/area-step/task-1","Frodo 101.csv")
+-- ("a/.flare-timing/task-1/area-step","Frodo 101.csv")
 areaStepPath :: CompDir -> Int -> Pilot -> (AreaStepDir, AreaStepFile)
 areaStepPath dir task pilot =
     (areaStepDir dir task, AreaStepFile $ pilotPath pilot <.> "csv")

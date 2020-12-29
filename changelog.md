@@ -13,6 +13,8 @@ of this changelog.
   than reach.
 * Split `fs-filter` into `fs-clean` and `fs-trim`.
 * Split `ft-fly-time` from `ft-cross-zone`.
+* Invert the command/task folder order to have task/command such as
+  `.flare-timing/task-1/align-time/*.csv`.
 
 # Ess ≠ Goal
 ## v0.29
