@@ -42,7 +42,7 @@ import Flight.Comp
     , LastArrival(..)
     , LastDown(..)
     , Tweak(..)
-    , compToTaskLength
+    , taskToTaskLength
     , compToCross
     , compToLeadArea
     , crossToTag
@@ -100,11 +100,9 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let lenFile = compToTaskLength compFile
     let tagFile = crossToTag . compToCross $ compFile
     let stopFile = tagToPeg tagFile
     putStrLn $ "Reading competition from " ++ show compFile
-    putStrLn $ "Reading task length from " ++ show lenFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
@@ -129,7 +127,14 @@ go CmdBatchOptions{..} compFile = do
 
     routes <-
         catchIO
-            (Just <$> readRoute lenFile)
+            (Just <$> do
+                taskFiles <- compFileToTaskFiles compFile
+                sequence
+                    [ do
+                        putStrLn $ "Reading task length from " ++ show routeFile
+                        readRoute routeFile
+                    | routeFile <- taskToTaskLength <$> taskFiles
+                    ])
             (const $ return Nothing)
 
     case (filesTaskAndSettings, tagging, stopping, routes) of

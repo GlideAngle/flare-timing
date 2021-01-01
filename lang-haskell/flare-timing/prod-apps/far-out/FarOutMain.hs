@@ -26,7 +26,7 @@ import Flight.Comp
     , Nominal(..)
     , PilotGroup(didFlyNoTracklog)
     , IxTask(..)
-    , compToTaskLength
+    , taskToTaskLength
     , compToMaskReach
     , compToFar
     , findCompInput
@@ -74,11 +74,9 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let lenFile = compToTaskLength compFile
     let maskReachFile = compToMaskReach compFile
     let farFile = compToFar compFile
     putStrLn $ "Reading competition from " ++ show compFile
-    putStrLn $ "Reading task length from " ++ show lenFile
     putStrLn $ "Reading far outs from " ++ show maskReachFile
 
     filesTaskAndSettings <-
@@ -96,7 +94,14 @@ go CmdBatchOptions{..} compFile = do
 
     routes <-
         catchIO
-            (Just <$> readRoute lenFile)
+            (Just <$> do
+                taskFiles <- compFileToTaskFiles compFile
+                sequence
+                    [ do
+                        putStrLn $ "Reading task length from " ++ show routeFile
+                        readRoute routeFile
+                    | routeFile <- taskToTaskLength <$> taskFiles
+                    ])
             (const $ return Nothing)
 
     let lookupTaskLength =

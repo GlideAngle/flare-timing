@@ -35,7 +35,6 @@ import Flight.Comp
     , compToAltLandout
     , compToAltRoute
     , compToAltScore
-    , compToTaskLength
     , compToFly
     , compToCross
     , compToMaskArrival
@@ -48,6 +47,7 @@ import Flight.Comp
     , compToLand
     , compToFar
     , compToPoint
+    , taskToTaskLength
     , crossToTag
     , tagToPeg
     , reshape
@@ -76,7 +76,6 @@ drive o@CmdServeOptions{file} = do
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
-    let lenFile = compToTaskLength compFile
     let flyFile = compToFly compFile
     let crossFile = compToCross compFile
     let tagFile = crossToTag crossFile
@@ -96,7 +95,6 @@ go CmdServeOptions{..} compFile = do
     let altFsRouteFile = compToAltRoute AltFs compFile
     let altFsScoreFile = compToAltScore AltFs compFile
     let altAsScoreFile = compToAltScore AltAs compFile
-    putStrLn $ "Reading task length from " ++ show lenFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
     putStrLn $ "Reading flying time range from " ++ show flyFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
@@ -133,7 +131,14 @@ go CmdServeOptions{..} compFile = do
 
             routes <-
                 catchIO
-                    (Just <$> readRoute lenFile)
+                    (Just <$> do
+                        taskFiles <- compFileToTaskFiles compFile
+                        sequence
+                            [ do
+                                putStrLn $ "Reading task length from " ++ show routeFile
+                                readRoute routeFile
+                            | routeFile <- taskToTaskLength <$> taskFiles
+                            ])
                     (const $ return Nothing)
 
             flying <-

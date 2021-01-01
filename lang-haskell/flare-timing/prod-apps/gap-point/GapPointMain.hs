@@ -1,3 +1,4 @@
+
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
@@ -56,7 +57,7 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToTaskLength
+    , taskToTaskLength
     , compToFly
     , compToCross
     , crossToTag
@@ -189,7 +190,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let lenFile = compToTaskLength compFile
     let flyFile = compToFly compFile
     let tagFile = crossToTag . compToCross $ compFile
     let stopFile = tagToPeg tagFile
@@ -202,7 +202,6 @@ go CmdBatchOptions{..} compFile = do
     let landFile = compToLand compFile
     let farFile = compToFar compFile
     let pointFile = compToPoint compFile
-    putStrLn $ "Reading task length from " ++ show lenFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
     putStrLn $ "Reading flying times from " ++ show flyFile
     putStrLn $ "Reading scored times from " ++ show stopFile
@@ -280,7 +279,14 @@ go CmdBatchOptions{..} compFile = do
 
     routes <-
         catchIO
-            (Just <$> readRoute lenFile)
+            (Just <$> do
+                taskFiles <- compFileToTaskFiles compFile
+                sequence
+                    [ do
+                        putStrLn $ "Reading task length from " ++ show routeFile
+                        readRoute routeFile
+                    | routeFile <- taskToTaskLength <$> taskFiles
+                    ])
             (const $ return Nothing)
 
     let lookupTaskLength =

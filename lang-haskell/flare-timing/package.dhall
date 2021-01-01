@@ -184,6 +184,7 @@ in    defs
               { dependencies =
                     deps
                   # [ "safe-exceptions"
+                    , "parallel-io"
                     , "flight-earth"
                     , "flight-route"
                     , "flight-units"

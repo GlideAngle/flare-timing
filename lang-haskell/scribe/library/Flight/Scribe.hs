@@ -160,12 +160,12 @@ writeAltRoute (AltRouteFile path) track = do
 readRoute
     :: (MonadThrow m, MonadIO m)
     => TaskLengthFile
-    -> m [Maybe TaskTrack]
+    -> m (Maybe TaskTrack)
 readRoute (TaskLengthFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeRoute :: TaskLengthFile -> [Maybe TaskTrack] -> IO ()
+writeRoute :: TaskLengthFile -> Maybe TaskTrack -> IO ()
 writeRoute (TaskLengthFile lenPath) route =
     BS.writeFile lenPath yaml
     where
