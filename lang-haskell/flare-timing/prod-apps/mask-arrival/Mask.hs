@@ -10,8 +10,8 @@ import Control.Concurrent.ParallelIO (parallel)
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
-    ( CompInputFile(..)
-    , CompSettings(..)
+    ( ScoringInputFiles
+    , CompTaskSettings(..)
     , Pilot(..)
     , Task(..)
     , Tweak(..)
@@ -42,17 +42,17 @@ import MaskPilots (maskPilots)
 type IOStep k = Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)
 
 writeMask
-    :: CompSettings k
+    :: CompTaskSettings k
     -> RoutesLookupTaskDistance
     -> Math
     -> ScoredLookup
     -> Maybe Tagging
     -> [IxTask]
     -> [Pilot]
-    -> CompInputFile
+    -> ScoringInputFiles
     -> IO ()
 writeMask
-    CompSettings
+    CompTaskSettings
         { nominal = Cmp.Nominal{free}
         , tasks
         , pilotGroups
@@ -61,8 +61,8 @@ writeMask
     math
     flying
     tags
-    ixSelectTasks selectPilots compFile = do
-    (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks selectPilots
+    ixSelectTasks selectPilots inFiles@(compFile, _) = do
+    (_, selectedCompLogs) <- settingsLogs inFiles ixSelectTasks selectPilots
 
     fss :: [[IOStep k]] <-
             sequence $

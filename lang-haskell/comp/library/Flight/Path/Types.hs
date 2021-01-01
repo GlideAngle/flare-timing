@@ -1,15 +1,21 @@
 module Flight.Path.Types
-    ( DotFolder(..)
+    ( IxTask(..)
+    , DotFolder(..)
     , AltDot(..)
     , FileType(..)
     , FileShape(..)
 
     , CompDir(..)
+    , TaskDir(..)
     , UnpackTrackDir(..)
     , AlignTimeDir(..)
     , DiscardFurtherDir(..)
     , AreaStepDir(..)
     , PegThenDiscardDir(..)
+
+    , CompInputFile(..)
+    , TaskInputFile(..)
+    , ScoringInputFiles
 
     , IgcFile(..)
     , KmlFile(..)
@@ -21,7 +27,6 @@ module Flight.Path.Types
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , CompInputFile(..)
     , TaskLengthFile(..)
     , FlyTimeFile(..)
     , CrossZoneFile(..)
@@ -44,6 +49,11 @@ module Flight.Path.Types
     , GapPointFile(..)
     ) where
 
+-- | 1-based indices of a task in a competition.
+newtype IxTask = IxTask Int
+    deriving (Eq, Show)
+    deriving newtype Num
+
 data DotFolder
     = DotRoot -- ^ Root is the same folder as the *.fsdb.
     | DotFt -- ^ The dot folder for flare-timing, .flare-timing.
@@ -65,6 +75,7 @@ data FileType
     | Igc
 
     | CompInput
+    | TaskInput
     | TaskLength
     | FlyTime
     | CrossZone
@@ -91,6 +102,8 @@ data FileType
     | AltLandout AltDot
     | AltRoute AltDot
     | AltScore AltDot
+
+type ScoringInputFiles = (CompInputFile, [TaskInputFile])
 
 data FileShape
     = Ext FilePath
@@ -153,8 +166,18 @@ newtype CompDir = CompDir FilePath
     deriving Eq
     deriving newtype Show
 
+-- | The directory path of a task.
+newtype TaskDir = TaskDir FilePath
+    deriving Eq
+    deriving newtype Show
+
 -- | The path to a competition file.
 newtype CompInputFile = CompInputFile FilePath
+    deriving Eq
+    deriving newtype Show
+
+-- | The path to a task file.
+newtype TaskInputFile = TaskInputFile FilePath
     deriving Eq
     deriving newtype Show
 

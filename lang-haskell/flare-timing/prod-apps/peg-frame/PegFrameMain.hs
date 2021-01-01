@@ -36,7 +36,7 @@ import Flight.Comp
     , FileType(CompInput)
     , CompInputFile(..)
     , TagZoneFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , TaskStop(..)
     , Task(..)
     , StartGate(..)
@@ -48,12 +48,13 @@ import Flight.Comp
     , tagToPeg
     , findCompInput
     , reshape
+    , mkCompTaskSettings
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
-    (readComp, readFlying, readTagging, writeFraming, readCompTrackRows)
+    (readCompAndTasks, compFileToTaskFiles, readFlying, readTagging, writeFraming, readCompTrackRows)
 import PegFrameOptions (description)
 
 main :: IO ()
@@ -85,9 +86,12 @@ go CmdBatchOptions{..} compFile = do
     putStrLn $ "Reading flying time range from " ++ show flyFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
     flying <-
@@ -100,21 +104,27 @@ go CmdBatchOptions{..} compFile = do
             (Just <$> readTagging tagFile)
             (const $ return Nothing)
 
-    case (compSettings, flying, tagging) of
+    case (filesTaskAndSettings, flying, tagging) of
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _) -> putStrLn "Couldn't read the flying times."
         (_, _, Nothing) -> putStrLn "Couldn't read the taggings."
-        (Just cs, Just fy, Just tg) -> writeStop cs compFile tagFile fy tg
+        (Just (_, settings), Just fy, Just tg) ->
+            writeStop
+                (uncurry mkCompTaskSettings $ settings)
+                compFile
+                tagFile
+                fy
+                tg
 
 writeStop
-    :: CompSettings k
+    :: CompTaskSettings k
     -> CompInputFile
     -> TagZoneFile
     -> Flying
     -> Tagging
     -> IO ()
 writeStop
-    CompSettings{tasks}
+    CompTaskSettings{tasks}
     compFile
     tagFile
     Flying{flying}

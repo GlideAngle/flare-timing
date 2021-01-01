@@ -10,7 +10,8 @@ import System.Directory (getCurrentDirectory)
 
 import Flight.Units ()
 import Flight.Scribe
-    ( readComp, readAltArrival, readAltLandout, readAltRoute, readAltScore
+    ( readCompAndTasks, compFileToTaskFiles
+    , readAltArrival, readAltLandout, readAltRoute, readAltScore
     , readRoute, readFlying, readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
@@ -50,6 +51,7 @@ import Flight.Comp
     , crossToTag
     , tagToPeg
     , reshape
+    , mkCompTaskSettings
     )
 import qualified ServeOptions as Opt (description)
 import Serve.Config
@@ -114,15 +116,20 @@ go CmdServeOptions{..} compFile = do
     putStrLn $ "Reading FS scores from " ++ show altFsScoreFile
     putStrLn $ "Reading airScore scores from " ++ show altAsScoreFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
-    case compSettings of
-        Nothing -> putStrLn "Couldn't read the comp settings"
-        Just cs -> do
-            let cfg = nullConfig compFile cs
+    case filesTaskAndSettings of
+        Nothing -> putStrLn "Couldn't find the task files or read the settings"
+        Just (taskFiles', (comp, tasks)) -> do
+            let cs = mkCompTaskSettings comp tasks
+            let inFiles = (compFile, taskFiles')
+            let cfg = nullConfig inFiles cs
 
             routes <-
                 catchIO
@@ -228,7 +235,7 @@ go CmdServeOptions{..} compFile = do
 
             case (routes, flying, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing) of
                 (rt@(Just _), fy@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), dL@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _)) ->
-                    f =<< mkGapPointApp (Config compFile cs rt fy cg tg fm mA mE dL mL mR mS bR lo gp altFsA altFsL altFsR altFsS altAsS)
+                    f =<< mkGapPointApp (Config inFiles cs rt fy cg tg fm mA mE dL mL mR mS bR lo gp altFsA altFsL altFsR altFsS altAsS)
                 (rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
                     putStrLn "WARNING: Only serving comp inputs and task lengths"
                     f =<< mkTaskLengthApp cfg{routing = rt}

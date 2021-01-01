@@ -12,11 +12,15 @@ Data for competitions, competitors and tasks.
 module Flight.Comp
     ( -- * Competition
       CompSettings(..)
+    , TaskSettings(..)
+    , CompTaskSettings(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
     , UtcOffset(..)
     , PilotGroup(..)
+    , mkCompTaskSettings
+    , unMkCompTaskSettings
     , defaultNominal
     -- * Task
     , Task(..)
@@ -72,7 +76,6 @@ module Flight.Comp
 
 import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
-import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
 import Data.Time.Clock (addUTCTime)
 import GHC.Generics (Generic)
@@ -111,6 +114,7 @@ import "flight-gap-math" Flight.Score
     )
 import "flight-gap-weight" Flight.Score (LwScaling(..), EGwScaling(..))
 import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Path.Types (IxTask(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -159,9 +163,6 @@ data StartEndDown a b =
 
 type StartEndMark = StartEnd UTCTime UTCTime
 type StartEndDownMark = StartEndDown UTCTime UTCTime
-
--- | 1-based indices of a task in a competition.
-newtype IxTask = IxTask Int deriving (Eq, Show)
 
 speedSectionToLeg :: SpeedSection -> Int -> Leg
 speedSectionToLeg Nothing i = RaceLeg i
@@ -274,15 +275,33 @@ timeCheck EarlyStart{earliest} startGates zoneTimes =
     ]
 
 pilotNamed :: CompSettings k -> [PilotName] -> [Pilot]
-pilotNamed CompSettings{pilots} [] = sort . nub . join $
-    (fmap . fmap) (\(PilotTrackLogFile p _) -> p) pilots
-pilotNamed CompSettings{pilots} xs = sort . nub . join $
-    [ filter (\(Pilot (_, name)) -> name `elem` xs) ps
-    | ps <- (fmap . fmap) (\(PilotTrackLogFile p _) -> p) pilots
-    ]
+pilotNamed CompSettings{pilots} [] = sort $ nub pilots
+pilotNamed CompSettings{pilots} xs = sort . nub $
+    filter (\(Pilot (_, name)) -> name `elem` xs) pilots
 
 data CompSettings k =
     CompSettings
+        { comp :: Comp
+        , nominal :: Nominal
+        , compTweak :: Maybe Tweak
+        , pilots :: [Pilot]
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+data TaskSettings k =
+    TaskSettings
+        { task :: Task k
+        , taskFolder :: TaskFolder
+        , pilots :: [PilotTrackLogFile]
+        , pilotGroup :: PilotGroup
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- NOTE: The combination of @CompSettings@ and @TaskSettings@ for every task.
+data CompTaskSettings k =
+    CompTaskSettings
         { comp :: Comp
         , nominal :: Nominal
         , compTweak :: Maybe Tweak
@@ -293,6 +312,33 @@ data CompSettings k =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+mkCompTaskSettings :: CompSettings k -> [TaskSettings k] -> CompTaskSettings k
+mkCompTaskSettings CompSettings{comp, nominal, compTweak} tss =
+    CompTaskSettings
+        comp
+        nominal
+        compTweak
+        (task <$> tss)
+        (taskFolder <$> tss)
+        [pilots | TaskSettings{pilots} <- tss]
+        (pilotGroup <$> tss)
+
+unMkCompTaskSettings :: CompTaskSettings k -> (CompSettings k, [TaskSettings k])
+unMkCompTaskSettings CompTaskSettings{pilots = pss, ..} =
+    ( CompSettings
+        comp
+        nominal
+        compTweak
+        (sort . nub $ concat [(\(PilotTrackLogFile p _) -> p) <$> ps | ps <- pss])
+    ,
+        [ TaskSettings t tf ps g
+        | t <- tasks
+        | tf <- taskFolders
+        | ps <- pss
+        | g <- pilotGroups
+        ]
+    )
 
 -- | Groups of pilots for a task.
 data PilotGroup =
@@ -403,6 +449,12 @@ showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
             ]
 
 instance FieldOrdering (CompSettings k) where
+    fieldOrder _ = cmp
+
+instance FieldOrdering (TaskSettings k) where
+    fieldOrder _ = cmp
+
+instance FieldOrdering (CompTaskSettings k) where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

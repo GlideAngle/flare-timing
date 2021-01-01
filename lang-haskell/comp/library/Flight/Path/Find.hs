@@ -8,6 +8,7 @@ module Flight.Path.Find
     , findCleanFsdb
     , findTrimFsdb
     , findCompInput
+    , findTaskInput
     , findFlyTime
     , findCrossZone
     , findIgc
@@ -18,7 +19,7 @@ import GHC.Records
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath ((</>), FilePath)
 import System.FilePath.Find
-    ((==?), (&&?), find, always, fileType, extension)
+    ((==?), (&&?), find, always, fileType, extension, fileName)
 import qualified System.FilePath.Find as Find (FileType(..))
 import Flight.Path.Types
 import Flight.Path.Tx (reshape)
@@ -133,6 +134,16 @@ findCompInput
     -> IO [CompInputFile]
 findCompInput = findFileType CompInput findCompInput' CompInputFile
 
+findTaskInput
+    :: (HasField "dir" o String, HasField "file" o String)
+    => o
+    -> IO [TaskInputFile]
+findTaskInput o =
+    fmap TaskInputFile <$> find always (fileName ==? file) dir
+    where
+        dir = getField @"dir" o
+        file = getField @"file" o
+
 findFlyTime
     :: (HasField "dir" o String, HasField "file" o String)
     => o
@@ -185,6 +196,7 @@ ext Kml = ".kml"
 ext Igc = ".igc"
 
 ext CompInput = ".comp-input.yaml"
+ext TaskInput = ".task-input.yaml"
 ext TaskLength = ".task-length.yaml"
 ext FlyTime = ".fly-time.yaml"
 ext CrossZone = ".cross-zone.yaml"

@@ -1,5 +1,6 @@
 import Text.Printf (printf)
 import System.Environment (getProgName)
+import System.FilePath ((</>))
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
@@ -7,6 +8,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
+import Control.Concurrent.ParallelIO (parallel_)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -28,18 +30,24 @@ import Flight.Comp
     ( FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
+    , IxTask(..)
     , Task(..)
     , TaskFolder(..)
     , Pilot(..)
     , PilotGroup(..)
     , PilotTrackLogFile(..)
+    , TaskInputFile(..)
+    , TaskDir(..)
     , trimFsdbToComp
     , findTrimFsdb
     , reshape
+    , unMkCompTaskSettings
+    , taskInputPath
+    , compFileToCompDir
     )
 import qualified Flight.Comp as C (Comp(earth, earthMath))
 import Flight.Zone (Radius(..))
@@ -47,7 +55,7 @@ import qualified Flight.Zone.Raw as Raw (Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import "flight-gap-math" Flight.Score (PenaltySeq, toSeqs)
 import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
-import Flight.Scribe (writeComp)
+import Flight.Scribe (writeComp, writeTask)
 import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
 
 -- NOTE: Util.snd3 from https://hackage.haskell.org/package/ghc
@@ -104,7 +112,23 @@ go earthMath zg fsdbFile@(TrimFsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ fsdbSettings earthMath zg (FsdbXml contents')
-    either print (writeComp (trimFsdbToComp fsdbFile)) settings
+    either
+        print
+        ((\(compSettings, taskSettings) -> do
+            let compFile = trimFsdbToComp fsdbFile
+            let compDir = compFileToCompDir compFile
+            writeComp compFile compSettings
+
+            parallel_
+                [ do
+                    let (TaskDir dir, TaskInputFile file) = taskInputPath compDir ixTask
+                    writeTask (TaskInputFile $ dir </> file) ts
+
+                | ts <- taskSettings
+                | ixTask <- IxTask <$> [1..]
+                ])
+        . unMkCompTaskSettings)
+        settings
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
 fsdbComp (FsdbXml contents) = do
@@ -196,7 +220,7 @@ fsdbSettings
     :: EarthMath
     -> Raw.Give
     -> FsdbXml
-    -> ExceptT String IO (CompSettings k)
+    -> ExceptT String IO (CompTaskSettings k)
 fsdbSettings earthMath zg fsdbXml = do
     c@Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
@@ -229,7 +253,7 @@ fsdbSettings earthMath zg fsdbXml = do
 
     lift . putStrLn $ msg
     return
-        CompSettings
+        CompTaskSettings
             { comp =
                 c
                     { scoreBack = sb

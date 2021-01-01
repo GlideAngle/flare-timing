@@ -67,10 +67,10 @@ readTaskTrackRows
     -> IxTask
     -> [Pilot]
     -> IO [Maybe (Pilot, [TrackRow])]
-readTaskTrackRows compFile i =
+readTaskTrackRows compFile ixTask =
     mapM
         (\p -> do
-            rows <- catchIO (readPilotTrackRows compFile i p) (const $ return [])
+            rows <- catchIO (readPilotTrackRows compFile ixTask p) (const $ return [])
             return $ if null rows then Nothing else Just (p, rows))
 
 readPilotTrackRows
@@ -78,9 +78,9 @@ readPilotTrackRows
     -> IxTask
     -> Pilot
     -> IO [TrackRow]
-readPilotTrackRows compFile (IxTask i) pilot = do
+readPilotTrackRows compFile ixTask pilot = do
     (_, rows) <- readUnpackTrack (UnpackTrackFile (dIn </> file))
     return $ V.toList rows
     where
         dir = compFileToCompDir compFile
-        (UnpackTrackDir dIn, UnpackTrackFile file) = unpackTrackPath dir i pilot
+        (UnpackTrackDir dIn, UnpackTrackFile file) = unpackTrackPath dir ixTask pilot

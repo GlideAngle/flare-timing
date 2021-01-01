@@ -24,8 +24,9 @@ import Flight.Route (OptimalRoute(..))
 import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
+    , ScoringInputFiles
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , TaskStop(..)
     , Task(..)
     , PilotName(..)
@@ -50,6 +51,7 @@ import Flight.Comp
     , speedSectionToLeg
     , reshape
     , pilotNamed
+    , mkCompTaskSettings
     )
 import Flight.Track.Time
     ( LeadingAreas(..), LeadAllDown(..), AreaRow
@@ -61,7 +63,7 @@ import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readComp, readRoute, readTagging, readFraming
+    ( readCompAndTasks, compFileToTaskFiles, readRoute, readTagging, readFraming
     , writeCompAreaStep
     , readCompLeading, writeDiscardingLead
     )
@@ -106,10 +108,14 @@ go CmdBatchOptions{..} compFile = do
     putStrLn $ "Reading zone tags from " ++ show tagFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
+
 
     tagging <-
         catchIO
@@ -126,42 +132,42 @@ go CmdBatchOptions{..} compFile = do
             (Just <$> readRoute lenFile)
             (const $ return Nothing)
 
-    case (compSettings, tagging, stopping, routes) of
+    case (filesTaskAndSettings, tagging, stopping, routes) of
         (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frames."
         (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just tg, Just sp, Just _) ->
+        (Just (taskFiles, settings@(cs, _)), Just tg, Just sp, Just _) ->
             filterTime
-                cs
+                (uncurry mkCompTaskSettings $ settings)
                 (routeLength taskRoute taskRouteSpeedSubset stopRoute startRoute routes)
                 (tagTaskLeading . Just $ effectiveTagging tg sp)
-                compFile
+                (compFile, taskFiles)
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
                 checkAll
 
 filterTime
-    :: CompSettings k
+    :: CompTaskSettings k
     -> RoutesLookupTaskDistance
     -> TaskLeadingLookup
-    -> CompInputFile
+    -> ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
-    -> (CompInputFile
+    -> (ScoringInputFiles
         -> [IxTask]
         -> [Pilot]
         -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
-    CompSettings{tasks, compTweak}
+    CompTaskSettings{tasks, compTweak}
     routes
     (TaskLeadingLookup lookupTaskLeading)
-    compFile selectTasks selectPilots f = do
+    inFiles selectTasks selectPilots f = do
 
     checks <-
         catchIO
-            (Just <$> f compFile selectTasks selectPilots)
+            (Just <$> f inFiles selectTasks selectPilots)
             (const $ return Nothing)
 
     case checks of
@@ -228,18 +234,18 @@ filterTime
                     ]
 
             let lc = if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1
-            lc routes compFile selectTasks tasks lsSpeedTask raceTimes taskPilots
+            lc routes inFiles selectTasks tasks lsSpeedTask raceTimes taskPilots
 
 lc1
     :: RoutesLookupTaskDistance
-    -> CompInputFile
+    -> ScoringInputFiles
     -> [IxTask]
     -> [Task k]
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO ()
-lc1 routes compFile selectTasks tasks lsSpeedTask raceTimes taskPilots = do
+lc1 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
     let iTasks = IxTask <$> [1 .. length taskPilots]
     let mkArea d t = d *: t
 
@@ -295,14 +301,14 @@ lc1 routes compFile selectTasks tasks lsSpeedTask raceTimes taskPilots = do
 
 lc2
     :: RoutesLookupTaskDistance
-    -> CompInputFile
+    -> ScoringInputFiles
     -> [IxTask]
     -> [Task k]
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO ()
-lc2 routes compFile selectTasks tasks lsSpeedTask raceTimes taskPilots = do
+lc2 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
     let iTasks = IxTask <$> [1 .. length taskPilots]
     let mkArea d t = d *: d *: t
 
@@ -357,11 +363,11 @@ lc2 routes compFile selectTasks tasks lsSpeedTask raceTimes taskPilots = do
     writeDiscardingLead (compToLeadArea compFile) (DiscardingLead{areas = ass'})
 
 checkAll
-    :: CompInputFile
+    :: ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
     -> IO [[Either (Pilot, TrackFileFail) (Pilot, ())]]
-checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
+checkAll = checkTracks $ \CompTaskSettings{tasks} -> (\ _ _ _ -> ()) tasks
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)

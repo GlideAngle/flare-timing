@@ -62,15 +62,15 @@ writePilotAreaStep
     -> IxTask
     -> (Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))
     -> IO (Maybe (Vector (AreaRow u)))
-writePilotAreaStep compFile selectTask iTask@(IxTask i) (pilot, LeadingAreas{areaFlown = areaRows}) =
-    if not (selectTask iTask) then return Nothing else do
+writePilotAreaStep compFile selectTask ixTask (pilot, LeadingAreas{areaFlown = areaRows}) =
+    if not (selectTask ixTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     _ <- f areaRows
     return $ Just areaRows
     where
         f = writeAreaStep (AreaStepFile $ dOut </> file)
         dir = compFileToCompDir compFile
-        (AreaStepDir dOut, AreaStepFile file) = areaStepPath dir i pilot
+        (AreaStepDir dOut, AreaStepFile file) = areaStepPath dir ixTask pilot
 
 readCompLeading
     :: AreaSteps (LeadingAreaUnits u)
@@ -106,14 +106,14 @@ readTaskLeading
     -> Maybe RaceTime
     -> [Pilot]
     -> IO [(Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))]
-readTaskLeading areaSteps lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
-    if not (select iTask) then return [] else do
+readTaskLeading areaSteps lengths compFile select ixTask toLeg raceTime ps =
+    if not (select ixTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
-    xs <- mapM (readPilotLeading areaSteps lengths compFile iTask toLeg raceTime) ps
+    xs <- mapM (readPilotLeading areaSteps lengths compFile ixTask toLeg raceTime) ps
     return $ zip ps xs
     where
         dir = compFileToCompDir compFile
-        (DiscardFurtherDir dOut) = discardFurtherDir dir i
+        (DiscardFurtherDir dOut) = discardFurtherDir dir ixTask
 
 readPilotLeading
     :: AreaSteps (LeadingAreaUnits u)
@@ -128,7 +128,7 @@ readPilotLeading _ _ _ _ _ Nothing _ = return $ LeadingAreas V.empty Nothing Not
 readPilotLeading
     areaSteps
     (RoutesLookupTaskDistance lookupTaskLength)
-    compFile iTask@(IxTask i) toLeg
+    compFile ixTask toLeg
     (Just raceTime)
     pilot = do
     (_, rows :: Vector TickRow) <- readDiscardFurther (DiscardFurtherFile (dIn </> file))
@@ -150,8 +150,8 @@ readPilotLeading
                 arrival
 
         dir = compFileToCompDir compFile
-        (DiscardFurtherDir dIn, DiscardFurtherFile file) = discardFurtherPath dir i pilot
-        lengthOfSs = (fmap routeLengthOfSs . ($ iTask)) =<< lookupTaskLength
+        (DiscardFurtherDir dIn, DiscardFurtherFile file) = discardFurtherPath dir ixTask pilot
+        lengthOfSs = (fmap routeLengthOfSs . ($ ixTask)) =<< lookupTaskLength
         close = LeadClose <$> leadClose raceTime
         down = LeadAllDown <$> leadAllDown raceTime
         arrival = LeadArrival <$> leadArrival raceTime

@@ -55,7 +55,8 @@ in    defs
           { ft-extract-input =
               { dependencies =
                     deps
-                  # [ "flight-earth"
+                  # [ "parallel-io"
+                    , "flight-earth"
                     , "flight-fsdb"
                     , "flight-gap-allot"
                     , "flight-gap-math"

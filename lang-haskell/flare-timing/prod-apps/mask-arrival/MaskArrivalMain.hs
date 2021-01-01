@@ -20,13 +20,15 @@ import Flight.Comp
     , findCompInput
     , reshape
     , pilotNamed
+    , mkCompTaskSettings
     )
 import Flight.Track.Stop (effectiveTagging)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
-import Flight.Scribe (readComp, readRoute, readTagging, readFraming)
+import Flight.Scribe
+    (readCompAndTasks, compFileToTaskFiles, readRoute, readTagging, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskArrivalOptions (description)
 import Mask (writeMask)
@@ -62,9 +64,12 @@ go CmdBatchOptions{math, task, pilot} compFile = do
     putStrLn $ "Reading zone tags from " ++ show tagFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
     tagging <-
@@ -91,22 +96,22 @@ go CmdBatchOptions{math, task, pilot} compFile = do
                 startRoute
                 routes
 
-    case (compSettings, tagging, stopping, routes) of
+    case (filesTaskAndSettings, tagging, stopping, routes) of
         (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frames."
         (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just tg, Just stp, Just _) -> do
+        (Just (taskFiles, settings@(cs, _)), Just tg, Just stp, Just _) -> do
             let iTasks = (IxTask <$> task)
             let ps = (pilotNamed cs $ PilotName <$> pilot)
             let tagging' = Just $ effectiveTagging tg stp
 
             writeMask
-                cs
+                (uncurry mkCompTaskSettings $ settings)
                 lookupTaskLength
                 math
                 scoredLookup
                 tagging'
                 iTasks
                 ps
-                compFile
+                (compFile, taskFiles)

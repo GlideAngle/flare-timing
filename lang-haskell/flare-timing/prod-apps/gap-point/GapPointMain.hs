@@ -41,7 +41,7 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
@@ -72,6 +72,7 @@ import Flight.Comp
     , compToPoint
     , findCompInput
     , reshape
+    , mkCompTaskSettings
     )
 import Flight.Track.Cross
     (InterpolatedFix(..), Flying(..), ZoneTag(..), TrackFlyingSection(..))
@@ -97,7 +98,8 @@ import Flight.Track.Point
     (Velocity(..), Breakdown(..), Pointing(..), Allocation(..), EssNotGoal(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
-    ( readComp, readRoute
+    ( readCompAndTasks, compFileToTaskFiles
+    , readRoute
     , readFlying, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
@@ -213,9 +215,12 @@ go CmdBatchOptions{..} compFile = do
     putStrLn $ "Reading speed from " ++ show maskSpeedFile
     putStrLn $ "Reading distance difficulty from " ++ show landFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
     fys <-
@@ -286,7 +291,7 @@ go CmdBatchOptions{..} compFile = do
                 startRoute
                 routes
 
-    case (compSettings, fys, tgs, stps, ma, me, ml2, mr, br, ms, landing, routes) of
+    case (filesTaskAndSettings, fys, tgs, stps, ma, me, ml2, mr, br, ms, landing, routes) of
         (Nothing, _, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the flying times."
         (_, _, Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
@@ -299,7 +304,8 @@ go CmdBatchOptions{..} compFile = do
         (_, _, _, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
         (_, _, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
         (_, _, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just cg, Just tg, Just stp, Just mA, Just _mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) -> do
+        (Just (_taskFiles, settings), Just cg, Just tg, Just stp, Just mA, Just _mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) -> do
+            let cs = uncurry mkCompTaskSettings $ settings
             let tg' = effectiveTagging tg stp
             let mE' = efforts lg
 
@@ -330,7 +336,7 @@ toBothWays d =
         }
 
 points'
-    :: CompSettings k
+    :: CompTaskSettings k
     -> RoutesLookupTaskDistance
     -> Flying
     -> Tagging
@@ -342,7 +348,7 @@ points'
     -> Cmp.Landing
     -> Pointing
 points'
-    CompSettings
+    CompTaskSettings
         { comp =
             Comp{discipline}
         , nominal =

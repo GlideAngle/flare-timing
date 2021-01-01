@@ -6,21 +6,23 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
+import Control.Exception.Safe (catchIO)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Comp(..)
     , Task(zones, speedSection)
     , CompInputFile(..)
     , compToTaskLength
     , findCompInput
     , reshape
+    , mkCompTaskSettings
     )
 import Flight.TaskTrack.Double (taskTracks)
-import Flight.Scribe (readComp, writeRoute)
+import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeRoute)
 import Flight.Zone.MkZones (unkindZones)
 import Flight.Zone (unlineZones)
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
@@ -58,10 +60,19 @@ go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ takeFileName compPath
 
-    settings <- readComp compFile
-    f settings
+    filesTaskAndSettings <-
+        catchIO
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
+            (const $ return Nothing)
+
+    case filesTaskAndSettings of
+        Nothing -> putStrLn "Couldn't read the comp settings."
+        Just (_taskFiles, settings) -> f (uncurry mkCompTaskSettings $ settings)
     where
-        f cs@CompSettings{comp = Comp{earthMath = eMath}}= do
+        f cs@CompTaskSettings{comp = Comp{earthMath = eMath}} = do
             let ixs = speedSection <$> tasks cs
 
             let az =

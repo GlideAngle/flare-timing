@@ -19,18 +19,20 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Nominal(..)
     , compToMaskEffort
     , compToLand
     , findCompInput
     , reshape
+    , mkCompTaskSettings
     )
 import Flight.Distance (unTaskDistanceAsKm)
 import Flight.Track.Distance (TrackDistance(..))
 import Flight.Track.Mask (MaskingEffort(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
-import Flight.Scribe (readComp, readMaskingEffort, writeLanding)
+import Flight.Scribe
+    (readCompAndTasks, compFileToTaskFiles, readMaskingEffort, writeLanding)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
@@ -65,23 +67,29 @@ go CmdBatchOptions{..} compFile = do
     let landFile = compToLand compFile
     putStrLn $ "Reading land outs from " ++ show maskFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
+
 
     masking <-
         catchIO
             (Just <$> readMaskingEffort maskFile)
             (const $ return Nothing)
 
-    case (compSettings, masking) of
+    case (filesTaskAndSettings, masking) of
         (Nothing, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing) -> putStrLn "Couldn't read the maskings."
-        (Just cs, Just mk) -> writeLanding landFile $ difficulty cs mk
+        (Just (_taskFiles, settings), Just mk) ->
+            let cs = uncurry mkCompTaskSettings $ settings
+            in writeLanding landFile $ difficulty cs mk
 
-difficulty :: CompSettings k -> MaskingEffort -> Cmp.Landing
-difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
+difficulty :: CompTaskSettings k -> MaskingEffort -> Cmp.Landing
+difficulty CompTaskSettings{nominal} MaskingEffort{bestEffort, land} =
     Cmp.Landing
         { minDistance = md
         , bestDistance = bests

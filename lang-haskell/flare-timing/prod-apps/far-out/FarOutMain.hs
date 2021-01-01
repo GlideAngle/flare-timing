@@ -22,7 +22,7 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Nominal(..)
     , PilotGroup(didFlyNoTracklog)
     , IxTask(..)
@@ -31,13 +31,15 @@ import Flight.Comp
     , compToFar
     , findCompInput
     , reshape
+    , mkCompTaskSettings
     )
 import Flight.Distance (unTaskDistanceAsKm, fromKms)
 import Flight.Track.Distance (TrackDistance(..), Effort)
 import Flight.Track.Mask (MaskingEffort(..), MaskingReach(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import qualified Flight.Lookup as Lookup (compRoutes)
-import Flight.Scribe (readComp, readRoute, readMaskingReach, writeFaring)
+import Flight.Scribe
+    (readCompAndTasks, compFileToTaskFiles, readRoute, readMaskingReach, writeFaring)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
@@ -79,9 +81,12 @@ go CmdBatchOptions{..} compFile = do
     putStrLn $ "Reading task length from " ++ show lenFile
     putStrLn $ "Reading far outs from " ++ show maskReachFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
     masking <-
@@ -102,12 +107,14 @@ go CmdBatchOptions{..} compFile = do
                 startRoute
                 routes
 
-    case (compSettings, masking, routes) of
+    case (filesTaskAndSettings, masking, routes) of
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _) -> putStrLn "Couldn't read the routes."
         (_, _, Nothing) -> putStrLn "Couldn't read the maskings."
-        (Just cs, Just mk, Just _) -> do
-            let CompSettings{nominal = Cmp.Nominal{free}, tasks, pilotGroups} = cs
+        (Just (_taskFiles, settings), Just mk, Just _) -> do
+            let cs@CompTaskSettings{nominal = Cmp.Nominal{free}, tasks, pilotGroups} =
+                    (uncurry mkCompTaskSettings $ settings)
+
             let ixTasks = take (length tasks) (IxTask <$> [1 ..])
 
             let dfNtss =
@@ -130,7 +137,7 @@ go CmdBatchOptions{..} compFile = do
             writeFaring farFile $ difficultyByReach cs mk ess
 
 difficultyByReach
-    :: CompSettings k
+    :: CompTaskSettings k
     -> MaskingReach
     -> [[(Pilot, TrackDistance Effort)]]
     -> Cmp.Landing
@@ -156,8 +163,8 @@ difficultyByReach cs MaskingReach{bolster, nigh} dfNtss =
                 | ns <- nigh
                 ]
 
-difficulty :: CompSettings k -> MaskingEffort -> Cmp.Landing
-difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
+difficulty :: CompTaskSettings k -> MaskingEffort -> Cmp.Landing
+difficulty CompTaskSettings{nominal} MaskingEffort{bestEffort, land} =
     Cmp.Landing
         { minDistance = md
         , bestDistance = bests

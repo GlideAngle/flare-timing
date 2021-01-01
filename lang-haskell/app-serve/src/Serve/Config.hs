@@ -23,13 +23,13 @@ import Flight.Track.Mask
 import qualified Flight.Track.Point as Alt (AltPointing(..))
 import Flight.Track.Point (Pointing(..))
 import "flight-gap-lead" Flight.Score (LeadingArea2Units)
-import Flight.Comp (CompSettings(..), CompInputFile(..))
+import Flight.Comp (CompTaskSettings(..), CompInputFile(..), TaskInputFile(..))
 import Flight.Route (TaskTrack(..), GeoLines(..))
 
 data Config k
     = Config
-        { compFile :: CompInputFile
-        , compSettings :: CompSettings k
+        { inputFiles :: (CompInputFile , [TaskInputFile])
+        , compSettings :: CompTaskSettings k
         , routing :: Maybe [Maybe TaskTrack]
         , flying :: Maybe Cg.Flying
         , crossing :: Maybe Cg.Crossing
@@ -51,10 +51,10 @@ data Config k
         , altAsScore :: Maybe Alt.AltPointing
         }
 
-nullConfig :: CompInputFile -> CompSettings k -> Config k
-nullConfig cf cs =
+nullConfig :: (CompInputFile, [TaskInputFile]) -> CompTaskSettings k -> Config k
+nullConfig fs cs =
     Config
-        { compFile = cf
+        { inputFiles = fs
         , compSettings = cs
         , routing = Nothing
         , flying = Nothing

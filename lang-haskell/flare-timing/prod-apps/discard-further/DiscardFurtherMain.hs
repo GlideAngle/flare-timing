@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Prelude hiding (last)
-import Data.Maybe (fromMaybe) 
-import Data.List (find) 
+import Data.Maybe (fromMaybe)
+import Data.List (find)
 import Data.List.NonEmpty (nonEmpty, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -21,8 +21,9 @@ import Flight.Zone.Raw (RawZone(..))
 import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
+    , ScoringInputFiles
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Comp(..)
     , Task(..)
     , PilotName(..)
@@ -35,12 +36,13 @@ import Flight.Comp
     , compToCross
     , crossToTag
     , tagToPeg
+    , mkCompTaskSettings
     )
 import Flight.Track.Time (TimeRow(..), TimeToTick, glideRatio, altBonusTimeToTick, copyTimeToTick)
 import Flight.Track.Stop (Framing(..), StopFraming(..), TrackScoredSection(..))
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readComp, readFraming
+    ( readCompAndTasks, compFileToTaskFiles, readFraming
     , readPilotAlignTimeWriteDiscardFurther
     , readPilotAlignTimeWritePegThenDiscard
     )
@@ -74,9 +76,12 @@ go CmdBatchOptions{..} compFile = do
     putStrLn $ "Reading competition from " ++ show compFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
     stopping <-
@@ -84,13 +89,13 @@ go CmdBatchOptions{..} compFile = do
             (Just <$> readFraming stopFile)
             (const $ return Nothing)
 
-    case (compSettings, stopping) of
+    case (filesTaskAndSettings, stopping) of
         (Nothing, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing) -> putStrLn "Couldn't read the scored frames."
-        (Just cs, Just Framing{stopFlying}) ->
+        (Just (taskFiles, settings@(cs, _)), Just Framing{stopFlying}) ->
             filterTime
-                cs
-                compFile
+                (uncurry mkCompTaskSettings $ settings)
+                (compFile, taskFiles)
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
                 stopFlying
@@ -103,19 +108,19 @@ filterTimeRow StopFraming{stopScored} TimeRow{time = t} = fromMaybe True $ do
     return $ t0 <= t && t <= t1
 
 filterTime
-    :: CompSettings k
-    -> CompInputFile
+    :: CompTaskSettings k
+    -> ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
     -> [[(Pilot, StopFraming)]]
-    -> (CompInputFile
+    -> (ScoringInputFiles
         -> [IxTask]
         -> [Pilot]
         -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
-    CompSettings{comp = Comp{discipline = hgOrPg}, tasks}
-    compFile selectTasks selectPilots stopFlying f = do
+    CompTaskSettings{comp = Comp{discipline = hgOrPg}, tasks}
+    inFiles@(compFile, _) selectTasks selectPilots stopFlying f = do
 
     let filterOnPilotStops pilot stops =
             (maybe
@@ -125,7 +130,7 @@ filterTime
 
     checks <-
         catchIO
-            (Just <$> f compFile selectTasks selectPilots)
+            (Just <$> f inFiles selectTasks selectPilots)
             (const $ return Nothing)
 
     case checks of
@@ -190,11 +195,11 @@ filterTime
                 ]
 
 checkAll
-    :: CompInputFile
+    :: ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
     -> IO [[Either (Pilot, TrackFileFail) (Pilot, ())]]
-checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
+checkAll = checkTracks $ \CompTaskSettings{tasks} -> (\ _ _ _ -> ()) tasks
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)

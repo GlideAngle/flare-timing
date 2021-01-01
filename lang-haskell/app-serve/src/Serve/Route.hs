@@ -15,7 +15,7 @@ import Control.Monad.Reader (asks)
 
 import Flight.Units ()
 import Flight.Geodesy (EarthModel(..), EarthMath(..))
-import Flight.Comp (Comp(..), CompSettings(..))
+import Flight.Comp (Comp(..), CompTaskSettings(..))
 import Flight.Route
     ( OptimalRoute(..), TaskTrack(..), TrackLine(..)
     , ProjectedTrackLine(..), PlanarTrackLine(..)

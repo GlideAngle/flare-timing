@@ -26,11 +26,13 @@ module Flight.Path.Tx
     , crossToTag
     , tagToPeg
     , compFileToCompDir
+    , taskDir
     , unpackTrackDir
     , alignTimeDir
     , discardFurtherDir
     , pegThenDiscardDir
     , areaStepDir
+    , taskInputPath
     , unpackTrackPath
     , alignTimePath
     , discardFurtherPath
@@ -61,6 +63,7 @@ shape Kml = Ext ".kml"
 shape Igc = Ext ".igc"
 
 shape CompInput = DotDirName "comp-input.yaml" DotFt
+shape TaskInput = DotDirName "task-input.yaml" DotFt
 shape TaskLength = DotDirName "task-length.yaml" DotFt
 shape FlyTime = DotDirName "fly-time.yaml" DotFt
 shape CrossZone = DotDirName "cross-zone.yaml" DotFt
@@ -93,6 +96,9 @@ shape (AltLandout AltAs) = DotDirName "land-out.yaml" DotAs
 shape (AltRoute AltAs) = DotDirName "task-route.yaml" DotAs
 shape (AltScore AltAs) = DotDirName "gap-score.yaml" DotAs
 
+-- |
+-- >>> reshape TaskInput ".flare-timing/comp-input.yaml"
+-- "task-input.yaml"
 reshape :: FileType -> FilePath -> FilePath
 reshape Fsdb = flip replaceExtensions "fsdb"
 reshape CleanFsdb = flip replaceExtensions "clean-fsdb.xml"
@@ -102,6 +108,7 @@ reshape Kml = id
 reshape Igc = id
 
 reshape CompInput = coerce . trimFsdbToComp . coerce . reshape TrimFsdb
+reshape TaskInput = const "task-input.yaml"
 reshape TaskLength = flip replaceExtensions "task-length.yaml"
 reshape FlyTime = coerce . compToFly . coerce . reshape CompInput
 reshape CrossZone = coerce . compToCross . coerce . reshape CompInput
@@ -131,10 +138,16 @@ reshape (AltLandout x) = coerce . compToAltLandout x . coerce . reshape CompInpu
 reshape (AltRoute x) = coerce . compToAltRoute x . coerce . reshape CompInput
 reshape (AltScore x) = coerce . compToAltScore x . coerce . reshape CompInput
 
-dotDirTask :: CompDir -> DotFolder -> FilePath -> Int -> FilePath
-dotDirTask (CompDir dir) dotFolder name task
-    | DotFt <- dotFolder =
-        dir </> ".flare-timing" </> "task-" ++ show task </> name 
+dotDirTask :: CompDir -> DotFolder -> IxTask -> FilePath
+dotDirTask (CompDir dir) dotFolder (IxTask task)
+    | DotFt <- dotFolder = dir </> ".flare-timing" </> "task-" ++ show task
+    | otherwise =
+        error
+        $ printf "Only %s has task folders but given %s" (show DotFt) (show dotFolder)
+
+dotSubdirTask :: CompDir -> DotFolder -> FilePath -> IxTask -> FilePath
+dotSubdirTask comp dotFolder name task
+    | DotFt <- dotFolder = dotDirTask comp dotFolder task </> name
     | otherwise =
         error
         $ printf "Only %s has task folders but given %s" (show DotFt) (show dotFolder)
@@ -156,7 +169,7 @@ cleanFsdbToTrimFsdb :: CleanFsdbFile -> TrimFsdbFile
 cleanFsdbToTrimFsdb _ = let DotDirName s d = shape TrimFsdb in TrimFsdbFile $ dotDir d s
 
 -- |
--- >>> trimFsdbToComp (TrimFsdbFile ".flight-system/trim-fsdb.xml")
+-- >>> trimFsdbToComp (TrimFsdbFile ".flare-timing/trim-fsdb.xml")
 -- ".flare-timing/comp-input.yaml"
 --
 -- prop> \s -> trimFsdbToComp (TrimFsdbFile s) == CompInputFile ".flare-timing/comp-input.yaml"
@@ -360,67 +373,75 @@ trimFsdbToAltScore a _ = let DotDirName s d = shape (AltScore a) in
     AltScoreFile $ dotDir d s
 
 compFileToCompDir :: CompInputFile -> CompDir
-compFileToCompDir (CompInputFile p) =
-    CompDir . takeDirectory $ takeDirectory p
+compFileToCompDir (CompInputFile p) = CompDir . takeDirectory $ takeDirectory p
 
 pilotPath :: Pilot -> FilePath
 pilotPath (Pilot (PilotId k, PilotName s)) =
     s ++ " " ++ k
 
 -- |
+-- >>> taskInputPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","task-input.yaml")
+taskInputPath :: CompDir -> IxTask -> (TaskDir, TaskInputFile)
+taskInputPath dir task = (taskDir dir task, TaskInputFile "task-input.yaml")
+
+taskDir :: CompDir -> IxTask -> TaskDir
+taskDir comp task = TaskDir $ dotDirTask comp DotFt task
+
+-- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
 -- ("a/.flare-timing/task-1/unpack-track","Frodo 101.csv")
-unpackTrackPath :: CompDir -> Int -> Pilot -> (UnpackTrackDir, UnpackTrackFile)
+unpackTrackPath :: CompDir -> IxTask -> Pilot -> (UnpackTrackDir, UnpackTrackFile)
 unpackTrackPath dir task pilot =
     (unpackTrackDir dir task, UnpackTrackFile $ pilotPath pilot <.> "csv")
 
-unpackTrackDir :: CompDir -> Int -> UnpackTrackDir
+unpackTrackDir :: CompDir -> IxTask -> UnpackTrackDir
 unpackTrackDir comp task =
-    UnpackTrackDir $ dotDirTask comp DotFt "unpack-track" task
+    UnpackTrackDir $ dotSubdirTask comp DotFt "unpack-track" task
 
 -- |
 -- >>> alignTimePath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
 -- ("a/.flare-timing/task-1/align-time","Frodo 101.csv")
-alignTimePath :: CompDir -> Int -> Pilot -> (AlignTimeDir, AlignTimeFile)
+alignTimePath :: CompDir -> IxTask -> Pilot -> (AlignTimeDir, AlignTimeFile)
 alignTimePath dir task pilot =
     (alignTimeDir dir task, AlignTimeFile $ pilotPath pilot <.> "csv")
 
-alignTimeDir :: CompDir -> Int -> AlignTimeDir
+alignTimeDir :: CompDir -> IxTask -> AlignTimeDir
 alignTimeDir comp task =
-    AlignTimeDir $ dotDirTask comp DotFt "align-time" task
+    AlignTimeDir $ dotSubdirTask comp DotFt "align-time" task
 
 -- |
 -- >>> discardFurtherPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
 -- ("a/.flare-timing/task-1/discard-further","Frodo 101.csv")
-discardFurtherPath :: CompDir -> Int -> Pilot -> (DiscardFurtherDir, DiscardFurtherFile)
+discardFurtherPath :: CompDir -> IxTask -> Pilot -> (DiscardFurtherDir, DiscardFurtherFile)
 discardFurtherPath dir task pilot =
     (discardFurtherDir dir task, DiscardFurtherFile $ pilotPath pilot <.> "csv")
 
-discardFurtherDir :: CompDir -> Int -> DiscardFurtherDir
+discardFurtherDir :: CompDir -> IxTask -> DiscardFurtherDir
 discardFurtherDir comp task =
-    DiscardFurtherDir $ dotDirTask comp DotFt "discard-further" task
+    DiscardFurtherDir $ dotSubdirTask comp DotFt "discard-further" task
 
 -- |
 -- >>> pegThenDiscardPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
 -- ("a/.flare-timing/task-1/peg-then-discard","Frodo 101.csv")
-pegThenDiscardPath :: CompDir -> Int -> Pilot -> (PegThenDiscardDir, PegThenDiscardFile)
+pegThenDiscardPath :: CompDir -> IxTask -> Pilot -> (PegThenDiscardDir, PegThenDiscardFile)
 pegThenDiscardPath dir task pilot =
     (pegThenDiscardDir dir task, PegThenDiscardFile $ pilotPath pilot <.> "csv")
 
-pegThenDiscardDir :: CompDir -> Int -> PegThenDiscardDir
+pegThenDiscardDir :: CompDir -> IxTask -> PegThenDiscardDir
 pegThenDiscardDir comp task =
-    PegThenDiscardDir $ dotDirTask comp DotFt "peg-then-discard" task
+    PegThenDiscardDir $ dotSubdirTask comp DotFt "peg-then-discard" task
 
 -- |
 -- >>> areaStepPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
 -- ("a/.flare-timing/task-1/area-step","Frodo 101.csv")
-areaStepPath :: CompDir -> Int -> Pilot -> (AreaStepDir, AreaStepFile)
+areaStepPath :: CompDir -> IxTask -> Pilot -> (AreaStepDir, AreaStepFile)
 areaStepPath dir task pilot =
     (areaStepDir dir task, AreaStepFile $ pilotPath pilot <.> "csv")
 
-areaStepDir :: CompDir -> Int -> AreaStepDir
+areaStepDir :: CompDir -> IxTask -> AreaStepDir
 areaStepDir comp task =
-    AreaStepDir $ dotDirTask comp DotFt "area-step" task
+    AreaStepDir $ dotSubdirTask comp DotFt "area-step" task
 
 -- $setup
 -- >>> import Test.QuickCheck

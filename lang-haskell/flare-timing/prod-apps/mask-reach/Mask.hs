@@ -20,8 +20,8 @@ import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
-    ( CompInputFile(..)
-    , CompSettings(..)
+    ( ScoringInputFiles
+    , CompTaskSettings(..)
     , Comp(..)
     , Pilot(..)
     , PilotGroup(..)
@@ -85,7 +85,7 @@ writeMask
     -> LeadingAreaSum u
     -> MkLeadingCoef u
     -> MkAreaToCoef v
-    -> CompSettings k
+    -> CompTaskSettings k
     -> RoutesLookupTaskDistance
     -> Math
     -> ScoredLookup
@@ -93,14 +93,14 @@ writeMask
     -> TaskLeadingLookup
     -> [IxTask]
     -> [Pilot]
-    -> CompInputFile
+    -> ScoringInputFiles
     -> IO ()
 writeMask
     MaskingArrival{arrivalRank}
     sumAreas
     invert
     areaToCoef
-    CompSettings
+    CompTaskSettings
         { comp = Comp{earthMath, give}
         , nominal = Cmp.Nominal{free}
         , tasks
@@ -111,8 +111,8 @@ writeMask
     flying
     tags
     lookupTaskLeading
-    ixSelectTasks selectPilots compFile = do
-    (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks selectPilots
+    ixSelectTasks selectPilots inFiles@(compFile, _) = do
+    (_, selectedCompLogs) <- settingsLogs inFiles ixSelectTasks selectPilots
 
     fss :: [[IOStep k]] <-
             sequence $

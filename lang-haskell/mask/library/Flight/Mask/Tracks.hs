@@ -7,41 +7,38 @@ import Control.Monad.Except (MonadIO, liftIO)
 import Flight.Kml (MarkedFixes)
 import Flight.Comp
     ( IxTask(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Pilot(..)
     , PilotTrackLogFile(..)
     , TrackFileFail(..)
-    , CompInputFile(..)
     , CompDir(..)
+    , ScoringInputFiles
     , compFileToCompDir
+    , mkCompTaskSettings
     )
 import Flight.TrackLog as Log
     (pilotTracks, filterPilots, filterTasks, makeAbsolute)
 import Flight.Units ()
-import Flight.Scribe (readComp)
+import Flight.Scribe (readCompTracks)
 
 settingsLogs
     :: (MonadThrow m, MonadIO m)
-    => CompInputFile
+    => ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
-    -> m (CompSettings k, [[PilotTrackLogFile]])
-settingsLogs compFile tasks selectPilots = do
-    settings <- readComp compFile
-    go settings
-    where
-        go s@CompSettings{pilots, taskFolders} = do
-            return (s, zs)
-            where
-                CompDir dir = compFileToCompDir compFile
-                ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
-                fs = Log.makeAbsolute dir <$> taskFolders
-                zs = zipWith (<$>) fs ys
+    -> m (CompTaskSettings k, [[PilotTrackLogFile]])
+settingsLogs files@(compFile, _) tasks selectPilots = do
+    (settings, (pilots, taskFolders)) <- readCompTracks files
+    let CompDir dir = compFileToCompDir compFile
+    let ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
+    let fs = Log.makeAbsolute dir <$> taskFolders
+    let zs = zipWith (<$>) fs ys
+    return (uncurry mkCompTaskSettings $ settings, zs)
 
 checkTracks
     :: (NFData a, MonadThrow m, MonadIO m)
-    => (CompSettings k -> (IxTask -> MarkedFixes -> a))
-    -> CompInputFile
+    => (CompTaskSettings k -> (IxTask -> MarkedFixes -> a))
+    -> ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
     -> m
@@ -49,6 +46,6 @@ checkTracks
            (Pilot, TrackFileFail)
            (Pilot, a)
         ]]
-checkTracks f compFile tasks selectPilots = do
-    (settings, xs) <- settingsLogs compFile tasks selectPilots
+checkTracks f files tasks selectPilots = do
+    (settings, xs) <- settingsLogs files tasks selectPilots
     liftIO $ Log.pilotTracks (f settings) xs

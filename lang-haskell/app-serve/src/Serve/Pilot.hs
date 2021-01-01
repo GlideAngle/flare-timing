@@ -46,7 +46,7 @@ import Flight.Comp
     , DfNoTrackPilot(..)
     , DfNoTrack(..)
     , Nyp(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     )
 import Flight.Mask (checkTracks)
 import Data.Ratio.Rounding (dpRound)
@@ -77,7 +77,7 @@ distinctPilots pss =
     let pilot (PilotTrackLogFile p _) = p
     in sort . nub .concat $ (fmap . fmap) pilot pss
 
-getPilots :: CompSettings k -> [Pilot]
+getPilots :: CompTaskSettings k -> [Pilot]
 getPilots = distinctPilots . pilots
 
 getTaskPilotAbs :: Int -> AppT k IO [Pilot]
@@ -173,14 +173,14 @@ getTaskPilotTrack ii pilotId = do
     let jj = ii - 1
     let ix = IxTask ii
     let pilot = PilotId pilotId
-    cf <- asks compFile
+    inFiles <- asks inputFiles
     ps <- getPilots <$> asks compSettings
     let p = find (\(Pilot (pid, _)) -> pid == pilot) ps
 
     case p of
         Nothing -> throwError $ errPilotNotFound pilot
         Just p' -> do
-            t <- checkTracks (const $ const id) cf [ix] [p']
+            t <- checkTracks (const $ const id) inFiles [ix] [p']
             case take 1 $ drop jj t of
                 [t' : _] ->
                     case t' of
@@ -193,7 +193,7 @@ getTaskPilotArea ii pilotId = do
     let jj = ii - 1
     let ix = IxTask ii
     let pilot = PilotId pilotId
-    cf <- asks compFile
+    (cf, _) <- asks inputFiles
     ml <- asks maskingLead
     dl <- asks discardingLead2
     ps <- getPilots <$> asks compSettings

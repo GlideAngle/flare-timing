@@ -31,7 +31,7 @@ import Flight.Comp
     , UnpackTrackDir(..)
     , CompInputFile(..)
     , UnpackTrackFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , PilotName(..)
     , Pilot(..)
     , IxTask(..)
@@ -40,11 +40,12 @@ import Flight.Comp
     , findCompInput
     , reshape
     , pilotNamed
+    , mkCompTaskSettings
     )
 import Flight.Mask (FnIxTask, settingsLogs, fixFromFix)
 import Flight.Track.Cross (Fix(..))
 import Flight.Kml (MarkedFixes(..))
-import Flight.Scribe (readComp, writeUnpackTrack)
+import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeUnpackTrack)
 import UnpackTrackOptions (description)
 import Flight.TrackLog (pilotTrack)
 
@@ -73,17 +74,23 @@ go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
     putStrLn $ "Reading competition from " ++ show compFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
-    case compSettings of
+
+    case filesTaskAndSettings of
         Nothing -> putStrLn "Couldn't read the comp settings."
-        Just cs@CompSettings{tasks} -> do
+        Just (taskFiles, settings@(cs, _)) -> do
+            let inFiles = (compFile, taskFiles)
+            let CompTaskSettings{tasks} = uncurry mkCompTaskSettings $ settings
             let ixSelectTasks = IxTask <$> task
             let ps = pilotNamed cs $ PilotName <$> pilot
-            (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks ps
+            (_, selectedCompLogs) <- settingsLogs inFiles ixSelectTasks ps
 
             parallel_ . concat $
                 [
@@ -100,7 +107,7 @@ go CmdBatchOptions{..} compFile = do
                                     "Unable to read task %d, %s." n (show pilotLog)
 
                             Just pt -> do
-                                let ptWrite = writePilotTimes compFile n
+                                let ptWrite = writePilotTimes compFile ixTask
 
                                 either
                                     (\(p, _) -> ptWrite (p, []))
@@ -114,15 +121,15 @@ go CmdBatchOptions{..} compFile = do
                 | taskLogs <- selectedCompLogs
                 ]
 
-writePilotTimes :: CompInputFile -> Int -> (Pilot, [TrackRow]) -> IO ()
-writePilotTimes compFile iTask (pilot, rows) = do
-    putStrLn $ printf "Task %d %s" iTask (commentOnFixRange pilot $ fixIdx <$> rows)
+writePilotTimes :: CompInputFile -> IxTask -> (Pilot, [TrackRow]) -> IO ()
+writePilotTimes compFile ixTask@(IxTask n) (pilot, rows) = do
+    putStrLn $ printf "Task %d %s" n (commentOnFixRange pilot $ fixIdx <$> rows)
     _ <- createDirectoryIfMissing True dOut
     _ <- writeUnpackTrack (UnpackTrackFile $ dOut </> f) rows
     return ()
     where
         dir = compFileToCompDir compFile
-        (UnpackTrackDir dOut, UnpackTrackFile f) = unpackTrackPath dir iTask pilot
+        (UnpackTrackDir dOut, UnpackTrackFile f) = unpackTrackPath dir ixTask pilot
 
 mkTrackRow :: Fix -> TrackRow
 mkTrackRow Fix{fix, time, lat, lng, alt} =

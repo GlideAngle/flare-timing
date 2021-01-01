@@ -3,7 +3,6 @@ module Flight.Scribe
     , readAltLandout, writeAltLandout
     , readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
-    , readComp, writeComp
     , readRoute, writeRoute
     , readFlying , writeFlying
     , readCrossing , writeCrossing
@@ -21,6 +20,7 @@ module Flight.Scribe
     , readPointing, writePointing
     , readCleanFsdb, writeCleanFsdb
     , readTrimFsdb, writeTrimFsdb
+    , module Flight.CompInput
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -56,7 +56,6 @@ import Flight.Comp
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , CompInputFile(..)
     , TaskLengthFile(..)
     , FlyTimeFile(..)
     , CrossZoneFile(..)
@@ -72,9 +71,9 @@ import Flight.Comp
     , LandOutFile(..)
     , FarOutFile(..)
     , GapPointFile(..)
-    , CompSettings(..)
     , FsdbXml(..)
     )
+import Flight.CompInput
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
@@ -101,20 +100,6 @@ readTrimFsdb (TrimFsdbFile path) = readFsdbXml path
 writeTrimFsdb :: TrimFsdbFile -> FsdbXml -> IO ()
 writeTrimFsdb (TrimFsdbFile path) fsdbXml =
     writeFsdbXml path fsdbXml
-
-readComp
-    :: (MonadThrow m, MonadIO m)
-    => CompInputFile
-    -> m (CompSettings k)
-readComp (CompInputFile path) = do
-    contents <- liftIO $ BS.readFile path
-    decodeThrow contents
-
-writeComp :: CompInputFile -> CompSettings k -> IO ()
-writeComp (CompInputFile path) compInput = do
-    let cfg = Y.setConfCompare (fieldOrder compInput) Y.defConfig
-    let yaml = Y.encodePretty cfg compInput
-    BS.writeFile path yaml
 
 readAltScore
     :: (MonadThrow m, MonadIO m)

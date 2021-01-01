@@ -20,8 +20,9 @@ import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
+    , ScoringInputFiles
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , PilotName(..)
     , Pilot(..)
     , TrackFileFail(..)
@@ -32,6 +33,7 @@ import Flight.Comp
     , findCompInput
     , reshape
     , pilotNamed
+    , mkCompTaskSettings
     )
 import Flight.Units ()
 import Flight.Track.Cross
@@ -55,7 +57,7 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (readComp, writeCrossing)
+import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeCrossing)
 import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -84,17 +86,23 @@ go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{pilot, math, task} compFile = do
     putStrLn $ "Reading competition from " ++ show compFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
-    case compSettings of
+
+    case filesTaskAndSettings of
         Nothing -> putStrLn "Couldn't read the comp settings."
-        Just cs@CompSettings{comp, tasks} -> do
+        Just (taskFiles, settings@(cs, _)) -> do
+            let inFiles = (compFile, taskFiles)
+            let CompTaskSettings{comp, tasks} = uncurry mkCompTaskSettings $ settings
             let ixSelectTasks = IxTask <$> task
             let ps = pilotNamed cs $ PilotName <$> pilot
-            (_, selectedCompLogs) <- settingsLogs compFile ixSelectTasks ps
+            (_, selectedCompLogs) <- settingsLogs inFiles ixSelectTasks ps
 
             tracks :: [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]] <-
                     sequence $
@@ -108,14 +116,14 @@ go CmdBatchOptions{pilot, math, task} compFile = do
                     | taskLogs <- selectedCompLogs
                     ]
 
-            writeCrossings compFile tasks tracks
+            writeCrossings inFiles tasks tracks
 
 writeCrossings
-    :: CompInputFile
+    :: ScoringInputFiles
     -> [Task k]
     -> [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
     -> IO ()
-writeCrossings compFile _ xs = do
+writeCrossings (compFile, _) _ xs = do
     let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
             unzip <$>
             (fmap . fmap)

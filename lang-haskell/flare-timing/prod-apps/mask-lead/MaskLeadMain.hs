@@ -15,7 +15,7 @@ import Flight.Comp
     , CompInputFile(..)
     , PilotName(..)
     , IxTask(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Tweak(..)
     , compToTaskLength
     , compToCross
@@ -25,6 +25,7 @@ import Flight.Comp
     , findCompInput
     , reshape
     , pilotNamed
+    , mkCompTaskSettings
     )
 import Flight.Track.Stop (effectiveTagging)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -32,7 +33,8 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
 import Flight.Lookup.Tag (tagTaskLeading)
-import Flight.Scribe (readComp, readRoute, readTagging, readFraming, readMaskingArrival)
+import Flight.Scribe
+    (readCompAndTasks, compFileToTaskFiles, readRoute, readTagging, readFraming, readMaskingArrival)
 import Flight.Lookup.Route (routeLength)
 import MaskLeadOptions (description)
 import Mask (writeMask)
@@ -72,9 +74,12 @@ go CmdBatchOptions{..} compFile = do
     putStrLn $ "Reading scored times from " ++ show stopFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
     tagging <-
@@ -106,20 +111,21 @@ go CmdBatchOptions{..} compFile = do
                 startRoute
                 routes
 
-    case (compSettings, tagging, stopping, arriving, routes) of
+    case (filesTaskAndSettings, tagging, stopping, arriving, routes) of
         (Nothing, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _, _, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing, _, _) -> putStrLn "Couldn't read the scored frames."
         (_, _, _, Nothing, _) -> putStrLn "Couldn't read the arrivals."
         (_, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs@CompSettings{compTweak}, Just tg, Just stp, Just as, Just _) -> do
+        (Just (taskFiles, settings@(cs, _)), Just tg, Just stp, Just as, Just _) -> do
+            let cts@CompTaskSettings{compTweak} = uncurry mkCompTaskSettings $ settings
             let tagging' = Just $ effectiveTagging tg stp
 
             let lc1 = writeMask as sumAreas (mk1Coef . area1toCoef) area1toCoef
             let lc2 = writeMask as sumAreas (mk2Coef . area2toCoef) area2toCoef
 
             (if maybe True leadingAreaDistanceSquared compTweak then lc2 else lc1)
-                cs
+                cts
                 lookupTaskLength
                 math
                 scoredLookup
@@ -127,4 +133,4 @@ go CmdBatchOptions{..} compFile = do
                 (tagTaskLeading tagging')
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
-                compFile
+                (compFile, taskFiles)

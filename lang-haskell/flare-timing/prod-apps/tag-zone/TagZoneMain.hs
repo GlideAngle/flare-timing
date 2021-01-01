@@ -21,7 +21,7 @@ import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , CompInputFile(..)
     , Comp(..)
     , Task(..)
@@ -30,6 +30,7 @@ import Flight.Comp
     , crossToTag
     , findCompInput
     , reshape
+    , mkCompTaskSettings
     )
 import Flight.Track.Cross
     (Flying(..), Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
@@ -37,7 +38,8 @@ import Flight.Track.Tag
     ( Tagging(..), TrackTag(..), PilotTrackTag(..)
     , timed
     )
-import Flight.Scribe (readComp, readFlying, readCrossing, writeTagging)
+import Flight.Scribe
+    (readCompAndTasks, compFileToTaskFiles, readFlying, readCrossing, writeTagging)
 import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -76,10 +78,14 @@ go math compFile = do
     putStrLn $ "Reading zone crossings from " ++ show crossFile
     putStrLn $ "Reading zone crossings from " ++ show crossFile
 
-    cs <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
+
 
     fys <-
         catchIO
@@ -91,7 +97,7 @@ go math compFile = do
             (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
-    case (cs, fys, cgs) of
+    case (filesTaskAndSettings, fys, cgs) of
         (Nothing, _, _) ->
             putStrLn "Couldn't read the comp settings."
 
@@ -101,9 +107,10 @@ go math compFile = do
         (_, _, Nothing) ->
             putStrLn "Couldn't read the crossings."
 
-        ( Just CompSettings{tasks, comp = Comp{earthMath, give}}
+        ( Just (_taskFiles, settings)
             , Just Flying{flying}
             , Just Crossing{crossing}) -> do
+            let CompTaskSettings{tasks, comp = Comp{earthMath, give}} = uncurry mkCompTaskSettings $ settings
             let pss :: [[PilotTrackTag]] =
                     [
                         (\case
