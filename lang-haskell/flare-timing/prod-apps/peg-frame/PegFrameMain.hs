@@ -54,7 +54,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
     ( readCompAndTasks
-    , readCompFlying, readTagging, writeFraming, readCompTrackRows
+    , readCompFlyTime, readTagging, writeFraming, readCompTrackRows
     )
 import PegFrameOptions (description)
 
@@ -94,7 +94,7 @@ go CmdBatchOptions{..} compFile = do
 
     flying <-
         catchIO
-            (Just <$> readCompFlying compFile)
+            (Just <$> readCompFlyTime compFile)
             (const $ return Nothing)
 
     tagging <-

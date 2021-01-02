@@ -12,7 +12,7 @@ import Flight.Units ()
 import Flight.Scribe
     ( readCompAndTasks
     , readAltArrival, readAltLandout, readAltRoute, readAltScore
-    , readRoutes, readCompFlying, readCompCrossing, readTagging, readFraming
+    , readRoutes, readCompFlyTime, readCompCrossZone, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readDiscardingLead
@@ -131,12 +131,12 @@ go CmdServeOptions{..} compFile = do
 
             flying <-
                 catchIO
-                    (Just <$> readCompFlying compFile)
+                    (Just <$> readCompFlyTime compFile)
                     (const $ return Nothing)
 
             crossing <-
                 catchIO
-                    (Just <$> readCompCrossing compFile)
+                    (Just <$> readCompCrossZone compFile)
                     (const $ return Nothing)
 
             tagging <-

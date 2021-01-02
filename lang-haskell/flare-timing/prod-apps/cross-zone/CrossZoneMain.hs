@@ -57,7 +57,7 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (readCompAndTasks, writeCompCrossing)
+import Flight.Scribe (readCompAndTasks, writeCompCrossZone)
 import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -142,7 +142,7 @@ writeCrossings (compFile, _) _ xs = do
                 , trackLogError = trackLogErrors <$> ess
                 }
 
-    writeCompCrossing compFile crossZone
+    writeCompCrossZone compFile crossZone
 
 madeZonesToCross :: MadeZones -> TrackCross
 madeZonesToCross x =

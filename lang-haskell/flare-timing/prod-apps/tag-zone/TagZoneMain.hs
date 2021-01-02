@@ -39,7 +39,7 @@ import Flight.Track.Tag
     )
 import Flight.Scribe
     ( readCompAndTasks
-    , readCompFlying, readCompCrossing, writeTagging
+    , readCompFlyTime, readCompCrossZone, writeTagging
     )
 import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
@@ -86,12 +86,12 @@ go math compFile = do
 
     fys <-
         catchIO
-            (Just <$> readCompFlying compFile)
+            (Just <$> readCompFlyTime compFile)
             (const $ return Nothing)
 
     cgs <-
         catchIO
-            (Just <$> readCompCrossing compFile)
+            (Just <$> readCompCrossZone compFile)
             (const $ return Nothing)
 
     case (filesTaskAndSettings, fys, cgs) of

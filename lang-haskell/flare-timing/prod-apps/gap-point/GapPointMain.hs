@@ -99,7 +99,7 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     ( readCompAndTasks
     , readRoutes
-    , readCompFlying, readTagging, readFraming
+    , readCompFlyTime, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readMaskingLead
@@ -220,7 +220,7 @@ go CmdBatchOptions{..} compFile = do
 
     fys <-
         catchIO
-            (Just <$> readCompFlying compFile)
+            (Just <$> readCompFlyTime compFile)
             (const $ return Nothing)
 
     tgs <-

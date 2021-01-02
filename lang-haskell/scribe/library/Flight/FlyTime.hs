@@ -1,6 +1,6 @@
 module Flight.FlyTime
-    ( readTaskFlying, writeTaskFlying
-    , readCompFlying, writeCompFlying
+    ( readTaskFlyTime, writeTaskFlyTime
+    , readCompFlyTime, writeCompFlyTime
     ) where
 
 import Prelude hiding (readFile, writeFile)
@@ -19,35 +19,35 @@ import Flight.Comp
     , taskToFlyTime, compFileToTaskFiles
     )
 
-readTaskFlying :: (MonadThrow m, MonadIO m) => FlyTimeFile -> m TaskFlying
-readTaskFlying (FlyTimeFile path) = liftIO $ BS.readFile path >>= decodeThrow
+readTaskFlyTime :: (MonadThrow m, MonadIO m) => FlyTimeFile -> m TaskFlying
+readTaskFlyTime (FlyTimeFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
-writeTaskFlying :: FlyTimeFile -> TaskFlying -> IO ()
-writeTaskFlying (FlyTimeFile path) flyTime = do
+writeTaskFlyTime :: FlyTimeFile -> TaskFlying -> IO ()
+writeTaskFlyTime (FlyTimeFile path) flyTime = do
     let cfg = Y.setConfCompare (fieldOrder flyTime) Y.defConfig
     let yaml = Y.encodePretty cfg flyTime
     BS.writeFile path yaml
 
-readCompFlying :: CompInputFile -> IO CompFlying
-readCompFlying compFile = do
+readCompFlyTime :: CompInputFile -> IO CompFlying
+readCompFlyTime compFile = do
     putStrLn "Reading flying times from:"
     taskFiles <- compFileToTaskFiles compFile
     mkCompFlyTime
         <$> parallel
             [ do
                 putStrLn $ "\t" ++ show flyTimeFile
-                readTaskFlying flyTimeFile
+                readTaskFlyTime flyTimeFile
             | flyTimeFile <- taskToFlyTime <$> taskFiles
             ]
 
-writeCompFlying :: CompInputFile -> CompFlying -> IO ()
-writeCompFlying compFile compFlyingTimes = do
+writeCompFlyTime :: CompInputFile -> CompFlying -> IO ()
+writeCompFlyTime compFile compFlyingTimes = do
     putStrLn "Writing flying times to:"
     taskFiles <- compFileToTaskFiles compFile
     parallel_
         [ do
             putStrLn $ "\t" ++ show flyTimeFile
-            writeTaskFlying flyTimeFile taskFlyingTimes
+            writeTaskFlyTime flyTimeFile taskFlyingTimes
 
         | taskFlyingTimes <- unMkCompFlyTime compFlyingTimes
         | flyTimeFile <- taskToFlyTime <$> taskFiles

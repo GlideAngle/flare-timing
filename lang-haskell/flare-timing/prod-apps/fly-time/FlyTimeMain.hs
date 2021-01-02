@@ -54,7 +54,7 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (readCompAndTasks, writeCompFlying)
+import Flight.Scribe (readCompAndTasks, writeCompFlyTime)
 import FlyTimeOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -157,7 +157,7 @@ writeFlyings compFile _ xs = do
                 , flying = flying
                 }
 
-    writeCompFlying compFile flyTime
+    writeCompFlyTime compFile flyTime
 
 flew :: TrackFlyingSection -> Bool
 flew TrackFlyingSection{flyingFixes, flyingSeconds}
