@@ -84,8 +84,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{pilot, math, task} compFile = do
-    putStrLn $ "Reading competition from " ++ show compFile
-
     filesTaskAndSettings <-
         catchIO
             (Just <$> do

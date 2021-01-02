@@ -1,18 +1,18 @@
 module Flight.CompInput
     ( readComp, writeComp
     , readTask, writeTask
-    , readCompAndTasks
-    , readCompTracks
+    , readCompAndTasks, readCompAndTasksQuietly, writeCompAndTasks
+    , readCompTracks, readCompTracksQuietly
     , compFileToTaskFiles
     ) where
 
-import Prelude hiding (readFile, writeFile)
 import System.FilePath (takeDirectory)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeThrow)
 import qualified Data.Yaml.Pretty as Y
+import Control.Concurrent.ParallelIO (parallel, parallel_)
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
@@ -22,6 +22,12 @@ import Flight.Comp
     , FindDirFile(..), FileType(TaskInput)
     , findTaskInput, reshape
     )
+
+compFileToTaskFiles :: CompInputFile -> IO [TaskInputFile]
+compFileToTaskFiles (CompInputFile pathComp) = do
+    let pathTask = reshape TaskInput pathComp
+    files <- findTaskInput $ FindDirFile {dir = takeDirectory pathComp, file = pathTask}
+    return files
 
 readComp :: (MonadThrow m, MonadIO m) => CompInputFile -> m (CompSettings k)
 readComp (CompInputFile path) = liftIO $ BS.readFile path >>= decodeThrow
@@ -41,25 +47,54 @@ writeTask (TaskInputFile path) taskInput = do
     let yaml = Y.encodePretty cfg taskInput
     BS.writeFile path yaml
 
-readCompTracks
-    :: (MonadThrow m, MonadIO m)
+readCompTracksQuietly
+    :: (MonadIO m, MonadThrow m)
     => ScoringInputFiles
     -> m ((CompSettings k, [TaskSettings k]), ([[PilotTrackLogFile]], [TaskFolder]))
+readCompTracksQuietly files = do
+    settings@(_, tss) <- readCompAndTasksQuietly files
+    return (settings, ([pilots | TaskSettings{pilots} <- tss], taskFolder <$> tss))
+
+readCompTracks
+    :: ScoringInputFiles
+    -> IO ((CompSettings k, [TaskSettings k]), ([[PilotTrackLogFile]], [TaskFolder]))
 readCompTracks files = do
     settings@(_, tss) <- readCompAndTasks files
     return (settings, ([pilots | TaskSettings{pilots} <- tss], taskFolder <$> tss))
 
-readCompAndTasks
+readCompAndTasksQuietly
     :: (MonadIO m, MonadThrow m)
     => ScoringInputFiles
     -> m (CompSettings k, [TaskSettings k])
-readCompAndTasks (compFile, taskFiles) = do
+readCompAndTasksQuietly (compFile, taskFiles) = do
     settingsComp <- readComp compFile
-    settingsTasks <- sequence $ readTask <$> taskFiles
+    settingsTasks <- sequence [readTask taskFile | taskFile <- taskFiles ]
     return (settingsComp, settingsTasks)
 
-compFileToTaskFiles :: CompInputFile -> IO [TaskInputFile]
-compFileToTaskFiles (CompInputFile pathComp) = do
-    let pathTask = reshape TaskInput pathComp
-    files <- findTaskInput $ FindDirFile {dir = takeDirectory pathComp, file = pathTask}
-    return files
+readCompAndTasks :: ScoringInputFiles -> IO (CompSettings k, [TaskSettings k])
+readCompAndTasks (compFile, taskFiles) = do
+    putStrLn $ "Reading comp inputs from " ++ show compFile
+    settingsComp <- readComp compFile
+    putStrLn "Reading task inputs from:"
+    settingsTasks <-
+        parallel
+            [ do
+                putStrLn $ "\t" ++ show taskFile
+                readTask taskFile
+            | taskFile <- taskFiles
+          ]
+    return (settingsComp, settingsTasks)
+
+writeCompAndTasks :: ScoringInputFiles -> (CompSettings k, [TaskSettings k]) -> IO ()
+writeCompAndTasks (compFile, taskFiles) (comp, tasks) = do
+    putStrLn $ "Writing comp inputs to " ++ show compFile
+    writeComp compFile comp
+    putStrLn "Writing task inputs to:"
+    parallel_
+        [ do
+            putStrLn $ "\t" ++ show taskFile
+            writeTask taskFile taskSetting
+
+        | taskSetting <- tasks
+        | taskFile <- taskFiles
+        ]

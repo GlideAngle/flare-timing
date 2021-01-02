@@ -73,7 +73,6 @@ go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
     let tagFile = crossToTag . compToCross $ compFile
     let stopFile = tagToPeg tagFile
-    putStrLn $ "Reading competition from " ++ show compFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
     filesTaskAndSettings <-

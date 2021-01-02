@@ -75,7 +75,6 @@ go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
     let maskReachFile = compToMaskReach compFile
     let farFile = compToFar compFile
-    putStrLn $ "Reading competition from " ++ show compFile
     putStrLn $ "Reading far outs from " ++ show maskReachFile
 
     filesTaskAndSettings <-

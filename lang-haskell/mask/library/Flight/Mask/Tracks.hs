@@ -19,7 +19,7 @@ import Flight.Comp
 import Flight.TrackLog as Log
     (pilotTracks, filterPilots, filterTasks, makeAbsolute)
 import Flight.Units ()
-import Flight.Scribe (readCompTracks)
+import Flight.Scribe (readCompTracksQuietly)
 
 settingsLogs
     :: (MonadThrow m, MonadIO m)
@@ -28,7 +28,7 @@ settingsLogs
     -> [Pilot]
     -> m (CompTaskSettings k, [[PilotTrackLogFile]])
 settingsLogs files@(compFile, _) tasks selectPilots = do
-    (settings, (pilots, taskFolders)) <- readCompTracks files
+    (settings, (pilots, taskFolders)) <- readCompTracksQuietly files
     let CompDir dir = compFileToCompDir compFile
     let ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
     let fs = Log.makeAbsolute dir <$> taskFolders

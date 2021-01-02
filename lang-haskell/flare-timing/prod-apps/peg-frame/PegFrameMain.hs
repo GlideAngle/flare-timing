@@ -82,7 +82,6 @@ go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
     let flyFile = compToFly compFile
     let tagFile = crossToTag . compToCross $ compFile
-    putStrLn $ "Reading competition from " ++ show compFile
     putStrLn $ "Reading flying time range from " ++ show flyFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
 

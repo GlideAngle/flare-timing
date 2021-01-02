@@ -8,7 +8,6 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
-import Control.Concurrent.ParallelIO (parallel_)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -55,7 +54,7 @@ import qualified Flight.Zone.Raw as Raw (Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import "flight-gap-math" Flight.Score (PenaltySeq, toSeqs)
 import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
-import Flight.Scribe (writeComp, writeTask)
+import Flight.Scribe (writeCompAndTasks)
 import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
 
 -- NOTE: Util.snd3 from https://hackage.haskell.org/package/ghc
@@ -114,19 +113,17 @@ go earthMath zg fsdbFile@(TrimFsdbFile fsdbPath) = do
     settings <- runExceptT $ fsdbSettings earthMath zg (FsdbXml contents')
     either
         print
-        ((\(compSettings, taskSettings) -> do
+        ((\settings' -> do
             let compFile = trimFsdbToComp fsdbFile
             let compDir = compFileToCompDir compFile
-            writeComp compFile compSettings
+            let taskFiles =
+                    [
+                        let (TaskDir dir, TaskInputFile file) = taskInputPath compDir ixTask
+                        in TaskInputFile $ dir </> file
 
-            parallel_
-                [ do
-                    let (TaskDir dir, TaskInputFile file) = taskInputPath compDir ixTask
-                    writeTask (TaskInputFile $ dir </> file) ts
-
-                | ts <- taskSettings
-                | ixTask <- IxTask <$> [1..]
-                ])
+                    | ixTask <- IxTask <$> [1..]
+                    ]
+            writeCompAndTasks (compFile, taskFiles) settings')
         . unMkCompTaskSettings)
         settings
 
