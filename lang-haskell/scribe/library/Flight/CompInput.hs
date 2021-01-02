@@ -5,7 +5,6 @@ module Flight.CompInput
     , readCompTracks, readCompTracksQuietly
     ) where
 
-import System.FilePath (takeDirectory)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
@@ -18,8 +17,6 @@ import Flight.Comp
     ( ScoringInputFiles, CompInputFile(..), TaskInputFile(..)
     , CompSettings(..), TaskSettings(..)
     , PilotTrackLogFile(..), TaskFolder(..)
-    , FindDirFile(..), FileType(TaskInput)
-    , findTaskInput, compFileToTaskFiles, reshape
     )
 
 readComp :: (MonadThrow m, MonadIO m) => CompInputFile -> m (CompSettings k)

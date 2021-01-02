@@ -42,8 +42,7 @@ import Flight.Comp
     , StartGate(..)
     , LastStart(..)
     , Pilot
-    , compToCross
-    , crossToTag
+    , compToTag
     , tagToPeg
     , findCompInput
     , reshape
@@ -82,7 +81,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = crossToTag . compToCross $ compFile
+    let tagFile = compToTag compFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
 
     filesTaskAndSettings <-

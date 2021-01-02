@@ -24,8 +24,8 @@ module Flight.Track.Cross
     , trackLogErrors
     , asIfFix
     , endOfFlying
-    , mkCompFlyingTime
-    , unMkCompFlyingTime
+    , mkCompFlyTime, unMkCompFlyTime
+    , mkCompCrossZone, unMkCompCrossZone
     ) where
 
 import Data.String (IsString())
@@ -67,15 +67,15 @@ data CompFlying =
     deriving anyclass (ToJSON, FromJSON)
 
 
-mkCompFlyingTime :: [TaskFlying] -> CompFlying
-mkCompFlyingTime ts =
+mkCompFlyTime :: [TaskFlying] -> CompFlying
+mkCompFlyTime ts =
     uncurry CompFlying $ unzip
     [ (s, f)
     | TaskFlying{suspectDnf = s, flying = f} <- ts
     ]
 
-unMkCompFlyingTime :: CompFlying -> [TaskFlying]
-unMkCompFlyingTime CompFlying{suspectDnf, flying} = zipWith TaskFlying suspectDnf flying
+unMkCompFlyTime :: CompFlying -> [TaskFlying]
+unMkCompFlyTime CompFlying{suspectDnf = ss, flying = fs} = zipWith TaskFlying ss fs
 
 -- | For each task, the crossing for that task.
 data TaskCrossing =
@@ -104,6 +104,16 @@ data CompCrossing =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+mkCompCrossZone :: [TaskCrossing] -> CompCrossing
+mkCompCrossZone ts =
+    uncurry CompCrossing $ unzip
+    [ (c, e)
+    | TaskCrossing{crossing = c, trackLogError = e} <- ts
+    ]
+
+unMkCompCrossZone :: CompCrossing -> [TaskCrossing]
+unMkCompCrossZone CompCrossing{crossing = cs, trackLogError = es} = zipWith TaskCrossing cs es
 
 -- NOTE: There's a similar Seconds newtype in the flight-kml package.  I don't
 -- want a dependency between these packages so I'm duplicating the newtype

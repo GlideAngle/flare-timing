@@ -12,7 +12,7 @@ import qualified Data.Yaml.Pretty as Y
 import Control.Concurrent.ParallelIO (parallel, parallel_)
 
 import Flight.Track.Cross
-    (TaskFlying, CompFlying, mkCompFlyingTime, unMkCompFlyingTime)
+    (TaskFlying, CompFlying, mkCompFlyTime, unMkCompFlyTime)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CompInputFile(..), FlyTimeFile(..)
@@ -32,12 +32,12 @@ readCompFlying :: CompInputFile -> IO CompFlying
 readCompFlying compFile = do
     putStrLn "Reading flying times from:"
     taskFiles <- compFileToTaskFiles compFile
-    mkCompFlyingTime
+    mkCompFlyTime
         <$> parallel
             [ do
-                putStrLn $ "\t" ++ show flyingFile
-                readTaskFlying flyingFile
-            | flyingFile <- taskToFlyTime <$> taskFiles
+                putStrLn $ "\t" ++ show flyTimeFile
+                readTaskFlying flyTimeFile
+            | flyTimeFile <- taskToFlyTime <$> taskFiles
             ]
 
 writeCompFlying :: CompInputFile -> CompFlying -> IO ()
@@ -46,9 +46,9 @@ writeCompFlying compFile compFlyingTimes = do
     taskFiles <- compFileToTaskFiles compFile
     parallel_
         [ do
-            putStrLn $ "\t" ++ show flyingFile
-            writeTaskFlying flyingFile taskFlyingTimes
+            putStrLn $ "\t" ++ show flyTimeFile
+            writeTaskFlying flyTimeFile taskFlyingTimes
 
-        | taskFlyingTimes <- unMkCompFlyingTime compFlyingTimes
-        | flyingFile <- taskToFlyTime <$> taskFiles
+        | taskFlyingTimes <- unMkCompFlyTime compFlyingTimes
+        | flyTimeFile <- taskToFlyTime <$> taskFiles
         ]

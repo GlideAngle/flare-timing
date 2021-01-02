@@ -10,7 +10,7 @@ module Flight.Path.Tx
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
-    , compToCross
+    , compToTag
     , compToLeadArea
     , compToMaskArrival
     , compToMaskEffort
@@ -24,8 +24,8 @@ module Flight.Path.Tx
 
     , taskToTaskLength
     , taskToFlyTime
+    , taskToCrossZone
 
-    , crossToTag
     , tagToPeg
     , compFileToCompDir
     , taskDir
@@ -38,6 +38,7 @@ module Flight.Path.Tx
     , taskInputPath
     , taskLengthPath
     , flyTimePath
+    , crossZonePath
 
     , unpackTrackPath
     , alignTimePath
@@ -117,8 +118,8 @@ reshape CompInput = coerce . trimFsdbToComp . coerce . reshape TrimFsdb
 reshape TaskInput = const "task-input.yaml"
 reshape TaskLength = const "task-length.yaml"
 reshape FlyTime = const "fly-time.yaml"
-reshape CrossZone = coerce . compToCross . coerce . reshape CompInput
-reshape TagZone = coerce . crossToTag . coerce . reshape CrossZone
+reshape CrossZone = const "cross-zone.yaml"
+reshape TagZone = coerce . compToTag . coerce . reshape CrossZone
 reshape PegFrame = coerce . tagToPeg . coerce . reshape TagZone
 reshape LeadArea = flip replaceExtensions "lead-area.yaml"
 
@@ -195,20 +196,18 @@ taskToFlyTime :: TaskInputFile -> FlyTimeFile
 taskToFlyTime (TaskInputFile s) = FlyTimeFile $ (takeDirectory s) </> reshape FlyTime s
 
 -- |
--- >>> compToCross (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/cross-zone.yaml"
---
--- prop> \s -> compToCross (CompInputFile s) == CrossZoneFile ".flare-timing/cross-zone.yaml"
-compToCross :: CompInputFile -> CrossZoneFile
-compToCross _ = let DotDirName s d = shape CrossZone in CrossZoneFile $ dotDir d s
+-- >>> taskToCrossZone (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/cross-zone.yaml"
+taskToCrossZone :: TaskInputFile -> CrossZoneFile
+taskToCrossZone (TaskInputFile s) = CrossZoneFile $ (takeDirectory s) </> reshape CrossZone s
 
 -- |
--- >>> crossToTag (CrossZoneFile ".flare-timing/cross-zone.yaml")
+-- >>> compToTag (CompInputFile ".flare-timing/comp-input.yaml")
 -- ".flare-timing/tag-zone.yaml"
 --
--- prop> \s -> crossToTag (CrossZoneFile s) == TagZoneFile ".flare-timing/tag-zone.yaml"
-crossToTag :: CrossZoneFile -> TagZoneFile
-crossToTag _ = let DotDirName s d = shape TagZone in TagZoneFile $ dotDir d s
+-- prop> \s -> compToTag (CompInputFile s) == TagZoneFile ".flare-timing/tag-zone.yaml"
+compToTag :: CompInputFile -> TagZoneFile
+compToTag _ = let DotDirName s d = shape TagZone in TagZoneFile $ dotDir d s
 
 -- |
 -- >>> tagToPeg (TagZoneFile ".flare-timing/tag-zone.yaml")
@@ -399,8 +398,14 @@ taskLengthPath dir task = (taskDir dir task, TaskLengthFile "task-length.yaml")
 -- |
 -- >>> flyTimePath (CompDir "a") (IxTask 1)
 -- ("a/.flare-timing/task-1","fly-time.yaml")
-flyTimePath :: CompDir -> IxTask -> (TaskDir, TaskLengthFile)
-flyTimePath dir task = (taskDir dir task, TaskLengthFile "fly-time.yaml")
+flyTimePath :: CompDir -> IxTask -> (TaskDir, FlyTimeFile)
+flyTimePath dir task = (taskDir dir task, FlyTimeFile "fly-time.yaml")
+
+-- |
+-- >>> crossZonePath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","cross-zone.yaml")
+crossZonePath :: CompDir -> IxTask -> (TaskDir, CrossZoneFile)
+crossZonePath dir task = (taskDir dir task, CrossZoneFile "cross-zone.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

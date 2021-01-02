@@ -25,8 +25,7 @@ import Flight.Comp
     , CompInputFile(..)
     , Comp(..)
     , Task(..)
-    , compToCross
-    , crossToTag
+    , compToTag
     , findCompInput
     , reshape
     , mkCompTaskSettings
@@ -40,7 +39,7 @@ import Flight.Track.Tag
     )
 import Flight.Scribe
     ( readCompAndTasks
-    , readCompFlying, readCrossing, writeTagging
+    , readCompFlying, readCompCrossing, writeTagging
     )
 import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
@@ -74,10 +73,7 @@ drive CmdBatchOptions{math, file} = do
 
 go :: Math -> CompInputFile -> IO ()
 go math compFile = do
-    let crossFile = compToCross compFile
     putStrLn $ "Reading tasks from " ++ show compFile
-    putStrLn $ "Reading zone crossings from " ++ show crossFile
-    putStrLn $ "Reading zone crossings from " ++ show crossFile
 
     filesTaskAndSettings <-
         catchIO
@@ -95,7 +91,7 @@ go math compFile = do
 
     cgs <-
         catchIO
-            (Just <$> readCrossing crossFile)
+            (Just <$> readCompCrossing compFile)
             (const $ return Nothing)
 
     case (filesTaskAndSettings, fys, cgs) of
@@ -149,7 +145,7 @@ go math compFile = do
 
             let tagZone = Tagging{timing = times, tagging = pss}
 
-            writeTagging (crossToTag crossFile) tagZone
+            writeTagging (compToTag compFile) tagZone
 
 flownTag
     :: Math

@@ -21,8 +21,7 @@ import Flight.Comp
     , IxTask(..)
     , CompSettings(..)
     , Comp(..)
-    , compToCross
-    , crossToTag
+    , compToTag
     , tagToPeg
     , findCompInput
     , reshape
@@ -63,7 +62,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = crossToTag $ compToCross compFile
+    let tagFile = compToTag compFile
     let stopFile = tagToPeg tagFile
     putStrLn $ "Reading competition from " ++ show compFile
     putStrLn $ "Reading zone tags from " ++ show tagFile

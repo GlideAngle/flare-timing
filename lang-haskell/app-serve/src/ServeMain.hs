@@ -12,7 +12,7 @@ import Flight.Units ()
 import Flight.Scribe
     ( readCompAndTasks
     , readAltArrival, readAltLandout, readAltRoute, readAltScore
-    , readRoutes, readCompFlying, readCrossing, readTagging, readFraming
+    , readRoutes, readCompFlying, readCompCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readDiscardingLead
@@ -35,7 +35,6 @@ import Flight.Comp
     , compToAltLandout
     , compToAltRoute
     , compToAltScore
-    , compToCross
     , compToMaskArrival
     , compToMaskEffort
     , compToLeadArea
@@ -46,7 +45,7 @@ import Flight.Comp
     , compToLand
     , compToFar
     , compToPoint
-    , crossToTag
+    , compToTag
     , tagToPeg
     , reshape
     , mkCompTaskSettings
@@ -75,8 +74,7 @@ drive o@CmdServeOptions{file} = do
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
-    let crossFile = compToCross compFile
-    let tagFile = crossToTag crossFile
+    let tagFile = compToTag compFile
     let stopFile= tagToPeg tagFile
     let maskArrivalFile = compToMaskArrival compFile
     let maskEffortFile = compToMaskEffort compFile
@@ -138,7 +136,7 @@ go CmdServeOptions{..} compFile = do
 
             crossing <-
                 catchIO
-                    (Just <$> readCrossing crossFile)
+                    (Just <$> readCompCrossing compFile)
                     (const $ return Nothing)
 
             tagging <-

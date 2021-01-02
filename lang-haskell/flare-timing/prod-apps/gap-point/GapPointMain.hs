@@ -57,8 +57,7 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToCross
-    , crossToTag
+    , compToTag
     , tagToPeg
     , compToMaskArrival
     , compToMaskEffort
@@ -189,7 +188,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = crossToTag . compToCross $ compFile
+    let tagFile = compToTag compFile
     let stopFile = tagToPeg tagFile
     let maskArrivalFile = compToMaskArrival compFile
     let maskEffortFile = compToMaskEffort compFile
