@@ -23,13 +23,8 @@ import Flight.Comp
     , findTaskInput, reshape
     )
 
-readComp
-    :: (MonadThrow m, MonadIO m)
-    => CompInputFile
-    -> m (CompSettings k)
-readComp (CompInputFile path) = do
-    contents <- liftIO $ BS.readFile path
-    decodeThrow contents
+readComp :: (MonadThrow m, MonadIO m) => CompInputFile -> m (CompSettings k)
+readComp (CompInputFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
 writeComp :: CompInputFile -> CompSettings k -> IO ()
 writeComp (CompInputFile path) compInput = do
@@ -37,13 +32,8 @@ writeComp (CompInputFile path) compInput = do
     let yaml = Y.encodePretty cfg compInput
     BS.writeFile path yaml
 
-readTask
-    :: (MonadThrow m, MonadIO m)
-    => TaskInputFile
-    -> m (TaskSettings k)
-readTask (TaskInputFile path) = do
-    contents <- liftIO $ BS.readFile path
-    decodeThrow contents
+readTask :: (MonadThrow m, MonadIO m) => TaskInputFile -> m (TaskSettings k)
+readTask (TaskInputFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
 writeTask :: TaskInputFile -> TaskSettings k -> IO ()
 writeTask (TaskInputFile path) taskInput = do
