@@ -57,7 +57,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , taskToTaskLength
     , compToFly
     , compToCross
     , crossToTag
@@ -100,7 +99,7 @@ import Flight.Track.Point
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     ( readCompAndTasks, compFileToTaskFiles
-    , readRoute
+    , readRoutes
     , readFlying, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
@@ -279,14 +278,7 @@ go CmdBatchOptions{..} compFile = do
 
     routes <-
         catchIO
-            (Just <$> do
-                taskFiles <- compFileToTaskFiles compFile
-                sequence
-                    [ do
-                        putStrLn $ "Reading task length from " ++ show routeFile
-                        readRoute routeFile
-                    | routeFile <- taskToTaskLength <$> taskFiles
-                    ])
+            (Just <$> readRoutes compFile)
             (const $ return Nothing)
 
     let lookupTaskLength =

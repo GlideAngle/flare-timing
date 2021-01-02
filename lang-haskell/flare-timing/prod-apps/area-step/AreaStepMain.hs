@@ -42,7 +42,6 @@ import Flight.Comp
     , LastArrival(..)
     , LastDown(..)
     , Tweak(..)
-    , taskToTaskLength
     , compToCross
     , compToLeadArea
     , crossToTag
@@ -63,7 +62,7 @@ import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readCompAndTasks, compFileToTaskFiles, readRoute, readTagging, readFraming
+    ( readCompAndTasks, compFileToTaskFiles, readRoutes, readTagging, readFraming
     , writeCompAreaStep
     , readCompLeading, writeDiscardingLead
     )
@@ -127,14 +126,7 @@ go CmdBatchOptions{..} compFile = do
 
     routes <-
         catchIO
-            (Just <$> do
-                taskFiles <- compFileToTaskFiles compFile
-                sequence
-                    [ do
-                        putStrLn $ "Reading task length from " ++ show routeFile
-                        readRoute routeFile
-                    | routeFile <- taskToTaskLength <$> taskFiles
-                    ])
+            (Just <$> readRoutes compFile)
             (const $ return Nothing)
 
     case (filesTaskAndSettings, tagging, stopping, routes) of

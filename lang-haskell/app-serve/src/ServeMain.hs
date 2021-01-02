@@ -12,7 +12,7 @@ import Flight.Units ()
 import Flight.Scribe
     ( readCompAndTasks, compFileToTaskFiles
     , readAltArrival, readAltLandout, readAltRoute, readAltScore
-    , readRoute, readFlying, readCrossing, readTagging, readFraming
+    , readRoutes, readFlying, readCrossing, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readDiscardingLead
@@ -47,7 +47,6 @@ import Flight.Comp
     , compToLand
     , compToFar
     , compToPoint
-    , taskToTaskLength
     , crossToTag
     , tagToPeg
     , reshape
@@ -131,14 +130,7 @@ go CmdServeOptions{..} compFile = do
 
             routes <-
                 catchIO
-                    (Just <$> do
-                        taskFiles <- compFileToTaskFiles compFile
-                        sequence
-                            [ do
-                                putStrLn $ "Reading task length from " ++ show routeFile
-                                readRoute routeFile
-                            | routeFile <- taskToTaskLength <$> taskFiles
-                            ])
+                    (Just <$> readRoutes compFile)
                     (const $ return Nothing)
 
             flying <-

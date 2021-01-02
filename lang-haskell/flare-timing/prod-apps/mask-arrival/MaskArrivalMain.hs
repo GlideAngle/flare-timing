@@ -13,7 +13,6 @@ import Flight.Comp
     , CompInputFile(..)
     , PilotName(..)
     , IxTask(..)
-    , taskToTaskLength
     , compToCross
     , crossToTag
     , tagToPeg
@@ -28,7 +27,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
 import Flight.Scribe
-    (readCompAndTasks, compFileToTaskFiles, readRoute, readTagging, readFraming)
+    (readCompAndTasks, compFileToTaskFiles, readRoutes, readTagging, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskArrivalOptions (description)
 import Mask (writeMask)
@@ -82,14 +81,7 @@ go CmdBatchOptions{math, task, pilot} compFile = do
 
     routes <-
         catchIO
-            (Just <$> do
-                taskFiles <- compFileToTaskFiles compFile
-                sequence
-                    [ do
-                        putStrLn $ "Reading task length from " ++ show routeFile
-                        readRoute routeFile
-                    | routeFile <- taskToTaskLength <$> taskFiles
-                    ])
+            (Just <$> readRoutes compFile)
             (const $ return Nothing)
 
     let scoredLookup = stopFlying stopping

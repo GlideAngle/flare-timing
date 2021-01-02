@@ -26,7 +26,6 @@ import Flight.Comp
     , Nominal(..)
     , PilotGroup(didFlyNoTracklog)
     , IxTask(..)
-    , taskToTaskLength
     , compToMaskReach
     , compToFar
     , findCompInput
@@ -39,7 +38,7 @@ import Flight.Track.Mask (MaskingEffort(..), MaskingReach(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Scribe
-    (readCompAndTasks, compFileToTaskFiles, readRoute, readMaskingReach, writeFaring)
+    (readCompAndTasks, compFileToTaskFiles, readRoutes, readMaskingReach, writeFaring)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
@@ -94,14 +93,7 @@ go CmdBatchOptions{..} compFile = do
 
     routes <-
         catchIO
-            (Just <$> do
-                taskFiles <- compFileToTaskFiles compFile
-                sequence
-                    [ do
-                        putStrLn $ "Reading task length from " ++ show routeFile
-                        readRoute routeFile
-                    | routeFile <- taskToTaskLength <$> taskFiles
-                    ])
+            (Just <$> readRoutes compFile)
             (const $ return Nothing)
 
     let lookupTaskLength =
