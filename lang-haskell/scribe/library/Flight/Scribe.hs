@@ -3,7 +3,6 @@ module Flight.Scribe
     , readAltLandout, writeAltLandout
     , readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
-    , readRoute, writeRoute
     , readFlying , writeFlying
     , readCrossing , writeCrossing
     , readTagging, writeTagging
@@ -25,6 +24,7 @@ module Flight.Scribe
     , module Flight.AlignTime
     , module Flight.DiscardFurther
     , module Flight.AreaStep
+    , module Flight.TaskLength
     ) where
 
 import Prelude hiding (readFile, writeFile)
@@ -38,7 +38,6 @@ import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
-import Flight.Route (TaskTrack(..), cmpFields)
 import Flight.Track.Cross (Flying, Crossing)
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Stop (Framing(..))
@@ -56,7 +55,6 @@ import Flight.Comp
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , TaskLengthFile(..)
     , FlyTimeFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
@@ -78,6 +76,7 @@ import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
 import Flight.AreaStep
+import Flight.TaskLength
 
 readFsdbXml :: FilePath -> IO FsdbXml
 readFsdbXml path =
@@ -156,21 +155,6 @@ writeAltRoute (AltRouteFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
-
-readRoute
-    :: (MonadThrow m, MonadIO m)
-    => TaskLengthFile
-    -> m (Maybe TaskTrack)
-readRoute (TaskLengthFile path) = do
-    contents <- liftIO $ BS.readFile path
-    decodeThrow contents
-
-writeRoute :: TaskLengthFile -> Maybe TaskTrack -> IO ()
-writeRoute (TaskLengthFile lenPath) route =
-    BS.writeFile lenPath yaml
-    where
-        cfg = Y.setConfCompare cmpFields Y.defConfig
-        yaml = Y.encodePretty cfg route
 
 readFlying
     :: (MonadThrow m, MonadIO m)
