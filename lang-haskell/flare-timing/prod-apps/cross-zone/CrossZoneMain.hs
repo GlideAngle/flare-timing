@@ -40,7 +40,7 @@ import Flight.Units ()
 import Flight.Track.Cross
     ( TrackCross(..)
     , PilotTrackCross(..)
-    , Crossing(..)
+    , CompCrossing(..)
     , trackLogErrors
     )
 import Flight.Geodesy (EarthModel(..), EarthMath(..))
@@ -138,7 +138,7 @@ writeCrossings (compFile, _) _ xs = do
     let ess = catMaybes . snd <$> ys
 
     let crossZone =
-            Crossing
+            CompCrossing
                 { crossing = (fmap . fmap) crossings pss
                 , trackLogError = trackLogErrors <$> ess
                 }

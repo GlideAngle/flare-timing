@@ -33,7 +33,7 @@ import Flight.Comp
     , compFileToTaskFiles
     )
 import Flight.Track.Cross
-    (CompFlying(..), Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
+    (CompFlying(..), CompCrossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
 import Flight.Track.Tag
     ( Tagging(..), TrackTag(..), PilotTrackTag(..)
     , timed
@@ -110,7 +110,7 @@ go math compFile = do
 
         ( Just (_taskFiles, settings)
             , Just CompFlying{flying}
-            , Just Crossing{crossing}) -> do
+            , Just CompCrossing{crossing}) -> do
             let CompTaskSettings{tasks, comp = Comp{earthMath, give}} = uncurry mkCompTaskSettings $ settings
             let pss :: [[PilotTrackTag]] =
                     [

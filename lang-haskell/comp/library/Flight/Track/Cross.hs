@@ -11,7 +11,7 @@ Tracks crossing task control zones.
 -}
 module Flight.Track.Cross
     ( TaskFlying(..), CompFlying(..)
-    , Crossing(..)
+    , TaskCrossing(..), CompCrossing(..)
     , Seconds(..)
     , TrackFlyingSection(..)
     , TrackCross(..)
@@ -78,8 +78,22 @@ unMkCompFlyingTime :: CompFlying -> [TaskFlying]
 unMkCompFlyingTime CompFlying{suspectDnf, flying} = zipWith TaskFlying suspectDnf flying
 
 -- | For each task, the crossing for that task.
-data Crossing =
-    Crossing
+data TaskCrossing =
+    TaskCrossing
+        { crossing :: [PilotTrackCross]
+        -- ^ For each task, for each made zone, the pair of fixes cross it.
+        , trackLogError :: TrackLogError
+        -- ^ For each task, the pilots with track log problems. Note that
+        -- pilots that flew but have no track appear here with
+        -- @TrackLogFileNotSet@ as the error and will be awarded minimum
+        -- distance.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | For each task, the crossing for that task.
+data CompCrossing =
+    CompCrossing
         { crossing :: [[PilotTrackCross]]
         -- ^ For each task, for each made zone, the pair of fixes cross it.
         , trackLogError :: [TrackLogError]
@@ -264,7 +278,10 @@ instance FieldOrdering TaskFlying where
 instance FieldOrdering CompFlying where
     fieldOrder _ = cmp
 
-instance FieldOrdering Crossing where
+instance FieldOrdering TaskCrossing where
+    fieldOrder _ = cmp
+
+instance FieldOrdering CompCrossing where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

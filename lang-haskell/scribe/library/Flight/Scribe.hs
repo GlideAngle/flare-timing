@@ -3,7 +3,6 @@ module Flight.Scribe
     , readAltLandout, writeAltLandout
     , readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
-    , readCrossing , writeCrossing
     , readTagging, writeTagging
     , readFraming, writeFraming
     , readMaskingArrival, writeMaskingArrival
@@ -19,12 +18,13 @@ module Flight.Scribe
     , readCleanFsdb, writeCleanFsdb
     , readTrimFsdb, writeTrimFsdb
     , module Flight.CompInput
+    , module Flight.TaskLength
     , module Flight.FlyTime
+    , module Flight.CrossZone
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
     , module Flight.AreaStep
-    , module Flight.TaskLength
     ) where
 
 import Prelude hiding (readFile, writeFile)
@@ -38,7 +38,6 @@ import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
-import Flight.Track.Cross (Crossing)
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Stop (Framing(..))
 import Flight.Track.Mask
@@ -55,7 +54,6 @@ import Flight.Comp
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , CrossZoneFile(..)
     , TagZoneFile(..)
     , PegFrameFile(..)
     , LeadAreaFile(..)
@@ -71,12 +69,13 @@ import Flight.Comp
     , FsdbXml(..)
     )
 import Flight.CompInput
+import Flight.TaskLength
 import Flight.FlyTime
+import Flight.CrossZone
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
 import Flight.AreaStep
-import Flight.TaskLength
 
 readFsdbXml :: FilePath -> IO FsdbXml
 readFsdbXml path = FsdbXml . T.unpack . T.decodeUtf8 <$> BS.readFile path
@@ -131,15 +130,6 @@ writeAltRoute :: AltRouteFile -> [GeoLines] -> IO ()
 writeAltRoute (AltRouteFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
-    BS.writeFile path yaml
-
-readCrossing :: (MonadThrow m, MonadIO m) => CrossZoneFile -> m Crossing
-readCrossing (CrossZoneFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeCrossing :: CrossZoneFile -> Crossing -> IO ()
-writeCrossing (CrossZoneFile path) crossZone = do
-    let cfg = Y.setConfCompare (fieldOrder crossZone) Y.defConfig
-    let yaml = Y.encodePretty cfg crossZone
     BS.writeFile path yaml
 
 readTagging :: (MonadThrow m, MonadIO m) => TagZoneFile -> m Tagging
