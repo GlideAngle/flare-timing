@@ -19,7 +19,7 @@ import qualified Data.Map.Strict as Map
 
 import Flight.Clip (FlyingSection)
 import Flight.Track.Cross
-    ( Flying(..), Seconds(..), TrackFlyingSection(..)
+    ( CompFlying(..), Seconds(..), TrackFlyingSection(..)
     , ZoneTag(..), InterpolatedFix(..)
     )
 import Flight.Track.Tag
@@ -54,7 +54,9 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
-    (readCompAndTasks, compFileToTaskFiles, readFlying, readTagging, writeFraming, readCompTrackRows)
+    ( readCompAndTasks, compFileToTaskFiles
+    , readCompFlying, readTagging, writeFraming, readCompTrackRows
+    )
 import PegFrameOptions (description)
 
 main :: IO ()
@@ -95,7 +97,7 @@ go CmdBatchOptions{..} compFile = do
 
     flying <-
         catchIO
-            (Just <$> readFlying flyFile)
+            (Just <$> readCompFlying flyFile)
             (const $ return Nothing)
 
     tagging <-
@@ -119,14 +121,14 @@ writeStop
     :: CompTaskSettings k
     -> CompInputFile
     -> TagZoneFile
-    -> Flying
+    -> CompFlying
     -> Tagging
     -> IO ()
 writeStop
     CompTaskSettings{tasks}
     compFile
     tagFile
-    Flying{flying}
+    CompFlying{flying}
     Tagging{timing, tagging} = do
 
     let sws :: [Maybe StopWindow] =

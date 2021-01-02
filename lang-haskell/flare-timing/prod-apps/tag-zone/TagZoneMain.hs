@@ -33,13 +33,15 @@ import Flight.Comp
     , mkCompTaskSettings
     )
 import Flight.Track.Cross
-    (Flying(..), Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
+    (CompFlying(..), Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
 import Flight.Track.Tag
     ( Tagging(..), TrackTag(..), PilotTrackTag(..)
     , timed
     )
 import Flight.Scribe
-    (readCompAndTasks, compFileToTaskFiles, readFlying, readCrossing, writeTagging)
+    ( readCompAndTasks, compFileToTaskFiles
+    , readCompFlying, readCrossing, writeTagging
+    )
 import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -89,7 +91,7 @@ go math compFile = do
 
     fys <-
         catchIO
-            (Just <$> readFlying flyFile)
+            (Just <$> readCompFlying flyFile)
             (const $ return Nothing)
 
     cgs <-
@@ -108,7 +110,7 @@ go math compFile = do
             putStrLn "Couldn't read the crossings."
 
         ( Just (_taskFiles, settings)
-            , Just Flying{flying}
+            , Just CompFlying{flying}
             , Just Crossing{crossing}) -> do
             let CompTaskSettings{tasks, comp = Comp{earthMath, give}} = uncurry mkCompTaskSettings $ settings
             let pss :: [[PilotTrackTag]] =

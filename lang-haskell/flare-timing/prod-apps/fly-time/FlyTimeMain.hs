@@ -37,7 +37,7 @@ import Flight.Comp
 import Flight.Units ()
 import Flight.Track.Cross
     ( TrackFlyingSection(..)
-    , Flying(..)
+    , CompFlying(..)
     )
 import Flight.Geodesy (EarthModel(..), EarthMath(..))
 import Flight.Mask
@@ -54,7 +54,7 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeFlying)
+import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeCompFlying)
 import FlyTimeOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -152,12 +152,12 @@ writeFlyings compFile _ xs = do
             ]
 
     let flyTime =
-            Flying
+            CompFlying
                 { suspectDnf = dnfs
                 , flying = flying
                 }
 
-    writeFlying (compToFly compFile) flyTime
+    writeCompFlying (compToFly compFile) flyTime
 
 flew :: TrackFlyingSection -> Bool
 flew TrackFlyingSection{flyingFixes, flyingSeconds}

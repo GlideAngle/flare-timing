@@ -8,7 +8,7 @@ import Control.Monad.Reader (ReaderT, MonadReader)
 import Control.Monad.Except (ExceptT(..), MonadError)
 
 import Flight.Units ()
-import qualified Flight.Track.Cross as Cg (Flying(..), Crossing(..))
+import qualified Flight.Track.Cross as Cg (CompFlying(..), Crossing(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..))
 import qualified Flight.Track.Stop as Sp (Framing(..))
 import Flight.Track.Land (Landing(..))
@@ -31,7 +31,7 @@ data Config k
         { inputFiles :: (CompInputFile , [TaskInputFile])
         , compSettings :: CompTaskSettings k
         , routing :: Maybe [Maybe TaskTrack]
-        , flying :: Maybe Cg.Flying
+        , flying :: Maybe Cg.CompFlying
         , crossing :: Maybe Cg.Crossing
         , tagging :: Maybe Tg.Tagging
         , framing :: Maybe Sp.Framing

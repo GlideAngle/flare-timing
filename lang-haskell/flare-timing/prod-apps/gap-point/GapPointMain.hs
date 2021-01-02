@@ -75,7 +75,7 @@ import Flight.Comp
     , mkCompTaskSettings
     )
 import Flight.Track.Cross
-    (InterpolatedFix(..), Flying(..), ZoneTag(..), TrackFlyingSection(..))
+    (InterpolatedFix(..), CompFlying(..), ZoneTag(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Distance
@@ -100,7 +100,7 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     ( readCompAndTasks, compFileToTaskFiles
     , readRoutes
-    , readFlying, readTagging, readFraming
+    , readCompFlying, readTagging, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readMaskingLead
@@ -223,7 +223,7 @@ go CmdBatchOptions{..} compFile = do
 
     fys <-
         catchIO
-            (Just <$> readFlying flyFile)
+            (Just <$> readCompFlying flyFile)
             (const $ return Nothing)
 
     tgs <-
@@ -336,7 +336,7 @@ toBothWays d =
 points'
     :: CompTaskSettings k
     -> RoutesLookupTaskDistance
-    -> Flying
+    -> CompFlying
     -> Tagging
     -> MaskingArrival
     -> MaskingEffort
@@ -362,7 +362,7 @@ points'
         , pilotGroups
         }
     routes
-    Flying{flying}
+    CompFlying{flying}
     Tagging{tagging}
     MaskingArrival
         { pilotsAtEss

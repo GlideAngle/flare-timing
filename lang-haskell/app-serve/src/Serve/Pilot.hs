@@ -25,7 +25,7 @@ import Control.Monad.Reader (asks)
 import Numeric.Sampling
 
 import Flight.Units ()
-import qualified Flight.Track.Cross as Cg (Flying(..), Crossing(..), PilotTrackCross(..))
+import qualified Flight.Track.Cross as Cg (CompFlying(..), Crossing(..), PilotTrackCross(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
 import qualified Flight.Track.Stop as Sp (Framing(..))
 import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..), TrackCross(..))
