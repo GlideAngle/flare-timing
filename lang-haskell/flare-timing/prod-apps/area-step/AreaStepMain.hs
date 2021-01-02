@@ -51,6 +51,7 @@ import Flight.Comp
     , reshape
     , pilotNamed
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Track.Time
     ( LeadingAreas(..), LeadAllDown(..), AreaRow
@@ -62,7 +63,7 @@ import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readCompAndTasks, compFileToTaskFiles, readRoutes, readTagging, readFraming
+    ( readCompAndTasks, readRoutes, readTagging, readFraming
     , writeCompAreaStep
     , readCompLeading, writeDiscardingLead
     )

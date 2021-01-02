@@ -28,11 +28,11 @@ import Flight.Comp
     , IxTask(..)
     , Task(..)
     , Comp(..)
-    , compToFly
     , findCompInput
     , reshape
     , pilotNamed
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Units ()
 import Flight.Track.Cross
@@ -54,7 +54,7 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeCompFlying)
+import Flight.Scribe (readCompAndTasks, writeCompFlying)
 import FlyTimeOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -157,7 +157,7 @@ writeFlyings compFile _ xs = do
                 , flying = flying
                 }
 
-    writeCompFlying (compToFly compFile) flyTime
+    writeCompFlying compFile flyTime
 
 flew :: TrackFlyingSection -> Bool
 flew TrackFlyingSection{flyingFixes, flyingSeconds}

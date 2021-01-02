@@ -27,8 +27,9 @@ import Flight.Comp
     , findCompInput
     , reshape
     , pilotNamed
+    , compFileToTaskFiles
     )
-import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, readTagging, readFraming)
+import Flight.Scribe (readCompAndTasks, readTagging, readFraming)
 import Flight.Lookup.Stop (stopFlying)
 import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)

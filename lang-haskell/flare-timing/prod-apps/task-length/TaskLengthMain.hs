@@ -16,12 +16,10 @@ import Flight.Comp
     , Comp(..)
     , Task(zones, speedSection)
     , CompInputFile(..)
-    , findCompInput
-    , reshape
-    , mkCompTaskSettings
+    , findCompInput, reshape, compFileToTaskFiles, mkCompTaskSettings
     )
 import Flight.TaskTrack.Double (taskTracks)
-import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeRoutes)
+import Flight.Scribe (readCompAndTasks, writeRoutes)
 import Flight.Zone.MkZones (unkindZones)
 import Flight.Zone (unlineZones)
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))

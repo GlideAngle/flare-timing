@@ -41,11 +41,12 @@ import Flight.Comp
     , reshape
     , pilotNamed
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Mask (FnIxTask, settingsLogs, fixFromFix)
 import Flight.Track.Cross (Fix(..))
 import Flight.Kml (MarkedFixes(..))
-import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeUnpackTrack)
+import Flight.Scribe (readCompAndTasks, writeUnpackTrack)
 import UnpackTrackOptions (description)
 import Flight.TrackLog (pilotTrack)
 

@@ -34,6 +34,7 @@ import Flight.Comp
     , reshape
     , pilotNamed
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Units ()
 import Flight.Track.Cross
@@ -57,7 +58,7 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeCrossing)
+import Flight.Scribe (readCompAndTasks, writeCrossing)
 import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
 

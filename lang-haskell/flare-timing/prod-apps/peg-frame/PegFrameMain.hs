@@ -42,19 +42,19 @@ import Flight.Comp
     , StartGate(..)
     , LastStart(..)
     , Pilot
-    , compToFly
     , compToCross
     , crossToTag
     , tagToPeg
     , findCompInput
     , reshape
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
-    ( readCompAndTasks, compFileToTaskFiles
+    ( readCompAndTasks
     , readCompFlying, readTagging, writeFraming, readCompTrackRows
     )
 import PegFrameOptions (description)
@@ -82,9 +82,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let flyFile = compToFly compFile
     let tagFile = crossToTag . compToCross $ compFile
-    putStrLn $ "Reading flying time range from " ++ show flyFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
 
     filesTaskAndSettings <-
@@ -97,7 +95,7 @@ go CmdBatchOptions{..} compFile = do
 
     flying <-
         catchIO
-            (Just <$> readCompFlying flyFile)
+            (Just <$> readCompFlying compFile)
             (const $ return Nothing)
 
     tagging <-

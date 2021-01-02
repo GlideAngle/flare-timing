@@ -37,12 +37,13 @@ import Flight.Comp
     , crossToTag
     , tagToPeg
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Track.Time (TimeRow(..), TimeToTick, glideRatio, altBonusTimeToTick, copyTimeToTick)
 import Flight.Track.Stop (Framing(..), StopFraming(..), TrackScoredSection(..))
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readCompAndTasks, compFileToTaskFiles, readFraming
+    ( readCompAndTasks, readFraming
     , readPilotAlignTimeWriteDiscardFurther
     , readPilotAlignTimeWritePegThenDiscard
     )

@@ -13,11 +13,12 @@ module Flight.Path.Find
     , findCrossZone
     , findIgc
     , findKml
+    , compFileToTaskFiles
     ) where
 
 import GHC.Records
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath ((</>), FilePath)
+import System.FilePath ((</>), FilePath, takeDirectory)
 import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension, fileName)
 import qualified System.FilePath.Find as Find (FileType(..))
@@ -30,6 +31,12 @@ data FindDirFile =
         , file :: FilePath
         }
     deriving Show
+
+compFileToTaskFiles :: CompInputFile -> IO [TaskInputFile]
+compFileToTaskFiles (CompInputFile pathComp) = do
+    let pathTask = reshape TaskInput pathComp
+    files <- findTaskInput $ FindDirFile {dir = takeDirectory pathComp, file = pathTask}
+    return files
 
 findAltArrival' :: AltDot -> FilePath -> IO [AltArrivalFile]
 findAltArrival' AltFs dir = fmap AltArrivalFile <$> findFiles DotFs (AltArrival AltFs) dir

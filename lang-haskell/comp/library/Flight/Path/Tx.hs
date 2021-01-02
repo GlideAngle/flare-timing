@@ -10,7 +10,6 @@ module Flight.Path.Tx
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
-    , compToFly
     , compToCross
     , compToLeadArea
     , compToMaskArrival
@@ -24,6 +23,7 @@ module Flight.Path.Tx
     , compToPoint
 
     , taskToTaskLength
+    , taskToFlyTime
 
     , crossToTag
     , tagToPeg
@@ -37,6 +37,7 @@ module Flight.Path.Tx
 
     , taskInputPath
     , taskLengthPath
+    , flyTimePath
 
     , unpackTrackPath
     , alignTimePath
@@ -115,7 +116,7 @@ reshape Igc = id
 reshape CompInput = coerce . trimFsdbToComp . coerce . reshape TrimFsdb
 reshape TaskInput = const "task-input.yaml"
 reshape TaskLength = const "task-length.yaml"
-reshape FlyTime = coerce . compToFly . coerce . reshape CompInput
+reshape FlyTime = const "fly-time.yaml"
 reshape CrossZone = coerce . compToCross . coerce . reshape CompInput
 reshape TagZone = coerce . crossToTag . coerce . reshape CrossZone
 reshape PegFrame = coerce . tagToPeg . coerce . reshape TagZone
@@ -188,12 +189,10 @@ taskToTaskLength :: TaskInputFile -> TaskLengthFile
 taskToTaskLength (TaskInputFile s) = TaskLengthFile $ (takeDirectory s) </> reshape TaskLength s
 
 -- |
--- >>> compToFly (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/fly-time.yaml"
---
--- prop> \s -> compToFly (CompInputFile s) == FlyTimeFile ".flare-timing/fly-time.yaml"
-compToFly :: CompInputFile -> FlyTimeFile
-compToFly _ = let DotDirName s d = shape FlyTime in FlyTimeFile $ dotDir d s
+-- >>> taskToFlyTime (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/fly-time.yaml"
+taskToFlyTime :: TaskInputFile -> FlyTimeFile
+taskToFlyTime (TaskInputFile s) = FlyTimeFile $ (takeDirectory s) </> reshape FlyTime s
 
 -- |
 -- >>> compToCross (CompInputFile ".flare-timing/comp-input.yaml")
@@ -396,6 +395,12 @@ taskInputPath dir task = (taskDir dir task, TaskInputFile "task-input.yaml")
 -- ("a/.flare-timing/task-1","task-length.yaml")
 taskLengthPath :: CompDir -> IxTask -> (TaskDir, TaskLengthFile)
 taskLengthPath dir task = (taskDir dir task, TaskLengthFile "task-length.yaml")
+
+-- |
+-- >>> flyTimePath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","fly-time.yaml")
+flyTimePath :: CompDir -> IxTask -> (TaskDir, TaskLengthFile)
+flyTimePath dir task = (taskDir dir task, TaskLengthFile "fly-time.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

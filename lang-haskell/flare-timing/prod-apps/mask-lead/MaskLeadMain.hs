@@ -25,6 +25,7 @@ import Flight.Comp
     , reshape
     , pilotNamed
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Track.Stop (effectiveTagging)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -33,7 +34,7 @@ import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
 import Flight.Lookup.Tag (tagTaskLeading)
 import Flight.Scribe
-    (readCompAndTasks, compFileToTaskFiles, readRoutes, readTagging, readFraming, readMaskingArrival)
+    (readCompAndTasks, readRoutes, readTagging, readFraming, readMaskingArrival)
 import Flight.Lookup.Route (routeLength)
 import MaskLeadOptions (description)
 import Mask (writeMask)

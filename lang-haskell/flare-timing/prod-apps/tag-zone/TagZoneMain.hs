@@ -25,12 +25,12 @@ import Flight.Comp
     , CompInputFile(..)
     , Comp(..)
     , Task(..)
-    , compToFly
     , compToCross
     , crossToTag
     , findCompInput
     , reshape
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Track.Cross
     (CompFlying(..), Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
@@ -39,7 +39,7 @@ import Flight.Track.Tag
     , timed
     )
 import Flight.Scribe
-    ( readCompAndTasks, compFileToTaskFiles
+    ( readCompAndTasks
     , readCompFlying, readCrossing, writeTagging
     )
 import TagZoneOptions (description)
@@ -74,7 +74,6 @@ drive CmdBatchOptions{math, file} = do
 
 go :: Math -> CompInputFile -> IO ()
 go math compFile = do
-    let flyFile = compToFly compFile
     let crossFile = compToCross compFile
     putStrLn $ "Reading tasks from " ++ show compFile
     putStrLn $ "Reading zone crossings from " ++ show crossFile
@@ -91,7 +90,7 @@ go math compFile = do
 
     fys <-
         catchIO
-            (Just <$> readCompFlying flyFile)
+            (Just <$> readCompFlying compFile)
             (const $ return Nothing)
 
     cgs <-

@@ -57,7 +57,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToFly
     , compToCross
     , crossToTag
     , tagToPeg
@@ -73,6 +72,7 @@ import Flight.Comp
     , findCompInput
     , reshape
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Track.Cross
     (InterpolatedFix(..), CompFlying(..), ZoneTag(..), TrackFlyingSection(..))
@@ -98,7 +98,7 @@ import Flight.Track.Point
     (Velocity(..), Breakdown(..), Pointing(..), Allocation(..), EssNotGoal(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
-    ( readCompAndTasks, compFileToTaskFiles
+    ( readCompAndTasks
     , readRoutes
     , readCompFlying, readTagging, readFraming
     , readMaskingArrival
@@ -189,7 +189,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let flyFile = compToFly compFile
     let tagFile = crossToTag . compToCross $ compFile
     let stopFile = tagToPeg tagFile
     let maskArrivalFile = compToMaskArrival compFile
@@ -202,7 +201,6 @@ go CmdBatchOptions{..} compFile = do
     let farFile = compToFar compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
-    putStrLn $ "Reading flying times from " ++ show flyFile
     putStrLn $ "Reading scored times from " ++ show stopFile
     putStrLn $ "Reading start and end zone tagging from " ++ show tagFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
@@ -223,7 +221,7 @@ go CmdBatchOptions{..} compFile = do
 
     fys <-
         catchIO
-            (Just <$> readCompFlying flyFile)
+            (Just <$> readCompFlying compFile)
             (const $ return Nothing)
 
     tgs <-

@@ -10,7 +10,7 @@ import System.Directory (getCurrentDirectory)
 
 import Flight.Units ()
 import Flight.Scribe
-    ( readCompAndTasks, compFileToTaskFiles
+    ( readCompAndTasks
     , readAltArrival, readAltLandout, readAltRoute, readAltScore
     , readRoutes, readCompFlying, readCrossing, readTagging, readFraming
     , readMaskingArrival
@@ -35,7 +35,6 @@ import Flight.Comp
     , compToAltLandout
     , compToAltRoute
     , compToAltScore
-    , compToFly
     , compToCross
     , compToMaskArrival
     , compToMaskEffort
@@ -51,6 +50,7 @@ import Flight.Comp
     , tagToPeg
     , reshape
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import qualified ServeOptions as Opt (description)
 import Serve.Config
@@ -75,7 +75,6 @@ drive o@CmdServeOptions{file} = do
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
-    let flyFile = compToFly compFile
     let crossFile = compToCross compFile
     let tagFile = crossToTag crossFile
     let stopFile= tagToPeg tagFile
@@ -95,7 +94,6 @@ go CmdServeOptions{..} compFile = do
     let altFsScoreFile = compToAltScore AltFs compFile
     let altAsScoreFile = compToAltScore AltAs compFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
-    putStrLn $ "Reading flying time range from " ++ show flyFile
     putStrLn $ "Reading zone tags from " ++ show tagFile
     putStrLn $ "Reading scored section from " ++ show stopFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
@@ -135,7 +133,7 @@ go CmdServeOptions{..} compFile = do
 
             flying <-
                 catchIO
-                    (Just <$> readCompFlying flyFile)
+                    (Just <$> readCompFlying compFile)
                     (const $ return Nothing)
 
             crossing <-

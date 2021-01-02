@@ -24,6 +24,8 @@ module Flight.Track.Cross
     , trackLogErrors
     , asIfFix
     , endOfFlying
+    , mkCompFlyingTime
+    , unMkCompFlyingTime
     ) where
 
 import Data.String (IsString())
@@ -63,6 +65,17 @@ data CompFlying =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+
+mkCompFlyingTime :: [TaskFlying] -> CompFlying
+mkCompFlyingTime ts =
+    uncurry CompFlying $ unzip
+    [ (s, f)
+    | TaskFlying{suspectDnf = s, flying = f} <- ts
+    ]
+
+unMkCompFlyingTime :: CompFlying -> [TaskFlying]
+unMkCompFlyingTime CompFlying{suspectDnf, flying} = zipWith TaskFlying suspectDnf flying
 
 -- | For each task, the crossing for that task.
 data Crossing =

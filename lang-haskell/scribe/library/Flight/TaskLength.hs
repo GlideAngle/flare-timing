@@ -6,14 +6,12 @@ import qualified Data.ByteString as BS
 import Data.Yaml (decodeThrow)
 import qualified Data.Yaml.Pretty as Y
 import Control.Concurrent.ParallelIO (parallel, parallel_)
-import System.FilePath ((</>))
 
 import Flight.Route (TaskTrack(..), cmpFields)
 import Flight.Comp
-    ( CompInputFile, TaskLengthFile(..), TaskDir(..), IxTask(..)
-    , taskLengthPath, taskToTaskLength, compFileToCompDir
+    ( CompInputFile, TaskLengthFile(..)
+    , taskToTaskLength, compFileToTaskFiles
     )
-import Flight.CompInput (compFileToTaskFiles)
 
 readRoute :: (MonadThrow m, MonadIO m) => TaskLengthFile -> m (Maybe TaskTrack)
 readRoute (TaskLengthFile path) = liftIO $ BS.readFile path >>= decodeThrow
@@ -38,14 +36,12 @@ readRoutes compFile = do
 writeRoutes :: CompInputFile -> [Maybe TaskTrack] -> IO ()
 writeRoutes compFile routes = do
     putStrLn "Writing task lengths to:"
-    let compDir = compFileToCompDir compFile
+    taskFiles <- compFileToTaskFiles compFile
     parallel_
         [ do
-            let (TaskDir dir, TaskLengthFile file) = taskLengthPath compDir ixTask
-            let routeFile = TaskLengthFile $ dir </> file
             putStrLn $ "\t" ++ show routeFile
             writeRoute routeFile route
 
         | route <- routes
-        | ixTask <- IxTask <$> [1..]
+        | routeFile <- taskToTaskLength <$> taskFiles
         ]

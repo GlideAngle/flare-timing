@@ -3,7 +3,6 @@ module Flight.CompInput
     , readTask, writeTask
     , readCompAndTasks, readCompAndTasksQuietly, writeCompAndTasks
     , readCompTracks, readCompTracksQuietly
-    , compFileToTaskFiles
     ) where
 
 import System.FilePath (takeDirectory)
@@ -20,14 +19,8 @@ import Flight.Comp
     , CompSettings(..), TaskSettings(..)
     , PilotTrackLogFile(..), TaskFolder(..)
     , FindDirFile(..), FileType(TaskInput)
-    , findTaskInput, reshape
+    , findTaskInput, compFileToTaskFiles, reshape
     )
-
-compFileToTaskFiles :: CompInputFile -> IO [TaskInputFile]
-compFileToTaskFiles (CompInputFile pathComp) = do
-    let pathTask = reshape TaskInput pathComp
-    files <- findTaskInput $ FindDirFile {dir = takeDirectory pathComp, file = pathTask}
-    return files
 
 readComp :: (MonadThrow m, MonadIO m) => CompInputFile -> m (CompSettings k)
 readComp (CompInputFile path) = liftIO $ BS.readFile path >>= decodeThrow

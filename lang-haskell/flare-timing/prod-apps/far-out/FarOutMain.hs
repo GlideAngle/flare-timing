@@ -31,6 +31,7 @@ import Flight.Comp
     , findCompInput
     , reshape
     , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Distance (unTaskDistanceAsKm, fromKms)
 import Flight.Track.Distance (TrackDistance(..), Effort)
@@ -38,7 +39,7 @@ import Flight.Track.Mask (MaskingEffort(..), MaskingReach(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Scribe
-    (readCompAndTasks, compFileToTaskFiles, readRoutes, readMaskingReach, writeFaring)
+    (readCompAndTasks, readRoutes, readMaskingReach, writeFaring)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
