@@ -35,6 +35,7 @@ in    defs
             , "filepath"
             , "filemanip"
             , "mtl"
+            , "parallel-io"
             , "safe-exceptions"
             , "text"
             , "yaml"

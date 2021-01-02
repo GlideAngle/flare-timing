@@ -1,6 +1,5 @@
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import System.FilePath ((</>))
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -8,7 +7,6 @@ import Control.Monad (mapM_)
 import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 import Control.Exception.Safe (catchIO)
-import Control.Concurrent.ParallelIO (parallel_)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Comp
@@ -18,15 +16,12 @@ import Flight.Comp
     , Comp(..)
     , Task(zones, speedSection)
     , CompInputFile(..)
-    , IxTask(..), TaskDir(..), TaskLengthFile(..)
-    , compFileToCompDir
     , findCompInput
     , reshape
     , mkCompTaskSettings
-    , taskLengthPath
     )
 import Flight.TaskTrack.Double (taskTracks)
-import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeRoute)
+import Flight.Scribe (readCompAndTasks, compFileToTaskFiles, writeRoutes)
 import Flight.Zone.MkZones (unkindZones)
 import Flight.Zone (unlineZones)
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
@@ -62,7 +57,6 @@ drive o@CmdOptions{file} = do
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{earthMath, measure, noTaskWaypoints} compFile@(CompInputFile compPath) = do
-    let compDir = compFileToCompDir compFile
     putStrLn $ takeFileName compPath
 
     filesTaskAndSettings <-
@@ -101,12 +95,5 @@ go CmdOptions{earthMath, measure, noTaskWaypoints} compFile@(CompInputFile compP
             -- let includeTask = if null task then const True else flip elem task
             let includeTask = const True
             let routes = taskTracks sp noTaskWaypoints includeTask measure ixs zss
+            writeRoutes compFile routes
 
-            parallel_
-                [ do
-                    let (TaskDir dir, TaskLengthFile file) = taskLengthPath compDir ixTask
-                    writeRoute (TaskLengthFile $ dir </> file) route
-
-                | route <- routes
-                | ixTask <- IxTask <$> [1..]
-                ]

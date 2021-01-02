@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9a7c05f9f37d4c89c4297c09401adbbaa81724d6aaeb9f66fe014b02da7499eb
+-- hash: 0f5d6005d3722a995dd3dcd9095c754548bf1fc780a63b1ce926aec3f0dfdb0a
 
 name:           flight-scribe
 version:        0.1.0
@@ -68,6 +68,7 @@ library
     , flight-units
     , flight-zone
     , mtl
+    , parallel-io
     , path
     , safe-exceptions
     , scientific
