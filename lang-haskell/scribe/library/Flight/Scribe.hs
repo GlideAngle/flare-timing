@@ -3,7 +3,6 @@ module Flight.Scribe
     , readAltLandout, writeAltLandout
     , readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
-    , readFlying , writeFlying
     , readCrossing , writeCrossing
     , readTagging, writeTagging
     , readFraming, writeFraming
@@ -20,6 +19,7 @@ module Flight.Scribe
     , readCleanFsdb, writeCleanFsdb
     , readTrimFsdb, writeTrimFsdb
     , module Flight.CompInput
+    , module Flight.FlyTime
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -38,7 +38,7 @@ import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
-import Flight.Track.Cross (Flying, Crossing)
+import Flight.Track.Cross (Crossing)
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Stop (Framing(..))
 import Flight.Track.Mask
@@ -55,7 +55,6 @@ import Flight.Comp
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , FlyTimeFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
     , PegFrameFile(..)
@@ -72,6 +71,7 @@ import Flight.Comp
     , FsdbXml(..)
     )
 import Flight.CompInput
+import Flight.FlyTime
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
@@ -131,15 +131,6 @@ writeAltRoute :: AltRouteFile -> [GeoLines] -> IO ()
 writeAltRoute (AltRouteFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
-    BS.writeFile path yaml
-
-readFlying :: (MonadThrow m, MonadIO m) => FlyTimeFile -> m Flying
-readFlying (FlyTimeFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeFlying :: FlyTimeFile -> Flying -> IO ()
-writeFlying (FlyTimeFile path) flyTime = do
-    let cfg = Y.setConfCompare (fieldOrder flyTime) Y.defConfig
-    let yaml = Y.encodePretty cfg flyTime
     BS.writeFile path yaml
 
 readCrossing :: (MonadThrow m, MonadIO m) => CrossZoneFile -> m Crossing
