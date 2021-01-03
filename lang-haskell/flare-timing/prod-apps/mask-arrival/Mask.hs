@@ -31,7 +31,7 @@ import qualified Flight.Lookup as Lookup
     (scoredTimeRange, arrivalRank, compRoutes, pilotTime, pilotEssTime)
 import Flight.Lookup.Tag (tagArrivalRank, tagPilotTime)
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (writeMaskingArrival, writeMaskingSpeed)
+import Flight.Scribe (writeCompMaskArrival, writeMaskingSpeed)
 import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats, altToAlt)
@@ -106,7 +106,7 @@ writeMask
 
     -- REVIEW: Waiting on feedback on GAP rule question about altitude
     -- bonus distance pushing a flight to goal so that it arrives.
-    writeMaskingArrival (compToMaskArrival compFile) (maskArrival as)
+    writeCompMaskArrival (compToMaskArrival compFile) (maskArrival as)
 
     let (_gsBestTime, maskSpeed') = maskSpeed lsTask' yss
 

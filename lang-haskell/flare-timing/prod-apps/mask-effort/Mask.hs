@@ -32,7 +32,7 @@ import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
 import Flight.Track.Tag (CompTagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
-import Flight.Track.Mask (MaskingArrival(..))
+import Flight.Track.Mask (CompMaskingArrival(..))
 import Flight.Track.Distance (TrackDistance(..), Effort)
 import Flight.Kml (MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
@@ -49,7 +49,7 @@ import Flight.Lookup.Tag
 import Flight.TrackLog (pilotTrack)
 import Flight.Scribe
     ( AltBonus(..)
-    , writeMaskingEffort
+    , writeCompMaskEffort
     , readCompBestDistances
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
@@ -71,7 +71,7 @@ type IOStep k = Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)
 
 writeMask
     :: (KnownUnit (Unpack u))
-    => MaskingArrival
+    => CompMaskingArrival
     -> LeadingAreaSum u
     -> MkLeadingCoef u
     -> MkAreaToCoef v
@@ -86,7 +86,7 @@ writeMask
     -> ScoringInputFiles
     -> IO ()
 writeMask
-    MaskingArrival{arrivalRank}
+    CompMaskingArrival{arrivalRank}
     sumAreas
     invert
     areaToCoef
@@ -184,7 +184,7 @@ writeMask
                 leadArea
 
     -- TODO: Use altitude bonus distance for effort.
-    writeMaskingEffort
+    writeCompMaskEffort
         (compToMaskEffort compFile)
         (maskEffort dsNullAltBest dsLand)
 

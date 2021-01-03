@@ -1,10 +1,7 @@
 module Flight.Scribe
-    ( readAltArrival, writeAltArrival
-    , readAltLandout, writeAltLandout
+    ( readAltLandout, writeAltLandout
     , readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
-    , readMaskingArrival, writeMaskingArrival
-    , readMaskingEffort, writeMaskingEffort
     , readMaskingLead, writeMaskingLead
     , readMaskingReach, writeMaskingReach
     , readMaskingSpeed, writeMaskingSpeed
@@ -22,6 +19,8 @@ module Flight.Scribe
     , module Flight.PegFrame
     , module Flight.LeadArea
     , module Flight.LeadArea.AreaStep
+    , module Flight.Mask.Arrival
+    , module Flight.Mask.Effort
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -37,8 +36,7 @@ import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
-import Flight.Track.Mask
-    (MaskingArrival, MaskingEffort, MaskingReach, MaskingSpeed, MaskingLead)
+import Flight.Track.Mask (MaskingReach, MaskingSpeed, MaskingLead)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, AltPointing)
 import Flight.Route (GeoLines)
@@ -46,12 +44,9 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CleanFsdbFile(..)
     , TrimFsdbFile(..)
-    , AltArrivalFile(..)
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , MaskArrivalFile(..)
-    , MaskEffortFile(..)
     , MaskLeadFile(..)
     , MaskReachFile(..)
     , MaskSpeedFile(..)
@@ -69,6 +64,8 @@ import Flight.TagZone
 import Flight.PegFrame
 import Flight.LeadArea
 import Flight.LeadArea.AreaStep
+import Flight.Mask.Arrival
+import Flight.Mask.Effort
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
@@ -101,15 +98,6 @@ writeAltScore (AltScoreFile path) pointing = do
     let yaml = Y.encodePretty cfg pointing
     BS.writeFile path yaml
 
-readAltArrival :: (MonadThrow m, MonadIO m) => AltArrivalFile -> m MaskingArrival
-readAltArrival (AltArrivalFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeAltArrival :: AltArrivalFile -> MaskingArrival -> IO ()
-writeAltArrival (AltArrivalFile path) track = do
-    let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
-    let yaml = Y.encodePretty cfg track
-    BS.writeFile path yaml
-
 readAltLandout :: (MonadThrow m, MonadIO m) => AltLandoutFile -> m Landing
 readAltLandout (AltLandoutFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
@@ -128,12 +116,6 @@ writeAltRoute (AltRouteFile path) track = do
     let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
 
-readMaskingArrival :: MonadIO m => MaskArrivalFile -> m MaskingArrival
-readMaskingArrival (MaskArrivalFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-readMaskingEffort :: MonadIO m => MaskEffortFile -> m MaskingEffort
-readMaskingEffort (MaskEffortFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
 readMaskingLead
     :: (KnownUnit (Unpack u), KnownUnit (Unpack v), MonadIO m)
     => MaskLeadFile
@@ -148,18 +130,6 @@ readMaskingSpeed (MaskSpeedFile path) = liftIO $ BS.readFile path >>= decodeThro
 
 readBonusReach :: MonadIO m => BonusReachFile -> m MaskingReach
 readBonusReach (BonusReachFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeMaskingArrival :: MaskArrivalFile -> MaskingArrival -> IO ()
-writeMaskingArrival (MaskArrivalFile path) maskTrack = do
-    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
-    let yaml = Y.encodePretty cfg maskTrack
-    BS.writeFile path yaml
-
-writeMaskingEffort :: MaskEffortFile -> MaskingEffort -> IO ()
-writeMaskingEffort (MaskEffortFile path) maskTrack = do
-    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
-    let yaml = Y.encodePretty cfg maskTrack
-    BS.writeFile path yaml
 
 writeMaskingLead
     :: (KnownUnit (Unpack u), KnownUnit (Unpack v))

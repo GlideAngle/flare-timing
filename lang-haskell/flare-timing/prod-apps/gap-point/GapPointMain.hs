@@ -82,8 +82,8 @@ import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Speed (pilotTime, startGateTaken)
 import qualified Flight.Track.Speed as Speed (TrackSpeed(..))
 import Flight.Track.Mask
-    ( MaskingArrival(..)
-    , MaskingEffort(..)
+    ( CompMaskingArrival(..)
+    , CompMaskingEffort(..)
     , MaskingLead(..)
     , MaskingReach(..)
     , MaskingSpeed(..)
@@ -97,8 +97,8 @@ import Flight.Scribe
     ( readCompAndTasks
     , readRoutes
     , readCompFlyTime, readCompTagZone, readCompPegFrame
-    , readMaskingArrival
-    , readMaskingEffort
+    , readCompMaskArrival
+    , readCompMaskEffort
     , readMaskingLead
     , readMaskingReach
     , readMaskingSpeed
@@ -228,12 +228,12 @@ go CmdBatchOptions{..} compFile = do
 
     ma <-
         catchIO
-            (Just <$> readMaskingArrival maskArrivalFile)
+            (Just <$> readCompMaskArrival maskArrivalFile)
             (const $ return Nothing)
 
     me <-
         catchIO
-            (Just <$> readMaskingEffort maskEffortFile)
+            (Just <$> readCompMaskEffort maskEffortFile)
             (const $ return Nothing)
 
     ml2 :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/((km^2)*s) |]) <-
@@ -299,9 +299,9 @@ go CmdBatchOptions{..} compFile = do
 
             writePointing pointFile $ points' cs lookupTaskLength cg tg' mA mE' mL2 (mR, bR) mS lg
 
-efforts :: Cmp.Landing -> MaskingEffort
+efforts :: Cmp.Landing -> CompMaskingEffort
 efforts Cmp.Landing{bestDistance = ds, difficulty = ess} =
-    MaskingEffort
+    CompMaskingEffort
         { bestEffort = [ do FlownMax d' <- d; return $ fromKms d' | d <- ds ]
         , land = downPilots <$> ess
         }
@@ -328,8 +328,8 @@ points'
     -> RoutesLookupTaskDistance
     -> CompFlying
     -> CompTagging
-    -> MaskingArrival
-    -> MaskingEffort
+    -> CompMaskingArrival
+    -> CompMaskingEffort
     -> MaskingLead _ _
     -> (MaskingReach, MaskingReach)
     -> MaskingSpeed
@@ -354,11 +354,11 @@ points'
     routes
     CompFlying{flying}
     CompTagging{tagging}
-    MaskingArrival
+    CompMaskingArrival
         { pilotsAtEss
         , arrivalRank
         }
-    MaskingEffort
+    CompMaskingEffort
         { bestEffort
         , land
         }

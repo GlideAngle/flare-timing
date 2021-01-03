@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Flight.Track.Mask.Effort
 Copyright   : (c) Block Scope Limited 2017
@@ -7,7 +9,11 @@ Stability   : experimental
 
 Tracks masked with task control zones.
 -}
-module Flight.Track.Mask.Effort (MaskingEffort(..)) where
+module Flight.Track.Mask.Effort
+    ( TaskMaskingEffort(..)
+    , CompMaskingEffort(..)
+    , mkCompMaskingEffort, unMkCompMaskingEffort
+    ) where
 
 import Data.UnitsOfMeasure (u)
 import GHC.Generics (Generic)
@@ -20,9 +26,18 @@ import Flight.Units ()
 import Flight.Track.Distance (TrackDistance(..), Effort)
 import Flight.Track.Mask.Cmp (cmp)
 
+data TaskMaskingEffort =
+    TaskMaskingEffort
+        { bestEffort :: Maybe (QTaskDistance Double [u| m |])
+        -- ^ The best distance made.
+        , land :: [(Pilot, TrackDistance Effort)]
+        -- ^ The distance of the landing spot for each pilot landing out.
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 -- | For each task, the masking for effort for that task.
-data MaskingEffort =
-    MaskingEffort
+data CompMaskingEffort =
+    CompMaskingEffort
         { bestEffort :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the best distance made.
         , land :: [[(Pilot, TrackDistance Effort)]]
@@ -31,4 +46,16 @@ data MaskingEffort =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-instance FieldOrdering MaskingEffort where fieldOrder _ = cmp
+mkCompMaskingEffort :: [TaskMaskingEffort] -> CompMaskingEffort
+mkCompMaskingEffort ts =
+    uncurry CompMaskingEffort $ unzip
+    [ (b, l)
+    | TaskMaskingEffort{bestEffort = b, land = l} <- ts
+    ]
+
+unMkCompMaskingEffort :: CompMaskingEffort -> [TaskMaskingEffort]
+unMkCompMaskingEffort CompMaskingEffort{bestEffort = bs, land = ls} =
+    zipWith TaskMaskingEffort bs ls
+
+instance FieldOrdering TaskMaskingEffort where fieldOrder _ = cmp
+instance FieldOrdering CompMaskingEffort where fieldOrder _ = cmp

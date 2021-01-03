@@ -5,7 +5,7 @@ import Data.Maybe (catMaybes)
 
 import Flight.Comp (Pilot(..))
 import Flight.Track.Arrival (ArrivalInputs, TrackArrival(..))
-import Flight.Track.Mask (MaskingArrival(..))
+import Flight.Track.Mask (CompMaskingArrival(..))
 import "flight-gap-allot" Flight.Score (PilotsAtEss(..))
 import Stats (TimeStats(..), FlightStats(..))
 
@@ -18,9 +18,9 @@ arrivalInputs xs =
     <$> xs
 
 
-maskArrival :: [[(Pilot, TrackArrival)]] -> MaskingArrival
+maskArrival :: [[(Pilot, TrackArrival)]] -> CompMaskingArrival
 maskArrival as =
-    MaskingArrival
+    CompMaskingArrival
         { pilotsAtEss = PilotsAtEss . toInteger . length <$> as
         , arrivalRank = as
         }

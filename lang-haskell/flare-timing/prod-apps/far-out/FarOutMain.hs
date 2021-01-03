@@ -35,7 +35,7 @@ import Flight.Comp
     )
 import Flight.Distance (unTaskDistanceAsKm, fromKms)
 import Flight.Track.Distance (TrackDistance(..), Effort)
-import Flight.Track.Mask (MaskingEffort(..), MaskingReach(..))
+import Flight.Track.Mask (CompMaskingEffort(..), MaskingReach(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Scribe
@@ -141,7 +141,7 @@ difficultyByReach
 difficultyByReach cs MaskingReach{bolster, nigh} dfNtss =
     difficulty
         cs
-        MaskingEffort
+        CompMaskingEffort
             { bestEffort =
                 [ do
                     ReachStats{max = FlownMax d} <- b
@@ -160,8 +160,8 @@ difficultyByReach cs MaskingReach{bolster, nigh} dfNtss =
                 | ns <- nigh
                 ]
 
-difficulty :: CompTaskSettings k -> MaskingEffort -> Cmp.Landing
-difficulty CompTaskSettings{nominal} MaskingEffort{bestEffort, land} =
+difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.Landing
+difficulty CompTaskSettings{nominal} CompMaskingEffort{bestEffort, land} =
     Cmp.Landing
         { minDistance = md
         , bestDistance = bests

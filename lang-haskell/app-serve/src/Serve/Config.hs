@@ -13,9 +13,9 @@ import qualified Flight.Track.Tag as Tg (CompTagging(..))
 import qualified Flight.Track.Stop as Sp (CompFraming(..))
 import Flight.Track.Land (Landing(..))
 import Flight.Track.Lead (CompLeading(..))
-import qualified Flight.Track.Mask as Mask (MaskingArrival(..))
+import qualified Flight.Track.Mask as Mask (CompMaskingArrival(..))
 import Flight.Track.Mask
-    ( MaskingEffort(..)
+    ( CompMaskingEffort(..)
     , MaskingLead(..)
     , MaskingReach(..)
     , MaskingSpeed(..)
@@ -35,8 +35,8 @@ data Config k
         , crossing :: Maybe Cg.CompCrossing
         , tagging :: Maybe Tg.CompTagging
         , framing :: Maybe Sp.CompFraming
-        , maskingArrival :: Maybe Mask.MaskingArrival
-        , maskingEffort :: Maybe MaskingEffort
+        , maskingArrival :: Maybe Mask.CompMaskingArrival
+        , maskingEffort :: Maybe CompMaskingEffort
         , discardingLead2 :: Maybe (CompLeading LeadingArea2Units)
         , maskingLead :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/(km^2)*s |])
         , maskingReach :: Maybe MaskingReach
@@ -44,7 +44,7 @@ data Config k
         , bonusReach :: Maybe MaskingReach
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
-        , altFsArrival :: Maybe Mask.MaskingArrival
+        , altFsArrival :: Maybe Mask.CompMaskingArrival
         , altFsLandout :: Maybe Landing
         , altFsRoute :: Maybe [GeoLines]
         , altFsScore :: Maybe Alt.AltPointing

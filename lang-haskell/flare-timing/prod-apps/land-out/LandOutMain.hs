@@ -30,9 +30,9 @@ import Flight.Comp
     )
 import Flight.Distance (unTaskDistanceAsKm)
 import Flight.Track.Distance (TrackDistance(..))
-import Flight.Track.Mask (MaskingEffort(..))
+import Flight.Track.Mask (CompMaskingEffort(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
-import Flight.Scribe (readCompAndTasks, readMaskingEffort, writeLanding)
+import Flight.Scribe (readCompAndTasks, readCompMaskEffort, writeLanding)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
@@ -78,7 +78,7 @@ go CmdBatchOptions{..} compFile = do
 
     masking <-
         catchIO
-            (Just <$> readMaskingEffort maskFile)
+            (Just <$> readCompMaskEffort maskFile)
             (const $ return Nothing)
 
     case (filesTaskAndSettings, masking) of
@@ -88,8 +88,8 @@ go CmdBatchOptions{..} compFile = do
             let cs = uncurry mkCompTaskSettings $ settings
             in writeLanding landFile $ difficulty cs mk
 
-difficulty :: CompTaskSettings k -> MaskingEffort -> Cmp.Landing
-difficulty CompTaskSettings{nominal} MaskingEffort{bestEffort, land} =
+difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.Landing
+difficulty CompTaskSettings{nominal} CompMaskingEffort{bestEffort, land} =
     Cmp.Landing
         { minDistance = md
         , bestDistance = bests

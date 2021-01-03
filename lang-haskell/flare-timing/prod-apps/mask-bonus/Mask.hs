@@ -38,7 +38,7 @@ import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
 import Flight.Track.Tag (CompTagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
-import Flight.Track.Mask (MaskingArrival(..))
+import Flight.Track.Mask (CompMaskingArrival(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Effort)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
@@ -79,7 +79,7 @@ type IOStep k = Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)
 
 writeMask
     :: (KnownUnit (Unpack u), KnownUnit (Unpack v))
-    => MaskingArrival
+    => CompMaskingArrival
     -> LeadingAreaSum u
     -> MkLeadingCoef u
     -> MkAreaToCoef v
@@ -94,7 +94,7 @@ writeMask
     -> ScoringInputFiles
     -> IO ()
 writeMask
-    MaskingArrival{arrivalRank}
+    CompMaskingArrival{arrivalRank}
     sumAreas
     invert
     areaToCoef

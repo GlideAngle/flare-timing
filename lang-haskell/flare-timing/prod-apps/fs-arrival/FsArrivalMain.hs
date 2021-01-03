@@ -21,7 +21,7 @@ import Flight.Fsdb
     , parseAltArrivals
     )
 import Flight.Track.Arrival (TrackArrival(..))
-import Flight.Track.Mask (MaskingArrival(..))
+import Flight.Track.Mask (CompMaskingArrival(..))
 import Flight.Comp
     ( AltDot(AltFs)
     , FindDirFile(..)
@@ -122,7 +122,7 @@ fsdbArrivals tasks (FsdbXml contents) = do
     fs <- lift $ parseAltArrivals tasks contents
     ExceptT $ return fs
 
-normArrivals :: FsdbXml -> ExceptT String IO MaskingArrival
+normArrivals :: FsdbXml -> ExceptT String IO CompMaskingArrival
 normArrivals fsdbXml = do
     Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     tw <- Just <$> fsdbTweak hgOrPg fsdbXml
@@ -130,7 +130,7 @@ normArrivals fsdbXml = do
     ts <- fsdbTasks hgOrPg tw sb fsdbXml
     as <- fsdbArrivals ts fsdbXml
     return
-        MaskingArrival
+        CompMaskingArrival
             { pilotsAtEss = PilotsAtEss . toInteger . length <$> as
             , arrivalRank = as
             }

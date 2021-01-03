@@ -14,8 +14,8 @@ import Flight.Scribe
     , readAltArrival, readAltLandout, readAltRoute, readAltScore
     , readRoutes
     , readCompFlyTime, readCompCrossZone, readCompTagZone, readCompPegFrame
-    , readMaskingArrival
-    , readMaskingEffort
+    , readCompMaskArrival
+    , readCompMaskEffort
     , readCompLeadArea
     , readMaskingLead
     , readMaskingReach
@@ -143,12 +143,12 @@ go CmdServeOptions{..} compFile = do
 
             maskingArrival <-
                 catchIO
-                    (Just <$> readMaskingArrival maskArrivalFile)
+                    (Just <$> readCompMaskArrival maskArrivalFile)
                     (const $ return Nothing)
 
             maskingEffort <-
                 catchIO
-                    (Just <$> readMaskingEffort maskEffortFile)
+                    (Just <$> readCompMaskEffort maskEffortFile)
                     (const $ return Nothing)
 
             discardingLead2 <-
