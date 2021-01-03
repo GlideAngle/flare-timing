@@ -13,7 +13,6 @@ import Flight.Comp
     , CompInputFile(..)
     , PilotName(..)
     , IxTask(..)
-    , compToPeg
     , findCompInput
     , reshape
     , pilotNamed
@@ -54,9 +53,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{math, task, pilot} compFile = do
-    let stopFile = compToPeg compFile
-    putStrLn $ "Reading scored times from " ++ show stopFile
-
     filesTaskAndSettings <-
         catchIO
             (Just <$> do
@@ -72,7 +68,7 @@ go CmdBatchOptions{math, task, pilot} compFile = do
 
     stopping <-
         catchIO
-            (Just <$> readCompPegFrame stopFile)
+            (Just <$> readCompPegFrame compFile)
             (const $ return Nothing)
 
     routes <-

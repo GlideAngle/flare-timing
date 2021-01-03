@@ -46,7 +46,6 @@ import Flight.Comp
     , compToLand
     , compToFar
     , compToPoint
-    , compToPeg
     , reshape
     , mkCompTaskSettings
     , compFileToTaskFiles
@@ -74,7 +73,6 @@ drive o@CmdServeOptions{file} = do
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
-    let stopFile = compToPeg compFile
     let maskArrivalFile = compToMaskArrival compFile
     let maskEffortFile = compToMaskEffort compFile
     let leadAreaFile = compToLeadArea compFile
@@ -91,7 +89,6 @@ go CmdServeOptions{..} compFile = do
     let altFsScoreFile = compToAltScore AltFs compFile
     let altAsScoreFile = compToAltScore AltAs compFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
-    putStrLn $ "Reading scored section from " ++ show stopFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
     putStrLn $ "Reading effort from " ++ show maskEffortFile
     putStrLn $ "Reading leading area from " ++ show leadAreaFile
@@ -144,7 +141,7 @@ go CmdServeOptions{..} compFile = do
 
             framing <-
                 catchIO
-                    (Just <$> readCompPegFrame stopFile)
+                    (Just <$> readCompPegFrame compFile)
                     (const $ return Nothing)
 
             maskingArrival <-

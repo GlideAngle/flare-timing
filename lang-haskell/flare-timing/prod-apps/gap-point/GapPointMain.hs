@@ -56,7 +56,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToPeg
     , compToMaskArrival
     , compToMaskEffort
     , compToMaskLead
@@ -186,7 +185,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let stopFile = compToPeg compFile
     let maskArrivalFile = compToMaskArrival compFile
     let maskEffortFile = compToMaskEffort compFile
     let maskLeadFile = compToMaskLead compFile
@@ -197,7 +195,6 @@ go CmdBatchOptions{..} compFile = do
     let farFile = compToFar compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
-    putStrLn $ "Reading scored times from " ++ show stopFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
     putStrLn $ "Reading effort from " ++ show maskEffortFile
     putStrLn $ "Reading leading from " ++ show maskLeadFile
@@ -226,7 +223,7 @@ go CmdBatchOptions{..} compFile = do
 
     stps <-
         catchIO
-            (Just <$> readCompPegFrame stopFile)
+            (Just <$> readCompPegFrame compFile)
             (const $ return Nothing)
 
     ma <-

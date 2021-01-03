@@ -41,7 +41,6 @@ import Flight.Comp
     , StartGate(..)
     , LastStart(..)
     , Pilot
-    , compToPeg
     , findCompInput
     , reshape
     , mkCompTaskSettings
@@ -352,9 +351,7 @@ writeStop
                 , tagging = tagss
                 }
 
-    let pegFile = compToPeg compFile
-    putStrLn $ "Writing framing to " ++ show pegFile
-    writeCompPegFrame pegFile frame
+    writeCompPegFrame compFile frame
 
 clipByTime :: FlyingSection UTCTime -> Maybe ZoneTag -> Maybe ZoneTag
 clipByTime Nothing x = x

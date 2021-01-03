@@ -10,7 +10,6 @@ module Flight.Path.Tx
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
-    , compToPeg
     , compToLeadArea
     , compToMaskArrival
     , compToMaskEffort
@@ -26,6 +25,7 @@ module Flight.Path.Tx
     , taskToFlyTime
     , taskToCrossZone
     , taskToTagZone
+    , taskToPegFrame
 
     , compFileToCompDir
     , taskDir
@@ -40,6 +40,7 @@ module Flight.Path.Tx
     , flyTimePath
     , crossZonePath
     , tagZonePath
+    , pegFramePath
 
     , unpackTrackPath
     , alignTimePath
@@ -121,7 +122,7 @@ reshape TaskLength = const "task-length.yaml"
 reshape FlyTime = const "fly-time.yaml"
 reshape CrossZone = const "cross-zone.yaml"
 reshape TagZone = const "tag-zone.yaml"
-reshape PegFrame = coerce . compToPeg . coerce . reshape TagZone
+reshape PegFrame = const "peg-frame.yaml"
 reshape LeadArea = flip replaceExtensions "lead-area.yaml"
 
 reshape MaskArrival = coerce . compToMaskArrival . coerce . reshape CompInput
@@ -209,12 +210,10 @@ taskToTagZone :: TaskInputFile -> TagZoneFile
 taskToTagZone (TaskInputFile s) = TagZoneFile $ (takeDirectory s) </> reshape TagZone s
 
 -- |
--- >>> compToPeg (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/peg-frame.yaml"
---
--- prop> \s -> compToPeg (CompInputFile s) == PegFrameFile ".flare-timing/peg-frame.yaml"
-compToPeg :: CompInputFile -> PegFrameFile
-compToPeg _ = let DotDirName s d = shape PegFrame in PegFrameFile $ dotDir d s
+-- >>> taskToPegFrame (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/peg-frame.yaml"
+taskToPegFrame :: TaskInputFile -> PegFrameFile
+taskToPegFrame (TaskInputFile s) = PegFrameFile $ (takeDirectory s) </> reshape PegFrame s
 
 -- |
 -- >>> compToMaskArrival (CompInputFile ".flare-timing/comp-input.yaml")
@@ -411,6 +410,12 @@ crossZonePath dir task = (taskDir dir task, CrossZoneFile "cross-zone.yaml")
 -- ("a/.flare-timing/task-1","tag-zone.yaml")
 tagZonePath :: CompDir -> IxTask -> (TaskDir, TagZoneFile)
 tagZonePath dir task = (taskDir dir task, TagZoneFile "tag-zone.yaml")
+
+-- |
+-- >>> pegFramePath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","peg-frame.yaml")
+pegFramePath :: CompDir -> IxTask -> (TaskDir, PegFrameFile)
+pegFramePath dir task = (taskDir dir task, PegFrameFile "peg-frame.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

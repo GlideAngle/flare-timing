@@ -174,7 +174,7 @@ mkCompPegFrame ts =
 
 unMkCompPegFrame :: CompFraming -> [TaskFraming]
 unMkCompPegFrame CompFraming{stopWindow = ws, stopFlying = fs, timing = is, tagging = gs} =
-    TaskFraming <$> ws <*> fs <*> is <*> gs
+    [TaskFraming w f i g | w <- ws | f <- fs | i <- is | g <- gs]
 
 effectiveTagging :: CompTagging -> CompFraming -> CompTagging
 effectiveTagging

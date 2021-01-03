@@ -18,7 +18,6 @@ import Flight.Comp
     , CompTaskSettings(..)
     , Tweak(..)
     , compToMaskArrival
-    , compToPeg
     , findCompInput
     , reshape
     , pilotNamed
@@ -62,9 +61,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let stopFile = compToPeg compFile
     let maskArrivalFile = compToMaskArrival compFile
-    putStrLn $ "Reading scored times from " ++ show stopFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
 
     filesTaskAndSettings <-
@@ -82,7 +79,7 @@ go CmdBatchOptions{..} compFile = do
 
     stopping <-
         catchIO
-            (Just <$> readCompPegFrame stopFile)
+            (Just <$> readCompPegFrame compFile)
             (const $ return Nothing)
 
     arriving <-

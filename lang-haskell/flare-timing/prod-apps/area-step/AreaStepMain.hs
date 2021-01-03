@@ -43,7 +43,6 @@ import Flight.Comp
     , LastDown(..)
     , Tweak(..)
     , compToLeadArea
-    , compToPeg
     , findCompInput
     , speedSectionToLeg
     , reshape
@@ -98,9 +97,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let stopFile = compToPeg compFile
-    putStrLn $ "Reading scored times from " ++ show stopFile
-
     filesTaskAndSettings <-
         catchIO
             (Just <$> do
@@ -117,7 +113,7 @@ go CmdBatchOptions{..} compFile = do
 
     stopping <-
         catchIO
-            (Just <$> readCompPegFrame stopFile)
+            (Just <$> readCompPegFrame compFile)
             (const $ return Nothing)
 
     routes <-
