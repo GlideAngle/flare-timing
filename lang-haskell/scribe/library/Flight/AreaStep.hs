@@ -1,6 +1,6 @@
 module Flight.AreaStep
     ( readCompBestDistances
-    , readCompLeading
+    , readCompLeadingAreas
     , writeCompAreaStep
     ) where
 
@@ -72,7 +72,7 @@ writePilotAreaStep compFile selectTask ixTask (pilot, LeadingAreas{areaFlown = a
         dir = compFileToCompDir compFile
         (AreaStepDir dOut, AreaStepFile file) = areaStepPath dir ixTask pilot
 
-readCompLeading
+readCompLeadingAreas
     :: AreaSteps (LeadingAreaUnits u)
     -> RoutesLookupTaskDistance
     -> CompInputFile
@@ -82,10 +82,10 @@ readCompLeading
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO [[(Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))]]
-readCompLeading areaSteps lengths compFile select tasks toLegs raceTimes pilots =
+readCompLeadingAreas areaSteps lengths compFile select tasks toLegs raceTimes pilots =
     sequence
         [
-            (readTaskLeading areaSteps lengths compFile select)
+            (readTaskLeadingAreas areaSteps lengths compFile select)
                 task
                 toLeg
                 rt
@@ -96,7 +96,7 @@ readCompLeading areaSteps lengths compFile select tasks toLegs raceTimes pilots 
         | ps <- pilots
         ]
 
-readTaskLeading
+readTaskLeadingAreas
     :: AreaSteps (LeadingAreaUnits u)
     -> RoutesLookupTaskDistance
     -> CompInputFile
@@ -106,16 +106,16 @@ readTaskLeading
     -> Maybe RaceTime
     -> [Pilot]
     -> IO [(Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))]
-readTaskLeading areaSteps lengths compFile select ixTask toLeg raceTime ps =
+readTaskLeadingAreas areaSteps lengths compFile select ixTask toLeg raceTime ps =
     if not (select ixTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
-    xs <- mapM (readPilotLeading areaSteps lengths compFile ixTask toLeg raceTime) ps
+    xs <- mapM (readPilotLeadingAreas areaSteps lengths compFile ixTask toLeg raceTime) ps
     return $ zip ps xs
     where
         dir = compFileToCompDir compFile
         (DiscardFurtherDir dOut) = discardFurtherDir dir ixTask
 
-readPilotLeading
+readPilotLeadingAreas
     :: AreaSteps (LeadingAreaUnits u)
     -> RoutesLookupTaskDistance
     -> CompInputFile
@@ -124,8 +124,8 @@ readPilotLeading
     -> Maybe RaceTime
     -> Pilot
     -> IO (LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))
-readPilotLeading _ _ _ _ _ Nothing _ = return $ LeadingAreas V.empty Nothing Nothing
-readPilotLeading
+readPilotLeadingAreas _ _ _ _ _ Nothing _ = return $ LeadingAreas V.empty Nothing Nothing
+readPilotLeadingAreas
     areaSteps
     (RoutesLookupTaskDistance lookupTaskLength)
     compFile ixTask toLeg

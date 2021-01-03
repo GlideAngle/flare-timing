@@ -31,7 +31,7 @@ import qualified Flight.Track.Tag as Tg (CompTagging(..), PilotTrackTag(..))
 import qualified Flight.Track.Stop as Sp (CompFraming(..))
 import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..), TrackCross(..))
 import Flight.Track.Stop (StopFraming(..), TrackScoredSection(..))
-import Flight.Track.Lead (DiscardingLead(..))
+import Flight.Track.Lead (CompLeading(..))
 import Flight.Track.Time (TickRow(..))
 import Flight.Track.Mask (MaskingLead(..))
 import Flight.Track.Point (Pointing(..), Velocity(..), Breakdown(..))
@@ -206,7 +206,7 @@ getTaskPilotArea ii pilotId = do
         (_, _, Nothing) -> throwError $ errPilotNotFound pilot
         (Just p'
             , Just MaskingLead{raceTime = rt, raceDistance = rd}
-            , Just DiscardingLead{areas = sq}) -> do
+            , Just CompLeading{areas = sq}) -> do
 
             xs <-
                 liftIO $ catchIO

@@ -5,7 +5,7 @@ module Flight.Scribe
     , readAltScore, writeAltScore
     , readMaskingArrival, writeMaskingArrival
     , readMaskingEffort, writeMaskingEffort
-    , readDiscardingLead, writeDiscardingLead
+    , readCompLeading, writeCompLeading
     , readMaskingLead, writeMaskingLead
     , readMaskingReach, writeMaskingReach
     , readMaskingSpeed, writeMaskingSpeed
@@ -40,7 +40,7 @@ import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
 import Flight.Track.Mask
     (MaskingArrival, MaskingEffort, MaskingReach, MaskingSpeed, MaskingLead)
-import Flight.Track.Lead (DiscardingLead)
+import Flight.Track.Lead (CompLeading)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, AltPointing)
 import Flight.Route (GeoLines)
@@ -130,11 +130,11 @@ writeAltRoute (AltRouteFile path) track = do
     let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
 
-readDiscardingLead
-    :: (MonadIO m, FromJSON (DiscardingLead q))
+readCompLeading
+    :: (MonadIO m, FromJSON (CompLeading q))
     => LeadAreaFile
-    -> m (DiscardingLead q)
-readDiscardingLead (LeadAreaFile path) = liftIO $ BS.readFile path >>= decodeThrow
+    -> m (CompLeading q)
+readCompLeading (LeadAreaFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
 readMaskingArrival :: MonadIO m => MaskArrivalFile -> m MaskingArrival
 readMaskingArrival (MaskArrivalFile path) = liftIO $ BS.readFile path >>= decodeThrow
@@ -157,12 +157,12 @@ readMaskingSpeed (MaskSpeedFile path) = liftIO $ BS.readFile path >>= decodeThro
 readBonusReach :: MonadIO m => BonusReachFile -> m MaskingReach
 readBonusReach (BonusReachFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
-writeDiscardingLead
-    :: (ToJSON (DiscardingLead q))
+writeCompLeading
+    :: (ToJSON (CompLeading q))
     => LeadAreaFile
-    -> DiscardingLead q
+    -> CompLeading q
     -> IO ()
-writeDiscardingLead (LeadAreaFile path) discardingLead = do
+writeCompLeading (LeadAreaFile path) discardingLead = do
     let cfg = Y.setConfCompare (fieldOrder discardingLead) Y.defConfig
     let yaml = Y.encodePretty cfg discardingLead
     BS.writeFile path yaml

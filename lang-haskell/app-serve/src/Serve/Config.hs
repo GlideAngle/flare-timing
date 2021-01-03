@@ -12,7 +12,7 @@ import qualified Flight.Track.Cross as Cg (CompFlying(..), CompCrossing(..))
 import qualified Flight.Track.Tag as Tg (CompTagging(..))
 import qualified Flight.Track.Stop as Sp (CompFraming(..))
 import Flight.Track.Land (Landing(..))
-import Flight.Track.Lead (DiscardingLead(..))
+import Flight.Track.Lead (CompLeading(..))
 import qualified Flight.Track.Mask as Mask (MaskingArrival(..))
 import Flight.Track.Mask
     ( MaskingEffort(..)
@@ -37,7 +37,7 @@ data Config k
         , framing :: Maybe Sp.CompFraming
         , maskingArrival :: Maybe Mask.MaskingArrival
         , maskingEffort :: Maybe MaskingEffort
-        , discardingLead2 :: Maybe (DiscardingLead LeadingArea2Units)
+        , discardingLead2 :: Maybe (CompLeading LeadingArea2Units)
         , maskingLead :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/(km^2)*s |])
         , maskingReach :: Maybe MaskingReach
         , maskingSpeed :: Maybe MaskingSpeed

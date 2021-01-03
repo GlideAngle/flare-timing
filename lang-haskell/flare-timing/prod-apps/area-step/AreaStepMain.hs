@@ -55,14 +55,14 @@ import Flight.Track.Time
     , taskToLeading
     , leadingAreaFlown, leadingAreaAfterLanding, leadingAreaBeforeStart
     )
-import Flight.Track.Lead (DiscardingLead(..))
+import Flight.Track.Lead (CompLeading(..))
 import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     ( readCompAndTasks, readRoutes, readCompTagZone, readCompPegFrame
     , writeCompAreaStep
-    , readCompLeading, writeDiscardingLead
+    , readCompLeadingAreas, writeCompLeading
     )
 import "flight-gap-lead" Flight.Score
     ( LeadingArea(..), LcPoint
@@ -239,7 +239,7 @@ lc1 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
     let mkArea d t = d *: t
 
     ass :: [[(Pilot, LeadingAreas (Vector (AreaRow [u| km*s |])) (Maybe LcPoint))]]
-            <- readCompLeading
+            <- readCompLeadingAreas
                 area1Steps
                 routes
                 compFile
@@ -286,7 +286,7 @@ lc1 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
             | rt <- raceTimes
             ]
 
-    writeDiscardingLead (compToLeadArea compFile) (DiscardingLead{areas = ass'})
+    writeCompLeading (compToLeadArea compFile) (CompLeading{areas = ass'})
 
 lc2
     :: RoutesLookupTaskDistance
@@ -302,7 +302,7 @@ lc2 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
     let mkArea d t = d *: d *: t
 
     ass :: [[(Pilot, LeadingAreas (Vector (AreaRow [u| (km^2)*s |])) (Maybe LcPoint))]]
-            <- readCompLeading
+            <- readCompLeadingAreas
                 area2Steps
                 routes
                 compFile
@@ -349,7 +349,7 @@ lc2 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
             | rt <- raceTimes
             ]
 
-    writeDiscardingLead (compToLeadArea compFile) (DiscardingLead{areas = ass'})
+    writeCompLeading (compToLeadArea compFile) (CompLeading{areas = ass'})
 
 checkAll
     :: ScoringInputFiles

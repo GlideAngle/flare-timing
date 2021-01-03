@@ -13,7 +13,7 @@ import Flight.Comp
 import Flight.Distance
     (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Comp.Distance (compDistance)
-import Flight.Track.Lead (DiscardingLead(..), LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
+import Flight.Track.Lead (CompLeading(..), LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import Flight.Track.Time (LeadTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Lead (compLeading)
@@ -33,7 +33,7 @@ maskLeadCoef
     -> [[Pilot]]
     -> [Maybe (BestTime (Quantity Double [u| h |]))]
     -> [[Maybe (Pilot, Time.TickRow)]]
-    -> DiscardingLead (LeadingAreaUnits u)
+    -> CompLeading (LeadingAreaUnits u)
     -> ( [Maybe (QTaskDistance Double [u| m |])]
        , [[Maybe (Pilot, Maybe LeadTick)]]
        , MaskingLead u v

@@ -54,7 +54,7 @@ import Flight.Scribe
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
     -- , readPilotPegThenDiscard
-    , readDiscardingLead
+    , readCompLeading
     )
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats)
@@ -166,7 +166,7 @@ writeMask
             (includeTask ixSelectTasks)
             ((fmap . fmap) fst dsLand)
 
-    discardingLeads <- readDiscardingLead (compToLeadArea compFile)
+    leading <- readCompLeading (compToLeadArea compFile)
 
     let (_dsNullAltBest, _nullAltRowTicks, nullAltLead) =
             maskLeadCoef
@@ -180,7 +180,7 @@ writeMask
                 psLandingOut
                 gsBestTime
                 nullAltRowsBest
-                discardingLeads
+                leading
 
     -- NOTE: For time and leading points do not use altitude bonus distances.
     writeMaskingLead (compToMaskLead compFile) nullAltLead

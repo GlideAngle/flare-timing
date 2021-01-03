@@ -1,3 +1,4 @@
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 {-|
@@ -11,7 +12,8 @@ The lead standing of a pilot's track in comparison to other pilots.
 -}
 module Flight.Track.Lead
     ( TrackLead(..)
-    , DiscardingLead(..)
+    , TaskLeading(..)
+    , CompLeading(..)
     , LeadingAreaSum
     , MkLeadingCoef
     , MkAreaToCoef
@@ -41,15 +43,24 @@ import "flight-gap-weight" Flight.Score (LwScaling(..))
 import Flight.Track.Time (LeadingAreas(..), taskToLeading, minLeadingCoef)
 import Flight.Zone.MkZones (Discipline(..))
 
+newtype TaskLeading u =
+    TaskLeading
+        { areas :: [(Pilot, LeadingAreas (LeadingArea u) (LeadingArea u))]
+        }
+    deriving (Eq, Ord, Generic)
+
 -- | For each task, the discarding for leading for that task. Further fixes are
 -- discarded and the leading areas collated.
-newtype DiscardingLead u =
-    DiscardingLead
+newtype CompLeading u =
+    CompLeading
         { areas :: [[(Pilot, LeadingAreas (LeadingArea u) (LeadingArea u))]]
         }
     deriving (Eq, Ord, Generic)
 
-instance FieldOrdering (DiscardingLead u) where
+instance FieldOrdering (TaskLeading u) where
+    fieldOrder _ = cmpArea compare
+
+instance FieldOrdering (CompLeading u) where
     fieldOrder _ = cmpArea compare
 
 cmpArea :: (Ord a, IsString a) => (a -> a -> Ordering) -> a -> a -> Ordering
@@ -74,8 +85,10 @@ data TrackLead u =
 
 deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, FromJSON (LeadingArea q)) => FromJSON (TrackLead q)
 deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToJSON (LeadingArea q)) => ToJSON (TrackLead q)
-deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, FromJSON (LeadingArea q)) => FromJSON (DiscardingLead q)
-deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToJSON (LeadingArea q)) => ToJSON (DiscardingLead q)
+deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, FromJSON (LeadingArea q)) => FromJSON (TaskLeading q)
+deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToJSON (LeadingArea q)) => ToJSON (TaskLeading q)
+deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, FromJSON (LeadingArea q)) => FromJSON (CompLeading q)
+deriving anyclass instance (KnownUnit (Unpack u), q ~ Quantity Double u, ToJSON (LeadingArea q)) => ToJSON (CompLeading q)
 
 -- | The default explicit leading weight scaling for each discipline?
 lwScalingDefault :: Discipline -> LwScaling
@@ -98,13 +111,13 @@ compLeading
     :: (KnownUnit (Unpack u))
     => LeadingAreaSum u
     -> MkLeadingCoef u
-    -> DiscardingLead (LeadingAreaUnits u)
+    -> CompLeading (LeadingAreaUnits u)
     -> [Maybe (QTaskDistance Double [u| m |])]
     ->
         ( [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
         , [[(Pilot, TrackLead (LeadingAreaUnits u))]]
         )
-compLeading sumAreas' invert DiscardingLead{areas = ass} lsTask =
+compLeading sumAreas' invert CompLeading{areas = ass} lsTask =
     (lcMins, lead)
     where
         ks :: [Quantity Rational _ -> Quantity Double [u| 1 |]]

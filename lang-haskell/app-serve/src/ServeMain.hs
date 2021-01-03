@@ -16,7 +16,7 @@ import Flight.Scribe
     , readCompFlyTime, readCompCrossZone, readCompTagZone, readCompPegFrame
     , readMaskingArrival
     , readMaskingEffort
-    , readDiscardingLead
+    , readCompLeading
     , readMaskingLead
     , readMaskingReach
     , readMaskingSpeed
@@ -156,7 +156,7 @@ go CmdServeOptions{..} compFile = do
 
             discardingLead2 <-
                 catchIO
-                    (Just <$> readDiscardingLead leadAreaFile)
+                    (Just <$> readCompLeading leadAreaFile)
                     (const $ return Nothing)
 
             maskingLead <-
