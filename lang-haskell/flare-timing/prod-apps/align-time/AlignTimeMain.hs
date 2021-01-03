@@ -27,7 +27,7 @@ import Flight.Comp
     , pilotNamed
     , compFileToTaskFiles
     )
-import Flight.Scribe (readCompAndTasks, readCompTagZone, readFraming)
+import Flight.Scribe (readCompAndTasks, readCompTagZone, readCompPegFrame)
 import Flight.Lookup.Stop (stopFlying)
 import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)
@@ -80,7 +80,7 @@ go CmdBatchOptions{..} compFile = do
 
     stopping <-
         catchIO
-            (Just <$> readFraming stopFile)
+            (Just <$> readCompPegFrame stopFile)
             (const $ return Nothing)
 
     let scoredLookup = stopFlying stopping

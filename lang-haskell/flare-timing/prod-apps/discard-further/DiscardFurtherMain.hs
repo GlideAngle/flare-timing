@@ -38,10 +38,10 @@ import Flight.Comp
     , compFileToTaskFiles
     )
 import Flight.Track.Time (TimeRow(..), TimeToTick, glideRatio, altBonusTimeToTick, copyTimeToTick)
-import Flight.Track.Stop (Framing(..), StopFraming(..), TrackScoredSection(..))
+import Flight.Track.Stop (CompFraming(..), StopFraming(..), TrackScoredSection(..))
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readCompAndTasks, readFraming
+    ( readCompAndTasks, readCompPegFrame
     , readPilotAlignTimeWriteDiscardFurther
     , readPilotAlignTimeWritePegThenDiscard
     )
@@ -83,13 +83,13 @@ go CmdBatchOptions{..} compFile = do
 
     stopping <-
         catchIO
-            (Just <$> readFraming stopFile)
+            (Just <$> readCompPegFrame stopFile)
             (const $ return Nothing)
 
     case (filesTaskAndSettings, stopping) of
         (Nothing, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing) -> putStrLn "Couldn't read the scored frames."
-        (Just (taskFiles, settings@(cs, _)), Just Framing{stopFlying}) ->
+        (Just (taskFiles, settings@(cs, _)), Just CompFraming{stopFlying}) ->
             filterTime
                 (uncurry mkCompTaskSettings $ settings)
                 (compFile, taskFiles)

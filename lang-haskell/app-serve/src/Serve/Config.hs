@@ -10,7 +10,7 @@ import Control.Monad.Except (ExceptT(..), MonadError)
 import Flight.Units ()
 import qualified Flight.Track.Cross as Cg (CompFlying(..), CompCrossing(..))
 import qualified Flight.Track.Tag as Tg (CompTagging(..))
-import qualified Flight.Track.Stop as Sp (Framing(..))
+import qualified Flight.Track.Stop as Sp (CompFraming(..))
 import Flight.Track.Land (Landing(..))
 import Flight.Track.Lead (DiscardingLead(..))
 import qualified Flight.Track.Mask as Mask (MaskingArrival(..))
@@ -34,7 +34,7 @@ data Config k
         , flying :: Maybe Cg.CompFlying
         , crossing :: Maybe Cg.CompCrossing
         , tagging :: Maybe Tg.CompTagging
-        , framing :: Maybe Sp.Framing
+        , framing :: Maybe Sp.CompFraming
         , maskingArrival :: Maybe Mask.MaskingArrival
         , maskingEffort :: Maybe MaskingEffort
         , discardingLead2 :: Maybe (DiscardingLead LeadingArea2Units)

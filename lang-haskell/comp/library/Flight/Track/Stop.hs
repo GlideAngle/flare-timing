@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Flight.Track.Stop
 Copyright   : (c) Block Scope Limited 2017
@@ -10,7 +12,8 @@ a restricted time window for scoring.
 -}
 module Flight.Track.Stop
     ( RetroActive(..)
-    , Framing(..)
+    , TaskFraming(..)
+    , CompFraming(..)
     , StopWindow(..)
     , TrackScoredSection(..)
     , TrackRacingGateSection(..)
@@ -22,12 +25,13 @@ module Flight.Track.Stop
     , stopClipByGate
     , endOfScored
     , effectiveTagging
+    , mkCompPegFrame, unMkCompPegFrame
     ) where
 
 import Prelude hiding (unzip)
 import Data.List.NonEmpty (nonEmpty, unzip)
 import Data.Maybe (listToMaybe, isJust)
-import Data.List (sort)
+import Data.List (sort, unzip4)
 import Data.String (IsString())
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Control.Monad (join)
@@ -126,10 +130,26 @@ data StopFraming =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+-- | The timing and tagging that includes restriction of time if the task was
+-- stopped.
+data TaskFraming =
+    TaskFraming
+        { stopWindow :: Maybe StopWindow
+        -- ^ The scored time window for a stopped task.
+        , stopFlying :: [(Pilot, StopFraming)]
+        -- ^ The pilots' flying section that is scored.
+        , timing :: TrackTime
+          -- ^ For each made zone, the first and last tag.
+        , tagging :: [PilotTrackTag]
+          -- ^ For each made zone, the tag.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 -- | For each task, the timing and tagging for that task that includes
 -- restriction of time if the task was stopped.
-data Framing =
-    Framing
+data CompFraming =
+    CompFraming
         { stopWindow :: [Maybe StopWindow]
         -- ^ The scored time window for a stopped task.
         , stopFlying :: [[(Pilot, StopFraming)]]
@@ -142,10 +162,24 @@ data Framing =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-effectiveTagging :: CompTagging -> Framing -> CompTagging
+uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
+uncurry4 f ~(a, b, c, d) = f a b c d
+
+mkCompPegFrame :: [TaskFraming] -> CompFraming
+mkCompPegFrame ts =
+    uncurry4 CompFraming $ unzip4
+    [ (w, f, i, g)
+    | TaskFraming{stopWindow = w, stopFlying = f, timing = i, tagging = g} <- ts
+    ]
+
+unMkCompPegFrame :: CompFraming -> [TaskFraming]
+unMkCompPegFrame CompFraming{stopWindow = ws, stopFlying = fs, timing = is, tagging = gs} =
+    TaskFraming <$> ws <*> fs <*> is <*> gs
+
+effectiveTagging :: CompTagging -> CompFraming -> CompTagging
 effectiveTagging
     CompTagging{timing = tssTag, tagging = gssTag}
-    Framing{timing = tssStop, tagging = gssStop, stopWindow} =
+    CompFraming{timing = tssStop, tagging = gssStop, stopWindow} =
         uncurry CompTagging . unzip $
         [ if isJust sw then tsStop else tsTag
         | sw <- stopWindow
@@ -196,7 +230,10 @@ stopClipByGate (Seconds n) gs x = unzip $ do
     let sg@(StartGate g) = snd $ startGateTaken gs' s
     return (sg, (s, min e $ (fromIntegral n) `addUTCTime` g))
 
-instance FieldOrdering Framing where
+instance FieldOrdering TaskFraming where
+    fieldOrder _ = cmp
+
+instance FieldOrdering CompFraming where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

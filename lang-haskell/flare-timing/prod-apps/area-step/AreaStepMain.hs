@@ -61,7 +61,7 @@ import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readCompAndTasks, readRoutes, readCompTagZone, readFraming
+    ( readCompAndTasks, readRoutes, readCompTagZone, readCompPegFrame
     , writeCompAreaStep
     , readCompLeading, writeDiscardingLead
     )
@@ -117,7 +117,7 @@ go CmdBatchOptions{..} compFile = do
 
     stopping <-
         catchIO
-            (Just <$> readFraming stopFile)
+            (Just <$> readCompPegFrame stopFile)
             (const $ return Nothing)
 
     routes <-

@@ -27,7 +27,7 @@ import Flight.Track.Tag
 import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
 import Flight.Track.Time (FixIdx(..), TrackRow(..))
 import Flight.Track.Stop
-    ( StopWindow(..), StopFraming(..), Framing(..)
+    ( StopWindow(..), StopFraming(..), CompFraming(..)
     , TrackScoredSection(..), TrackRacingGateSection(..), TrackRacingStartSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate, endOfScored
     )
@@ -52,7 +52,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
     ( readCompAndTasks
-    , readCompFlyTime, readCompTagZone, writeFraming, readCompTrackRows
+    , readCompFlyTime, readCompTagZone, writeCompPegFrame, readCompTrackRows
     )
 import PegFrameOptions (description)
 
@@ -345,7 +345,7 @@ writeStop
             ]
 
     let frame =
-            Framing
+            CompFraming
                 { stopWindow = sws
                 , stopFlying = sfss'
                 , timing = timess
@@ -354,7 +354,7 @@ writeStop
 
     let pegFile = compToPeg compFile
     putStrLn $ "Writing framing to " ++ show pegFile
-    writeFraming pegFile frame
+    writeCompPegFrame pegFile frame
 
 clipByTime :: FlyingSection UTCTime -> Maybe ZoneTag -> Maybe ZoneTag
 clipByTime Nothing x = x

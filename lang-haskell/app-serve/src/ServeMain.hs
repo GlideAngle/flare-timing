@@ -12,7 +12,8 @@ import Flight.Units ()
 import Flight.Scribe
     ( readCompAndTasks
     , readAltArrival, readAltLandout, readAltRoute, readAltScore
-    , readRoutes, readCompFlyTime, readCompCrossZone, readCompTagZone, readFraming
+    , readRoutes
+    , readCompFlyTime, readCompCrossZone, readCompTagZone, readCompPegFrame
     , readMaskingArrival
     , readMaskingEffort
     , readDiscardingLead
@@ -143,7 +144,7 @@ go CmdServeOptions{..} compFile = do
 
             framing <-
                 catchIO
-                    (Just <$> readFraming stopFile)
+                    (Just <$> readCompPegFrame stopFile)
                     (const $ return Nothing)
 
             maskingArrival <-

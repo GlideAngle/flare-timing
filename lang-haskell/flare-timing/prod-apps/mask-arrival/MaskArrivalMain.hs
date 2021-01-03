@@ -26,7 +26,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
 import Flight.Scribe
-    (readCompAndTasks, readRoutes, readCompTagZone, readFraming)
+    (readCompAndTasks, readRoutes, readCompTagZone, readCompPegFrame)
 import Flight.Lookup.Route (routeLength)
 import MaskArrivalOptions (description)
 import Mask (writeMask)
@@ -72,7 +72,7 @@ go CmdBatchOptions{math, task, pilot} compFile = do
 
     stopping <-
         catchIO
-            (Just <$> readFraming stopFile)
+            (Just <$> readCompPegFrame stopFile)
             (const $ return Nothing)
 
     routes <-
