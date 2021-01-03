@@ -5,7 +5,6 @@ module Flight.Scribe
     , readAltScore, writeAltScore
     , readMaskingArrival, writeMaskingArrival
     , readMaskingEffort, writeMaskingEffort
-    , readCompLeading, writeCompLeading
     , readMaskingLead, writeMaskingLead
     , readMaskingReach, writeMaskingReach
     , readMaskingSpeed, writeMaskingSpeed
@@ -21,6 +20,7 @@ module Flight.Scribe
     , module Flight.CrossZone
     , module Flight.TagZone
     , module Flight.PegFrame
+    , module Flight.LeadArea
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -31,7 +31,6 @@ import Prelude hiding (readFile, writeFile)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
-import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Yaml (decodeThrow)
 import qualified Data.Text.Encoding as T
 import qualified Data.Text as T
@@ -40,7 +39,6 @@ import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
 import Flight.Track.Mask
     (MaskingArrival, MaskingEffort, MaskingReach, MaskingSpeed, MaskingLead)
-import Flight.Track.Lead (CompLeading)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, AltPointing)
 import Flight.Route (GeoLines)
@@ -52,7 +50,6 @@ import Flight.Comp
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , LeadAreaFile(..)
     , MaskArrivalFile(..)
     , MaskEffortFile(..)
     , MaskLeadFile(..)
@@ -70,6 +67,7 @@ import Flight.FlyTime
 import Flight.CrossZone
 import Flight.TagZone
 import Flight.PegFrame
+import Flight.LeadArea
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
@@ -130,12 +128,6 @@ writeAltRoute (AltRouteFile path) track = do
     let yaml = Y.encodePretty cfg track
     BS.writeFile path yaml
 
-readCompLeading
-    :: (MonadIO m, FromJSON (CompLeading q))
-    => LeadAreaFile
-    -> m (CompLeading q)
-readCompLeading (LeadAreaFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
 readMaskingArrival :: MonadIO m => MaskArrivalFile -> m MaskingArrival
 readMaskingArrival (MaskArrivalFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
@@ -156,16 +148,6 @@ readMaskingSpeed (MaskSpeedFile path) = liftIO $ BS.readFile path >>= decodeThro
 
 readBonusReach :: MonadIO m => BonusReachFile -> m MaskingReach
 readBonusReach (BonusReachFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeCompLeading
-    :: (ToJSON (CompLeading q))
-    => LeadAreaFile
-    -> CompLeading q
-    -> IO ()
-writeCompLeading (LeadAreaFile path) discardingLead = do
-    let cfg = Y.setConfCompare (fieldOrder discardingLead) Y.defConfig
-    let yaml = Y.encodePretty cfg discardingLead
-    BS.writeFile path yaml
 
 writeMaskingArrival :: MaskArrivalFile -> MaskingArrival -> IO ()
 writeMaskingArrival (MaskArrivalFile path) maskTrack = do
