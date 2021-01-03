@@ -3,7 +3,6 @@ module Flight.Scribe
     , readAltLandout, writeAltLandout
     , readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
-    , readTagging, writeTagging
     , readFraming, writeFraming
     , readMaskingArrival, writeMaskingArrival
     , readMaskingEffort, writeMaskingEffort
@@ -21,6 +20,7 @@ module Flight.Scribe
     , module Flight.TaskLength
     , module Flight.FlyTime
     , module Flight.CrossZone
+    , module Flight.TagZone
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -38,7 +38,6 @@ import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
-import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Stop (Framing(..))
 import Flight.Track.Mask
     (MaskingArrival, MaskingEffort, MaskingReach, MaskingSpeed, MaskingLead)
@@ -54,7 +53,6 @@ import Flight.Comp
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , TagZoneFile(..)
     , PegFrameFile(..)
     , LeadAreaFile(..)
     , MaskArrivalFile(..)
@@ -72,6 +70,7 @@ import Flight.CompInput
 import Flight.TaskLength
 import Flight.FlyTime
 import Flight.CrossZone
+import Flight.TagZone
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
@@ -130,15 +129,6 @@ writeAltRoute :: AltRouteFile -> [GeoLines] -> IO ()
 writeAltRoute (AltRouteFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
-    BS.writeFile path yaml
-
-readTagging :: (MonadThrow m, MonadIO m) => TagZoneFile -> m Tagging
-readTagging (TagZoneFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeTagging :: TagZoneFile -> Tagging -> IO ()
-writeTagging (TagZoneFile path) tagZone = do
-    let cfg = Y.setConfCompare (fieldOrder tagZone) Y.defConfig
-    let yaml = Y.encodePretty cfg tagZone
     BS.writeFile path yaml
 
 readFraming :: (MonadThrow m, MonadIO m) => PegFrameFile -> m Framing

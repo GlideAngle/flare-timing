@@ -30,7 +30,7 @@ import Flight.Comp
     )
 import Flight.Distance (QTaskDistance)
 import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
-import Flight.Track.Tag (Tagging)
+import Flight.Track.Tag (CompTagging)
 import Flight.Track.Lead (LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Mask (MaskingArrival(..))
@@ -80,7 +80,7 @@ writeMask
     -> RoutesLookupTaskDistance
     -> Math
     -> ScoredLookup
-    -> Maybe Tagging
+    -> Maybe CompTagging
     -> TaskLeadingLookup
     -> [IxTask]
     -> [Pilot]
@@ -198,7 +198,7 @@ flown
     -> Maybe Give
     -> RoutesLookupTaskDistance
     -> ScoredLookup
-    -> Maybe Tagging
+    -> Maybe CompTagging
     -> FnIxTask k (Pilot -> FlightStats k)
 flown math earthMath give (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask fixes =
     maybe
@@ -214,7 +214,7 @@ flown'
     -> Math
     -> EarthMath
     -> Maybe Give
-    -> Maybe Tagging
+    -> Maybe CompTagging
     -> FnIxTask k (Pilot -> FlightStats k)
 flown' _ _ Rational _ _ _ _ _ _ _ = error "Nigh for rationals not yet implemented."
 flown' dTaskF flying Floating earthMath give tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =

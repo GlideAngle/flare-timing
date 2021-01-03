@@ -39,7 +39,7 @@ import Flight.Clip (FlyingSection)
 import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Comp (LastStart(..), StartGate(..))
 import Flight.Track.Cross (Seconds(..))
-import Flight.Track.Tag (Tagging(..), TrackTime(..), PilotTrackTag(..), ZonesLastTag(..))
+import Flight.Track.Tag (CompTagging(..), TrackTime(..), PilotTrackTag(..), ZonesLastTag(..))
 import Flight.Track.Speed (startGateTaken)
 import Flight.Field (FieldOrdering(..))
 
@@ -142,11 +142,11 @@ data Framing =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-effectiveTagging :: Tagging -> Framing -> Tagging
+effectiveTagging :: CompTagging -> Framing -> CompTagging
 effectiveTagging
-    Tagging{timing = tssTag, tagging = gssTag}
+    CompTagging{timing = tssTag, tagging = gssTag}
     Framing{timing = tssStop, tagging = gssStop, stopWindow} =
-        uncurry Tagging . unzip $
+        uncurry CompTagging . unzip $
         [ if isJust sw then tsStop else tsTag
         | sw <- stopWindow
         | tsTag <- zip tssTag gssTag

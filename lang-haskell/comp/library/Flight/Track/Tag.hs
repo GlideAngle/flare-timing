@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Flight.Track.Tag
 Copyright   : (c) Block Scope Limited 2017
@@ -8,7 +10,8 @@ Stability   : experimental
 Tracks tagging task control zones.
 -}
 module Flight.Track.Tag
-    ( Tagging(..)
+    ( TaskTagging(..)
+    , CompTagging(..)
     , TrackTime(..)
     , TrackTag(..)
     , PilotTrackTag(..)
@@ -37,9 +40,19 @@ import Flight.Comp (FirstLead(..), FirstStart(..), LastArrival(..))
 import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
 import Flight.Field (FieldOrdering(..))
 
+data TaskTagging =
+    TaskTagging
+        { timing :: TrackTime
+          -- ^ For each made zone, the first and last tag.
+        , tagging :: [PilotTrackTag]
+          -- ^ For each made zone, the tag.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 -- | For each task, the timing and tagging for that task.
-data Tagging =
-    Tagging
+data CompTagging =
+    CompTagging
         { timing :: [TrackTime]
           -- ^ For each made zone, the first and last tag.
         , tagging :: [[PilotTrackTag]]
@@ -230,7 +243,10 @@ data PilotTrackTag =
         -- ^ The tags should be Just if the pilot launched.
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-instance FieldOrdering Tagging where
+instance FieldOrdering TaskTagging where
+    fieldOrder _ = cmp
+
+instance FieldOrdering CompTagging where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

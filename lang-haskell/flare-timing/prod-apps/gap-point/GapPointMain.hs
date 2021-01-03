@@ -75,7 +75,7 @@ import Flight.Comp
     )
 import Flight.Track.Cross
     (InterpolatedFix(..), CompFlying(..), ZoneTag(..), TrackFlyingSection(..))
-import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
+import Flight.Track.Tag (CompTagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Distance
     (TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Effort, awardByFrac)
@@ -334,7 +334,7 @@ points'
     :: CompTaskSettings k
     -> RoutesLookupTaskDistance
     -> CompFlying
-    -> Tagging
+    -> CompTagging
     -> MaskingArrival
     -> MaskingEffort
     -> MaskingLead _ _
@@ -360,7 +360,7 @@ points'
         }
     routes
     CompFlying{flying}
-    Tagging{tagging}
+    CompTagging{tagging}
     MaskingArrival
         { pilotsAtEss
         , arrivalRank

@@ -55,7 +55,7 @@ import Flight.Mask
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (Fix(..), ZoneTag(..), asIfFix)
-import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
+import Flight.Track.Tag (CompTagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Track.Stop (TrackScoredSection(..))
 import Flight.Kml (MarkedFixes(..), timeToFixIdx)
 import Data.Ratio.Rounding (dpRound)
@@ -111,7 +111,7 @@ checkAll
     -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
-    -> Tagging
+    -> CompTagging
     -> ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
@@ -199,7 +199,7 @@ group
     -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
-    -> Tagging
+    -> CompTagging
     -> FnIxTask k (Pilot -> [TimeRow])
 group
     math
@@ -208,7 +208,7 @@ group
     sp
     ssOnly
     (ScoredLookup lookupScored)
-    tags@Tagging{timing}
+    tags@CompTagging{timing}
     tasks iTask@(IxTask i)
     mf@MarkedFixes{mark0} p =
     case (tasks ^? element (i - 1), timing ^? element (i - 1)) of

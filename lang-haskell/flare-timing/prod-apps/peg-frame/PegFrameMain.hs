@@ -23,7 +23,7 @@ import Flight.Track.Cross
     , ZoneTag(..), InterpolatedFix(..)
     )
 import Flight.Track.Tag
-    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed, lastStarting, starting, tagTimes)
+    ( CompTagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed, lastStarting, starting, tagTimes)
 import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
 import Flight.Track.Time (FixIdx(..), TrackRow(..))
 import Flight.Track.Stop
@@ -119,14 +119,14 @@ writeStop
     -> CompInputFile
     -> TagZoneFile
     -> CompFlying
-    -> Tagging
+    -> CompTagging
     -> IO ()
 writeStop
     CompTaskSettings{tasks}
     compFile
     tagFile
     CompFlying{flying}
-    Tagging{timing, tagging} = do
+    CompTagging{timing, tagging} = do
 
     let sws :: [Maybe StopWindow] =
             [

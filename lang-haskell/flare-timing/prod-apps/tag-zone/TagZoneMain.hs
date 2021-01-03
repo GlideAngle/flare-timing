@@ -34,7 +34,7 @@ import Flight.Comp
 import Flight.Track.Cross
     (CompFlying(..), CompCrossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
 import Flight.Track.Tag
-    ( Tagging(..), TrackTag(..), PilotTrackTag(..)
+    ( CompTagging(..), TrackTag(..), PilotTrackTag(..)
     , timed
     )
 import Flight.Scribe
@@ -143,7 +143,7 @@ go math compFile = do
                     | fs <- fmap (endOfFlying . snd) <$> flying
                     ]
 
-            let tagZone = Tagging{timing = times, tagging = pss}
+            let tagZone = CompTagging{timing = times, tagging = pss}
 
             writeTagging (compToTag compFile) tagZone
 

@@ -22,7 +22,7 @@ import Flight.Comp
     , compToMaskSpeed
     )
 import Flight.Mask (FnIxTask, settingsLogs)
-import Flight.Track.Tag (Tagging)
+import Flight.Track.Tag (CompTagging)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Lookup.Stop (ScoredLookup(..))
 import Flight.Track.Arrival (TrackArrival(..), arrivalsByTime, arrivalsByRank)
@@ -46,7 +46,7 @@ writeMask
     -> RoutesLookupTaskDistance
     -> Math
     -> ScoredLookup
-    -> Maybe Tagging
+    -> Maybe CompTagging
     -> [IxTask]
     -> [Pilot]
     -> ScoringInputFiles
@@ -113,7 +113,7 @@ writeMask
     -- NOTE: For time and leading points do not use altitude bonus distances.
     writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
 
-flown :: Math -> ScoredLookup -> Maybe Tagging -> FnIxTask k (Pilot -> FlightStats k)
+flown :: Math -> ScoredLookup -> Maybe CompTagging -> FnIxTask k (Pilot -> FlightStats k)
 flown Rational _ _ _ _ _ _ = error "Nigh for rationals not yet implemented."
 flown Floating flying tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of

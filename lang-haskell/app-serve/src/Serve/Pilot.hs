@@ -27,7 +27,7 @@ import Numeric.Sampling
 import Flight.Units ()
 import qualified Flight.Track.Cross as Cg
     (CompFlying(..), CompCrossing(..), PilotTrackCross(..))
-import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
+import qualified Flight.Track.Tag as Tg (CompTagging(..), PilotTrackTag(..))
 import qualified Flight.Track.Stop as Sp (Framing(..))
 import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..), TrackCross(..))
 import Flight.Track.Stop (StopFraming(..), TrackScoredSection(..))
