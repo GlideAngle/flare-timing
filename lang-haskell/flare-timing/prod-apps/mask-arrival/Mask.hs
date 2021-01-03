@@ -18,7 +18,6 @@ import Flight.Comp
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
-    , compToMaskArrival
     , compToMaskSpeed
     )
 import Flight.Mask (FnIxTask, settingsLogs)
@@ -106,7 +105,7 @@ writeMask
 
     -- REVIEW: Waiting on feedback on GAP rule question about altitude
     -- bonus distance pushing a flight to goal so that it arrives.
-    writeCompMaskArrival (compToMaskArrival compFile) (maskArrival as)
+    writeCompMaskArrival compFile (maskArrival as)
 
     let (_gsBestTime, maskSpeed') = maskSpeed lsTask' yss
 

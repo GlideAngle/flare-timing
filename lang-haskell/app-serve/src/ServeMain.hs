@@ -36,8 +36,6 @@ import Flight.Comp
     , compToAltLandout
     , compToAltRoute
     , compToAltScore
-    , compToMaskArrival
-    , compToMaskEffort
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
@@ -72,8 +70,6 @@ drive o@CmdServeOptions{file} = do
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
-    let maskArrivalFile = compToMaskArrival compFile
-    let maskEffortFile = compToMaskEffort compFile
     let maskLeadFile = compToMaskLead compFile
     let maskReachFile = compToMaskReach compFile
     let maskSpeedFile = compToMaskSpeed compFile
@@ -87,8 +83,6 @@ go CmdServeOptions{..} compFile = do
     let altFsScoreFile = compToAltScore AltFs compFile
     let altAsScoreFile = compToAltScore AltAs compFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
-    putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
-    putStrLn $ "Reading effort from " ++ show maskEffortFile
     putStrLn $ "Reading leading from " ++ show maskLeadFile
     putStrLn $ "Reading reach from " ++ show maskReachFile
     putStrLn $ "Reading speed from " ++ show maskSpeedFile
@@ -143,12 +137,12 @@ go CmdServeOptions{..} compFile = do
 
             maskingArrival <-
                 catchIO
-                    (Just <$> readCompMaskArrival maskArrivalFile)
+                    (Just <$> readCompMaskArrival compFile)
                     (const $ return Nothing)
 
             maskingEffort <-
                 catchIO
-                    (Just <$> readCompMaskEffort maskEffortFile)
+                    (Just <$> readCompMaskEffort compFile)
                     (const $ return Nothing)
 
             discardingLead2 <-

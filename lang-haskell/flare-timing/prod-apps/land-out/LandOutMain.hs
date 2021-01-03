@@ -21,7 +21,6 @@ import Flight.Comp
     , CompInputFile(..)
     , CompTaskSettings(..)
     , Nominal(..)
-    , compToMaskEffort
     , compToLand
     , findCompInput
     , reshape
@@ -63,9 +62,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let maskFile = compToMaskEffort compFile
     let landFile = compToLand compFile
-    putStrLn $ "Reading land outs from " ++ show maskFile
 
     filesTaskAndSettings <-
         catchIO
@@ -78,7 +75,7 @@ go CmdBatchOptions{..} compFile = do
 
     masking <-
         catchIO
-            (Just <$> readCompMaskEffort maskFile)
+            (Just <$> readCompMaskEffort compFile)
             (const $ return Nothing)
 
     case (filesTaskAndSettings, masking) of

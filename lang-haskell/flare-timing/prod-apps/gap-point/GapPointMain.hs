@@ -56,8 +56,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToMaskArrival
-    , compToMaskEffort
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
@@ -185,8 +183,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let maskArrivalFile = compToMaskArrival compFile
-    let maskEffortFile = compToMaskEffort compFile
     let maskLeadFile = compToMaskLead compFile
     let maskReachFile = compToMaskReach compFile
     let maskSpeedFile = compToMaskSpeed compFile
@@ -195,8 +191,6 @@ go CmdBatchOptions{..} compFile = do
     let farFile = compToFar compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
-    putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
-    putStrLn $ "Reading effort from " ++ show maskEffortFile
     putStrLn $ "Reading leading from " ++ show maskLeadFile
     putStrLn $ "Reading reach from " ++ show maskReachFile
     putStrLn $ "Reading bonus reach from " ++ show bonusReachFile
@@ -228,12 +222,12 @@ go CmdBatchOptions{..} compFile = do
 
     ma <-
         catchIO
-            (Just <$> readCompMaskArrival maskArrivalFile)
+            (Just <$> readCompMaskArrival compFile)
             (const $ return Nothing)
 
     me <-
         catchIO
-            (Just <$> readCompMaskEffort maskEffortFile)
+            (Just <$> readCompMaskEffort compFile)
             (const $ return Nothing)
 
     ml2 :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/((km^2)*s) |]) <-

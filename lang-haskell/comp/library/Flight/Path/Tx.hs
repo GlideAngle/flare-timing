@@ -10,8 +10,6 @@ module Flight.Path.Tx
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
-    , compToMaskArrival
-    , compToMaskEffort
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
@@ -26,6 +24,8 @@ module Flight.Path.Tx
     , taskToTagZone
     , taskToPegFrame
     , taskToLeadArea
+    , taskToMaskArrival
+    , taskToMaskEffort
 
     , compFileToCompDir
     , taskDir
@@ -42,6 +42,8 @@ module Flight.Path.Tx
     , tagZonePath
     , pegFramePath
     , leadAreaPath
+    , maskArrivalPath
+    , maskEffortPath
 
     , unpackTrackPath
     , alignTimePath
@@ -126,8 +128,8 @@ reshape TagZone = const "tag-zone.yaml"
 reshape PegFrame = const "peg-frame.yaml"
 reshape LeadArea = const "lead-area.yaml"
 
-reshape MaskArrival = coerce . compToMaskArrival . coerce . reshape CompInput
-reshape MaskEffort = coerce . compToMaskEffort . coerce . reshape CompInput
+reshape MaskArrival = const "mask-arrival.yaml"
+reshape MaskEffort = const "mask-effort.yaml"
 reshape MaskLead = coerce . compToMaskLead . coerce . reshape CompInput
 reshape MaskReach = coerce . compToMaskReach . coerce . reshape CompInput
 reshape MaskSpeed = coerce . compToMaskSpeed . coerce . reshape CompInput
@@ -223,20 +225,16 @@ taskToLeadArea :: TaskInputFile -> LeadAreaFile
 taskToLeadArea (TaskInputFile s) = LeadAreaFile $ (takeDirectory s) </> reshape LeadArea s
 
 -- |
--- >>> compToMaskArrival (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/mask-arrival.yaml"
---
--- prop> \s -> compToMaskArrival (CompInputFile s) == MaskArrivalFile ".flare-timing/mask-arrival.yaml"
-compToMaskArrival :: CompInputFile -> MaskArrivalFile
-compToMaskArrival _ = let DotDirName s d = shape MaskArrival in MaskArrivalFile $ dotDir d s
+-- >>> taskToMaskArrival (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/mask-arrival.yaml"
+taskToMaskArrival :: TaskInputFile -> MaskArrivalFile
+taskToMaskArrival (TaskInputFile s) = MaskArrivalFile $ (takeDirectory s) </> reshape MaskArrival s
 
 -- |
--- >>> compToMaskEffort (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/mask-effort.yaml"
---
--- prop> \s -> compToMaskEffort (CompInputFile s) == MaskEffortFile ".flare-timing/mask-effort.yaml"
-compToMaskEffort :: CompInputFile -> MaskEffortFile
-compToMaskEffort _ = let DotDirName s d = shape MaskEffort in MaskEffortFile $ dotDir d s
+-- >>> taskToMaskEffort (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/mask-effort.yaml"
+taskToMaskEffort :: TaskInputFile -> MaskEffortFile
+taskToMaskEffort (TaskInputFile s) = MaskEffortFile $ (takeDirectory s) </> reshape MaskEffort s
 
 -- |
 -- >>> compToMaskLead (CompInputFile ".flare-timing/comp-input.yaml")
@@ -421,6 +419,18 @@ pegFramePath dir task = (taskDir dir task, PegFrameFile "peg-frame.yaml")
 -- ("a/.flare-timing/task-1","lead-area.yaml")
 leadAreaPath :: CompDir -> IxTask -> (TaskDir, LeadAreaFile)
 leadAreaPath dir task = (taskDir dir task, LeadAreaFile "lead-area.yaml")
+
+-- |
+-- >>> maskArrivalPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","mask-arrival.yaml")
+maskArrivalPath :: CompDir -> IxTask -> (TaskDir, MaskArrivalFile)
+maskArrivalPath dir task = (taskDir dir task, MaskArrivalFile "mask-arrival.yaml")
+
+-- |
+-- >>> maskEffortPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","mask-effort.yaml")
+maskEffortPath :: CompDir -> IxTask -> (TaskDir, MaskEffortFile)
+maskEffortPath dir task = (taskDir dir task, MaskEffortFile "mask-effort.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

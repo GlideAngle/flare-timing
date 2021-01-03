@@ -12,7 +12,7 @@ Tracks masked with task control zones.
 module Flight.Track.Mask.Arrival
     ( TaskMaskingArrival(..)
     , CompMaskingArrival(..)
-    , mkCompMaskingArrival, unMkCompMaskingArrival
+    , mkCompMaskArrival, unMkCompMaskArrival
     ) where
 
 import GHC.Generics (Generic)
@@ -44,15 +44,15 @@ data CompMaskingArrival =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-mkCompMaskingArrival :: [TaskMaskingArrival] -> CompMaskingArrival
-mkCompMaskingArrival ts =
+mkCompMaskArrival :: [TaskMaskingArrival] -> CompMaskingArrival
+mkCompMaskArrival ts =
     uncurry CompMaskingArrival $ unzip
     [ (p, a)
     | TaskMaskingArrival{pilotsAtEss = p, arrivalRank = a} <- ts
     ]
 
-unMkCompMaskingArrival :: CompMaskingArrival -> [TaskMaskingArrival]
-unMkCompMaskingArrival CompMaskingArrival{pilotsAtEss = ps, arrivalRank = as} =
+unMkCompMaskArrival :: CompMaskingArrival -> [TaskMaskingArrival]
+unMkCompMaskArrival CompMaskingArrival{pilotsAtEss = ps, arrivalRank = as} =
     zipWith TaskMaskingArrival ps as
 
 instance FieldOrdering TaskMaskingArrival where fieldOrder _ = cmp

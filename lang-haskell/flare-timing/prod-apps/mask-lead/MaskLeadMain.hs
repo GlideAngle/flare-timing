@@ -17,7 +17,6 @@ import Flight.Comp
     , IxTask(..)
     , CompTaskSettings(..)
     , Tweak(..)
-    , compToMaskArrival
     , findCompInput
     , reshape
     , pilotNamed
@@ -61,9 +60,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let maskArrivalFile = compToMaskArrival compFile
-    putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
-
     filesTaskAndSettings <-
         catchIO
             (Just <$> do
@@ -84,7 +80,7 @@ go CmdBatchOptions{..} compFile = do
 
     arriving <-
         catchIO
-            (Just <$> readCompMaskArrival maskArrivalFile)
+            (Just <$> readCompMaskArrival compFile)
             (const $ return Nothing)
 
     routes <-

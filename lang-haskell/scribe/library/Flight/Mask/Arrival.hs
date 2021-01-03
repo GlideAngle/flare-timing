@@ -1,5 +1,6 @@
 module Flight.Mask.Arrival
-    ( readCompMaskArrival, writeCompMaskArrival
+    ( readTaskMaskArrival, writeTaskMaskArrival
+    , readCompMaskArrival, writeCompMaskArrival
     , readAltArrival, writeAltArrival
     ) where
 
@@ -9,25 +10,57 @@ import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeThrow)
 import qualified Data.Yaml.Pretty as Y
+import Control.Concurrent.ParallelIO (parallel, parallel_)
 
-import Flight.Track.Mask (CompMaskingArrival)
+import Flight.Track.Mask
+    ( TaskMaskingArrival(..), CompMaskingArrival(..)
+    , mkCompMaskArrival, unMkCompMaskArrival
+    )
 import Flight.Field (FieldOrdering(..))
-import Flight.Comp (MaskArrivalFile(..), AltArrivalFile(..))
+import Flight.Comp
+    ( CompInputFile(..), MaskArrivalFile(..), AltArrivalFile(..)
+    , compFileToTaskFiles, taskToMaskArrival
+    )
 
 readAltArrival :: (MonadThrow m, MonadIO m) => AltArrivalFile -> m CompMaskingArrival
 readAltArrival (AltArrivalFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
 writeAltArrival :: AltArrivalFile -> CompMaskingArrival -> IO ()
-writeAltArrival (AltArrivalFile path) track = do
-    let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
-    let yaml = Y.encodePretty cfg track
+writeAltArrival (AltArrivalFile path) altArrival = do
+    let cfg = Y.setConfCompare (fieldOrder altArrival) Y.defConfig
+    let yaml = Y.encodePretty cfg altArrival
     BS.writeFile path yaml
 
-readCompMaskArrival :: MonadIO m => MaskArrivalFile -> m CompMaskingArrival
-readCompMaskArrival (MaskArrivalFile path) = liftIO $ BS.readFile path >>= decodeThrow
+readTaskMaskArrival :: MonadIO m => MaskArrivalFile -> m TaskMaskingArrival
+readTaskMaskArrival (MaskArrivalFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
-writeCompMaskArrival :: MaskArrivalFile -> CompMaskingArrival -> IO ()
-writeCompMaskArrival (MaskArrivalFile path) maskTrack = do
-    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
-    let yaml = Y.encodePretty cfg maskTrack
+writeTaskMaskArrival :: MaskArrivalFile -> TaskMaskingArrival -> IO ()
+writeTaskMaskArrival (MaskArrivalFile path) maskArrival = do
+    let cfg = Y.setConfCompare (fieldOrder maskArrival) Y.defConfig
+    let yaml = Y.encodePretty cfg maskArrival
     BS.writeFile path yaml
+
+readCompMaskArrival :: CompInputFile -> IO CompMaskingArrival
+readCompMaskArrival compFile = do
+    putStrLn "Reading arrivals from:"
+    taskFiles <- compFileToTaskFiles compFile
+    mkCompMaskArrival
+        <$> parallel
+            [ do
+                putStrLn $ "\t" ++ show maskArrivalFile
+                readTaskMaskArrival maskArrivalFile
+            | maskArrivalFile <- taskToMaskArrival <$> taskFiles
+            ]
+
+writeCompMaskArrival :: CompInputFile -> CompMaskingArrival -> IO ()
+writeCompMaskArrival compFile compMaskArrivals = do
+    putStrLn "Writing arrivals to:"
+    taskFiles <- compFileToTaskFiles compFile
+    parallel_
+        [ do
+            putStrLn $ "\t" ++ show maskArrivalFile
+            writeTaskMaskArrival maskArrivalFile taskMaskArrivals
+
+        | taskMaskArrivals <- unMkCompMaskArrival compMaskArrivals
+        | maskArrivalFile <- taskToMaskArrival <$> taskFiles
+        ]

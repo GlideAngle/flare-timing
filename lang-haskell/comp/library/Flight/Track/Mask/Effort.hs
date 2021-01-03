@@ -12,7 +12,7 @@ Tracks masked with task control zones.
 module Flight.Track.Mask.Effort
     ( TaskMaskingEffort(..)
     , CompMaskingEffort(..)
-    , mkCompMaskingEffort, unMkCompMaskingEffort
+    , mkCompMaskEffort, unMkCompMaskEffort
     ) where
 
 import Data.UnitsOfMeasure (u)
@@ -46,15 +46,15 @@ data CompMaskingEffort =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-mkCompMaskingEffort :: [TaskMaskingEffort] -> CompMaskingEffort
-mkCompMaskingEffort ts =
+mkCompMaskEffort :: [TaskMaskingEffort] -> CompMaskingEffort
+mkCompMaskEffort ts =
     uncurry CompMaskingEffort $ unzip
     [ (b, l)
     | TaskMaskingEffort{bestEffort = b, land = l} <- ts
     ]
 
-unMkCompMaskingEffort :: CompMaskingEffort -> [TaskMaskingEffort]
-unMkCompMaskingEffort CompMaskingEffort{bestEffort = bs, land = ls} =
+unMkCompMaskEffort :: CompMaskingEffort -> [TaskMaskingEffort]
+unMkCompMaskEffort CompMaskingEffort{bestEffort = bs, land = ls} =
     zipWith TaskMaskingEffort bs ls
 
 instance FieldOrdering TaskMaskingEffort where fieldOrder _ = cmp

@@ -25,7 +25,6 @@ import Flight.Comp
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
-    , compToMaskEffort
     )
 import Flight.Distance (QTaskDistance)
 import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
@@ -184,9 +183,7 @@ writeMask
                 leadArea
 
     -- TODO: Use altitude bonus distance for effort.
-    writeCompMaskEffort
-        (compToMaskEffort compFile)
-        (maskEffort dsNullAltBest dsLand)
+    writeCompMaskEffort compFile (maskEffort dsNullAltBest dsLand)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
