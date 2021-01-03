@@ -1,7 +1,7 @@
-module Flight.AreaStep
+module Flight.LeadArea.AreaStep
     ( readCompBestDistances
     , readCompLeadingAreas
-    , writeCompAreaStep
+    , writeCompLeadingAreas
     ) where
 
 import System.Directory (createDirectoryIfMissing)
@@ -44,12 +44,12 @@ writeAreaStep (AreaStepFile path) xs =
         opts = defaultEncodeOptions {encUseCrLf = False}
         rows = encodeByNameWith opts hs $ V.toList xs
 
-writeCompAreaStep
+writeCompLeadingAreas
     :: CompInputFile
     -> [IxTask]
     -> [[(Pilot, LeadingAreas (Vector (AreaRow u)) (Maybe LcPoint))]]
     -> IO [[Maybe (Vector (AreaRow u))]]
-writeCompAreaStep compFile tasks ass =
+writeCompLeadingAreas compFile tasks ass =
         sequence
         [ sequence $ (writePilotAreaStep compFile (const True) task) <$> as
         | task <- tasks

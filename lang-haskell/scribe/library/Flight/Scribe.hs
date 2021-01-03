@@ -21,10 +21,10 @@ module Flight.Scribe
     , module Flight.TagZone
     , module Flight.PegFrame
     , module Flight.LeadArea
+    , module Flight.LeadArea.AreaStep
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
-    , module Flight.AreaStep
     ) where
 
 import Prelude hiding (readFile, writeFile)
@@ -68,10 +68,10 @@ import Flight.CrossZone
 import Flight.TagZone
 import Flight.PegFrame
 import Flight.LeadArea
+import Flight.LeadArea.AreaStep
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
-import Flight.AreaStep
 
 readFsdbXml :: FilePath -> IO FsdbXml
 readFsdbXml path = FsdbXml . T.unpack . T.decodeUtf8 <$> BS.readFile path

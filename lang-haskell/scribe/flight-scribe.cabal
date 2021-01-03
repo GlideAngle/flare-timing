@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e8471c51a00365f252b5ba72f73054ef8b97bccc4e41954fb1458f942aa51751
+-- hash: 685594f40c02f98304848feec645e9b72dc612a3f4e86e1f319d184175960e85
 
 name:           flight-scribe
 version:        0.1.0
@@ -38,12 +38,12 @@ library
       Flight.Scribe
   other-modules:
       Flight.AlignTime
-      Flight.AreaStep
       Flight.CompInput
       Flight.CrossZone
       Flight.DiscardFurther
       Flight.FlyTime
       Flight.LeadArea
+      Flight.LeadArea.AreaStep
       Flight.PegFrame
       Flight.TagZone
       Flight.TaskLength

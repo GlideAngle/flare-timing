@@ -61,8 +61,7 @@ import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     ( readCompAndTasks, readRoutes, readCompTagZone, readCompPegFrame
-    , writeCompAreaStep
-    , readCompLeadingAreas, writeCompLeading
+    , writeCompLeadingAreas, readCompLeadingAreas, writeCompLeading
     )
 import "flight-gap-lead" Flight.Score
     ( LeadingArea(..), LcPoint
@@ -249,7 +248,7 @@ lc1 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
                 raceTimes
                 taskPilots
 
-    _ <- writeCompAreaStep compFile iTasks ass
+    _ <- writeCompLeadingAreas compFile iTasks ass
 
     let ass' :: [[(Pilot, (LeadingAreas (LeadingArea LeadingArea1Units) (LeadingArea LeadingArea1Units)))]] =
             [
@@ -312,7 +311,7 @@ lc2 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
                 raceTimes
                 taskPilots
 
-    _ <- writeCompAreaStep compFile iTasks ass
+    _ <- writeCompLeadingAreas compFile iTasks ass
 
     let ass' :: [[(Pilot, (LeadingAreas (LeadingArea LeadingArea2Units) (LeadingArea LeadingArea2Units)))]] =
             [
