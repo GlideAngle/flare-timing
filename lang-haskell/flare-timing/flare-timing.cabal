@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0f11e844bec5ce6b1bbb586178bd58474ff26c0e792fe62493a2f459b17a83e1
+-- hash: 224281a0fc66849d103584079c9687fd55aa090ad0998ba48a6909a3486f29ba
 
 name:           flare-timing
 version:        0.1.0
@@ -301,46 +301,6 @@ executable ft-align-time
     , siggy-chardust
     , transformers
     , uom-plugin
-    , yaml
-  default-language: Haskell2010
-
-executable ft-area-step
-  main-is: AreaStepMain.hs
-  other-modules:
-      AreaStepOptions
-      Paths_flare_timing
-  hs-source-dirs:
-      prod-apps/area-step
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , bytestring
-    , clock
-    , cmdargs
-    , directory
-    , filemanip
-    , filepath
-    , flight-clip
-    , flight-cmd
-    , flight-comp
-    , flight-gap-allot
-    , flight-gap-lead
-    , flight-latlng
-    , flight-lookup
-    , flight-mask
-    , flight-route
-    , flight-scribe
-    , flight-time
-    , flight-zone
-    , formatting
-    , mtl
-    , raw-strings-qq
-    , safe-exceptions
-    , transformers
-    , uom-plugin
-    , vector
     , yaml
   default-language: Haskell2010
 
@@ -695,6 +655,46 @@ executable ft-land-out
     , safe-exceptions
     , transformers
     , uom-plugin
+    , yaml
+  default-language: Haskell2010
+
+executable ft-lead-area
+  main-is: LeadAreaMain.hs
+  other-modules:
+      LeadAreaOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/lead-area
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-gap-allot
+    , flight-gap-lead
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-time
+    , flight-zone
+    , formatting
+    , mtl
+    , raw-strings-qq
+    , safe-exceptions
+    , transformers
+    , uom-plugin
+    , vector
     , yaml
   default-language: Haskell2010
 

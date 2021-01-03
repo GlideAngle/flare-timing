@@ -72,7 +72,7 @@ import "flight-gap-lead" Flight.Score
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
-import AreaStepOptions (description)
+import LeadAreaOptions (description)
 
 main :: IO ()
 main = do

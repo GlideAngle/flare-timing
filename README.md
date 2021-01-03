@@ -83,7 +83,7 @@ a zone with [`ft-tag-zone`](lang-haskell/flare-timing/prod-apps/tag-zone).
 9. Discard fixes that get further from goal and note leading area with
 [`ft-discard-further`](lang-haskell/flare-timing/prod-apps/discard-further).  
 10. Draw out leading areas 
-[`ft-area-step`](lang-haskell/flare-timing/prod-apps/area-step).  
+[`ft-lead-area`](lang-haskell/flare-timing/prod-apps/lead-area).  
 11. Mask a task over its tracklogs with the following, run in any order:
     * [`ft-mask-arrival`](lang-haskell/flare-timing/prod-apps/mask-arrival).  
     * [`ft-mask-bonus`](lang-haskell/flare-timing/prod-apps/mask-bonus).  

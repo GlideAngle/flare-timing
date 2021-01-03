@@ -371,7 +371,7 @@ in    defs
               , source-dirs =
                   "prod-apps/discard-further"
               }
-          , ft-area-step =
+          , ft-lead-area =
               { dependencies =
                     deps
                   # [ "safe-exceptions"
@@ -392,9 +392,9 @@ in    defs
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
               , main =
-                  "AreaStepMain.hs"
+                  "LeadAreaMain.hs"
               , source-dirs =
-                  "prod-apps/area-step"
+                  "prod-apps/lead-area"
               }
           , ft-mask-arrival =
               { dependencies =
