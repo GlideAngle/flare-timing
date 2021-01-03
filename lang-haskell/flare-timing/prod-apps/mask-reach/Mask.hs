@@ -32,7 +32,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , DfNoTrack(..)
     , dfNoTrackReach
-    , compToMaskReach
     )
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
@@ -212,7 +211,7 @@ writeMask
 
     -- NOTE: The reach without altitude bonus distance.
     writeCompMaskReach
-        (compToMaskReach compFile)
+        compFile
         (maskReachTime
             math
             earthMath

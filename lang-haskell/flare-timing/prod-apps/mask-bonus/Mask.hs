@@ -31,7 +31,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , DfNoTrack(..)
     , dfNoTrackReach
-    , compToBonusReach
     )
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
@@ -208,7 +207,7 @@ writeMask
 
     -- NOTE: The reach with altitude bonus distance.
     writeCompMaskBonus
-        (compToBonusReach compFile)
+        compFile
         (maskReachTick
             free
             dfNtReach

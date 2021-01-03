@@ -57,9 +57,7 @@ import Flight.Comp
     , IxTask(..)
     , EarlyStart(..)
     , compToMaskLead
-    , compToMaskReach
     , compToMaskSpeed
-    , compToBonusReach
     , compToLand
     , compToFar
     , compToPoint
@@ -184,16 +182,12 @@ drive o@CmdBatchOptions{file} = do
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
     let maskLeadFile = compToMaskLead compFile
-    let maskReachFile = compToMaskReach compFile
     let maskSpeedFile = compToMaskSpeed compFile
-    let bonusReachFile = compToBonusReach compFile
     let landFile = compToLand compFile
     let farFile = compToFar compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
     putStrLn $ "Reading leading from " ++ show maskLeadFile
-    putStrLn $ "Reading reach from " ++ show maskReachFile
-    putStrLn $ "Reading bonus reach from " ++ show bonusReachFile
     putStrLn $ "Reading speed from " ++ show maskSpeedFile
     putStrLn $ "Reading distance difficulty from " ++ show landFile
 
@@ -237,12 +231,12 @@ go CmdBatchOptions{..} compFile = do
 
     mr <-
         catchIO
-            (Just <$> readCompMaskReach maskReachFile)
+            (Just <$> readCompMaskReach compFile)
             (const $ return Nothing)
 
     br <-
         catchIO
-            (Just <$> readCompMaskBonus bonusReachFile)
+            (Just <$> readCompMaskBonus compFile)
             (const $ return Nothing)
 
     ms <-

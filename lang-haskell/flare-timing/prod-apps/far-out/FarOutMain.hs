@@ -26,7 +26,6 @@ import Flight.Comp
     , Nominal(..)
     , PilotGroup(didFlyNoTracklog)
     , IxTask(..)
-    , compToMaskReach
     , compToFar
     , findCompInput
     , reshape
@@ -74,9 +73,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let maskReachFile = compToMaskReach compFile
     let farFile = compToFar compFile
-    putStrLn $ "Reading far outs from " ++ show maskReachFile
 
     filesTaskAndSettings <-
         catchIO
@@ -88,7 +85,7 @@ go CmdBatchOptions{..} compFile = do
 
     masking <-
         catchIO
-            (Just <$> readCompMaskReach maskReachFile)
+            (Just <$> readCompMaskReach compFile)
             (const $ return Nothing)
 
     routes <-

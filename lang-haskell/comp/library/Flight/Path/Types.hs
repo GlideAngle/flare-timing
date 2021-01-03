@@ -43,7 +43,7 @@ module Flight.Path.Types
     , MaskLeadFile(..)
     , MaskReachFile(..)
     , MaskSpeedFile(..)
-    , BonusReachFile(..)
+    , MaskBonusFile(..)
     , LandOutFile(..)
     , FarOutFile(..)
     , GapPointFile(..)
@@ -86,7 +86,7 @@ data FileType
     | MaskLead
     | MaskReach
     | MaskSpeed
-    | BonusReach
+    | MaskBonus
     | LeadArea
     | LandOut
     | FarOut
@@ -287,7 +287,7 @@ newtype MaskSpeedFile = MaskSpeedFile FilePath
     deriving newtype Show
 
 -- | The path to a mask reach with altitude bonus distance file.
-newtype BonusReachFile = BonusReachFile FilePath
+newtype MaskBonusFile = MaskBonusFile FilePath
     deriving Eq
     deriving newtype Show
 
