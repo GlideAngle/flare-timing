@@ -17,7 +17,7 @@ import qualified Flight.Track.Mask as Mask (CompMaskingArrival(..))
 import Flight.Track.Mask
     ( CompMaskingEffort(..)
     , MaskingLead(..)
-    , MaskingReach(..)
+    , CompMaskingReach(..)
     , MaskingSpeed(..)
     )
 import qualified Flight.Track.Point as Alt (AltPointing(..))
@@ -39,9 +39,9 @@ data Config k
         , maskingEffort :: Maybe CompMaskingEffort
         , discardingLead2 :: Maybe (CompLeading LeadingArea2Units)
         , maskingLead :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/(km^2)*s |])
-        , maskingReach :: Maybe MaskingReach
+        , maskingReach :: Maybe CompMaskingReach
         , maskingSpeed :: Maybe MaskingSpeed
-        , bonusReach :: Maybe MaskingReach
+        , bonusReach :: Maybe CompMaskingReach
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
         , altFsArrival :: Maybe Mask.CompMaskingArrival

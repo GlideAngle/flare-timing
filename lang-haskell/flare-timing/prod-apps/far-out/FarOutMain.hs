@@ -35,11 +35,11 @@ import Flight.Comp
     )
 import Flight.Distance (unTaskDistanceAsKm, fromKms)
 import Flight.Track.Distance (TrackDistance(..), Effort)
-import Flight.Track.Mask (CompMaskingEffort(..), MaskingReach(..))
+import Flight.Track.Mask (CompMaskingEffort(..), CompMaskingReach(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Scribe
-    (readCompAndTasks, readRoutes, readMaskingReach, writeFaring)
+    (readCompAndTasks, readRoutes, readCompMaskReach, writeFaring)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
@@ -88,7 +88,7 @@ go CmdBatchOptions{..} compFile = do
 
     masking <-
         catchIO
-            (Just <$> readMaskingReach maskReachFile)
+            (Just <$> readCompMaskReach maskReachFile)
             (const $ return Nothing)
 
     routes <-
@@ -135,10 +135,10 @@ go CmdBatchOptions{..} compFile = do
 
 difficultyByReach
     :: CompTaskSettings k
-    -> MaskingReach
+    -> CompMaskingReach
     -> [[(Pilot, TrackDistance Effort)]]
     -> Cmp.Landing
-difficultyByReach cs MaskingReach{bolster, nigh} dfNtss =
+difficultyByReach cs CompMaskingReach{bolster, nigh} dfNtss =
     difficulty
         cs
         CompMaskingEffort

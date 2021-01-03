@@ -46,6 +46,7 @@ import Flight.Track.Cross (Seconds(..))
 import Flight.Track.Tag (CompTagging(..), TrackTime(..), PilotTrackTag(..), ZonesLastTag(..))
 import Flight.Track.Speed (startGateTaken)
 import Flight.Field (FieldOrdering(..))
+import Flight.Track.Curry (uncurry4)
 
 -- | For a stopped task, this is the time the task is scored until, the
 -- announced stop time wound back by the score back time.
@@ -161,9 +162,6 @@ data CompFraming =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
-
-uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
-uncurry4 f ~(a, b, c, d) = f a b c d
 
 mkCompPegFrame :: [TaskFraming] -> CompFraming
 mkCompPegFrame ts =

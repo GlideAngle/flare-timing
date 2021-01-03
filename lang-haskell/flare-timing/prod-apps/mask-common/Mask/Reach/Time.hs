@@ -24,7 +24,7 @@ import Flight.Comp.Distance (GeoNigh(..))
 import Flight.Comp.Distance.Double ()
 import qualified Flight.Track.Time as Time (TimeRow(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
-import Flight.Track.Mask (MaskingReach(..))
+import Flight.Track.Mask (CompMaskingReach(..))
 import "flight-gap-allot" Flight.Score
     ( MinimumDistance(..), PilotDistance(..), FlownMax(..), LinearFraction(..)
     , FlownMax(..), FlownMean(..), FlownStdDev(..)
@@ -47,7 +47,7 @@ maskReachTime
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[Pilot]]
-    -> MaskingReach
+    -> CompMaskingReach
 maskReachTime Rational _ _ _ _ _ _ _ _ _ = error "Reach time not yet implemented for rational numbers."
 maskReachTime
     Floating
@@ -60,7 +60,7 @@ maskReachTime
     dsBest
     dsNighRows
     psArriving =
-    MaskingReach
+    CompMaskingReach
         { bolster = zipWith3 maybeReachStats bsMax bsMean bsStdDev
         , reach = zipWith3 maybeReachStats rsMax rsMean rsStdDev
         , reachRank = rss

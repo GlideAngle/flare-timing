@@ -55,7 +55,7 @@ import Flight.Lookup.Tag
 import Flight.TrackLog (pilotTrack)
 import Flight.Scribe
     ( AltBonus(..)
-    , writeBonusReach
+    , writeCompMaskBonus
     , readCompBestDistances
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
@@ -207,7 +207,7 @@ writeMask
             ]
 
     -- NOTE: The reach with altitude bonus distance.
-    writeBonusReach
+    writeCompMaskBonus
         (compToBonusReach compFile)
         (maskReachTick
             free

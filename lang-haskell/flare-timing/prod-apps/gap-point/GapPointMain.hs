@@ -83,7 +83,7 @@ import Flight.Track.Mask
     ( CompMaskingArrival(..)
     , CompMaskingEffort(..)
     , MaskingLead(..)
-    , MaskingReach(..)
+    , CompMaskingReach(..)
     , MaskingSpeed(..)
     )
 import Flight.Track.Land (Landing(..))
@@ -98,9 +98,9 @@ import Flight.Scribe
     , readCompMaskArrival
     , readCompMaskEffort
     , readMaskingLead
-    , readMaskingReach
+    , readCompMaskBonus
+    , readCompMaskReach
     , readMaskingSpeed
-    , readBonusReach
     , readLanding
     , readFaring
     , writePointing
@@ -237,12 +237,12 @@ go CmdBatchOptions{..} compFile = do
 
     mr <-
         catchIO
-            (Just <$> readMaskingReach maskReachFile)
+            (Just <$> readCompMaskReach maskReachFile)
             (const $ return Nothing)
 
     br <-
         catchIO
-            (Just <$> readBonusReach bonusReachFile)
+            (Just <$> readCompMaskBonus bonusReachFile)
             (const $ return Nothing)
 
     ms <-
@@ -325,7 +325,7 @@ points'
     -> CompMaskingArrival
     -> CompMaskingEffort
     -> MaskingLead _ _
-    -> (MaskingReach, MaskingReach)
+    -> (CompMaskingReach, CompMaskingReach)
     -> MaskingSpeed
     -> Cmp.Landing
     -> Pointing
@@ -360,12 +360,12 @@ points'
         { sumDistance
         , leadRank
         }
-    ( MaskingReach
+    ( CompMaskingReach
         { reach = reachStatsF
         , bolster = bolsterStatsF
         , nigh = nighF
         }
-    , MaskingReach
+    , CompMaskingReach
         { reach = reachStatsE
         , bolster = bolsterStatsE
         , nigh = nighE

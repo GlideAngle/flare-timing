@@ -19,7 +19,7 @@ import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp.Distance (compNighTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
-import Flight.Track.Mask (MaskingReach(..))
+import Flight.Track.Mask (CompMaskingReach(..))
 import "flight-gap-allot" Flight.Score
     ( MinimumDistance(..), PilotDistance(..), FlownMax(..), LinearFraction(..)
     , FlownMax(..), FlownMean(..), FlownStdDev(..)
@@ -36,7 +36,7 @@ maskReachTick
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [[Maybe (Pilot, Time.TickRow)]]
     -> [[Pilot]]
-    -> MaskingReach
+    -> CompMaskingReach
 maskReachTick
     (MinimumDistance dMin)
     dfNtNigh
@@ -45,7 +45,7 @@ maskReachTick
     dsBest
     dsNighRows
     psArriving =
-    MaskingReach
+    CompMaskingReach
         { bolster = zipWith3 maybeReachStats bsMax bsMean bsStdDev
         , reach = zipWith3 maybeReachStats rsMax rsMean rsStdDev
         , reachRank = rss

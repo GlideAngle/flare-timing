@@ -18,9 +18,9 @@ import Flight.Scribe
     , readCompMaskEffort
     , readCompLeadArea
     , readMaskingLead
-    , readMaskingReach
+    , readCompMaskReach
     , readMaskingSpeed
-    , readBonusReach
+    , readCompMaskBonus
     , readLanding, readFaring, readPointing
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -157,12 +157,12 @@ go CmdServeOptions{..} compFile = do
 
             maskingReach <-
                 catchIO
-                    (Just <$> readMaskingReach maskReachFile)
+                    (Just <$> readCompMaskReach maskReachFile)
                     (const $ return Nothing)
 
             bonusReach <-
                 catchIO
-                    (Just <$> readBonusReach bonusReachFile)
+                    (Just <$> readCompMaskBonus bonusReachFile)
                     (const $ return Nothing)
 
             maskingSpeed <-

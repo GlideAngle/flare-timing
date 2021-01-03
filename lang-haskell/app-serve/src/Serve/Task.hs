@@ -33,10 +33,10 @@ import Flight.Track.Land
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
-import qualified Flight.Track.Mask as Mask (MaskingReach(..), CompMaskingArrival(..))
+import qualified Flight.Track.Mask as Mask (CompMaskingReach(..), CompMaskingArrival(..))
 import Flight.Track.Mask
     ( MaskingLead(..)
-    , MaskingReach(..)
+    , CompMaskingReach(..)
     , MaskingSpeed(..)
     )
 import Flight.Track.Point (Pointing(..), Allocation(..), Breakdown(..))
