@@ -33,8 +33,7 @@ import Flight.Comp
     , findCompInput
     , reshape
     , pilotNamed
-    , compToTag
-    , tagToPeg
+    , compToPeg
     , mkCompTaskSettings
     , compFileToTaskFiles
     )
@@ -71,8 +70,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = compToTag compFile
-    let stopFile = tagToPeg tagFile
+    let stopFile = compToPeg compFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
     filesTaskAndSettings <-

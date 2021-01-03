@@ -43,8 +43,7 @@ import Flight.Comp
     , LastDown(..)
     , Tweak(..)
     , compToLeadArea
-    , compToTag
-    , tagToPeg
+    , compToPeg
     , findCompInput
     , speedSectionToLeg
     , reshape
@@ -62,7 +61,7 @@ import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readCompAndTasks, readRoutes, readTagging, readFraming
+    ( readCompAndTasks, readRoutes, readCompTagZone, readFraming
     , writeCompAreaStep
     , readCompLeading, writeDiscardingLead
     )
@@ -99,9 +98,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = compToTag compFile
-    let stopFile = tagToPeg tagFile
-    putStrLn $ "Reading zone tags from " ++ show tagFile
+    let stopFile = compToPeg compFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
     filesTaskAndSettings <-
@@ -115,7 +112,7 @@ go CmdBatchOptions{..} compFile = do
 
     tagging <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
             (const $ return Nothing)
 
     stopping <-

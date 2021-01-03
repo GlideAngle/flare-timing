@@ -12,7 +12,7 @@ import Flight.Units ()
 import Flight.Scribe
     ( readCompAndTasks
     , readAltArrival, readAltLandout, readAltRoute, readAltScore
-    , readRoutes, readCompFlyTime, readCompCrossZone, readTagging, readFraming
+    , readRoutes, readCompFlyTime, readCompCrossZone, readCompTagZone, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readDiscardingLead
@@ -45,8 +45,7 @@ import Flight.Comp
     , compToLand
     , compToFar
     , compToPoint
-    , compToTag
-    , tagToPeg
+    , compToPeg
     , reshape
     , mkCompTaskSettings
     , compFileToTaskFiles
@@ -74,8 +73,7 @@ drive o@CmdServeOptions{file} = do
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
-    let tagFile = compToTag compFile
-    let stopFile= tagToPeg tagFile
+    let stopFile = compToPeg compFile
     let maskArrivalFile = compToMaskArrival compFile
     let maskEffortFile = compToMaskEffort compFile
     let leadAreaFile = compToLeadArea compFile
@@ -92,7 +90,6 @@ go CmdServeOptions{..} compFile = do
     let altFsScoreFile = compToAltScore AltFs compFile
     let altAsScoreFile = compToAltScore AltAs compFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
-    putStrLn $ "Reading zone tags from " ++ show tagFile
     putStrLn $ "Reading scored section from " ++ show stopFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
     putStrLn $ "Reading effort from " ++ show maskEffortFile
@@ -141,7 +138,7 @@ go CmdServeOptions{..} compFile = do
 
             tagging <-
                 catchIO
-                    (Just <$> readTagging tagFile)
+                    (Just <$> readCompTagZone compFile)
                     (const $ return Nothing)
 
             framing <-

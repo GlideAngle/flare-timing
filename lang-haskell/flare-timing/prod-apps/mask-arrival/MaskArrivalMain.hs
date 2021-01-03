@@ -13,8 +13,7 @@ import Flight.Comp
     , CompInputFile(..)
     , PilotName(..)
     , IxTask(..)
-    , compToTag
-    , tagToPeg
+    , compToPeg
     , findCompInput
     , reshape
     , pilotNamed
@@ -27,7 +26,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
 import Flight.Scribe
-    (readCompAndTasks, readRoutes, readTagging, readFraming)
+    (readCompAndTasks, readRoutes, readCompTagZone, readFraming)
 import Flight.Lookup.Route (routeLength)
 import MaskArrivalOptions (description)
 import Mask (writeMask)
@@ -55,9 +54,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{math, task, pilot} compFile = do
-    let tagFile = compToTag compFile
-    let stopFile = tagToPeg tagFile
-    putStrLn $ "Reading zone tags from " ++ show tagFile
+    let stopFile = compToPeg compFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
     filesTaskAndSettings <-
@@ -70,7 +67,7 @@ go CmdBatchOptions{math, task, pilot} compFile = do
 
     tagging <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
             (const $ return Nothing)
 
     stopping <-

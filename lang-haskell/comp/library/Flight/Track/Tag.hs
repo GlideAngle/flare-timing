@@ -24,6 +24,7 @@ module Flight.Track.Tag
     , timed
     , starting
     , tagTimes
+    , mkCompTagZone, unMkCompTagZone
     ) where
 
 import Data.Maybe (listToMaybe, fromMaybe, catMaybes)
@@ -60,6 +61,16 @@ data CompTagging =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+mkCompTagZone :: [TaskTagging] -> CompTagging
+mkCompTagZone ts =
+    uncurry CompTagging $ unzip
+    [ (i, g)
+    | TaskTagging{timing = i, tagging = g} <- ts
+    ]
+
+unMkCompTagZone :: CompTagging -> [TaskTagging]
+unMkCompTagZone CompTagging{timing = is, tagging = gs} = zipWith TaskTagging is gs
 
 -- | The first tagging of each zone.
 newtype ZonesFirstTag = ZonesFirstTag [Maybe UTCTime]

@@ -35,15 +35,13 @@ import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , CompInputFile(..)
-    , TagZoneFile(..)
     , CompTaskSettings(..)
     , TaskStop(..)
     , Task(..)
     , StartGate(..)
     , LastStart(..)
     , Pilot
-    , compToTag
-    , tagToPeg
+    , compToPeg
     , findCompInput
     , reshape
     , mkCompTaskSettings
@@ -54,7 +52,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
     ( readCompAndTasks
-    , readCompFlyTime, readTagging, writeFraming, readCompTrackRows
+    , readCompFlyTime, readCompTagZone, writeFraming, readCompTrackRows
     )
 import PegFrameOptions (description)
 
@@ -81,8 +79,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = compToTag compFile
-    putStrLn $ "Reading zone tags from " ++ show tagFile
 
     filesTaskAndSettings <-
         catchIO
@@ -99,7 +95,7 @@ go CmdBatchOptions{..} compFile = do
 
     tagging <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
             (const $ return Nothing)
 
     case (filesTaskAndSettings, flying, tagging) of
@@ -110,21 +106,18 @@ go CmdBatchOptions{..} compFile = do
             writeStop
                 (uncurry mkCompTaskSettings $ settings)
                 compFile
-                tagFile
                 fy
                 tg
 
 writeStop
     :: CompTaskSettings k
     -> CompInputFile
-    -> TagZoneFile
     -> CompFlying
     -> CompTagging
     -> IO ()
 writeStop
     CompTaskSettings{tasks}
     compFile
-    tagFile
     CompFlying{flying}
     CompTagging{timing, tagging} = do
 
@@ -359,7 +352,7 @@ writeStop
                 , tagging = tagss
                 }
 
-    let pegFile = tagToPeg tagFile
+    let pegFile = compToPeg compFile
     putStrLn $ "Writing framing to " ++ show pegFile
     writeFraming pegFile frame
 

@@ -1,4 +1,3 @@
-
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
@@ -57,8 +56,7 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToTag
-    , tagToPeg
+    , compToPeg
     , compToMaskArrival
     , compToMaskEffort
     , compToMaskLead
@@ -99,7 +97,7 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     ( readCompAndTasks
     , readRoutes
-    , readCompFlyTime, readTagging, readFraming
+    , readCompFlyTime, readCompTagZone, readFraming
     , readMaskingArrival
     , readMaskingEffort
     , readMaskingLead
@@ -188,8 +186,7 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = compToTag compFile
-    let stopFile = tagToPeg tagFile
+    let stopFile = compToPeg compFile
     let maskArrivalFile = compToMaskArrival compFile
     let maskEffortFile = compToMaskEffort compFile
     let maskLeadFile = compToMaskLead compFile
@@ -201,7 +198,6 @@ go CmdBatchOptions{..} compFile = do
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
     putStrLn $ "Reading scored times from " ++ show stopFile
-    putStrLn $ "Reading start and end zone tagging from " ++ show tagFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
     putStrLn $ "Reading effort from " ++ show maskEffortFile
     putStrLn $ "Reading leading from " ++ show maskLeadFile
@@ -225,7 +221,7 @@ go CmdBatchOptions{..} compFile = do
 
     tgs <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
             (const $ return Nothing)
 
     stps <-

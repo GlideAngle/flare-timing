@@ -25,7 +25,6 @@ import Flight.Comp
     , CompInputFile(..)
     , Comp(..)
     , Task(..)
-    , compToTag
     , findCompInput
     , reshape
     , mkCompTaskSettings
@@ -39,7 +38,7 @@ import Flight.Track.Tag
     )
 import Flight.Scribe
     ( readCompAndTasks
-    , readCompFlyTime, readCompCrossZone, writeTagging
+    , readCompFlyTime, readCompCrossZone, writeCompTagZone
     )
 import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
@@ -145,7 +144,7 @@ go math compFile = do
 
             let tagZone = CompTagging{timing = times, tagging = pss}
 
-            writeTagging (compToTag compFile) tagZone
+            writeCompTagZone compFile tagZone
 
 flownTag
     :: Math

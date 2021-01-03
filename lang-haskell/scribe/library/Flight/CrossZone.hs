@@ -39,14 +39,14 @@ readCompCrossZone compFile = do
             ]
 
 writeCompCrossZone :: CompInputFile -> CompCrossing -> IO ()
-writeCompCrossZone compFile compCrossingTimes = do
+writeCompCrossZone compFile compCrossZones = do
     putStrLn "Writing zone crossings to:"
     taskFiles <- compFileToTaskFiles compFile
     parallel_
         [ do
             putStrLn $ "\t" ++ show crossZoneFile
-            writeTaskCrossZone crossZoneFile taskCrossingTimes
+            writeTaskCrossZone crossZoneFile taskCrossZones
 
-        | taskCrossingTimes <- unMkCompCrossZone compCrossingTimes
+        | taskCrossZones <- unMkCompCrossZone compCrossZones
         | crossZoneFile <- taskToCrossZone <$> taskFiles
         ]

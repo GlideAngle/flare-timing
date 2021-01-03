@@ -21,14 +21,13 @@ import Flight.Comp
     , IxTask(..)
     , CompSettings(..)
     , Comp(..)
-    , compToTag
-    , tagToPeg
+    , compToPeg
     , findCompInput
     , reshape
     , pilotNamed
     , compFileToTaskFiles
     )
-import Flight.Scribe (readCompAndTasks, readTagging, readFraming)
+import Flight.Scribe (readCompAndTasks, readCompTagZone, readFraming)
 import Flight.Lookup.Stop (stopFlying)
 import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)
@@ -62,10 +61,8 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = compToTag compFile
-    let stopFile = tagToPeg tagFile
+    let stopFile = compToPeg compFile
     putStrLn $ "Reading competition from " ++ show compFile
-    putStrLn $ "Reading zone tags from " ++ show tagFile
     putStrLn $ "Reading scored times from " ++ show stopFile
 
     filesTaskAndSettings <-
@@ -78,7 +75,7 @@ go CmdBatchOptions{..} compFile = do
 
     tagging <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
             (const $ return Nothing)
 
     stopping <-

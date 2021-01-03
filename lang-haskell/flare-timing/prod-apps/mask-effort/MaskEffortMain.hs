@@ -18,8 +18,7 @@ import Flight.Comp
     , CompTaskSettings(..)
     , Tweak(..)
     , compToMaskArrival
-    , compToTag
-    , tagToPeg
+    , compToPeg
     , findCompInput
     , reshape
     , pilotNamed
@@ -33,7 +32,7 @@ import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (stopFlying)
 import Flight.Lookup.Tag (tagTaskLeading)
 import Flight.Scribe
-    (readCompAndTasks, readRoutes, readTagging, readFraming, readMaskingArrival)
+    (readCompAndTasks, readRoutes, readCompTagZone, readFraming, readMaskingArrival)
 import Flight.Lookup.Route (routeLength)
 import MaskEffortOptions (description)
 import Mask (writeMask)
@@ -63,10 +62,8 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let tagFile = compToTag compFile
-    let stopFile = tagToPeg tagFile
+    let stopFile = compToPeg compFile
     let maskArrivalFile = compToMaskArrival compFile
-    putStrLn $ "Reading zone tags from " ++ show tagFile
     putStrLn $ "Reading scored times from " ++ show stopFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
 
@@ -80,7 +77,7 @@ go CmdBatchOptions{..} compFile = do
 
     tagging <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
             (const $ return Nothing)
 
     stopping <-
