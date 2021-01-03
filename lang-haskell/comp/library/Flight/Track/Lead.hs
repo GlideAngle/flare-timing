@@ -21,6 +21,7 @@ module Flight.Track.Lead
     , compLeading
     , lwScalingDefault
     , cmpArea
+    , mkCompLeadArea, unMkCompLeadArea
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
@@ -56,6 +57,12 @@ newtype CompLeading u =
         { areas :: [[(Pilot, LeadingAreas (LeadingArea u) (LeadingArea u))]]
         }
     deriving (Eq, Ord, Generic)
+
+mkCompLeadArea :: [TaskLeading u] -> CompLeading u
+mkCompLeadArea ts = CompLeading [areas | TaskLeading{areas} <- ts]
+
+unMkCompLeadArea :: CompLeading u -> [TaskLeading u]
+unMkCompLeadArea CompLeading{areas} = TaskLeading <$> areas
 
 instance FieldOrdering (TaskLeading u) where
     fieldOrder _ = cmpArea compare

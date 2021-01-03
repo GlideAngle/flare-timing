@@ -42,7 +42,6 @@ import Flight.Comp
     , LastArrival(..)
     , LastDown(..)
     , Tweak(..)
-    , compToLeadArea
     , findCompInput
     , speedSectionToLeg
     , reshape
@@ -61,7 +60,7 @@ import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     ( readCompAndTasks, readRoutes, readCompTagZone, readCompPegFrame
-    , writeCompLeadingAreas, readCompLeadingAreas, writeCompLeading
+    , writeCompLeadingAreas, readCompLeadingAreas, writeCompLeadArea
     )
 import "flight-gap-lead" Flight.Score
     ( LeadingArea(..), LcPoint
@@ -285,7 +284,7 @@ lc1 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
             | rt <- raceTimes
             ]
 
-    writeCompLeading (compToLeadArea compFile) (CompLeading{areas = ass'})
+    writeCompLeadArea compFile (CompLeading{areas = ass'})
 
 lc2
     :: RoutesLookupTaskDistance
@@ -348,7 +347,7 @@ lc2 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
             | rt <- raceTimes
             ]
 
-    writeCompLeading (compToLeadArea compFile) (CompLeading{areas = ass'})
+    writeCompLeadArea compFile (CompLeading{areas = ass'})
 
 checkAll
     :: ScoringInputFiles

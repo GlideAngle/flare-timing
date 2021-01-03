@@ -32,7 +32,6 @@ import Flight.Comp
     , DfNoTrack(..)
     , dfNoTrackReach
     , compToBonusReach
-    , compToLeadArea
     )
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
@@ -61,7 +60,7 @@ import Flight.Scribe
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
     -- , readPilotPegThenDiscard
-    , readCompLeading
+    , readCompLeadArea
     )
 import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
@@ -179,7 +178,7 @@ writeMask
             (includeTask ixSelectTasks)
             ((fmap . fmap) fst dsLand)
 
-    leading <- readCompLeading (compToLeadArea compFile)
+    leading <- readCompLeadArea compFile
 
     let (dsBonusAltBest, _, _) =
             maskLeadCoef

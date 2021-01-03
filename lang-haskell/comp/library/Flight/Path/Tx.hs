@@ -10,7 +10,6 @@ module Flight.Path.Tx
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
-    , compToLeadArea
     , compToMaskArrival
     , compToMaskEffort
     , compToMaskLead
@@ -26,6 +25,7 @@ module Flight.Path.Tx
     , taskToCrossZone
     , taskToTagZone
     , taskToPegFrame
+    , taskToLeadArea
 
     , compFileToCompDir
     , taskDir
@@ -41,6 +41,7 @@ module Flight.Path.Tx
     , crossZonePath
     , tagZonePath
     , pegFramePath
+    , leadAreaPath
 
     , unpackTrackPath
     , alignTimePath
@@ -123,7 +124,7 @@ reshape FlyTime = const "fly-time.yaml"
 reshape CrossZone = const "cross-zone.yaml"
 reshape TagZone = const "tag-zone.yaml"
 reshape PegFrame = const "peg-frame.yaml"
-reshape LeadArea = flip replaceExtensions "lead-area.yaml"
+reshape LeadArea = const "lead-area.yaml"
 
 reshape MaskArrival = coerce . compToMaskArrival . coerce . reshape CompInput
 reshape MaskEffort = coerce . compToMaskEffort . coerce . reshape CompInput
@@ -216,6 +217,12 @@ taskToPegFrame :: TaskInputFile -> PegFrameFile
 taskToPegFrame (TaskInputFile s) = PegFrameFile $ (takeDirectory s) </> reshape PegFrame s
 
 -- |
+-- >>> taskToLeadArea (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/lead-area.yaml"
+taskToLeadArea :: TaskInputFile -> LeadAreaFile
+taskToLeadArea (TaskInputFile s) = LeadAreaFile $ (takeDirectory s) </> reshape LeadArea s
+
+-- |
 -- >>> compToMaskArrival (CompInputFile ".flare-timing/comp-input.yaml")
 -- ".flare-timing/mask-arrival.yaml"
 --
@@ -262,14 +269,6 @@ compToMaskSpeed _ = let DotDirName s d = shape MaskSpeed in MaskSpeedFile $ dotD
 -- prop> \s -> compToBonusReach (CompInputFile s) == BonusReachFile ".flare-timing/bonus-reach.yaml"
 compToBonusReach :: CompInputFile -> BonusReachFile
 compToBonusReach _ = let DotDirName s d = shape BonusReach in BonusReachFile $ dotDir d s
-
--- |
--- >>> compToLeadArea (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/lead-area.yaml"
---
--- prop> \s -> compToLeadArea (CompInputFile s) == LeadAreaFile ".flare-timing/lead-area.yaml"
-compToLeadArea :: CompInputFile -> LeadAreaFile
-compToLeadArea _ = let DotDirName s d = shape LeadArea in LeadAreaFile $ dotDir d s
 
 -- |
 -- >>> compToLand (CompInputFile ".flare-timing/comp-input.yaml")
@@ -416,6 +415,12 @@ tagZonePath dir task = (taskDir dir task, TagZoneFile "tag-zone.yaml")
 -- ("a/.flare-timing/task-1","peg-frame.yaml")
 pegFramePath :: CompDir -> IxTask -> (TaskDir, PegFrameFile)
 pegFramePath dir task = (taskDir dir task, PegFrameFile "peg-frame.yaml")
+
+-- |
+-- >>> leadAreaPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","lead-area.yaml")
+leadAreaPath :: CompDir -> IxTask -> (TaskDir, LeadAreaFile)
+leadAreaPath dir task = (taskDir dir task, LeadAreaFile "lead-area.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

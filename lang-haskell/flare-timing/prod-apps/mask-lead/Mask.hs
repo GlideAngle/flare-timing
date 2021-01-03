@@ -25,7 +25,6 @@ import Flight.Comp
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
     , compToMaskLead
-    , compToLeadArea
     )
 import Flight.Distance (QTaskDistance)
 import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
@@ -54,7 +53,7 @@ import Flight.Scribe
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
     -- , readPilotPegThenDiscard
-    , readCompLeading
+    , readCompLeadArea
     )
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats)
@@ -166,7 +165,7 @@ writeMask
             (includeTask ixSelectTasks)
             ((fmap . fmap) fst dsLand)
 
-    leading <- readCompLeading (compToLeadArea compFile)
+    leading <- readCompLeadArea compFile
 
     let (_dsNullAltBest, _nullAltRowTicks, nullAltLead) =
             maskLeadCoef

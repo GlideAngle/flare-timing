@@ -16,7 +16,7 @@ import Flight.Scribe
     , readCompFlyTime, readCompCrossZone, readCompTagZone, readCompPegFrame
     , readMaskingArrival
     , readMaskingEffort
-    , readCompLeading
+    , readCompLeadArea
     , readMaskingLead
     , readMaskingReach
     , readMaskingSpeed
@@ -38,7 +38,6 @@ import Flight.Comp
     , compToAltScore
     , compToMaskArrival
     , compToMaskEffort
-    , compToLeadArea
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
@@ -75,7 +74,6 @@ go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
     let maskArrivalFile = compToMaskArrival compFile
     let maskEffortFile = compToMaskEffort compFile
-    let leadAreaFile = compToLeadArea compFile
     let maskLeadFile = compToMaskLead compFile
     let maskReachFile = compToMaskReach compFile
     let maskSpeedFile = compToMaskSpeed compFile
@@ -91,7 +89,6 @@ go CmdServeOptions{..} compFile = do
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
     putStrLn $ "Reading arrivals from " ++ show maskArrivalFile
     putStrLn $ "Reading effort from " ++ show maskEffortFile
-    putStrLn $ "Reading leading area from " ++ show leadAreaFile
     putStrLn $ "Reading leading from " ++ show maskLeadFile
     putStrLn $ "Reading reach from " ++ show maskReachFile
     putStrLn $ "Reading speed from " ++ show maskSpeedFile
@@ -156,7 +153,7 @@ go CmdServeOptions{..} compFile = do
 
             discardingLead2 <-
                 catchIO
-                    (Just <$> readCompLeading leadAreaFile)
+                    (Just <$> readCompLeadArea compFile)
                     (const $ return Nothing)
 
             maskingLead <-
