@@ -11,7 +11,7 @@ import System.Directory (getCurrentDirectory)
 import Flight.Units ()
 import Flight.Scribe
     ( readCompAndTasks
-    , readAltArrival, readAltLandout, readAltRoute, readAltScore
+    , readAltArrival, readAltLandOut, readAltRoute, readAltScore
     , readRoutes
     , readCompFlyTime, readCompCrossZone, readCompTagZone, readCompPegFrame
     , readCompMaskArrival
@@ -21,7 +21,7 @@ import Flight.Scribe
     , readCompMaskReach
     , readCompMaskSpeed
     , readCompMaskBonus
-    , readLanding, readFaring, readPointing
+    , readCompLandOut, readCompFarOut, readPointing
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -36,8 +36,6 @@ import Flight.Comp
     , compToAltLandout
     , compToAltRoute
     , compToAltScore
-    , compToLand
-    , compToFar
     , compToPoint
     , reshape
     , mkCompTaskSettings
@@ -66,8 +64,6 @@ drive o@CmdServeOptions{file} = do
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
-    let landFile = compToLand compFile
-    let farFile = compToFar compFile
     let pointFile = compToPoint compFile
     let altFsArrivalFile = compToAltArrival AltFs compFile
     let altFsLandoutFile = compToAltLandout AltFs compFile
@@ -75,7 +71,6 @@ go CmdServeOptions{..} compFile = do
     let altFsScoreFile = compToAltScore AltFs compFile
     let altAsScoreFile = compToAltScore AltAs compFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
-    putStrLn $ "Reading land outs from " ++ show landFile
     putStrLn $ "Reading scores from " ++ show pointFile
     putStrLn $ "Reading FS arrivals from " ++ show altFsArrivalFile
     putStrLn $ "Reading FS land outs from " ++ show altFsLandoutFile
@@ -160,12 +155,12 @@ go CmdServeOptions{..} compFile = do
 
             _landing <-
                 catchIO
-                    (Just <$> readLanding landFile)
+                    (Just <$> readCompLandOut compFile)
                     (const $ return Nothing)
 
             landing <-
                 catchIO
-                    (Just <$> readFaring farFile)
+                    (Just <$> readCompFarOut compFile)
                     (const $ return Nothing)
 
             pointing <-
@@ -180,7 +175,7 @@ go CmdServeOptions{..} compFile = do
 
             altFsL <-
                 catchIO
-                    (Just <$> readAltLandout altFsLandoutFile)
+                    (Just <$> readAltLandOut altFsLandoutFile)
                     (const $ return Nothing)
 
             altFsR <-

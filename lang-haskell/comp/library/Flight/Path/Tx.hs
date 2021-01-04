@@ -10,8 +10,6 @@ module Flight.Path.Tx
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
-    , compToLand
-    , compToFar
     , compToPoint
 
     , taskToTaskLength
@@ -26,6 +24,8 @@ module Flight.Path.Tx
     , taskToMaskBonus
     , taskToMaskSpeed
     , taskToMaskLead
+    , taskToLandOut
+    , taskToFarOut
 
     , compFileToCompDir
     , taskDir
@@ -48,6 +48,8 @@ module Flight.Path.Tx
     , maskBonusPath
     , maskSpeedPath
     , maskLeadPath
+    , landOutPath
+    , farOutPath
 
     , unpackTrackPath
     , alignTimePath
@@ -139,8 +141,8 @@ reshape MaskReach = const "mask-reach.yaml"
 reshape MaskSpeed = const "mask-speed.yaml"
 
 reshape MaskBonus = const "mask-bonus.yaml"
-reshape LandOut = coerce . compToLand . coerce . reshape CompInput
-reshape FarOut = coerce . compToFar . coerce . reshape CompInput
+reshape LandOut = const "land-out.yaml"
+reshape FarOut = const "far-out.yaml"
 reshape GapPoint = coerce . compToPoint . coerce . reshape CompInput
 
 reshape UnpackTrack = flip replaceExtensions "unpack-track.csv"
@@ -265,20 +267,16 @@ taskToMaskLead :: TaskInputFile -> MaskLeadFile
 taskToMaskLead (TaskInputFile s) = MaskLeadFile $ (takeDirectory s) </> reshape MaskLead s
 
 -- |
--- >>> compToLand (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/land-out.yaml"
---
--- prop> \s -> compToLand (CompInputFile s) == LandOutFile ".flare-timing/land-out.yaml"
-compToLand :: CompInputFile -> LandOutFile
-compToLand _ = let DotDirName s d = shape LandOut in LandOutFile $ dotDir d s
+-- >>> taskToLandOut (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/land-out.yaml"
+taskToLandOut :: TaskInputFile -> LandOutFile
+taskToLandOut (TaskInputFile s) = LandOutFile $ (takeDirectory s) </> reshape LandOut s
 
 -- |
--- >>> compToFar (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/far-out.yaml"
---
--- prop> \s -> compToFar (CompInputFile s) == FarOutFile ".flare-timing/far-out.yaml"
-compToFar :: CompInputFile -> FarOutFile
-compToFar _ = let DotDirName s d = shape FarOut in FarOutFile $ dotDir d s
+-- >>> taskToFarOut (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/far-out.yaml"
+taskToFarOut :: TaskInputFile -> FarOutFile
+taskToFarOut (TaskInputFile s) = FarOutFile $ (takeDirectory s) </> reshape FarOut s
 
 -- |
 -- >>> compToPoint (CompInputFile ".flare-timing/comp-input.yaml")
@@ -451,6 +449,18 @@ maskSpeedPath dir task = (taskDir dir task, MaskSpeedFile "mask-speed.yaml")
 -- ("a/.flare-timing/task-1","mask-lead.yaml")
 maskLeadPath :: CompDir -> IxTask -> (TaskDir, MaskLeadFile)
 maskLeadPath dir task = (taskDir dir task, MaskLeadFile "mask-lead.yaml")
+
+-- |
+-- >>> landOutPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","land-out.yaml")
+landOutPath :: CompDir -> IxTask -> (TaskDir, LandOutFile)
+landOutPath dir task = (taskDir dir task, LandOutFile "land-out.yaml")
+
+-- |
+-- >>> farOutPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","far-out.yaml")
+farOutPath :: CompDir -> IxTask -> (TaskDir, FarOutFile)
+farOutPath dir task = (taskDir dir task, FarOutFile "far-out.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

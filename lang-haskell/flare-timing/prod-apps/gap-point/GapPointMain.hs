@@ -56,8 +56,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToLand
-    , compToFar
     , compToPoint
     , findCompInput
     , reshape
@@ -82,11 +80,11 @@ import Flight.Track.Mask
     , CompMaskingReach(..)
     , CompMaskingSpeed(..)
     )
-import Flight.Track.Land (Landing(..))
+import Flight.Track.Land (CompLanding(..))
 import Flight.Track.Place (rankByTotal)
 import Flight.Track.Point
     (Velocity(..), Breakdown(..), Pointing(..), Allocation(..), EssNotGoal(..))
-import qualified Flight.Track.Land as Cmp (Landing(..))
+import qualified Flight.Track.Land as Cmp (CompLanding(..))
 import Flight.Scribe
     ( readCompAndTasks
     , readRoutes
@@ -97,8 +95,7 @@ import Flight.Scribe
     , readCompMaskBonus
     , readCompMaskReach
     , readCompMaskSpeed
-    , readLanding
-    , readFaring
+    , readCompLandOut, readCompFarOut
     , writePointing
     )
 import Flight.Mask (RaceSections(..), section)
@@ -179,11 +176,8 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let landFile = compToLand compFile
-    let farFile = compToFar compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
-    putStrLn $ "Reading distance difficulty from " ++ show landFile
 
     filesTaskAndSettings <-
         catchIO
@@ -240,12 +234,12 @@ go CmdBatchOptions{..} compFile = do
 
     _landing <-
         catchIO
-            (Just <$> readLanding landFile)
+            (Just <$> readCompLandOut compFile)
             (const $ return Nothing)
 
     landing <-
         catchIO
-            (Just <$> readFaring farFile)
+            (Just <$> readCompFarOut compFile)
             (const $ return Nothing)
 
     routes <-
@@ -281,8 +275,8 @@ go CmdBatchOptions{..} compFile = do
 
             writePointing pointFile $ points' cs lookupTaskLength cg tg' mA mE' mL2 (mR, bR) mS lg
 
-efforts :: Cmp.Landing -> CompMaskingEffort
-efforts Cmp.Landing{bestDistance = ds, difficulty = ess} =
+efforts :: Cmp.CompLanding -> CompMaskingEffort
+efforts Cmp.CompLanding{bestDistance = ds, difficulty = ess} =
     CompMaskingEffort
         { bestEffort = [ do FlownMax d' <- d; return $ fromKms d' | d <- ds ]
         , land = downPilots <$> ess
@@ -315,7 +309,7 @@ points'
     -> CompMaskingLead _ _
     -> (CompMaskingReach, CompMaskingReach)
     -> CompMaskingSpeed
-    -> Cmp.Landing
+    -> Cmp.CompLanding
     -> Pointing
 points'
     CompTaskSettings
@@ -367,7 +361,7 @@ points'
         , gsSpeed
         , altStopped
         }
-    Landing
+    CompLanding
         { difficulty = landoutDifficulty
         } =
     Pointing

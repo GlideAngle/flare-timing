@@ -10,16 +10,15 @@ Stability   : experimental
 Tracks masked with task control zones.
 -}
 module Flight.Track.Land
-    ( Landing(..)
-    , TaskLanding(..)
+    ( TaskLanding(..)
+    , CompLanding(..)
     , TrackEffort(..)
-    , compLanding
-    , taskLanding
     , effortRank
+    , mkCompLandOut, unMkCompLandOut, taskLanding
     ) where
 
 import Lens.Micro ((^?), ix)
-import Data.List (sortOn)
+import Data.List (sortOn, unzip5)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -41,6 +40,7 @@ import "flight-gap-effort" Flight.Score
     , DifficultyFraction(..)
     )
 import Flight.Comp (IxTask(..))
+import Flight.Track.Curry (uncurry5)
 
 data TrackEffort =
     TrackEffort
@@ -67,8 +67,8 @@ chunkEffort ChunkDifficulty{downs, downers, frac = DifficultyFraction df} =
     | pilot <- downers
     ]
 
-effortRank :: Landing -> [[(Pilot, TrackEffort)]]
-effortRank Landing{difficulty} =
+effortRank :: CompLanding -> [[(Pilot, TrackEffort)]]
+effortRank CompLanding{difficulty} =
     [ maybe
         []
         ( sortOn
@@ -82,24 +82,6 @@ effortRank Landing{difficulty} =
     | d <- difficulty
     ]
 
-taskLanding :: IxTask -> Landing -> Maybe TaskLanding
-taskLanding (IxTask iTask) Landing{..} = do
-    let i = fromIntegral iTask - 1
-    bd <- bestDistance ^? ix i
-    lo <- landout ^? ix i
-    la <- lookahead ^? ix i
-    cg <- chunking ^? ix i
-    df <- difficulty ^? ix i
-    return
-        TaskLanding
-            { minDistance = minDistance
-            , bestDistance = bd
-            , landout = lo
-            , lookahead = la
-            , chunking = cg
-            , difficulty = df
-            }
-
 -- | The landing for a single task.
 data TaskLanding =
     TaskLanding
@@ -108,37 +90,21 @@ data TaskLanding =
         -- before this distance get this distance. The 100m segments start from
         -- here.
         , bestDistance :: Maybe (FlownMax (Quantity Double [u| km |]))
-        -- ^ For each task, the best distance flown.
+        -- ^ The best distance flown.
         , landout :: Int
-        -- ^ For each task, the number of pilots landing out.
+        -- ^ The number of pilots landing out.
         , lookahead :: Maybe Lookahead
-        -- ^ For each task, how many 100m chunks to look ahead for land outs.
+        -- ^ How many 100m chunks to look ahead for land outs.
         , chunking :: Maybe Chunking
-        -- ^ For each task, the chunking.
+        -- ^ The chunking.
         , difficulty :: Maybe [ChunkDifficulty]
         -- ^ The difficulty of each chunk.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-compLanding :: MinimumDistance (Quantity Double [u| km |]) -> [TaskLanding] -> Landing
-compLanding free xs =
-    Landing
-        { minDistance = free
-        , bestDistance =
-            (\TaskLanding{bestDistance = bd} -> bd) <$> xs
-        , landout =
-            (\TaskLanding{landout = lo} -> lo) <$> xs
-        , lookahead =
-            (\TaskLanding{lookahead = ahead} -> ahead) <$> xs
-        , chunking =
-            (\TaskLanding{chunking = cg} -> cg) <$> xs
-        , difficulty =
-            (\TaskLanding{difficulty = dy} -> dy) <$> xs
-        }
-
 -- | For each task, the landing for that task.
-data Landing =
-    Landing
+data CompLanding =
+    CompLanding
         { minDistance :: MinimumDistance (Quantity Double [u| km |])
         -- ^ The mimimum distance, set once for the comp. All pilots landing
         -- before this distance get this distance. The 100m segments start from
@@ -156,8 +122,58 @@ data Landing =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-instance FieldOrdering Landing where
-    fieldOrder _ = cmp
+mkCompLandOut :: [TaskLanding] -> CompLanding
+mkCompLandOut ts =
+    (\(a' : _, xs) -> uncurry5 (CompLanding a') $ unzip5 xs) $ unzip
+    [ (a, (b, c, d, e, f))
+    | TaskLanding
+        { minDistance = a
+        , bestDistance = b
+        , landout = c
+        , lookahead = d
+        , chunking = e
+        , difficulty = f
+        } <- ts
+    ]
+
+unMkCompLandOut :: CompLanding -> [TaskLanding]
+unMkCompLandOut
+    CompLanding
+        { minDistance = a
+        , bestDistance = bs
+        , landout = cs
+        , lookahead = ds
+        , chunking = es
+        , difficulty = fs
+        } =
+    [ TaskLanding a b c d e f
+    | b <- bs
+    | c <- cs
+    | d <- ds
+    | e <- es
+    | f <- fs
+    ]
+
+taskLanding :: IxTask -> CompLanding -> Maybe TaskLanding
+taskLanding (IxTask iTask) CompLanding{..} = do
+    let i = fromIntegral iTask - 1
+    bd <- bestDistance ^? ix i
+    lo <- landout ^? ix i
+    la <- lookahead ^? ix i
+    cg <- chunking ^? ix i
+    df <- difficulty ^? ix i
+    return
+        TaskLanding
+            { minDistance = minDistance
+            , bestDistance = bd
+            , landout = lo
+            , lookahead = la
+            , chunking = cg
+            , difficulty = df
+            }
+
+instance FieldOrdering TaskLanding where fieldOrder _ = cmp
+instance FieldOrdering CompLanding where fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =

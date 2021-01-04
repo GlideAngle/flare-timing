@@ -26,7 +26,6 @@ import Flight.Comp
     , Nominal(..)
     , PilotGroup(didFlyNoTracklog)
     , IxTask(..)
-    , compToFar
     , findCompInput
     , reshape
     , mkCompTaskSettings
@@ -35,10 +34,10 @@ import Flight.Comp
 import Flight.Distance (unTaskDistanceAsKm, fromKms)
 import Flight.Track.Distance (TrackDistance(..), Effort)
 import Flight.Track.Mask (CompMaskingEffort(..), CompMaskingReach(..))
-import qualified Flight.Track.Land as Cmp (Landing(..))
+import qualified Flight.Track.Land as Cmp (CompLanding(..))
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Scribe
-    (readCompAndTasks, readRoutes, readCompMaskReach, writeFaring)
+    (readCompAndTasks, readRoutes, readCompMaskReach, writeCompFarOut)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
@@ -73,8 +72,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let farFile = compToFar compFile
-
     filesTaskAndSettings <-
         catchIO
             (Just <$> do
@@ -128,13 +125,13 @@ go CmdBatchOptions{..} compFile = do
                     | dfNts <- dfNtss
                     ]
 
-            writeFaring farFile $ difficultyByReach cs mk ess
+            writeCompFarOut compFile $ difficultyByReach cs mk ess
 
 difficultyByReach
     :: CompTaskSettings k
     -> CompMaskingReach
     -> [[(Pilot, TrackDistance Effort)]]
-    -> Cmp.Landing
+    -> Cmp.CompLanding
 difficultyByReach cs CompMaskingReach{bolster, nigh} dfNtss =
     difficulty
         cs
@@ -157,9 +154,9 @@ difficultyByReach cs CompMaskingReach{bolster, nigh} dfNtss =
                 | ns <- nigh
                 ]
 
-difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.Landing
+difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.CompLanding
 difficulty CompTaskSettings{nominal} CompMaskingEffort{bestEffort, land} =
-    Cmp.Landing
+    Cmp.CompLanding
         { minDistance = md
         , bestDistance = bests
         , landout = length <$> land

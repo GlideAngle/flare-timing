@@ -21,7 +21,6 @@ import Flight.Comp
     , CompInputFile(..)
     , CompTaskSettings(..)
     , Nominal(..)
-    , compToLand
     , findCompInput
     , reshape
     , mkCompTaskSettings
@@ -30,8 +29,8 @@ import Flight.Comp
 import Flight.Distance (unTaskDistanceAsKm)
 import Flight.Track.Distance (TrackDistance(..))
 import Flight.Track.Mask (CompMaskingEffort(..))
-import qualified Flight.Track.Land as Cmp (Landing(..))
-import Flight.Scribe (readCompAndTasks, readCompMaskEffort, writeLanding)
+import qualified Flight.Track.Land as Cmp (CompLanding(..))
+import Flight.Scribe (readCompAndTasks, readCompMaskEffort, writeCompLandOut)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
@@ -62,8 +61,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let landFile = compToLand compFile
-
     filesTaskAndSettings <-
         catchIO
             (Just <$> do
@@ -71,7 +68,6 @@ go CmdBatchOptions{..} compFile = do
                 s <- readCompAndTasks (compFile, ts)
                 return (ts, s))
             (const $ return Nothing)
-
 
     masking <-
         catchIO
@@ -83,11 +79,11 @@ go CmdBatchOptions{..} compFile = do
         (_, Nothing) -> putStrLn "Couldn't read the maskings."
         (Just (_taskFiles, settings), Just mk) ->
             let cs = uncurry mkCompTaskSettings $ settings
-            in writeLanding landFile $ difficulty cs mk
+            in writeCompLandOut compFile $ difficulty cs mk
 
-difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.Landing
+difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.CompLanding
 difficulty CompTaskSettings{nominal} CompMaskingEffort{bestEffort, land} =
-    Cmp.Landing
+    Cmp.CompLanding
         { minDistance = md
         , bestDistance = bests
         , landout = length <$> land

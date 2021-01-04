@@ -1,9 +1,6 @@
 module Flight.Scribe
-    ( readAltLandout, writeAltLandout
-    , readAltRoute, writeAltRoute
+    ( readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
-    , readLanding, writeLanding
-    , readFaring, writeFaring
     , readPointing, writePointing
     , readCleanFsdb, writeCleanFsdb
     , readTrimFsdb, writeTrimFsdb
@@ -24,6 +21,8 @@ module Flight.Scribe
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
+    , module Flight.LandOut
+    , module Flight.FarOut
     ) where
 
 import Prelude hiding (readFile, writeFile)
@@ -35,18 +34,14 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 
-import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, AltPointing)
 import Flight.Route (GeoLines)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CleanFsdbFile(..)
     , TrimFsdbFile(..)
-    , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , LandOutFile(..)
-    , FarOutFile(..)
     , GapPointFile(..)
     , FsdbXml(..)
     )
@@ -55,18 +50,20 @@ import Flight.TaskLength
 import Flight.FlyTime
 import Flight.CrossZone
 import Flight.TagZone
+import Flight.UnpackTrack
 import Flight.PegFrame
+import Flight.AlignTime
+import Flight.DiscardFurther
 import Flight.LeadArea
 import Flight.LeadArea.AreaStep
 import Flight.Mask.Arrival
+import Flight.Mask.Speed
 import Flight.Mask.Bonus
 import Flight.Mask.Effort
-import Flight.Mask.Reach
-import Flight.Mask.Speed
 import Flight.Mask.Lead
-import Flight.UnpackTrack
-import Flight.AlignTime
-import Flight.DiscardFurther
+import Flight.Mask.Reach
+import Flight.LandOut
+import Flight.FarOut
 
 readFsdbXml :: FilePath -> IO FsdbXml
 readFsdbXml path = FsdbXml . T.unpack . T.decodeUtf8 <$> BS.readFile path
@@ -96,15 +93,6 @@ writeAltScore (AltScoreFile path) pointing = do
     let yaml = Y.encodePretty cfg pointing
     BS.writeFile path yaml
 
-readAltLandout :: (MonadThrow m, MonadIO m) => AltLandoutFile -> m Landing
-readAltLandout (AltLandoutFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeAltLandout :: AltLandoutFile -> Landing -> IO ()
-writeAltLandout (AltLandoutFile path) track = do
-    let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
-    let yaml = Y.encodePretty cfg track
-    BS.writeFile path yaml
-
 readAltRoute :: (MonadThrow m, MonadIO m) => AltRouteFile -> m [GeoLines]
 readAltRoute (AltRouteFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
@@ -112,24 +100,6 @@ writeAltRoute :: AltRouteFile -> [GeoLines] -> IO ()
 writeAltRoute (AltRouteFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
-    BS.writeFile path yaml
-
-readLanding :: (MonadThrow m, MonadIO m) => LandOutFile -> m Landing
-readLanding (LandOutFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeLanding :: LandOutFile -> Landing -> IO ()
-writeLanding (LandOutFile path) landout = do
-    let cfg = Y.setConfCompare (fieldOrder landout) Y.defConfig
-    let yaml = Y.encodePretty cfg landout
-    BS.writeFile path yaml
-
-readFaring :: (MonadThrow m, MonadIO m) => FarOutFile -> m Landing
-readFaring (FarOutFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeFaring :: FarOutFile -> Landing -> IO ()
-writeFaring (FarOutFile path) landout = do
-    let cfg = Y.setConfCompare (fieldOrder landout) Y.defConfig
-    let yaml = Y.encodePretty cfg landout
     BS.writeFile path yaml
 
 readPointing :: (MonadThrow m, MonadIO m) => GapPointFile -> m Pointing
