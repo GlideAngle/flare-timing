@@ -24,7 +24,6 @@ import Flight.Comp
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
-    , compToMaskLead
     )
 import Flight.Distance (QTaskDistance)
 import Flight.Mask (GeoDash(..), FnIxTask, settingsLogs)
@@ -48,7 +47,7 @@ import Flight.Lookup.Tag
 import Flight.TrackLog (pilotTrack)
 import Flight.Scribe
     ( AltBonus(..)
-    , writeMaskingLead
+    , writeCompMaskLead
     , readCompBestDistances
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
@@ -182,7 +181,7 @@ writeMask
                 leading
 
     -- NOTE: For time and leading points do not use altitude bonus distances.
-    writeMaskingLead (compToMaskLead compFile) nullAltLead
+    writeCompMaskLead compFile nullAltLead
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)

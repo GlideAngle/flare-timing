@@ -33,7 +33,7 @@ import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..), TrackCross(..))
 import Flight.Track.Stop (StopFraming(..), TrackScoredSection(..))
 import Flight.Track.Lead (CompLeading(..))
 import Flight.Track.Time (TickRow(..))
-import Flight.Track.Mask (MaskingLead(..))
+import Flight.Track.Mask (CompMaskingLead(..))
 import Flight.Track.Point (Pointing(..), Velocity(..), Breakdown(..))
 import "flight-gap-allot" Flight.Score (PilotVelocity(..))
 import Flight.Scribe (readPilotDiscardFurther)
@@ -205,7 +205,7 @@ getTaskPilotArea ii pilotId = do
         (_, Nothing, _) -> throwError $ errPilotNotFound pilot
         (_, _, Nothing) -> throwError $ errPilotNotFound pilot
         (Just p'
-            , Just MaskingLead{raceTime = rt, raceDistance = rd}
+            , Just CompMaskingLead{raceTime = rt, raceDistance = rd}
             , Just CompLeading{areas = sq}) -> do
 
             xs <-

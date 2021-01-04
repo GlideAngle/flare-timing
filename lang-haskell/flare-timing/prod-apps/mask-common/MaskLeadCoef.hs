@@ -17,7 +17,7 @@ import Flight.Track.Lead (CompLeading(..), LeadingAreaSum, MkLeadingCoef, MkArea
 import Flight.Track.Time (LeadTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Lead (compLeading)
-import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
+import Flight.Track.Mask (CompMaskingLead(..), RaceTime(..))
 import "flight-gap-allot" Flight.Score (BestTime(..), MinimumDistance(..))
 import "flight-gap-lead" Flight.Score (LeadingAreaUnits, LengthOfSs(..))
 
@@ -36,7 +36,7 @@ maskLeadCoef
     -> CompLeading (LeadingAreaUnits u)
     -> ( [Maybe (QTaskDistance Double [u| m |])]
        , [[Maybe (Pilot, Maybe LeadTick)]]
-       , MaskingLead u v
+       , CompMaskingLead u v
        )
 maskLeadCoef
     sumAreas
@@ -51,7 +51,7 @@ maskLeadCoef
     rows
     discardingLead =
     (dsBest, rowTicks,) $
-    MaskingLead
+    CompMaskingLead
         { raceTime = raceTime
         , raceDistance = lsSpeedSubset
         , sumDistance = dsSum

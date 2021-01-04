@@ -35,7 +35,7 @@ import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import qualified Flight.Track.Mask as Mask (CompMaskingReach(..), CompMaskingArrival(..))
 import Flight.Track.Mask
-    ( MaskingLead(..)
+    ( CompMaskingLead(..)
     , CompMaskingReach(..)
     , CompMaskingSpeed(..)
     )

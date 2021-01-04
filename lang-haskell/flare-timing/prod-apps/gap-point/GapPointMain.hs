@@ -56,7 +56,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToMaskLead
     , compToLand
     , compToFar
     , compToPoint
@@ -79,7 +78,7 @@ import qualified Flight.Track.Speed as Speed (TrackSpeed(..))
 import Flight.Track.Mask
     ( CompMaskingArrival(..)
     , CompMaskingEffort(..)
-    , MaskingLead(..)
+    , CompMaskingLead(..)
     , CompMaskingReach(..)
     , CompMaskingSpeed(..)
     )
@@ -94,7 +93,7 @@ import Flight.Scribe
     , readCompFlyTime, readCompTagZone, readCompPegFrame
     , readCompMaskArrival
     , readCompMaskEffort
-    , readMaskingLead
+    , readCompMaskLead
     , readCompMaskBonus
     , readCompMaskReach
     , readCompMaskSpeed
@@ -180,12 +179,10 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let maskLeadFile = compToMaskLead compFile
     let landFile = compToLand compFile
     let farFile = compToFar compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
-    putStrLn $ "Reading leading from " ++ show maskLeadFile
     putStrLn $ "Reading distance difficulty from " ++ show landFile
 
     filesTaskAndSettings <-
@@ -221,9 +218,9 @@ go CmdBatchOptions{..} compFile = do
             (Just <$> readCompMaskEffort compFile)
             (const $ return Nothing)
 
-    ml2 :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/((km^2)*s) |]) <-
+    ml2 :: Maybe (CompMaskingLead [u| (km^2)*s |] [u| 1/((km^2)*s) |]) <-
         catchIO
-            (Just <$> (readMaskingLead maskLeadFile))
+            (Just <$> readCompMaskLead compFile)
             (const $ return Nothing)
 
     mr <-
@@ -315,7 +312,7 @@ points'
     -> CompTagging
     -> CompMaskingArrival
     -> CompMaskingEffort
-    -> MaskingLead _ _
+    -> CompMaskingLead _ _
     -> (CompMaskingReach, CompMaskingReach)
     -> CompMaskingSpeed
     -> Cmp.Landing
@@ -347,7 +344,7 @@ points'
         { bestEffort
         , land
         }
-    MaskingLead
+    CompMaskingLead
         { sumDistance
         , leadRank
         }

@@ -2,7 +2,6 @@ module Flight.Scribe
     ( readAltLandout, writeAltLandout
     , readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
-    , readMaskingLead, writeMaskingLead
     , readLanding, writeLanding
     , readFaring, writeFaring
     , readPointing, writePointing
@@ -21,6 +20,7 @@ module Flight.Scribe
     , module Flight.Mask.Effort
     , module Flight.Mask.Reach
     , module Flight.Mask.Speed
+    , module Flight.Mask.Lead
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -34,9 +34,7 @@ import Data.Yaml (decodeThrow)
 import qualified Data.Text.Encoding as T
 import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
-import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
-import Flight.Track.Mask (MaskingLead)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, AltPointing)
 import Flight.Route (GeoLines)
@@ -47,7 +45,6 @@ import Flight.Comp
     , AltLandoutFile(..)
     , AltRouteFile(..)
     , AltScoreFile(..)
-    , MaskLeadFile(..)
     , LandOutFile(..)
     , FarOutFile(..)
     , GapPointFile(..)
@@ -66,6 +63,7 @@ import Flight.Mask.Bonus
 import Flight.Mask.Effort
 import Flight.Mask.Reach
 import Flight.Mask.Speed
+import Flight.Mask.Lead
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
@@ -114,22 +112,6 @@ writeAltRoute :: AltRouteFile -> [GeoLines] -> IO ()
 writeAltRoute (AltRouteFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
-    BS.writeFile path yaml
-
-readMaskingLead
-    :: (KnownUnit (Unpack u), KnownUnit (Unpack v), MonadIO m)
-    => MaskLeadFile
-    -> m (MaskingLead u v)
-readMaskingLead (MaskLeadFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeMaskingLead
-    :: (KnownUnit (Unpack u), KnownUnit (Unpack v))
-    => MaskLeadFile
-    -> MaskingLead u v
-    -> IO ()
-writeMaskingLead (MaskLeadFile path) maskTrack = do
-    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
-    let yaml = Y.encodePretty cfg maskTrack
     BS.writeFile path yaml
 
 readLanding :: (MonadThrow m, MonadIO m) => LandOutFile -> m Landing

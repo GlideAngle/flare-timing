@@ -16,7 +16,7 @@ import Flight.Track.Lead (CompLeading(..))
 import qualified Flight.Track.Mask as Mask (CompMaskingArrival(..))
 import Flight.Track.Mask
     ( CompMaskingEffort(..)
-    , MaskingLead(..)
+    , CompMaskingLead(..)
     , CompMaskingReach(..)
     , CompMaskingSpeed(..)
     )
@@ -38,7 +38,7 @@ data Config k
         , maskingArrival :: Maybe Mask.CompMaskingArrival
         , maskingEffort :: Maybe CompMaskingEffort
         , discardingLead2 :: Maybe (CompLeading LeadingArea2Units)
-        , maskingLead :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/(km^2)*s |])
+        , maskingLead :: Maybe (CompMaskingLead [u| (km^2)*s |] [u| 1/(km^2)*s |])
         , maskingReach :: Maybe CompMaskingReach
         , maskingSpeed :: Maybe CompMaskingSpeed
         , bonusReach :: Maybe CompMaskingReach

@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Flight.Track.Mask.Lead
 Copyright   : (c) Block Scope Limited 2017
@@ -8,12 +10,15 @@ Stability   : experimental
 Tracks masked with task control zones.
 -}
 module Flight.Track.Mask.Lead
-    ( MaskingLead(..)
+    ( TaskMaskingLead(..)
+    , CompMaskingLead(..)
     , RaceTime(..)
     , racing
+    , mkCompMaskLead, unMkCompMaskLead
     ) where
 
 import Data.Maybe (fromMaybe)
+import Data.List (unzip6)
 import Data.Time.Clock (UTCTime, diffUTCTime, addUTCTime)
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -33,10 +38,28 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Lead (TrackLead(..), cmpArea)
 import Flight.Track.Mask.Cmp (cmp)
+import Flight.Track.Curry (uncurry6)
+
+data TaskMaskingLead u v =
+    TaskMaskingLead
+        { raceTime :: Maybe RaceTime
+        -- ^ The race times.
+        , raceDistance :: Maybe (QTaskDistance Double [u| m |])
+        -- ^ The distance of the speed section.
+        , sumDistance :: Maybe (QTaskDistance Double [u| m |])
+        -- ^ The sum of all distance flown over minimum distance.
+        , leadAreaToCoef :: Maybe (AreaToCoef (LeadingAreaToCoefUnits v))
+        -- ^ The scaling of leading area.
+        , leadCoefMin :: Maybe (LeadingCoef (Quantity Double [u| 1 |]))
+        -- ^ The minimum of all pilot's leading coefficient.
+        , leadRank :: [(Pilot, TrackLead (LeadingAreaUnits u))]
+        -- ^ The rank order of leading and leading fraction.
+        }
+    deriving (Eq, Ord, Generic)
 
 -- | For each task, the masking for leading for that task.
-data MaskingLead u v =
-    MaskingLead
+data CompMaskingLead u v =
+    CompMaskingLead
         { raceTime :: [Maybe RaceTime]
         -- ^ For each task, the race times.
         , raceDistance :: [Maybe (QTaskDistance Double [u| m |])]
@@ -52,10 +75,46 @@ data MaskingLead u v =
         }
     deriving (Eq, Ord, Generic)
 
-instance FieldOrdering (MaskingLead u v) where fieldOrder _ = cmpArea cmp
+mkCompMaskLead :: [TaskMaskingLead u v] -> CompMaskingLead u v
+mkCompMaskLead ts =
+    uncurry6 CompMaskingLead $ unzip6
+    [ (a, b, c, d, e, f)
+    | TaskMaskingLead
+        { raceTime = a
+        , raceDistance = b
+        , sumDistance = c
+        , leadAreaToCoef = d
+        , leadCoefMin = e
+        , leadRank = f
+        } <- ts
+    ]
 
-deriving instance (KnownUnit (Unpack u), KnownUnit (Unpack v)) => ToJSON (MaskingLead u v)
-deriving instance (KnownUnit (Unpack u), KnownUnit (Unpack v)) => FromJSON (MaskingLead u v)
+unMkCompMaskLead :: CompMaskingLead u v -> [TaskMaskingLead u v]
+unMkCompMaskLead
+    CompMaskingLead
+        { raceTime = as
+        , raceDistance = bs
+        , sumDistance = cs
+        , leadAreaToCoef = ds
+        , leadCoefMin = es
+        , leadRank = fs
+        } =
+    [ TaskMaskingLead a b c d e f
+    | a <- as
+    | b <- bs
+    | c <- cs
+    | d <- ds
+    | e <- es
+    | f <- fs
+    ]
+
+instance FieldOrdering (TaskMaskingLead u v) where fieldOrder _ = cmpArea cmp
+instance FieldOrdering (CompMaskingLead u v) where fieldOrder _ = cmpArea cmp
+
+deriving instance (KnownUnit (Unpack u), KnownUnit (Unpack v)) => ToJSON (TaskMaskingLead u v)
+deriving instance (KnownUnit (Unpack u), KnownUnit (Unpack v)) => FromJSON (TaskMaskingLead u v)
+deriving instance (KnownUnit (Unpack u), KnownUnit (Unpack v)) => ToJSON (CompMaskingLead u v)
+deriving instance (KnownUnit (Unpack u), KnownUnit (Unpack v)) => FromJSON (CompMaskingLead u v)
 
 -- | The racing time for the speed section is required for leading points.
 data RaceTime =

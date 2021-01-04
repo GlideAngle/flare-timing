@@ -10,7 +10,6 @@ module Flight.Path.Tx
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
-    , compToMaskLead
     , compToLand
     , compToFar
     , compToPoint
@@ -26,6 +25,7 @@ module Flight.Path.Tx
     , taskToMaskReach
     , taskToMaskBonus
     , taskToMaskSpeed
+    , taskToMaskLead
 
     , compFileToCompDir
     , taskDir
@@ -47,6 +47,7 @@ module Flight.Path.Tx
     , maskReachPath
     , maskBonusPath
     , maskSpeedPath
+    , maskLeadPath
 
     , unpackTrackPath
     , alignTimePath
@@ -133,7 +134,7 @@ reshape LeadArea = const "lead-area.yaml"
 
 reshape MaskArrival = const "mask-arrival.yaml"
 reshape MaskEffort = const "mask-effort.yaml"
-reshape MaskLead = coerce . compToMaskLead . coerce . reshape CompInput
+reshape MaskLead = const "mask-lead.yaml"
 reshape MaskReach = const "mask-reach.yaml"
 reshape MaskSpeed = const "mask-speed.yaml"
 
@@ -258,12 +259,10 @@ taskToMaskSpeed :: TaskInputFile -> MaskSpeedFile
 taskToMaskSpeed (TaskInputFile s) = MaskSpeedFile $ (takeDirectory s) </> reshape MaskSpeed s
 
 -- |
--- >>> compToMaskLead (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/mask-lead.yaml"
---
--- prop> \s -> compToMaskLead (CompInputFile s) == MaskLeadFile ".flare-timing/mask-lead.yaml"
-compToMaskLead :: CompInputFile -> MaskLeadFile
-compToMaskLead _ = let DotDirName s d = shape MaskLead in MaskLeadFile $ dotDir d s
+-- >>> taskToMaskLead (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/mask-lead.yaml"
+taskToMaskLead :: TaskInputFile -> MaskLeadFile
+taskToMaskLead (TaskInputFile s) = MaskLeadFile $ (takeDirectory s) </> reshape MaskLead s
 
 -- |
 -- >>> compToLand (CompInputFile ".flare-timing/comp-input.yaml")
@@ -446,6 +445,12 @@ maskBonusPath dir task = (taskDir dir task, MaskBonusFile "mask-bonus.yaml")
 -- ("a/.flare-timing/task-1","mask-speed.yaml")
 maskSpeedPath :: CompDir -> IxTask -> (TaskDir, MaskSpeedFile)
 maskSpeedPath dir task = (taskDir dir task, MaskSpeedFile "mask-speed.yaml")
+
+-- |
+-- >>> maskLeadPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","mask-lead.yaml")
+maskLeadPath :: CompDir -> IxTask -> (TaskDir, MaskLeadFile)
+maskLeadPath dir task = (taskDir dir task, MaskLeadFile "mask-lead.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
