@@ -37,7 +37,7 @@ import qualified Flight.Track.Mask as Mask (CompMaskingReach(..), CompMaskingArr
 import Flight.Track.Mask
     ( MaskingLead(..)
     , CompMaskingReach(..)
-    , MaskingSpeed(..)
+    , CompMaskingSpeed(..)
     )
 import Flight.Track.Point (Pointing(..), Allocation(..), Breakdown(..))
 import qualified "flight-gap-weight" Flight.Score as Wg (Weights(..))

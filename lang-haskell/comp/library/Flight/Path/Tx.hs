@@ -11,7 +11,6 @@ module Flight.Path.Tx
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
     , compToMaskLead
-    , compToMaskSpeed
     , compToLand
     , compToFar
     , compToPoint
@@ -26,6 +25,7 @@ module Flight.Path.Tx
     , taskToMaskEffort
     , taskToMaskReach
     , taskToMaskBonus
+    , taskToMaskSpeed
 
     , compFileToCompDir
     , taskDir
@@ -46,6 +46,7 @@ module Flight.Path.Tx
     , maskEffortPath
     , maskReachPath
     , maskBonusPath
+    , maskSpeedPath
 
     , unpackTrackPath
     , alignTimePath
@@ -134,7 +135,7 @@ reshape MaskArrival = const "mask-arrival.yaml"
 reshape MaskEffort = const "mask-effort.yaml"
 reshape MaskLead = coerce . compToMaskLead . coerce . reshape CompInput
 reshape MaskReach = const "mask-reach.yaml"
-reshape MaskSpeed = coerce . compToMaskSpeed . coerce . reshape CompInput
+reshape MaskSpeed = const "mask-speed.yaml"
 
 reshape MaskBonus = const "mask-bonus.yaml"
 reshape LandOut = coerce . compToLand . coerce . reshape CompInput
@@ -251,20 +252,18 @@ taskToMaskBonus :: TaskInputFile -> MaskBonusFile
 taskToMaskBonus (TaskInputFile s) = MaskBonusFile $ (takeDirectory s) </> reshape MaskBonus s
 
 -- |
+-- >>> taskToMaskSpeed (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/mask-speed.yaml"
+taskToMaskSpeed :: TaskInputFile -> MaskSpeedFile
+taskToMaskSpeed (TaskInputFile s) = MaskSpeedFile $ (takeDirectory s) </> reshape MaskSpeed s
+
+-- |
 -- >>> compToMaskLead (CompInputFile ".flare-timing/comp-input.yaml")
 -- ".flare-timing/mask-lead.yaml"
 --
 -- prop> \s -> compToMaskLead (CompInputFile s) == MaskLeadFile ".flare-timing/mask-lead.yaml"
 compToMaskLead :: CompInputFile -> MaskLeadFile
 compToMaskLead _ = let DotDirName s d = shape MaskLead in MaskLeadFile $ dotDir d s
-
--- |
--- >>> compToMaskSpeed (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/mask-speed.yaml"
---
--- prop> \s -> compToMaskSpeed (CompInputFile s) == MaskSpeedFile ".flare-timing/mask-speed.yaml"
-compToMaskSpeed :: CompInputFile -> MaskSpeedFile
-compToMaskSpeed _ = let DotDirName s d = shape MaskSpeed in MaskSpeedFile $ dotDir d s
 
 -- |
 -- >>> compToLand (CompInputFile ".flare-timing/comp-input.yaml")
@@ -441,6 +440,12 @@ maskReachPath dir task = (taskDir dir task, MaskReachFile "mask-reach.yaml")
 -- ("a/.flare-timing/task-1","mask-bonus.yaml")
 maskBonusPath :: CompDir -> IxTask -> (TaskDir, MaskBonusFile)
 maskBonusPath dir task = (taskDir dir task, MaskBonusFile "mask-bonus.yaml")
+
+-- |
+-- >>> maskSpeedPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","mask-speed.yaml")
+maskSpeedPath :: CompDir -> IxTask -> (TaskDir, MaskSpeedFile)
+maskSpeedPath dir task = (taskDir dir task, MaskSpeedFile "mask-speed.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

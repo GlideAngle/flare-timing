@@ -18,7 +18,6 @@ import Flight.Comp
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
-    , compToMaskSpeed
     )
 import Flight.Mask (FnIxTask, settingsLogs)
 import Flight.Track.Tag (CompTagging)
@@ -30,7 +29,7 @@ import qualified Flight.Lookup as Lookup
     (scoredTimeRange, arrivalRank, compRoutes, pilotTime, pilotEssTime)
 import Flight.Lookup.Tag (tagArrivalRank, tagPilotTime)
 import Flight.TrackLog (pilotTrack)
-import Flight.Scribe (writeCompMaskArrival, writeMaskingSpeed)
+import Flight.Scribe (writeCompMaskArrival, writeCompMaskSpeed)
 import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats, altToAlt)
@@ -110,7 +109,7 @@ writeMask
     let (_gsBestTime, maskSpeed') = maskSpeed lsTask' yss
 
     -- NOTE: For time and leading points do not use altitude bonus distances.
-    writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
+    writeCompMaskSpeed compFile maskSpeed'
 
 flown :: Math -> ScoredLookup -> Maybe CompTagging -> FnIxTask k (Pilot -> FlightStats k)
 flown Rational _ _ _ _ _ _ = error "Nigh for rationals not yet implemented."

@@ -11,7 +11,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (QAlt)
 import Flight.Comp (Pilot(..), TaskRouteDistance(..))
-import Flight.Track.Mask (MaskingSpeed(..))
+import Flight.Track.Mask (CompMaskingSpeed(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
 import "flight-gap-allot" Flight.Score (BestTime(..), PilotTime(..), speedFraction)
@@ -48,10 +48,10 @@ times f xs =
 maskSpeed
     :: [Maybe TaskRouteDistance]
     -> [[(Pilot, FlightStats k)]]
-    -> ([Maybe (BestTime (Quantity Double [u| h |]))], MaskingSpeed)
+    -> ([Maybe (BestTime (Quantity Double [u| h |]))], CompMaskingSpeed)
 maskSpeed lsTask yss =
     (gsBestTime,) $
-    MaskingSpeed
+    CompMaskingSpeed
         { ssBestTime = ssBestTime
         , gsBestTime = gsBestTime
         , taskDistance = lsWholeTask

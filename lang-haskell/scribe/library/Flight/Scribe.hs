@@ -3,7 +3,6 @@ module Flight.Scribe
     , readAltRoute, writeAltRoute
     , readAltScore, writeAltScore
     , readMaskingLead, writeMaskingLead
-    , readMaskingSpeed, writeMaskingSpeed
     , readLanding, writeLanding
     , readFaring, writeFaring
     , readPointing, writePointing
@@ -21,6 +20,7 @@ module Flight.Scribe
     , module Flight.Mask.Bonus
     , module Flight.Mask.Effort
     , module Flight.Mask.Reach
+    , module Flight.Mask.Speed
     , module Flight.UnpackTrack
     , module Flight.AlignTime
     , module Flight.DiscardFurther
@@ -36,7 +36,7 @@ import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 import Data.UnitsOfMeasure (KnownUnit, Unpack)
 
-import Flight.Track.Mask (MaskingSpeed, MaskingLead)
+import Flight.Track.Mask (MaskingLead)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, AltPointing)
 import Flight.Route (GeoLines)
@@ -48,7 +48,6 @@ import Flight.Comp
     , AltRouteFile(..)
     , AltScoreFile(..)
     , MaskLeadFile(..)
-    , MaskSpeedFile(..)
     , LandOutFile(..)
     , FarOutFile(..)
     , GapPointFile(..)
@@ -66,6 +65,7 @@ import Flight.Mask.Arrival
 import Flight.Mask.Bonus
 import Flight.Mask.Effort
 import Flight.Mask.Reach
+import Flight.Mask.Speed
 import Flight.UnpackTrack
 import Flight.AlignTime
 import Flight.DiscardFurther
@@ -122,21 +122,12 @@ readMaskingLead
     -> m (MaskingLead u v)
 readMaskingLead (MaskLeadFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
-readMaskingSpeed :: MonadIO m => MaskSpeedFile -> m MaskingSpeed
-readMaskingSpeed (MaskSpeedFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
 writeMaskingLead
     :: (KnownUnit (Unpack u), KnownUnit (Unpack v))
     => MaskLeadFile
     -> MaskingLead u v
     -> IO ()
 writeMaskingLead (MaskLeadFile path) maskTrack = do
-    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
-    let yaml = Y.encodePretty cfg maskTrack
-    BS.writeFile path yaml
-
-writeMaskingSpeed :: MaskSpeedFile -> MaskingSpeed -> IO ()
-writeMaskingSpeed (MaskSpeedFile path) maskTrack = do
     let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
     let yaml = Y.encodePretty cfg maskTrack
     BS.writeFile path yaml

@@ -57,7 +57,6 @@ import Flight.Comp
     , IxTask(..)
     , EarlyStart(..)
     , compToMaskLead
-    , compToMaskSpeed
     , compToLand
     , compToFar
     , compToPoint
@@ -82,7 +81,7 @@ import Flight.Track.Mask
     , CompMaskingEffort(..)
     , MaskingLead(..)
     , CompMaskingReach(..)
-    , MaskingSpeed(..)
+    , CompMaskingSpeed(..)
     )
 import Flight.Track.Land (Landing(..))
 import Flight.Track.Place (rankByTotal)
@@ -98,7 +97,7 @@ import Flight.Scribe
     , readMaskingLead
     , readCompMaskBonus
     , readCompMaskReach
-    , readMaskingSpeed
+    , readCompMaskSpeed
     , readLanding
     , readFaring
     , writePointing
@@ -182,13 +181,11 @@ drive o@CmdBatchOptions{file} = do
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
     let maskLeadFile = compToMaskLead compFile
-    let maskSpeedFile = compToMaskSpeed compFile
     let landFile = compToLand compFile
     let farFile = compToFar compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
     putStrLn $ "Reading leading from " ++ show maskLeadFile
-    putStrLn $ "Reading speed from " ++ show maskSpeedFile
     putStrLn $ "Reading distance difficulty from " ++ show landFile
 
     filesTaskAndSettings <-
@@ -241,7 +238,7 @@ go CmdBatchOptions{..} compFile = do
 
     ms <-
         catchIO
-            (Just <$> readMaskingSpeed maskSpeedFile)
+            (Just <$> readCompMaskSpeed compFile)
             (const $ return Nothing)
 
     _landing <-
@@ -320,7 +317,7 @@ points'
     -> CompMaskingEffort
     -> MaskingLead _ _
     -> (CompMaskingReach, CompMaskingReach)
-    -> MaskingSpeed
+    -> CompMaskingSpeed
     -> Cmp.Landing
     -> Pointing
 points'
@@ -365,7 +362,7 @@ points'
         , nigh = nighE
         }
     )
-    MaskingSpeed
+    CompMaskingSpeed
         { ssBestTime
         , gsBestTime
         , taskSpeedDistance

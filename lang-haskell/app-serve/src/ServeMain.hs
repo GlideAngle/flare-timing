@@ -19,7 +19,7 @@ import Flight.Scribe
     , readCompLeadArea
     , readMaskingLead
     , readCompMaskReach
-    , readMaskingSpeed
+    , readCompMaskSpeed
     , readCompMaskBonus
     , readLanding, readFaring, readPointing
     )
@@ -37,7 +37,6 @@ import Flight.Comp
     , compToAltRoute
     , compToAltScore
     , compToMaskLead
-    , compToMaskSpeed
     , compToLand
     , compToFar
     , compToPoint
@@ -69,7 +68,6 @@ drive o@CmdServeOptions{file} = do
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
     let maskLeadFile = compToMaskLead compFile
-    let maskSpeedFile = compToMaskSpeed compFile
     let landFile = compToLand compFile
     let farFile = compToFar compFile
     let pointFile = compToPoint compFile
@@ -80,7 +78,6 @@ go CmdServeOptions{..} compFile = do
     let altAsScoreFile = compToAltScore AltAs compFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
     putStrLn $ "Reading leading from " ++ show maskLeadFile
-    putStrLn $ "Reading speed from " ++ show maskSpeedFile
     putStrLn $ "Reading land outs from " ++ show landFile
     putStrLn $ "Reading scores from " ++ show pointFile
     putStrLn $ "Reading FS arrivals from " ++ show altFsArrivalFile
@@ -161,7 +158,7 @@ go CmdServeOptions{..} compFile = do
 
             maskingSpeed <-
                 catchIO
-                    (Just <$> readMaskingSpeed maskSpeedFile)
+                    (Just <$> readCompMaskSpeed compFile)
                     (const $ return Nothing)
 
             _landing <-
