@@ -56,7 +56,6 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToPoint
     , findCompInput
     , reshape
     , mkCompTaskSettings
@@ -83,7 +82,7 @@ import Flight.Track.Mask
 import Flight.Track.Land (CompLanding(..))
 import Flight.Track.Place (rankByTotal)
 import Flight.Track.Point
-    (Velocity(..), Breakdown(..), Pointing(..), Allocation(..), EssNotGoal(..))
+    (Velocity(..), Breakdown(..), CompPointing(..), Allocation(..), EssNotGoal(..))
 import qualified Flight.Track.Land as Cmp (CompLanding(..))
 import Flight.Scribe
     ( readCompAndTasks
@@ -96,7 +95,7 @@ import Flight.Scribe
     , readCompMaskReach
     , readCompMaskSpeed
     , readCompLandOut, readCompFarOut
-    , writePointing
+    , writeCompGapPoint
     )
 import Flight.Mask (RaceSections(..), section)
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
@@ -176,7 +175,6 @@ drive o@CmdBatchOptions{file} = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
 
     filesTaskAndSettings <-
@@ -273,7 +271,7 @@ go CmdBatchOptions{..} compFile = do
             let tg' = effectiveTagging tg stp
             let mE' = efforts lg
 
-            writePointing pointFile $ points' cs lookupTaskLength cg tg' mA mE' mL2 (mR, bR) mS lg
+            writeCompGapPoint compFile $ points' cs lookupTaskLength cg tg' mA mE' mL2 (mR, bR) mS lg
 
 efforts :: Cmp.CompLanding -> CompMaskingEffort
 efforts Cmp.CompLanding{bestDistance = ds, difficulty = ess} =
@@ -310,7 +308,7 @@ points'
     -> (CompMaskingReach, CompMaskingReach)
     -> CompMaskingSpeed
     -> Cmp.CompLanding
-    -> Pointing
+    -> CompPointing
 points'
     CompTaskSettings
         { comp =
@@ -364,7 +362,7 @@ points'
     CompLanding
         { difficulty = landoutDifficulty
         } =
-    Pointing
+    CompPointing
         { validityWorking = workings
         , validity = validities
         , allocation = allocs

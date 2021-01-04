@@ -34,7 +34,7 @@ import Flight.Track.Stop (StopFraming(..), TrackScoredSection(..))
 import Flight.Track.Lead (CompLeading(..))
 import Flight.Track.Time (TickRow(..))
 import Flight.Track.Mask (CompMaskingLead(..))
-import Flight.Track.Point (Pointing(..), Velocity(..), Breakdown(..))
+import Flight.Track.Point (CompPointing(..), Velocity(..), Breakdown(..))
 import "flight-gap-allot" Flight.Score (PilotVelocity(..))
 import Flight.Scribe (readPilotDiscardFurther)
 import Flight.Comp
@@ -67,10 +67,10 @@ roundVelocity' b@Breakdown{velocity = Just v@Velocity{gsVelocity = (Just x)}} =
     b{velocity = Just v{gsVelocity = Just . roundVelocity $ x}}
 roundVelocity' b = b
 
-getScores :: Pointing -> [[(Pilot, Breakdown)]]
+getScores :: CompPointing -> [[(Pilot, Breakdown)]]
 getScores = ((fmap . fmap . fmap) roundVelocity') . score
 
-getScoresDf :: Pointing -> [[(Pilot, Breakdown)]]
+getScoresDf :: CompPointing -> [[(Pilot, Breakdown)]]
 getScoresDf = ((fmap . fmap . fmap) roundVelocity') . scoreDf
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]

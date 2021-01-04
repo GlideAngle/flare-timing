@@ -1,7 +1,5 @@
 module Flight.Scribe
     ( readAltRoute, writeAltRoute
-    , readAltScore, writeAltScore
-    , readPointing, writePointing
     , readCleanFsdb, writeCleanFsdb
     , readTrimFsdb, writeTrimFsdb
     , module Flight.CompInput
@@ -23,6 +21,7 @@ module Flight.Scribe
     , module Flight.DiscardFurther
     , module Flight.LandOut
     , module Flight.FarOut
+    , module Flight.GapPoint
     ) where
 
 import Prelude hiding (readFile, writeFile)
@@ -34,15 +33,12 @@ import qualified Data.Text.Encoding as T
 import qualified Data.Text as T
 import qualified Data.Yaml.Pretty as Y
 
-import Flight.Track.Point (Pointing, AltPointing)
 import Flight.Route (GeoLines)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CleanFsdbFile(..)
     , TrimFsdbFile(..)
     , AltRouteFile(..)
-    , AltScoreFile(..)
-    , GapPointFile(..)
     , FsdbXml(..)
     )
 import Flight.CompInput
@@ -64,6 +60,7 @@ import Flight.Mask.Lead
 import Flight.Mask.Reach
 import Flight.LandOut
 import Flight.FarOut
+import Flight.GapPoint
 
 readFsdbXml :: FilePath -> IO FsdbXml
 readFsdbXml path = FsdbXml . T.unpack . T.decodeUtf8 <$> BS.readFile path
@@ -84,15 +81,6 @@ readTrimFsdb (TrimFsdbFile path) = readFsdbXml path
 writeTrimFsdb :: TrimFsdbFile -> FsdbXml -> IO ()
 writeTrimFsdb (TrimFsdbFile path) = writeFsdbXml path
 
-readAltScore :: (MonadThrow m, MonadIO m) => AltScoreFile -> m AltPointing
-readAltScore (AltScoreFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writeAltScore :: AltScoreFile -> AltPointing -> IO ()
-writeAltScore (AltScoreFile path) pointing = do
-    let cfg = Y.setConfCompare (fieldOrder pointing) Y.defConfig
-    let yaml = Y.encodePretty cfg pointing
-    BS.writeFile path yaml
-
 readAltRoute :: (MonadThrow m, MonadIO m) => AltRouteFile -> m [GeoLines]
 readAltRoute (AltRouteFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
@@ -100,13 +88,4 @@ writeAltRoute :: AltRouteFile -> [GeoLines] -> IO ()
 writeAltRoute (AltRouteFile path) track = do
     let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
     let yaml = Y.encodePretty cfg track
-    BS.writeFile path yaml
-
-readPointing :: (MonadThrow m, MonadIO m) => GapPointFile -> m Pointing
-readPointing (GapPointFile path) = liftIO $ BS.readFile path >>= decodeThrow
-
-writePointing :: GapPointFile -> Pointing -> IO ()
-writePointing (GapPointFile path) gapPoint = do
-    let cfg = Y.setConfCompare (fieldOrder gapPoint) Y.defConfig
-    let yaml = Y.encodePretty cfg gapPoint
     BS.writeFile path yaml

@@ -8,7 +8,7 @@ import Data.Vector (Vector)
 import Servant (throwError)
 
 import qualified Flight.Track.Point as Alt (AltPointing(..), AltBreakdown(..))
-import Flight.Track.Point (Pointing(..), Breakdown(..))
+import Flight.Track.Point (CompPointing(..), Breakdown(..))
 import "flight-gap-math" Flight.Score (TaskPoints(..))
 import Flight.Comp (Pilot(..))
 import Serve.Config (AppT(..), Config(pointing, altFsScore, altAsScore))
@@ -18,7 +18,7 @@ data DiffWay = DiffWayFtFs | DiffWayFtAs | DiffWayAsFs
 
 getFt :: MonadReader (Config k) m => () -> m (Maybe [[(Pilot, TaskPoints)]])
 getFt () = do
-    fmap (\Pointing{score} -> (fmap . fmap . fmap) (\Breakdown{total} -> total) score) <$> asks pointing
+    fmap (\CompPointing{score} -> (fmap . fmap . fmap) (\Breakdown{total} -> total) score) <$> asks pointing
 
 getFs :: MonadReader (Config k) m => () -> m (Maybe [[(Pilot, TaskPoints)]])
 getFs () = do

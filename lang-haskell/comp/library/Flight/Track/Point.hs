@@ -14,11 +14,13 @@ module Flight.Track.Point
     , AltBreakdown(..)
     , Breakdown(..)
     , AltPointing(..)
-    , Pointing(..)
+    , TaskPointing(..), CompPointing(..)
     , Allocation(..)
     , EssNotGoal(..)
+    , mkCompGapPoint, unMkCompGapPoint
     ) where
 
+import Data.List (unzip6)
 import Data.Time.Clock (UTCTime)
 import Data.String (IsString())
 import GHC.Generics (Generic)
@@ -50,6 +52,7 @@ import "flight-gap-valid" Flight.Score
 import "flight-gap-weight" Flight.Score (GoalRatio, Weights)
 import Flight.Track.Distance (Effort)
 import Flight.Comp (StartGate)
+import Flight.Track.Curry (uncurry6)
 
 newtype EssNotGoal = EssNotGoal Bool
     deriving (Eq, Ord, Show, Generic)
@@ -154,9 +157,20 @@ data AltPointing =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+data TaskPointing =
+    TaskPointing
+        { validityWorking :: Maybe ValidityWorking
+        , validity :: Maybe Validity
+        , allocation :: Maybe Allocation
+        , score :: [(Pilot, Breakdown)]
+        , scoreDf :: [(Pilot, Breakdown)]
+        , scoreDfNoTrack :: [(Pilot, Breakdown)]
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 -- | For each task, the points for that task.
-data Pointing =
-    Pointing
+data CompPointing =
+    CompPointing
         { validityWorking :: [Maybe ValidityWorking]
         , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
@@ -175,11 +189,42 @@ data Allocation =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-instance FieldOrdering Pointing where
-    fieldOrder _ = cmpPointing
+mkCompGapPoint :: [TaskPointing] -> CompPointing
+mkCompGapPoint ts =
+    uncurry6 CompPointing $ unzip6
+    [ (a, b, c, d, e, f)
+    | TaskPointing
+        { validityWorking = a
+        , validity = b
+        , allocation = c
+        , score = d
+        , scoreDf = e
+        , scoreDfNoTrack = f
+        } <- ts
+    ]
 
-instance FieldOrdering AltPointing where
-    fieldOrder _ = cmpAlt
+unMkCompGapPoint :: CompPointing -> [TaskPointing]
+unMkCompGapPoint
+    CompPointing
+        { validityWorking = as
+        , validity = bs
+        , allocation = cs
+        , score = ds
+        , scoreDf = es
+        , scoreDfNoTrack = fs
+        } =
+    [ TaskPointing a b c d e f
+    | a <- as
+    | b <- bs
+    | c <- cs
+    | d <- ds
+    | e <- es
+    | f <- fs
+    ]
+
+instance FieldOrdering TaskPointing where fieldOrder _ = cmpPointing
+instance FieldOrdering CompPointing where fieldOrder _ = cmpPointing
+instance FieldOrdering AltPointing where fieldOrder _ = cmpAlt
 
 cmpAlt :: (Ord a, IsString a) => a -> a -> Ordering
 cmpAlt a b =

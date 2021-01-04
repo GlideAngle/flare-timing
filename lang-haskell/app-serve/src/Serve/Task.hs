@@ -39,7 +39,7 @@ import Flight.Track.Mask
     , CompMaskingReach(..)
     , CompMaskingSpeed(..)
     )
-import Flight.Track.Point (Pointing(..), Allocation(..), Breakdown(..))
+import Flight.Track.Point (CompPointing(..), Allocation(..), Breakdown(..))
 import qualified "flight-gap-weight" Flight.Score as Wg (Weights(..))
 import qualified "flight-gap-valid" Flight.Score as Vy (Validity(..))
 import qualified "flight-gap-valid" Flight.Score as Vw (ValidityWorking(..))
@@ -111,7 +111,7 @@ getValidity :: (HasField "validity" p [Maybe Vy.Validity]) => Maybe p -> [Maybe 
 getValidity Nothing = []
 getValidity (Just p) = ((fmap . fmap) roundValidity) . getField @"validity" $ p
 
-getAllocation :: Maybe Pointing -> [Maybe Allocation]
+getAllocation :: Maybe CompPointing -> [Maybe Allocation]
 getAllocation Nothing = []
 getAllocation (Just p) = ((fmap . fmap) roundAllocation) . allocation $ p
 

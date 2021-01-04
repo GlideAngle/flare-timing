@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4fddf758f5d3e9eaceffc2610443bf88f49086796455ecb5bf1808cf2b884a93
+-- hash: 94558e493952f0dba062ad385d40490759fee978a4d2f685e8fe128d0b6c1166
 
 name:           flight-scribe
 version:        0.1.0
@@ -43,6 +43,7 @@ library
       Flight.DiscardFurther
       Flight.FarOut
       Flight.FlyTime
+      Flight.GapPoint
       Flight.LandOut
       Flight.LeadArea
       Flight.LeadArea.AreaStep

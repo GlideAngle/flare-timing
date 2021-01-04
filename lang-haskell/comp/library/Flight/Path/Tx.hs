@@ -10,7 +10,6 @@ module Flight.Path.Tx
     , fsdbToCleanFsdb
     , cleanFsdbToTrimFsdb
     , trimFsdbToComp
-    , compToPoint
 
     , taskToTaskLength
     , taskToFlyTime
@@ -26,6 +25,7 @@ module Flight.Path.Tx
     , taskToMaskLead
     , taskToLandOut
     , taskToFarOut
+    , taskToGapPoint
 
     , compFileToCompDir
     , taskDir
@@ -50,6 +50,7 @@ module Flight.Path.Tx
     , maskLeadPath
     , landOutPath
     , farOutPath
+    , gapPointPath
 
     , unpackTrackPath
     , alignTimePath
@@ -143,7 +144,7 @@ reshape MaskSpeed = const "mask-speed.yaml"
 reshape MaskBonus = const "mask-bonus.yaml"
 reshape LandOut = const "land-out.yaml"
 reshape FarOut = const "far-out.yaml"
-reshape GapPoint = coerce . compToPoint . coerce . reshape CompInput
+reshape GapPoint = const "gap-point.yaml"
 
 reshape UnpackTrack = flip replaceExtensions "unpack-track.csv"
 reshape AlignTime = flip replaceExtensions "align-time.csv"
@@ -279,12 +280,10 @@ taskToFarOut :: TaskInputFile -> FarOutFile
 taskToFarOut (TaskInputFile s) = FarOutFile $ (takeDirectory s) </> reshape FarOut s
 
 -- |
--- >>> compToPoint (CompInputFile ".flare-timing/comp-input.yaml")
--- ".flare-timing/gap-point.yaml"
---
--- prop> \s -> compToPoint (CompInputFile s) == GapPointFile ".flare-timing/gap-point.yaml"
-compToPoint :: CompInputFile -> GapPointFile
-compToPoint _ = let DotDirName s d = shape GapPoint in GapPointFile $ dotDir d s
+-- >>> taskToGapPoint (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/gap-point.yaml"
+taskToGapPoint :: TaskInputFile -> GapPointFile
+taskToGapPoint (TaskInputFile s) = GapPointFile $ (takeDirectory s) </> reshape GapPoint s
 
 -- |
 -- >>> compToAltArrival AltFs (CompInputFile ".flare-timing/comp-input.yaml")
@@ -461,6 +460,12 @@ landOutPath dir task = (taskDir dir task, LandOutFile "land-out.yaml")
 -- ("a/.flare-timing/task-1","far-out.yaml")
 farOutPath :: CompDir -> IxTask -> (TaskDir, FarOutFile)
 farOutPath dir task = (taskDir dir task, FarOutFile "far-out.yaml")
+
+-- |
+-- >>> gapPointPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","gap-point.yaml")
+gapPointPath :: CompDir -> IxTask -> (TaskDir, FarOutFile)
+gapPointPath dir task = (taskDir dir task, FarOutFile "gap-point.yaml")
 
 -- |
 -- >>> unpackTrackPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

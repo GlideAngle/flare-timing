@@ -21,7 +21,7 @@ import Flight.Scribe
     , readCompMaskReach
     , readCompMaskSpeed
     , readCompMaskBonus
-    , readCompLandOut, readCompFarOut, readPointing
+    , readCompLandOut, readCompFarOut, readCompGapPoint
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -36,7 +36,6 @@ import Flight.Comp
     , compToAltLandout
     , compToAltRoute
     , compToAltScore
-    , compToPoint
     , reshape
     , mkCompTaskSettings
     , compFileToTaskFiles
@@ -64,14 +63,12 @@ drive o@CmdServeOptions{file} = do
 
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile = do
-    let pointFile = compToPoint compFile
     let altFsArrivalFile = compToAltArrival AltFs compFile
     let altFsLandoutFile = compToAltLandout AltFs compFile
     let altFsRouteFile = compToAltRoute AltFs compFile
     let altFsScoreFile = compToAltScore AltFs compFile
     let altAsScoreFile = compToAltScore AltAs compFile
     putStrLn $ "Reading competition & pilots DNF from " ++ show compFile
-    putStrLn $ "Reading scores from " ++ show pointFile
     putStrLn $ "Reading FS arrivals from " ++ show altFsArrivalFile
     putStrLn $ "Reading FS land outs from " ++ show altFsLandoutFile
     putStrLn $ "Reading FS optimal routes from " ++ show altFsRouteFile
@@ -165,7 +162,7 @@ go CmdServeOptions{..} compFile = do
 
             pointing <-
                 catchIO
-                    (Just <$> readPointing pointFile)
+                    (Just <$> readCompGapPoint compFile)
                     (const $ return Nothing)
 
             altFsA <-

@@ -34,7 +34,7 @@ import Control.Monad.Reader (asks, runReaderT)
 
 import Flight.Units ()
 import qualified Flight.Track.Point as Alt (AltPointing(..))
-import Flight.Track.Point (Pointing(..))
+import Flight.Track.Point (CompPointing(..))
 import Flight.Comp (AltDot(AltFs, AltAs), CompTaskSettings(..))
 import ServeSwagger (SwagUiApi)
 import Serve.Config (AppT(..), Config(..))
