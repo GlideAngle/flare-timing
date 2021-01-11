@@ -18,12 +18,11 @@ module Flight.Track.Land
     ) where
 
 import Lens.Micro ((^?), ix)
-import Data.Maybe (listToMaybe, fromMaybe)
-import Data.List (sortOn, unzip5)
+import Data.List (sortOn, unzip6)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u, convert, zero)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Field (FieldOrdering(..))
@@ -41,7 +40,7 @@ import "flight-gap-effort" Flight.Score
     , DifficultyFraction(..)
     )
 import Flight.Comp (IxTask(..))
-import Flight.Track.Curry (uncurry5)
+import Flight.Track.Curry (uncurry6)
 
 data TrackEffort =
     TrackEffort
@@ -106,7 +105,7 @@ data TaskLanding =
 -- | For each task, the landing for that task.
 data CompLanding =
     CompLanding
-        { minDistance :: MinimumDistance (Quantity Double [u| km |])
+        { minDistance :: [MinimumDistance (Quantity Double [u| km |])]
         -- ^ The mimimum distance, set once for the comp. All pilots landing
         -- before this distance get this distance. The 100m segments start from
         -- here.
@@ -125,9 +124,8 @@ data CompLanding =
 
 mkCompLandOut :: [TaskLanding] -> CompLanding
 mkCompLandOut ts =
-    (\(as, xs) -> uncurry5 (CompLanding (fromMaybe (MinimumDistance zero) $ listToMaybe as)) $ unzip5 xs)
-    $ unzip
-    [ (a, (b, c, d, e, f))
+    uncurry6 CompLanding $ unzip6
+    [ (a, b, c, d, e, f)
     | TaskLanding
         { minDistance = a
         , bestDistance = b
@@ -141,7 +139,7 @@ mkCompLandOut ts =
 unMkCompLandOut :: CompLanding -> [TaskLanding]
 unMkCompLandOut
     CompLanding
-        { minDistance = a
+        { minDistance = as
         , bestDistance = bs
         , landout = cs
         , lookahead = ds
@@ -149,6 +147,7 @@ unMkCompLandOut
         , difficulty = fs
         } =
     [ TaskLanding a b c d e f
+    | a <- as
     | b <- bs
     | c <- cs
     | d <- ds
@@ -159,6 +158,7 @@ unMkCompLandOut
 taskLanding :: IxTask -> CompLanding -> Maybe TaskLanding
 taskLanding (IxTask iTask) CompLanding{..} = do
     let i = fromIntegral iTask - 1
+    mn <- minDistance ^? ix i
     bd <- bestDistance ^? ix i
     lo <- landout ^? ix i
     la <- lookahead ^? ix i
@@ -166,7 +166,7 @@ taskLanding (IxTask iTask) CompLanding{..} = do
     df <- difficulty ^? ix i
     return
         TaskLanding
-            { minDistance = minDistance
+            { minDistance = mn
             , bestDistance = bd
             , landout = lo
             , lookahead = la

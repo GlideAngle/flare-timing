@@ -84,7 +84,7 @@ go CmdBatchOptions{..} compFile = do
 difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.CompLanding
 difficulty CompTaskSettings{nominal} CompMaskingEffort{bestEffort, land} =
     Cmp.CompLanding
-        { minDistance = md
+        { minDistance = const md <$> land
         , bestDistance = bests
         , landout = length <$> land
         , lookahead = ahead
