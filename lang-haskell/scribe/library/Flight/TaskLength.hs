@@ -1,4 +1,8 @@
-module Flight.TaskLength (readRoute, writeRoute, readRoutes, writeRoutes) where
+module Flight.TaskLength
+    ( readAltRoute, writeAltRoute
+    , readRoute, writeRoute
+    , readRoutes, writeRoutes
+    ) where
 
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
@@ -7,11 +11,21 @@ import Data.Yaml (decodeThrow)
 import qualified Data.Yaml.Pretty as Y
 import Control.Concurrent.ParallelIO (parallel, parallel_)
 
-import Flight.Route (TaskTrack(..), cmpFields)
+import Flight.Field (FieldOrdering(..))
+import Flight.Route (GeoLines, TaskTrack(..), cmpFields)
 import Flight.Comp
-    ( CompInputFile, TaskLengthFile(..)
+    ( AltRouteFile(..), CompInputFile, TaskLengthFile(..)
     , taskToTaskLength, compFileToTaskFiles
     )
+
+readAltRoute :: (MonadThrow m, MonadIO m) => AltRouteFile -> m [GeoLines]
+readAltRoute (AltRouteFile path) = liftIO $ BS.readFile path >>= decodeThrow
+
+writeAltRoute :: AltRouteFile -> [GeoLines] -> IO ()
+writeAltRoute (AltRouteFile path) track = do
+    let cfg = Y.setConfCompare (fieldOrder track) Y.defConfig
+    let yaml = Y.encodePretty cfg track
+    BS.writeFile path yaml
 
 readRoute :: (MonadThrow m, MonadIO m) => TaskLengthFile -> m (Maybe TaskTrack)
 readRoute (TaskLengthFile path) = liftIO $ BS.readFile path >>= decodeThrow
