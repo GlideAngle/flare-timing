@@ -15,6 +15,7 @@ of this changelog.
 * Split `ft-fly-time` from `ft-cross-zone`.
 * Invert the command/task folder order to have task/command such as
   `.flare-timing/task-1/align-time/*.csv`.
+* Break up working files so that they are per-task, not for the whole comp.
 
 # Ess ≠ Goal
 ## v0.29
