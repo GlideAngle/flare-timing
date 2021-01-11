@@ -18,11 +18,12 @@ module Flight.Track.Land
     ) where
 
 import Lens.Micro ((^?), ix)
+import Data.Maybe (listToMaybe, fromMaybe)
 import Data.List (sortOn, unzip5)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure (u, convert, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Field (FieldOrdering(..))
@@ -124,7 +125,8 @@ data CompLanding =
 
 mkCompLandOut :: [TaskLanding] -> CompLanding
 mkCompLandOut ts =
-    (\(a' : _, xs) -> uncurry5 (CompLanding a') $ unzip5 xs) $ unzip
+    (\(as, xs) -> uncurry5 (CompLanding (fromMaybe (MinimumDistance zero) $ listToMaybe as)) $ unzip5 xs)
+    $ unzip
     [ (a, (b, c, d, e, f))
     | TaskLanding
         { minDistance = a
