@@ -157,15 +157,14 @@ difficultyByReach cs CompMaskingReach{bolster, nigh} dfNtss =
 difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.CompLanding
 difficulty CompTaskSettings{nominal} CompMaskingEffort{bestEffort, land} =
     Cmp.CompLanding
-        { minDistance = const md <$> land
-        , bestDistance = bests
+        { bestDistance = bests
         , landout = length <$> land
         , lookahead = ahead
         , chunking = cgs
         , difficulty = cs
         }
     where
-        md@(MinimumDistance (MkQuantity free')) = free nominal
+        MinimumDistance (MkQuantity free') = free nominal
 
         pss :: [[Pilot]]
         pss = (fmap . fmap) fst land

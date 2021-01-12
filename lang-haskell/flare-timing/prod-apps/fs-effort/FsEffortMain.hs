@@ -4,16 +4,13 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
-import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
-import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNominal, parseAltLandouts)
+import Flight.Fsdb (parseAltLandouts)
 import Flight.Track.Land (CompLanding(..), TaskLanding(..), mkCompLandOut)
 import Flight.Comp
     ( AltDot(AltFs)
@@ -21,12 +18,10 @@ import Flight.Comp
     , FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
-    , Nominal(..)
     , trimFsdbToAltLandout
     , findTrimFsdb
     , reshape
     )
-import Flight.Score (MinimumDistance(..))
 import Flight.Scribe (readTrimFsdb, writeAltLandOut)
 import FsEffortOptions (description)
 
@@ -59,27 +54,12 @@ go trimFsdbFile = do
     settings <- runExceptT $ normEfforts (FsdbXml contents')
     either print (writeAltLandOut (trimFsdbToAltLandout AltFs trimFsdbFile)) settings
 
-fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
-fsdbNominal (FsdbXml contents) = do
-    ns <- lift $ parseNominal contents
-    case ns of
-        Left msg -> ExceptT . return $ Left msg
-        Right [n] -> ExceptT . return $ Right n
-        _ -> do
-            let msg = "Expected only one set of nominals for the comp"
-            lift $ print msg
-            throwE msg
-
-fsdbEfforts
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> FsdbXml
-    -> ExceptT String IO [TaskLanding]
-fsdbEfforts free (FsdbXml contents) = do
-    fs <- lift $ parseAltLandouts free contents
+fsdbEfforts :: FsdbXml -> ExceptT String IO [TaskLanding]
+fsdbEfforts (FsdbXml contents) = do
+    fs <- lift $ parseAltLandouts contents
     ExceptT $ return fs
 
 normEfforts :: FsdbXml -> ExceptT String IO CompLanding
 normEfforts fsdbXml = do
-    Nominal{free} <- fsdbNominal fsdbXml
-    es <- fsdbEfforts free fsdbXml
+    es <- fsdbEfforts fsdbXml
     return $ mkCompLandOut es

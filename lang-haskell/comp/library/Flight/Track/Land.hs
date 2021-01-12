@@ -18,7 +18,7 @@ module Flight.Track.Land
     ) where
 
 import Lens.Micro ((^?), ix)
-import Data.List (sortOn, unzip6)
+import Data.List (sortOn, unzip5)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -27,12 +27,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
-import "flight-gap-allot" Flight.Score
-    ( Pilot(..)
-    , PilotDistance(..)
-    , MinimumDistance(..)
-    , FlownMax(..)
-    )
+import "flight-gap-allot" Flight.Score ( Pilot(..), PilotDistance(..), FlownMax(..))
 import "flight-gap-effort" Flight.Score
     ( Lookahead
     , Chunking(..)
@@ -40,7 +35,7 @@ import "flight-gap-effort" Flight.Score
     , DifficultyFraction(..)
     )
 import Flight.Comp (IxTask(..))
-import Flight.Track.Curry (uncurry6)
+import Flight.Track.Curry (uncurry5)
 
 data TrackEffort =
     TrackEffort
@@ -85,11 +80,7 @@ effortRank CompLanding{difficulty} =
 -- | The landing for a single task.
 data TaskLanding =
     TaskLanding
-        { minDistance :: MinimumDistance (Quantity Double [u| km |])
-        -- ^ The mimimum distance, set once for the comp. All pilots landing
-        -- before this distance get this distance. The 100m segments start from
-        -- here.
-        , bestDistance :: Maybe (FlownMax (Quantity Double [u| km |]))
+        { bestDistance :: Maybe (FlownMax (Quantity Double [u| km |]))
         -- ^ The best distance flown.
         , landout :: Int
         -- ^ The number of pilots landing out.
@@ -105,11 +96,7 @@ data TaskLanding =
 -- | For each task, the landing for that task.
 data CompLanding =
     CompLanding
-        { minDistance :: [MinimumDistance (Quantity Double [u| km |])]
-        -- ^ The mimimum distance, set once for the comp. All pilots landing
-        -- before this distance get this distance. The 100m segments start from
-        -- here.
-        , bestDistance :: [Maybe (FlownMax (Quantity Double [u| km |]))]
+        { bestDistance :: [Maybe (FlownMax (Quantity Double [u| km |]))]
         -- ^ For each task, the best distance flown.
         , landout :: [Int]
         -- ^ For each task, the number of pilots landing out.
@@ -124,41 +111,37 @@ data CompLanding =
 
 mkCompLandOut :: [TaskLanding] -> CompLanding
 mkCompLandOut ts =
-    uncurry6 CompLanding $ unzip6
-    [ (a, b, c, d, e, f)
+    uncurry5 CompLanding $ unzip5
+    [ (a, b, c, d, e)
     | TaskLanding
-        { minDistance = a
-        , bestDistance = b
-        , landout = c
-        , lookahead = d
-        , chunking = e
-        , difficulty = f
+        { bestDistance = a
+        , landout = b
+        , lookahead = c
+        , chunking = d
+        , difficulty = e
         } <- ts
     ]
 
 unMkCompLandOut :: CompLanding -> [TaskLanding]
 unMkCompLandOut
     CompLanding
-        { minDistance = as
-        , bestDistance = bs
-        , landout = cs
-        , lookahead = ds
-        , chunking = es
-        , difficulty = fs
+        { bestDistance = as
+        , landout = bs
+        , lookahead = cs
+        , chunking = ds
+        , difficulty = es
         } =
-    [ TaskLanding a b c d e f
+    [ TaskLanding a b c d e
     | a <- as
     | b <- bs
     | c <- cs
     | d <- ds
     | e <- es
-    | f <- fs
     ]
 
 taskLanding :: IxTask -> CompLanding -> Maybe TaskLanding
 taskLanding (IxTask iTask) CompLanding{..} = do
     let i = fromIntegral iTask - 1
-    mn <- minDistance ^? ix i
     bd <- bestDistance ^? ix i
     lo <- landout ^? ix i
     la <- lookahead ^? ix i
@@ -166,8 +149,7 @@ taskLanding (IxTask iTask) CompLanding{..} = do
     df <- difficulty ^? ix i
     return
         TaskLanding
-            { minDistance = mn
-            , bestDistance = bd
+            { bestDistance = bd
             , landout = lo
             , lookahead = la
             , chunking = cg
