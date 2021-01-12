@@ -43,7 +43,7 @@ drive CmdBatchOptions{file} = do
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
     end <- getTime Monotonic
-    fprint ("Read *.fsdb, wrote it clean and wrote it trim in " % timeSpecs % "\n") start end
+    fprint ("Read *.fsdb, wrote it clean in " % timeSpecs % "\n") start end
 
 go :: FsdbFile -> IO ()
 go fsdbFile@(FsdbFile fsdbPath) = do
