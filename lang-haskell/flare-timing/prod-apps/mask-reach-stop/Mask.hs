@@ -54,11 +54,11 @@ import Flight.Lookup.Tag
 import Flight.TrackLog (pilotTrack)
 import Flight.Scribe
     ( AltBonus(..)
-    , writeCompMaskBonus
+    , writeCompMaskReachStop
     , readCompBestDistances
     -- TODO: Take care to consider bonus altitude distance with leading area.
     -- , readPilotDiscardFurther
-    -- , readPilotPegThenDiscard
+    -- , readPilotDiscardFurtherStop
     , readCompLeadArea
     )
 import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..))
@@ -163,7 +163,7 @@ writeMask
     bonusAltRows :: [[(Pilot, [Time.TickRow])]]
         <-
             sequence $
-            [ sequence [sequence (p, readPilotPegThenDiscard compFile ix p) | p <- ps]
+            [ sequence [sequence (p, readPilotDiscardFurtherStop compFile ix p) | p <- ps]
             | ix <- (IxTask <$> [1 .. ])
             | ps <- pilots
             ]
@@ -206,7 +206,7 @@ writeMask
             ]
 
     -- NOTE: The reach with altitude bonus distance.
-    writeCompMaskBonus
+    writeCompMaskReachStop
         compFile
         (maskReachTick
             free

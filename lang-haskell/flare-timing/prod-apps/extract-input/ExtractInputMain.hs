@@ -188,7 +188,6 @@ fsdbTaskPilotGroups :: FsdbXml -> ExceptT String IO [PilotGroup]
 fsdbTaskPilotGroups (FsdbXml contents) = do
     ts <- lift $ parseTaskPilotGroups contents
     ExceptT $ return ts
-
 fsdbTaskPilotPenaltiesAuto
     :: FsdbXml
     -> ExceptT String IO [[(Pilot, PenaltySeq, String)]]

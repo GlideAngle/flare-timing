@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 224281a0fc66849d103584079c9687fd55aa090ad0998ba48a6909a3486f29ba
+-- hash: 430b1988c7a88b1f9dea2b0defdd81ff9f58b1692be8ce6acfd8e24a9f3553cf
 
 name:           flare-timing
 version:        0.1.0
@@ -377,6 +377,47 @@ executable ft-discard-further
     , flight-zone
     , formatting
     , mtl
+    , parallel-io
+    , raw-strings-qq
+    , safe-exceptions
+    , transformers
+    , uom-plugin
+    , vector
+    , yaml
+  default-language: Haskell2010
+
+executable ft-discard-further-stop
+  main-is: DiscardFurtherStopMain.hs
+  other-modules:
+      DiscardFurtherStopOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/discard-further-stop
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-gap-allot
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-time
+    , flight-zone
+    , formatting
+    , mtl
+    , parallel-io
     , raw-strings-qq
     , safe-exceptions
     , transformers
@@ -754,67 +795,6 @@ executable ft-mask-arrival
     , yaml
   default-language: Haskell2010
 
-executable ft-mask-bonus
-  main-is: MaskBonusMain.hs
-  other-modules:
-      MaskEffort
-      MaskLead
-      MaskLeadCoef
-      MaskPilots
-      MaskSpeed
-      Mask
-      Mask.Reach.Tick
-      MaskBonusOptions
-      Stats
-      Paths_flare_timing
-  hs-source-dirs:
-      prod-apps/mask-common
-      prod-apps/mask-bonus
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , bytestring
-    , clock
-    , cmdargs
-    , containers
-    , deepseq
-    , directory
-    , filemanip
-    , filepath
-    , flight-clip
-    , flight-cmd
-    , flight-comp
-    , flight-earth
-    , flight-gap-allot
-    , flight-gap-lead
-    , flight-gap-valid
-    , flight-kml
-    , flight-latlng
-    , flight-lookup
-    , flight-mask
-    , flight-route
-    , flight-scribe
-    , flight-span
-    , flight-time
-    , flight-track
-    , flight-zone
-    , formatting
-    , lens
-    , mtl
-    , parallel-io
-    , raw-strings-qq
-    , safe-exceptions
-    , siggy-chardust
-    , statistics
-    , time
-    , transformers
-    , uom-plugin
-    , vector
-    , yaml
-  default-language: Haskell2010
-
 executable ft-mask-effort
   main-is: MaskEffortMain.hs
   other-modules:
@@ -952,6 +932,67 @@ executable ft-mask-reach
   hs-source-dirs:
       prod-apps/mask-common
       prod-apps/mask-reach
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , containers
+    , deepseq
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-gap-allot
+    , flight-gap-lead
+    , flight-gap-valid
+    , flight-kml
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-span
+    , flight-time
+    , flight-track
+    , flight-zone
+    , formatting
+    , lens
+    , mtl
+    , parallel-io
+    , raw-strings-qq
+    , safe-exceptions
+    , siggy-chardust
+    , statistics
+    , time
+    , transformers
+    , uom-plugin
+    , vector
+    , yaml
+  default-language: Haskell2010
+
+executable ft-mask-reach-stop
+  main-is: MaskReachStopMain.hs
+  other-modules:
+      MaskEffort
+      MaskLead
+      MaskLeadCoef
+      MaskPilots
+      MaskSpeed
+      Mask
+      Mask.Reach.Tick
+      MaskReachStopOptions
+      Stats
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/mask-common
+      prod-apps/mask-reach-stop
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:

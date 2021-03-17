@@ -11,6 +11,7 @@ arguments =
     , "-XDataKinds"
     , "-XDerivingStrategies"
     , "-XFlexibleContexts"
+    , "-XFlexibleInstances"
     , "-XGeneralizedNewtypeDeriving"
     , "-XPackageImports"
     , "-XTypeApplications"

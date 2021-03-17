@@ -350,7 +350,8 @@ in    defs
           , ft-discard-further =
               { dependencies =
                     deps
-                  # [ "safe-exceptions"
+                  # [ "parallel-io"
+                    , "safe-exceptions"
                     , "vector"
                     , "flight-clip"
                     , "flight-gap-allot"
@@ -370,6 +371,31 @@ in    defs
                   "DiscardFurtherMain.hs"
               , source-dirs =
                   "prod-apps/discard-further"
+              }
+          , ft-discard-further-stop =
+              { dependencies =
+                    deps
+                  # [ "parallel-io"
+                    , "safe-exceptions"
+                    , "vector"
+                    , "flight-clip"
+                    , "flight-gap-allot"
+                    , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "DiscardFurtherStopMain.hs"
+              , source-dirs =
+                  "prod-apps/discard-further-stop"
               }
           , ft-lead-area =
               { dependencies =
@@ -491,7 +517,7 @@ in    defs
               , source-dirs =
                   [ "prod-apps/mask-common", "prod-apps/mask-reach" ]
               }
-          , ft-mask-bonus =
+          , ft-mask-reach-stop =
               { dependencies =
                     deps
                   # [ "containers"
@@ -531,14 +557,14 @@ in    defs
                   , "MaskSpeed"
                   , "Mask"
                   , "Mask.Reach.Tick"
-                  , "MaskBonusOptions"
+                  , "MaskReachStopOptions"
                   , "Stats"
                   , "Paths_flare_timing"
                   ]
               , main =
-                  "MaskBonusMain.hs"
+                  "MaskReachStopMain.hs"
               , source-dirs =
-                  [ "prod-apps/mask-common", "prod-apps/mask-bonus" ]
+                  [ "prod-apps/mask-common", "prod-apps/mask-reach-stop" ]
               }
           , ft-mask-effort =
               { dependencies =

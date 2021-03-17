@@ -1,18 +1,15 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
-{-# OPTIONS_GHC -fno-warn-unused-matches #-}
-{-# OPTIONS_GHC -fno-warn-unused-local-binds #-}
-{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
 import Prelude hiding (last)
 import Data.Maybe (fromMaybe)
 import Data.List (find)
+import Data.List.NonEmpty (nonEmpty, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Control.Monad (mapM_, void)
+import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
 import Control.Concurrent.ParallelIO (parallel_)
@@ -20,18 +17,18 @@ import Control.Concurrent.ParallelIO (parallel_)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import qualified Flight.Comp as DFNT (DfNoTrack(..), DfNoTrackPilot(..))
+import Flight.Zone.MkZones (Zones(..))
+import Flight.Zone.Raw (RawZone(..))
 import Flight.Comp
     ( FindDirFile(..)
     , FileType(CompInput)
     , ScoringInputFiles
     , CompInputFile(..)
     , CompTaskSettings(..)
+    , Comp(..)
     , Task(..)
     , PilotName(..)
     , Pilot(..)
-    , PilotGroup(..)
-    , PilotTrackLogFile(..)
     , TrackFileFail
     , IxTask(..)
     , findCompInput
@@ -40,14 +37,14 @@ import Flight.Comp
     , mkCompTaskSettings
     , compFileToTaskFiles
     )
-import Flight.Track.Time (TimeRow(..), copyTimeToTick)
+import Flight.Track.Time (TimeRow(..), TimeToTick, glideRatio, altBonusTimeToTick, copyTimeToTick)
 import Flight.Track.Stop (CompFraming(..), StopFraming(..), TrackScoredSection(..))
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     ( readCompAndTasks, readCompPegFrame
-    , readPilotAlignTimeWriteDiscardFurther
+    , readPilotAlignTimeWriteDiscardFurtherStop
     )
-import DiscardFurtherOptions (description)
+import DiscardFurtherStopOptions (description)
 
 main :: IO ()
 main = do
@@ -71,12 +68,11 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Filtering times completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{pilot = p, ..} compFile = do
+go CmdBatchOptions{..} compFile = do
     filesTaskAndSettings <-
         catchIO
             (Just <$> do
                 ts <- compFileToTaskFiles compFile
-                putStrLn $ "TASKS: >>>: " ++ show ts
                 s <- readCompAndTasks (compFile, ts)
                 return (ts, s))
             (const $ return Nothing)
@@ -94,7 +90,7 @@ go CmdBatchOptions{pilot = p, ..} compFile = do
                 (uncurry mkCompTaskSettings $ settings)
                 (compFile, taskFiles)
                 (IxTask <$> task)
-                (pilotNamed cs $ PilotName <$> p)
+                (pilotNamed cs $ PilotName <$> pilot)
                 stopFlying
                 checkAll
 
@@ -116,7 +112,7 @@ filterTime
         -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
-    CompTaskSettings{tasks, pilots, pilotGroups}
+    CompTaskSettings{comp = Comp{discipline = hgOrPg}, tasks}
     inFiles@(compFile, _) selectTasks selectPilots stopFlying f = do
 
     let filterOnPilotStops pilot stops =
@@ -132,47 +128,47 @@ filterTime
 
     case checks of
         Nothing -> putStrLn "Unable to read tracks for pilots."
-        Just _xs -> do
-            {-
+        Just xs -> do
             let taskPilots :: [[Pilot]] =
                     (fmap . fmap)
                         (\case
                             Left (p, _) -> p
                             Right (p, _) -> p)
                         xs
-                        -}
 
-            sequence_
+            let altBonusesOnTime :: [TimeToTick] =
+                    [
+                        fromMaybe copyTimeToTick $ do
+                            _ <- stopped
+                            zs' <- nonEmpty zs
+                            let RawZone{alt} = last zs'
+                            altBonusTimeToTick (glideRatio hgOrPg) <$> alt
+
+                    | Task{stopped, zones = Zones{raw = zs}} <- tasks
+                    ]
+
+            parallel_
                 [
-                    if | cancelled -> putStrLn $ "TASK-" ++ show n ++ " CANCELLED"
-                       | not (includeTask selectTasks ixTask) -> putStrLn $ "TASK-" ++ show n ++ " EXCLUDED"
-                       | otherwise -> do
-                            putStrLn $ "TASK-" ++ show n ++ " == " ++ taskName
-                            putStrLn $ "TASK-" ++ show n ++ " ABS: " ++ show absent
-                            putStrLn $ "TASK-" ++ show n ++ " DNF: " ++ show dnf
-                            putStrLn $ "TASK-" ++ show n ++ " DFNT: " ++ show dfnt
-
+                    if not (includeTask selectTasks n)
+                       then putStrLn $ "Skipping task " ++ (show n)
+                       else
                             parallel_
-                                [
-                                    if | p `elem` absent -> putStrLn $ "TASK-" ++ show n ++ " ABS " ++ show p
-                                       | p `elem` dnf -> putStrLn $ "TASK-" ++ show n ++ " DNF " ++ show p
-                                       | p `elem` dfnt -> putStrLn $ "TASK-" ++ show n ++ " DFNoTrack " ++ show p
-                                       | otherwise -> void $
-                                           readPilotAlignTimeWriteDiscardFurther
-                                                compFile
-                                                ixTask
-                                                p
-                                                copyTimeToTick
-                                                id
-                                                (filterOnPilotStops p stops)
-                                | PilotTrackLogFile p _ <- taskPilots
+                                [ do
+                                    a <- readPilotAlignTimeWriteDiscardFurtherStop
+                                            compFile
+                                            n
+                                            p
+                                            timeToTick
+                                            id
+                                            (filterOnPilotStops p stops)
+                                    return $ (p, a)
+
+                                | p <- pilots
                                 ]
-                | ixTask@(IxTask n) <- (IxTask <$> [1 .. ])
-                | Task{taskName, cancelled} <- tasks
-                | taskPilots <- pilots
-                | PilotGroup{absent, dnf, didFlyNoTracklog} <- pilotGroups
-                , let dfnt = DFNT.pilot <$> DFNT.unDfNoTrack didFlyNoTracklog
+                | n <- (IxTask <$> [1 .. ])
+                | pilots <- taskPilots
                 | stops <- stopFlying
+                | timeToTick <- altBonusesOnTime
                 ]
 
 checkAll

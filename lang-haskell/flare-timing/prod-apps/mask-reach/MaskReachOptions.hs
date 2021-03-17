@@ -14,8 +14,7 @@ tracklogs, one per task;
     Reads  ./k/p.kml
     Reads  ./c.tag-zone.yaml
     Reads  ./c.mask-arrival.yaml
-    Writes ./flare-timing/discard-further/task-n/p.csv
-    Writes ./c.mask-track.yaml
+    Writes ./flare-timing/task-n/mask-reach.yaml
 
 If a list of tasks are supplied then those tasks alone are processed, otherwise
 all tasks are processed. The same thing goes if a list of pilots is supplied or

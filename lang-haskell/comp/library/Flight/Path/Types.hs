@@ -10,8 +10,8 @@ module Flight.Path.Types
     , UnpackTrackDir(..)
     , AlignTimeDir(..)
     , DiscardFurtherDir(..)
+    , DiscardFurtherStopDir(..)
     , AreaStepDir(..)
-    , PegThenDiscardDir(..)
 
     , CompInputFile(..)
     , TaskInputFile(..)
@@ -35,15 +35,15 @@ module Flight.Path.Types
     , UnpackTrackFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
+    , DiscardFurtherStopFile(..)
     , AreaStepFile(..)
-    , PegThenDiscardFile(..)
     , LeadAreaFile(..)
     , MaskArrivalFile(..)
     , MaskEffortFile(..)
     , MaskLeadFile(..)
     , MaskReachFile(..)
+    , MaskReachStopFile(..)
     , MaskSpeedFile(..)
-    , MaskBonusFile(..)
     , LandOutFile(..)
     , FarOutFile(..)
     , GapPointFile(..)
@@ -85,8 +85,8 @@ data FileType
     | MaskEffort
     | MaskLead
     | MaskReach
+    | MaskReachStop
     | MaskSpeed
-    | MaskBonus
     | LeadArea
     | LandOut
     | FarOut
@@ -95,7 +95,7 @@ data FileType
     | UnpackTrack
     | AlignTime
     | DiscardFurther
-    | PegThenDiscard
+    | DiscardFurtherStop
     | AreaStep
 
     | AltArrival AltDot
@@ -216,6 +216,11 @@ newtype DiscardFurtherDir = DiscardFurtherDir FilePath
     deriving Eq
     deriving newtype Show
 
+-- | The path to a peg then discard directory for a single stopped task.
+newtype DiscardFurtherStopDir = DiscardFurtherStopDir FilePath
+    deriving Eq
+    deriving newtype Show
+
 -- | The path to an align time directory for a single task.
 newtype AlignTimeDir = AlignTimeDir FilePath
     deriving Eq
@@ -223,11 +228,6 @@ newtype AlignTimeDir = AlignTimeDir FilePath
 
 -- | The path to a area step directory for a single task.
 newtype AreaStepDir = AreaStepDir FilePath
-    deriving Eq
-    deriving newtype Show
-
--- | The path to a peg then discard directory for a single task.
-newtype PegThenDiscardDir = PegThenDiscardDir FilePath
     deriving Eq
     deriving newtype Show
 
@@ -246,13 +246,13 @@ newtype DiscardFurtherFile = DiscardFurtherFile FilePath
     deriving Eq
     deriving newtype Show
 
--- | The path to a area step file.
-newtype AreaStepFile = AreaStepFile FilePath
+-- | The path to a discard file in a stopped task, includes altitude bonus glide.
+newtype DiscardFurtherStopFile = DiscardFurtherStopFile FilePath
     deriving Eq
     deriving newtype Show
 
--- | The path to a peg then discard file.
-newtype PegThenDiscardFile = PegThenDiscardFile FilePath
+-- | The path to a area step file.
+newtype AreaStepFile = AreaStepFile FilePath
     deriving Eq
     deriving newtype Show
 
@@ -281,13 +281,13 @@ newtype MaskReachFile = MaskReachFile FilePath
     deriving Eq
     deriving newtype Show
 
--- | The path to a mask speed file.
-newtype MaskSpeedFile = MaskSpeedFile FilePath
+-- | The path to a mask reach with altitude bonus distance file.
+newtype MaskReachStopFile = MaskReachStopFile FilePath
     deriving Eq
     deriving newtype Show
 
--- | The path to a mask reach with altitude bonus distance file.
-newtype MaskBonusFile = MaskBonusFile FilePath
+-- | The path to a mask speed file.
+newtype MaskSpeedFile = MaskSpeedFile FilePath
     deriving Eq
     deriving newtype Show
 

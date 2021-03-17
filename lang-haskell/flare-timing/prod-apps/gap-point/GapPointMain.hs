@@ -91,8 +91,8 @@ import Flight.Scribe
     , readCompMaskArrival
     , readCompMaskEffort
     , readCompMaskLead
-    , readCompMaskBonus
     , readCompMaskReach
+    , readCompMaskReachStop
     , readCompMaskSpeed
     , readCompLandOut, readCompFarOut
     , writeCompGapPoint
@@ -222,7 +222,7 @@ go CmdBatchOptions{..} compFile = do
 
     br <-
         catchIO
-            (Just <$> readCompMaskBonus compFile)
+            (Just <$> readCompMaskReachStop compFile)
             (const $ return Nothing)
 
     ms <-

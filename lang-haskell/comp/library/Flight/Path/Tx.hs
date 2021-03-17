@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Flight.Path.Tx
     ( trimFsdbToAltArrival
     , trimFsdbToAltLandout
@@ -20,7 +22,7 @@ module Flight.Path.Tx
     , taskToMaskArrival
     , taskToMaskEffort
     , taskToMaskReach
-    , taskToMaskBonus
+    , taskToMaskReachStop
     , taskToMaskSpeed
     , taskToMaskLead
     , taskToLandOut
@@ -32,7 +34,7 @@ module Flight.Path.Tx
     , unpackTrackDir
     , alignTimeDir
     , discardFurtherDir
-    , pegThenDiscardDir
+    , discardFurtherStopDir
     , areaStepDir
 
     , taskInputPath
@@ -45,7 +47,7 @@ module Flight.Path.Tx
     , maskArrivalPath
     , maskEffortPath
     , maskReachPath
-    , maskBonusPath
+    , maskReachStopPath
     , maskSpeedPath
     , maskLeadPath
     , landOutPath
@@ -55,14 +57,16 @@ module Flight.Path.Tx
     , unpackTrackPath
     , alignTimePath
     , discardFurtherPath
-    , pegThenDiscardPath
+    , discardFurtherStopPath
     , areaStepPath
     , reshape
     ) where
 
+import Data.List (elemIndex)
 import Data.Coerce (coerce)
 import Text.Printf (printf)
-import System.FilePath (FilePath, (</>), (<.>), takeDirectory, replaceExtensions)
+import System.FilePath
+    (FilePath, (</>), (<.>), takeDirectory, replaceExtensions, splitDirectories)
 import "flight-gap-allot" Flight.Score (PilotId(..), PilotName(..), Pilot(..))
 import Flight.Path.Types
 
@@ -94,7 +98,7 @@ shape MaskEffort = DotDirName "mask-effort.yaml" DotFt
 shape MaskLead = DotDirName "mask-lead.yaml" DotFt
 shape MaskReach = DotDirName "mask-reach.yaml" DotFt
 shape MaskSpeed = DotDirName "mask-speed.yaml" DotFt
-shape MaskBonus = DotDirName "bonus-reach.yaml" DotFt
+shape MaskReachStop = DotDirName "mask-reach-stop.yaml" DotFt
 shape LandOut = DotDirName "land-out.yaml" DotFt
 shape FarOut = DotDirName "far-out.yaml" DotFt
 shape GapPoint = DotDirName "gap-point.yaml" DotFt
@@ -102,7 +106,7 @@ shape GapPoint = DotDirName "gap-point.yaml" DotFt
 shape UnpackTrack = Ext ".unpack-track.csv"
 shape AlignTime = Ext ".align-time.csv"
 shape DiscardFurther = Ext ".discard-further.csv"
-shape PegThenDiscard = Ext ".peg-then-discard.csv"
+shape DiscardFurtherStop = Ext ".discard-further-stop.csv"
 shape AreaStep = Ext ".area-step.csv"
 
 shape (AltArrival AltFs) = DotDirName "mask-arrival.yaml" DotFs
@@ -141,7 +145,7 @@ reshape MaskLead = const "mask-lead.yaml"
 reshape MaskReach = const "mask-reach.yaml"
 reshape MaskSpeed = const "mask-speed.yaml"
 
-reshape MaskBonus = const "mask-bonus.yaml"
+reshape MaskReachStop = const "mask-reach-stop.yaml"
 reshape LandOut = const "land-out.yaml"
 reshape FarOut = const "far-out.yaml"
 reshape GapPoint = const "gap-point.yaml"
@@ -149,7 +153,7 @@ reshape GapPoint = const "gap-point.yaml"
 reshape UnpackTrack = flip replaceExtensions "unpack-track.csv"
 reshape AlignTime = flip replaceExtensions "align-time.csv"
 reshape DiscardFurther = flip replaceExtensions "discard-further.csv"
-reshape PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
+reshape DiscardFurtherStop = flip replaceExtensions "further-stop.csv"
 reshape AreaStep = flip replaceExtensions "area-step.csv"
 
 reshape (AltArrival x) = coerce . compToAltArrival x . coerce . reshape CompInput
@@ -250,10 +254,10 @@ taskToMaskReach :: TaskInputFile -> MaskReachFile
 taskToMaskReach (TaskInputFile s) = MaskReachFile $ (takeDirectory s) </> reshape MaskReach s
 
 -- |
--- >>> taskToMaskBonus (TaskInputFile ".flare-timing/task-1/task-input.yaml")
--- ".flare-timing/task-1/mask-bonus.yaml"
-taskToMaskBonus :: TaskInputFile -> MaskBonusFile
-taskToMaskBonus (TaskInputFile s) = MaskBonusFile $ (takeDirectory s) </> reshape MaskBonus s
+-- >>> taskToMaskReachStop (TaskInputFile ".flare-timing/task-1/task-input.yaml")
+-- ".flare-timing/task-1/mask-reach-stop.yaml"
+taskToMaskReachStop :: TaskInputFile -> MaskReachStopFile
+taskToMaskReachStop (TaskInputFile s) = MaskReachStopFile $ (takeDirectory s) </> reshape MaskReachStop s
 
 -- |
 -- >>> taskToMaskSpeed (TaskInputFile ".flare-timing/task-1/task-input.yaml")
@@ -378,6 +382,26 @@ taskInputPath :: CompDir -> IxTask -> (TaskDir, TaskInputFile)
 taskInputPath dir task = (taskDir dir task, TaskInputFile "task-input.yaml")
 
 -- |
+-- >>> taskInputPath (CompDir "a") (IxTask 1) == taskInputPath (CompDir "a") (IxTask 1)
+-- True
+--
+-- >>> taskInputPath (CompDir "a") (IxTask 1) < taskInputPath (CompDir "a") (IxTask 2)
+-- True
+--
+-- >>> taskInputPath (CompDir "a") (IxTask 2) < taskInputPath (CompDir "a") (IxTask 10)
+-- True
+instance Ord TaskInputFile where
+    compare (TaskInputFile x) (TaskInputFile y) = compare (f x) (f y) where
+        f path =
+            case reverse . splitDirectories $ takeDirectory path of
+                [] -> Nothing
+                taskN : _ -> elemIndex taskN $ (\n -> "task-" ++ show n) <$> [1..100 :: Int]
+
+instance  {-# OVERLAPPING #-} Ord (TaskDir, TaskInputFile) where
+    compare x y = compare (f x) (f y) where
+        f (TaskDir d, TaskInputFile file) = TaskInputFile (d </> file)
+
+-- |
 -- >>> taskLengthPath (CompDir "a") (IxTask 1)
 -- ("a/.flare-timing/task-1","task-length.yaml")
 taskLengthPath :: CompDir -> IxTask -> (TaskDir, TaskLengthFile)
@@ -432,10 +456,10 @@ maskReachPath :: CompDir -> IxTask -> (TaskDir, MaskReachFile)
 maskReachPath dir task = (taskDir dir task, MaskReachFile "mask-reach.yaml")
 
 -- |
--- >>> maskBonusPath (CompDir "a") (IxTask 1)
--- ("a/.flare-timing/task-1","mask-bonus.yaml")
-maskBonusPath :: CompDir -> IxTask -> (TaskDir, MaskBonusFile)
-maskBonusPath dir task = (taskDir dir task, MaskBonusFile "mask-bonus.yaml")
+-- >>> maskReachStopPath (CompDir "a") (IxTask 1)
+-- ("a/.flare-timing/task-1","mask-reach-stop.yaml")
+maskReachStopPath :: CompDir -> IxTask -> (TaskDir, MaskReachStopFile)
+maskReachStopPath dir task = (taskDir dir task, MaskReachStopFile "mask-reach-stop.yaml")
 
 -- |
 -- >>> maskSpeedPath (CompDir "a") (IxTask 1)
@@ -501,15 +525,15 @@ discardFurtherDir comp task =
     DiscardFurtherDir $ dotSubdirTask comp DotFt "discard-further" task
 
 -- |
--- >>> pegThenDiscardPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
--- ("a/.flare-timing/task-1/peg-then-discard","Frodo 101.csv")
-pegThenDiscardPath :: CompDir -> IxTask -> Pilot -> (PegThenDiscardDir, PegThenDiscardFile)
-pegThenDiscardPath dir task pilot =
-    (pegThenDiscardDir dir task, PegThenDiscardFile $ pilotPath pilot <.> "csv")
+-- >>> discardFurtherStopPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))
+-- ("a/.flare-timing/task-1/discard-further-stop","Frodo 101.csv")
+discardFurtherStopPath :: CompDir -> IxTask -> Pilot -> (DiscardFurtherStopDir, DiscardFurtherStopFile)
+discardFurtherStopPath dir task pilot =
+    (discardFurtherStopDir dir task, DiscardFurtherStopFile $ pilotPath pilot <.> "csv")
 
-pegThenDiscardDir :: CompDir -> IxTask -> PegThenDiscardDir
-pegThenDiscardDir comp task =
-    PegThenDiscardDir $ dotSubdirTask comp DotFt "peg-then-discard" task
+discardFurtherStopDir :: CompDir -> IxTask -> DiscardFurtherStopDir
+discardFurtherStopDir comp task =
+    DiscardFurtherStopDir $ dotSubdirTask comp DotFt "discard-further-stop" task
 
 -- |
 -- >>> areaStepPath (CompDir "a") 1 (Pilot (PilotId "101", PilotName "Frodo"))

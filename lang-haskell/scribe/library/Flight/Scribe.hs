@@ -9,9 +9,9 @@ module Flight.Scribe
     , module Flight.LeadArea
     , module Flight.LeadArea.AreaStep
     , module Flight.Mask.Arrival
-    , module Flight.Mask.Bonus
     , module Flight.Mask.Effort
     , module Flight.Mask.Reach
+    , module Flight.Mask.ReachStop
     , module Flight.Mask.Speed
     , module Flight.Mask.Lead
     , module Flight.UnpackTrack
@@ -36,10 +36,10 @@ import Flight.LeadArea
 import Flight.LeadArea.AreaStep
 import Flight.Mask.Arrival
 import Flight.Mask.Speed
-import Flight.Mask.Bonus
 import Flight.Mask.Effort
 import Flight.Mask.Lead
 import Flight.Mask.Reach
+import Flight.Mask.ReachStop
 import Flight.LandOut
 import Flight.FarOut
 import Flight.GapPoint

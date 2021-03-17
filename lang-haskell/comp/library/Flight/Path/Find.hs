@@ -17,6 +17,7 @@ module Flight.Path.Find
     ) where
 
 import GHC.Records
+import Data.List (sort)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath ((</>), FilePath, takeDirectory)
 import System.FilePath.Find
@@ -36,7 +37,7 @@ compFileToTaskFiles :: CompInputFile -> IO [TaskInputFile]
 compFileToTaskFiles (CompInputFile pathComp) = do
     let pathTask = reshape TaskInput pathComp
     files <- findTaskInput $ FindDirFile {dir = takeDirectory pathComp, file = pathTask}
-    return files
+    return $ sort files
 
 findAltArrival' :: AltDot -> FilePath -> IO [AltArrivalFile]
 findAltArrival' AltFs dir = fmap AltArrivalFile <$> findFiles DotFs (AltArrival AltFs) dir
@@ -214,8 +215,8 @@ ext MaskArrival = ".mask-arrival.yaml"
 ext MaskEffort = ".mask-effort.yaml"
 ext MaskLead = ".mask-lead.yaml"
 ext MaskReach = ".mask-reach.yaml"
+ext MaskReachStop = ".mask-reach-stop.yaml"
 ext MaskSpeed = ".mask-speed.yaml"
-ext MaskBonus = ".mask-bonus.yaml"
 ext LandOut = ".land-out.yaml"
 ext FarOut = ".far-out.yaml"
 ext GapPoint = ".gap-point.yaml"
@@ -223,7 +224,7 @@ ext GapPoint = ".gap-point.yaml"
 ext UnpackTrack = ".unpack-track.csv"
 ext AlignTime = ".align-time.csv"
 ext DiscardFurther = ".discard-further.csv"
-ext PegThenDiscard = ".peg-then-discard.csv"
+ext DiscardFurtherStop = ".discard-further-stop.csv"
 ext AreaStep = ".area-step.csv"
 
 ext (AltArrival _) = "arrival.yaml"
