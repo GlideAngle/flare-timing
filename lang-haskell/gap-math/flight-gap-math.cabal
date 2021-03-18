@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 888b4b694f197cd018f6b82ee6e5cc423cf1105e69e0d1a5ee4b7c4c6c93a583
+-- hash: 90cfc5d8a1d7e51ce093a068713c688d4695d579533e69dc5635236fc8910185
 
 name:           flight-gap-math
 version:        0.1.0
@@ -118,6 +118,7 @@ test-suite math
       Points.Hg
       Points.Pg
       Points.Props
+      Points.Round
       SpeedFraction
       TestNewtypes
       Paths_flight_gap_math

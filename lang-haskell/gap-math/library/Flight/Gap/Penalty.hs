@@ -21,6 +21,7 @@ module Flight.Gap.Penalty
     , mkMul, mkAdd, mkReset
     , exMul, exAdd, exReset
     , identityOfMul, identityOfAdd, identityOfReset
+    , onPointsReduced
     ) where
 
 import qualified Data.CReal as ExactReal
@@ -43,7 +44,7 @@ import Data.Aeson
     , object, withObject
     )
 
-import Flight.Gap.Points.Task (TaskPoints(..))
+import Flight.Gap.Points.Task (TaskPoints(..), onTaskPoints)
 import Data.Ratio.Rounding (sdRound)
 
 type CReal = ExactReal.CReal 64
@@ -296,6 +297,15 @@ data PointsReduced =
         -- ^ The raw sequence of jump the gun penalties.
         }
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+
+onPointsReduced :: (Double -> Double) -> PointsReduced -> PointsReduced
+onPointsReduced f x =
+    x
+        { subtotal = onTaskPoints f (subtotal x)
+        , mulApplied = onTaskPoints f (mulApplied x)
+        , addApplied = onTaskPoints f (addApplied x)
+        , resetApplied = onTaskPoints f (resetApplied x)
+        }
 
 identityOfMul :: PointPenalty Mul
 identityOfMul = PenaltyFraction 1

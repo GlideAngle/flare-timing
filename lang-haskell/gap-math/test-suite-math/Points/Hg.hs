@@ -33,10 +33,7 @@ import "flight-gap-math" Flight.Score
     -- NOTE: imports needed for memory leaking, stack overflowing test.
     --, PenaltySeq(..), mkMull
     )
-
--- TODO: When base >= 4.11 use Data.Functor ((<&>))
-(<&>) :: Either c a -> (a -> b) -> Either c b
-(<&>) = flip (<$>)
+import Points.Round ((<&>), dpRoundPointsReduced)
 
 egHgPenalty :: FS.GoalValidatedPoints -> FS.PenaltySeq
 egHgPenalty = egPenalty $ EGwScaling 0.8
@@ -62,7 +59,7 @@ essNoGoalHg =
     PointsReduced
         { subtotal = TaskPoints 5
         , mulApplied = TaskPoints 0
-        , addApplied = TaskPoints $ 0.4
+        , addApplied = TaskPoints 0.4
         , resetApplied = TaskPoints 0
         , total = TaskPoints 4.6
         , effp = addSeq $ negate 0.4
@@ -323,7 +320,7 @@ hgUnits = testGroup "HG Points"
 
     , testGroup "ESS but no goal"
         [ HU.testCase "✓ Sum of reach, effort, leading, 80% of time & arrival points" $
-            (FS.taskPoints
+            (dpRoundPointsReduced <$> FS.taskPoints
                 NoGoalHg
                 egHgPenalty
                 idSeq
@@ -333,7 +330,7 @@ hgUnits = testGroup "HG Points"
                     Right essNoGoalHg
 
         , HU.testCase "✓ With jump penalty fraction = 1 (the identity of multiplication)" $
-            (FS.taskPoints
+            (dpRoundPointsReduced <$> FS.taskPoints
                 NoGoalHg
                 egHgPenalty
                 (mulSeq 1)
@@ -343,7 +340,7 @@ hgUnits = testGroup "HG Points"
                     Right essNoGoalHg
 
         , HU.testCase "✘ With jump penalty points = 0 (the identity of addition)" $
-            (FS.taskPoints
+            (dpRoundPointsReduced <$> FS.taskPoints
                 NoGoalHg
                 egHgPenalty
                 (addSeq 0)
@@ -353,7 +350,7 @@ hgUnits = testGroup "HG Points"
                     Right essNoGoalHg
 
         , HU.testCase "✘ With jump reset = ∅ (the identity of reset)" $
-            (FS.taskPoints
+            (dpRoundPointsReduced <$> FS.taskPoints
                 NoGoalHg
                 egHgPenalty
                 (addSeq 0)
