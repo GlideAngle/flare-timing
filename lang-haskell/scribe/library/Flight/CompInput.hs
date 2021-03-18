@@ -5,6 +5,8 @@ module Flight.CompInput
     , readCompTracks, readCompTracksQuietly
     ) where
 
+import System.FilePath (takeDirectory)
+import System.Directory (createDirectoryIfMissing)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
@@ -35,6 +37,10 @@ writeTask :: TaskInputFile -> TaskSettings k -> IO ()
 writeTask (TaskInputFile path) taskInput = do
     let cfg = Y.setConfCompare (fieldOrder taskInput) Y.defConfig
     let yaml = Y.encodePretty cfg taskInput
+
+    -- SEE: https://stackoverflow.com/questions/58682357/how-to-create-a-file-and-its-parent-directories-in-haskell
+    createDirectoryIfMissing True $ takeDirectory path
+
     BS.writeFile path yaml
 
 readCompTracksQuietly
