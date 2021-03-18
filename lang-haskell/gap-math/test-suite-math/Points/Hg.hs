@@ -5,7 +5,6 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u)
 
-import Data.Ratio.Rounding (dpRound)
 import qualified "flight-gap-math" Flight.Score as FS
 import "flight-gap-weight" Flight.Score (EGwScaling(..))
 import "flight-gap-math" Flight.Score
@@ -31,18 +30,10 @@ import "flight-gap-math" Flight.Score
     , mkReset
     , exAdd, mkAdd
     , egPenalty
-    , onPointsReduced
     -- NOTE: imports needed for memory leaking, stack overflowing test.
     --, PenaltySeq(..), mkMull
     )
-
--- TODO: When base >= 4.11 use Data.Functor ((<&>))
-(<&>) :: Either c a -> (a -> b) -> Either c b
-(<&>) = flip (<$>)
-
--- | Round before comparing point fields, so that 0.40000000000000036 => 0.4.
-dpRoundPoints :: PointsReduced -> PointsReduced
-dpRoundPoints = onPointsReduced (dpRound 8)
+import Points.Round ((<&>), dpRoundPointsReduced)
 
 egHgPenalty :: FS.GoalValidatedPoints -> FS.PenaltySeq
 egHgPenalty = egPenalty $ EGwScaling 0.8
@@ -329,7 +320,7 @@ hgUnits = testGroup "HG Points"
 
     , testGroup "ESS but no goal"
         [ HU.testCase "✓ Sum of reach, effort, leading, 80% of time & arrival points" $
-            (dpRoundPoints <$> FS.taskPoints
+            (dpRoundPointsReduced <$> FS.taskPoints
                 NoGoalHg
                 egHgPenalty
                 idSeq
@@ -339,7 +330,7 @@ hgUnits = testGroup "HG Points"
                     Right essNoGoalHg
 
         , HU.testCase "✓ With jump penalty fraction = 1 (the identity of multiplication)" $
-            (dpRoundPoints <$> FS.taskPoints
+            (dpRoundPointsReduced <$> FS.taskPoints
                 NoGoalHg
                 egHgPenalty
                 (mulSeq 1)
@@ -349,7 +340,7 @@ hgUnits = testGroup "HG Points"
                     Right essNoGoalHg
 
         , HU.testCase "✘ With jump penalty points = 0 (the identity of addition)" $
-            (dpRoundPoints <$> FS.taskPoints
+            (dpRoundPointsReduced <$> FS.taskPoints
                 NoGoalHg
                 egHgPenalty
                 (addSeq 0)
@@ -359,7 +350,7 @@ hgUnits = testGroup "HG Points"
                     Right essNoGoalHg
 
         , HU.testCase "✘ With jump reset = ∅ (the identity of reset)" $
-            (dpRoundPoints <$> FS.taskPoints
+            (dpRoundPointsReduced <$> FS.taskPoints
                 NoGoalHg
                 egHgPenalty
                 (addSeq 0)

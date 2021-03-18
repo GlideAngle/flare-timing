@@ -27,10 +27,7 @@ import "flight-gap-math" Flight.Score
     , mkMul, mkAdd, mkReset
     , egPenalty
     )
-
--- TODO: When base >= 4.11 use Data.Functor ((<&>))
-(<&>) :: Either c a -> (a -> b) -> Either c b
-(<&>) = flip (<$>)
+import Points.Round ((<&>))
 
 egPgPenalty :: FS.GoalValidatedPoints -> FS.PenaltySeq
 egPgPenalty = egPenalty $ EGwScaling 0

@@ -32,6 +32,7 @@ import "flight-gap-math" Flight.Score
     )
 
 import TestNewtypes
+import Points.Round ((<&>))
 
 hgTaskPoints :: PtTest Hg -> Bool
 hgTaskPoints (PtTest sitrep eg js others parts) =
@@ -44,10 +45,6 @@ pgTaskPoints (PtTest sitrep eg js others parts) =
     let expected = correct sitrep eg js others parts
         actual = (FS.taskPoints sitrep eg js others parts) <&> total
     in actual == expected
-
--- TODO: When base >= 4.11 use Data.Functor ((<&>))
-(<&>) :: Either c a -> (a -> b) -> Either c b
-(<&>) = flip (<$>)
 
 correct
     :: forall a. (SitRep a)
