@@ -204,10 +204,15 @@ correct
     Points
         { reach = LinearPoints r
         , leading = LeadingPoints l
+        , arrival = ArrivalPoints a
+        , time = TimePoints t
         }
     = Right $ total p
     where
-        x = TaskPoints (fromRational $ r + l)
+        -- NOTE: Include time and arrival in the total points, goal validation
+        -- will become a penalty applied separately as a fraction of time and
+        -- arrival points.
+        x = TaskPoints (fromRational $ r + l + t + a)
         p = FS.applyPenalties muls adds resets x
 
 correct p@NoGoalPg _eg js _ _ =
