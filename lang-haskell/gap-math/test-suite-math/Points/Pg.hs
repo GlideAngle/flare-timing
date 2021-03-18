@@ -32,8 +32,7 @@ import Points.Round ((<&>))
 egPgPenalty :: FS.GoalValidatedPoints -> FS.PenaltySeq
 egPgPenalty = egPenalty $ EGwScaling 0
 
-launchToStart0, launchToStart1, launchToStart2, launchToStart7 :: LaunchToStartPoints
-launchToStart0 = LaunchToStartPoints . assumeProp $ refined 0
+launchToStart1, launchToStart2, launchToStart7 :: LaunchToStartPoints
 launchToStart1 = LaunchToStartPoints . assumeProp $ refined 1
 launchToStart2 = LaunchToStartPoints . assumeProp $ refined 2
 launchToStart7 = LaunchToStartPoints . assumeProp $ refined 7
