@@ -38,9 +38,7 @@ writeTask (TaskInputFile path) taskInput = do
     let cfg = Y.setConfCompare (fieldOrder taskInput) Y.defConfig
     let yaml = Y.encodePretty cfg taskInput
 
-    -- SEE: https://stackoverflow.com/questions/58682357/how-to-create-a-file-and-its-parent-directories-in-haskell
     createDirectoryIfMissing True $ takeDirectory path
-
     BS.writeFile path yaml
 
 readCompTracksQuietly
