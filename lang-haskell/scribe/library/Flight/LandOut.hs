@@ -5,6 +5,8 @@ module Flight.LandOut
     ) where
 
 import Prelude hiding (readFile, writeFile)
+import System.FilePath (takeDirectory)
+import System.Directory (createDirectoryIfMissing)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
@@ -27,6 +29,8 @@ writeAltLandOut :: AltLandoutFile -> CompLanding -> IO ()
 writeAltLandOut (AltLandoutFile path) landOut = do
     let cfg = Y.setConfCompare (fieldOrder landOut) Y.defConfig
     let yaml = Y.encodePretty cfg landOut
+
+    createDirectoryIfMissing True $ takeDirectory path
     BS.writeFile path yaml
 
 readTaskLandOut :: (MonadThrow m, MonadIO m) => LandOutFile -> m TaskLanding

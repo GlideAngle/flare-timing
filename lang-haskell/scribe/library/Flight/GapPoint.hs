@@ -5,6 +5,8 @@ module Flight.GapPoint
     ) where
 
 import Prelude hiding (readFile, writeFile)
+import System.FilePath (takeDirectory)
+import System.Directory (createDirectoryIfMissing)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
@@ -29,6 +31,8 @@ writeAltScore :: AltScoreFile -> AltPointing -> IO ()
 writeAltScore (AltScoreFile path) altPointing = do
     let cfg = Y.setConfCompare (fieldOrder altPointing) Y.defConfig
     let yaml = Y.encodePretty cfg altPointing
+
+    createDirectoryIfMissing True $ takeDirectory path
     BS.writeFile path yaml
 
 readTaskGapPoint :: (MonadThrow m, MonadIO m) => GapPointFile -> m TaskPointing

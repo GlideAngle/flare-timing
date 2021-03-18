@@ -5,6 +5,8 @@ module Flight.Mask.Arrival
     ) where
 
 import Prelude hiding (readFile, writeFile)
+import System.FilePath (takeDirectory)
+import System.Directory (createDirectoryIfMissing)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
@@ -29,6 +31,8 @@ writeAltArrival :: AltArrivalFile -> CompMaskingArrival -> IO ()
 writeAltArrival (AltArrivalFile path) altArrival = do
     let cfg = Y.setConfCompare (fieldOrder altArrival) Y.defConfig
     let yaml = Y.encodePretty cfg altArrival
+
+    createDirectoryIfMissing True $ takeDirectory path
     BS.writeFile path yaml
 
 readTaskMaskArrival :: MonadIO m => MaskArrivalFile -> m TaskMaskingArrival
