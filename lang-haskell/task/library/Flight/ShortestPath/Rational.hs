@@ -20,7 +20,7 @@ import Flight.ShortestPath.Cost
     , Zs(..), AngleCut(..), CostSegment
     )
 import Flight.ShortestPath.Graph (pad, unpad, dedup, loop, buildGraph, connectNodes)
-import Flight.ShortestPath (GeoPath(..))
+import Flight.ShortestPath (GeoPath(..), OptimalPath)
 
 instance (Real a, Fractional a) => GeoPath Rational a where
     shortestPath
@@ -30,11 +30,12 @@ instance (Real a, Fractional a) => GeoPath Rational a where
         -> CircumSample Rational
         -> AngleCut Rational
         -> SampleParams Rational
+        -> Maybe [ZonePoint Rational]
         -> [Zone Rational]
-        -> Zs (PathDistance Rational)
-    shortestPath _ _ _ _ _ [] = Z0
-    shortestPath _ _ _ _ _ [_] = Z1
-    shortestPath e cseg cs angleCut sp xs =
+        -> Zs (OptimalPath Rational)
+    shortestPath _ _ _ _ _ _ [] = Z0
+    shortestPath _ _ _ _ _ _ [_] = Z1
+    shortestPath e cseg cs angleCut sp _hints xs =
         case xs of
             [] -> Z0
             [_] -> Z1
@@ -44,10 +45,13 @@ instance (Real a, Fractional a) => GeoPath Rational a where
                     (Z1, _) -> Z1
                     (ZxNotSeparated, _) -> ZxNotSeparated
                     (Zs (PathCost pcd), ptsCenterLine) ->
-                        Zs PathDistance
-                            { edgesSum = TaskDistance $ MkQuantity pcd
-                            , vertices = ptsCenterLine
-                            }
+                        let d =
+                                PathDistance
+                                    { edgesSum = TaskDistance $ MkQuantity pcd
+                                    , vertices = ptsCenterLine
+                                    }
+
+                        in Zs ([], d)
         where
             connector :: NodeConnector _
             connector = connectNodes cseg

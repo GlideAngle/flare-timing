@@ -298,7 +298,7 @@ distanceEdgeSphere
     -> [Zone Double]
     -> Zs (PathDistance Double)
 distanceEdgeSphere sp segCost =
-    shortestPath @Double @Double e segCost cs cut sp
+    fmap snd <$> shortestPath @Double @Double e segCost cs cut sp Nothing
     where
         e = (Haversines, EarthAsSphere earthRadius)
         cs = circumSample @Double @Double e
@@ -309,7 +309,7 @@ distanceEdgeEllipsoid
     -> [Zone Double]
     -> Zs (PathDistance Double)
 distanceEdgeEllipsoid sp segCost =
-    shortestPath @Double @Double e segCost cs cut sp
+    fmap snd <$> shortestPath @Double @Double e segCost cs cut sp Nothing
     where
         e = (Vincenty, EarthAsEllipsoid wgs84)
         cs = circumSample @Double @Double e

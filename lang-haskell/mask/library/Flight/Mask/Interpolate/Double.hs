@@ -39,13 +39,13 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
         -> LatLng Double [u| rad |]
         -> Zs ([LatLng Double [u| rad |]])
     interpolate e sp (TaskZone z) x y =
-        vertices <$> ee
+        vertices . snd <$> ee
         where
             Sliver{..} = sliver @Double @Double e
             zs' = [Point x, z, Point y]
             ac = angleCut @Double @Double e
             dEE = shortestPath @Double @Double e
-            ee = dEE cseg cs ac sp zs'
+            ee = dEE cseg cs ac sp Nothing zs'
 
     fractionate
         :: Trig Double a

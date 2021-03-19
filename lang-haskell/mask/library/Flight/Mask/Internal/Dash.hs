@@ -8,13 +8,14 @@ import Prelude hiding (span)
 import Data.UnitsOfMeasure (u)
 
 import Flight.Units ()
+import Flight.Zone.Cylinder (ZonePoint(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone (Zone(..))
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Distance (QTaskDistance, PathDistance(..))
 import Flight.Task (Zs(..), fromZs)
 import Flight.Geodesy.Solution (SeparatedZones)
-import Flight.ShortestPath (OptimalPath)
+import Flight.ShortestPath (OptimizePath, OptimalPath)
 
 import Flight.Mask.Internal.Zone (TaskZone(..), TrackZone(..), slice)
 import Flight.Mask.Internal.Race (RaceSections(..), Ticked)
@@ -22,7 +23,8 @@ import Flight.Mask.Internal.Race (RaceSections(..), Ticked)
 -- | The distance to goal given the zones have been ticked.
 dashToGoal
     :: forall a b. (Real b, Fractional b)
-    => OptimalPath b
+    => OptimizePath b
+    -> Maybe [ZonePoint b]
     -> SeparatedZones b
     -> Ticked
     -> (a -> TrackZone b)
@@ -30,13 +32,14 @@ dashToGoal
     -> [TaskZone b]
     -> [(ZoneIdx, a)]
     -> Maybe (QTaskDistance b [u| m |])
-dashToGoal optZs sepZs ticked mkZone speedSection zs xs =
-    dashToGoalR optZs sepZs ticked mkZone speedSection zs (reverse xs)
+dashToGoal optZs hints sepZs ticked mkZone speedSection zs xs =
+    dashToGoalR optZs hints sepZs ticked mkZone speedSection zs (reverse xs)
 
 -- | Same as @dashToGoal@ but taking the fixes reversed.
 dashToGoalR
     :: forall a b. (Real b, Fractional b)
-    => OptimalPath b
+    => OptimizePath b
+    -> Maybe [ZonePoint b]
     -> SeparatedZones b
     -> Ticked
     -> (a -> TrackZone b)
@@ -44,26 +47,28 @@ dashToGoalR
     -> [TaskZone b]
     -> [(ZoneIdx, a)]
     -> Maybe (QTaskDistance b [u| m |])
-dashToGoalR optZs sepZs ticked mkZone speedSection zs xs =
+dashToGoalR optZs hints sepZs ticked mkZone speedSection zs xs =
     fromZs
-    $ edgesSum
-    <$> dashPathToGoalR optZs sepZs ticked mkZone speedSection zs xs
+    $ edgesSum . snd
+    <$> dashPathToGoalR optZs hints sepZs ticked mkZone speedSection zs xs
 
 dashPathToGoalR
     :: forall a b. (Real b, Fractional b)
-    => OptimalPath b
+    => OptimizePath b
+    -> Maybe [ZonePoint b]
     -> SeparatedZones b
     -> Ticked -- ^ The zones ticked
     -> (a -> TrackZone b)
     -> SpeedSection
     -> [TaskZone b] -- ^ Zones of the task
     -> [(ZoneIdx, a)] -- ^ Index and distance of each fix
-    -> Zs (PathDistance b)
-dashPathToGoalR _ _ _ _ _ _ [] =
+    -> Zs (OptimalPath b)
+dashPathToGoalR _ _ _ _ _ _ _ [] =
     Z0
 
 dashPathToGoalR
     optZs
+    hints
     sepZs
     RaceSections{race = []}
     mkZone
@@ -71,7 +76,7 @@ dashPathToGoalR
     zs
     ((_, x) : _) =
     -- NOTE: Didn't make the start so skip the start.
-    optZs zs'
+    optZs hints zs'
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
@@ -80,6 +85,7 @@ dashPathToGoalR
 
 dashPathToGoalR
     optZs
+    hints
     sepZs
     RaceSections{race} -- ^ The zones ticked
     mkZone
@@ -89,7 +95,7 @@ dashPathToGoalR
     -- NOTE: I don't consider all fixes from last turnpoint made
     -- so this distance is the distance from the very last fix when
     -- at times on this leg the pilot may have been closer to goal.
-    optZs zs'
+    optZs hints zs'
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs

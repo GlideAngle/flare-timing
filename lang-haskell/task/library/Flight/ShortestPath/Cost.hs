@@ -1,6 +1,7 @@
 module Flight.ShortestPath.Cost
     ( Zs(..)
     , PathCost(..)
+    , OptimalCostedPath
     , GraphBuilder
     , NodeConnector
     , CostSegment
@@ -13,10 +14,13 @@ import Data.UnitsOfMeasure (u)
 import Data.Graph.Inductive.Graph (Node, LEdge)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
+import Flight.LatLng (LatLng(..))
 import Flight.Zone (Zone(..), ArcSweep(..))
 import Flight.Zone.Cylinder (SampleParams(..), ZonePoint(..), CircumSample)
 import Flight.Units ()
 import Flight.Distance (PathDistance(..), SpanLatLng)
+
+type OptimalCostedPath a = ([ZonePoint a], (PathCost a, [LatLng a [u| rad |]]))
 
 type CostSegment a = Zone a -> Zone a -> PathDistance a
 

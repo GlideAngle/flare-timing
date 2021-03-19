@@ -9,7 +9,7 @@ import Data.UnitsOfMeasure (u)
 
 import Flight.Units ()
 import Flight.Clip (FlyCut(..), FlyClipping(..))
-import Flight.Zone.Cylinder (SampleParams(..))
+import Flight.Zone.Cylinder (SampleParams(..), ZonePoint(..))
 import Flight.Zone.Raw (Give)
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
@@ -81,6 +81,7 @@ class GeoSliver g a => GeoDash g a where
         => Earth g
         -> Maybe Give
         -> SampleParams g
+        -> Maybe [ZonePoint g]
         -> Ticked -- ^ The zones ticked
         -> Task k
         -> UTCTime

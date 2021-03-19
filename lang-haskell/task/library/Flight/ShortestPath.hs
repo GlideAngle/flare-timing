@@ -1,13 +1,14 @@
-module Flight.ShortestPath (GeoPath(..), OptimalPath) where
+module Flight.ShortestPath (GeoPath(..), OptimizePath, OptimalPath) where
 
 import Flight.Zone (Zone(..))
-import Flight.Zone.Cylinder (SampleParams, CircumSample)
+import Flight.Zone.Cylinder (SampleParams, CircumSample, ZonePoint)
 import Flight.Units ()
 import Flight.Distance (PathDistance(..))
 import Flight.Geodesy.Solution (Trig, GeoZones(..), GeodesySolutions(..))
 import Flight.ShortestPath.Cost
 
-type OptimalPath a = [Zone a] -> Zs (PathDistance a)
+type OptimalPath a = ([ZonePoint a], PathDistance a)
+type OptimizePath a = Maybe [ZonePoint a] -> [Zone a] -> Zs (OptimalPath a)
 
 class GeoZones g a => GeoPath g a where
     shortestPath
@@ -17,5 +18,6 @@ class GeoZones g a => GeoPath g a where
         -> CircumSample g
         -> AngleCut g
         -> SampleParams g
+        -> Maybe [ZonePoint g]
         -> [Zone g]
-        -> Zs (PathDistance g)
+        -> Zs (OptimalPath g)

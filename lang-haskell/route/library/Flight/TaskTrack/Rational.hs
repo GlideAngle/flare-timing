@@ -302,7 +302,7 @@ distanceEdgeSphere
     -> [Zone Rational]
     -> Zs (PathDistance Rational)
 distanceEdgeSphere sp segCost =
-    shortestPath @Rational @Rational e segCost cs cut sp
+    fmap snd <$> shortestPath @Rational @Rational e segCost cs cut sp Nothing
     where
         e = (Haversines, EarthAsSphere earthRadius, defEps)
         cs = circumSample @Rational @Rational e
@@ -313,7 +313,7 @@ distanceEdgeEllipsoid
     -> [Zone Rational]
     -> Zs (PathDistance Rational)
 distanceEdgeEllipsoid sp segCost =
-    shortestPath @Rational @Rational e segCost cs cut sp
+    fmap snd <$> shortestPath @Rational @Rational e segCost cs cut sp Nothing
     where
         e = (Vincenty, EarthAsEllipsoid wgs84, defEps)
         cs = circumSample @_ @Rational e
