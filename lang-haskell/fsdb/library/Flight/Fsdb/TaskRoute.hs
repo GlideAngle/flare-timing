@@ -51,7 +51,7 @@ getRoute =
     where
         getWaypoints =
             getChildren
-            >>> hasName "FsTaskShortestPath"
+            >>> deep (hasName "FsTaskShortestPath")
             >>> (listA getTps >>> arr catMaybes)
             where
                 getTps =
