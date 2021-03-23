@@ -105,9 +105,11 @@ normScores fsdbXml = do
     n <- fsdbNominal fsdbXml
     np@AltPointing{score = xss} <- fsdbScores n fsdbXml
 
+    -- V for velocity.
     let vss :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
             times <$> xss
 
+    -- T for time.
     let tss =
             [
                 reverse . sortOn (total . snd) $
@@ -131,6 +133,7 @@ normScores fsdbXml = do
             | vs <- (fmap . fmap) snd vss
             ]
 
+    -- L for leading.
     let lss =
             [
                 maybe
@@ -146,6 +149,7 @@ normScores fsdbXml = do
             | xs <- tss
             ]
 
+    -- A for arrival.
     let ass =
             [
                 maybe
@@ -161,6 +165,7 @@ normScores fsdbXml = do
             | xs <- lss
             ]
 
+    -- R for reach.
     let rss =
             [
                 maybe
@@ -176,6 +181,7 @@ normScores fsdbXml = do
             | xs <- ass
             ]
 
+    -- E for effort.
     let ess =
             [
                 maybe
@@ -191,6 +197,7 @@ normScores fsdbXml = do
             | xs <- rss
             ]
 
+    -- D for distance.
     let dss =
             [
                 maybe
