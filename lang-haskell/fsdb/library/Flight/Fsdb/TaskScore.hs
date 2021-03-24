@@ -133,7 +133,7 @@ xpRankScore =
         ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, dL, ss, es, ssE) ->
             AltBreakdown
                 { place = TaskPlacing $ fromIntegral r
-                , total = TaskPoints $ fromIntegral p
+                , total = TaskPoints p
                 , breakdown =
                     Points
                         { reach = LinearPoints $ dToR ldp
@@ -196,7 +196,7 @@ xpRankScore =
                 , timeElapsed
                 } ->
                     ( fromIntegral r
-                    , round p
+                    , p
                     , fromRational ldp
                     , fromRational ddp
                     , fromRational dp
@@ -213,7 +213,8 @@ xpRankScore =
         )
     $ xp14Tuple
         (xpAttr "rank" xpInt)
-        (xpAttr "points" xpInt)
+        -- NOTE: FS used to write int points but since Apr 2020 writes floats.
+        (xpAttr "points" xpPrim)
 
         (xpDefault (0 :: Double) $ xpAttr "linear_distance_points" xpPrim)
         (xpDefault (0 :: Double) $ xpAttr "difficulty_distance_points" xpPrim)
