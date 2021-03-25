@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module FlareTiming.Plot.Time.Table (tableSpeed) where
+module FlareTiming.ViePlot.Time.Table (tableVieSpeed) where
 
 import Reflex.Dom
 import qualified Data.Text as T (Text)
@@ -16,17 +16,17 @@ import WireTypes.Pilot (Pilot(..), PilotId(..), fstPilotId, pilotIdsWidth)
 import WireTypes.Point (StartGate)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Time (showHmsForHours, showHours)
-import FlareTiming.Task.Score.Show (showPilotTime, showPilotTimeDiff)
+import FlareTiming.Score.Show (showPilotTime, showPilotTimeDiff)
 import FlareTiming.Plot.Event (rowClass)
 
-tableSpeed
+tableVieSpeed
     :: MonadWidget t m
     => Dynamic t [StartGate]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackSpeed)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
-tableSpeed sgs sEx xs select = do
+tableVieSpeed sgs sEx xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
     ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
             el "thead" $ do

@@ -7,7 +7,7 @@ import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Point (StartGate)
 import WireTypes.Speed (TrackSpeed(..))
 import WireTypes.Pilot (Pilot(..))
-import qualified FlareTiming.Plot.Time.View as V (timePlot)
+import qualified FlareTiming.ViePlot.Time.View as V (timeViePlot)
 
 timeViePlot
     :: MonadWidget t m
@@ -33,6 +33,6 @@ timeViePlot sgs sEx tm =
 
                             _ ->
                                 elClass "article" "tile is-child" $
-                                    V.timePlot sgs sEx (fromMaybe [] <$> tm))
+                                    V.timeViePlot sgs sEx (fromMaybe [] <$> tm))
 
                     return ()

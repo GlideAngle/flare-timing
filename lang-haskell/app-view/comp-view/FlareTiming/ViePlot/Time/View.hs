@@ -14,7 +14,7 @@ import WireTypes.Speed (TrackSpeed(..), PilotTime(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import WireTypes.Point (StartGate)
-import FlareTiming.Plot.Time.Table (tableSpeed)
+import FlareTiming.ViePlot.Time.Table (tableVieSpeed)
 import FlareTiming.Plot.Event
     (tableClass, mkMsg, mkLegend, legendClasses, numLegendPilots, selectPilots)
 
@@ -94,7 +94,7 @@ timeViePlot sgs sEx xs = do
         let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
-            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableSpeed sgs sEx xs dPilots')
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableVieSpeed sgs sEx xs dPilots')
 
         return ()
 
