@@ -17,7 +17,7 @@ import System.Directory (getCurrentDirectory)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNominal, parseAltScores)
+import Flight.Fsdb (parseComp, parseNominal, parseTweak, parseAltScores)
 import Flight.Track.Speed (TrackSpeed)
 import qualified Flight.Track.Speed as Time (TrackSpeed(..))
 import Flight.Track.Point (AltPointing(..), AltBreakdown(..))
@@ -28,11 +28,14 @@ import Flight.Comp
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , Pilot(..)
+    , Comp(..)
     , Nominal(..)
+    , Tweak(..)
     , trimFsdbToAltScore
     , findTrimFsdb
     , reshape
     )
+import Flight.Zone.MkZones (Discipline(..))
 import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
 import qualified "flight-gap-allot" Flight.Score as Frac (Fractions(..))
 import "flight-gap-allot" Flight.Score
@@ -43,7 +46,6 @@ import "flight-gap-allot" Flight.Score
     , LinearFraction(..)
     , DifficultyFraction(..)
     , PowerExponent
-    , powerExp56
     , speedFraction
     )
 import "flight-gap-math" Flight.Score
@@ -86,6 +88,17 @@ go trimFsdbFile = do
     settings <- runExceptT $ normScores (FsdbXml contents')
     either print (writeAltScore (trimFsdbToAltScore AltFs trimFsdbFile)) settings
 
+fsdbComp :: FsdbXml -> ExceptT String IO Comp
+fsdbComp (FsdbXml contents) = do
+    cs <- lift $ parseComp contents
+    case cs of
+        Left msg -> ExceptT . return $ Left msg
+        Right [c] -> ExceptT . return $ Right c
+        Right _ -> do
+            let msg = "Expected only one comp"
+            lift $ print msg
+            throwE msg
+
 fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
 fsdbNominal (FsdbXml contents) = do
     ns <- lift $ parseNominal contents
@@ -97,6 +110,17 @@ fsdbNominal (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
+fsdbTweak :: Discipline -> FsdbXml -> ExceptT String IO Tweak
+fsdbTweak discipline (FsdbXml contents) = do
+    ns <- lift $ parseTweak discipline contents
+    case ns of
+        Left msg -> ExceptT . return $ Left msg
+        Right [n] -> ExceptT . return $ Right n
+        _ -> do
+            let msg = "Expected only one set of tweaks for the comp"
+            lift $ print msg
+            throwE msg
+
 fsdbScores :: Nominal -> FsdbXml -> ExceptT String IO AltPointing
 fsdbScores n (FsdbXml contents) = do
     fs <- lift $ parseAltScores n contents
@@ -104,15 +128,14 @@ fsdbScores n (FsdbXml contents) = do
 
 normScores :: FsdbXml -> ExceptT String IO AltPointing
 normScores fsdbXml = do
-    -- TODO: Read power exponent from use_flat_decline_of_time_points.
-    let pe = powerExp56
-
     n <- fsdbNominal fsdbXml
+    Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
+    Tweak{timePowerExponent = tpe} <- fsdbTweak hgOrPg fsdbXml
     np@AltPointing{score = xss} <- fsdbScores n fsdbXml
 
     -- V for velocity.
     let vss :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-            times pe <$> xss
+            times tpe <$> xss
 
     -- T for time.
     let tss =
