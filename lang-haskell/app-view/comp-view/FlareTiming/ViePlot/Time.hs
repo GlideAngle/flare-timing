@@ -3,6 +3,7 @@ module FlareTiming.ViePlot.Time (timeViePlot) where
 import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
+import WireTypes.Comp (Tweak)
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Point (StartGate)
 import WireTypes.Speed (TrackSpeed(..))
@@ -11,11 +12,12 @@ import qualified FlareTiming.ViePlot.Time.View as V (timeViePlot)
 
 timeViePlot
     :: MonadWidget t m
-    => Dynamic t [StartGate]
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t [StartGate]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackSpeed)])
     -> m ()
-timeViePlot sgs sEx tm =
+timeViePlot tweak sgs sEx tm =
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -33,6 +35,6 @@ timeViePlot sgs sEx tm =
 
                             _ ->
                                 elClass "article" "tile is-child" $
-                                    V.timeViePlot sgs sEx (fromMaybe [] <$> tm))
+                                    V.timeViePlot tweak sgs sEx (fromMaybe [] <$> tm))
 
                     return ()

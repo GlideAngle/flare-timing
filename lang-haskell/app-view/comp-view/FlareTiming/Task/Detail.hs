@@ -364,7 +364,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                                     (\case
                                         ViePlotFsTabReach -> plotReach
                                         ViePlotFsTabEffort -> effortViePlot hgOrPg sAltFs ef
-                                        ViePlotFsTabTime -> timeViePlot sgs sAltFs sd
+                                        ViePlotFsTabTime -> timeViePlot tweak sgs sAltFs sd
 
                                         ViePlotFsTabLead -> do
                                             tabViePlotFsLead <- tabsViePlotFsLead
@@ -421,7 +421,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                                     (\case
                                         ViePlotFsTabReach -> plotReach
                                         ViePlotFsTabEffort -> effortViePlot hgOrPg sAltAs ef
-                                        ViePlotFsTabTime -> timeViePlot sgs sAltAs sd
+                                        ViePlotFsTabTime -> timeViePlot tweak sgs sAltAs sd
 
                                         ViePlotFsTabLead -> do
                                             tabViePlotFsLead <- tabsViePlotFsLead
@@ -506,7 +506,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
                                 PlotTabSplit -> plotSplit
                                 PlotTabReach -> reachPlot task reach bonusReach
                                 PlotTabEffort -> effortPlot hgOrPg ef
-                                PlotTabTime -> timePlot sgs sAltFs sd
+                                PlotTabTime -> timePlot tweak sgs sAltFs sd
 
                                 PlotTabLead -> do
                                     tabPlotLead <- tabsPlotLead

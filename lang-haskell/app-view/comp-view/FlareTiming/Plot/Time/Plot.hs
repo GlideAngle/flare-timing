@@ -8,6 +8,8 @@ import GHCJS.Types (JSVal)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
 import Data.List (nub)
+
+import WireTypes.Comp (PowerExponent(..))
 import FlareTiming.Plot.Foreign (Plot(..))
 import FlareTiming.Plot.Event (uncurry5, unpackSelect)
 
@@ -74,20 +76,21 @@ foreign import javascript unsafe
 timePlot
     :: IsElement e
     => e
+    -> PowerExponent
     -> (Double, Double)
     -> [[Double]] -- ^ All xy pairs
     -> [[Double]] -- ^ Selected xy pairs
     -> IO Plot
-timePlot e (tMin, tMax) xs ys = do
+timePlot e pe (tMin, tMax) xs ys = do
     let xyfn :: [[Double]] =
-            [ [x', fnGAP tMin x']
+            [ [x', fnGAP pe tMin x']
             | x <- [0 .. 199 :: Integer]
             , let step = abs $ (tMax - tMin) / 200
             , let x' = tMin + step * fromIntegral x
             ]
 
-    let xyfnFS :: [[Double]] =
-            [ [x', fnFS tMin x']
+    let xyfnGAP :: [[Double]] =
+            [ [x', fnGAP pe tMin x']
             | x <- [0 .. 199 :: Integer]
             , let step = abs $ (tMax - tMin) / 200
             , let x' = tMin + step * fromIntegral x
@@ -99,18 +102,13 @@ timePlot e (tMin, tMax) xs ys = do
     tMax' <- toJSVal $ tMax + pad
 
     xyfn' <- toJSValListOf xyfn
-    xyfnFS' <- toJSValListOf xyfnFS
+    xyfnGAP' <- toJSValListOf xyfnGAP
     xs' <- toJSValListOf $ nub xs
     ys' <- unpackSelect ys
 
-    Plot <$> (uncurry5 $ plot_ (unElement . toElement $ e) tMin' tMax' xyfn' xyfnFS' xs') ys'
+    Plot <$> (uncurry5 $ plot_ (unElement . toElement $ e) tMin' tMax' xyfn' xyfnGAP' xs') ys'
 
 -- | The equation from the GAP rules.
-fnGAP :: Double -> Double -> Double
-fnGAP tMin t =
-    max 0.0 $ 1.0 - ((t - tMin)**2/tMin**(1.0/2.0))**(1.0/3.0)
-
--- | The equation from the FS implementation.
-fnFS :: Double -> Double -> Double
-fnFS tMin t =
-    max 0.0 $ 1.0 - ((t - tMin)/tMin**(1.0/2.0))**(2.0/3.0)
+fnGAP :: PowerExponent -> Double -> Double -> Double
+fnGAP (PowerExponent pe) tMin t =
+    max 0.0 $ 1.0 - ((t - tMin)/tMin**(1.0/2.0))**pe

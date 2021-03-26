@@ -8,6 +8,7 @@ import Data.Maybe (catMaybes)
 import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import qualified FlareTiming.Plot.Time.Plot as P (timePlot)
 
+import WireTypes.Comp (Tweak(..), powerExp23)
 import WireTypes.Fraction (SpeedFraction(..))
 import qualified WireTypes.Point as Alt (AltBreakdown(..))
 import WireTypes.Speed (TrackSpeed(..), PilotTime(..))
@@ -33,11 +34,14 @@ timeRange xs =
 
 timeViePlot
     :: MonadWidget t m
-    => Dynamic t [StartGate]
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t [StartGate]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, TrackSpeed)]
     -> m ()
-timeViePlot sgs sEx xs = do
+timeViePlot tweak' sgs sEx xs = do
+    tweak <- sample . current $ tweak'
+    let tpe = maybe powerExp23 timePowerExponent tweak
     let w = ffor xs (pilotIdsWidth . fmap fst)
 
     elClass "div" "tile is-ancestor" $ mdo
@@ -55,7 +59,7 @@ timeViePlot sgs sEx xs = do
                                 | Pilot (pid, _) <- ps
                                 ]
 
-                        _ <- P.timePlot (_element_raw elPlot) (timeRange times) (placings times) (placings times')
+                        _ <- P.timePlot (_element_raw elPlot) tpe (timeRange times) (placings times) (placings times')
                         return ())
 
                     elAttr "div" ("id" =: "legend-time" <> "class" =: "level") $
