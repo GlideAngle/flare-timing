@@ -42,6 +42,7 @@ import "flight-gap-allot" Flight.Score
     , DistanceFraction(..)
     , LinearFraction(..)
     , DifficultyFraction(..)
+    , PowerExponent(..)
     , speedFraction
     )
 import "flight-gap-math" Flight.Score
@@ -102,12 +103,14 @@ fsdbScores n (FsdbXml contents) = do
 
 normScores :: FsdbXml -> ExceptT String IO AltPointing
 normScores fsdbXml = do
+    -- TODO: Read power exponent from use_flat_decline_of_time_points.
+    let pe = PowerExponent $ 5/6
     n <- fsdbNominal fsdbXml
     np@AltPointing{score = xss} <- fsdbScores n fsdbXml
 
     -- V for velocity.
     let vss :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-            times <$> xss
+            times pe <$> xss
 
     -- T for time.
     let tss =
@@ -322,9 +325,10 @@ leads xs =
         g lcMin lc = leadingFraction lcMin lc
 
 times
-    :: [(Pilot, AltBreakdown)]
+    :: PowerExponent
+    -> [(Pilot, AltBreakdown)]
     -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
-times xs =
+times pe xs =
     (\bt -> (bt, second (g bt) <$> ys)) <$> Gap.bestTime' ts
     where
         ys :: [(Pilot, PilotTime (Quantity Double [u| h |]))]
@@ -339,5 +343,5 @@ times xs =
         g best t =
             Time.TrackSpeed
                 { Time.time = t
-                , Time.frac = speedFraction best t
+                , Time.frac = speedFraction pe best t
                 }

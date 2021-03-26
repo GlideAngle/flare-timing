@@ -30,7 +30,7 @@ import qualified Flight.Lookup as Lookup
 import Flight.Lookup.Tag (tagArrivalRank, tagPilotTime)
 import Flight.TrackLog (pilotTrack)
 import Flight.Scribe (writeCompMaskArrival, writeCompMaskSpeed)
-import "flight-gap-allot" Flight.Score (ArrivalFraction(..))
+import "flight-gap-allot" Flight.Score (PowerExponent(..), ArrivalFraction(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats, altToAlt)
 import MaskArrival (maskArrival, arrivalInputs)
@@ -52,6 +52,7 @@ writeMask
 writeMask
     CompTaskSettings
         { nominal = Cmp.Nominal{free}
+        , compTweak
         , tasks
         , pilotGroups
         }
@@ -106,7 +107,8 @@ writeMask
     -- bonus distance pushing a flight to goal so that it arrives.
     writeCompMaskArrival compFile (maskArrival as)
 
-    let (_gsBestTime, maskSpeed') = maskSpeed lsTask' yss
+    let tpe = maybe (PowerExponent $ 2/3) timePowerExponent compTweak
+    let (_gsBestTime, maskSpeed') = maskSpeed tpe lsTask' yss
 
     -- NOTE: For time and leading points do not use altitude bonus distances.
     writeCompMaskSpeed compFile maskSpeed'

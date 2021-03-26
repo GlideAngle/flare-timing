@@ -11,14 +11,16 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Comp (Pilot(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
-import "flight-gap-allot" Flight.Score (BestTime(..), PilotTime(..), speedFraction)
+import "flight-gap-allot" Flight.Score
+    (BestTime(..), PilotTime(..), PowerExponent, speedFraction)
 import Stats (TimeStats(..), FlightStats(..))
 
 times
-    :: (TimeStats -> PilotTime (Quantity Double [u| h |]))
+    :: PowerExponent
+    -> (TimeStats -> PilotTime (Quantity Double [u| h |]))
     -> [(Pilot, FlightStats k)]
     -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
-times f xs =
+times pe f xs =
     (\ bt -> (bt, sortOn (time . snd) $ second (g bt) <$> ys))
     <$> Gap.bestTime' ts
     where
@@ -34,10 +36,11 @@ times f xs =
         g best t =
             TrackSpeed
                 { time = t
-                , frac = speedFraction best t
+                , frac = speedFraction pe best t
                 }
 
 maskSpeedBestTime
-    :: [[(Pilot, FlightStats k)]]
+    :: PowerExponent
+    -> [[(Pilot, FlightStats k)]]
     -> ([Maybe (BestTime (Quantity Double [u| h |]))])
-maskSpeedBestTime yss = (fmap . fmap) fst $ times gsTime <$> yss
+maskSpeedBestTime pe yss = (fmap . fmap) fst $ times pe gsTime <$> yss

@@ -23,6 +23,7 @@ import Flight.Comp
     ( ScoringInputFiles
     , CompTaskSettings(..)
     , Comp(..)
+    , Tweak(..)
     , Pilot(..)
     , PilotGroup(..)
     , Task(..)
@@ -62,6 +63,7 @@ import Flight.Scribe
     -- , readPilotPegThenDiscard
     , readCompLeadArea
     )
+import "flight-gap-allot" Flight.Score (PowerExponent(..))
 import qualified "flight-gap-valid" Flight.Score as Gap (ReachToggle(..))
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
@@ -101,6 +103,7 @@ writeMask
     CompTaskSettings
         { comp = Comp{earthMath, give}
         , nominal = Cmp.Nominal{free}
+        , compTweak
         , tasks
         , pilotGroups
         }
@@ -149,7 +152,8 @@ writeMask
     -- Zones (zs) of the task and zones ticked.
     let zsTaskTicked :: [Map Pilot _] = Map.fromList . landTaskTicked <$> yss
 
-    let gsBestTime = maskSpeedBestTime yss
+    let tpe = maybe (PowerExponent $ 2/3) timePowerExponent compTweak
+    let gsBestTime = maskSpeedBestTime tpe yss
     let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 
     {- TODO: Take care to consider bonus altitude distance with leading area.

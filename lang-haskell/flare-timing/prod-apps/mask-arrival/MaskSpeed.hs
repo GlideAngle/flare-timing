@@ -14,7 +14,8 @@ import Flight.Comp (Pilot(..), TaskRouteDistance(..))
 import Flight.Track.Mask (CompMaskingSpeed(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
-import "flight-gap-allot" Flight.Score (BestTime(..), PilotTime(..), speedFraction)
+import "flight-gap-allot" Flight.Score
+    (BestTime(..), PilotTime(..), PowerExponent(..), speedFraction)
 import Stats (TimeStats(..), FlightStats(..))
 
 landAltitudes :: [(Pilot, FlightStats k)] -> [(Pilot, QAlt Double [u| m |])]
@@ -23,10 +24,11 @@ landAltitudes xs =
     $ fmap (\(p, FlightStats{..}) -> (p,) <$> statAlt) xs
 
 times
-    :: (TimeStats -> PilotTime (Quantity Double [u| h |]))
+    :: PowerExponent
+    -> (TimeStats -> PilotTime (Quantity Double [u| h |]))
     -> [(Pilot, FlightStats k)]
     -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
-times f xs =
+times pe f xs =
     (\ bt -> (bt, sortOn (time . snd) $ second (g bt) <$> ys))
     <$> Gap.bestTime' ts
     where
@@ -42,14 +44,15 @@ times f xs =
         g best t =
             TrackSpeed
                 { time = t
-                , frac = speedFraction best t
+                , frac = speedFraction pe best t
                 }
 
 maskSpeed
-    :: [Maybe TaskRouteDistance]
+    :: PowerExponent
+    -> [Maybe TaskRouteDistance]
     -> [[(Pilot, FlightStats k)]]
     -> ([Maybe (BestTime (Quantity Double [u| h |]))], CompMaskingSpeed)
-maskSpeed lsTask yss =
+maskSpeed pe lsTask yss =
     (gsBestTime,) $
     CompMaskingSpeed
         { ssBestTime = ssBestTime
@@ -66,10 +69,10 @@ maskSpeed lsTask yss =
 
         -- Velocities (vs).
         ssVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                times ssTime <$> yss
+                times pe ssTime <$> yss
 
         gsVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                times gsTime <$> yss
+                times pe gsTime <$> yss
 
         dsAlt :: [[(Pilot, QAlt Double [u| m |])]] = landAltitudes <$> yss
 

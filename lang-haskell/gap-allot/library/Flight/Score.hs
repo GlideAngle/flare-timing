@@ -59,6 +59,7 @@ module Flight.Score
     , SumOfDistance(..)
     , unFlownMaxAsKm
     -- * Math
+    , PowerExponent(..)
     , powerFraction
     -- * Fractions
     , Fractions(..)

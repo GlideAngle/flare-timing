@@ -133,6 +133,46 @@ fsCompetition =
 --     min_time_span_for_valid_task="60"
 --     score_back_time="15"
 --     time_points_if_not_in_goal="0.8" />
+--
+-- <FsScoreFormula
+--     id="GAP2020"
+--     min_dist="7
+--     nom_dist="60
+--     nom_time="1.5
+--     nom_launch="0.96
+--     nom_goal="0.3
+--     day_quality_override="0
+--     bonus_gr="5
+--     jump_the_gun_factor="2
+--     jump_the_gun_max="300
+--     normalize_1000_before_day_quality="0
+--     time_points_if_not_in_goal="0.8
+--     use_1000_points_for_max_day_quality="0
+--     use_arrival_position_points="1
+--     use_arrival_time_points="0
+--     use_departure_points="0
+--     use_difficulty_for_distance_points="1
+--     use_distance_points="1
+--     use_distance_squared_for_LC="1
+--     use_leading_points="1
+--     use_semi_circle_control_zone_for_goal_line="1
+--     use_time_points="1
+--     scoring_altitude="QNH
+--     final_glide_decelerator="none
+--     no_final_glide_decelerator_reason="
+--     min_time_span_for_valid_task="45
+--     score_back_time="15
+--     use_proportional_leading_weight_if_nobody_in_goal="0
+--     leading_weight_factor="1
+--     turnpoint_radius_tolerance="0.001
+--     turnpoint_radius_minimum_absolute_tolerance="5
+--     number_of_decimals_task_results="1
+--     number_of_decimals_competition_results="0
+--     redistribute_removed_time_points_as_distance_points="1
+--     use_best_score_for_ftv_validity="1
+--     use_constant_leading_weight="0
+--     use_pwca2019_for_lc="0
+--     use_flat_decline_of_timepoints="1" />
 fsScoreFormula :: ArrowXml a => a XmlTree XmlTree
 fsScoreFormula =
     processTopDown
@@ -156,6 +196,8 @@ fsScoreFormula =
                     , "use_arrival_time_points"
                     , "use_distance_squared_for_LC"
                     , "time_points_if_not_in_goal"
+
+                    , "use_flat_decline_of_timepoints"
                     ])
                 . localPart)
             (isElem >>> hasName "FsScoreFormula")

@@ -103,6 +103,7 @@ import "flight-gap-allot" Flight.Score
     , PilotId(..)
     , PilotName(..)
     , Pilot(..)
+    , PowerExponent(..)
     )
 import "flight-gap-lead" Flight.Score (Leg(..), LengthOfSs(..))
 import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
@@ -391,6 +392,7 @@ data Tweak =
         , leadingAreaDistanceSquared :: Bool
         , arrivalRank :: Bool
         , arrivalTime :: Bool
+        , timePowerExponent :: PowerExponent
         , essNotGoalScaling :: EGwScaling
         }
     deriving (Eq, Ord, Show, Generic)

@@ -9,7 +9,7 @@ import Control.Monad (join)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc', xpPrim
-    , xpWrap, xpElem, xpAttr, xpTextAttr, xpOption, xpFilterAttr, xp7Tuple
+    , xpWrap, xpElem, xpAttr, xpTextAttr, xpOption, xpDefault, xpFilterAttr, xp8Tuple
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -32,6 +32,7 @@ import Text.XML.HXT.Core
 
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Comp (Tweak(..))
+import "flight-gap-allot" Flight.Score (PowerExponent(..))
 import "flight-gap-weight" Flight.Score (LwScaling(..), EGwScaling(..))
 import Flight.Track.Lead (lwScalingDefault)
 import Flight.Fsdb.Internal.XmlPickle (xpBool)
@@ -63,10 +64,11 @@ xpTweak discipline =
         <+> hasName "double_leading_weight"
         <+> hasName "use_arrival_position_points"
         <+> hasName "use_arrival_time_points"
+        <+> hasName "use_flat_decline_of_timepoints"
         <+> hasName "time_points_if_not_in_goal"
         )
     $ xpWrap
-        ( \(formula, lp, lsq, dlw, ar, at, eg :: Maybe Double) ->
+        ( \(formula, lp, lsq, dlw, ar, at, tpe, eg :: Maybe Double) ->
             let ls =
                     case (lp, dlw) of
                         (Just False, _) -> Just $ LwScaling 0
@@ -83,6 +85,7 @@ xpTweak discipline =
                     , leadingAreaDistanceSquared = fromMaybe (leadingSquareAreaDefault formula) lsq
                     , arrivalRank = ar && discipline /= Paragliding
                     , arrivalTime = at && discipline /= Paragliding
+                    , timePowerExponent = PowerExponent $ if tpe then (5/6) else (2/3)
                     , essNotGoalScaling = EGwScaling $ maybe 0 toRational eg
                     }
         , \Tweak
@@ -90,6 +93,7 @@ xpTweak discipline =
             , leadingAreaDistanceSquared = lsq
             , arrivalRank = ar
             , arrivalTime = at
+            , timePowerExponent
             , essNotGoalScaling = EGwScaling eg
             } ->
             let (lp, lw) =
@@ -101,15 +105,18 @@ xpTweak discipline =
                         Just (LwScaling _) -> (True, True)
                         Nothing -> (True, True)
 
-            in ("", lp, Just lsq, lw, ar, at, Just $ fromRational eg)
+                tpe = timePowerExponent == PowerExponent (5/6)
+
+            in ("", lp, Just lsq, lw, ar, at, tpe, Just $ fromRational eg)
         )
-    $ xp7Tuple
+    $ xp8Tuple
         (xpTextAttr "id")
         (xpOption $ xpAttr "use_leading_points" xpBool)
         (xpOption $ xpAttr "use_distance_squared_for_LC" xpBool)
         (xpOption $ xpAttr "double_leading_weight" xpBool)
         (xpAttr "use_arrival_position_points" xpBool)
         (xpAttr "use_arrival_time_points" xpBool)
+        (xpDefault False $ xpAttr "use_flat_decline_of_timepoints" xpBool)
         (xpOption $ xpAttr "time_points_if_not_in_goal" xpPrim)
 
 getCompTweak
@@ -123,7 +130,7 @@ getCompTweak discipline =
     >>> arr (unpickleDoc' $ xpTweak discipline))
     `orElse`
     (constA . Right $
-        Tweak Nothing False (discipline == HangGliding) False (EGwScaling 0))
+        Tweak Nothing False (discipline == HangGliding) False (PowerExponent $ 2/3) (EGwScaling 0))
 
 parseTweak :: Discipline -> String -> IO (Either String [Tweak])
 parseTweak discipline contents = do
