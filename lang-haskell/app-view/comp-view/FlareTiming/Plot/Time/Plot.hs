@@ -26,52 +26,47 @@ foreign import javascript unsafe
     \    points: $4\
     \  , fnType: 'points'\
     \  , color: '#808080'\
-    \  , graphType: 'polyline'\
-    \  },{\
-    \    points: $5\
-    \  , fnType: 'points'\
-    \  , color: '#808080'\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
-    \    points: $6\
+    \    points: $5\
     \  , fnType: 'points'\
     \  , color: '#1e1e1e'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter'\
     \  },{\
-    \    points: $7\
+    \    points: $6\
     \  , fnType: 'points'\
     \  , color: '#377eb8'\
     \  , attr: { r: 9 }\
     \  , graphType: 'scatter'\
     \  },{\
-    \    points: $8\
+    \    points: $7\
     \  , fnType: 'points'\
     \  , color: '#ff7f00'\
     \  , attr: { r: 9 }\
     \  , graphType: 'scatter'\
     \  },{\
-    \    points: $9\
+    \    points: $8\
     \  , fnType: 'points'\
     \  , color: '#4daf4a'\
     \  , attr: { r: 9 }\
     \  , graphType: 'scatter'\
     \  },{\
-    \    points: $10\
+    \    points: $9\
     \  , fnType: 'points'\
     \  , color: '#e41a1c'\
     \  , attr: { r: 9 }\
     \  , graphType: 'scatter'\
     \  },{\
-    \    points: $11\
+    \    points: $10\
     \  , fnType: 'points'\
     \  , color: '#984ea3'\
     \  , attr: { r: 9 }\
     \  , graphType: 'scatter'\
     \  }]\
     \})"
-    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 timePlot
     :: IsElement e
@@ -82,13 +77,6 @@ timePlot
     -> [[Double]] -- ^ Selected xy pairs
     -> IO Plot
 timePlot e pe (tMin, tMax) xs ys = do
-    let xyfn :: [[Double]] =
-            [ [x', fnGAP pe tMin x']
-            | x <- [0 .. 199 :: Integer]
-            , let step = abs $ (tMax - tMin) / 200
-            , let x' = tMin + step * fromIntegral x
-            ]
-
     let xyfnGAP :: [[Double]] =
             [ [x', fnGAP pe tMin x']
             | x <- [0 .. 199 :: Integer]
@@ -101,12 +89,11 @@ timePlot e pe (tMin, tMax) xs ys = do
     tMin' <- toJSVal $ tMin - pad
     tMax' <- toJSVal $ tMax + pad
 
-    xyfn' <- toJSValListOf xyfn
     xyfnGAP' <- toJSValListOf xyfnGAP
     xs' <- toJSValListOf $ nub xs
     ys' <- unpackSelect ys
 
-    Plot <$> (uncurry5 $ plot_ (unElement . toElement $ e) tMin' tMax' xyfn' xyfnGAP' xs') ys'
+    Plot <$> (uncurry5 $ plot_ (unElement . toElement $ e) tMin' tMax' xyfnGAP' xs') ys'
 
 -- | The equation from the GAP rules.
 fnGAP :: PowerExponent -> Double -> Double -> Double
