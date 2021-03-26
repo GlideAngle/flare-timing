@@ -32,7 +32,7 @@ import Text.XML.HXT.Core
 
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Comp (Tweak(..))
-import "flight-gap-allot" Flight.Score (PowerExponent(..))
+import "flight-gap-allot" Flight.Score (powerExp23, powerExp56)
 import "flight-gap-weight" Flight.Score (LwScaling(..), EGwScaling(..))
 import Flight.Track.Lead (lwScalingDefault)
 import Flight.Fsdb.Internal.XmlPickle (xpBool)
@@ -85,7 +85,7 @@ xpTweak discipline =
                     , leadingAreaDistanceSquared = fromMaybe (leadingSquareAreaDefault formula) lsq
                     , arrivalRank = ar && discipline /= Paragliding
                     , arrivalTime = at && discipline /= Paragliding
-                    , timePowerExponent = PowerExponent $ if tpe then (5/6) else (2/3)
+                    , timePowerExponent = if tpe then powerExp56 else powerExp23
                     , essNotGoalScaling = EGwScaling $ maybe 0 toRational eg
                     }
         , \Tweak
@@ -105,7 +105,7 @@ xpTweak discipline =
                         Just (LwScaling _) -> (True, True)
                         Nothing -> (True, True)
 
-                tpe = timePowerExponent == PowerExponent (5/6)
+                tpe = timePowerExponent == powerExp56
 
             in ("", lp, Just lsq, lw, ar, at, tpe, Just $ fromRational eg)
         )
@@ -130,7 +130,7 @@ getCompTweak discipline =
     >>> arr (unpickleDoc' $ xpTweak discipline))
     `orElse`
     (constA . Right $
-        Tweak Nothing False (discipline == HangGliding) False (PowerExponent $ 2/3) (EGwScaling 0))
+        Tweak Nothing False (discipline == HangGliding) False powerExp23 (EGwScaling 0))
 
 parseTweak :: Discipline -> String -> IO (Either String [Tweak])
 parseTweak discipline contents = do

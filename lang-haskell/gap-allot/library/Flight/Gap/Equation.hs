@@ -1,5 +1,6 @@
 module Flight.Gap.Equation
     ( PowerExponent(..)
+    , powerExp23, powerExp56
     , powerFraction
     , arrivalTimePowerFraction
     ) where
@@ -22,6 +23,10 @@ instance Newtype PowerExponent Double where
 
 deriveDecimalPlaces (DecimalPlaces 8) ''PowerExponent
 deriveJsonViaSci ''PowerExponent
+
+powerExp23, powerExp56 :: PowerExponent
+powerExp23 = PowerExponent $ 2/3
+powerExp56 = PowerExponent $ 5/6
 
 -- |
 -- prop> powerFraction 0 x == 0

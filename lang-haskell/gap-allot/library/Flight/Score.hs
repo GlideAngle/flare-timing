@@ -60,6 +60,7 @@ module Flight.Score
     , unFlownMaxAsKm
     -- * Math
     , PowerExponent(..)
+    , powerExp23, powerExp56
     , powerFraction
     -- * Fractions
     , Fractions(..)

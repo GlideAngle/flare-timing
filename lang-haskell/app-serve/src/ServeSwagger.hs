@@ -545,6 +545,7 @@ instance ToSchema Discipline
 instance ToSchema UtcOffset
 instance ToSchema Give
 instance ToSchema LwScaling
+instance ToSchema PowerExponent
 instance ToSchema PenaltySeq
 instance ToSchema PenaltySeqs
 instance ToSchema EarlyStart

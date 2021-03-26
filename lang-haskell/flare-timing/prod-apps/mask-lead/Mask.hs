@@ -55,7 +55,7 @@ import Flight.Scribe
     -- , readPilotPegThenDiscard
     , readCompLeadArea
     )
-import "flight-gap-allot" Flight.Score (PowerExponent(..))
+import "flight-gap-allot" Flight.Score (powerExp23)
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), nullStats)
 import MaskEffort (landDistances)
@@ -138,7 +138,7 @@ writeMask
             ]
     -}
 
-    let tpe = maybe (PowerExponent $ 2/3) timePowerExponent compTweak
+    let tpe = maybe powerExp23 timePowerExponent compTweak
     let gsBestTime = maskSpeedBestTime tpe yss
     let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 

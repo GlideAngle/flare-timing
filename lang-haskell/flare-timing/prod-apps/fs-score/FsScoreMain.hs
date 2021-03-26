@@ -42,7 +42,8 @@ import "flight-gap-allot" Flight.Score
     , DistanceFraction(..)
     , LinearFraction(..)
     , DifficultyFraction(..)
-    , PowerExponent(..)
+    , PowerExponent
+    , powerExp56
     , speedFraction
     )
 import "flight-gap-math" Flight.Score
@@ -104,7 +105,8 @@ fsdbScores n (FsdbXml contents) = do
 normScores :: FsdbXml -> ExceptT String IO AltPointing
 normScores fsdbXml = do
     -- TODO: Read power exponent from use_flat_decline_of_time_points.
-    let pe = PowerExponent $ 5/6
+    let pe = powerExp56
+
     n <- fsdbNominal fsdbXml
     np@AltPointing{score = xss} <- fsdbScores n fsdbXml
 
