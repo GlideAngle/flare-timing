@@ -2,7 +2,7 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/changelog.md)
 of this changelog.
 
-# Moved Files
+# Moved Working Files
 ## v0.30
 
 * Moved the file `.flight-system/clean-fsdb.xml` back to the root folder with
@@ -16,6 +16,13 @@ of this changelog.
 * Invert the command/task folder order to have task/command such as
   `.flare-timing/task-1/align-time/*.csv`.
 * Break up working files so that they are per-task, not for the whole comp.
+* Create intermediate folders for workings, if missing.
+* Show the comparison columns in the table that goes with the time plot.
+* Parse `//FsScoreFormula/@use_flat_decline_of_timepoints` from `*.fsdb` and
+  set the corresponding exponent as `^(2/3)` or `^(5/6)` for the time points
+  distribution. Draw the corresponding line of this equation on the time plot.
+* Parse `//FsResult/@points` as double rather than int.
+* Parse `//FsTaskShortestPath` deep, at any level of nesting within `FsTask`.
 
 # Ess ≠ Goal
 ## v0.29
