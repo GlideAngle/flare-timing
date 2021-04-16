@@ -224,9 +224,9 @@ pointRow
     -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t PilotId
     -> m ()
-pointRow w dfNt tp pilots sFt sAltFs sAltAs pid = do
-    let ftScore tp' Breakdown{ place = nth, total = total'} =
-            (showRank nth, showTaskPointsRounded tp' total')
+pointRow w dfNt taskPoints pilots sFt sAltFs sAltAs pid = do
+    let ftScore tp Breakdown{ place = nth, total = total'} =
+            (showRank nth, showTaskPointsRounded tp total')
 
     let yAlt pid' sAltFs' Breakdown{total = pFt} =
             case Map.lookup pid' sAltFs' of
@@ -244,53 +244,57 @@ pointRow w dfNt tp pilots sFt sAltFs sAltAs pid = do
                 (Just Alt.AltBreakdown{total = pAs}, Just Alt.AltBreakdown{total = pFs}) ->
                     showTaskPointsDiff pFs pAs
 
-    let xBreakdown = ffor2 pid sFt Map.lookup
-    let xPilot = ffor2 pid pilots Map.lookup
-    dyn_ $ ffor3 tp xBreakdown xPilot (\tp' xBreakdown' xPilot' -> case (tp', xBreakdown', xPilot') of
-        (_, Nothing, _) -> return ()
-        (_, _, Nothing) -> return ()
-        (tp'', Just xBreakdown'', Just pilot) -> do
-            let xFt = ftScore tp'' xBreakdown''
+    dyn_ $
+        ffor3
+            taskPoints
+            (ffor2 pid sFt Map.lookup)
+            (ffor2 pid pilots Map.lookup)
+            (\tp' breakdown' pilot' ->
+        case (tp', breakdown', pilot') of
+            (_, Nothing, _) -> return ()
+            (_, _, Nothing) -> return ()
+            (tp, Just breakdown, Just pilot) -> do
+                let xFt = ftScore tp breakdown
 
-            let yFs = ffor2 pid sAltFs (\p s -> yAlt p s xBreakdown'')
-            let yAs = ffor2 pid sAltAs (\p s -> yAlt p s xBreakdown'')
-            let zAsFsDiff = ffor3 pid sAltAs sAltFs zAlt
+                let yFs = ffor2 pid sAltFs (\p s -> yAlt p s breakdown)
+                let yAs = ffor2 pid sAltAs (\p s -> yAlt p s breakdown)
+                let zAsFsDiff = ffor3 pid sAltAs sAltFs zAlt
 
-            let xFtRank = fst xFt
-            let xFtScore = snd xFt
+                let xFtRank = fst xFt
+                let xFtScore = snd xFt
 
-            let yFsRank = ffor yFs $ \(yr, _, _) -> yr
-            let yAsRank = ffor yAs $ \(yr, _, _) -> yr
+                let yFsRank = ffor yFs $ \(yr, _, _) -> yr
+                let yAsRank = ffor yAs $ \(yr, _, _) -> yr
 
-            let yFsScore = ffor yFs $ \(_, ys, _) -> ys
-            let yAsScore = ffor yAs $ \(_, ys, _) -> ys
+                let yFsScore = ffor yFs $ \(_, ys, _) -> ys
+                let yAsScore = ffor yAs $ \(_, ys, _) -> ys
 
-            let yFtFsDiff = ffor yFs $ \(_, _, yd) -> yd
-            let yFtAsDiff = ffor yAs $ \(_, _, yd) -> yd
+                let yFtFsDiff = ffor yFs $ \(_, _, yd) -> yd
+                let yFtAsDiff = ffor yAs $ \(_, _, yd) -> yd
 
-            let classPilot = ffor2 w dfNt (\w' (DfNoTrack ps) ->
-                                let n = showPilot w' pilot in
-                                if pilot `elem` (Pilot.pilot <$> ps)
-                                   then ("pilot-dfnt", n <> " ☞ ")
-                                   else ("", n))
+                let classPilot = ffor2 w dfNt (\w' (DfNoTrack ps) ->
+                                    let n = showPilot w' pilot in
+                                    if pilot `elem` (Pilot.pilot <$> ps)
+                                       then ("pilot-dfnt", n <> " ☞ ")
+                                       else ("", n))
 
-            elDynClass "tr" (fst <$> classPilot) $ do
-                elClass "td" "as td-norm td-placing" $ dynText yAsRank
-                elClass "td" "fs td-norm td-placing" $ dynText yFsRank
-                elClass "td" "ft td-placing" $ text xFtRank
-                elClass "td" "td-pilot" . dynText $ snd <$> classPilot
+                elDynClass "tr" (fst <$> classPilot) $ do
+                    elClass "td" "as td-norm td-placing" $ dynText yAsRank
+                    elClass "td" "fs td-norm td-placing" $ dynText yFsRank
+                    elClass "td" "ft td-placing" $ text xFtRank
+                    elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-                elClass "td" "td-total-points" $ text xFtScore
-                elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
-                elClass "td" "td-diff" $ dynText yFtFsDiff
+                    elClass "td" "td-total-points" $ text xFtScore
+                    elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
+                    elClass "td" "td-diff" $ dynText yFtFsDiff
 
-                elClass "td" "td-total-points" $ text xFtScore
-                elClass "td" "as td-norm td-total-points" $ dynText yAsScore
-                elClass "td" "td-diff" $ dynText yFtAsDiff
+                    elClass "td" "td-total-points" $ text xFtScore
+                    elClass "td" "as td-norm td-total-points" $ dynText yAsScore
+                    elClass "td" "td-diff" $ dynText yFtAsDiff
 
-                elClass "td" "as td-norm td-total-points" $ dynText yAsScore
-                elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
-                elClass "td" "td-diff" $ dynText zAsFsDiff)
+                    elClass "td" "as td-norm td-total-points" $ dynText yAsScore
+                    elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
+                    elClass "td" "td-diff" $ dynText zAsFsDiff)
 
     return ()
 
