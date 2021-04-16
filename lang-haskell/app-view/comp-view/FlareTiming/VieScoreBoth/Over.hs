@@ -22,7 +22,10 @@ import WireTypes.Point
 import WireTypes.ValidityWorking (ValidityWorking(..))
 import WireTypes.Comp
     ( UtcOffset(..), Discipline(..), MinimumDistance(..), EarlyStart(..))
-import WireTypes.Pilot (Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..), fstPilotId, pilotIdsWidth)
+import WireTypes.Pilot
+    ( Pilot(..), PilotId(..), Dnf(..), DfNoTrack(..)
+    , getPilotId, fstPilotId, pilotIdsWidth
+    )
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
@@ -48,145 +51,166 @@ tableVieScoreBothOver
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _wg _pt tp sDfs sAltFs sAltAs = mdo
-    scoreSort <- holdDyn SortFt eTableSort
-    let textAs = ffor scoreSort (\case SortAs -> "As ↓"; _ -> "As")
-    let textFs = ffor scoreSort (\case SortFs -> "Fs ↓"; _ -> "Fs")
-    let textFt = ffor scoreSort (\case SortFt -> "Ft ↓"; _ -> "Ft")
+tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _wg _pt tp sDfs sAltFs sAltAs = do
+    let mapPilots = Map.fromList . fmap ((\pilot@(Pilot (pid, _)) -> (pid, pilot)) . fst) <$> sDfs
 
+    let mapFt = Map.fromList . fmap fstPilotId <$> sDfs
     let mapFs = Map.fromList . fmap fstPilotId <$> sAltFs
     let mapAs = Map.fromList . fmap fstPilotId <$> sAltAs
-    let w = ffor sDfs (pilotIdsWidth . fmap fst)
-    let dnf = unDnf <$> dnf'
-    lenDnf :: Int <- sample . current $ length <$> dnf
-    lenDfs :: Int <- sample . current $ length <$> sDfs
-    let dnfPlacing =
-            (if lenDnf == 1 then TaskPlacing else TaskPlacingEqual)
-            . fromIntegral
-            $ lenDfs + 1
 
-    let thSpace = elClass "th" "th-space" $ text ""
+    let keysFt = (fmap . fmap) (getPilotId . fst) sDfs
+    let keysFs = (fmap . fmap) (getPilotId . fst) sAltFs
+    let keysAs = (fmap . fmap) (getPilotId . fst) sAltAs
 
-    let tableClass =
-            let tc = "table is-striped is-narrow" in
-            ffor2 hgOrPg sgs (\x gs ->
-                let y = T.pack . show $ x in
-                y <> (if null gs then " " else " sg ") <> tc)
+    let keysPilots = ffor3 keysFt keysFs keysAs (\a b c -> (a, b, c))
 
-    let yDiff = ffor3 sDfs mapFs mapAs (\sDfs' mapFs' mapAs' ->
-                    let altTotal Alt.AltBreakdown{total = p} = p in
-                    [
-                        ( altTotal <$> Map.lookup pid mapFs'
-                        , altTotal <$> Map.lookup pid mapAs'
-                        , p'
-                        )
-                    | (Pilot (pid, _), Breakdown{total = p'}) <- sDfs'
-                    ])
+    _ <- mdo
+        scoreSort <- holdDyn SortFt eTableSort
 
-    let stats = ffor
-                        yDiff
-                        ((\(fs', as', ft) ->
-                            let fs = sequence fs'
+        let textFt = ffor scoreSort (\case SortFt -> "Ft ↓"; _ -> "Ft")
+        let textAs = ffor scoreSort (\case SortAs -> "As ↓"; _ -> "As")
+        let textFs = ffor scoreSort (\case SortFs -> "Fs ↓"; _ -> "Fs")
 
-                                -- NOTE: For some pilots, airScore is giving
-                                -- a null score. To do the stats, substitute
-                                -- zero for those scores.
-                                as = Just $ maybe (TaskPoints 0) id <$> as'
+        let sortedPilots = ffor2 scoreSort keysPilots (\s ps ->
+                case (s, ps) of
+                    (SortFt, (ps', _, _)) -> ps'
+                    (SortFs, (_, ps', _)) -> ps'
+                    (SortAs, (_, _, ps')) -> ps')
 
-                                dFtFs = showTaskPointsDiffStats fs ft
-                                dFtAs = showTaskPointsDiffStats as ft
-                                dAsFs = maybe "" (showTaskPointsDiffStats as) fs
-                            in
-                                (dFtFs, (dFtAs, dAsFs)))
-                        . unzip3)
+        let w = ffor sDfs (pilotIdsWidth . fmap fst)
+        let dnf = unDnf <$> dnf'
+        lenDnf :: Int <- sample . current $ length <$> dnf
+        lenDfs :: Int <- sample . current $ length <$> sDfs
+        let dnfPlacing =
+                (if lenDnf == 1 then TaskPlacing else TaskPlacingEqual)
+                . fromIntegral
+                $ lenDfs + 1
 
-    eTableSort <- elDynClass "table" tableClass $ do
-        eHeadSort <- el "thead" $ do
+        let thSpace = elClass "th" "th-space" $ text ""
 
-            el "tr" $ do
-                elAttr "th" ("colspan" =: "4") $ text ""
-                elAttr "th" ("colspan" =: "12" <> "class" =: "ft-fs th-points")
-                    $ text "Total Point Comparisons"
+        let tableClass =
+                let tc = "table is-striped is-narrow" in
+                ffor2 hgOrPg sgs (\x gs ->
+                    let y = T.pack . show $ x in
+                    y <> (if null gs then " " else " sg ") <> tc)
 
-            el "tr" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-place") $ text "Place"
-                thSpace
-                elAttr "th" ("colspan" =: "3" <> "class" =: "ft-fs th-points") . dynText
-                    $ fst <$> stats
-                elAttr "th" ("colspan" =: "3" <> "class" =: "ft-as th-points") . dynText
-                    $ fst . snd <$> stats
-                elAttr "th" ("colspan" =: "3" <> "class" =: "as-fs th-points") . dynText
-                    $ snd . snd <$> stats
+        let yDiff = ffor3 sDfs mapFs mapAs (\sDfs' mapFs' mapAs' ->
+                        let altTotal Alt.AltBreakdown{total = p} = p in
+                        [
+                            ( altTotal <$> Map.lookup pid mapFs'
+                            , altTotal <$> Map.lookup pid mapAs'
+                            , p'
+                            )
+                        | (Pilot (pid, _), Breakdown{total = p'}) <- sDfs'
+                        ])
 
-            eHeadRowSort <- el "tr" $ do
-                (sortAs, _) <- elDynClass' "th" "as th-norm th-placing" $ el "a" (dynText textAs)
-                (sortFs, _) <- elDynClass' "th" "fs th-norm th-placing" $ el "a" (dynText textFs)
-                (sortFt, _) <- elDynClass' "th" "ft th-placing" $ el "a" (dynText textFt)
+        let stats = ffor
+                            yDiff
+                            ((\(fs', as', ft) ->
+                                let fs = sequence fs'
 
-                let eSortAs = (const SortAs) <$> domEvent Click sortAs
-                let eSortFs = (const SortFs) <$> domEvent Click sortFs
-                let eSortFt = (const SortFt) <$> domEvent Click sortFt
+                                    -- NOTE: For some pilots, airScore is giving
+                                    -- a null score. To do the stats, substitute
+                                    -- zero for those scores.
+                                    as = Just $ maybe (TaskPoints 0) id <$> as'
 
-                elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
+                                    dFtFs = showTaskPointsDiffStats fs ft
+                                    dFtAs = showTaskPointsDiffStats as ft
+                                    dAsFs = maybe "" (showTaskPointsDiffStats as) fs
+                                in
+                                    (dFtFs, (dFtAs, dAsFs)))
+                            . unzip3)
 
-                elClass "th" "th-total-points" $ text "Ft"
-                elClass "th" "fs th-norm th-total-points" $ text "Fs"
-                elClass "th" "th-diff" $ text "Δ Ft-Fs"
+        eTableSort <- elDynClass "table" tableClass $ do
+            eHeadSort <- el "thead" $ do
 
-                elClass "th" "th-total-points" $ text "Ft"
-                elClass "th" "as th-norm th-total-points" $ text "As"
-                elClass "th" "th-diff" $ text "Δ Ft-As"
+                el "tr" $ do
+                    elAttr "th" ("colspan" =: "4") $ text ""
+                    elAttr "th" ("colspan" =: "12" <> "class" =: "ft-fs th-points")
+                        $ text "Total Point Comparisons"
 
-                elClass "th" "as th-norm th-total-points" $ text "As"
-                elClass "th" "fs th-norm th-total-points" $ text "Fs"
-                elClass "th" "th-diff" $ text "Δ As-Fs"
+                el "tr" $ do
+                    elAttr "th" ("colspan" =: "3" <> "class" =: "th-place") $ text "Place"
+                    thSpace
+                    elAttr "th" ("colspan" =: "3" <> "class" =: "ft-fs th-points") . dynText
+                        $ fst <$> stats
+                    elAttr "th" ("colspan" =: "3" <> "class" =: "ft-as th-points") . dynText
+                        $ fst . snd <$> stats
+                    elAttr "th" ("colspan" =: "3" <> "class" =: "as-fs th-points") . dynText
+                        $ snd . snd <$> stats
 
-                return $ leftmost [ eSortAs, eSortFs, eSortFt ]
+                eHeadRowSort <- el "tr" $ do
+                    (sortAs, _) <- elDynClass' "th" "as th-norm th-placing" $ el "a" (dynText textAs)
+                    (sortFs, _) <- elDynClass' "th" "fs th-norm th-placing" $ el "a" (dynText textFs)
+                    (sortFt, _) <- elDynClass' "th" "ft th-placing" $ el "a" (dynText textFt)
 
-            elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points"
+                    let eSortAs = (const SortAs) <$> domEvent Click sortAs
+                    let eSortFs = (const SortFs) <$> domEvent Click sortFs
+                    let eSortFt = (const SortFt) <$> domEvent Click sortFt
 
-                elClass "th" "th-task-alloc" . dynText $
-                    maybe
-                        ""
-                        (\x -> showTaskPointsRounded (Just x) x)
-                    <$> tp
+                    elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
-                thSpace
+                    elClass "th" "th-total-points" $ text "Ft"
+                    elClass "th" "fs th-norm th-total-points" $ text "Fs"
+                    elClass "th" "th-diff" $ text "Δ Ft-Fs"
 
-            return eHeadRowSort
+                    elClass "th" "th-total-points" $ text "Ft"
+                    elClass "th" "as th-norm th-total-points" $ text "As"
+                    elClass "th" "th-diff" $ text "Δ Ft-As"
 
-        _ <- el "tbody" $ do
-            _ <-
-                simpleList
-                    sDfs
-                    (pointRow
-                        w
-                        dfNt
-                        tp
-                        mapFs
-                        mapAs)
+                    elClass "th" "as th-norm th-total-points" $ text "As"
+                    elClass "th" "fs th-norm th-total-points" $ text "Fs"
+                    elClass "th" "th-diff" $ text "Δ As-Fs"
 
-            dnfRows w dnfPlacing dnf'
-            return ()
+                    return $ leftmost [ eSortAs, eSortFs, eSortFt ]
 
-        let tdFoot = elAttr "td" ("colspan" =: "13")
-        let foot = el "tr" . tdFoot . text
+                elClass "tr" "tr-allocation" $ do
+                    elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points"
 
-        el "tfoot" $ do
-            foot "* Any points so annotated are the maximum attainable."
-            foot "☞ Pilots without a tracklog but given a distance by the scorer."
-            foot "Δ A difference between total points, mean ± standard deviation."
+                    elClass "th" "th-task-alloc" . dynText $
+                        maybe
+                            ""
+                            (\x -> showTaskPointsRounded (Just x) x)
+                        <$> tp
 
-        return eHeadSort
+                    thSpace
+                    thSpace
+                    thSpace
+                    thSpace
+                    thSpace
+                    thSpace
+                    thSpace
+                    thSpace
 
+                return eHeadRowSort
+
+            _ <- el "tbody" $ do
+                _ <-
+                    simpleList
+                        sortedPilots
+                        (pointRow
+                            w
+                            dfNt
+                            tp
+                            mapPilots
+                            mapFt
+                            mapFs
+                            mapAs)
+
+                dnfRows w dnfPlacing dnf'
+                return ()
+
+            let tdFoot = elAttr "td" ("colspan" =: "13")
+            let foot = el "tr" . tdFoot . text
+
+            el "tfoot" $ do
+                foot "* Any points so annotated are the maximum attainable."
+                foot "☞ Pilots without a tracklog but given a distance by the scorer."
+                foot "Δ A difference between total points, mean ± standard deviation."
+
+            return eHeadSort
+
+        return ()
     return ()
 
 pointRow
@@ -194,16 +218,18 @@ pointRow
     => Dynamic t Int
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe TaskPoints)
+    -> Dynamic t (Map.Map PilotId Pilot)
+    -> Dynamic t (Map.Map PilotId Breakdown)
     -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
     -> Dynamic t (Map.Map PilotId Alt.AltBreakdown)
-    -> Dynamic t (Pilot, Breakdown)
+    -> Dynamic t PilotId
     -> m ()
-pointRow w dfNt tp sAltFs sAltAs x = do
-    let pilot = fst <$> x
-    let xB = snd <$> x
+pointRow w dfNt tp pilots sFt sAltFs sAltAs pid = do
+    let ftScore tp' Breakdown{ place = nth, total = total'} =
+            (showRank nth, showTaskPointsRounded tp' total')
 
-    let yAlt (Pilot (pid, _)) sAltFs' (_, Breakdown{total = pFt}) =
-            case Map.lookup pid sAltFs' of
+    let yAlt pid' sAltFs' Breakdown{total = pFt} =
+            case Map.lookup pid' sAltFs' of
                 Nothing -> ("", "", "")
                 Just
                     Alt.AltBreakdown
@@ -211,51 +237,62 @@ pointRow w dfNt tp sAltFs sAltAs x = do
                         , total = pFs@(TaskPoints pts)
                         } -> (showRank nth, showRounded pts, showTaskPointsDiff pFs pFt)
 
-    let zAlt (Pilot (pid, _)) sAltAs' sAltFs' =
-            case (Map.lookup pid sAltAs', Map.lookup pid sAltFs') of
+    let zAlt pid' sAltAs' sAltFs' =
+            case (Map.lookup pid' sAltAs', Map.lookup pid' sAltFs') of
                 (Nothing, _) -> ""
                 (_, Nothing) -> ""
                 (Just Alt.AltBreakdown{total = pAs}, Just Alt.AltBreakdown{total = pFs}) ->
                     showTaskPointsDiff pFs pAs
 
-    let yFs = ffor3 pilot sAltFs x yAlt
-    let yAs = ffor3 pilot sAltAs x yAlt
-    let zAsFsDiff = ffor3 pilot sAltAs sAltFs zAlt
+    let xBreakdown = ffor2 pid sFt Map.lookup
+    let xPilot = ffor2 pid pilots Map.lookup
+    dyn_ $ ffor3 tp xBreakdown xPilot (\tp' xBreakdown' xPilot' -> case (tp', xBreakdown', xPilot') of
+        (_, Nothing, _) -> return ()
+        (_, _, Nothing) -> return ()
+        (tp'', Just xBreakdown'', Just pilot) -> do
+            let xFt = ftScore tp'' xBreakdown''
 
-    let yFsRank = ffor yFs $ \(yr, _, _) -> yr
-    let yAsRank = ffor yAs $ \(yr, _, _) -> yr
+            let yFs = ffor2 pid sAltFs (\p s -> yAlt p s xBreakdown'')
+            let yAs = ffor2 pid sAltAs (\p s -> yAlt p s xBreakdown'')
+            let zAsFsDiff = ffor3 pid sAltAs sAltFs zAlt
 
-    let yFsScore = ffor yFs $ \(_, ys, _) -> ys
-    let yAsScore = ffor yAs $ \(_, ys, _) -> ys
+            let xFtRank = fst xFt
+            let xFtScore = snd xFt
 
-    let yFtFsDiff = ffor yFs $ \(_, _, yd) -> yd
-    let yFtAsDiff = ffor yAs $ \(_, _, yd) -> yd
+            let yFsRank = ffor yFs $ \(yr, _, _) -> yr
+            let yAsRank = ffor yAs $ \(yr, _, _) -> yr
 
-    let classPilot = ffor3 w pilot dfNt (\w' p (DfNoTrack ps) ->
-                        let n = showPilot w' p in
-                        if p `elem` (Pilot.pilot <$> ps)
-                           then ("pilot-dfnt", n <> " ☞ ")
-                           else ("", n))
+            let yFsScore = ffor yFs $ \(_, ys, _) -> ys
+            let yAsScore = ffor yAs $ \(_, ys, _) -> ys
 
-    elDynClass "tr" (fst <$> classPilot) $ do
-        elClass "td" "as td-norm td-placing" $ dynText yAsRank
-        elClass "td" "fs td-norm td-placing" $ dynText yFsRank
-        elClass "td" "ft td-placing" . dynText $ showRank . place <$> xB
-        elClass "td" "td-pilot" . dynText $ snd <$> classPilot
+            let yFtFsDiff = ffor yFs $ \(_, _, yd) -> yd
+            let yFtAsDiff = ffor yAs $ \(_, _, yd) -> yd
 
-        elClass "td" "td-total-points" . dynText
-            $ zipDynWith showTaskPointsRounded tp (total <$> xB)
-        elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
-        elClass "td" "td-diff" $ dynText yFtFsDiff
+            let classPilot = ffor2 w dfNt (\w' (DfNoTrack ps) ->
+                                let n = showPilot w' pilot in
+                                if pilot `elem` (Pilot.pilot <$> ps)
+                                   then ("pilot-dfnt", n <> " ☞ ")
+                                   else ("", n))
 
-        elClass "td" "td-total-points" . dynText
-            $ zipDynWith showTaskPointsRounded tp (total <$> xB)
-        elClass "td" "as td-norm td-total-points" $ dynText yAsScore
-        elClass "td" "td-diff" $ dynText yFtAsDiff
+            elDynClass "tr" (fst <$> classPilot) $ do
+                elClass "td" "as td-norm td-placing" $ dynText yAsRank
+                elClass "td" "fs td-norm td-placing" $ dynText yFsRank
+                elClass "td" "ft td-placing" $ text xFtRank
+                elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "as td-norm td-total-points" $ dynText yAsScore
-        elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
-        elClass "td" "td-diff" $ dynText zAsFsDiff
+                elClass "td" "td-total-points" $ text xFtScore
+                elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
+                elClass "td" "td-diff" $ dynText yFtFsDiff
+
+                elClass "td" "td-total-points" $ text xFtScore
+                elClass "td" "as td-norm td-total-points" $ dynText yAsScore
+                elClass "td" "td-diff" $ dynText yFtAsDiff
+
+                elClass "td" "as td-norm td-total-points" $ dynText yAsScore
+                elClass "td" "fs td-norm td-total-points" $ dynText yFsScore
+                elClass "td" "td-diff" $ dynText zAsFsDiff)
+
+    return ()
 
 dnfRows
     :: MonadWidget t m
