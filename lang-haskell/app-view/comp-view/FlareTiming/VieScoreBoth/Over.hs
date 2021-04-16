@@ -27,6 +27,8 @@ import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Score.Show
 
+data ScoreSort = SortFt | SortFs | SortAs
+
 tableVieScoreBothOver
     :: MonadWidget t m
     => Dynamic t UtcOffset
@@ -46,7 +48,14 @@ tableVieScoreBothOver
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
-tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _wg _pt tp sDfs sAltFs sAltAs = do
+tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _wg _pt tp sDfs sAltFs sAltAs = mdo
+    scoreSort <- holdDyn SortFt eTableSort
+    let textAs = ffor scoreSort (\case SortAs -> "As ↓"; _ -> "As")
+    let textFs = ffor scoreSort (\case SortFs -> "Fs ↓"; _ -> "Fs")
+    let textFt = ffor scoreSort (\case SortFt -> "Ft ↓"; _ -> "Ft")
+
+    let mapFs = Map.fromList . fmap fstPilotId <$> sAltFs
+    let mapAs = Map.fromList . fmap fstPilotId <$> sAltAs
     let w = ffor sDfs (pilotIdsWidth . fmap fst)
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
@@ -64,18 +73,15 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
 
-    let yDiff = ffor3 sDfs sAltFs sAltAs (\sDfs' sAltFs' sAltAs' ->
-                    let mapFs = Map.fromList $ fstPilotId <$> sAltFs'
-                        mapAs = Map.fromList $ fstPilotId <$> sAltAs'
-                        altTotal Alt.AltBreakdown{total = p} = p
-                    in
-                        [
-                            ( altTotal <$> Map.lookup pid mapFs
-                            , altTotal <$> Map.lookup pid mapAs
-                            , p'
-                            )
-                        | (Pilot (pid, _), Breakdown{total = p'}) <- sDfs'
-                        ])
+    let yDiff = ffor3 sDfs mapFs mapAs (\sDfs' mapFs' mapAs' ->
+                    let altTotal Alt.AltBreakdown{total = p} = p in
+                    [
+                        ( altTotal <$> Map.lookup pid mapFs'
+                        , altTotal <$> Map.lookup pid mapAs'
+                        , p'
+                        )
+                    | (Pilot (pid, _), Breakdown{total = p'}) <- sDfs'
+                    ])
 
     let stats = ffor
                         yDiff
@@ -94,8 +100,8 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                                 (dFtFs, (dFtAs, dAsFs)))
                         . unzip3)
 
-    _ <- elDynClass "table" tableClass $ do
-        el "thead" $ do
+    eTableSort <- elDynClass "table" tableClass $ do
+        eHeadSort <- el "thead" $ do
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "4") $ text ""
@@ -112,10 +118,15 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                 elAttr "th" ("colspan" =: "3" <> "class" =: "as-fs th-points") . dynText
                     $ snd . snd <$> stats
 
-            el "tr" $ do
-                elClass "th" "as th-norm th-placing" $ text "As"
-                elClass "th" "fs th-norm th-placing" $ text "Fs"
-                elClass "th" "ft th-placing" $ text "Ft"
+            eHeadRowSort <- el "tr" $ do
+                (sortAs, _) <- elDynClass' "th" "as th-norm th-placing" $ el "a" (dynText textAs)
+                (sortFs, _) <- elDynClass' "th" "fs th-norm th-placing" $ el "a" (dynText textFs)
+                (sortFt, _) <- elDynClass' "th" "ft th-placing" $ el "a" (dynText textFt)
+
+                let eSortAs = (const SortAs) <$> domEvent Click sortAs
+                let eSortFs = (const SortFs) <$> domEvent Click sortFs
+                let eSortFt = (const SortFt) <$> domEvent Click sortFt
+
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
                 elClass "th" "th-total-points" $ text "Ft"
@@ -129,6 +140,8 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                 elClass "th" "as th-norm th-total-points" $ text "As"
                 elClass "th" "fs th-norm th-total-points" $ text "Fs"
                 elClass "th" "th-diff" $ text "Δ As-Fs"
+
+                return $ leftmost [ eSortAs, eSortFs, eSortFt ]
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-allocation") $ text "Available Points"
@@ -148,6 +161,8 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                 thSpace
                 thSpace
 
+            return eHeadRowSort
+
         _ <- el "tbody" $ do
             _ <-
                 simpleList
@@ -156,8 +171,8 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
                         w
                         dfNt
                         tp
-                        (Map.fromList . fmap fstPilotId <$> sAltFs)
-                        (Map.fromList . fmap fstPilotId <$> sAltAs))
+                        mapFs
+                        mapAs)
 
             dnfRows w dnfPlacing dnf'
             return ()
@@ -169,6 +184,8 @@ tableVieScoreBothOver _utcOffset hgOrPg _early _free sgs _ln dnf' dfNt _vy _vw _
             foot "* Any points so annotated are the maximum attainable."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
             foot "Δ A difference between total points, mean ± standard deviation."
+
+        return eHeadSort
 
     return ()
 
