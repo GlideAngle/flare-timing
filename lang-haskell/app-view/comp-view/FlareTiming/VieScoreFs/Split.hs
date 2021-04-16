@@ -140,8 +140,8 @@ tableVieScoreFsSplit altDot utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg p
             el "tr" $ do
                 let altName = T.pack $ show altDot
 
-                elClass "th" "th-norm th-placing" $ text "Ft"
-                elClass "th" "th-placing" $ text altName
+                elClass "th" "th-norm th-placing" $ text altName
+                elClass "th" "th-placing" $ text "Ft"
                 elClass "th" "th-pilot" . dynText $ ffor w hashIdHyphenPilot
 
                 elClass "th" "th-distance-points" $ text "Ft"
@@ -153,7 +153,7 @@ tableVieScoreFsSplit altDot utcOffset hgOrPg free sgs _ln dnf' dfNt _vy vw _wg p
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elClass "th" "th-leading-points" $ text "Ft"
-                elClass "th" "th-norm th-leading-points" $ text "Ft"
+                elClass "th" "th-norm th-leading-points" $ text altName
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Ft"
