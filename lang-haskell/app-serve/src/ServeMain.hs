@@ -11,7 +11,7 @@ import System.Directory (getCurrentDirectory)
 import Flight.Units ()
 import Flight.Scribe
     ( readCompAndTasks
-    , readAltArrival, readAltLandOut, readAltRoute, readAltScore
+    , readAltArrival, readAltLandOut, readAltRoute, readAltScore, readAsScore
     , readRoutes
     , readCompFlyTime, readCompCrossZone, readCompTagZone, readCompPegFrame
     , readCompMaskArrival
@@ -189,7 +189,7 @@ go CmdServeOptions{..} compFile = do
             -- AesonException "Error in $.score[0][0][1].landedMade: expected String, encountered Null"
             altAsS <-
                 catchIO
-                    (Just <$> readAltScore altAsScoreFile)
+                    (Just <$> readAsScore altAsScoreFile)
                     (const $ return Nothing)
 
             case (routes, flying, crossing, tagging, framing, maskingArrival, maskingEffort, discardingLead2, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing) of

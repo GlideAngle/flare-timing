@@ -11,9 +11,13 @@ Task points.
 -}
 module Flight.Track.Point
     ( Velocity(..)
-    , AltBreakdown(..)
     , Breakdown(..)
-    , AltPointing(..)
+    , AltBreakdown(..)
+    , AirScoreBreakdown(..)
+    , airScoreToAltBreakdown
+    , AlternativePointing(..)
+    , AltPointing
+    , AirScorePointing
     , TaskPointing(..), CompPointing(..)
     , Allocation(..)
     , EssNotGoal(..)
@@ -84,11 +88,12 @@ data Velocity =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
--- | The breakdown of the expected or normative score for a pilot for a task
--- extracted from the *.fsdb file.
-data AltBreakdown =
-    AltBreakdown
+-- | The breakdown for a pilot for a task extracted from
+-- http://localhost:5000/flaretiming_yaml/<comp-id>/gap-score.
+data AirScoreBreakdown =
+    AirScoreBreakdown
         { place :: TaskPlacing
+        -- ^ The place given by the alternative scoring program.
         , total :: TaskPoints
         , breakdown :: Points
         , fractions :: Fractions
@@ -105,6 +110,39 @@ data AltBreakdown =
         , leadingCoef :: LeadingCoef (Quantity Double [u| 1 |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | The breakdown of the expected or normative score for a pilot for a task
+-- extracted from the *.fsdb file.
+data AltBreakdown =
+    AltBreakdown
+        { placeGiven :: TaskPlacing
+        -- ^ The place given by the alternative scoring program.
+        , placeTaken :: TaskPlacing
+        -- ^ The place taken by sorting on total.
+        , total :: TaskPoints
+        , breakdown :: Points
+        , fractions :: Fractions
+        , reach :: ReachToggle (Maybe Effort)
+        -- ^ Most pilots have reach but some get nulls from airScore.
+        , landedMade :: Maybe Effort
+        -- ^ Reported by FS but not by airScore. Not actually used in
+        -- calculating points in GAP.
+        , ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
+        , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+        , leadingArea :: Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
+        -- ^ Reported by FS but not by airScore.
+        , leadingCoef :: LeadingCoef (Quantity Double [u| 1 |])
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+airScoreToAltBreakdown :: AirScoreBreakdown -> AltBreakdown
+airScoreToAltBreakdown AirScoreBreakdown{..} =
+    AltBreakdown
+        { placeGiven = place
+        , placeTaken = place
+        , ..
+        }
 
 data Breakdown =
     Breakdown
@@ -145,17 +183,20 @@ data Breakdown =
 
 -- | For each task, the expected or normative points for that task as scored by
 -- FS.
-data AltPointing =
-    AltPointing
+data AlternativePointing breakdown =
+    AlternativePointing
         { bestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
         , validityWorkingLaunch :: [Maybe LaunchValidityWorking]
         , validityWorkingTime :: [Maybe TimeValidityWorking]
         , validityWorkingDistance :: [Maybe DistanceValidityWorking]
         , validityWorkingStop :: [Maybe StopValidityWorking]
         , validity :: [Maybe Validity]
-        , score :: [[(Pilot, AltBreakdown)]]
+        , score :: [[(Pilot, breakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+type AltPointing = AlternativePointing AltBreakdown
+type AirScorePointing = AlternativePointing AirScoreBreakdown
 
 data TaskPointing =
     TaskPointing
@@ -231,7 +272,14 @@ cmpAlt a b =
     case (a, b) of
         ("place", _) -> LT
 
+        ("placeGiven", _) -> LT
+
+        ("placeTaken", "PlaceGiven") -> LT
+        ("placeTaken", _) -> LT
+
         ("total", "place") -> GT
+        ("total", "placeGiven") -> GT
+        ("total", "placeTaken") -> GT
         ("total", _) -> LT
 
         ("distance", "place") -> GT

@@ -7,7 +7,8 @@ import qualified Data.Vector as V (fromList)
 import Data.Vector (Vector)
 import Servant (throwError)
 
-import qualified Flight.Track.Point as Alt (AltPointing(..), AltBreakdown(..))
+import qualified Flight.Track.Point as Alt
+    (AlternativePointing(..), AltBreakdown(..), AirScoreBreakdown(..))
 import Flight.Track.Point (CompPointing(..), Breakdown(..))
 import "flight-gap-math" Flight.Score (TaskPoints(..))
 import Flight.Comp (Pilot(..))
@@ -22,11 +23,11 @@ getFt () = do
 
 getFs :: MonadReader (Config k) m => () -> m (Maybe [[(Pilot, TaskPoints)]])
 getFs () = do
-    fmap (\Alt.AltPointing{score} -> (fmap . fmap . fmap) (\Alt.AltBreakdown{total} -> total) score) <$> asks altFsScore
+    fmap (\Alt.AlternativePointing{score} -> (fmap . fmap . fmap) (\Alt.AltBreakdown{total} -> total) score) <$> asks altFsScore
 
 getAs :: MonadReader (Config k) m => () -> m (Maybe [[(Pilot, TaskPoints)]])
 getAs () = do
-    fmap (\Alt.AltPointing{score} -> (fmap . fmap . fmap) (\Alt.AltBreakdown{total} -> total) score) <$> asks altAsScore
+    fmap (\Alt.AlternativePointing{score} -> (fmap . fmap . fmap) (\Alt.AirScoreBreakdown{total} -> total) score) <$> asks altAsScore
 
 getTaskPointsDiffStats :: DiffWay -> AppT k IO [Maybe (Double, Double)]
 

@@ -1,5 +1,6 @@
 module Flight.GapPoint
     ( readAltScore, writeAltScore
+    , readAsScore
     , readTaskGapPoint, writeTaskGapPoint
     , readCompGapPoint, writeCompGapPoint
     ) where
@@ -15,7 +16,7 @@ import qualified Data.Yaml.Pretty as Y
 import Control.Concurrent.ParallelIO (parallel, parallel_)
 
 import Flight.Track.Point
-    ( AltPointing(..), TaskPointing(..), CompPointing(..)
+    ( AltPointing, AirScorePointing, TaskPointing(..), CompPointing(..)
     , mkCompGapPoint, unMkCompGapPoint
     )
 import Flight.Field (FieldOrdering(..))
@@ -26,6 +27,10 @@ import Flight.Comp
 
 readAltScore :: (MonadThrow m, MonadIO m) => AltScoreFile -> m AltPointing
 readAltScore (AltScoreFile path) = liftIO $ BS.readFile path >>= decodeThrow
+
+-- NOTE: AirScore files are only read.
+readAsScore :: (MonadThrow m, MonadIO m) => AltScoreFile -> m AirScorePointing
+readAsScore (AltScoreFile path) = liftIO $ BS.readFile path >>= decodeThrow
 
 writeAltScore :: AltScoreFile -> AltPointing -> IO ()
 writeAltScore (AltScoreFile path) altPointing = do

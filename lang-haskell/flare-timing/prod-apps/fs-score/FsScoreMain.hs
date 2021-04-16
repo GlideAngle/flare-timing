@@ -19,8 +19,9 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Fsdb (parseComp, parseNominal, parseTweak, parseAltScores)
 import Flight.Track.Speed (TrackSpeed)
+import Flight.Track.Place (rankByAltTotal, sortAltScores)
 import qualified Flight.Track.Speed as Time (TrackSpeed(..))
-import Flight.Track.Point (AltPointing(..), AltBreakdown(..))
+import Flight.Track.Point (AlternativePointing(..), AltPointing, AltBreakdown(..))
 import Flight.Comp
     ( AltDot(AltFs)
     , FindDirFile(..)
@@ -131,7 +132,7 @@ normScores fsdbXml = do
     n <- fsdbNominal fsdbXml
     Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     Tweak{timePowerExponent = tpe} <- fsdbTweak hgOrPg fsdbXml
-    np@AltPointing{score = xss} <- fsdbScores n fsdbXml
+    np@AlternativePointing{score = xss} <- fsdbScores n fsdbXml
 
     -- V for velocity.
     let vss :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
@@ -241,7 +242,12 @@ normScores fsdbXml = do
             | xs <- ess
             ]
 
-    return np{bestTime = (fmap . fmap) fst vss, score = dss}
+    let rankss =
+            [ rankByAltTotal $ sortAltScores xs
+            | xs <- dss
+            ]
+
+    return np{bestTime = (fmap . fmap) fst vss, score = rankss}
 
 arrivals :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, ArrivalFraction)]
 arrivals xs =

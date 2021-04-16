@@ -19,7 +19,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import qualified Data.Map.Merge.Strict as Map
-import Data.List (sortBy, partition)
+import Data.List (partition)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_, join)
@@ -80,7 +80,7 @@ import Flight.Track.Mask
     , CompMaskingSpeed(..)
     )
 import Flight.Track.Land (CompLanding(..))
-import Flight.Track.Place (rankByTotal)
+import Flight.Track.Place (rankByTotal, sortScores)
 import Flight.Track.Point
     (Velocity(..), Breakdown(..), CompPointing(..), Allocation(..), EssNotGoal(..))
 import qualified Flight.Track.Land as Cmp (CompLanding(..))
@@ -952,12 +952,6 @@ points'
             | xs <- scoreDf
             | ys <- scoreDfNoTrack
             ]
-
-sortScores :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
-sortScores =
-    sortBy
-        (\(_, Breakdown{total = a}) (_, Breakdown{total = b}) ->
-            b `compare` a)
 
 zeroPoints :: Gap.Points
 zeroPoints =

@@ -225,7 +225,7 @@ pointRow
     -> Dynamic t PilotId
     -> m ()
 pointRow w dfNt taskPoints pilots sFt sAltFs sAltAs pid = do
-    let ftScore tp Breakdown{ place = nth, total = total'} =
+    let ftScore tp Breakdown{place = nth, total = total'} =
             (showRank nth, showTaskPointsRounded tp total')
 
     let yAlt pid' sAltFs' Breakdown{total = pFt} =
@@ -233,7 +233,7 @@ pointRow w dfNt taskPoints pilots sFt sAltFs sAltAs pid = do
                 Nothing -> ("", "", "")
                 Just
                     Alt.AltBreakdown
-                        { place = nth
+                        { placeTaken = nth
                         , total = pFs@(TaskPoints pts)
                         } -> (showRank nth, showRounded pts, showTaskPointsDiff pFs pFt)
 

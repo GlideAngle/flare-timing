@@ -317,7 +317,7 @@ pointRow w cTime cArrival _utcOffset _free dfNt pt tp sAltFs x = do
                     Nothing -> ("", "", "", "", "", "", "", "", "", "", "")
                     Just
                         Alt.AltBreakdown
-                            { place = nth
+                            { placeTaken = nth
                             , total = p@(TaskPoints pts)
                             , breakdown =
                                 Points

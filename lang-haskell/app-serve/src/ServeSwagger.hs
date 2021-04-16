@@ -466,6 +466,47 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, Breakdown) where
                       }
                 )
 
+instance {-# OVERLAPPING #-} ToSchema (Pilot, AirScoreBreakdown) where
+    declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
+        & example ?~
+            toJSON
+               ( Pilot (PilotId "5", PilotName "Jonny Durand")
+               ,
+                   AirScoreBreakdown
+                       { place = TaskPlacing 1
+                       , total = TaskPoints 1000
+                       , breakdown =
+                           Points
+                               { time = TimePoints 493.7
+                               , reach = LinearPoints 217.88
+                               , distance = DistancePoints 435.8
+                               , leading = LeadingPoints 0
+                               , effort = DifficultyPoints 217.88
+                               , arrival = ArrivalPoints 70.5
+                               }
+                        , fractions =
+                            Fractions
+                                { time = SpeedFraction 1
+                                , reach = LinearFraction 1
+                                , distance = DistanceFraction 1
+                                , leading = LeadingFraction 0
+                                , effort = DifficultyFraction 1
+                                , arrival = ArrivalFraction 1
+                                }
+                      , reach =
+                          ReachToggle
+                              { extra = Just . TaskDistance $ convert [u| 99.531000 km |]
+                              , flown = Just . TaskDistance $ convert [u| 99.531000 km |]
+                              }
+                      , landedMade = Just $ TaskDistance $ convert [u| 99.530000 km |]
+                      , ss = Just $ read "2017-04-09 03:40:00 UTC"
+                      , es = Just $ read "2017-04-09 06:08:09 UTC"
+                      , timeElapsed = Just $ PilotTime [u| 2.469167 h |]
+                      , leadingArea = Just $ LeadingArea [u| 0 km^2 s |]
+                      , leadingCoef = LeadingCoef 0
+                      }
+                )
+
 instance {-# OVERLAPPING #-} ToSchema (Pilot, AltBreakdown) where
     declareNamedSchema _ = pure . NamedSchema Nothing $ mempty
         & example ?~
@@ -473,7 +514,8 @@ instance {-# OVERLAPPING #-} ToSchema (Pilot, AltBreakdown) where
                ( Pilot (PilotId "5", PilotName "Jonny Durand")
                ,
                    AltBreakdown
-                       { place = TaskPlacing 1
+                       { placeGiven = TaskPlacing 1
+                       , placeTaken = TaskPlacing 1
                        , total = TaskPoints 1000
                        , breakdown =
                            Points

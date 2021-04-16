@@ -20,7 +20,7 @@ import Flight.Track.Mask
     , CompMaskingReach(..)
     , CompMaskingSpeed(..)
     )
-import qualified Flight.Track.Point as Alt (AltPointing(..))
+import qualified Flight.Track.Point as Alt (AltPointing, AirScorePointing)
 import Flight.Track.Point (CompPointing(..))
 import "flight-gap-lead" Flight.Score (LeadingArea2Units)
 import Flight.Comp (CompTaskSettings(..), CompInputFile(..), TaskInputFile(..))
@@ -48,7 +48,7 @@ data Config k
         , altFsLandout :: Maybe CompLanding
         , altFsRoute :: Maybe [GeoLines]
         , altFsScore :: Maybe Alt.AltPointing
-        , altAsScore :: Maybe Alt.AltPointing
+        , altAsScore :: Maybe Alt.AirScorePointing
         }
 
 nullConfig :: (CompInputFile, [TaskInputFile]) -> CompTaskSettings k -> Config k

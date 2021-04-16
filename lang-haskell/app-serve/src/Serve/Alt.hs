@@ -15,8 +15,9 @@ import Control.Monad.Reader (asks)
 import Flight.Units ()
 import Flight.Track.Land (TaskLanding(..), taskLanding)
 import Flight.Track.Arrival (TrackArrival(..))
+import Flight.Track.Place (rankByAirScoreTotal)
 import qualified Flight.Track.Mask as Mask (CompMaskingArrival(..))
-import qualified Flight.Track.Point as Alt (AltPointing(..), AltBreakdown(..))
+import qualified Flight.Track.Point as Alt (AlternativePointing(..), AltBreakdown(..))
 import qualified "flight-gap-valid" Flight.Score as Vw (ValidityWorking(..))
 import Flight.Comp (AltDot(AltFs, AltAs), IxTask(..), Pilot(..))
 import Flight.Route (TrackLine(..), GeoLines(..))
@@ -50,20 +51,27 @@ getAltTaskValidityWorking ii = do
         _ -> throwError $ errTaskStep "gap-point" ii
 
 getAltTaskScore :: AltDot -> Int -> AppT k IO [(Pilot, Alt.AltBreakdown)]
-getAltTaskScore altDot ii = do
-    let (altScore, altSegment) =
-            case altDot of
-                AltFs -> (altFsScore, "fs-score")
-                AltAs -> (altAsScore, "as-score")
 
-    xs' <- fmap Alt.score <$> asks altScore
+getAltTaskScore AltFs ii = do
+    xs' <- fmap Alt.score <$> asks altFsScore
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
                 x : _ -> return x
                 _ -> throwError $ errTaskBounds ii
 
-        _ -> throwError $ errTaskStep altSegment ii
+        _ -> throwError $ errTaskStep "fs-score" ii
+
+getAltTaskScore AltAs ii = do
+    xs' <- fmap Alt.score <$> asks altAsScore
+    let asSorted = (fmap . fmap) rankByAirScoreTotal xs'
+    case asSorted of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "as-score" ii
 
 getAltTaskRouteSphere :: Int -> AppT k IO (Maybe TrackLine)
 getAltTaskRouteSphere ii = do

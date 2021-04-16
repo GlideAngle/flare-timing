@@ -6,6 +6,7 @@ of this changelog.
 ## v0.31
 
 * Added sorting by rank to score tables.
+* Show equal placings for airScore and Flight System rankings.
 
 # Moved Working Files
 ## v0.30

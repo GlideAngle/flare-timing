@@ -9,15 +9,22 @@ Task placing.
 -}
 module Flight.Track.Place
     ( rankByTotal
+    , rankByAltTotal
+    , rankByAirScoreTotal
     , rankByArrival
     , reIndex
+    , sortScores
+    , sortAltScores
     ) where
 
 import Data.Function (on)
-import Data.List (groupBy, sort)
+import Data.List (groupBy, sort, sortBy)
 import Data.Time.Clock (UTCTime)
 
-import Flight.Track.Point (Breakdown(..))
+import Flight.Track.Point
+    (Breakdown(..), AltBreakdown(placeTaken), airScoreToAltBreakdown)
+import qualified Flight.Track.Point as Alt (AltBreakdown(..))
+import qualified Flight.Track.Point as As (AirScoreBreakdown(..))
 import "flight-gap-allot" Flight.Score (Pilot(..), TaskPlacing(..), ArrivalPlacing(..))
 import "flight-gap-math" Flight.Score (TaskPoints(..))
 import Data.Ratio.Rounding (dpRound)
@@ -70,11 +77,31 @@ rankByTotal xs =
     , y <- ys
     ]
 
+rankByAltTotal :: [(Pilot, AltBreakdown)] -> [(Pilot, AltBreakdown)]
+rankByAltTotal xs =
+    [ (rankAltScore f ii) <$> y
+    | (ii, ys) <-
+                reIndex
+                . zip [1..]
+                . groupBy ((==) `on` truncateTaskPoints . Alt.total . snd)
+                $ xs
+    , let f = if length ys == 1 then TaskPlacing else TaskPlacingEqual
+    , y <- ys
+    ]
+
+rankByAirScoreTotal :: [(Pilot, As.AirScoreBreakdown)] -> [(Pilot, Alt.AltBreakdown)]
+rankByAirScoreTotal xs' =
+    let xs = (fmap . fmap) airScoreToAltBreakdown xs' in rankByAltTotal xs
+
+-- TODO: GAP 2020 now has 1 decimal place in points. Use that when ranking.
 truncateTaskPoints :: TaskPoints -> Integer
 truncateTaskPoints (TaskPoints x) = truncate . dpRound 0 $ x
 
 rankScore :: (Integer -> TaskPlacing) -> Integer -> Breakdown -> Breakdown
 rankScore f ii b = b{place = f ii}
+
+rankAltScore :: (Integer -> TaskPlacing) -> Integer -> AltBreakdown -> AltBreakdown
+rankAltScore f ii b = b{placeTaken = f ii}
 
 rankByArrival :: [UTCTime] -> [(UTCTime, ArrivalPlacing)]
 rankByArrival ts =
@@ -91,3 +118,13 @@ rankByArrival ts =
                  else flip ArrivalPlacingEqual $ fromIntegral n
     , y <- ys
     ]
+
+sortScores :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
+sortScores =
+    sortBy (\(_, Breakdown{total = a}) (_, Breakdown{total = b}) ->
+        b `compare` a)
+
+sortAltScores :: [(Pilot, AltBreakdown)] -> [(Pilot, AltBreakdown)]
+sortAltScores =
+    sortBy (\(_, Alt.AltBreakdown{total = a}) (_, Alt.AltBreakdown{total = b}) ->
+        b `compare` a)

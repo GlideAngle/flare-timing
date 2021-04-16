@@ -194,7 +194,7 @@ pointRow w dfNt tp sEx pManual x = do
                     Nothing -> ("", "", "")
                     Just
                         Alt.AltBreakdown
-                            { place = nth
+                            { placeTaken = nth
                             , total = p@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))
 

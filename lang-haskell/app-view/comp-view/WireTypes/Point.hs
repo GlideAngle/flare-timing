@@ -465,7 +465,8 @@ data ReachToggle a =
 
 data AltBreakdown =
     AltBreakdown
-        { place :: TaskPlacing
+        { placeGiven :: TaskPlacing
+        , placeTaken :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points
         , fractions :: Fractions

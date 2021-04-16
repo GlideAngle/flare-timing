@@ -33,7 +33,7 @@ import Control.Lens hiding (ix)
 import Control.Monad.Reader (asks, runReaderT)
 
 import Flight.Units ()
-import qualified Flight.Track.Point as Alt (AltPointing(..))
+import qualified Flight.Track.Point as Alt (AlternativePointing(..))
 import Flight.Track.Point (CompPointing(..))
 import Flight.Comp (AltDot(AltFs, AltAs), CompTaskSettings(..))
 import ServeSwagger (SwagUiApi)

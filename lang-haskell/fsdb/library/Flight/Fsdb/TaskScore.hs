@@ -47,7 +47,7 @@ import Text.XML.HXT.Core
 
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Track.Distance (AwardedDistance(..))
-import Flight.Track.Point (AltPointing(..), AltBreakdown(..))
+import Flight.Track.Point (AlternativePointing(..), AltPointing, AltBreakdown(..))
 import qualified Flight.Track.Point as Alt (AltBreakdown(..))
 import Flight.Comp (PilotId(..), Pilot(..), Nominal(..), DfNoTrackPilot(..))
 import qualified "flight-gap-allot" Flight.Score as Frac (Fractions(..))
@@ -131,8 +131,12 @@ xpRankScore =
         )
     $ xpWrap
         ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, dL, ss, es, ssE) ->
+            let place = TaskPlacing $ fromIntegral r in
+
             AltBreakdown
-                { place = TaskPlacing $ fromIntegral r
+                { placeGiven = place
+                -- NOTE: We'll adjust place taken later.
+                , placeTaken = place
                 , total = TaskPoints p
                 , breakdown =
                     Points
@@ -178,7 +182,7 @@ xpRankScore =
                 , leadingCoef = LeadingCoef zero
                 }
         , \AltBreakdown
-                { place = TaskPlacing r
+                { placeGiven = TaskPlacing r
                 , total = TaskPoints p
                 , breakdown =
                     Points
@@ -752,7 +756,7 @@ parseAltScores
 
     return $
         (\(vs, lw, tw, dw, sw) ->
-            AltPointing
+            AlternativePointing
                 { bestTime = tss
                 , validityWorkingLaunch = lw
                 , validityWorkingTime = tw
