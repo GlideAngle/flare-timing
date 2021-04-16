@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/changelog.md)
 of this changelog.
 
+# Sorting Tables
+## v0.31
+
+* Added sorting by rank to score tables.
+
 # Moved Working Files
 ## v0.30
 
