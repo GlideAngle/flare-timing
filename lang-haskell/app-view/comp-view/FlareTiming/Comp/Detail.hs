@@ -24,7 +24,7 @@ compDetail
     -> Dynamic t [Task]
     -> m (Event t IxTask)
 compDetail ls cs ns diffFtFs diffFtAs diffAsFs ts = do
-    compHeader cs ns
+    compHeader cs
     _ <- simpleList cs crumbComp
     tab <- tabsComp
     let tasksHold = taskList ls diffFtFs diffFtAs diffAsFs ts
@@ -32,7 +32,7 @@ compDetail ls cs ns diffFtFs diffFtAs diffAsFs ts = do
     e <- widgetHold tasksHold $
             (\case
                 CompTabSettings -> do
-                    _ <- simpleList cs tableComp
+                    _ <- simpleList cs (tableComp ns)
                     return never
 
                 CompTabTask -> tasksHold
