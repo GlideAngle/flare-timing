@@ -19,11 +19,11 @@ tableComp
     -> m ()
 tableComp ns c = do
     let n = listToMaybe <$> ns
-    _ <- elClass "table" "table is-bordered" $ do
+    _ <- elClass "table" "table is-bordered is-striped" $ do
             el "thead" $
                 el "tr" $ do
-                    elAttr "th" ("colspan" =: "3") $ text ""
-                    el "th" $ text "Value"
+                    elAttr "th" ("colspan" =: "3" <> "class" =: "is-primary") $ text "Setting"
+                    elClass "th" "is-info" $ text "Value"
 
             _ <- el "tbody" . dyn $ ffor2 n c compRows
             el "tfoot" $
@@ -74,19 +74,19 @@ giveRows Comp{..} = do
     _ <- case give of
         Just Give{giveFraction = gf, giveDistance = Nothing} -> do
             el "tr" $ do
-                el "th" $ text "* Give"
-                elAttr "td" ("colspan" =: "2")
-                    $ text "give fraction only, no give distance"
+                el "th" $ text "Give *"
+                elAttr "th" ("colspan" =: "2")
+                    $ text "Fraction (no give distance)"
                 el "td" . text . T.pack . printf "%.5f" $ gf
 
         Just Give{giveFraction = gf, giveDistance = Just (Radius gd)} -> do
             el "tr" $ do
-                elAttr "th" ("rowspan" =: "2" <> "colspan" =: "2") $ text "* Give"
-                el "td" $ text "Fraction"
+                elAttr "th" ("rowspan" =: "2" <> "colspan" =: "2") $ text "Give *"
+                el "th" $ text "Fraction"
                 el "td" . text . T.pack . printf "%.5f" $ gf
 
             el "tr" $ do
-                el "td" $ text "Distance"
+                el "th" $ text "Distance"
                 el "td" . text . T.pack . printf "%.3f m" $ gd
 
         Nothing ->
@@ -107,43 +107,30 @@ nominal n u sb = do
         Nothing -> text "Loading nominals ..."
         Just Nominal{..} -> do
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text "UTC Offset"
-                el "td" $ do
-                    elClass "span" "tag is-warning" $ do
-                        text $ showUtcOffset u
+                elAttr "th" ("colspan" =: "3") $ text "UTC offset"
+                el "td" . text $ showUtcOffset u
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text "Minimum Distance"
-                el "td" $ do
-                    elClass "span" "tag is-black" $ do
-                        text . showMinimumDistance $ free
+                elAttr "th" ("colspan" =: "3") $ text "Minimum distance"
+                el "td" . text $ showMinimumDistance free
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text "Nominal Distance"
-                el "td" $ do
-                    elClass "span" "tag is-info" $ do
-                        text $ T.pack distance
+                elAttr "th" ("colspan" =: "3") $ text "Nominal distance"
+                el "td" . text $ T.pack distance
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text "Nominal Time"
-                el "td" $ do
-                    elClass "span" "tag is-success" $ do
-                        text . T.pack . show $ time
+                elAttr "th" ("colspan" =: "3") $ text "Nominal time"
+                el "td" . text . T.pack $ show time
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "3") $ text "Nominal Goal"
-                el "td" $ do
-                    elClass "span" "tag is-primary" $ do
-                        text . T.pack . show $ goal
+                elAttr "th" ("colspan" =: "3") $ text "Nominal goal"
+                el "td" . text . T.pack $ show goal
 
             case sb of
                 Nothing -> return ()
-                Just sb' ->
-                    el "tr" $ do
-                        elAttr "th" ("colspan" =: "3") $ text "Score Back Time"
-                        el "td" $ do
-                            elClass "span" "tag is-danger" $ do
-                                text . T.pack . showScoreBackTime $ sb'
+                Just sb' -> el "tr" $ do
+                    elAttr "th" ("colspan" =: "3") $ text "Score back time"
+                    el "td" . text . T.pack $ showScoreBackTime sb'
 
     return ()
 

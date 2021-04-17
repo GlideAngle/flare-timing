@@ -8,6 +8,7 @@ of this changelog.
 * Added sorting by rank to score tables.
 * Show equal placings for airScore and Flight System rankings.
 * Corrected mislabelled column headers in the 2-way comparison tables.
+* Move the display settings to the settings tab and table.
 
 # Moved Working Files
 ## v0.30
