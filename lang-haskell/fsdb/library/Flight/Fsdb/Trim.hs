@@ -28,7 +28,9 @@ import Text.XML.HXT.Core
 
 import Flight.Comp (FsdbXml(..))
 import Flight.Fsdb.Internal.Xml
-    (fsCompetitionNotes, fsCompetitionResults, fsCustomAttributes, fsParticipant)
+    ( fsCompetitionResults, fsTaskResults
+    , fsCompetitionNotes, fsCustomAttributes, fsParticipant
+    )
 
 -- | Trims the XML of the *.fsdb leaving only inputs to scoring by flare-timing
 -- or outputs from the scoring made by FS that flare-timing can compare with.
@@ -51,6 +53,7 @@ trimComp (FsdbXml contents) = do
                 , fsCompetition
                 , fsCompetitionNotes
                 , fsCompetitionResults
+                , fsTaskResults
                 , fsScoreFormula
                 , fsParticipant
                 , fsCustomAttributes

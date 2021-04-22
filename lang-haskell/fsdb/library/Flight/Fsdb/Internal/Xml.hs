@@ -1,6 +1,7 @@
 module Flight.Fsdb.Internal.Xml
-    ( fsCompetitionNotes
-    , fsCompetitionResults
+    ( fsCompetitionResults
+    , fsTaskResults
+    , fsCompetitionNotes
     , fsCustomAttributes
     , fsParticipant
     ) where
@@ -23,6 +24,11 @@ fsCompetitionResults :: ArrowXml a => a XmlTree XmlTree
 fsCompetitionResults =
     processTopDown
         $ none `when` (isElem >>> hasName "FsCompetitionResults")
+
+fsTaskResults :: ArrowXml a => a XmlTree XmlTree
+fsTaskResults =
+    processTopDown
+        $ none `when` (isElem >>> hasName "FsTaskResults")
 
 fsCompetitionNotes :: ArrowXml a => a XmlTree XmlTree
 fsCompetitionNotes =
