@@ -286,16 +286,15 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             yss' :: [[Crossing]]
             yss' = (fmap . fmap) unOrdCrossing yss
 
-            selected =
-                SelectedCrossings
-                [
-                    let prover = proveCrossing timecheck mark0 fixes
-                    in selectZoneCross prover selector ys
+            selected = SelectedCrossings $
+                zipWith3
+                    (\timecheck selector ys ->
+                        let prover = proveCrossing timecheck mark0 fixes
+                        in selectZoneCross prover selector ys)
 
-                | timecheck <- timechecks
-                | selector <- selectors
-                | ys <- yss'
-                ]
+                    timechecks
+                    selectors
+                    yss'
 
             fs =
                 (\x ->
