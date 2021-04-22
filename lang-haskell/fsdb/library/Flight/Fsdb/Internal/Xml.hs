@@ -1,5 +1,6 @@
 module Flight.Fsdb.Internal.Xml
     ( fsCompetitionNotes
+    , fsCompetitionResults
     , fsCustomAttributes
     , fsParticipant
     ) where
@@ -17,6 +18,11 @@ import Text.XML.HXT.Core
     , when
     , filterA
     )
+
+fsCompetitionResults :: ArrowXml a => a XmlTree XmlTree
+fsCompetitionResults =
+    processTopDown
+        $ none `when` (isElem >>> hasName "FsCompetitionResults")
 
 fsCompetitionNotes :: ArrowXml a => a XmlTree XmlTree
 fsCompetitionNotes =
