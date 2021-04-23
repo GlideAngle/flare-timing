@@ -5,7 +5,7 @@ module Flight.Mask.Tag.Double where
 import Prelude hiding (span)
 import Data.Coerce (coerce)
 import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
-import Data.List ((\\), filter, inits)
+import Data.List ((\\), filter, inits, foldl')
 import Control.Arrow (first)
 import Control.Monad (join)
 
@@ -51,8 +51,7 @@ import Flight.Mask.Internal.Cross
     )
 import Flight.Mask.Interpolate (GeoTagInterpolate(..))
 import Flight.Mask.Tag (FnTask, selectZoneCross)
-import Flight.Mask.Tag.Prove (prove, proveCrossing)
-import Flight.Mask.Tag.OrdLists (trimOrdLists)
+import Flight.Mask.Tag.Prove (keepCrossing, prove, proveCrossing)
 import Flight.Mask.Tag.Motion (flyingSection, secondsRange, timeRange)
 
 import Flight.ShortestPath.Double ()
@@ -288,7 +287,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                         Nothing
 
             yss :: [[OrdCrossing]]
-            yss = trimOrdLists ((fmap . fmap) OrdCrossing xss'')
+            yss = ((fmap . fmap) OrdCrossing xss'')
 
             yss' :: [[Crossing]]
             yss' = (fmap . fmap) unOrdCrossing yss
@@ -298,11 +297,30 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 let tsys :: [(TimePass, [Crossing] -> Maybe Crossing, [Crossing])]
                     tsys = zip3 timechecks selectors yss'
 
-                    pickTag (timecheck, selector, ys) =
+                    pickTag
+                        :: TimePass
+                        -> ([Crossing] -> Maybe Crossing)
+                        -> [Crossing]
+                        -> Maybe ZoneCross
+                    pickTag timecheck selector ys =
                         let prover = proveCrossing timecheck mark0 fixes
-                        in selectZoneCross prover selector ys
+                            ys' = filter (keepCrossing timecheck mark0 fixes) ys
+                        in
+                            selectZoneCross prover selector ys'
 
-                in fmap pickTag tsys
+                    pickTags
+                        :: [Maybe ZoneCross]
+                        -> (TimePass, [Crossing] -> Maybe Crossing, [Crossing])
+                        -> [Maybe ZoneCross]
+                    pickTags acc (timePass, selector, ys) =
+                        case acc of
+                            [] -> pickTag timePass selector ys : acc
+                            Nothing : _ -> Nothing : acc
+                            Just ZoneCross{crossingPair = [_, Fix{time = tM}]} : _ ->
+                                pickTag (\t -> t > tM && timePass t) selector ys : acc
+                            Just _ : _ -> fail "Crossing pairs should be pairs"
+
+                in reverse $ foldl' pickTags [] tsys
 
             fs =
                 (\x ->

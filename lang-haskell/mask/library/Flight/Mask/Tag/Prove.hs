@@ -1,6 +1,7 @@
-module Flight.Mask.Tag.Prove (prove, proveCrossing) where
+module Flight.Mask.Tag.Prove (keepCrossing, prove, proveCrossing) where
 
 import Prelude hiding (span)
+import Data.Maybe (fromMaybe)
 import Data.Time.Clock (UTCTime)
 import Control.Lens ((^?), element)
 
@@ -17,6 +18,24 @@ import Flight.Mask.Internal.Zone
     , Crossing
     , fixFromFix
     )
+
+keepCrossing :: TimePass -> UTCTime -> [Kml.Fix] -> Crossing -> Bool
+
+keepCrossing pass mark0 fixes (Left (ZoneEntry i@(ZoneIdx i') j@(ZoneIdx j'))) =
+    fromMaybe False $ do
+        fixM <- fixes ^? element i'
+        fixN <- fixes ^? element j'
+        let f = fixFromFix mark0
+        let [Fix{time = ti}, Fix{time = tj}] = [f i fixM, f j fixN]
+        return $ pass ti || pass tj
+
+keepCrossing pass mark0 fixes (Right (ZoneExit i@(ZoneIdx i') j@(ZoneIdx j'))) =
+    fromMaybe False $ do
+        fixM <- fixes ^? element i'
+        fixN <- fixes ^? element j'
+        let f = fixFromFix mark0
+        let [Fix{time = ti}, Fix{time = tj}] = [f i fixM, f j fixN]
+        return $ pass ti || pass tj
 
 -- | Prove from the fixes and mark that the crossing exits. We don't know the
 -- interpolated crossing point and time yet so we'll accept a crossing where
