@@ -148,7 +148,14 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         task@Task{zones, speedSection, startGates}
         MarkedFixes{mark0, fixes}
         indices =
-        (selected, nominees, SelectedStart selectedStart, NomineeStarts dedupStarts, excluded)
+
+        ( SelectedCrossings selected
+        , nominees
+        , SelectedStart selectedStart
+        , NomineeStarts dedupStarts
+        , excluded
+        )
+
         where
             sepZs = separatedZones @Double @Double e
 
@@ -286,15 +293,16 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
             yss' :: [[Crossing]]
             yss' = (fmap . fmap) unOrdCrossing yss
 
-            selected = SelectedCrossings $
-                zipWith3
-                    (\timecheck selector ys ->
-                        let prover = proveCrossing timecheck mark0 fixes
-                        in selectZoneCross prover selector ys)
+            selected :: [Maybe ZoneCross]
+            selected =
+                let tsys :: [(TimePass, [Crossing] -> Maybe Crossing, [Crossing])]
+                    tsys = zip3 timechecks selectors yss'
 
-                    timechecks
-                    selectors
-                    yss'
+                    pickTag (timecheck, selector, ys) =
+                        let prover = proveCrossing timecheck mark0 fixes
+                        in selectZoneCross prover selector ys
+
+                in fmap pickTag tsys
 
             fs =
                 (\x ->
