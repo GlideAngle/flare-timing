@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1b2feb1f0336769d819ad44bbcba12061183ada840160f960781a9c57e02f697
+-- hash: ec6098f58c34c0ebef4dcdee1c35f314d713325a9f3e04933de3aef8a2b381c5
 
 name:           flight-mask
 version:        0.1.0
@@ -58,7 +58,6 @@ library
       Flight.Mask.Interpolate.Double
       Flight.Mask.Tag.Double
       Flight.Mask.Tag.Motion
-      Flight.Mask.Tag.OrdLists
       Flight.Mask.Tag.Prove
       Flight.Mask.Time
       Flight.Mask.Time.Double
@@ -128,7 +127,6 @@ test-suite doctest
       Flight.Mask.Tag
       Flight.Mask.Tag.Double
       Flight.Mask.Tag.Motion
-      Flight.Mask.Tag.OrdLists
       Flight.Mask.Tag.Prove
       Flight.Mask.Time
       Flight.Mask.Time.Double
