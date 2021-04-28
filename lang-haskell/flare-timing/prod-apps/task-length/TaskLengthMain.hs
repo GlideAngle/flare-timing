@@ -87,7 +87,7 @@ go CmdOptions{earthMath, measure, noTaskWaypoints} compFile@(CompInputFile compP
 
             -- TODO: Find out if the give that enlarges zones is allowed to shorten
             -- the task length.
-            let zss = unlineZones az . unkindZones Nothing. zones <$> tasks
+            let zss = unlineZones az . unkindZones (const id) Nothing . zones <$> tasks
 
             -- TODO: Get rid of task selection in @taskTracks@.
             -- let includeTask = if null task then const True else flip elem task

@@ -11,6 +11,7 @@ import Control.Monad (join)
 
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
+import Flight.Zone.MkZones (Zones)
 import Flight.Zone.SpeedSection (sliceZones, restartZones)
 import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Zone.Raw (Give)
@@ -163,6 +164,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                     [z0, z1] -> clearlySeparatedZones (arcLength @Double @Double e) z0 z1
                     _ -> sepZs zs
 
+            fromZs :: Zones -> [TaskZone Double]
             fromZs = fromZones @Double @Double e give
 
             keptFixes :: [Kml.Fix]

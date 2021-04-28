@@ -9,6 +9,7 @@ module Flight.Zone.MkZones
     , Zones(..)
     , mkZones
     , unkindZones
+    , inflate, deflate
     ) where
 
 import GHC.Generics (Generic)
@@ -16,7 +17,7 @@ import Data.Aeson
     ( ToJSON(..), FromJSON(..), Options(..)
     , defaultOptions, genericToJSON, genericParseJSON
     )
-import Data.UnitsOfMeasure ((*:), (+:), u, convert, fromRational')
+import Data.UnitsOfMeasure ((*:), (+:), (-:), u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
@@ -271,34 +272,54 @@ mkZones discipline goalLine decel _ speed@(Just _) alts zs =
         es = replicate esLen tk
         g = raceZoneKinds ps ts ek es gk
 
-unkindZones :: Maybe Give -> Zones -> [Z.Zone Double]
-unkindZones give Zones{raceKind = Just (TzEssIsGoal ps ts g)} =
-    (unkind give <$> (ps ++ ts)) ++ [unkind give g]
-unkindZones give Zones{raceKind = Just (TzEssIsNotGoal ps rs e es g)} =
-    (unkind give <$> (ps ++ rs)) ++ [unkind give e] ++ (unkind give <$> es) ++ [unkind give g]
-unkindZones give Zones{openKind = Just (TzOpenDistance ps ts o)} =
-    (unkind give <$> (ps ++ ts)) ++ [unkind give o]
-unkindZones _ Zones{raw} = Z.toCylinder <$> raw
+type ResizeRadius
+    = Maybe Give
+    -> Radius (Quantity Double [u| m |])
+    -> Radius (Quantity Double [u| m |])
 
-unkind :: Maybe Give -> ZoneKind g Double -> Z.Zone Double
-unkind _ (Point x) = Z.Point x
-unkind _ (Vector _ _ x) = Z.Point x
-unkind g (Star r x) = Z.Cylinder (enlarge g r) x
-unkind g (Cylinder r x) = Z.Cylinder (enlarge g r) x
-unkind g (CutCone _ r x _) = Z.Cylinder (enlarge g r) x
-unkind g (CutSemiCone _ r x _) = Z.Cylinder (enlarge g r) x
-unkind g (CutCylinder _ r x _) = Z.Cylinder (enlarge g r) x
-unkind g (CutSemiCylinder _ r x _) = Z.Cylinder (enlarge g r) x
-unkind g (Line r x) = Z.Line Nothing (enlarge g r) x
-unkind g (Circle r x) = Z.Cylinder (enlarge g r) x
-unkind g (SemiCircle r x) = Z.Cylinder (enlarge g r) x
+unkindZones :: ResizeRadius -> Maybe Give -> Zones -> [Z.Zone Double]
+unkindZones resize give Zones{raceKind = Just (TzEssIsGoal ps ts g)} =
+    (unkind resize give <$> (ps ++ ts))
+    ++ [unkind resize give g]
+unkindZones resize give Zones{raceKind = Just (TzEssIsNotGoal ps rs e es g)} =
+    (unkind resize give <$> (ps ++ rs))
+    ++ [unkind resize give e]
+    ++ (unkind resize give <$> es)
+    ++ [unkind resize give g]
+unkindZones resize give Zones{openKind = Just (TzOpenDistance ps ts o)} =
+    (unkind resize give <$> (ps ++ ts))
+    ++ [unkind resize give o]
+unkindZones _ _ Zones{raw} = Z.toCylinder <$> raw
 
-enlarge :: Maybe Give -> Radius _ -> Radius _
-enlarge Nothing r = r
-enlarge (Just Give{giveFraction = gf, giveDistance = Nothing}) (Radius r) =
+unkind :: ResizeRadius -> Maybe Give -> ZoneKind g Double -> Z.Zone Double
+unkind _ _ (Point x) = Z.Point x
+unkind _ _ (Vector _ _ x) = Z.Point x
+unkind resize g (Star r x) = Z.Cylinder (resize g r) x
+unkind resize g (Cylinder r x) = Z.Cylinder (resize g r) x
+unkind resize g (CutCone _ r x _) = Z.Cylinder (resize g r) x
+unkind resize g (CutSemiCone _ r x _) = Z.Cylinder (resize g r) x
+unkind resize g (CutCylinder _ r x _) = Z.Cylinder (resize g r) x
+unkind resize g (CutSemiCylinder _ r x _) = Z.Cylinder (resize g r) x
+unkind resize g (Line r x) = Z.Line Nothing (resize g r) x
+unkind resize g (Circle r x) = Z.Cylinder (resize g r) x
+unkind resize g (SemiCircle r x) = Z.Cylinder (resize g r) x
+
+inflate :: ResizeRadius
+inflate Nothing r = r
+inflate (Just Give{giveFraction = gf, giveDistance = Nothing}) (Radius r) =
     let fMax = ([u| 1.0 |] +: (MkQuantity gf)) *: r
     in Radius fMax
-enlarge (Just Give{giveFraction = gf, giveDistance = Just (Radius dg)}) (Radius r) =
+inflate (Just Give{giveFraction = gf, giveDistance = Just (Radius dg)}) (Radius r) =
     let fMax = ([u| 1.0 |] +: (MkQuantity gf)) *: r
         dMax = r +: dg
     in Radius $ max fMax dMax
+
+deflate :: ResizeRadius
+deflate Nothing r = r
+deflate (Just Give{giveFraction = gf, giveDistance = Nothing}) (Radius r) =
+    let fMax = ([u| 1.0 |] -: (MkQuantity gf)) *: r
+    in Radius fMax
+deflate (Just Give{giveFraction = gf, giveDistance = Just (Radius dg)}) (Radius r) =
+    let fMax = ([u| 1.0 |] -: (MkQuantity gf)) *: r
+        dMax = r -: dg
+    in Radius $ min fMax dMax
