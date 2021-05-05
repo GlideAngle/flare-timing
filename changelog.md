@@ -12,6 +12,7 @@ of this changelog.
 * Strip out `FsCompetitionResults` and `FsCompetitionResults` elements when
   trimming the `*.fsdb` down to `./.flare-timing/trim-fsdb.xml`.
 * Use adaptive time checks to sort crossings when detecting taggings.
+* Use the give when detecting zone crossings.
 
 # Moved Working Files
 ## v0.30
