@@ -53,10 +53,13 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
                 case (eeInner, eeOuter) of
                     (ZxNotSeparated, o) -> o
                     (i, ZxNotSeparated) -> i
+
                     (Z0, o) -> o
                     (i, Z0) -> i
+
                     (Z1, o) -> o
                     (i, Z1) -> i
+
                     (i@(Zs iPath), o@(Zs oPath)) -> if iPath < oPath then i else o
 
         in vertices <$> ee
