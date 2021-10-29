@@ -71,8 +71,8 @@ jobs:
     - name: flight-gap-lead
       run: cabal v2-test flight-gap-lead --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-math
-      run: cabal v2-test flight-gap-math --test-show-details=direct --test-option="--color=always"
+    # - name: flight-gap-math
+    #  run: cabal v2-test flight-gap-math --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-stop
       run: cabal v2-test flight-gap-stop --test-show-details=direct --test-option="--color=always"
