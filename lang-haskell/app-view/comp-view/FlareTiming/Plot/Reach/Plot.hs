@@ -29,14 +29,14 @@ foreign import javascript unsafe
     \  },{\
     \    points: $5\
     \  , fnType: 'points'\
-    \  , color: '#1e1e1e'\
-    \  , attr: { r: 3 }\
+    \  , color: '#e41a1ccc'\
+    \  , attr: { r: 3, fill: '#e41a1ccc' }\
     \  , graphType: 'scatter'\
     \  },{\
     \    points: $6\
     \  , fnType: 'points'\
-    \  , color: '#1e1e1e'\
-    \  , attr: { r: 3 }\
+    \  , color: '#808080'\
+    \  , attr: { r: 5, opacity: 0.5 }\
     \  , graphType: 'scatter'\
     \  },{\
     \    points: $7\

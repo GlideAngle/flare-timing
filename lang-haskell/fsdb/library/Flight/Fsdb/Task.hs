@@ -13,7 +13,7 @@ module Flight.Fsdb.Task
     ) where
 
 import Data.Refined (assumeProp, refined)
-import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.Time.Clock (UTCTime, addUTCTime, diffUTCTime)
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (sort, sortOn, nub)
 import Data.UnitsOfMeasure (u)
@@ -107,8 +107,8 @@ xpPointPenaltyAuto =
     $ xpWrap
         ( \case
             (0.0, s) -> (idSeq, s)
-            (pts, s) -> (addSeq pts, s)
-        , \(PenaltySeq{add}, s) -> (exAdd add, s)
+            (pts, s) -> (addSeq $ negate pts, s)
+        , \(PenaltySeq{add}, s) -> (exAdd $ negate add, s)
         )
     $ xpPair
         (xpAttr "penalty_points_auto" xpPrim)
@@ -126,15 +126,15 @@ xpPointPenalty =
         ( \case
             -- WARNING: Zero for the penalty fraction means don't apply
             -- a fraction. If this were a fraction we'd be multiplying by one.
+            -- NOTE: We convert penalties to scalings when fractions with f(x) = 1 - x.
             (0.0, 0.0, s) -> (idSeq, s)
-            (frac, 0.0, s) -> (mulSeq frac, s)
-            (0.0, pts, s) -> (addSeq pts, s)
-            (frac, pts, s) ->
-                (idSeq{mul = mkMul frac, add = mkAdd pts}, s)
+            (frac, 0.0, s) -> (mulSeq (1.0 - frac), s)
+            (0.0, pts, s) -> (addSeq $ negate pts, s)
+            (frac, pts, s) -> (idSeq{mul = mkMul (1.0 - frac), add = mkAdd $ negate pts}, s)
         , \(PenaltySeq{mul, add = y}, s) ->
                 case mul of
-                    (idMul -> True) -> (0.0, exAdd y, s)
-                    x -> (exMul x, exAdd y, s)
+                    (idMul -> True) -> (0.0, exAdd $ negate y, s)
+                    x -> (1.0 - exMul x, exAdd $ negate y, s)
         )
     $ xpTriple
         (xpAttr "penalty" xpPrim)
@@ -449,9 +449,10 @@ getTaskPilotGroup ps =
                     >>> arr (unKeyPilot (keyMap kps) . PilotId)
 
         getTaskDistance =
-            getChildren
+            (getChildren
             >>> hasName "FsTaskScoreParams"
-            >>> getAttrValue "task_distance"
+            >>> getAttrValue "task_distance")
+            `orElse` constA ""
 
 getDidFlyNoTracklog
     :: ArrowXml a
@@ -576,6 +577,9 @@ getTask discipline compTweak sb =
                 , zoneTimes = ts''
                 , startGates = gates
                 , stopped =
+                    -- NOTE: In paragliding there is a score back time but in
+                    -- hang gliding this is taken as the interval between the
+                    -- start gates or 15 mins.
                     maybe
                         Nothing
                         (\case
@@ -583,15 +587,33 @@ getTask discipline compTweak sb =
                                 Just $ TaskStop
                                     { announced = t
                                     , retroactive =
-                                        maybe
-                                            t
-                                            (\(ScoreBackTime (MkQuantity secs)) ->
-                                                realToFrac (negate secs) `addUTCTime` t)
-                                            sb
+                                        case discipline of
+                                            HangGliding ->
+                                                let diff =
+                                                        case gates of
+                                                            StartGate g0 : StartGate g1 : _ -> g0 `diffUTCTime` g1
+                                                            _ -> realToFrac $ negate (900 :: Int)
+
+                                                in diff `addUTCTime` t
+
+                                            Paragliding ->
+                                                maybe
+                                                    t
+                                                    (\(ScoreBackTime (MkQuantity secs)) ->
+                                                        realToFrac (negate secs) `addUTCTime` t)
+                                                    sb
                                     }
 
                             TaskStateRegular _ -> Nothing
                             TaskStateCancel _ -> Nothing)
+                        taskState
+                , cancelled =
+                    maybe
+                        False
+                        (\case
+                            TaskStateStop{} -> False
+                            TaskStateRegular _ -> False
+                            TaskStateCancel _ -> True)
                         taskState
                 , taskTweak = if tw == compTweak then compTweak else tw
                 , earlyStart = fromMaybe nullEarlyStart es

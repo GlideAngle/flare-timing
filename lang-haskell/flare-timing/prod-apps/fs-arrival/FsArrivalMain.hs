@@ -8,6 +8,7 @@ import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -17,26 +18,28 @@ import Flight.Fsdb
     , parseTweak
     , parseScoreBack
     , parseTasks
-    , parseNormArrivals
+    , parseAltArrivals
     )
 import Flight.Track.Arrival (TrackArrival(..))
-import Flight.Track.Mask (MaskingArrival(..))
+import Flight.Track.Mask (CompMaskingArrival(..))
 import Flight.Comp
-    ( FileType(TrimFsdb)
+    ( AltDot(AltFs)
+    , FindDirFile(..)
+    , FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , Pilot(..)
     , Comp(..)
     , Task(..)
     , Tweak(..)
-    , trimFsdbToNormArrival
+    , trimFsdbToAltArrival
     , findTrimFsdb
-    , ensureExt
+    , reshape
     )
 import Flight.Zone.MkZones (Discipline(..))
 import "flight-gap-allot" Flight.Score (PilotsAtEss(..))
 import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
-import Flight.Scribe (readTrimFsdb, writeNormArrival)
+import Flight.Scribe (readTrimFsdb, writeAltArrival)
 import FsArrivalOptions (description)
 
 main :: IO ()
@@ -44,16 +47,17 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
+    let lf = LenientFile {coerceFile = reshape TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findTrimFsdb o
+    cwd <- getCurrentDirectory
+    files <- findTrimFsdb $ FindDirFile {dir = cwd, file = file}
 
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
@@ -65,7 +69,7 @@ go trimFsdbFile = do
     FsdbXml contents <- readTrimFsdb trimFsdbFile
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ normArrivals (FsdbXml contents')
-    either print (writeNormArrival (trimFsdbToNormArrival trimFsdbFile)) settings
+    either print (writeAltArrival (trimFsdbToAltArrival AltFs trimFsdbFile)) settings
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
 fsdbComp (FsdbXml contents) = do
@@ -115,10 +119,10 @@ fsdbTasks discipline tw sb (FsdbXml contents) = do
 
 fsdbArrivals :: [Task k] -> FsdbXml -> ExceptT String IO [[(Pilot, TrackArrival)]]
 fsdbArrivals tasks (FsdbXml contents) = do
-    fs <- lift $ parseNormArrivals tasks contents
+    fs <- lift $ parseAltArrivals tasks contents
     ExceptT $ return fs
 
-normArrivals :: FsdbXml -> ExceptT String IO MaskingArrival
+normArrivals :: FsdbXml -> ExceptT String IO CompMaskingArrival
 normArrivals fsdbXml = do
     Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     tw <- Just <$> fsdbTweak hgOrPg fsdbXml
@@ -126,7 +130,7 @@ normArrivals fsdbXml = do
     ts <- fsdbTasks hgOrPg tw sb fsdbXml
     as <- fsdbArrivals ts fsdbXml
     return
-        MaskingArrival
+        CompMaskingArrival
             { pilotsAtEss = PilotsAtEss . toInteger . length <$> as
             , arrivalRank = as
             }

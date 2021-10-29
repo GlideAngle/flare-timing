@@ -7,10 +7,6 @@ extra-deps:
   pantry-tree:
     size: 2225
     sha256: aee2f75974e868ff429b8ff349a29667536c60397098f5dfedc968d1951511bb
-- hackage: uom-plugin-0.3.0.0@sha256:b9dc0f0dd19c54f78f3c16065bc9975572abfdcd58e78df955e223bb038929b4,2851
-  pantry-tree:
-    size: 1465
-    sha256: d782094dd66d63659990e6f8823d405110b662d1d7a2e6af9065c0ebdcb9da88
 - hackage: doctest-0.15.0@sha256:b90e16b49bdb3863c394525b229dc6f1be99457ec49fb8831e2706f80389b590,6932
   pantry-tree:
     size: 7980
@@ -32,6 +28,8 @@ extra-deps:
     size: 310
     sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
 - memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
+- servant-py-0.1.1.1@sha256:815f2791443bec2a40821a01da6623154029a8c3cb041dc7845a1b92fd2e9601,2931
+- aeson-1.3.1.1@sha256:1ab29743b4c4c9be7df57200ed2c8779048adda4cead075944b7b471e93ed4c3,6006
 flags:
     detour-via-sci:
         suppress-failing-tests: true
@@ -84,8 +82,17 @@ flags:
 tested-with: GHC == 8.2.2
 packages:
 - lang-haskell/build
+
 - lang-haskell/detour-via-sci
 - lang-haskell/detour-via-uom
+- lang-haskell/tasty-compare
+- lang-haskell/siggy-chardust
+
+- lang-haskell/hcoord/hcoord
+- lang-haskell/hcoord/hcoord-utm
+- lang-haskell/exact-real
+- lang-haskell/uom-plugin/uom-plugin
+
 - lang-haskell/clip
 - lang-haskell/cmd
 - lang-haskell/comp
@@ -106,16 +113,12 @@ packages:
 - lang-haskell/mask
 - lang-haskell/route
 - lang-haskell/scribe
-- lang-haskell/siggy-chardust
 - lang-haskell/span
 - lang-haskell/task
-- lang-haskell/tasty-compare
 - lang-haskell/time
 - lang-haskell/track
 - lang-haskell/units
 - lang-haskell/zone
+
 - lang-haskell/flare-timing
 - lang-haskell/app-serve
-- lang-haskell/hcoord/hcoord
-- lang-haskell/hcoord/hcoord-utm
-- lang-haskell/exact-real

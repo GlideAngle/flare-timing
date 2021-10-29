@@ -24,9 +24,7 @@ import Flight.Cmd.Options (ProgramName(..), Description(..), Extension(..))
 -- | Options passed in on the command line.
 data CmdBatchOptions
     = CmdBatchOptions
-        { dir :: FilePath
-        -- ^ Picking all competition in this directory.
-        , file :: FilePath
+        { file :: FilePath
         -- ^ Picking the competition in this file.
         , task :: [Int]
         -- ^ Include only these tasks.
@@ -42,11 +40,7 @@ data CmdBatchOptions
 mkOptions :: ProgramName -> Description -> Maybe Extension -> CmdBatchOptions
 mkOptions (ProgramName programName) (Description description) ext =
     CmdBatchOptions
-        { dir = def
-        &= help dirMsg
-        &= groupname "Source"
-
-        , file = def
+        { file = def
         &= help fileMsg
         &= groupname "Source"
 
@@ -77,5 +71,4 @@ mkOptions (ProgramName programName) (Description description) ext =
         &= program programName
     where
         Extension ext' = fromMaybe (Extension "*.comp.yaml") ext
-        dirMsg =  "Over all " ++ ext' ++ " files in this directory"
         fileMsg = "With this one competition " ++ ext' ++ " file"

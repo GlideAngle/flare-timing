@@ -4,7 +4,6 @@ import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
 import WireTypes.Comp (Tweak(..), LwScaling(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Lead (TrackLead(..))
 import qualified FlareTiming.Plot.LeadCoef.View as V (leadCoefPlot)
 import WireTypes.Pilot (Pilot(..))
@@ -14,10 +13,9 @@ leadCoefPlot
     :: MonadWidget t m
     => IxTask
     -> Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackLead)])
     -> m ()
-leadCoefPlot ix tweak sEx ld =
+leadCoefPlot ix tweak ld =
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -43,6 +41,6 @@ leadCoefPlot ix tweak sEx ld =
                                         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> notice
                                         _ -> return ())
 
-                                    V.leadCoefPlot ix tweak sEx (fromMaybe [] <$> ld))
+                                    V.leadCoefPlot ix tweak (fromMaybe [] <$> ld))
 
                     return ()

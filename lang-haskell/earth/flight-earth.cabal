@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7af15eef959e6fd687d5cf0e3379e59969e03cafca6410ecfa2e76de072cae90
+-- hash: 8d41095659db4f7fb006f737ac6cd78a330f3cb83bfe641de241005c241d1b12
 
 name:           flight-earth
 version:        0.1.0
 synopsis:       Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection.
 description:    Distances on the Earth for hang gliding and paragliding competitons.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/earth#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: earth
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

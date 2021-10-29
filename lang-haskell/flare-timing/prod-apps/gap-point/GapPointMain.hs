@@ -8,7 +8,7 @@ import qualified Prelude as Stats (max)
 import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (fromMaybe, catMaybes, isJust, isNothing)
 import Data.Function ((&))
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -19,40 +19,32 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import qualified Data.Map.Merge.Strict as Map
-import Data.List (sortBy, partition)
+import Data.List (partition)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_, join)
+import Control.Monad.Zip (mzip)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 import "newtype" Control.Newtype (Newtype(..))
-import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
+import Data.UnitsOfMeasure ((/:), u, convert, unQuantity, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (QAlt)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Distance (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
+import Flight.Distance (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm, fromKms)
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (DfNoTrackPilot(..))
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
     , CompInputFile(..)
-    , TaskLengthFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
-    , CrossZoneFile(..)
-    , TagZoneFile(..)
-    , MaskArrivalFile(..)
-    , MaskEffortFile(..)
-    , MaskLeadFile(..)
-    , MaskReachFile(..)
-    , MaskSpeedFile(..)
-    , BonusReachFile(..)
-    , LandOutFile(..)
     , Pilot
     , PilotGroup(dnf, didFlyNoTracklog)
     , StartGate(..)
@@ -64,59 +56,50 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , IxTask(..)
     , EarlyStart(..)
-    , compToTaskLength
-    , compToCross
-    , crossToTag
-    , compToMaskArrival
-    , compToMaskEffort
-    , compToMaskLead
-    , compToMaskReach
-    , compToMaskSpeed
-    , compToBonusReach
-    , compToLand
-    , compToPoint
     , findCompInput
-    , ensureExt
+    , reshape
+    , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Track.Cross
-    (InterpolatedFix(..), Crossing(..), ZoneTag(..), TrackFlyingSection(..))
-import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
+    (InterpolatedFix(..), CompFlying(..), ZoneTag(..), TrackFlyingSection(..))
+import Flight.Track.Tag (CompTagging(..), PilotTrackTag(..), TrackTag(..))
+import Flight.Track.Stop (effectiveTagging)
 import Flight.Track.Distance
-    ( TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Land
-    , awardByFrac
-    )
+    (TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Effort, awardByFrac)
 import Flight.Track.Time (AwardedVelocity(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Speed (pilotTime, startGateTaken)
 import qualified Flight.Track.Speed as Speed (TrackSpeed(..))
 import Flight.Track.Mask
-    ( MaskingArrival(..)
-    , MaskingEffort(..)
-    , MaskingLead(..)
-    , MaskingReach(..)
-    , MaskingSpeed(..)
+    ( CompMaskingArrival(..)
+    , CompMaskingEffort(..)
+    , CompMaskingLead(..)
+    , CompMaskingReach(..)
+    , CompMaskingSpeed(..)
     )
-import Flight.Track.Land (Landing(..))
-import Flight.Track.Place (rankByTotal)
+import Flight.Track.Land (CompLanding(..))
+import Flight.Track.Place (rankByTotal, sortScores)
 import Flight.Track.Point
-    (Velocity(..), Breakdown(..), Pointing(..), Allocation(..))
-import qualified Flight.Track.Land as Cmp (Landing(..))
+    (Velocity(..), Breakdown(..), CompPointing(..), Allocation(..), EssNotGoal(..))
+import qualified Flight.Track.Land as Cmp (CompLanding(..))
 import Flight.Scribe
-    ( readComp, readRoute
-    , readCrossing, readTagging
-    , readMaskingArrival
-    , readMaskingEffort
-    , readMaskingLead
-    , readMaskingReach
-    , readMaskingSpeed
-    , readBonusReach
-    , readLanding
-    , writePointing
+    ( readCompAndTasks
+    , readRoutes
+    , readCompFlyTime, readCompTagZone, readCompPegFrame
+    , readCompMaskArrival
+    , readCompMaskEffort
+    , readCompMaskLead
+    , readCompMaskBonus
+    , readCompMaskReach
+    , readCompMaskSpeed
+    , readCompLandOut, readCompFarOut
+    , writeCompGapPoint
     )
 import Flight.Mask (RaceSections(..), section)
-import Flight.Zone.SpeedSection (SpeedSection)
-import Flight.Zone.MkZones (Discipline(..))
+import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
+import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)
 import "flight-gap-allot" Flight.Score
@@ -144,7 +127,9 @@ import "flight-gap-math" Flight.Score
     , idSeq, addSeq, nullSeqs, toSeqs, exAdd
     , jumpTheGunSitRepHg, jumpTheGunSitRepPg
     , availablePointsHg, availablePointsPg
+    , egPenaltyNull
     )
+import qualified "flight-gap-math" Flight.Score as GapMath (egPenalty)
 import "flight-gap-valid" Flight.Score
     ( Validity(..), ValidityWorking(..)
     , StopValidity(..), StopValidityWorking
@@ -172,99 +157,92 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
     Fmt.fprint ("Tallying points completed in " Fmt.% timeSpecs Fmt.% "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
-    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
-    let maskEffortFile@(MaskEffortFile maskEffortPath) = compToMaskEffort compFile
-    let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
-    let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
-    let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
-    let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
-    let landFile@(LandOutFile landPath) = compToLand compFile
-    let pointFile = compToPoint compFile
-    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-    putStrLn $ "Reading pilots ABS & DNF from task from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
-    putStrLn $ "Reading start and end zone tagging from '" ++ takeFileName tagPath ++ "'"
-    putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
-    putStrLn $ "Reading effort from '" ++ takeFileName maskEffortPath ++ "'"
-    putStrLn $ "Reading leading from '" ++ takeFileName maskLeadPath ++ "'"
-    putStrLn $ "Reading reach from '" ++ takeFileName maskReachPath ++ "'"
-    putStrLn $ "Reading bonus reach from '" ++ takeFileName bonusReachPath ++ "'"
-    putStrLn $ "Reading speed from '" ++ takeFileName maskSpeedPath ++ "'"
-    putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
+go CmdBatchOptions{..} compFile = do
+    putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
-    cgs <-
+    fys <-
         catchIO
-            (Just <$> readCrossing crossFile)
+            (Just <$> readCompFlyTime compFile)
             (const $ return Nothing)
 
     tgs <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
+            (const $ return Nothing)
+
+    stps <-
+        catchIO
+            (Just <$> readCompPegFrame compFile)
             (const $ return Nothing)
 
     ma <-
         catchIO
-            (Just <$> readMaskingArrival maskArrivalFile)
+            (Just <$> readCompMaskArrival compFile)
             (const $ return Nothing)
 
     me <-
         catchIO
-            (Just <$> readMaskingEffort maskEffortFile)
+            (Just <$> readCompMaskEffort compFile)
             (const $ return Nothing)
 
-    ml2 :: Maybe (MaskingLead [u| (km^2)*s |] [u| 1/((km^2)*s) |]) <-
+    ml2 :: Maybe (CompMaskingLead [u| (km^2)*s |] [u| 1/((km^2)*s) |]) <-
         catchIO
-            (Just <$> (readMaskingLead maskLeadFile))
+            (Just <$> readCompMaskLead compFile)
             (const $ return Nothing)
 
     mr <-
         catchIO
-            (Just <$> readMaskingReach maskReachFile)
+            (Just <$> readCompMaskReach compFile)
             (const $ return Nothing)
 
     br <-
         catchIO
-            (Just <$> readBonusReach bonusReachFile)
+            (Just <$> readCompMaskBonus compFile)
             (const $ return Nothing)
 
     ms <-
         catchIO
-            (Just <$> readMaskingSpeed maskSpeedFile)
+            (Just <$> readCompMaskSpeed compFile)
+            (const $ return Nothing)
+
+    _landing <-
+        catchIO
+            (Just <$> readCompLandOut compFile)
             (const $ return Nothing)
 
     landing <-
         catchIO
-            (Just <$> readLanding landFile)
+            (Just <$> readCompFarOut compFile)
             (const $ return Nothing)
 
     routes <-
         catchIO
-            (Just <$> readRoute lenFile)
+            (Just <$> readRoutes compFile)
             (const $ return Nothing)
 
     let lookupTaskLength =
@@ -275,35 +253,64 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 startRoute
                 routes
 
-    case (compSettings, cgs, tgs, ma, me, ml2, mr, br, ms, landing, routes) of
-        (Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the crossings."
-        (_, _, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, _, Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking arrivals."
-        (_, _, _, _, Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking effort."
-        (_, _, _, _, _, Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the masking leading."
-        (_, _, _, _, _, _, Nothing, _, _, _, _) -> putStrLn "Couldn't read the masking reach."
-        (_, _, _, _, _, _, _, Nothing, _, _, _) -> putStrLn "Couldn't read the bonus reach."
-        (_, _, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
-        (_, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
-        (_, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just cg, Just tg, Just mA, Just mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) ->
-            writePointing pointFile $ points' cs lookupTaskLength cg tg mA mE mL2 (mR, bR) mS lg
+    case (filesTaskAndSettings, fys, tgs, stps, ma, me, ml2, mr, br, ms, landing, routes) of
+        (Nothing, _, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the flying times."
+        (_, _, Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, _, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the scored frames."
+        (_, _, _, _, Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking arrivals."
+        (_, _, _, _, _, Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking effort."
+        (_, _, _, _, _, _, Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the masking leading."
+        (_, _, _, _, _, _, _, Nothing, _, _, _, _) -> putStrLn "Couldn't read the masking reach."
+        (_, _, _, _, _, _, _, _, Nothing, _, _, _) -> putStrLn "Couldn't read the bonus reach."
+        (_, _, _, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
+        (_, _, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
+        (_, _, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just (_taskFiles, settings), Just cg, Just tg, Just stp, Just mA, Just _mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) -> do
+            let cs = uncurry mkCompTaskSettings $ settings
+            let tg' = effectiveTagging tg stp
+            let mE' = efforts lg
+
+            writeCompGapPoint compFile $ points' cs lookupTaskLength cg tg' mA mE' mL2 (mR, bR) mS lg
+
+efforts :: Cmp.CompLanding -> CompMaskingEffort
+efforts Cmp.CompLanding{bestDistance = ds, difficulty = ess} =
+    CompMaskingEffort
+        { bestEffort = [ do FlownMax d' <- d; return $ fromKms d' | d <- ds ]
+        , land = downPilots <$> ess
+        }
+
+downPilots
+    :: Maybe [ChunkDifficulty]
+    -> [(Pilot, TrackDistance Effort)]
+downPilots Nothing = []
+downPilots (Just xs) =
+    concat
+    [ zip downers ((\(PilotDistance d) -> toBothWays $ fromKms d) <$> downs)
+    | ChunkDifficulty{downers, downs} <- xs
+    ]
+
+toBothWays :: QTaskDistance Double [u| m |] -> TrackDistance (QTaskDistance Double [u| m |])
+toBothWays d =
+    TrackDistance
+        { togo = Nothing -- NOTE: Don't care about togo right now.
+        , made = Just d
+        }
 
 points'
-    :: CompSettings k
+    :: CompTaskSettings k
     -> RoutesLookupTaskDistance
-    -> Crossing
-    -> Tagging
-    -> MaskingArrival
-    -> MaskingEffort
-    -> MaskingLead _ _
-    -> (MaskingReach, MaskingReach)
-    -> MaskingSpeed
-    -> Cmp.Landing
-    -> Pointing
+    -> CompFlying
+    -> CompTagging
+    -> CompMaskingArrival
+    -> CompMaskingEffort
+    -> CompMaskingLead _ _
+    -> (CompMaskingReach, CompMaskingReach)
+    -> CompMaskingSpeed
+    -> Cmp.CompLanding
+    -> CompPointing
 points'
-    CompSettings
+    CompTaskSettings
         { comp =
             Comp{discipline}
         , nominal =
@@ -319,32 +326,32 @@ points'
         , pilotGroups
         }
     routes
-    Crossing{flying}
-    Tagging{tagging}
-    MaskingArrival
+    CompFlying{flying}
+    CompTagging{tagging}
+    CompMaskingArrival
         { pilotsAtEss
         , arrivalRank
         }
-    MaskingEffort
+    CompMaskingEffort
         { bestEffort
         , land
         }
-    MaskingLead
+    CompMaskingLead
         { sumDistance
         , leadRank
         }
-    ( MaskingReach
+    ( CompMaskingReach
         { reach = reachStatsF
         , bolster = bolsterStatsF
         , nigh = nighF
         }
-    , MaskingReach
+    , CompMaskingReach
         { reach = reachStatsE
         , bolster = bolsterStatsE
         , nigh = nighE
         }
     )
-    MaskingSpeed
+    CompMaskingSpeed
         { ssBestTime
         , gsBestTime
         , taskSpeedDistance
@@ -352,10 +359,10 @@ points'
         , gsSpeed
         , altStopped
         }
-    Landing
+    CompLanding
         { difficulty = landoutDifficulty
         } =
-    Pointing
+    CompPointing
         { validityWorking = workings
         , validity = validities
         , allocation = allocs
@@ -406,7 +413,7 @@ points'
         maybeTasks :: [a -> Maybe a]
         maybeTasks =
             [ if b == [u| 0 km |] then const Nothing else Just
-            | ReachStats{max = FlownMax b} <- bolsterStatsF
+            | b <- maybe zero (\ReachStats{max = FlownMax d} -> d) <$> bolsterStatsF
             ]
 
         lvs =
@@ -432,8 +439,8 @@ points'
                 (ReachToggle{extra = bE, flown = bF})
                 s
             | pf <- PilotsFlying <$> dfss
-            | ReachStats{max = bE} <- bolsterStatsE
-            | ReachStats{max = bF} <- bolsterStatsF
+            | bE <- maybe (FlownMax zero) (\ReachStats{max = d} -> d) <$> bolsterStatsE
+            | bF <- maybe (FlownMax zero) (\ReachStats{max = d} -> d) <$> bolsterStatsF
             | s <- dSums
             ]
 
@@ -452,8 +459,8 @@ points'
 
                 | ssT <- f ssBestTime
                 | gsT <- f gsBestTime
-                | ReachStats{max = bE} <- bolsterStatsE
-                | ReachStats{max = bF} <- bolsterStatsF
+                | bE <- maybe (FlownMax zero) (\ReachStats{max = d} -> d) <$> bolsterStatsE
+                | bF <- maybe (FlownMax zero) (\ReachStats{max = d} -> d) <$> bolsterStatsF
                 ]
 
         workings :: [Maybe ValidityWorking] =
@@ -500,7 +507,7 @@ points'
             | gr <- grs
             | dw <- dws
             | tw <- taskTweak <$> tasks
-            | ReachStats{max = FlownMax bd} <- bolsterStatsE
+            | bd <- maybe zero (\ReachStats{max = FlownMax d} -> d) <$> bolsterStatsE
             | td <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> lsWholeTask
             ]
 
@@ -557,6 +564,7 @@ points'
                 do
                     _ <- sp
                     ed' <- ed
+
                     let ls = PilotsLanded . fromIntegral . length $ snd <$> landedByStop
                     let sf = PilotsFlying . fromIntegral . length $ snd <$> stillFlying
                     let r = ReachToggle{extra = rE, flown = rF}
@@ -599,18 +607,20 @@ points'
         -- NOTE: Pilots either get to goal or have a nigh distance.
         nighDistanceDfE :: [[(Pilot, Maybe Double)]] =
             [ let xs' = (fmap . fmap) madeNigh xs
-                  ys' = (fmap . fmap) (const . Just $ unFlownMaxAsKm b) ys
+                  f = (\ReachStats{max = b} -> unFlownMaxAsKm b) <$> rStats
+                  ys' = (fmap . fmap) (const f) ys
               in (xs' ++ ys')
-            | ReachStats{max = b} <- bolsterStatsE
+            | rStats <- bolsterStatsE
             | xs <- nighE
             | ys <- arrivalRank
             ]
 
         nighDistanceDfF :: [[(Pilot, Maybe Double)]] =
             [ let xs' = (fmap . fmap) madeNigh xs
-                  ys' = (fmap . fmap) (const . Just $ unFlownMaxAsKm b) ys
+                  f = (\ReachStats{max = b} -> unFlownMaxAsKm b) <$> rStats
+                  ys' = (fmap . fmap) (const f) ys
               in (xs' ++ ys')
-            | ReachStats{max = b} <- bolsterStatsF
+            | rStats <- bolsterStatsF
             | xs <- nighF
             | ys <- arrivalRank
             ]
@@ -726,11 +736,11 @@ points'
                 TooEarlyPoints . assumeProp . refined . round . unpack
                 $ maybe
                     (LinearPoints 0)
-                    (\ps' ->
+                    (\(ReachStats{max = FlownMax b}, ps') ->
                         let bd = Just . TaskDistance $ convert b in
                         (applyLinear free bd ps') (Just . unQuantity $ unpack free))
-                    ps
-            | ReachStats{max = FlownMax b} <- bolsterStatsE
+                    (mzip rStats ps)
+            | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
             ]
 
@@ -740,16 +750,16 @@ points'
                 LaunchToStartPoints . assumeProp . refined . round . unpack
                 $ maybe
                     (LinearPoints 0)
-                    (\ps' ->
+                    (\(ReachStats{max = FlownMax b}, ps') ->
                         let bd = Just . TaskDistance $ convert b
                         in (applyLinear free bd ps') launchToStart)
-                    ps
-            | ReachStats{max = FlownMax b} <- bolsterStatsE
+                    (mzip rStats ps)
+            | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
             | launchToStart <-
                 (fmap . fmap)
                     (\(TaskDistance td) ->
-                        let ss :: Quantity _ [u| m |]
+                        let ss :: Quantity _ [u| km |]
                             ss = convert td
                          in unQuantity ss)
                     lsLaunchToSssTask
@@ -758,11 +768,11 @@ points'
         nighDistancePointsDfE :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' ->
+                (\(ReachStats{max = FlownMax b}, ps') ->
                     let bd = Just . TaskDistance $ convert b in
                     (fmap . fmap) (applyLinear free bd ps') ds)
-                ps
-            | ReachStats{max = FlownMax b} <- bolsterStatsE
+                (mzip rStats ps)
+            | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDfE
             ]
@@ -770,11 +780,11 @@ points'
         nighDistancePointsDfNoTrackE :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' ->
+                (\(ReachStats{max = FlownMax b}, ps') ->
                     let bd = Just . TaskDistance $ convert b in
                     (fmap . fmap) (applyLinear free bd ps') ds)
-                ps
-            | ReachStats{max = FlownMax b} <- bolsterStatsE
+                (mzip rStats ps)
+            | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDfNoTrackE
             ]
@@ -850,6 +860,26 @@ points'
             | ts <- tagging
             ]
 
+        essNotGoals :: [[(Pilot, Maybe EssNotGoal)]] =
+            [
+                [ (p,) $ do
+                    zs <- zonesTag <$> tag
+                    startToEss@(_, e) <- ss
+
+                    let essToGoal = (e, lenZs)
+                    let madeE = all isJust $ sliceZones (Just startToEss) zs
+                    let missedG = any isNothing $ sliceZones (Just essToGoal) zs
+
+                    return . EssNotGoal $ madeE && missedG
+
+                | PilotTrackTag p tag <- ts
+                ]
+            | Task{zones = Zones{raw = zsRaw}} <- tasks
+            , let lenZs = length zsRaw
+            | ss <- speedSections
+            | ts <- tagging
+            ]
+
         scoreDf :: [[(Pilot, Breakdown)]] =
             [ let dsL = Map.fromList dsLand
                   dsE = Map.fromList dsNighE
@@ -863,8 +893,8 @@ points'
 
               in
                   rankByTotal . sortScores
-                  $ fmap (tallyDf discipline startGates hgTooE pgTooE earlyStart)
-                  A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs
+                  $ fmap (tallyDf discipline egPenalty startGates hgTooE pgTooE earlyStart)
+                  A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs egs gs
             | hgTooE <- tooEarlyPoints
             | pgTooE <- launchToStartPoints
             | diffs <- difficultyDistancePointsDf
@@ -892,8 +922,14 @@ points'
             | ssEs <- elapsedTime ssSpeed
             | gsEs <- elapsedTime gsSpeed
             | gs <- tags
-            | Task{startGates, earlyStart} <- tasks
+            | Task{startGates, earlyStart, taskTweak} <- tasks
+            , let egPenalty =
+                      maybe
+                          egPenaltyNull
+                          (\Tweak{essNotGoalScaling = x} -> GapMath.egPenalty x)
+                          taskTweak
             | penals <- penals <$> tasks
+            | egs <- essNotGoals
             ]
 
         scoreDfNoTrack :: [[(Pilot, Breakdown)]] =
@@ -916,12 +952,6 @@ points'
             | xs <- scoreDf
             | ys <- scoreDfNoTrack
             ]
-
-sortScores :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
-sortScores =
-    sortBy
-        (\(_, Breakdown{total = a}) (_, Breakdown{total = b}) ->
-            b `compare` a)
 
 zeroPoints :: Gap.Points
 zeroPoints =
@@ -950,10 +980,17 @@ applyDifficulty Gap.Points{distance = DistancePoints y} (DifficultyFraction frac
 madeDifficultyDf
     :: MinimumDistance (Quantity Double [u| km |])
     -> Map IxChunk DifficultyFraction
-    -> TrackDistance Land
+    -> TrackDistance Effort
     -> DifficultyFraction
 madeDifficultyDf _ mapIxToFrac td =
-    fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
+    -- WARNING: The pilot distance, if rounded up could index the next chunk.
+    case Map.lookup ix mapIxToFrac of
+        Just df -> df
+        Nothing ->
+            case Map.lookupLE ix mapIxToFrac of
+                Just (ixLE, df) | ix - ixLE == 1 -> df
+                Just _ -> DifficultyFraction 0
+                Nothing -> DifficultyFraction 0
     where
         pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
         ix = toIxChunk pd
@@ -990,7 +1027,7 @@ madeAwarded (MinimumDistance (MkQuantity d)) _ _ = Just d
 madeNigh :: TrackDistance Nigh -> Maybe Double
 madeNigh TrackDistance{made} = unTaskDistanceAsKm <$> made
 
-madeLand :: TrackDistance Land -> Maybe Double
+madeLand :: TrackDistance Effort -> Maybe Double
 madeLand TrackDistance{made} = unTaskDistanceAsKm <$> made
 
 applyLinear
@@ -1046,6 +1083,7 @@ collateDf
     -> [(Pilot, (Maybe a, Maybe a, Maybe a, Maybe a))]
     -> [(Pilot, Maybe b)]
     -> [(Pilot, Maybe c)]
+    -> [(Pilot, Maybe EssNotGoal)]
     -> [(Pilot, Maybe d)]
     -> [
             ( Pilot
@@ -1054,14 +1092,17 @@ collateDf
                 ,
                     ( Maybe d
                     ,
-                        ( Maybe c
+                        ( Maybe EssNotGoal
                         ,
-                            ( Maybe b
+                            ( Maybe c
                             ,
-                                ( (Maybe a, Maybe a, Maybe a, Maybe a)
+                                ( Maybe b
                                 ,
-                                    ( (PenaltySeqs, String)
-                                    , Gap.Points
+                                    ( (Maybe a, Maybe a, Maybe a, Maybe a)
+                                    ,
+                                        ( (PenaltySeqs, String)
+                                        , Gap.Points
+                                        )
                                     )
                                 )
                             )
@@ -1070,10 +1111,12 @@ collateDf
                 )
             )
         ]
-collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
+
+collateDf diffs linears ls as ts penals alts ds ssEs gsEs egs gs =
     Map.toList
     $ Map.intersectionWith (,) malts
     $ Map.intersectionWith (,) mg
+    $ Map.intersectionWith (,) meg
     $ Map.intersectionWith (,) mgsEs
     $ Map.intersectionWith (,) mssEs
     $ Map.intersectionWith (,) md
@@ -1090,6 +1133,7 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
         md = Map.fromList ds
         mssEs = Map.fromList ssEs
         mgsEs = Map.fromList gsEs
+        meg = Map.fromList egs
         mg = Map.fromList gs
         penals' = tuplePenalty <$> penals
 
@@ -1213,6 +1257,7 @@ startEnd RaceSections{race} =
 
 tallyDf
     :: Discipline
+    -> _
     -> [StartGate]
     -> TooEarlyPoints
     -> LaunchToStartPoints
@@ -1222,19 +1267,22 @@ tallyDf
         ,
             ( Maybe StartEndTags
             ,
-                ( Maybe (PilotTime (Quantity Double [u| h |]))
+                ( Maybe EssNotGoal
                 ,
                     ( Maybe (PilotTime (Quantity Double [u| h |]))
                     ,
-                        (
-                            ( Maybe (PilotDistance (Quantity Double [u| km |]))
-                            , Maybe (PilotDistance (Quantity Double [u| km |]))
-                            , Maybe (PilotDistance (Quantity Double [u| km |]))
-                            , Maybe (PilotDistance (Quantity Double [u| km |]))
-                            )
+                        ( Maybe (PilotTime (Quantity Double [u| h |]))
                         ,
-                            ( (PenaltySeqs, String)
-                            , Gap.Points
+                            (
+                                ( Maybe (PilotDistance (Quantity Double [u| km |]))
+                                , Maybe (PilotDistance (Quantity Double [u| km |]))
+                                , Maybe (PilotDistance (Quantity Double [u| km |]))
+                                , Maybe (PilotDistance (Quantity Double [u| km |]))
+                                )
+                            ,
+                                ( (PenaltySeqs, String)
+                                , Gap.Points
+                                )
                             )
                         )
                     )
@@ -1244,6 +1292,7 @@ tallyDf
     -> Breakdown
 tallyDf
     hgOrPg
+    egPenalty
     startGates
     tooEarlyPoints
     launchToStartPoints
@@ -1252,6 +1301,8 @@ tallyDf
     ,
         ( g
         ,
+            ( eg
+            ,
             ( gsT
             ,
                 ( ssT
@@ -1262,6 +1313,7 @@ tallyDf
                     )
                 )
             )
+            )
         )
     ) =
     Breakdown
@@ -1271,8 +1323,11 @@ tallyDf
         , demeritPoint = addApplied
         , demeritReset = resetApplied
         , total = total
+        , essNotGoal = eg
+        , penaltiesEssNotGoal = toSeqs effg
         , jump = jump
-        , penaltiesJump = toSeqs effj
+        , penaltiesJumpRaw = jRaw
+        , penaltiesJumpEffective = jEffective
         , penalties = toSeqs effp
         , penaltyReason = penaltyReason
         , breakdown = x
@@ -1309,24 +1364,44 @@ tallyDf
 
         ptsReduced =
             case hgOrPg of
-                HangGliding -> fromMaybe (Gap.taskPoints NominalHg idSeq penalties x) $ do
-                    jtg@(JumpedTheGun jSecs) <- jump
-                    return $
-                        case jumpTheGunSitRepHg tooEarlyPoints earliest spp jtg of
-                            Left j ->
-                                Gap.taskPoints
-                                    (Jumped spp (JumpedTheGun jSecs))
-                                    (addSeq $ exAdd j)
-                                    penalties
-                                    x
+                -- TODO: Workout what the sitrep is here. It won't always be
+                -- NominalHg.
+                HangGliding ->
+                    fromMaybe
+                        (let sitrep =
+                                 case eg of
+                                     Nothing -> NominalHg
+                                     Just (EssNotGoal False) -> NominalHg
+                                     Just (EssNotGoal True) -> NoGoalHg
+                         in
+                             Gap.taskPoints sitrep egPenalty idSeq penalties x) $
+                    do
+                        jtg@(JumpedTheGun jSecs) <- jump
+                        return $
+                            case jumpTheGunSitRepHg tooEarlyPoints earliest spp jtg of
+                                Left j ->
+                                    Gap.taskPoints
+                                        (Jumped tooEarlyPoints spp (JumpedTheGun jSecs))
+                                        egPenalty
+                                        (addSeq $ exAdd j)
+                                        penalties
+                                        x
 
-                            Right sitrep ->
-                                Gap.taskPoints sitrep idSeq penalties x
+                                Right sitrep ->
+                                    Gap.taskPoints sitrep egPenalty idSeq penalties x
 
-                Paragliding -> fromMaybe (Gap.taskPoints NominalPg idSeq penalties x) $ do
+                Paragliding ->
+                    fromMaybe
+                        (let sitrep =
+                                 case eg of
+                                     Nothing -> NominalPg
+                                     Just (EssNotGoal False) -> NominalPg
+                                     Just (EssNotGoal True) -> NoGoalPg
+                         in
+                             Gap.taskPoints sitrep egPenalty idSeq penalties x) $ do
                     jtg <- jump
                     sitrep <- jumpTheGunSitRepPg launchToStartPoints jtg
-                    return $ Gap.taskPoints sitrep idSeq penalties x
+                    return $ Gap.taskPoints sitrep egPenalty idSeq penalties x
 
         ptsReduced' =
             case ptsReduced of
@@ -1341,7 +1416,12 @@ tallyDf
                 , total
                 , effp
                 , effj
+                , rawj
+                , effg
                 } = ptsReduced'
+
+        jEffective = toSeqs effj
+        jRaw = if rawj /= jEffective then Just rawj else Nothing
 
         ss' = getTagTime unStart
         es' = getTagTime unEnd
@@ -1381,8 +1461,11 @@ tallyDfNoTrack
         , demeritPoint = addApplied
         , demeritReset = resetApplied
         , total = total
+        , essNotGoal = Nothing
+        , penaltiesEssNotGoal = nullSeqs
         , jump = Nothing
-        , penaltiesJump = nullSeqs
+        , penaltiesJumpRaw = Nothing
+        , penaltiesJumpEffective = nullSeqs
         , penalties = toSeqs effp
         , penaltyReason = penaltyReason
         , breakdown = x
@@ -1432,8 +1515,8 @@ tallyDfNoTrack
                 , effp
                 } =
                     case hgOrPg of
-                        HangGliding -> Gap.taskPoints NominalHg idSeq penalties x
-                        Paragliding -> Gap.taskPoints NominalPg idSeq penalties x
+                        HangGliding -> Gap.taskPoints NominalHg egPenaltyNull idSeq penalties x
+                        Paragliding -> Gap.taskPoints NominalPg egPenaltyNull idSeq penalties x
 
         dE = PilotDistance <$> do
                 dT <- dT'

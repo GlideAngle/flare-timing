@@ -36,33 +36,50 @@ $family-primary: $family-serif
 // 10% — 1A
 // 5% — 0D
 // 0% — 00
-$reach: #377eb8cc;
-$launch: #ff7f00cc;
-$effort: #ff7f00cc;
-$time: #4daf4acc;
-$leading: #e41a1ccc;
-$bolster: #e41a1ccc;
-$stop: #e41a1ccc;
-$arrival: #984ea3cc;
-$valid: #000000cc;
+$reach: #377eb880;
+$launch: #ff7f0080;
+$effort: #ff7f0080;
+$time: #4daf4a80;
+$leading: #e41a1c80;
+$bolster: #e41a1c80;
+$stop: #e41a1c80;
+$arrival: #984ea380;
+$valid: #00000080;
+$time-arrival: #fc8d6280;
 
-$reach-invert: $primary-invert;
-$effort-invert: $primary-invert;
-$time-invert: $primary-invert;
-$leading-invert: $primary-invert;
-$arrival-invert: $primary-invert;
+// NOTE: If the background colors are dark then using $primary-invert but if
+// they are light then use $default.
+$reach-invert: $black;
+$effort-invert: $black;
+$time-invert: $black;
+$leading-invert: $black;
+$arrival-invert: $black;
+$time-arrival-invert: $black;
 
-$total: #00d1b2cc;
+$total: #00d1b280;
+$as-diff: #bebada80;
+$fs-diff: #66666680;
 
 .is-diff
     @extend .is-black;
-    color: white;
-    background-color: $valid;
-    border-color: $valid;
+    color: black !important;
+    background-color: $fs-diff !important;
+    border-color: $fs-diff !important;
+
+.is-fs-diff
+    @extend .is-black;
+    color: black !important;
+    background-color: $fs-diff !important;
+    border-color: $fs-diff !important;
+
+.is-as-diff
+    @extend .is-black;
+    color: black !important;
+    background-color: $as-diff !important;
+    border-color: $as-diff !important;
 
 body, input, button, select, textarea
     font-family: 'B612 Mono', monospace;
-
 .spacer
     height: 20px;
 
@@ -74,6 +91,7 @@ th.th-speed-section, th.th-early
     border-bottom-color: $time;
     background-color: $time;
 
+td.td-speed,
 th.th-speed
     color: $time-invert;
     border-bottom-color: $time;
@@ -125,6 +143,7 @@ th.th-early-demerit
 .tr-sum td.td-valid-reach-extra-diff
     @extend .is-info;
 
+.th-points,
 .tr-sum td.td-norm,
 .tr-sum td.td-valid-bolster,
 .tr-sum td.td-valid-bolster-extra,
@@ -134,11 +153,11 @@ th.th-early-demerit
 .th-distance, .th-valid-reach-col, .th-distance-flown
     @extend .is-info;
 
-.th-distance-points
+.th-distance-points, .th-distance-flown, .th-distance-extra
     @extend .has-text-right;
 
-.th-points, .th-valid-bolster-col, .th-distance-extra
-    @extend .is-primary;
+.th-valid-bolster-col, .th-distance-extra
+    @extend .is-danger;
 
 .th-stopped
     @extend .is-danger;
@@ -146,6 +165,7 @@ th.th-early-demerit
 .th-norm, .td-norm, tr.norm td
     @extend .is-diff;
 
+.td-norm.td-penalty-reason,
 .th-norm.th-penalty-reason,
 .th-norm.chunking
     @extend .has-text-left;
@@ -181,81 +201,34 @@ th.th-early-demerit
     @extend .has-text-right;
     @extend .is-warning;
 
-.th-chunk
-    @extend .has-text-right;
-
-.th-min-distance
-    @extend .has-text-right;
-
-.th-best-distance
-    @extend .has-text-right;
-
-.th-alt-distance
-    @extend .has-text-right;
-
-.th-landed-distance
-    @extend .has-text-right;
-
-.th-chunk-units
-    @extend .has-text-right;
-
-.th-min-distance-units
-    @extend .has-text-right;
-
-.th-best-distance-units
-    @extend .has-text-right;
-
-.th-alt-distance-units
-    @extend .has-text-right;
-
-.th-landed-distance-units
-    @extend .has-text-right;
-
-.th-reach-alloc
-    @extend .has-text-right;
-
-.th-effort-alloc
-    @extend .has-text-right;
-
-.th-distance-alloc
-    @extend .has-text-right;
-
-.th-leading-alloc
-    @extend .has-text-right;
-
-.th-time-alloc
-    @extend .has-text-right;
-
-.th-arrival-alloc
-    @extend .has-text-right;
-
-.th-task-alloc
-    @extend .has-text-right;
-
-.th-distance-validity
-    @extend .has-text-right;
-
-.th-time-validity
-    @extend .has-text-right;
-
-.th-task-validity
-    @extend .has-text-right;
-
-.th-distance-weight
-    @extend .has-text-right;
-
-.th-leading-weight
-    @extend .has-text-right;
-
-.th-time-weight
-    @extend .has-text-right;
-
-.th-arrival-weight
-    @extend .has-text-right;
-
+.th-chunk,
+.th-min-distance,
+.th-best-distance,
+.th-alt-distance,
+.th-landed-distance,
+.th-chunk-units,
+.th-min-distance-units,
+.th-best-distance-units,
+.th-alt-distance-units,
+.th-landed-distance-units,
+.th-reach-alloc,
+.th-effort-alloc,
+.th-distance-alloc,
+.th-leading-alloc,
+.th-time-alloc,
+.th-arrival-alloc,
+.th-task-alloc,
+.th-distance-validity,
+.th-time-validity,
+.th-task-validity,
+.th-distance-weight,
+.th-leading-weight,
+.th-time-weight,
+.th-arrival-weight,
 .th-placing
     @extend .has-text-right;
 
+.th-hms,
 .th-start-start, .th-start-gate, .th-awarded-start
     @extend .has-text-centered;
 
@@ -272,7 +245,6 @@ th.th-early-demerit
     @extend .has-text-centered;
 
 table:not(.sg) .th-start-gate, table:not(.sg) .th-time
-    text-decoration: line-through;
     @extend .has-text-danger;
 
 .th-pace
@@ -299,17 +271,17 @@ table:not(.sg) .th-start-gate, table:not(.sg) .th-time
 .th-arrival-points
     @extend .has-text-right;
 
+.th-time-arrival-points
+    @extend .has-text-right;
+
 .th-time-points.gr-zero
-    text-decoration: line-through;
     @extend .has-text-danger;
 
 table.pg .th-arrival-points, table.hg .th-arrival-points.gr-zero
-    text-decoration: line-through;
     @extend .has-text-danger;
 
 .pg.not, .sg.not, span.gr-zero
     @extend .has-text-danger;
-    text-decoration: line-through;
 
 .td-placing
     @extend .has-text-right;
@@ -320,17 +292,15 @@ tr.pilot-dfnt .td-pilot
 
 .td-pilot
     width: 10vw;
+    white-space: nowrap;
 
 .td-start-start
     @extend .has-text-centered;
 
-table:not(.sg) .td-start-start
-    @extend .has-text-success;
-
 .td-start-gate
     @extend .has-text-centered;
 
-table.sg .td-start-gate
+table :not(.td-norm).td-start-gate
     @extend .has-text-success;
 
 .td-awarded-start
@@ -352,14 +322,11 @@ table:not(.sg) .td-pace
 .td-time
     @extend .has-text-centered;
 
-table.sg .td-time
+table.sg :not(.td-norm).td-time
     @extend .has-text-info;
 
 table:not(.sg) .td-time
     color: transparent;
-
-.td-speed
-    @extend .has-text-right;
 
 .td-speed-distance
     @extend .has-text-right;
@@ -370,6 +337,8 @@ table:not(.sg) .td-time
 .td-min-distance
     @extend .has-text-right;
 
+.td-best-distance-extra,
+.td-best-distance-flown,
 .td-best-distance
     @extend .has-text-right;
 
@@ -383,7 +352,6 @@ tr.pilot-dfnt .td-best-distance:not(.award-free), tr.pilot-dfnt .td-landed-dista
     @extend .has-text-info;
 
 tr .td-best-distance.award-free, tr .td-landed-distance.award-free
-    text-decoration: line-through;
     @extend .has-text-danger;
 
 .th-pid, .td-pid
@@ -406,7 +374,6 @@ tr .td-best-distance.award-free, tr .td-landed-distance.award-free
     @extend .has-text-right;
 
 table.pg .th-effort-points
-    text-decoration: line-through;
     @extend .has-text-danger;
 
 .td-distance-points
@@ -420,6 +387,9 @@ table.pg .th-effort-points
 
 .td-time-points.gr-zero
     color: transparent;
+
+.td-time-arrival-points
+    @extend .has-text-right;
 
 .td-arrival-points
     @extend .has-text-right;
@@ -536,6 +506,16 @@ tr.end-speed > .td-tp-name
     background-color: $table-striped-row-even-background-color;
     background-image: repeating-linear-gradient(-45deg, $table-background-color, $table-background-color 30px, $table-striped-row-even-background-color 30px, $table-striped-row-even-background-color 60px)
 
+.th-map-fixes
+    @extend .has-text-centered;
+    @extend .is-light;
+
+.th-map-times
+    @extend .has-text-centered;
+
+.td-map-unscored
+    @extend .has-text-right;
+
 .th-geo-network
     @extend .is-info;
 
@@ -551,8 +531,13 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 .subtitle + .subtitle
     margin-top: -1.25rem;
 
-.th-penalty, .td-penalty
+.th-penalty, .td-penalty, .th-penalty-reset, .th-penalty-point
     @extend .has-text-right;
+
+.content table th.th-penalty-point, .content table th.th-penalty-point-group
+    color: $time-invert;
+    border-bottom-color: $time;
+    background-color: $time;
 
 .th-awarded-reach, .td-awarded-reach
     @extend .has-text-right;
@@ -646,30 +631,44 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 .legend.table td
     border: none;
 
+#score-compare-split .th-reach-points, #score-compare-split .td-reach-points,
+#score-compare-split .th-distance-points, #score-compare-split .td-distance-points,
+#score-compare-reach .th-reach-points, #score-compare-reach .td-reach-points,
+#score-reach .th-reach-points, #score-reach .td-reach-points,
 #score-overview .th-distance-points, #score-overview .td-distance-points,
 #score-penal .th-distance-points, #score-penal .td-distance-points,
 #score-points .th-distance-points-breakdown,
 #score-points .th-distance-points, #score-points .td-distance-points,
+#score-compare-reach .th-distance-points-breakdown,
 #score-reach .th-distance-points-breakdown,
 #score-reach .th-distance-points, #score-reach .td-distance-points
     color: $reach-invert;
     border-color: $reach;
     background-color: $reach;
 
+#score-compare-split .th-effort-points, #score-compare-split .td-effort-points,
+#score-compare-effort .th-effort-points, #score-compare-effort .td-effort-points,
+#score-effort .th-effort-points, #score-effort .td-effort-points,
+#score-compare-effort .th-distance-points-breakdown,
 #score-effort .th-distance-points-breakdown,
 #score-effort .th-distance-points, #score-effort .td-distance-points
     color: $effort-invert;
     border-color: $effort;
     background-color: $effort;
 
+#score-compare-split .th-time-points, #score-compare-split .td-time-points,
+#score-compare-time .th-time-points, #score-compare-time .td-time-points,
+#score-time .th-time-points, #score-time .td-time-points,
 #score-overview .th-time-points, #score-overview .td-time-points,
 #score-penal .th-time-points, #score-penal .td-time-points,
+#score-compare-time .th-time-points-breakdown,
 #score-time .th-time-points-breakdown,
 #score-points .th-time-points, #score-points .td-time-points
     color: $time-invert;
     border-color: $time;
     background-color: $time;
 
+#score-compare-split .th-leading-points, #score-compare-split .td-leading-points,
 #score-overview .th-leading-points, #score-overview .td-leading-points,
 #score-penal .th-leading-points, #score-penal .td-leading-points,
 #score-points .th-leading-points, #score-points .td-leading-points
@@ -677,18 +676,39 @@ table td.td-geo-plane, table td.td-geo-pythagorus
     border-color: $leading;
     background-color: $leading;
 
+#score-compare-split .th-arrival-points, #score-compare-split .td-arrival-points,
+#score-compare-arrival .th-arrival-points, #score-compare-arrival .td-arrival-points,
+#score-arrival .th-arrival-points, #score-arrival .td-arrival-points,
 #score-overview .th-arrival-points, #score-overview .td-arrival-points,
 #score-penal .th-arrival-points, #score-penal .td-arrival-points,
+#score-compare-arrival .th-arrival-points-breakdown,
 #score-arrival .th-arrival-points-breakdown,
 #score-points .th-arrival-points, #score-points .td-arrival-points
     color: $arrival-invert;
     border-color: $arrival;
     background-color: $arrival;
 
+#score-penal .th-time-arrival-points, #score-penal .td-time-arrival-points
+    color: $time-arrival-invert;
+    border-color: $time-arrival;
+    background-color: $time-arrival;
+
+#score-compare-split .th-total-points, #score-compare-split .td-total-points,
 #score-overview .th-total-points, #score-overview .td-total-points,
 #score-penal .th-total-points, #score-penal .td-total-points,
-#score-points .th-total-points, #score-points .td-total-points
+#score-points .th-total-points, #score-points .td-total-points,
+#vie-with-both .th-total-points, #vie-with-both .td-total-points,
+#vie-with-both .ft.th-placing, #vie-with-both .ft.td-placing
     @extend .is-primary;
+
+// NOTE: When the background colours are faded, use black for the color.
+#score-compare-split .td-total-points,
+#score-overview .td-total-points,
+#score-penal .td-total-points,
+#score-points .td-total-points,
+#vie-with-both .ft.td-placing,
+#vie-with-both .td-total-points
+    color: $black !important;
 
 #score-points .th-time-points,
 #score-points .th-leading-points,
@@ -733,6 +753,33 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 #hg-plot-valid-stop-by-vary path.origin
     stroke: white;
 
+#score-overview .fs.th-norm.th-placing,
+#score-overview .fs.td-norm.td-placing,
+#score-overview .fs.th-norm.th-diff,
+#score-overview .fs.td-norm.td-diff,
+#score-overview .fs.th-norm.th-total-points,
+#score-overview .fs.td-norm.td-total-points
+    @extend .is-fs-diff;
+
+#score-overview .as.th-norm.th-placing,
+#score-overview .as.td-norm.td-placing,
+#score-overview .as.th-norm.th-diff,
+#score-overview .as.td-norm.td-diff,
+#score-overview .as.th-norm.th-total-points,
+#score-overview .as.td-norm.td-total-points
+    @extend .is-as-diff;
+
+#vie-with-both .td-diff,
+    @extend .has-text-right;
+
+.as.th-placing, .as.td-placing,
+.as.th-total-points, .as.td-total-points
+    @extend .is-as-diff;
+
+.ft-as.th-points
+    @extend .is-white;
+
+.th-place, .ft-fs.th-points, .as-fs.th-points,
 .th-lead-area, .th-lead-frac,
 .th-reach-frac, .th-effort-frac,
 .th-time-frac
@@ -752,6 +799,9 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 .td-task-stats-mean, .td-task-stats-stddev
     @extend .has-text-right;
     @extend .has-text-weight-bold;
+
+.th-task-dist, .td-task-dist
+    @extend .has-text-right;
 
 .ft.icon
   width: 1rem;
@@ -774,3 +824,15 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 
 .ft.icon.tag-inter
   background-color: $total;
+
+.th-zone-ess, .td-zone-ess
+    @extend .has-text-right;
+
+.th-zone-goal, .td-zone-goal
+    @extend .has-text-left;
+
+.td-zone-made
+    @extend .has-text-success;
+
+.td-zone-miss
+    @extend .has-text-danger;

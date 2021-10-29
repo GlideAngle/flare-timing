@@ -3,6 +3,7 @@
 module Flight.Zone.Path (costSegment, distancePointToPoint) where
 
 import Prelude hiding (sum, span)
+import Data.List (foldl')
 import Data.UnitsOfMeasure ((+:), (-:), u, abs', zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -36,6 +37,7 @@ distancePointToPoint span xs =
         { edgesSum = distanceViaCenters span xs
         , vertices = center <$> xs
         }
+{-# INLINABLE distancePointToPoint #-}
 
 distanceViaCenters
     :: Real a
@@ -61,7 +63,7 @@ distanceViaCenters span xs@[a, b]
 distanceViaCenters span xs = distance span xs
 
 sum :: Num a => [Quantity a [u| m |]] -> Quantity a [u| m |]
-sum = foldr (+:) zero
+sum = foldl' (+:) zero
 
 distance :: Num a => SpanLatLng a -> [Zone a] -> QTaskDistance a [u| m |]
 distance span xs =

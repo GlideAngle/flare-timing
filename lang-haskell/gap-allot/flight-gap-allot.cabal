@@ -1,18 +1,18 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 372798bf8904600f2deda1246aa285563d12ccc9359b126b6136c6f0ed8245bd
+-- hash: 97f73846e21ef4ba4d972cc58e29e9601a77a3509deb7938fb3a0ac5f73be961
 
 name:           flight-gap-allot
 version:        0.1.0
 synopsis:       GAP Scoring, allotment.
 description:    GAP scoring for hang gliding and paragliding competitons, allot points available for each part.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-base#readme
-bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-base/issues
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/gap-allot#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
@@ -27,7 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-base
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False
@@ -73,6 +73,7 @@ library
     , base >=4.10.1.0 && <5
     , cassava
     , containers
+    , deepseq
     , detour-via-sci
     , detour-via-uom
     , exact-real
@@ -102,6 +103,7 @@ test-suite doctest
     , base >=4.10.1.0 && <5
     , cassava
     , containers
+    , deepseq
     , detour-via-sci
     , detour-via-uom
     , doctest

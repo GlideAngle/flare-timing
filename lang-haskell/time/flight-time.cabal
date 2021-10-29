@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c02b2f6426c31f818e401c89def4e2fcbca9cf834f3151fcdf8b390bb1432452
+-- hash: c7242ff5a671da97ed6e78b6b5af62ba6eff3aa3bf715f105631b387b932d755
 
 name:           flight-time
 version:        0.1.0
 synopsis:       Align times of competing pilot's tracklogs.
 description:    From a defined start, align the times of pilots on track so that we can then work out the leading points.
 category:       Data
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/time#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: time
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

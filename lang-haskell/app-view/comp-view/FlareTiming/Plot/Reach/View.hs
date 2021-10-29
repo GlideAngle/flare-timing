@@ -4,7 +4,7 @@ module FlareTiming.Plot.Reach.View (reachPlot) where
 
 import Reflex.Dom
 import Data.Maybe (isJust, catMaybes)
-import Data.List (sortOn, find)
+import Data.List (find)
 
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
@@ -14,7 +14,6 @@ import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import WireTypes.Point (PilotDistance(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.Reach.TableReach (tablePilotReach)
 import FlareTiming.Plot.Reach.TableBonus (tablePilotReachBonus)
@@ -37,18 +36,17 @@ timeRange xs = let rXs = rawReach <$> xs in (minimum rXs, maximum rXs)
 reValue :: [(Pilot, TrackReach)] -> [(Pilot, TrackReach)] -> [[Double]]
 reValue pxs pys =
     [ [x, y]
-    | (_, TrackReach{reach = PilotDistance x}) <- sortOn fst pxs
-    | (_, TrackReach{frac = ReachFraction y}) <- sortOn fst pys
+    | (_, TrackReach{reach = PilotDistance x}) <- pxs
+    | (_, TrackReach{frac = ReachFraction y}) <- pys
     ]
 
 reachPlot
     :: MonadWidget t m
     => Dynamic t Task
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
-reachPlot task sEx xs xsBonus = do
+reachPlot task xs xsBonus = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
 
     elClass "div" "tile is-ancestor" $ mdo
@@ -77,7 +75,7 @@ reachPlot task sEx xs xsBonus = do
                         let reaches' = snd . unzip $ ys'
                         let reachesBonus' = snd . unzip $ ysBonus'
 
-                        let tt = timeRange reaches
+                        let tt = timeRange reachesBonus
 
                         _ <-
                             if isJust stopped then
@@ -127,8 +125,12 @@ reachPlot task sEx xs xsBonus = do
             <- selectPilots dPilots (\dPilots' ->
                     elClass "div" "tile is-child" $ do
                         ev <- dyn $ ffor task (\case
-                                Task{stopped = Nothing} -> tablePilotReach sEx xs dPilots'
-                                Task{stopped = Just _} -> tablePilotReachBonus sEx xs xsBonus dPilots')
+                                Task{stopped = Nothing} ->
+                                    tablePilotReach xs dPilots'
+
+                                Task{stopped = Just _} ->
+                                    tablePilotReachBonus xs xsBonus dPilots')
+
                         ePilot <- switchHold never ev
                         return ePilot)
 

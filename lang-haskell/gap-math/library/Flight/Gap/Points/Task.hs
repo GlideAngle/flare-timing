@@ -1,4 +1,4 @@
-module Flight.Gap.Points.Task (TaskPoints(..)) where
+module Flight.Gap.Points.Task (TaskPoints(..), onTaskPoints) where
 
 import Text.Printf (printf)
 import Test.QuickCheck (Arbitrary(..), Gen)
@@ -22,3 +22,6 @@ instance Arbitrary TaskPoints where
 
 deriveDecimalPlaces (DecimalPlaces 3) ''TaskPoints
 deriveJsonViaSci ''TaskPoints
+
+onTaskPoints :: (Double -> Double) -> TaskPoints -> TaskPoints
+onTaskPoints f (TaskPoints x) = TaskPoints $ f x

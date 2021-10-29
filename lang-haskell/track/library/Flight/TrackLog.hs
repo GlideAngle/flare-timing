@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 {-|
 Module      : Flight.TrackLog
 Copyright   : (c) Block Scope Limited 2017
@@ -9,6 +11,7 @@ Competition pilot tracks logs.
 -}
 module Flight.TrackLog
     ( pilotTracks
+    , pilotTrack
     , filterPilots
     , filterTasks
     , makeAbsolute
@@ -22,8 +25,8 @@ import Data.Time.Clock (UTCTime(..), diffUTCTime)
 import Data.Time.Calendar
 import Data.Bifunctor (bimap)
 import Data.Maybe (catMaybes, listToMaybe)
-import Data.List (nubBy)
 import Data.Char (toLower)
+import Control.DeepSeq
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath
@@ -35,6 +38,8 @@ import System.FilePath
     , joinPath
     , takeExtension
     )
+import Data.Set (Set)
+import qualified Data.Set as Set
 
 import qualified Flight.Kml as K
 import qualified Flight.Igc as I (parse)
@@ -52,7 +57,6 @@ import Flight.Comp
     , TaskFolder(..)
     , IxTask(..)
     )
-import Flight.Igc (eqOnTime)
 import qualified Flight.Igc as Igc (mark)
 
 ixTasks :: [IxTask]
@@ -79,12 +83,12 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                     if not dfe
                         then return . Left $ TrackLogFileExistsNot file
                         else do
-                            contents <- toString <$> readFile file
+                            contents <- readFile file
 
                             kml :: Either String K.MarkedFixes
                                 <- case toLower <$> takeExtension file of
                                       ".kml" ->
-                                          K.parse contents
+                                          K.parse $ toString contents
 
                                       ".igc" ->
                                           case I.parse contents of
@@ -93,17 +97,19 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                                                 $ "Can't parse IGC: " ++ file
 
                                             Right xs ->
-                                                return . Right $ igcMarkedFixes xs
+                                                return . Right $!! igcMarkedFixes xs
 
                                       _ ->
-                                          K.parse contents
+                                          K.parse $ toString contents
 
                             return $ bimap TrackLogFileNotRead f kml
 
     ExceptT . return . bimap (p,) (p,) $ x
+{-# SCC pilotTrack #-}
 
 taskPilotTracks
-    :: (IxTask -> K.MarkedFixes -> a)
+    :: NFData a
+    => (IxTask -> K.MarkedFixes -> a)
     -> [ (IxTask, [ PilotTrackLogFile ]) ]
     -> IO
         [[ Either
@@ -112,13 +118,16 @@ taskPilotTracks
         ]]
 taskPilotTracks _ [] =
     return []
-taskPilotTracks f xs =
-    sequence $ (\(i, ts) ->
-        sequence $ runExceptT . pilotTrack (f i) <$> ts)
-        <$> xs
+taskPilotTracks f !xs =
+    sequence
+    $ (\(i, ts) -> do
+        pts <- sequence $ runExceptT . pilotTrack (f i) <$> ts
+        return $!! pts)
+    <$> xs
 
 pilotTracks
-    :: (IxTask -> K.MarkedFixes -> a)
+    :: NFData a
+    => (IxTask -> K.MarkedFixes -> a)
     -> [[ PilotTrackLogFile ]]
     -> IO
         [[ Either
@@ -127,7 +136,8 @@ pilotTracks
         ]]
 pilotTracks _ [] = return []
 pilotTracks f tasks =
-    taskPilotTracks f (zip ixTasks tasks) 
+    taskPilotTracks f (zip ixTasks tasks)
+{-# INLINABLE pilotTracks #-}
 
 filterPilots
     :: [ Pilot ]
@@ -177,8 +187,8 @@ nullMarkedFixes :: K.MarkedFixes
 nullMarkedFixes = K.MarkedFixes (UTCTime (ModifiedJulianDay 0) 0) []
 
 igcMarkedFixes :: [Flight.Igc.IgcRecord] -> K.MarkedFixes
-igcMarkedFixes xs =
-    maybe nullMarkedFixes (`mark` zs) date
+igcMarkedFixes !xs =
+    maybe nullMarkedFixes (\d -> mark d $!! zs) date
     where
         date =
             listToMaybe
@@ -186,14 +196,31 @@ igcMarkedFixes xs =
             . filter isMark
             $ xs
 
-        ys = bumpOver $ filter isFix xs
+        xs' = {-# SCC filter_is_fix #-} filter isFix xs
+        ys = {-# SCC bump_over #-} bumpOver xs'
 
         -- NOTE: Some loggers will be using sub-second logging. The columns in
         -- the B record holding the s or ss, tenths or hundredths of a second,
         -- are specified in the I record. Whether parsing IGC files at the
         -- second or sub-second granularity, we need to avoid having fixes with
         -- identical time stamps hence the nubBy here.
-        zs = nubBy eqOnTime ys
+        zs =  {-# SCC nubOrdOn_hms #-} nubOrdOn hms ys
+{-# SCC igcMarkedFixes #-}
+
+-- TODO: Remove nubOrdOn and nubOrdOnExcluding when I can upgrade the
+-- containers version.
+nubOrdOn :: Ord b => (a -> b) -> [a] -> [a]
+nubOrdOn f = \xs -> nubOrdOnExcluding f Set.empty xs
+{-# INLINE nubOrdOn #-}
+
+nubOrdOnExcluding :: Ord b => (a -> b) -> Set b -> [a] -> [a]
+nubOrdOnExcluding f = go
+  where
+    go _ [] = []
+    go s (x:xs)
+      | fx `Set.member` s = go s xs
+      | otherwise = x : go (Set.insert fx s) xs
+      where !fx = f x
 
 -- |
 -- >>> mark markSasha fixesSasha
@@ -209,6 +236,7 @@ igcMarkedFixes xs =
 -- ((2018-01-02 00:44:29 UTC,2018-01-02 09:07:43 UTC),(00:00:00,08:23:14))
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark = Igc.mark unStamp
+{-# INLINE mark #-}
 
 unStamp
     :: Maybe UTCTime
@@ -221,6 +249,7 @@ unStamp (Just mark0) xs =
         { K.mark0 = mark0
         , K.fixes = toFix mark0 <$> xs
         }
+{-# INLINE unStamp #-}
 
 toFix :: UTCTime -> (UTCTime, (Lat, Lng, AltBaro, Maybe AltGps)) -> K.Fix
 toFix mark0 (t, (lat, lng, altBaro, altGps)) =
@@ -235,6 +264,7 @@ toFix mark0 (t, (lat, lng, altBaro, altGps)) =
         -- TODO: Which is Maybe GPS or BARO, KML vs IGC?
         , K.fixAltBaro = readAltGps <$> altGps
         }
+{-# INLINE toFix #-}
 
 readDegMin :: Degree -> MinuteOfAngle -> Rational
 readDegMin (Degree d) MinuteOfAngle{unThousandths} =
@@ -242,20 +272,25 @@ readDegMin (Degree d) MinuteOfAngle{unThousandths} =
     where
         d' = fromIntegral d
         m' = fromIntegral unThousandths :: Integer
+{-# INLINE readDegMin #-}
 
 readLat :: Lat -> K.Latitude
 readLat (LatN d m) = K.Latitude $ readDegMin d m
 readLat (LatS d m) = K.Latitude . negate $ readDegMin d m
+{-# INLINE readLat #-}
 
 readLng :: Lng -> K.Longitude
 readLng (LngE d m) = K.Longitude $ readDegMin d m
 readLng (LngW d m) = K.Longitude . negate $ readDegMin d m
+{-# INLINE readLng #-}
 
 readAltBaro :: AltBaro -> K.Altitude
 readAltBaro (AltBaro (Altitude alt)) = K.Altitude $ fromIntegral alt
+{-# INLINE readAltBaro #-}
 
 readAltGps :: AltGps -> K.Altitude
 readAltGps (AltGps (Altitude alt)) = K.Altitude $ fromIntegral alt
+{-# INLINE readAltGps #-}
 
 -- $setup
 -- >>> :set -XTemplateHaskell

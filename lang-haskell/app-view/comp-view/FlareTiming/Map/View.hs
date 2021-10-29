@@ -80,7 +80,7 @@ import WireTypes.Route
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comms (getTaskPilotDf)
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Time (timeZone, showTime)
+import FlareTiming.Time (timeZone, showTime, showTimePico)
 import FlareTiming.Earth (AzimuthFwd(..), azimuthFwd, azimuthFlip)
 
 data ZoomOrPan = Zoom | Pan deriving Show
@@ -268,7 +268,7 @@ tagMarkers
             ++ "#"
             ++ printf "%.2f" fixFrac
             ++ " at "
-            ++ showTime tz time
+            ++ showTimePico tz time
             ++ "<br />"
             ++ showLatLng latLng
 
@@ -476,13 +476,15 @@ map
 
                                 let pn@(PilotName pn') = getPilotName p
                                 let n = jN - (j0 - i)
-                                let ts = take n pts
-                                let tsUnscored = drop n pts
+                                let tsScored = take n pts
+
+                                -- NOTE: To avoid a discontinuity, keep the last of the scored points.
+                                let tsUnscored = drop (n - 1) pts
 
                                 markers <- sequence $ tagMarkers pn tz <$> catMaybes tags
                                 let tagging = fst <$> markers
 
-                                line <- L.trackLine ts "black"
+                                line <- L.trackLine tsScored "black"
                                 gTrack <- L.layerGroupAddLayer [] line
                                 gTagging <- L.layerGroup tagging
 
@@ -556,7 +558,8 @@ map
                                 -- NOTE: Don't bother with the track not scored
                                 -- layer if the unscored track is empty.
                                 unless (null tsUnscored) $ do
-                                    let msg = printf ": unscored %d" $ length tsUnscored
+                                    -- NOTE: We've got to drop the 1st element, the last of the scored fixes.
+                                    let msg = printf ": unscored %d" $ (length $ drop 1 tsUnscored)
                                     lineUnscored <- L.discardLine tsUnscored "black"
                                     gUnscored <- L.layerGroupAddLayer [] lineUnscored
                                     L.addOverlay layers' (PilotName (pn' <> msg), gUnscored)

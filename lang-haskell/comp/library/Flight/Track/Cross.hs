@@ -10,7 +10,8 @@ Stability   : experimental
 Tracks crossing task control zones.
 -}
 module Flight.Track.Cross
-    ( Crossing(..)
+    ( TaskFlying(..), CompFlying(..)
+    , TaskCrossing(..), CompCrossing(..)
     , Seconds(..)
     , TrackFlyingSection(..)
     , TrackCross(..)
@@ -23,12 +24,15 @@ module Flight.Track.Cross
     , trackLogErrors
     , asIfFix
     , endOfFlying
+    , mkCompFlyTime, unMkCompFlyTime
+    , mkCompCrossZone, unMkCompCrossZone
     ) where
 
 import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
 import Control.Monad (join)
 import GHC.Generics (Generic)
+import Control.DeepSeq
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Clip (FlyingSection)
@@ -38,15 +42,59 @@ import Flight.Field (FieldOrdering(..))
 import "flight-gap-allot" Flight.Score (Pilot(..))
 import Flight.Comp (StartGate(..))
 
--- | For each task, the crossing for that task.
-data Crossing =
-    Crossing
+-- | For one task, the flying for that task.
+data TaskFlying =
+    TaskFlying
+        { suspectDnf :: [Pilot]
+        -- ^ For each task, the pilots whose tracklogs suggest they did not fly
+        -- such as by having no fixes.
+        , flying :: [(Pilot, Maybe TrackFlyingSection)]
+        -- ^ For each task, the pilots' flying sections.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | For each task, the flying for that task.
+data CompFlying =
+    CompFlying
         { suspectDnf :: [[Pilot]]
         -- ^ For each task, the pilots whose tracklogs suggest they did not fly
         -- such as by having no fixes.
         , flying :: [[(Pilot, Maybe TrackFlyingSection)]]
         -- ^ For each task, the pilots' flying sections.
-        , crossing :: [[PilotTrackCross]]
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+
+mkCompFlyTime :: [TaskFlying] -> CompFlying
+mkCompFlyTime ts =
+    uncurry CompFlying $ unzip
+    [ (s, f)
+    | TaskFlying{suspectDnf = s, flying = f} <- ts
+    ]
+
+unMkCompFlyTime :: CompFlying -> [TaskFlying]
+unMkCompFlyTime CompFlying{suspectDnf = ss, flying = fs} = zipWith TaskFlying ss fs
+
+-- | For each task, the crossing for that task.
+data TaskCrossing =
+    TaskCrossing
+        { crossing :: [PilotTrackCross]
+        -- ^ For each task, for each made zone, the pair of fixes cross it.
+        , trackLogError :: TrackLogError
+        -- ^ For each task, the pilots with track log problems. Note that
+        -- pilots that flew but have no track appear here with
+        -- @TrackLogFileNotSet@ as the error and will be awarded minimum
+        -- distance.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | For each task, the crossing for that task.
+data CompCrossing =
+    CompCrossing
+        { crossing :: [[PilotTrackCross]]
         -- ^ For each task, for each made zone, the pair of fixes cross it.
         , trackLogError :: [TrackLogError]
         -- ^ For each task, the pilots with track log problems. Note that
@@ -57,13 +105,23 @@ data Crossing =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+mkCompCrossZone :: [TaskCrossing] -> CompCrossing
+mkCompCrossZone ts =
+    uncurry CompCrossing $ unzip
+    [ (c, e)
+    | TaskCrossing{crossing = c, trackLogError = e} <- ts
+    ]
+
+unMkCompCrossZone :: CompCrossing -> [TaskCrossing]
+unMkCompCrossZone CompCrossing{crossing = cs, trackLogError = es} = zipWith TaskCrossing cs es
+
 -- NOTE: There's a similar Seconds newtype in the flight-kml package.  I don't
 -- want a dependency between these packages so I'm duplicating the newtype
 -- here.
 newtype Seconds = Seconds Integer
     deriving (Eq, Ord, Show, Generic)
     deriving newtype Num
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | For a single track, the flying section.
 data TrackFlyingSection =
@@ -82,7 +140,7 @@ data TrackFlyingSection =
         -- ^ The flying section as a time range.
         }
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | For a single track, the zones crossed.
 data TrackCross =
@@ -145,7 +203,7 @@ data Fix =
         -- ^ The altitude in decimal degrees, +ve is E and -ve is W.
         }
     deriving (Eq, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 instance Ord Fix where
     Fix{fix = i} `compare` Fix{fix = j} =
@@ -209,7 +267,7 @@ data ZoneCross =
         -- ^ Mark each fix as inside or outside the zone.
         }
     deriving (Eq, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 instance Ord ZoneCross where
     ZoneCross{crossingPair = i} `compare` ZoneCross{crossingPair = j} =
@@ -224,7 +282,16 @@ data PilotTrackCross =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-instance FieldOrdering Crossing where
+instance FieldOrdering TaskFlying where
+    fieldOrder _ = cmp
+
+instance FieldOrdering CompFlying where
+    fieldOrder _ = cmp
+
+instance FieldOrdering TaskCrossing where
+    fieldOrder _ = cmp
+
+instance FieldOrdering CompCrossing where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

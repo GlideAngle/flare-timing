@@ -83,6 +83,9 @@ dpRound n f
     | n < 0 = dpRound 0 f
     | otherwise =
         fromInteger (round $ f * (10^n)) / (10.0^^n)
+{-# INLINABLE dpRound #-}
+{-# SPECIALIZE dpRound :: Integer -> Double -> Double #-}
+{-# SPECIALIZE dpRound :: Integer -> Rational -> Rational #-}
 
 -- | Rounds to a non-negative number of __s__ignificant __d__igits.
 --
@@ -158,6 +161,9 @@ sdRound sd' f =
 
         g = f / 10^p
         gZ = f * 10^pZ
+{-# INLINABLE sdRound #-}
+{-# SPECIALIZE sdRound :: Natural -> Double -> Double #-}
+{-# SPECIALIZE sdRound :: Natural -> Rational -> Rational #-}
 
 -- $name
 -- Rounding to decimal places is a special case of rounding significant digits.

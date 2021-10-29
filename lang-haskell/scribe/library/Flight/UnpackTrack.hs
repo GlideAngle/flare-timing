@@ -4,6 +4,7 @@ module Flight.UnpackTrack
     , readCompTrackRows
     ) where
 
+import Control.DeepSeq
 import Control.Exception.Safe (MonadThrow, throwString, catchIO)
 import Control.Monad.Except (MonadIO, liftIO)
 import Control.Monad (zipWithM)
@@ -38,7 +39,7 @@ readUnpackTrack
     -> m (Header, Vector TrackRow)
 readUnpackTrack (UnpackTrackFile csvPath) = do
     contents <- liftIO $ BL.readFile csvPath
-    either throwString return $ decodeByName contents
+    either throwString return $!! decodeByName contents
 
 writeUnpackTrack :: UnpackTrackFile -> [TrackRow] -> IO ()
 writeUnpackTrack (UnpackTrackFile path) xs =
@@ -66,10 +67,10 @@ readTaskTrackRows
     -> IxTask
     -> [Pilot]
     -> IO [Maybe (Pilot, [TrackRow])]
-readTaskTrackRows compFile i =
+readTaskTrackRows compFile ixTask =
     mapM
         (\p -> do
-            rows <- catchIO (readPilotTrackRows compFile i p) (const $ return [])
+            rows <- catchIO (readPilotTrackRows compFile ixTask p) (const $ return [])
             return $ if null rows then Nothing else Just (p, rows))
 
 readPilotTrackRows
@@ -77,9 +78,9 @@ readPilotTrackRows
     -> IxTask
     -> Pilot
     -> IO [TrackRow]
-readPilotTrackRows compFile (IxTask i) pilot = do
+readPilotTrackRows compFile ixTask pilot = do
     (_, rows) <- readUnpackTrack (UnpackTrackFile (dIn </> file))
     return $ V.toList rows
     where
         dir = compFileToCompDir compFile
-        (UnpackTrackDir dIn, UnpackTrackFile file) = unpackTrackPath dir i pilot
+        (UnpackTrackDir dIn, UnpackTrackFile file) = unpackTrackPath dir ixTask pilot

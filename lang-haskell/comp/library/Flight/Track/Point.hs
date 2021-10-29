@@ -11,13 +11,20 @@ Task points.
 -}
 module Flight.Track.Point
     ( Velocity(..)
-    , NormBreakdown(..)
     , Breakdown(..)
-    , NormPointing(..)
-    , Pointing(..)
+    , AltBreakdown(..)
+    , AirScoreBreakdown(..)
+    , airScoreToAltBreakdown
+    , AlternativePointing(..)
+    , AltPointing
+    , AirScorePointing
+    , TaskPointing(..), CompPointing(..)
     , Allocation(..)
+    , EssNotGoal(..)
+    , mkCompGapPoint, unMkCompGapPoint
     ) where
 
+import Data.List (unzip6)
 import Data.Time.Clock (UTCTime)
 import Data.String (IsString())
 import GHC.Generics (Generic)
@@ -47,8 +54,13 @@ import "flight-gap-valid" Flight.Score
     , ReachToggle(..)
     )
 import "flight-gap-weight" Flight.Score (GoalRatio, Weights)
-import Flight.Track.Distance (Land)
+import Flight.Track.Distance (Effort)
 import Flight.Comp (StartGate)
+import Flight.Track.Curry (uncurry6)
+
+newtype EssNotGoal = EssNotGoal Bool
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data Velocity =
     Velocity
@@ -76,23 +88,61 @@ data Velocity =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
--- | The breakdown of the expected or normative score for a pilot for a task
--- extracted from the *.fsdb file.
-data NormBreakdown =
-    NormBreakdown
+-- | The breakdown for a pilot for a task extracted from
+-- http://localhost:5000/flaretiming_yaml/<comp-id>/gap-score.
+data AirScoreBreakdown =
+    AirScoreBreakdown
         { place :: TaskPlacing
+        -- ^ The place given by the alternative scoring program.
         , total :: TaskPoints
         , breakdown :: Points
         , fractions :: Fractions
-        , reach :: ReachToggle Land
-        , landedMade :: Land
+        , reach :: ReachToggle (Maybe Effort)
+        -- ^ Most pilots have reach but some get nulls from airScore.
+        , landedMade :: Maybe Effort
+        -- ^ Reported by FS but not by airScore. Not actually used in
+        -- calculating points in GAP.
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
-        , leadingArea :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        , leadingArea :: Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
+        -- ^ Reported by FS but not by airScore.
         , leadingCoef :: LeadingCoef (Quantity Double [u| 1 |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | The breakdown of the expected or normative score for a pilot for a task
+-- extracted from the *.fsdb file.
+data AltBreakdown =
+    AltBreakdown
+        { placeGiven :: TaskPlacing
+        -- ^ The place given by the alternative scoring program.
+        , placeTaken :: TaskPlacing
+        -- ^ The place taken by sorting on total.
+        , total :: TaskPoints
+        , breakdown :: Points
+        , fractions :: Fractions
+        , reach :: ReachToggle (Maybe Effort)
+        -- ^ Most pilots have reach but some get nulls from airScore.
+        , landedMade :: Maybe Effort
+        -- ^ Reported by FS but not by airScore. Not actually used in
+        -- calculating points in GAP.
+        , ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
+        , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+        , leadingArea :: Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
+        -- ^ Reported by FS but not by airScore.
+        , leadingCoef :: LeadingCoef (Quantity Double [u| 1 |])
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+airScoreToAltBreakdown :: AirScoreBreakdown -> AltBreakdown
+airScoreToAltBreakdown AirScoreBreakdown{..} =
+    AltBreakdown
+        { placeGiven = place
+        , placeTaken = place
+        , ..
+        }
 
 data Breakdown =
     Breakdown
@@ -110,8 +160,12 @@ data Breakdown =
         , total :: TaskPoints
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.
+        , essNotGoal :: Maybe EssNotGoal
+        -- ^ If the pilot has a tracklog, true if they made ESS but not goal.
+        , penaltiesEssNotGoal :: PenaltySeqs
         , jump :: Maybe (JumpedTheGun (Quantity Double [u| s |]))
-        , penaltiesJump :: PenaltySeqs
+        , penaltiesJumpRaw :: Maybe PenaltySeqs
+        , penaltiesJumpEffective :: PenaltySeqs
         , penalties :: PenaltySeqs
         , penaltyReason :: String
         , breakdown :: Points
@@ -129,21 +183,35 @@ data Breakdown =
 
 -- | For each task, the expected or normative points for that task as scored by
 -- FS.
-data NormPointing =
-    NormPointing
+data AlternativePointing breakdown =
+    AlternativePointing
         { bestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
         , validityWorkingLaunch :: [Maybe LaunchValidityWorking]
         , validityWorkingTime :: [Maybe TimeValidityWorking]
         , validityWorkingDistance :: [Maybe DistanceValidityWorking]
         , validityWorkingStop :: [Maybe StopValidityWorking]
         , validity :: [Maybe Validity]
-        , score :: [[(Pilot, NormBreakdown)]]
+        , score :: [[(Pilot, breakdown)]]
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+type AltPointing = AlternativePointing AltBreakdown
+type AirScorePointing = AlternativePointing AirScoreBreakdown
+
+data TaskPointing =
+    TaskPointing
+        { validityWorking :: Maybe ValidityWorking
+        , validity :: Maybe Validity
+        , allocation :: Maybe Allocation
+        , score :: [(Pilot, Breakdown)]
+        , scoreDf :: [(Pilot, Breakdown)]
+        , scoreDfNoTrack :: [(Pilot, Breakdown)]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | For each task, the points for that task.
-data Pointing =
-    Pointing
+data CompPointing =
+    CompPointing
         { validityWorking :: [Maybe ValidityWorking]
         , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
@@ -162,18 +230,56 @@ data Allocation =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-instance FieldOrdering Pointing where
-    fieldOrder _ = cmpPointing
+mkCompGapPoint :: [TaskPointing] -> CompPointing
+mkCompGapPoint ts =
+    uncurry6 CompPointing $ unzip6
+    [ (a, b, c, d, e, f)
+    | TaskPointing
+        { validityWorking = a
+        , validity = b
+        , allocation = c
+        , score = d
+        , scoreDf = e
+        , scoreDfNoTrack = f
+        } <- ts
+    ]
 
-instance FieldOrdering NormPointing where
-    fieldOrder _ = cmpNorm
+unMkCompGapPoint :: CompPointing -> [TaskPointing]
+unMkCompGapPoint
+    CompPointing
+        { validityWorking = as
+        , validity = bs
+        , allocation = cs
+        , score = ds
+        , scoreDf = es
+        , scoreDfNoTrack = fs
+        } =
+    [ TaskPointing a b c d e f
+    | a <- as
+    | b <- bs
+    | c <- cs
+    | d <- ds
+    | e <- es
+    | f <- fs
+    ]
 
-cmpNorm :: (Ord a, IsString a) => a -> a -> Ordering
-cmpNorm a b =
+instance FieldOrdering TaskPointing where fieldOrder _ = cmpPointing
+instance FieldOrdering CompPointing where fieldOrder _ = cmpPointing
+instance FieldOrdering AltPointing where fieldOrder _ = cmpAlt
+
+cmpAlt :: (Ord a, IsString a) => a -> a -> Ordering
+cmpAlt a b =
     case (a, b) of
         ("place", _) -> LT
 
+        ("placeGiven", _) -> LT
+
+        ("placeTaken", "PlaceGiven") -> LT
+        ("placeTaken", _) -> LT
+
         ("total", "place") -> GT
+        ("total", "placeGiven") -> GT
+        ("total", "placeTaken") -> GT
         ("total", _) -> LT
 
         ("distance", "place") -> GT
@@ -289,40 +395,63 @@ cmpPointing a b =
         ("total", "place") -> GT
         ("total", _) -> LT
 
+        ("essNotGoal", "place") -> GT
+        ("essNotGoal", "total") -> GT
+        ("essNotGoal", _) -> LT
+
+        ("penaltiesEssNotGoal", "place") -> GT
+        ("penaltiesEssNotGoal", "total") -> GT
+        ("penaltiesEssNotGoal", "essNotGoal") -> GT
+        ("penaltiesEssNotGoal", _) -> LT
+
         ("jump", "place") -> GT
         ("jump", "total") -> GT
+        ("jump", "essNotGoal") -> GT
+        ("jump", "penaltiesEssNotGoal") -> GT
         ("jump", _) -> LT
 
-        ("penaltiesJump", "place") -> GT
-        ("penaltiesJump", "total") -> GT
-        ("penaltiesJump", "jump") -> GT
-        ("penaltiesJump", _) -> LT
+        ("penaltiesJumpRaw", "place") -> GT
+        ("penaltiesJumpRaw", "total") -> GT
+        ("penaltiesJumpRaw", "essNotGoal") -> GT
+        ("penaltiesJumpRaw", "penaltiesEssNotGoal") -> GT
+        ("penaltiesJumpRaw", "jump") -> GT
+        ("penaltiesJumpRaw", _) -> LT
+
+        ("penaltiesJumpEffective", "place") -> GT
+        ("penaltiesJumpEffective", "total") -> GT
+        ("penaltiesJumpEffective", "essNotGoal") -> GT
+        ("penaltiesJumpEffective", "penaltiesEssNotGoal") -> GT
+        ("penaltiesJumpEffective", "jump") -> GT
+        ("penaltiesJumpEffective", "penaltiesJumpRaw") -> GT
+        ("penaltiesJumpEffective", _) -> LT
 
         ("penalties", "place") -> GT
         ("penalties", "total") -> GT
+        ("penalties", "essNotGoal") -> GT
+        ("penalties", "penaltiesEssNotGoal") -> GT
         ("penalties", "jump") -> GT
-        ("penalties", "penaltiesJump") -> GT
+        ("penalties", "penaltiesJumpRaw") -> GT
+        ("penalties", "penaltiesJumpEffective") -> GT
         ("penalties", _) -> LT
-
-        ("penaltyReason", "place") -> GT
-        ("penaltyReason", "total") -> GT
-        ("penaltyReason", "jump") -> GT
-        ("penaltyReason", "penaltiesJump") -> GT
-        ("penaltyReason", "penalties") -> GT
-        ("penaltyReason", _) -> LT
 
         ("breakdown", "place") -> GT
         ("breakdown", "total") -> GT
+        ("breakdown", "essNotGoal") -> GT
+        ("breakdown", "penaltiesEssNotGoal") -> GT
         ("breakdown", "jump") -> GT
-        ("breakdown", "penaltiesJump") -> GT
+        ("breakdown", "penaltiesJumpRaw") -> GT
+        ("breakdown", "penaltiesJumpEffective") -> GT
         ("breakdown", "penalties") -> GT
         ("breakdown", "penaltyReason") -> GT
         ("breakdown", _) -> LT
 
         ("velocity", "place") -> GT
         ("velocity", "total") -> GT
+        ("velocity", "essNotGoal") -> GT
+        ("velocity", "penaltiesEssNotGoal") -> GT
         ("velocity", "jump") -> GT
-        ("velocity", "penaltiesJump") -> GT
+        ("velocity", "penaltiesJumpRaw") -> GT
+        ("velocity", "penaltiesJumpEffective") -> GT
         ("velocity", "penalties") -> GT
         ("velocity", "penaltyReason") -> GT
         ("velocity", "breakdown") -> GT
@@ -330,13 +459,46 @@ cmpPointing a b =
 
         ("reach", "place") -> GT
         ("reach", "total") -> GT
+        ("reach", "essNotGoal") -> GT
+        ("reach", "penaltiesEssNotGoal") -> GT
         ("reach", "jump") -> GT
-        ("reach", "penaltiesJump") -> GT
+        ("reach", "penaltiesJumpRaw") -> GT
+        ("reach", "penaltiesJumpEffective") -> GT
         ("reach", "penalties") -> GT
         ("reach", "penaltyReason") -> GT
         ("reach", "breakdown") -> GT
         ("reach", "velocity") -> GT
         ("reach", _) -> LT
+
+        ("demeritFrac", "demeritPoint") -> LT
+        ("demeritFrac", "demeritReset") -> LT
+        ("demeritFrac", "penaltyReason") -> LT
+        ("demeritFrac", "subtotal") -> LT
+        ("demeritFrac", "landedMade") -> LT
+        ("demeritFrac", "stoppedAlt") -> LT
+        ("demeritFrac", _) -> GT
+
+        ("demeritPoint", "demeritReset") -> LT
+        ("demeritPoint", "penaltyReason") -> LT
+        ("demeritPoint", "subtotal") -> LT
+        ("demeritPoint", "landedMade") -> LT
+        ("demeritPoint", "stoppedAlt") -> LT
+        ("demeritPoint", _) -> GT
+
+        ("demeritReset", "penaltyReason") -> LT
+        ("demeritReset", "subtotal") -> LT
+        ("demeritReset", "landedMade") -> LT
+        ("demeritReset", "stoppedAlt") -> LT
+        ("demeritReset", _) -> GT
+
+        ("penaltyReason", "subtotal") -> LT
+        ("penaltyReason", "landedMade") -> LT
+        ("penaltyReason", "stoppedAlt") -> LT
+        ("penaltyReason", _) -> GT
+
+        ("subtotal", "landedMade") -> LT
+        ("subtotal", "stoppedAlt") -> LT
+        ("subtotal", _) -> GT
 
         ("landedMade", "stoppedAlt") -> LT
         ("landedMade", _) -> GT

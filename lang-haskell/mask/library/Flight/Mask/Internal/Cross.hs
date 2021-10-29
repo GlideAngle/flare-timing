@@ -25,6 +25,7 @@ import Flight.Mask.Internal.Zone
     , ZoneExit(..)
     , Crossing
     , OrdCrossing(..)
+    , boundingZone
     )
 import Flight.Geodesy.Solution (SeparatedZones)
 
@@ -45,7 +46,12 @@ insideZone
     -> TaskZone a
     -> [TrackZone a]
     -> Maybe ZoneIdx
-insideZone sepZs (TaskZone z) =
+
+insideZone sepZs (SharpZone z) =
+    fmap ZoneIdx
+    . findIndex (\(TrackZone x) -> not $ sepZs [x, z])
+
+insideZone sepZs (BluntZone _ z) =
     fmap ZoneIdx
     . findIndex (\(TrackZone x) -> not $ sepZs [x, z])
 
@@ -55,7 +61,12 @@ outsideZone
     -> TaskZone a
     -> [TrackZone a]
     -> Maybe ZoneIdx
-outsideZone sepZs (TaskZone z) =
+
+outsideZone sepZs (SharpZone z) =
+    fmap ZoneIdx
+    . findIndex (\(TrackZone x) -> sepZs [x, z])
+
+outsideZone sepZs (BluntZone _ z) =
     fmap ZoneIdx
     . findIndex (\(TrackZone x) -> sepZs [x, z])
 
@@ -127,6 +138,7 @@ enterExitSeq sepZs z xs =
 
         (hit@(ZoneEntry _ jIdx@(ZoneIdx j)) : _) ->
             Left hit : (reindex jIdx <$> exitEnterSeq sepZs z (drop j xs))
+{-# INLINABLE enterExitSeq #-}
 
 -- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
 exitEnterSeq
@@ -140,6 +152,7 @@ exitEnterSeq sepZs z xs =
 
         (hit@(ZoneExit _ jIdx@(ZoneIdx j)) : _) ->
             Right hit : (reindex jIdx <$> enterExitSeq sepZs z (drop j xs))
+{-# INLINABLE exitEnterSeq #-}
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then
@@ -182,7 +195,8 @@ isStartExit sepZs fromZones Task{speedSection, zones}
         if i > 1
             then
                 case (zs ^? element (i - 2), zs ^? element (i - 1)) of
-                    (Just tp, Just start) -> Just . not . sepZs $ unTaskZone <$> [tp, start]
+                    (Just tp, Just start) ->
+                        Just . not . sepZs $ boundingZone <$> [tp, start]
                     _ -> Nothing
             else
                 Nothing

@@ -12,9 +12,7 @@ data PlotTab
     | PlotTabArrive
     | PlotTabValid
 
-tabsPlot
-    :: MonadWidget t m
-    => m (Event t PlotTab)
+tabsPlot :: MonadWidget t m => m (Event t PlotTab)
 tabsPlot =
     elClass "div" "tabs" $
         el "ul" $ mdo

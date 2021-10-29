@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e9aa3c3f84e946d8463f76c67d34cbe23cc16b62a433d1a6075a9791a7fec505
+-- hash: 3196ecf3db731cf6b4a4d1e82c70c55b0332699250c0e0715b7b55c7ee8c3e2e
 
 name:           flight-lookup
 version:        0.1.0
 synopsis:       Hang gliding and paragliding competition data access.
 description:    Lookup items for a task, for a pilot, etc.
 category:       Data
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/lookup#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: lookup
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

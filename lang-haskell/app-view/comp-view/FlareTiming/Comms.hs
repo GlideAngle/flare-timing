@@ -1,5 +1,7 @@
 module FlareTiming.Comms
     ( GetConstraint
+    , AltDot(..)
+    , DiffWay(..)
     , getComps
     , getNominals
     , getTasks
@@ -8,13 +10,9 @@ module FlareTiming.Comms
     , getPilots
     , getPilotsStatus
     , getValidity
-    , getNormValidity
     , getAllocation
     , getTaskScore
     , getTaskValidityWorking
-    , getTaskNormValidityWorking
-    , getTaskLengthNormSphere
-    , getTaskLengthNormEllipse
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -37,14 +35,19 @@ module FlareTiming.Comms
     , getTaskReach
     , getTaskBonusReach
     , getTaskEffort
-    , getTaskNormLanding
     , getTaskLanding
-    , getTaskNormScore
     , getTaskArrival
-    , getTaskNormArrival
     , getTaskLead
     , getTaskTime
     , emptyRoute
+
+    , getAltValidity
+    , getTaskAltValidityWorking
+    , getTaskLengthAltSphere
+    , getTaskLengthAltEllipse
+    , getTaskAltLanding
+    , getTaskAltScore
+    , getTaskAltArrival
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -73,16 +76,30 @@ import WireTypes.ValidityWorking
 import FlareTiming.Events (IxTask(..))
 
 -- NOTE: Possible alternatives for mapUri ...
--- mapUri s = "http://1976-never-land.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://1989-lift-lines.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://2012-forbes.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://2018-forbes.flaretiming.com/json" <> s <> ".json"
+-- Paragliding
 -- mapUri s = "http://2018-dalmatian.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "http://2019-dalmatian.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://2016-quest.flaretiming.com/json" <> s <> ".json"
--- mapUri s = "http://2017-dalby.flaretiming.com/json" <> s <> ".json"
+-- Comp Archetypes
+-- mapUri s = "http://1976-never-land.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://1989-lift-lines.flaretiming.com/json" <> s <> ".json"
+-- Hang Gliding: Worlds
 -- mapUri s = "http://2019-italy.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2012-forbes.flaretiming.com/json" <> s <> ".json"
+-- Hang Gliding: Australia
+-- mapUri s = "http://2014-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2015-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2016-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2017-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2018-forbes.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2017-dalby.flaretiming.com/json" <> s <> ".json"
+-- Hang Glding: USA
+-- mapUri s = "http://2016-quest.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2016-greenswamp.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2016-greenswamp-sport.flaretiming.com/json" <> s <> ".json"
+-- mapUri s = "http://2016-big-spring.flaretiming.com/json" <> s <> ".json"
+-- Local Relative
 -- mapUri s = "/json" <> s <> ".json"
+-- Development Server
 -- mapUri s = "http://localhost:3000" <> s
 mapUri :: T.Text -> T.Text
 mapUri s = "http://localhost:3000" <> s
@@ -153,8 +170,12 @@ getTasks = get "/comp-input/tasks"
 getTaskLengths :: Get t m [TaskDistance]
 getTaskLengths = get "/task-length/task-lengths"
 
-getStatsPointDiff :: Get t m [Maybe (Double, Double)]
-getStatsPointDiff = get "/stats/point-diff"
+data DiffWay = DiffWayFtFs | DiffWayFtAs | DiffWayAsFs
+
+getStatsPointDiff :: DiffWay -> Get t m [Maybe (Double, Double)]
+getStatsPointDiff DiffWayFtFs = get "/stats/point-diff-ft-fs"
+getStatsPointDiff DiffWayFtAs = get "/stats/point-diff-ft-as"
+getStatsPointDiff DiffWayAsFs = get "/stats/point-diff-as-fs"
 
 getComps :: Get t m Comp
 getComps = get "/comp-input/comps"
@@ -170,9 +191,6 @@ getPilotsStatus = get "/gap-point/pilots-status"
 
 getValidity :: Get t m [Maybe Validity]
 getValidity = get "/gap-point/validity"
-
-getNormValidity :: Get t m [Maybe Validity]
-getNormValidity = get "/fs-score/validity"
 
 getAllocation :: Get t m [Maybe Allocation]
 getAllocation = get "/gap-point/allocation"
@@ -195,20 +213,11 @@ getTaskBonusReach = getIxTask "mask-track" "bonus-reach"
 getTaskEffort :: GetIxTask' t m [(Pilot, TrackEffort)]
 getTaskEffort = getIxTask "land-out" "effort"
 
-getTaskNormLanding :: GetIxTask' t m (Maybe TaskLanding)
-getTaskNormLanding = getIxTask "fs-effort" "landing"
-
 getTaskLanding :: GetIxTask' t m (Maybe TaskLanding)
 getTaskLanding = getIxTask "land-out" "landing"
 
-getTaskNormScore :: GetIxTask' t m [(Pilot, NormBreakdown)]
-getTaskNormScore = getIxTask "fs-score" "score"
-
 getTaskArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
 getTaskArrival = getIxTask "mask-track" "arrival"
-
-getTaskNormArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
-getTaskNormArrival = getIxTask "fs-mask-track" "arrival"
 
 getTaskLead :: GetIxTask' t m [(Pilot, TrackLead)]
 getTaskLead = getIxTask "mask-track" "lead"
@@ -222,18 +231,8 @@ getTaskFlyingSectionTimes = getIxTask "cross-zone" "flying-times"
 getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"
 
-getTaskNormValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
-getTaskNormValidityWorking = getIxTask "fs-score" "validity-working"
-
-getFsRoute_ :: T.Text -> IxTask -> Get t m b
-getFsRoute_ = getIxTask "fs-route"
-
 getTaskLength_ :: T.Text -> IxTask -> Get t m b
 getTaskLength_ = getIxTask "task-length"
-
-getTaskLengthNormSphere, getTaskLengthNormEllipse :: GetIxTask' t m (Maybe TrackLine)
-getTaskLengthNormSphere = getFsRoute_ "sphere"
-getTaskLengthNormEllipse = getFsRoute_ "ellipse"
 
 getTaskLengthSphericalEdge, getTaskLengthEllipsoidEdge
     :: GetIxTask' t m (OptimalRoute (Maybe TrackLine))
@@ -416,3 +415,36 @@ getTaskPilotTag (IxTask ii) ev = do
     let req' md = XhrRequest "GET" (u md) def
     rsp <- performRequestAsync . fmap req' $ getPilotId <$> ev
     return $ fmapMaybe decodeXhrResponse rsp
+
+data AltDot = AltFs | AltAs
+
+instance Show AltDot where
+    show AltFs = "Fs"
+    show AltAs = "As"
+
+getAltValidity :: Get t m [Maybe Validity]
+getAltValidity = get "/fs-score/validity"
+
+getFsRoute_ :: T.Text -> IxTask -> Get t m b
+getFsRoute_ = getIxTask "fs-route"
+
+getTaskAltLanding :: GetIxTask' t m (Maybe TaskLanding)
+getTaskAltLanding = getIxTask "fs-effort" "landing"
+
+-- WARNING: I found that airScore was changing the capitalisation of pilots'
+-- names, uppercasing the first letter of each word. To avoid misses, lookup by
+-- @PilotId@ instead of by @Pilot@.
+getTaskAltScore :: AltDot -> GetIxTask' t m [(Pilot, AltBreakdown)]
+getTaskAltScore AltFs = getIxTask "fs-score" "score"
+getTaskAltScore AltAs = getIxTask "as-score" "score"
+
+getTaskAltArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
+getTaskAltArrival = getIxTask "fs-mask-track" "arrival"
+
+getTaskAltValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
+getTaskAltValidityWorking = getIxTask "fs-score" "validity-working"
+
+getTaskLengthAltSphere, getTaskLengthAltEllipse :: GetIxTask' t m (Maybe TrackLine)
+getTaskLengthAltSphere = getFsRoute_ "sphere"
+getTaskLengthAltEllipse = getFsRoute_ "ellipse"
+

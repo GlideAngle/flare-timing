@@ -8,13 +8,12 @@ Stability   : experimental
 Tracks masked with task control zones.
 -}
 module Flight.Track.Mask
-    ( MaskingArrival(..)
-    , MaskingEffort(..)
-    , MaskingReach(..)
-    , MaskingSpeed(..)
-    , RaceTime(..)
-    , MaskingLead(..)
-    , racing
+    ( RaceTime(..)
+    , module Flight.Track.Mask.Arrival
+    , module Flight.Track.Mask.Effort
+    , module Flight.Track.Mask.Reach
+    , module Flight.Track.Mask.Speed
+    , module Flight.Track.Mask.Lead
     ) where
 
 import Flight.Track.Mask.Arrival

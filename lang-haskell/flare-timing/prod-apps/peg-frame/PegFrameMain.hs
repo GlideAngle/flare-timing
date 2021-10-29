@@ -13,45 +13,46 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Monad (join)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 
 import Flight.Clip (FlyingSection)
 import Flight.Track.Cross
-    ( Crossing(..), Seconds(..), TrackFlyingSection(..)
+    ( CompFlying(..), Seconds(..), TrackFlyingSection(..)
     , ZoneTag(..), InterpolatedFix(..)
     )
 import Flight.Track.Tag
-    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed)
+    ( CompTagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed, lastStarting, starting, tagTimes)
 import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
 import Flight.Track.Time (FixIdx(..), TrackRow(..))
 import Flight.Track.Stop
-    ( StopWindow(..), Framing(..), TrackScoredSection(..)
+    ( StopWindow(..), StopFraming(..), CompFraming(..)
+    , TrackScoredSection(..), TrackRacingGateSection(..), TrackRacingStartSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate, endOfScored
     )
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
     , CompInputFile(..)
-    , CrossZoneFile(..)
-    , TagZoneFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , TaskStop(..)
     , Task(..)
     , StartGate(..)
     , LastStart(..)
     , Pilot
-    , compToCross
-    , crossToTag
-    , tagToPeg
     , findCompInput
-    , ensureExt
+    , reshape
+    , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
-    (readComp, readCrossing, readTagging, writeFraming, readCompTrackRows)
+    ( readCompAndTasks
+    , readCompFlyTime, readCompTagZone, writeCompPegFrame, readCompTrackRows
+    )
 import PegFrameOptions (description)
 
 main :: IO ()
@@ -59,80 +60,83 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
     fprint ("Pegging the scoring frame completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
-    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
-    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
+go CmdBatchOptions{..} compFile = do
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
-    crossing <-
+    flying <-
         catchIO
-            (Just <$> readCrossing crossFile)
+            (Just <$> readCompFlyTime compFile)
             (const $ return Nothing)
 
     tagging <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
             (const $ return Nothing)
 
-    case (compSettings, crossing, tagging) of
+    case (filesTaskAndSettings, flying, tagging) of
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _) -> putStrLn "Couldn't read the crossings."
+        (_, Nothing, _) -> putStrLn "Couldn't read the flying times."
         (_, _, Nothing) -> putStrLn "Couldn't read the taggings."
-        (Just cs, Just cg, Just tg) -> writeStop cs compFile tagFile cg tg
+        (Just (_, settings), Just fy, Just tg) ->
+            writeStop
+                (uncurry mkCompTaskSettings $ settings)
+                compFile
+                fy
+                tg
 
 writeStop
-    :: CompSettings k
+    :: CompTaskSettings k
     -> CompInputFile
-    -> TagZoneFile
-    -> Crossing
-    -> Tagging
+    -> CompFlying
+    -> CompTagging
     -> IO ()
 writeStop
-    CompSettings{tasks}
+    CompTaskSettings{tasks}
     compFile
-    tagFile
-    Crossing{flying}
-    Tagging{timing, tagging} = do
+    CompFlying{flying}
+    CompTagging{timing, tagging} = do
 
     let sws :: [Maybe StopWindow] =
             [
                 do
                     TaskStop{retroactive = t1} <- stopped
+                    let (tN, psN) = lastStarting ss tt
 
                     case gs of
-                        -- NOTE: An elapsed time task. Find the last crossing
-                        -- of the start.
+                        -- NOTE: An elapsed time task. Find the last crossing of
+                        -- the start.
                         [] -> do
                             LastStart sN <- tardyElapsed ss zonesLast
-                            let wt = if sN < t1 then Just (sN, t1) else Nothing
                             return
                                 StopWindow
-                                    { lastStarters = []
-                                    , windowTimes = wt
-                                    , windowSeconds = Seconds . round $ t1 `diffUTCTime` sN
+                                    { lastStartTime = tN
+                                    , lastStarters = psN
+                                    , stopWindowTimes = if sN < t1 then Just (sN, t1) else Nothing
+                                    , stopWindowSeconds = Seconds . round $ t1 `diffUTCTime` sN
                                     }
 
                         -- NOTE: A race task with a single start gate. All
@@ -140,25 +144,26 @@ writeStop
                         (StartGate t0) : [] ->
                             return
                                 StopWindow
-                                    { lastStarters = []
-                                    , windowTimes = Just (t0, t1)
-                                    , windowSeconds = Seconds . round $ t1 `diffUTCTime` t0
+                                    { lastStartTime = tN
+                                    , lastStarters = psN
+                                    , stopWindowTimes = Just (t0, t1)
+                                    , stopWindowSeconds = Seconds . round $ t1 `diffUTCTime` t0
                                     }
 
                         -- NOTE: A race task with a multiple start gates. Find
                         -- the last start gate taken.
                         _ -> do
                             StartGate gN <- tardyGate gs ss zts zps
-                            let wt = if gN < t1 then Just (gN, t1) else Nothing
                             return
                                 StopWindow
-                                    { lastStarters = []
-                                    , windowTimes = wt
-                                    , windowSeconds = Seconds . round $ t1 `diffUTCTime` gN
+                                    { lastStartTime = tN
+                                    , lastStarters = psN
+                                    , stopWindowTimes = if gN < t1 then Just (gN, t1) else Nothing
+                                    , stopWindowSeconds = Seconds . round $ t1 `diffUTCTime` gN
                                     }
 
             | Task{stopped, startGates = gs, speedSection = ss} <- tasks
-            | TrackTime{zonesLast, zonesRankTime = zts, zonesRankPilot = zps} <- timing
+            | tt@TrackTime{zonesLast, zonesRankTime = zts, zonesRankPilot = zps} <- timing
             ]
 
     let ps = (fmap . fmap) fst flying
@@ -170,54 +175,89 @@ writeStop
     let trackss :: [Map Pilot [TrackRow]] =
             maybe (repeat $ Map.empty) (fmap (Map.fromList . catMaybes)) trackss'
 
-    let sfss :: [[(Pilot, Maybe TrackScoredSection)]] =
+    let sfss :: [[(Pilot, (Maybe TrackScoredSection, Maybe TrackRacingGateSection))]] =
             [
                 [ (p,) $ sw & \case
-                    Nothing -> do
+                    Nothing -> (, Nothing) $ do
                         TrackFlyingSection{flyingFixes, flyingTimes, flyingSeconds} <- tfs
 
                         return
                             TrackScoredSection
                                 { scoredFixes = flyingFixes
-                                , scoredTimes = flyingTimes
                                 , scoredSeconds = flyingSeconds
+                                , scoredTimes = flyingTimes
+                                , scoredWindowSeconds = do
+                                    (t0, t1) <- flyingTimes
+                                    return . Seconds . round $ t1 `diffUTCTime` t0
                                 }
 
-                    _ -> do
-                        StopWindow{windowSeconds = clipSecs} <- sw
+                    _ -> maybe (Nothing, Nothing) (\(a, b) -> (Just a, b)) $ do
+                        StopWindow{stopWindowSeconds = clipSecs} <- sw
                         TrackFlyingSection{flyingTimes = ts, flyingSeconds} <- tfs
                         case gs of
                             [] -> do
                                 (t0, t1) <- stopClipByDuration clipSecs ts
-                                let delta = t1 `diffUTCTime` t0
+                                let delta = round $ t1 `diffUTCTime` t0
                                 let st = Just (t0, t1)
                                 let track = Map.lookup p tracks
                                 let si = join $ scoredIndices st <$> track
 
                                 return
-                                    TrackScoredSection
+                                    ( TrackScoredSection
                                         { scoredFixes = si
-                                        , scoredTimes = st
                                         , scoredSeconds = do
                                             (Seconds w0, _) <- flyingSeconds
-                                            return (Seconds w0, Seconds $ w0 + round delta)
+                                            return (Seconds w0, Seconds $ w0 + delta)
+                                        , scoredTimes = st
+                                        , scoredWindowSeconds = Just $ Seconds delta
                                         }
+                                    , Nothing
+                                    )
 
                             _ -> do
-                                (t0, t1) <- stopClipByGate clipSecs gs ts
-                                let delta = t1 `diffUTCTime` t0
-                                let st = Just (t0, t1)
+                                let (sg, tsClipped) = stopClipByGate clipSecs gs ts
+                                StartGate tG <- sg
+                                (t0, t1) <- tsClipped
+                                let deltaFlying = t1 `diffUTCTime` t0
+                                let rFlying = round deltaFlying
+
                                 let track = Map.lookup p tracks
+
+                                let st = Just (t0, t1)
                                 let si = join $ scoredIndices st <$> track
 
-                                return
-                                    TrackScoredSection
-                                        { scoredFixes = si
-                                        , scoredTimes = st
-                                        , scoredSeconds = do
+                                let rgt = Just (tG, t1)
+                                let rgi = join $ scoredIndices rgt <$> track
+
+                                let sfSecs =
+                                        do
                                             (Seconds w0, _) <- flyingSeconds
-                                            return (Seconds w0, Seconds $ w0 + round delta)
+                                            return (Seconds rFlying, (Seconds w0, Seconds $ w0 + rFlying))
+
+                                let rgSecs =
+                                        do
+                                            (Seconds w0, _) <- flyingSeconds
+                                            let delta0 = tG `diffUTCTime` t0
+                                            let delta1 = t1 `diffUTCTime` tG
+                                            let r0 = round delta0
+                                            let r1 = round delta1
+                                            return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
+
+                                return
+                                    ( TrackScoredSection
+                                        { scoredFixes = si
+                                        , scoredSeconds = snd <$> sfSecs
+                                        , scoredTimes = st
+                                        , scoredWindowSeconds = fst <$> sfSecs
                                         }
+                                    , Just
+                                        TrackRacingGateSection
+                                            { racingGateFixes = rgi
+                                            , racingGateSeconds = snd <$> rgSecs
+                                            , racingGateTimes = rgt
+                                            , racingGateWindowSeconds = fst <$> rgSecs
+                                            }
+                                    )
 
                 | (p, tfs) <- pfs
                 ]
@@ -239,7 +279,7 @@ writeStop
                         return $ TrackTag{zonesTag = zs'}
 
                 | PilotTrackTag p tt <- pts
-                | (_, sf) <- sfs
+                | (_, (sf, _)) <- sfs
                 ]
 
             | sw <- sws
@@ -250,18 +290,68 @@ writeStop
     let timess :: [TrackTime] =
             [ timed ts fs
             | ts <- tagss
-            | fs <- fmap (endOfScored . snd) <$> sfss
+            | fs <- fmap (endOfScored . fst . snd) <$> sfss
+            ]
+
+    let sfss' =
+            [
+                [ (p,) $
+                    StopFraming
+                        { stopScored = sfStop
+                        , stopRacingGate = sfGate
+                        , stopRacingStart = do
+                            TrackFlyingSection{flyingSeconds} <- tfs
+                            TrackScoredSection{scoredTimes} <- sfStop
+                            TrackRacingGateSection{racingGateTimes} <- sfGate
+                            (t0, _) <- scoredTimes
+                            (_, t1) <- racingGateTimes
+                            tags' <- tagTimes ptt
+                            tS <- starting ss tags'
+
+                            let track = Map.lookup p tracks
+
+                            let rst = Just (tS, t1)
+                            let rsi = join $ scoredIndices rst <$> track
+
+                            let rsSecs =
+                                    do
+                                        (Seconds w0, _) <- flyingSeconds
+                                        let delta0 = tS `diffUTCTime` t0
+                                        let delta1 = t1 `diffUTCTime` tS
+                                        let r0 = round delta0
+                                        let r1 = round delta1
+                                        return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
+
+                            return
+                                TrackRacingStartSection
+                                    { racingStartFixes = rsi
+                                    , racingStartSeconds = snd <$> rsSecs
+                                    , racingStartTimes = rst
+                                    , racingStartWindowSeconds = fst <$> rsSecs
+                                    }
+                        }
+
+                | (_, tfs) <- pfs
+                | (p, (sfStop, sfGate)) <- sfs
+                | ptt@PilotTrackTag{} <- tags
+                ]
+
+            | Task{speedSection = ss} <- tasks
+            | pfs <- flying
+            | sfs <- sfss
+            | tags <- tagss
+            | tracks <- trackss
             ]
 
     let frame =
-            Framing
+            CompFraming
                 { stopWindow = sws
-                , stopFlying = sfss
+                , stopFlying = sfss'
                 , timing = timess
                 , tagging = tagss
                 }
 
-    writeFraming (tagToPeg tagFile) frame
+    writeCompPegFrame compFile frame
 
 clipByTime :: FlyingSection UTCTime -> Maybe ZoneTag -> Maybe ZoneTag
 clipByTime Nothing x = x

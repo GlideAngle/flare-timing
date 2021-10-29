@@ -5,20 +5,21 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
+import Control.Exception.Safe (catchIO)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Comp
-    ( FileType(CompInput)
-    , CompSettings(..)
+    ( FindDirFile(..)
+    , FileType(CompInput)
+    , CompTaskSettings(..)
     , Comp(..)
     , Task(zones, speedSection)
     , CompInputFile(..)
-    , compToTaskLength
-    , findCompInput
-    , ensureExt
+    , findCompInput, reshape, compFileToTaskFiles, mkCompTaskSettings
     )
 import Flight.TaskTrack.Double (taskTracks)
-import Flight.Scribe (readComp, writeRoute)
+import Flight.Scribe (readCompAndTasks, writeRoutes)
 import Flight.Zone.MkZones (unkindZones)
 import Flight.Zone (unlineZones)
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
@@ -36,30 +37,41 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()
-drive o = do
+drive o@CmdOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
     fprint ("Measuring task lengths completed in " % timeSpecs % "\n") start end
 
 go :: CmdOptions -> CompInputFile -> IO ()
-go CmdOptions{..} compFile@(CompInputFile compPath) = do
+go CmdOptions{earthMath, measure, noTaskWaypoints} compFile@(CompInputFile compPath) = do
     putStrLn $ takeFileName compPath
 
-    settings <- readComp compFile
-    f settings
-    where
-        f cs@CompSettings{comp = Comp{earthMath = eMath}}= do
-            let ixs = speedSection <$> tasks cs
+    filesTaskAndSettings <-
+        catchIO
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
+            (const $ return Nothing)
+
+    case filesTaskAndSettings of
+        Nothing -> putStrLn "Couldn't read the comp settings."
+        Just (_taskFiles, settings) -> do
+            let CompTaskSettings{comp = Comp{earthMath = eMath}, tasks} =
+                    uncurry mkCompTaskSettings $ settings
+
+            let ixs = speedSection <$> tasks
 
             let az =
                     azimuthFwd @Double @Double
@@ -75,9 +87,11 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 
             -- TODO: Find out if the give that enlarges zones is allowed to shorten
             -- the task length.
-            let zss = unlineZones az . unkindZones Nothing. zones <$> tasks cs
-            let includeTask = if null task then const True else flip elem task
+            let zss = unlineZones az . unkindZones (const id) Nothing . zones <$> tasks
 
-            writeRoute
-                (compToTaskLength compFile)
-                (taskTracks sp noTaskWaypoints includeTask measure ixs zss)
+            -- TODO: Get rid of task selection in @taskTracks@.
+            -- let includeTask = if null task then const True else flip elem task
+            let includeTask = const True
+            let routes = taskTracks sp noTaskWaypoints includeTask measure ixs zss
+            writeRoutes compFile routes
+

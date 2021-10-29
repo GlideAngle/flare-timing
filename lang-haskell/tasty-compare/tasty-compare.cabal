@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3dd97035095f3da9f2d37acd5088cf8087965b43a091f860533eb85e071e7907
+-- hash: f20b67be344e341a0c656ef48e152a064cbe6ed99d2fbebd61491aacc43e9fae
 
 name:           tasty-compare
 version:        0.1.0
 synopsis:       Tasty HUnit extensions for comparisons.
 description:    Adds assertCompare and operators for the same.
 category:       Test
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/tasty-compare#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: tasty-compare
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

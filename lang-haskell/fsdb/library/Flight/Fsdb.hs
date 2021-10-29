@@ -21,10 +21,10 @@ module Flight.Fsdb
     , parsePilots
     , parseTracks
     , parseTaskFolders
-    , parseNormScores
-    , parseNormRoutes
-    , parseNormArrivals
-    , parseNormLandouts
+    , parseAltScores
+    , parseAltRoutes
+    , parseAltArrivals
+    , parseAltLandouts
     ) where
 
 import Flight.Fsdb.Clean

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ci-pier]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:

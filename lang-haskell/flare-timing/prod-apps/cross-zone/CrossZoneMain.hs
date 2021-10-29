@@ -1,5 +1,4 @@
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
+import Debug.Trace (traceShowId)
 import Prelude hiding (span)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -7,37 +6,40 @@ import Data.Coerce (coerce)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Maybe (catMaybes, isNothing)
-import Data.List (nub, sort)
+import Data.Maybe (catMaybes)
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
+import Control.Monad.Except (runExceptT)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
+import Control.Concurrent.ParallelIO (parallel)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
+    , ScoringInputFiles
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , PilotName(..)
     , Pilot(..)
     , TrackFileFail(..)
     , IxTask(..)
     , Task(..)
     , Comp(..)
-    , compToCross
     , findCompInput
-    , ensureExt
+    , reshape
     , pilotNamed
+    , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Units ()
 import Flight.Track.Cross
-    ( TrackFlyingSection(..)
-    , TrackCross(..)
+    ( TrackCross(..)
     , PilotTrackCross(..)
-    , Crossing(..)
+    , CompCrossing(..)
     , trackLogErrors
     )
 import Flight.Geodesy (EarthModel(..), EarthMath(..))
@@ -50,11 +52,12 @@ import Flight.Mask
     , SelectedStart(..)
     , NomineeStarts(..)
     , ExcludedCrossings(..)
-    , checkTracks
+    , settingsLogs
     , madeZones
     , nullFlying
     )
-import Flight.Scribe (readComp, writeCrossing)
+import Flight.TrackLog (pilotTrack)
+import Flight.Scribe (readCompAndTasks, writeCompCrossZone)
 import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -63,50 +66,62 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go co@CmdBatchOptions{pilot, task} compFile@(CompInputFile compPath) = do
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-
-    compSettings <-
+go CmdBatchOptions{pilot, math, task} compFile = do
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
-    case compSettings of
-        Nothing -> putStrLn "Couldn't read the comp settings."
-        Just cs@CompSettings{comp, tasks} -> do
-            let ixs = IxTask <$> task
-            let ps = pilotNamed cs $ PilotName <$> pilot
-            tracks <-
-                catchIO
-                    (Just <$> checkAll comp (math co) compFile ixs ps)
-                    (const $ return Nothing)
 
-            case tracks of
-                Nothing -> putStrLn "Unable to read tracks for pilots."
-                Just ts -> writeCrossings compFile tasks ts
+    case filesTaskAndSettings of
+        Nothing -> putStrLn "Couldn't read the comp settings."
+        Just (taskFiles, settings@(cs, _)) -> do
+            let inFiles = (compFile, taskFiles)
+            let CompTaskSettings{comp, tasks} = uncurry mkCompTaskSettings $ settings
+            let ixSelectTasks = IxTask <$> task
+            let ps = pilotNamed cs $ PilotName <$> pilot
+            (_, selectedCompLogs) <- settingsLogs inFiles ixSelectTasks ps
+
+            tracks :: [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]] <-
+                    sequence $
+                    [
+                        parallel $
+                        [ runExceptT $ pilotTrack ((flown comp math) tasks ixTask) (traceShowId pilotLog)
+                        | pilotLog <- taskLogs
+                        ]
+
+                    | ixTask <- IxTask <$> [1..]
+                    | taskLogs <- selectedCompLogs
+                    ]
+
+            writeCrossings inFiles tasks tracks
 
 writeCrossings
-    :: CompInputFile
+    :: ScoringInputFiles
     -> [Task k]
     -> [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
     -> IO ()
-writeCrossings compFile _ xs = do
+writeCrossings (compFile, _) _ xs = do
     let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
             unzip <$>
             (fmap . fmap)
@@ -121,34 +136,13 @@ writeCrossings compFile _ xs = do
     let pss = fst <$> ys
     let ess = catMaybes . snd <$> ys
 
-    let pErrs :: [[Pilot]] =
-            [ fst <$> filter ((/= TrackLogFileNotSet) . snd) es
-            | es <- ess
-            ]
-
-    let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying pss
-
-    let notFlys :: [[Pilot]] =
-            [ fmap fst . filter snd
-              $ (fmap . fmap) (maybe False (not . flew)) fs
-            | fs <- flying
-            ]
-
-    let dnfs =
-            [ sort . nub $ es ++ ns
-            | es <- pErrs
-            | ns <- notFlys
-            ]
-
     let crossZone =
-            Crossing
-                { suspectDnf = dnfs
-                , flying = flying
-                , crossing = (fmap . fmap) crossings pss
+            CompCrossing
+                { crossing = (fmap . fmap) crossings pss
                 , trackLogError = trackLogErrors <$> ess
                 }
 
-    writeCrossing (compToCross compFile) crossZone
+    writeCompCrossZone compFile crossZone
 
 madeZonesToCross :: MadeZones -> TrackCross
 madeZonesToCross x =
@@ -163,29 +157,6 @@ madeZonesToCross x =
 crossings :: (Pilot, Maybe MadeZones) -> PilotTrackCross
 crossings (p, x) =
     PilotTrackCross p $ madeZonesToCross <$> x
-
-flew :: TrackFlyingSection -> Bool
-flew TrackFlyingSection{flyingFixes, flyingSeconds}
-    | isNothing flyingFixes = False
-    | isNothing flyingSeconds = False
-    | otherwise = f flyingFixes || f flyingSeconds
-    where
-        f :: Ord a => Maybe (a, a) -> Bool
-        f Nothing = False
-        f (Just (a, b)) = a < b
-
-madeZonesToFlying :: MadeZones -> TrackFlyingSection
-madeZonesToFlying MadeZones{flying} = flying
-
-checkAll
-    :: Comp
-    -> Math
-    -> CompInputFile
-    -> [IxTask]
-    -> [Pilot]
-    -> IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
-checkAll c math =
-    checkTracks $ \CompSettings{tasks} -> flown c math tasks
 
 flown :: Comp -> Math -> FnIxTask k MadeZones
 flown c math tasks (IxTask i) fs =

@@ -3,7 +3,7 @@ module Flight.Fsdb.Comp (parseComp) where
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc', xpWrap, xp9Tuple, xpFilterAttr, xpDefault
-    , xpElem, xpTrees, xpAttr, xpPrim, xpInt, xpOption, xpTextAttr
+    , xpElem, xpTrees, xpAttr, xpPrim, xpOption, xpTextAttr
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -23,7 +23,8 @@ import Text.XML.HXT.Core
 
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
-import Flight.Comp (Comp(..), UtcOffset(..))
+import Flight.Comp (Comp(..))
+import Flight.Fsdb.Internal.XmlPickle (xpUtcOffset)
 
 xpComp :: PU Comp
 xpComp =
@@ -48,7 +49,7 @@ xpComp =
                 , location = l
                 , from = f
                 , to = t
-                , utcOffset = UtcOffset $ 60 * utc
+                , utcOffset = utc
                 , scoreBack = s
                 , give = Nothing
                 , earth = e
@@ -61,7 +62,7 @@ xpComp =
             , location
             , from
             , to
-            , let (UtcOffset utc) = utcOffset in utc `div` 60
+            , utcOffset
             , scoreBack
             , []
             )
@@ -73,7 +74,7 @@ xpComp =
         (xpTextAttr "location")
         (xpTextAttr "from")
         (xpTextAttr "to")
-        (xpAttr "utc_offset" xpInt)
+        (xpAttr "utc_offset" xpUtcOffset)
         (xpOption $ xpAttr "score_back" xpPrim)
         xpTrees
 

@@ -10,6 +10,7 @@ module WireTypes.Pilot
     , Penal(..)
     , AwardedDistance(..)
     , AwardedVelocity(..)
+    , fstPilotId
     , getPilotId
     , getPilotName
     , nullPilot
@@ -81,6 +82,9 @@ newtype Pilot = Pilot (PilotId, PilotName)
 instance Ord Pilot where
     (Pilot (k0, s0)) `compare` (Pilot (k1, s1)) =
         (s0, k0) `compare` (s1, k1)
+
+fstPilotId :: (Pilot, a) -> (PilotId, a)
+fstPilotId (Pilot (pid, _), x) = (pid, x)
 
 getPilotId :: Pilot -> PilotId
 getPilotId (Pilot (pid, _)) = pid

@@ -18,9 +18,12 @@ module WireTypes.Comp
     , Tweak(..)
     , LwScaling(..)
     , AwScaling(..)
+    , EGwScaling(..)
     , JumpTheGunLimit(..)
     , SecondsPerPoint(..)
     , EarlyStart(..)
+    , PowerExponent(..)
+    , powerExp23
     , scaling
     , getAllRawZones
     , getRaceRawZones
@@ -280,6 +283,10 @@ newtype LwScaling = LwScaling Double
     deriving (Eq, Ord, Generic)
     deriving anyclass FromJSON
 
+newtype EGwScaling = EGwScaling Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass FromJSON
+
 newtype AwScaling = AwScaling Double
     deriving (Eq, Ord, Generic)
     deriving anyclass FromJSON
@@ -292,12 +299,21 @@ instance Show AwScaling where
     show (AwScaling 0) = "0"
     show (AwScaling x) = show x
 
+newtype PowerExponent = PowerExponent Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass FromJSON
+
+powerExp23 :: PowerExponent
+powerExp23 = PowerExponent $ 2/3
+
 data Tweak =
     Tweak
         { leadingWeightScaling :: Maybe LwScaling
         , leadingAreaDistanceSquared :: Bool
         , arrivalRank :: Bool
         , arrivalTime :: Bool
+        , timePowerExponent :: PowerExponent
+        , essNotGoalScaling :: EGwScaling
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
@@ -361,6 +377,7 @@ data Task =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
+        , cancelled :: Bool
         , taskTweak :: Maybe Tweak
         , earlyStart :: EarlyStart
         , penalsAuto :: [(Pilot, PenaltySeqs, String)]
@@ -438,14 +455,20 @@ scaling HangGliding Nothing =
         , leadingAreaDistanceSquared = True
         , arrivalRank = False
         , arrivalTime = False
+        , timePowerExponent = powerExp23
+        , essNotGoalScaling = EGwScaling 0.8
         }
+
 scaling Paragliding Nothing =
     Tweak
         { leadingWeightScaling = Just (LwScaling 2)
         , leadingAreaDistanceSquared = True
         , arrivalRank = False
         , arrivalTime = False
+        , timePowerExponent = powerExp23
+        , essNotGoalScaling = EGwScaling 0
         }
+
 scaling
     HangGliding
     (Just Tweak{leadingWeightScaling = lw, ..}) =
@@ -454,9 +477,12 @@ scaling
         , leadingAreaDistanceSquared
         , arrivalRank
         , arrivalTime
+        , timePowerExponent
+        , essNotGoalScaling
         }
     where
         lw' = fromMaybe (LwScaling 1) lw
+
 scaling
     Paragliding
     (Just Tweak{leadingWeightScaling = lw, ..}) =
@@ -465,6 +491,8 @@ scaling
         , leadingAreaDistanceSquared
         , arrivalRank
         , arrivalTime
+        , timePowerExponent
+        , essNotGoalScaling
         }
     where
         lw' = fromMaybe (LwScaling 2) lw

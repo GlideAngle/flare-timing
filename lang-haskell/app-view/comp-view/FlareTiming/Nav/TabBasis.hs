@@ -8,9 +8,7 @@ data BasisTab
     | BasisTabValidity
     | BasisTabGeo
 
-tabsBasis
-    :: MonadWidget t m
-    => m (Event t BasisTab)
+tabsBasis :: MonadWidget t m => m (Event t BasisTab)
 tabsBasis =
     elClass "div" "tabs" $
         el "ul" $ mdo

@@ -13,6 +13,7 @@ import qualified Data.List as List (span)
 import Data.Maybe (listToMaybe)
 import Data.List (nub, group, elemIndex)
 import Data.List.Split (chop)
+import Data.Foldable (foldl')
 
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
@@ -418,9 +419,12 @@ flyingSection ys =
         zss = group yls
         zls = jumpGaps $ length <$> zss
         tally i =
-            sum $ take (iys + 1) yls
+            strictSum $ take (iys + 1) yls
             where
-                iys = sum $ take (i + 1) zls
+                iys = strictSum $ take (i + 1) zls
+
+strictSum :: [Int] -> Int
+strictSum = foldl' (+) 0
 
 jumpGap :: (Ord a, Num a) => [a] -> ([a], [a])
 jumpGap (x : 1 : 1 : 1 : y : xs)
@@ -461,4 +465,4 @@ jumpGaps :: [Int] -> [Int]
 jumpGaps xs =
     if ys == xs then ys else jumpGaps ys
     where
-        ys = sum <$> chop jumpGap xs
+        ys = strictSum <$> chop jumpGap xs

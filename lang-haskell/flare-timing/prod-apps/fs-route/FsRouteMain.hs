@@ -8,6 +8,7 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import System.Directory (getCurrentDirectory)
 
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
 import Flight.LatLng.Raw (RawLatLng(..), RawLat(..), RawLng(..))
@@ -15,18 +16,20 @@ import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNormRoutes)
+import Flight.Fsdb (parseAltRoutes)
 import Flight.Comp
-    ( FileType(TrimFsdb)
+    ( AltDot(AltFs)
+    , FindDirFile(..)
+    , FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
-    , trimFsdbToNormRoute
+    , trimFsdbToAltRoute
     , findTrimFsdb
-    , ensureExt
+    , reshape
     )
 import Flight.Route
 import Flight.TaskTrack.Double
-import Flight.Scribe (readTrimFsdb, writeNormRoute)
+import Flight.Scribe (readTrimFsdb, writeAltRoute)
 import FsRouteOptions (description)
 
 sp :: SampleParams Double
@@ -37,16 +40,17 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
+    let lf = LenientFile {coerceFile = reshape TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findTrimFsdb o
+    cwd <- getCurrentDirectory
+    files <- findTrimFsdb $ FindDirFile {dir = cwd, file = file}
 
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
@@ -58,11 +62,11 @@ go trimFsdbFile = do
     FsdbXml contents <- readTrimFsdb trimFsdbFile
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ normRoutes (FsdbXml contents')
-    either print (writeNormRoute (trimFsdbToNormRoute trimFsdbFile)) settings
+    either print (writeAltRoute (trimFsdbToAltRoute AltFs trimFsdbFile)) settings
 
 fsdbRoutes :: FsdbXml -> ExceptT String IO [[RawLatLng]]
 fsdbRoutes (FsdbXml contents) = do
-    fs <- lift $ parseNormRoutes contents
+    fs <- lift $ parseAltRoutes contents
     let fs' = (fmap . fmap . fmap) convertLatLng fs
     ExceptT $ return fs'
 

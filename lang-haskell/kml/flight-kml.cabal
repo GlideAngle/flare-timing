@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 573809751c3c3c05b0eeb0bbcd643e9ead7c559a9b9c082b28fed39064542ba2
+-- hash: 007c562a6393bc25482eb49544d732e032152ab828cd8c9ec95446adbb209d96
 
 name:           flight-kml
 version:        1.1.0
 synopsis:       Parsing of pilot tracklogs dumped as KML.
 description:    Provides parsing of dumped tracklogs. In hang gliding and paragliding competitions when FS and GpsDump are paired in competition mode a pilot's tracklog is dumped as KML. This is exlained in detail on the FS wiki.
 category:       Data, Parsing, Geography, Gps, Flight, XML, KML
-homepage:       https://github.com/blockscope/flare-timing/tree/master/kml#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/kml#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -28,8 +28,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: kml
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False
@@ -49,6 +48,7 @@ library
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
+    , deepseq
     , detour-via-sci
     , flight-clip
     , hxt
@@ -76,6 +76,7 @@ test-suite doctest
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
+    , deepseq
     , detour-via-sci
     , doctest
     , flight-clip
@@ -108,6 +109,7 @@ test-suite parse
   build-depends:
       aeson
     , base
+    , deepseq
     , detour-via-sci
     , flight-clip
     , hxt

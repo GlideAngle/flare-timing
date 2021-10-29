@@ -1,18 +1,18 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dfe2e5b3ef4e90c1b2d6997ec89a51fa2b4d59752fa8da6e4b252374de083aae
+-- hash: 6972ac136eebf1b6faa6a50fe31702167c7f9876f43e7f39b14dd697845dac86
 
 name:           flight-gap-effort
 version:        0.1.0
 synopsis:       GAP Scoring, Effort
 description:    GAP scoring for hang gliding and paragliding competitons, the effort (distance difficulty) parts.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-validity#readme
-bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-validity/issues
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/gap-effort#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
@@ -27,7 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-validity
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a93b4393588295b0f9402ec5740513c9a6ea9814ec6e7b5a84a7308609a35cd8
+-- hash: 590edffe908a8731c9609f0fdb1f0afe83ec1e47a171841e620d78dda966edd1
 
 name:           flight-track
 version:        0.1.0
 synopsis:       Hang gliding and paragliding competition track logs.
 description:    Reading track logs for each pilot in each task of a competition.
 category:       Data
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/track#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -31,8 +31,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: track
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False
@@ -51,6 +50,7 @@ library
       base >=4.10.1.0 && <5
     , bytestring
     , containers
+    , deepseq
     , directory
     , filepath
     , flight-clip
@@ -79,6 +79,7 @@ test-suite doctest
       base >=4.10.1.0 && <5
     , bytestring
     , containers
+    , deepseq
     , directory
     , doctest
     , filepath

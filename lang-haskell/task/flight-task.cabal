@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 962d9f92305c89bb0ef0569c590abc55c08d15d4a9c352af106941a7a4a734bc
+-- hash: be64dfa74cc7ddf63e7345bb467453e5d8dd7328ecaffabb2f0072a65be5d82d
 
 name:           flight-task
 version:        0.1.0
 synopsis:       Tasks to fly.
 description:    Tasks for hang gliding and paragliding competitons.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/task#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: task
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

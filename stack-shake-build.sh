@@ -2,5 +2,5 @@
 
 #set +v
 
-stack install build-flare-timing
-build-flare-timing $@
+stack install ft-build
+ft-build $@

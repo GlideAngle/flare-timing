@@ -11,7 +11,6 @@ import qualified FlareTiming.Plot.LeadCoef.Plot as P (leadCoefPlot)
 import WireTypes.Fraction (LeadingFraction(..))
 import WireTypes.Comp (Tweak(..))
 import WireTypes.Lead (TrackLead(..), LeadingCoefficient(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..), nullPilot, pilotIdsWidth)
 import FlareTiming.Pilot (hashIdHyphenPilot)
 import FlareTiming.Plot.LeadCoef.Table (tablePilotCoef)
@@ -36,10 +35,9 @@ leadCoefPlot
     :: MonadWidget t m
     => IxTask
     -> Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-leadCoefPlot _ix tweak sEx xs = do
+leadCoefPlot _ix tweak xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
 
     elClass "div" "tile is-ancestor" $ mdo
@@ -96,7 +94,7 @@ leadCoefPlot _ix tweak sEx xs = do
         let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
-            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tablePilotCoef tweak sEx xs dPilots')
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tablePilotCoef tweak xs dPilots')
 
         return ()
 

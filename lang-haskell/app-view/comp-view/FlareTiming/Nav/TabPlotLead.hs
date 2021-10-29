@@ -7,9 +7,7 @@ data PlotLeadTab
     = PlotLeadTabPoint
     | PlotLeadTabArea
 
-tabsPlotLead
-    :: MonadWidget t m
-    => m (Event t PlotLeadTab)
+tabsPlotLead :: MonadWidget t m => m (Event t PlotLeadTab)
 tabsPlotLead =
     elClass "div" "tabs" $
         el "ul" $ mdo

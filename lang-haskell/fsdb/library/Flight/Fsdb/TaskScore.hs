@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Fsdb.TaskScore (parseNormScores) where
+module Flight.Fsdb.TaskScore (parseAltScores) where
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
@@ -47,8 +47,8 @@ import Text.XML.HXT.Core
 
 import Flight.Distance (TaskDistance(..), QTaskDistance, unTaskDistanceAsKm)
 import Flight.Track.Distance (AwardedDistance(..))
-import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
-import qualified Flight.Track.Point as Norm (NormBreakdown(..))
+import Flight.Track.Point (AlternativePointing(..), AltPointing, AltBreakdown(..))
+import qualified Flight.Track.Point as Alt (AltBreakdown(..))
 import Flight.Comp (PilotId(..), Pilot(..), Nominal(..), DfNoTrackPilot(..))
 import qualified "flight-gap-allot" Flight.Score as Frac (Fractions(..))
 import "flight-gap-allot" Flight.Score
@@ -106,7 +106,7 @@ toPilotTime x =
         secs :: Quantity Double [u| s |]
         secs = fromRational' . MkQuantity . toRational $ timeOfDayToTime x
 
-xpRankScore :: PU NormBreakdown
+xpRankScore :: PU AltBreakdown
 xpRankScore =
     xpElem "FsResult"
     $ xpFilterAttr
@@ -131,9 +131,13 @@ xpRankScore =
         )
     $ xpWrap
         ( \(r, p, ldp, ddp, dp, l, a, t, dM, dE, dL, ss, es, ssE) ->
-            NormBreakdown
-                { place = TaskPlacing $ fromIntegral r
-                , total = TaskPoints $ fromIntegral p
+            let place = TaskPlacing $ fromIntegral r in
+
+            AltBreakdown
+                { placeGiven = place
+                -- NOTE: We'll adjust place taken later.
+                , placeTaken = place
+                , total = TaskPoints p
                 , breakdown =
                     Points
                         { reach = LinearPoints $ dToR ldp
@@ -155,24 +159,30 @@ xpRankScore =
 
                 , reach =
                     ReachToggle
-                        { flown = taskKmToMetres . TaskDistance . MkQuantity $ dM
-                        , extra = taskKmToMetres . TaskDistance . MkQuantity $ dE
+                        { flown = Just . taskKmToMetres . TaskDistance $ MkQuantity dM
+                        , extra = Just . taskKmToMetres . TaskDistance $ MkQuantity dE
                         }
                 -- WARNING: Sometimes FS writes min double to last_distance.
                 -- last_distance="-1.79769313486232E+305"
                 , landedMade =
-                    taskKmToMetres . TaskDistance . MkQuantity
+                    Just . taskKmToMetres . TaskDistance . MkQuantity
                     $ Stats.max 0 dL
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
+
+                -- WARNING: FS always has a time for ss_time but airscore uses
+                -- "" instead of "00:00:00" when the pilot didn't complete the
+                -- speed section.
                 , timeElapsed =
-                    if ssE == Just "00:00:00" then Nothing else
-                    toPilotTime . parseHmsTime <$> ssE
-                , leadingArea = LeadingArea zero
+                    if | ssE == Just "00:00:00" -> Nothing
+                       | ssE == Just "" -> Nothing
+                       | otherwise -> toPilotTime . parseHmsTime <$> ssE
+
+                , leadingArea = Nothing
                 , leadingCoef = LeadingCoef zero
                 }
-        , \NormBreakdown
-                { place = TaskPlacing r
+        , \AltBreakdown
+                { placeGiven = TaskPlacing r
                 , total = TaskPoints p
                 , breakdown =
                     Points
@@ -183,27 +193,23 @@ xpRankScore =
                         , arrival = ArrivalPoints a
                         , time = TimePoints t
                         }
-                , reach =
-                    ReachToggle
-                        { flown = TaskDistance (MkQuantity dM)
-                        , extra = TaskDistance (MkQuantity dE)
-                        }
-                , landedMade = TaskDistance (MkQuantity dL)
+                , reach = ReachToggle{flown, extra}
+                , landedMade
                 , ss
                 , es
                 , timeElapsed
                 } ->
                     ( fromIntegral r
-                    , round p
+                    , p
                     , fromRational ldp
                     , fromRational ddp
                     , fromRational dp
                     , fromRational l
                     , fromRational a
                     , fromRational t
-                    , dE
-                    , dM
-                    , dL
+                    , maybe 0 (\(TaskDistance (MkQuantity dE)) -> dE) extra
+                    , maybe 0 (\(TaskDistance (MkQuantity dM)) -> dM) flown
+                    , maybe 0 (\(TaskDistance (MkQuantity dL)) -> dL) landedMade
                     , show <$> ss
                     , show <$> es
                     , show <$> timeElapsed
@@ -211,7 +217,8 @@ xpRankScore =
         )
     $ xp14Tuple
         (xpAttr "rank" xpInt)
-        (xpAttr "points" xpInt)
+        -- NOTE: FS used to write int points but since Apr 2020 writes floats.
+        (xpAttr "points" xpPrim)
 
         (xpDefault (0 :: Double) $ xpAttr "linear_distance_points" xpPrim)
         (xpDefault (0 :: Double) $ xpAttr "difficulty_distance_points" xpPrim)
@@ -425,13 +432,13 @@ xpStopValidityWorking =
                     , flying = PilotsFlying $ fromIntegral pf
                     , reachStats =
                         ReachToggle
-                            { extra =
+                            { extra = Just $
                                 ReachStats
                                     { max = FlownMax $ convert qExtraMax
                                     , mean = FlownMean [u| 0 km |]
                                     , stdDev = FlownStdDev [u| 0 km |]
                                     }
-                            , flown =
+                            , flown =Just $
                                 ReachStats
                                     { max = FlownMax $ convert qFlownMax
                                     , mean = FlownMean [u| 0 km |]
@@ -444,25 +451,28 @@ xpStopValidityWorking =
                 { pilotsAtEss = PilotsAtEss pe
                 , landed = PilotsLanded pl
                 , flying = PilotsFlying pf
-                , reachStats =
-                    ReachToggle
-                        { extra = ReachStats{max = FlownMax qExtraMax}
-                        , flown = ReachStats{max = FlownMax qFlownMax}
-                        }
+                , reachStats = ReachToggle{extra, flown}
                 , launchToEssDistance = ed
                 } ->
-                    let (MkQuantity eMax) :: Quantity _ [u| km |] = convert qExtraMax
-                        (MkQuantity fMax) :: Quantity _ [u| km |] = convert qFlownMax
-                    in
-                        ( fromIntegral pe
-                        , fromIntegral pl
-                        , fromIntegral pf
-                        , eMax
-                        , fMax
-                        , do
-                            LaunchToEss (MkQuantity d) <- ed
-                            return d
-                        )
+                    ( fromIntegral pe
+                    , fromIntegral pl
+                    , fromIntegral pf
+                    , maybe
+                        0
+                        (\ReachStats{max = FlownMax qExtraMax} ->
+                            let (MkQuantity eMax) :: Quantity _ [u| km |] = convert qExtraMax
+                            in eMax)
+                        extra
+                    , maybe
+                        0
+                        (\ReachStats{max = FlownMax qFlownMax} ->
+                            let (MkQuantity fMax) :: Quantity _ [u| km |] = convert qFlownMax
+                            in fMax)
+                        flown
+                    , do
+                        LaunchToEss (MkQuantity d) <- ed
+                        return d
+                    )
         )
     $ xp6Tuple
         (xpAttr "no_of_pilots_reaching_es" xpInt)
@@ -472,15 +482,17 @@ xpStopValidityWorking =
         (xpAttr "best_real_dist" xpPrim)
         (xpOption $ xpAttr "launch_to_ess_distance" xpPrim)
 
-getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
+getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe AltBreakdown)]
 getScore pilots =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> getTaskDistance
+    >>> getAttrValue "name"
+    &&& getTaskDistance
     &&& getDidFly kps
     &&& getDidFlyNoTracklog kps
     &&& getPoint
-    >>> arr (\(t, (wt, (nt, xs))) ->
+    -- NOTE: wt = with track, nt = no track.
+    >>> arr (\(_name, (t, (wt, (nt, xs)))) ->
         let td :: Maybe (QTaskDistance _ [u| km |]) = asTaskKm t
             dfwt = asAward t <$> wt
             dfnt = asAward t <$> nt
@@ -492,24 +504,32 @@ getScore pilots =
         in
             [
                 (,) p $ do
-                    n@NormBreakdown{reach = r@ReachToggle{flown = dm}, fractions = fracs} <- x
-                    let dKm = taskMetresToKm dm
+                    n@AltBreakdown{reach = r@ReachToggle{flown = dm}, fractions = fracs} <- x
+                    dKm <- taskMetresToKm <$> dm
                     AwardedDistance{awardedFrac = dFrac} <- asAwardReach t (Just dKm)
                     return
                         n
                             { fractions = fracs{Frac.distance = DistanceFraction $ toRational dFrac}
-                            , Norm.reach =
+                            , Alt.reach =
                                 maybe
                                     r
                                     (\(TaskDistance (d :: Quantity _ [u| m |])
                                           , ReachToggle
-                                              { flown = AwardedDistance{awardedFrac = fracF}
-                                              , extra = AwardedDistance{awardedFrac = fracE}
+                                              { flown = fracFlown
+                                              , extra = fracExtra
                                               }) ->
-                                        r
-                                            { flown = TaskDistance $ MkQuantity fracF *: d
-                                            , extra = TaskDistance $ MkQuantity fracE *: d
-                                            })
+                                        let fracDistance AwardedDistance{awardedFrac} =
+                                                    TaskDistance $ MkQuantity awardedFrac *: d
+
+                                            f = fracDistance fracFlown
+
+    -- WARNING: FS will set FsFlightData/@bonus_distance="0" in cases where the
+    -- task is using barometric altitude but the track only has GPS altitude.
+    -- Despite this, FS scores reach on the max of FsFlight/@distance and
+    -- FsFlightData/@bonus_distance.
+                                            e = fracDistance $ Stats.max fracFlown fracExtra
+                                        in
+                                            r{flown = Just f, extra = Just e})
                                     (do
                                         TaskDistance td' <- td
                                         let td'' :: Quantity _ [u| m |] = convert td'
@@ -558,12 +578,18 @@ getScore pilots =
                         ( unKeyPilot (keyMap kps) . PilotId $ pid
                         , do
                             norm <- x
-                            (a, c) <- ld
                             return $
-                                norm
-                                    { leadingArea = LeadingArea . MkQuantity . fromIntegral $ a
-                                    , leadingCoef = LeadingCoef . MkQuantity $ c
-                                    }
+                                maybe
+                                    norm
+                                    (\(a, c) ->
+                                        norm
+                                            { leadingArea =
+                                                Just . LeadingArea . MkQuantity
+                                                $ fromIntegral a
+
+                                            , leadingCoef = LeadingCoef . MkQuantity $ c
+                                            })
+                                    ld
                         ))
 
                 getResultScore =
@@ -577,9 +603,11 @@ getScore pilots =
             >>> arr (unpickleDoc xpLeading)
 
         getTaskDistance =
-            getChildren
+            (getChildren
             >>> hasName "FsTaskScoreParams"
             >>> getAttrValue "task_distance"
+            )
+            `orElse` constA ""
 
 getValidity
     :: ArrowXml a
@@ -591,21 +619,21 @@ getValidity
     -> a XmlTree
          ( Either
              String
-             ( Validity
-             , LaunchValidityWorking
-             , TimeValidityWorking
-             , DistanceValidityWorking
-             , StopValidityWorking
+             ( Maybe Validity
+             , Maybe LaunchValidityWorking
+             , Maybe TimeValidityWorking
+             , Maybe DistanceValidityWorking
+             , Maybe StopValidityWorking
              )
          )
 getValidity ng nl nd md nt =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> getTaskValidity
-    &&& getLaunchValidityWorking
-    &&& getTimeValidityWorking
-    &&& getDistanceValidityWorking
-    &&& getStopValidityWorking
+    >>> (maybeScored getTaskValidity)
+    &&& (maybeScored getLaunchValidityWorking)
+    &&& (maybeScored getTimeValidityWorking)
+    &&& (maybeScored getDistanceValidityWorking)
+    &&& (maybeScored getStopValidityWorking)
     >>> arr (\(tv, (lw, (tw, (dw, sw)))) -> do
             tv' <- tv
             lw' <- lw
@@ -639,8 +667,15 @@ getValidity ng nl nd md nt =
             >>> hasName "FsTaskScoreParams"
             >>> arr (unpickleDoc' xpStopValidityWorking)
 
-parseNormScores :: Nominal -> String -> IO (Either String NormPointing)
-parseNormScores
+        -- NOTE: When a task is cancelled, it doesn't have FsTaskScoreParams.
+        --  <FsTask>
+        --    <FsTaskState task_state="CANCELLED">
+        --    <!-- No child FsTaskScoreParams element -->
+        --  </FsTask>
+        maybeScored x = (x >>> arr (fmap Just)) `orElse` constA (Right Nothing)
+
+parseAltScores :: Nominal -> String -> IO (Either String AltPointing)
+parseAltScores
     Nominal
         { goal = ng
         , launch = nl
@@ -660,50 +695,58 @@ parseNormScores
     ps <- runX $ doc >>> getCompPilot
     xss <- runX $ doc >>> getScore ps
 
-    let yss :: [[(Pilot, NormBreakdown)]] = [catMaybes $ sequence <$> xs| xs <- xss]
-    let tss = const Nothing <$> yss
+    let yss :: [[(Pilot, AltBreakdown)]] = [catMaybes $ sequence <$> xs| xs <- xss]
+    let tss :: [Maybe (BestTime (Quantity Double [u| h |]))] = const Nothing <$> yss
 
-    let rss =
+    let rss :: [([Maybe (QTaskDistance Double [u| m |])], [Maybe (QTaskDistance Double [u| m |])])] =
             [
                 unzip
                 [ (extra, flown)
-                | NormBreakdown{reach = ReachToggle{extra, flown}} <- ys
+                | AltBreakdown{reach = ReachToggle{extra, flown}} <- ys
                 ]
             | ys <- (fmap . fmap) snd yss
             ]
 
-    let es =
-            [
+    let es :: [Maybe ReachStats] =
+            [ do
+                xs <- Just $ maybe (TaskDistance zero) id <$> xs'
                 let ys = V.fromList $ unTaskDistanceAsKm <$> xs
-                    (ysMean, ysVar) = Stats.meanVariance ys
-                in
+                let (ysMean, ysVar) = Stats.meanVariance ys
+                return $
                     ReachStats
                         { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
                         , mean = FlownMean $ MkQuantity ysMean
                         , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
                         }
-            | (xs, _) <- rss
+            | (xs', _) <- rss
             ]
 
-    let rs =
-            [
+    let rs :: [Maybe ReachStats] =
+            [ do
+                xs <- Just $ maybe (TaskDistance zero) id <$> xs'
                 let ys = V.fromList $ unTaskDistanceAsKm <$> xs
-                    (ysMean, ysVar) = Stats.meanVariance ys
-                in
+                let (ysMean, ysVar) = Stats.meanVariance ys
+                return $
                     ReachStats
                         { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
                         , mean = FlownMean $ MkQuantity ysMean
                         , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
                         }
-            | (_, xs) <- rss
+            | (_, xs') <- rss
             ]
 
     gvs <- runX $ doc >>> getValidity ng nl nd md nt
-    let vws =
+    let vws :: [Either String (Maybe _, Maybe _, Maybe _, Maybe _, Maybe _)] =
             [
-                (\(vs, lw, tw, dw, sw) ->
-                    let sw' = sw{reachStats = ReachToggle{extra = e, flown = r}} in
-                    (vs, lw, tw, dw, sw')
+                (\(vs, lw, tw, dw, sw') ->
+                    ( vs
+                    , lw
+                    , tw
+                    , dw
+                    ,
+                        (\sw -> sw{reachStats = ReachToggle{extra = e, flown = r}})
+                        <$> sw'
+                    )
                 )
                 <$> gv
             | gv <- gvs
@@ -713,13 +756,13 @@ parseNormScores
 
     return $
         (\(vs, lw, tw, dw, sw) ->
-            NormPointing
+            AlternativePointing
                 { bestTime = tss
-                , validityWorkingLaunch = Just <$> lw
-                , validityWorkingTime = Just <$> tw
-                , validityWorkingDistance = Just <$> dw
-                , validityWorkingStop = Just <$> sw
-                , validity = Just <$> vs
+                , validityWorkingLaunch = lw
+                , validityWorkingTime = tw
+                , validityWorkingDistance = dw
+                , validityWorkingStop = sw
+                , validity = vs
                 , score = yss
                 })
         . unzip5

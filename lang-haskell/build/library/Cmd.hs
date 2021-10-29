@@ -39,12 +39,12 @@ tooling StackTooling = "stack"
 tooling PierTooling = "pier"
 
 cmdDocTestFor :: Tooling -> String -> String
-cmdDocTestFor CabalTooling x = "cabal new-test " ++ x ++ ":doctest"
+cmdDocTestFor CabalTooling x = "cabal v2-test " ++ x ++ ":doctest"
 cmdDocTestFor StackTooling x = "stack test " ++ x ++ ":doctest"
 cmdDocTestFor PierTooling x = "stack exec pier -- test " ++ x ++ ":doctest"
 
 cmdTestFor :: Tooling -> (Pkg, Test) -> String
-cmdTestFor CabalTooling (x, y) = "cabal new-test " ++ x ++ ":" ++ y
+cmdTestFor CabalTooling (x, y) = "cabal v2-test " ++ x ++ ":" ++ y
 cmdTestFor StackTooling (x, y) = "stack test " ++ x ++ ":" ++ y
 cmdTestFor PierTooling (x, y) = "stack exec pier -- test " ++ x ++ ":test-suite:" ++ y
 
@@ -55,12 +55,12 @@ compilerToolFor StackTooling x = "stack build --copy-compiler-tool " ++ x
 compilerToolFor PierTooling _ = ""
 
 cmdBuildFor :: Tooling -> String -> String
-cmdBuildFor CabalTooling x = "cabal new-build " ++ x
+cmdBuildFor CabalTooling x = "cabal v2-build " ++ x
 cmdBuildFor StackTooling x = "stack build " ++ x ++ " --copy-bins"
 cmdBuildFor PierTooling x = "stack exec pier -- build " ++ x
 
 cmdBuildTestFor :: Tooling -> String -> String
-cmdBuildTestFor CabalTooling x = "cabal new-build " ++ x
+cmdBuildTestFor CabalTooling x = "cabal v2-build " ++ x
 cmdBuildTestFor StackTooling x = "stack build " ++ x ++ " --no-run-tests"
 cmdBuildTestFor PierTooling x = "stack exec pier -- build " ++ x ++ " --no-run-tests"
 
@@ -123,9 +123,9 @@ docTestPkgs =
 -- | The names of the test app executables.
 testApps :: [String]
 testApps =
-    [ "test-fsdb-parser"
-    , "test-igc-parser"
-    , "test-kml-parser"
+    [ "ft-fsdb-parser"
+    , "ft-igc-parser"
+    , "ft-kml-parser"
     ]
 
 -- | The names of the production app executables
@@ -137,22 +137,22 @@ prodApps =
     , "fs-effort"
     , "fs-score"
 
-    , "extract-input"
-    , "task-length"
-    , "cross-zone"
-    , "tag-zone"
-    , "peg-frame"
-    , "align-time"
-    , "discard-further"
-    , "mask-track"
-    , "land-out"
-    , "gap-point"
+    , "ft-extract-input"
+    , "ft-task-length"
+    , "ft-cross-zone"
+    , "ft-tag-zone"
+    , "ft-peg-frame"
+    , "ft-align-time"
+    , "ft-discard-further"
+    , "ft-mask-track"
+    , "ft-land-out"
+    , "ft-gap-point"
     ]
 
 -- | The names of the production app executables
 wwwApps :: [String]
 wwwApps =
-    [ "comp-serve"
+    [ "ft-comp-serve"
     ]
 
 cleanRules :: Rules ()

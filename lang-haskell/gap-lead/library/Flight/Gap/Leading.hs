@@ -27,7 +27,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces)
 import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Units ()
-import "flight-gap-allot" Flight.Score (LeadingFraction(..), powerFraction)
+import "flight-gap-allot" Flight.Score
+    (LeadingFraction(..), powerExp23, powerFraction)
 import Flight.Gap.Leading.Area (LeadingAreas(..), LeadingArea(..))
 import Flight.Gap.Leading.Coef (LeadingCoef(..), LeadingCoefUnits)
 
@@ -161,4 +162,4 @@ leadingFraction
     -> LeadingCoef LeadingCoefUnits
     -> LeadingFraction
 leadingFraction (LeadingCoef (MkQuantity lcMin)) (LeadingCoef (MkQuantity lc)) =
-    LeadingFraction . toRational $ powerFraction lcMin lc
+    LeadingFraction . toRational $ powerFraction powerExp23 lcMin lc

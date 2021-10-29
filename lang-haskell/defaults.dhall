@@ -6,6 +6,10 @@
     "phil.dejoux@blockscope.com"
 , copyright =
     "\u00A9 2017-2019 Phil de Joux, \u00A9 2017-2019 Block Scope Limited"
+, git =
+    "https://github.com/BlockScope/flare-timing.git"
+, bug-reports =
+    "https://github.com/blockscope/flare-timing/issues"
 , license =
     "MPL-2.0"
 , license-file =

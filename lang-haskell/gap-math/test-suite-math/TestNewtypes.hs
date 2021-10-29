@@ -4,6 +4,7 @@ module TestNewtypes where
 
 import Prelude hiding (max)
 import qualified Prelude (max)
+import Text.Printf (printf)
 import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
 import Data.List (sortBy)
@@ -19,6 +20,10 @@ import "flight-gap-math" Flight.Score
 
 import Normal (Normal(..))
 import Flight.Units()
+
+tooEarly1, tooEarly2 :: TooEarlyPoints
+tooEarly1 = TooEarlyPoints . assumeProp $ refined 1
+tooEarly2 = TooEarlyPoints . assumeProp $ refined 2
 
 -- | Arrival fraction
 newtype AfTest = AfTest (PilotsAtEss, ArrivalPlacing) deriving Show
@@ -116,11 +121,15 @@ instance QC.Arbitrary DfTest where
 data PtTest a =
     PtTest
         { ptSitrep :: SitRep a
+        , ptEssNotGoal :: GoalValidatedPoints -> PenaltySeq
         , ptJumps :: PenaltySeq
         , ptOthers :: PenaltySeqs
         , ptPoints :: Points
         }
-    deriving Show
+
+instance Show (PtTest a) where
+    show PtTest{..} =
+        printf "(situation = %s, jumps = %s, penalties = %s, points = %s)" (show ptSitrep) (show ptJumps) (show ptOthers) (show ptPoints)
 
 newtype PointParts = PointParts Points deriving Show
 
@@ -148,14 +157,24 @@ instance QC.Arbitrary (PtTest Hg) where
                 , do
                     (QC.Positive x) <- arbitrary
                     return $ JumpedTooEarly (TooEarlyPoints (assumeProp $ refined x))
+
                 , do
                     (QC.Positive spp) <- arbitrary
                     (QC.Positive jtg) <- arbitrary
-                    return $ Jumped (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg)
+                    return $
+                        Jumped
+                            tooEarly1
+                            (SecondsPerPoint $ MkQuantity spp)
+                            (JumpedTheGun $ MkQuantity jtg)
+
                 , do
                     (QC.Positive spp) <- arbitrary
                     (QC.Positive jtg) <- arbitrary
-                    return $ JumpedNoGoal (SecondsPerPoint $ MkQuantity spp) (JumpedTheGun $ MkQuantity jtg)
+                    return $
+                        JumpedNoGoal
+                            tooEarly1
+                            (SecondsPerPoint $ MkQuantity spp)
+                            (JumpedTheGun $ MkQuantity jtg)
                 ]
 
         (PointParts parts) <- arbitrary
@@ -179,7 +198,7 @@ instance QC.Arbitrary (PtTest Hg) where
 
         others <- genOthers
 
-        return $ PtTest penalty jumps others parts
+        return $ PtTest penalty egPenaltyNull jumps others parts
 
 instance QC.Arbitrary (PtTest Pg) where
     arbitrary = do
@@ -213,4 +232,4 @@ instance QC.Arbitrary (PtTest Pg) where
 
         others <- genOthers
 
-        return $ PtTest penalty jumps others parts
+        return $ PtTest penalty egPenaltyNull jumps others parts

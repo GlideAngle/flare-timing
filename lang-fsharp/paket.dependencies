@@ -1,7 +1,0 @@
-source https://api.nuget.org/v3/index.json
-
-nuget FSharp.Core
-nuget Hedgehog
-nuget unquote
-nuget xUnit
-nuget xunit.runner.visualstudio

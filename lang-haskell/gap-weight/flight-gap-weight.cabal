@@ -1,18 +1,18 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9eac8a90e060bb513994bef56d1d5413a420cf6d6e60d145b8e0852f40f8949b
+-- hash: e7683165eba0f0a8a41ed0a7e9c7ae943d0b903a4211ee7740ec67bd9e4c2ebd
 
 name:           flight-gap-weight
 version:        0.1.0
 synopsis:       GAP Scoring, Weights
 description:    GAP scoring for hang gliding and paragliding competitons, the weighting parts.
 category:       Flight
-homepage:       https://github.com/blockscope/flare-timing/lang-haskell/gap-lead#readme
-bug-reports:    https://github.com/blockscope/flare-timing/lang-haskell/gap-lead/issues
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/gap-weight#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
@@ -27,7 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing/lang-haskell/gap-lead
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False
@@ -39,6 +39,7 @@ library
   other-modules:
       Flight.Gap.Weight.Arrival
       Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.EssNotGoal
       Flight.Gap.Weight.GoalRatio
       Flight.Gap.Weight.Leading
       Flight.Gap.Weight.Time

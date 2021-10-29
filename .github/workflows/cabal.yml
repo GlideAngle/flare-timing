@@ -2,9 +2,9 @@ name: cabal
 
 on:
   push:
-    branches: [ci-cabal]
+    branches: [ci-cabal, fix/haskell-actions-setup-519]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: actions/setup-haskell@v1
+    - uses: haskell/actions/setup@v1
       name: Setup GHC and cabal-install
       with:
         ghc-version: ${{ matrix.ghc }}
