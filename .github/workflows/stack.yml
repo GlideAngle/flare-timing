@@ -44,90 +44,89 @@ jobs:
         path: ~/.stack
         key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
 
-    - name: build tests
-      run: stack test --no-run-tests --no-terminal
+    # - name: build tests
+    #   run: stack test --no-run-tests --no-terminal
 
-    # NOTE: Github actions YAML doesn't support anchors.
-    - name: flight-clip
-      run: stack test flight-clip --no-terminal --test-arguments "--color=always"
+    # - name: flight-clip
+    #   run: stack test flight-clip --no-terminal --test-arguments "--color=always"
 
-    - name: flight-cmd
-      run: stack test flight-cmd --no-terminal --test-arguments "--color=always"
+    # - name: flight-cmd
+    #   run: stack test flight-cmd --no-terminal --test-arguments "--color=always"
 
-    - name: flight-comp
-      run: stack test flight-comp --no-terminal --test-arguments "--color=always"
+    # - name: flight-comp
+    #   run: stack test flight-comp --no-terminal --test-arguments "--color=always"
 
-    - name: detour-via-sci
-      run: stack test detour-via-sci --no-terminal --test-arguments "--color=always"
+    # - name: detour-via-sci
+    #   run: stack test detour-via-sci --no-terminal --test-arguments "--color=always"
 
-    - name: detour-via-uom
-      run: stack test detour-via-uom --no-terminal --test-arguments "--color=always"
+    # - name: detour-via-uom
+    #   run: stack test detour-via-uom --no-terminal --test-arguments "--color=always"
 
-    - name: flight-earth
-      run: stack test flight-earth --no-terminal --test-arguments "--color=always"
+    # - name: flight-earth
+    #   run: stack test flight-earth --no-terminal --test-arguments "--color=always"
 
-    - name: flight-fsdb
-      run: stack test flight-fsdb --no-terminal --test-arguments "--color=always"
+    # - name: flight-fsdb
+    #   run: stack test flight-fsdb --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-allot
-      run: stack test flight-gap-allot --no-terminal --test-arguments "--color=always"
+    # - name: flight-gap-allot
+    #   run: stack test flight-gap-allot --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-effort
-      run: stack test flight-gap-effort --no-terminal --test-arguments "--color=always"
+    # - name: flight-gap-effort
+    #   run: stack test flight-gap-effort --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-lead
-      run: stack test flight-gap-lead --no-terminal --test-arguments "--color=always"
+    # - name: flight-gap-lead
+    #   run: stack test flight-gap-lead --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-math
-      run: stack test flight-gap-math --no-terminal --test-arguments "--color=always"
+    # - name: flight-gap-math
+    #   run: stack test flight-gap-math --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-stop
-      run: stack test flight-gap-stop --no-terminal --test-arguments "--color=always"
+    # - name: flight-gap-stop
+    #   run: stack test flight-gap-stop --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-valid
-      run: stack test flight-gap-valid --no-terminal --test-arguments "--color=always"
+    # - name: flight-gap-valid
+    #   run: stack test flight-gap-valid --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-weight
-      run: stack test flight-gap-weight --no-terminal --test-arguments "--color=always"
+    # - name: flight-gap-weight
+    #   run: stack test flight-gap-weight --no-terminal --test-arguments "--color=always"
 
-    - name: flight-igc
-      run: stack test flight-igc --no-terminal --test-arguments "--color=always"
+    # - name: flight-igc
+    #   run: stack test flight-igc --no-terminal --test-arguments "--color=always"
 
-    - name: flight-kml
-      run: stack test flight-kml --no-terminal --test-arguments "--color=always"
+    # - name: flight-kml
+    #   run: stack test flight-kml --no-terminal --test-arguments "--color=always"
 
-    - name: flight-latlng
-      run: stack test flight-latlng --no-terminal --test-arguments "--color=always"
+    # - name: flight-latlng
+    #   run: stack test flight-latlng --no-terminal --test-arguments "--color=always"
 
-    - name: flight-lookup
-      run: stack test flight-lookup --no-terminal --test-arguments "--color=always"
+    # - name: flight-lookup
+    #   run: stack test flight-lookup --no-terminal --test-arguments "--color=always"
 
-    - name: flight-mask
-      run: stack test flight-mask --no-terminal --test-arguments "--color=always"
+    # - name: flight-mask
+    #   run: stack test flight-mask --no-terminal --test-arguments "--color=always"
 
-    - name: flight-route
-      run: stack test flight-route --no-terminal --test-arguments "--color=always"
+    # - name: flight-route
+    #   run: stack test flight-route --no-terminal --test-arguments "--color=always"
 
-    - name: flight-scribe
-      run: stack test flight-scribe --no-terminal --test-arguments "--color=always"
+    # - name: flight-scribe
+    #   run: stack test flight-scribe --no-terminal --test-arguments "--color=always"
 
-    - name: siggy-chardust
-      run: stack test siggy-chardust --no-terminal --test-arguments "--color=always"
+    # - name: siggy-chardust
+    #   run: stack test siggy-chardust --no-terminal --test-arguments "--color=always"
 
-    - name: flight-span
-      run: stack test flight-span --no-terminal --test-arguments "--color=always"
+    # - name: flight-span
+    #   run: stack test flight-span --no-terminal --test-arguments "--color=always"
 
-    - name: flight-task
-      run: stack test flight-task --no-terminal --test-arguments "--color=always"
+    # - name: flight-task
+    #   run: stack test flight-task --no-terminal --test-arguments "--color=always"
 
-    - name: flight-time
-      run: stack test flight-time --no-terminal --test-arguments "--color=always"
+    # - name: flight-time
+    #   run: stack test flight-time --no-terminal --test-arguments "--color=always"
 
-    - name: flight-track
-      run: stack test flight-track --no-terminal --test-arguments "--color=always"
+    # - name: flight-track
+    #   run: stack test flight-track --no-terminal --test-arguments "--color=always"
 
-    - name: flight-units
-      run: stack test flight-units --no-terminal --test-arguments "--color=always"
+    # - name: flight-units
+    #   run: stack test flight-units --no-terminal --test-arguments "--color=always"
 
-    - name: flight-zone
-      run: stack test flight-zone --no-terminal --test-arguments "--color=always"
+    # - name: flight-zone
+    #   run: stack test flight-zone --no-terminal --test-arguments "--color=always"
