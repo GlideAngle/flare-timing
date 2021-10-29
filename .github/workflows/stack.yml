@@ -8,10 +8,13 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    name: ghc ${{ matrix.ghc }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        cabal: ["3.0"]
+        ghc:
+          - "8.2.2"
 
     steps:
     - uses: mstksg/get-package@v1
@@ -23,8 +26,12 @@ jobs:
       with:
         submodules: true
 
-    - uses: mstksg/setup-stack@v1
-      name: Setup Stack
+    - uses: haskell/actions/setup@v1
+      name: Setup stack and cabal-install
+      with:
+        ghc-version: ${{ matrix.ghc }}
+        cabal-version: ${{ matrix.cabal }}
+        enable-stack: true
 
     - name: Cache Key
       id: cache_key
