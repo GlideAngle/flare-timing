@@ -83,8 +83,8 @@ jobs:
     - name: flight-gap-weight
       run: cabal v2-test flight-gap-weight --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-igc
-    #   run: cabal v2-test flight-igc --test-show-details=direct --test-option="--color=always"
+    - name: flight-igc
+      run: cabal v2-test flight-igc --test-show-details=direct --test-option="--color=always"
 
     - name: flight-kml
       run: cabal v2-test flight-kml --test-show-details=direct --test-option="--color=always"
