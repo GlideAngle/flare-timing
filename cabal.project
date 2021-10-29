@@ -1,4 +1,5 @@
 with-compiler: ghc-8.2.2
+write-ghc-environment-files: always
 packages:
       lang-haskell/build
 

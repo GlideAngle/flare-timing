@@ -25,9 +25,9 @@ in  let defs =
                 , "flight-clip"
                 , "deepseq"
                 , "attoparsec"
-                , "tasty-quickcheck"
                 , "time"
                 , "utf8-string"
+                , "QuickCheck"
                 ]
           , library =
               { source-dirs = "library", exposed-modules = "Flight.Igc" }

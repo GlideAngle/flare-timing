@@ -27,7 +27,7 @@ import GHC.Generics (Generic)
 import Control.DeepSeq
 import Text.Printf (printf)
 import Data.List (partition)
-import Test.Tasty.QuickCheck (Arbitrary(..), frequency, oneof)
+import Test.QuickCheck (Arbitrary(..), frequency, oneof)
 
 -- | An altitude in metres.
 newtype Altitude = Altitude Int
