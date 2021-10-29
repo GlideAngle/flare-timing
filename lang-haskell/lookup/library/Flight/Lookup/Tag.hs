@@ -31,7 +31,7 @@ import Flight.Comp
     )
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Track.Tag
-    ( Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
+    ( CompTagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
     , firstLead, lastArrival
     )
 import Flight.Mask (Ticked, RaceSections(..), slice, section)
@@ -49,14 +49,14 @@ newtype TaskLeadingLookup =
 
 type TaggingLookup a = IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
 
-tagTaskTime :: Maybe Tagging -> TaskTimeLookup
+tagTaskTime :: Maybe CompTagging -> TaskTimeLookup
 tagTaskTime = TaskTimeLookup . (fmap taskTimeElapsed)
 
-tagTaskLeading :: Maybe Tagging -> TaskLeadingLookup
+tagTaskLeading :: Maybe CompTagging -> TaskLeadingLookup
 tagTaskLeading = TaskLeadingLookup . (fmap taskLeadingTimes)
 
 taskLeadingTimes
-    :: Tagging
+    :: CompTagging
     -> IxTask
     -> SpeedSection
     -> Maybe StartEndDownMark
@@ -68,7 +68,7 @@ taskLeadingTimes x (IxTask i) ss = do
     return $ StartEndDown start end lastLanding
 
 taskTimeElapsed
-    :: Tagging
+    :: CompTagging
     -> IxTask
     -> SpeedSection
     -> Maybe StartEndMark
@@ -85,20 +85,20 @@ newtype LeadingLookup = LeadingLookup (Maybe (TaggingLookup StartEndDownMark))
 newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe ZoneTag]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 
-tagTicked :: Maybe Tagging -> TickLookup
+tagTicked :: Maybe CompTagging -> TickLookup
 tagTicked = TickLookup . (fmap ticked)
 
-tagPilotTime :: Maybe Tagging -> TimeLookup
+tagPilotTime :: Maybe CompTagging -> TimeLookup
 tagPilotTime = TimeLookup . (fmap timeElapsed)
 
-tagPilotTag :: Maybe Tagging -> TagLookup
+tagPilotTag :: Maybe CompTagging -> TagLookup
 tagPilotTag = TagLookup . (fmap tagged)
 
-tagArrivalRank :: Maybe Tagging -> ArrivalRankLookup
+tagArrivalRank :: Maybe CompTagging -> ArrivalRankLookup
 tagArrivalRank = ArrivalRankLookup . (fmap arrivalRank)
 
 ticked
-    :: Tagging
+    :: CompTagging
     -> IxTask
     -> SpeedSection
     -> Pilot
@@ -132,7 +132,7 @@ tickedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
     Just $ tickedZones speedSection zonesTag
 
 timeElapsed
-    :: Tagging
+    :: CompTagging
     -> IxTask
     -> SpeedSection
     -> Pilot
@@ -161,7 +161,7 @@ timeElapsedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
     startEnd $ slice speedSection zonesTag
 
 tagged
-    :: Tagging
+    :: CompTagging
     -> IxTask
     -> SpeedSection
     -> Pilot
@@ -182,7 +182,7 @@ taggedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
     slice speedSection zonesTag
 
 arrivalRank
-    :: Tagging
+    :: CompTagging
     -> IxTask
     -> SpeedSection
     -> Pilot

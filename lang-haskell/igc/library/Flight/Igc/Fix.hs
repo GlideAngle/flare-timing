@@ -23,6 +23,7 @@ type IgcFix = Fix HMS Pos
 eqOnTime :: IgcRecord -> IgcRecord -> Bool
 eqOnTime B{hms = t0} B{hms = t1} = t0 == t1
 eqOnTime a b = a == b
+{-# INLINABLE eqOnTime #-}
 
 seconds :: HMS -> Second
 seconds (HMS (Hour h) (MinuteOfTime m) (Second s)) =
@@ -153,6 +154,7 @@ mark f (HFDTE YMD{year = yy, month = mm, day = dd}) xs =
     where
         ys = catMaybes $ extract <$> xs
         ts = [stamp (yy, mm, dd) `first` y | y <- ys]
+{-# INLINABLE mark #-}
 
 -- | Extracts B record data as type @IgcFix@.
 --

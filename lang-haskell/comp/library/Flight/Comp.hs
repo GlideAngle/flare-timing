@@ -12,11 +12,15 @@ Data for competitions, competitors and tasks.
 module Flight.Comp
     ( -- * Competition
       CompSettings(..)
+    , TaskSettings(..)
+    , CompTaskSettings(..)
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
     , UtcOffset(..)
     , PilotGroup(..)
+    , mkCompTaskSettings
+    , unMkCompTaskSettings
     , defaultNominal
     -- * Task
     , Task(..)
@@ -72,10 +76,10 @@ module Flight.Comp
 
 import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
-import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
 import Data.Time.Clock (addUTCTime)
 import GHC.Generics (Generic)
+import Control.DeepSeq
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Maybe (listToMaybe)
 import Data.List (intercalate, nub, sort)
@@ -99,6 +103,7 @@ import "flight-gap-allot" Flight.Score
     , PilotId(..)
     , PilotName(..)
     , Pilot(..)
+    , PowerExponent(..)
     )
 import "flight-gap-lead" Flight.Score (Leg(..), LengthOfSs(..))
 import "flight-gap-stop" Flight.Score (ScoreBackTime(..))
@@ -108,8 +113,9 @@ import "flight-gap-math" Flight.Score
     , JumpTheGunLimit(..)
     , TooEarlyPoints(..)
     )
-import "flight-gap-weight" Flight.Score (LwScaling(..))
+import "flight-gap-weight" Flight.Score (LwScaling(..), EGwScaling(..))
 import Flight.Geodesy (EarthMath(..), EarthModel(..))
+import Flight.Path.Types (IxTask(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -159,9 +165,6 @@ data StartEndDown a b =
 type StartEndMark = StartEnd UTCTime UTCTime
 type StartEndDownMark = StartEndDown UTCTime UTCTime
 
--- | 1-based indices of a task in a competition.
-newtype IxTask = IxTask Int deriving (Eq, Show)
-
 speedSectionToLeg :: SpeedSection -> Int -> Leg
 speedSectionToLeg Nothing i = RaceLeg i
 speedSectionToLeg (Just (s, e)) i =
@@ -191,7 +194,7 @@ newtype RoutesLookupTaskDistance =
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
     deriving (Eq, Ord, Show, Read, Generic)
@@ -273,15 +276,33 @@ timeCheck EarlyStart{earliest} startGates zoneTimes =
     ]
 
 pilotNamed :: CompSettings k -> [PilotName] -> [Pilot]
-pilotNamed CompSettings{pilots} [] = sort . nub . join $
-    (fmap . fmap) (\(PilotTrackLogFile p _) -> p) pilots
-pilotNamed CompSettings{pilots} xs = sort . nub . join $
-    [ filter (\(Pilot (_, name)) -> name `elem` xs) ps
-    | ps <- (fmap . fmap) (\(PilotTrackLogFile p _) -> p) pilots
-    ]
+pilotNamed CompSettings{pilots} [] = sort $ nub pilots
+pilotNamed CompSettings{pilots} xs = sort . nub $
+    filter (\(Pilot (_, name)) -> name `elem` xs) pilots
 
 data CompSettings k =
     CompSettings
+        { comp :: Comp
+        , nominal :: Nominal
+        , compTweak :: Maybe Tweak
+        , pilots :: [Pilot]
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+data TaskSettings k =
+    TaskSettings
+        { task :: Task k
+        , taskFolder :: TaskFolder
+        , pilots :: [PilotTrackLogFile]
+        , pilotGroup :: PilotGroup
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- NOTE: The combination of @CompSettings@ and @TaskSettings@ for every task.
+data CompTaskSettings k =
+    CompTaskSettings
         { comp :: Comp
         , nominal :: Nominal
         , compTweak :: Maybe Tweak
@@ -292,6 +313,33 @@ data CompSettings k =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+mkCompTaskSettings :: CompSettings k -> [TaskSettings k] -> CompTaskSettings k
+mkCompTaskSettings CompSettings{comp, nominal, compTweak} tss =
+    CompTaskSettings
+        comp
+        nominal
+        compTweak
+        (task <$> tss)
+        (taskFolder <$> tss)
+        [pilots | TaskSettings{pilots} <- tss]
+        (pilotGroup <$> tss)
+
+unMkCompTaskSettings :: CompTaskSettings k -> (CompSettings k, [TaskSettings k])
+unMkCompTaskSettings CompTaskSettings{pilots = pss, ..} =
+    ( CompSettings
+        comp
+        nominal
+        compTweak
+        (sort . nub $ concat [(\(PilotTrackLogFile p _) -> p) <$> ps | ps <- pss])
+    ,
+        [ TaskSettings t tf ps g
+        | t <- tasks
+        | tf <- taskFolders
+        | ps <- pss
+        | g <- pilotGroups
+        ]
+    )
 
 -- | Groups of pilots for a task.
 data PilotGroup =
@@ -344,6 +392,8 @@ data Tweak =
         , leadingAreaDistanceSquared :: Bool
         , arrivalRank :: Bool
         , arrivalTime :: Bool
+        , timePowerExponent :: PowerExponent
+        , essNotGoalScaling :: EGwScaling
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -376,6 +426,9 @@ data Task k =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
+        , cancelled :: Bool
+        -- ^ If the task is cancelled. A task can be stopped and then later
+        -- cancelled.
         , taskTweak :: Maybe Tweak
         , earlyStart :: EarlyStart
         , penalsAuto :: [(Pilot, PenaltySeqs, String)]
@@ -398,6 +451,12 @@ showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
             ]
 
 instance FieldOrdering (CompSettings k) where
+    fieldOrder _ = cmp
+
+instance FieldOrdering (TaskSettings k) where
+    fieldOrder _ = cmp
+
+instance FieldOrdering (CompTaskSettings k) where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
@@ -524,6 +583,7 @@ cmp a b =
         ("speedSection", "zoneTimes") -> LT
         ("speedSection", "startGates") -> LT
         ("speedSection", "stopped") -> LT
+        ("speedSection", "cancelled") -> LT
         ("speedSection", "taskTweak") -> LT
         ("speedSection", "earlyStart") -> LT
         ("speedSection", "penalsAuto") -> LT
@@ -533,6 +593,7 @@ cmp a b =
 
         ("zoneTimes", "startGates") -> LT
         ("zoneTimes", "stopped") -> LT
+        ("zoneTimes", "cancelled") -> LT
         ("zoneTimes", "taskTweak") -> LT
         ("zoneTimes", "earlyStart") -> LT
         ("zoneTimes", "penalsAuto") -> LT
@@ -540,6 +601,8 @@ cmp a b =
         ("zoneTimes", "absent") -> LT
         ("zoneTimes", _) -> GT
 
+        ("startGates", "stopped") -> LT
+        ("startGates", "cancelled") -> LT
         ("startGates", "absent") -> LT
         ("startGates", "taskTweak") -> LT
         ("startGates", "earlyStart") -> LT
@@ -547,11 +610,18 @@ cmp a b =
         ("startGates", "penals") -> LT
         ("startGates", _) -> GT
 
+        ("stopped", "cancelled") -> LT
         ("stopped", "taskTweak") -> LT
         ("stopped", "earlyStart") -> LT
         ("stopped", "penalsAuto") -> LT
         ("stopped", "penals") -> LT
         ("stopped", _) -> GT
+
+        ("cancelled", "taskTweak") -> LT
+        ("cancelled", "earlyStart") -> LT
+        ("cancelled", "penalsAuto") -> LT
+        ("cancelled", "penals") -> LT
+        ("cancelled", _) -> GT
 
         ("taskTweak", "earlyStart") -> LT
         ("taskTweak", "penalsAuto") -> LT

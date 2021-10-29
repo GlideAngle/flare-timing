@@ -5,12 +5,13 @@ module Flight.Mask.Tag.Double where
 import Prelude hiding (span)
 import Data.Coerce (coerce)
 import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
-import Data.List ((\\), filter, inits)
+import Data.List ((\\), filter, inits, foldl')
 import Control.Arrow (first)
 import Control.Monad (join)
 
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
+import Flight.Zone.MkZones (Zones)
 import Flight.Zone.SpeedSection (sliceZones, restartZones)
 import Flight.Zone.Cylinder (SampleParams(..))
 import Flight.Zone.Raw (Give)
@@ -51,8 +52,7 @@ import Flight.Mask.Internal.Cross
     )
 import Flight.Mask.Interpolate (GeoTagInterpolate(..))
 import Flight.Mask.Tag (FnTask, selectZoneCross)
-import Flight.Mask.Tag.Prove (prove, proveCrossing)
-import Flight.Mask.Tag.OrdLists (trimOrdLists)
+import Flight.Mask.Tag.Prove (keepCrossing, prove, proveCrossing)
 import Flight.Mask.Tag.Motion (flyingSection, secondsRange, timeRange)
 
 import Flight.ShortestPath.Double ()
@@ -148,7 +148,14 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         task@Task{zones, speedSection, startGates}
         MarkedFixes{mark0, fixes}
         indices =
-        (selected, nominees, SelectedStart selectedStart, NomineeStarts dedupStarts, excluded)
+
+        ( SelectedCrossings selected
+        , nominees
+        , SelectedStart selectedStart
+        , NomineeStarts dedupStarts
+        , excluded
+        )
+
         where
             sepZs = separatedZones @Double @Double e
 
@@ -157,6 +164,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                     [z0, z1] -> clearlySeparatedZones (arcLength @Double @Double e) z0 z1
                     _ -> sepZs zs
 
+            fromZs :: Zones -> [TaskZone Double]
             fromZs = fromZones @Double @Double e give
 
             keptFixes :: [Kml.Fix]
@@ -241,10 +249,24 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 | (sg, gs) <- dedupCrossings
                 ]
 
-            -- The first crossing of the last start gate with crossings.
+            -- WARNING: We have to be careful to exclude those crossings that
+            -- happen after the pilot has crossed the next zone. This can happen
+            -- when a pilot again crosses the start cylinder enroute between
+            -- subsequent turnpoints.
+            beforeNextZoneCrossing :: ZoneCross -> Bool
+            beforeNextZoneCrossing =
+                case sliceZones speedSection $ coerce nominees of
+                    (_ : ns : _) ->
+                        let ns' = catMaybes ns in if null ns' then const True else
+                        \x -> all ((<) x) ns'
+                    _ -> const True
+
+            dedupStarts' = (fmap . fmap) (filter beforeNextZoneCrossing) dedupStarts
+
+            -- The last crossing of the last start gate with crossings.
             selectedStart = do
-                (sg, xs) <- listToMaybe . take 1 $ filter (not . null . snd) dedupStarts
-                case xs of
+                (sg, xs) <- listToMaybe . take 1 $ filter (not . null . snd) dedupStarts'
+                case reverse xs of
                     [] -> Nothing
                     x : _ -> Just (sg, x)
 
@@ -267,21 +289,40 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                         Nothing
 
             yss :: [[OrdCrossing]]
-            yss = trimOrdLists ((fmap . fmap) OrdCrossing xss'')
+            yss = ((fmap . fmap) OrdCrossing xss'')
 
             yss' :: [[Crossing]]
             yss' = (fmap . fmap) unOrdCrossing yss
 
+            selected :: [Maybe ZoneCross]
             selected =
-                SelectedCrossings
-                [
-                    let prover = proveCrossing timecheck mark0 fixes
-                    in selectZoneCross prover selector ys
+                let tsys :: [(TimePass, [Crossing] -> Maybe Crossing, [Crossing])]
+                    tsys = zip3 timechecks selectors yss'
 
-                | timecheck <- timechecks
-                | selector <- selectors
-                | ys <- yss'
-                ]
+                    pickTag
+                        :: TimePass
+                        -> ([Crossing] -> Maybe Crossing)
+                        -> [Crossing]
+                        -> Maybe ZoneCross
+                    pickTag timecheck selector ys =
+                        let prover = proveCrossing timecheck mark0 fixes
+                            ys' = filter (keepCrossing timecheck mark0 fixes) ys
+                        in
+                            selectZoneCross prover selector ys'
+
+                    pickTags
+                        :: [Maybe ZoneCross]
+                        -> (TimePass, [Crossing] -> Maybe Crossing, [Crossing])
+                        -> [Maybe ZoneCross]
+                    pickTags acc (timePass, selector, ys) =
+                        case acc of
+                            [] -> pickTag timePass selector ys : acc
+                            Nothing : _ -> Nothing : acc
+                            Just ZoneCross{crossingPair = [_, Fix{time = tM}]} : _ ->
+                                pickTag (\t -> t > tM && timePass t) selector ys : acc
+                            Just _ : _ -> fail "Crossing pairs should be pairs"
+
+                in reverse $ foldl' pickTags [] tsys
 
             fs =
                 (\x ->

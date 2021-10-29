@@ -22,6 +22,7 @@ module Flight.Score
     , TimeWeight(..)
     , Lw(..)
     , LwScaling(..)
+    , EGwScaling(..)
     , Aw(..)
     , Rw(..)
     , Ew(..)
@@ -38,6 +39,7 @@ module Flight.Score
 import Flight.Gap.Weight.GoalRatio
 import Flight.Gap.Weight.Distance
 import Flight.Gap.Weight.Leading
+import Flight.Gap.Weight.EssNotGoal
 import Flight.Gap.Weight.Arrival
 import Flight.Gap.Weight.Time
 import Flight.Gap.Weighting

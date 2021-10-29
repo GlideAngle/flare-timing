@@ -1,4 +1,4 @@
-module Flight.Fsdb.TaskArrival (parseNormArrivals) where
+module Flight.Fsdb.TaskArrival (parseAltArrivals) where
 
 import Data.Time.Clock (UTCTime)
 import Data.Maybe (catMaybes)
@@ -54,7 +54,10 @@ xpRankScore =
         <+> hasName "finished_ss"
         )
     $ xpWrap
-        ( \(a, es) -> (ArrivalPoints $ dToR a,) <$> (parseUtcTime <$> es)
+        -- WARNING: FsResult@finished_ss is only written by FS when arrival
+        -- points are positive but airscore writes it empty, not parsable as a
+        -- UTC time. Guard against that parse with the check on @arrival_points.
+        ( \(a, es) -> (ArrivalPoints $ dToR a,) <$> (parseUtcTime <$> if a > 0 then es else Nothing)
         , (\case
             Nothing -> (0, Nothing)
             Just (ArrivalPoints a, es) -> (fromRational a, Just $ show es))
@@ -113,8 +116,8 @@ getScore pilots =
                     >>> hasName "FsResult"
                     >>> arr (unpickleDoc xpRankScore)
 
-parseNormArrivals :: [Task k] -> String -> IO (Either String [[(Pilot, TrackArrival)]])
-parseNormArrivals tasks contents = do
+parseAltArrivals :: [Task k] -> String -> IO (Either String [[(Pilot, TrackArrival)]])
+parseAltArrivals tasks contents = do
     let doc =
             readString
                 [ withValidate no

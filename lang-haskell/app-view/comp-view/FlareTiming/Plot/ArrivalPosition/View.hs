@@ -36,9 +36,8 @@ xyPosition TrackArrival{rank = ArrivalPlacingEqual x _, frac = ArrivalFraction y
 arrivalPositionPlot
     :: MonadWidget t m
     => Dynamic t [(Pilot, TrackArrival)]
-    -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-arrivalPositionPlot xs xsN = do
+arrivalPositionPlot xs = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
 
     elClass "div" "tile is-ancestor" $ mdo
@@ -83,7 +82,7 @@ arrivalPositionPlot xs xsN = do
         let pilots :: [Pilot] = take numLegendPilots $ repeat nullPilot
         dPilots :: Dynamic _ [Pilot] <- foldDyn (\pa pas -> take numLegendPilots $ pa : pas) pilots (updated dPilot)
         (dPilot, eRedraw, (e1, e2, e3, e4, e5))
-            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableArrivalPosition xs xsN dPilots')
+            <- selectPilots dPilots (\dPilots' -> elClass "div" "tile is-child" $ tableArrivalPosition xs dPilots')
 
         return ()
     return ()

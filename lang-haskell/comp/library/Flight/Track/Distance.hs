@@ -13,7 +13,7 @@ module Flight.Track.Distance
     , AwardedDistance(..)
     , Clamp(..)
     , Nigh
-    , Land
+    , Effort
     , awardByFrac
     ) where
 
@@ -27,7 +27,7 @@ import Flight.Route (TrackLine(..))
 import "flight-gap-allot" Flight.Score (LinearFraction(..))
 
 type Nigh = TrackLine
-type Land = QTaskDistance Double [u| m |]
+type Effort = QTaskDistance Double [u| m |]
 
 -- | A distance awarded by the scorer for whatever reason. Commonly this is for
 -- the pilot that does not submit their tracklog but it can also arise where
@@ -35,9 +35,9 @@ type Land = QTaskDistance Double [u| m |]
 -- and nullify the tracklog.
 data AwardedDistance =
     AwardedDistance
-        { awardedMade :: Land
+        { awardedMade :: Effort
         -- ^ The distance awarded by the scorer to the pilot as-is.
-        , awardedTask :: Land
+        , awardedTask :: Effort
         -- ^ The task distance as read.
         , awardedFrac :: Double
         -- ^ The fraction of the task distance awarded to the pilot.

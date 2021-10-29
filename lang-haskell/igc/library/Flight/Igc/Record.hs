@@ -23,29 +23,36 @@ module Flight.Igc.Record
     ) where
 
 import Prelude hiding (readFile, min)
+import GHC.Generics (Generic)
+import Control.DeepSeq
 import Text.Printf (printf)
 import Data.List (partition)
 import Test.Tasty.QuickCheck (Arbitrary(..), frequency, oneof)
 
 -- | An altitude in metres.
 newtype Altitude = Altitude Int
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | An hour of time.
 newtype Hour = Hour Int
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A minute of time.
 newtype MinuteOfTime = MinuteOfTime Int
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | Thousandths of a minute of angle.
 newtype MinuteOfAngle = MinuteOfAngle {unThousandths :: Int}
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A second of time.
 newtype Second = Second Int
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 instance Show Second where
     show (Second s) = showHmsForSecs s
@@ -60,50 +67,61 @@ showHmsForSecs sec =
 
 -- | A whole degree of angle. May have leading zeros. Has no decimal part.
 newtype Degree = Degree Int
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A time with hours, minutes and seconds.
 data HMS = HMS Hour MinuteOfTime Second
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A latitude with degrees and minutes.
 data Lat
     = LatN Degree MinuteOfAngle -- ^ North
     | LatS Degree MinuteOfAngle -- ^ South
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A longitude with degrees and minutes.
 data Lng
     = LngW Degree MinuteOfAngle -- ^ West
     | LngE Degree MinuteOfAngle -- ^ East
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | Pressure altitude in metres
 newtype AltBaro = AltBaro Altitude
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | GPS altitude in metres
 newtype AltGps = AltGps Altitude
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A two digit character year
 newtype Year = Year Int
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A two digit character month
 newtype Month = Month Int
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A two digit character year
 newtype Day = Day Int
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 -- | A two digit character item index
 newtype Nth = Nth String
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 data YMD = YMD {year :: Year, month :: Month, day :: Day}
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 instance Show YMD where
     show YMD{year = Year y, month = Month m, day = Day d} =
@@ -146,7 +164,8 @@ data IgcRecord
     | G
     -- | Any other record type is ignored
     | Ignore
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass NFData
 
 instance Show IgcRecord where
     show B{hms, pos = (lat', lng', altB, altG)} =
@@ -242,10 +261,12 @@ addHoursHms
     (Hour h)
     (HMS (Hour hh) mm ss) =
     HMS (Hour $ hh + h) mm ss
+{-# INLINABLE addHoursHms #-}
 
 addHoursIgc :: Hour -> IgcRecord -> IgcRecord
 addHoursIgc h x@B{hms} = x{hms = addHoursHms h hms}
 addHoursIgc _ x = x
+{-# INLINABLE addHoursIgc #-}
 
 showDegreeOfLat :: Degree -> String
 showDegreeOfLat (Degree d) = printf "%02d°" d
@@ -322,6 +343,7 @@ isMark HFDTEDATE{} = True
 isMark HFDTE{} = True
 isMark G{} = False
 isMark Ignore = False
+{-# INLINABLE isMark #-}
 
 -- | Is the record a __@B@__ record?
 isFix :: IgcRecord -> Bool
@@ -330,6 +352,7 @@ isFix HFDTEDATE{} = False
 isFix HFDTE{} = False
 isFix G{} = False
 isFix Ignore = False
+{-# INLINABLE isFix #-}
 
 {--
 B: record type is a basic tracklog record

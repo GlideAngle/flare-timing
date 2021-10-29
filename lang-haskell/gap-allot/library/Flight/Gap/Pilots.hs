@@ -9,6 +9,7 @@ module Flight.Gap.Pilots
     , PilotsLaunched(..)
     ) where
 
+import Control.DeepSeq
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import GHC.Generics (Generic)
 
@@ -19,16 +20,16 @@ instance Show Pilot where show (Pilot x) = show x
 newtype PilotId =
     PilotId String
     deriving (Eq, Ord, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 newtype PilotName =
     PilotName String
     deriving (Eq, Ord, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 newtype Pilot = Pilot (PilotId, PilotName)
     deriving (Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
 
 -- | Order by name then by id.
 instance Ord Pilot where

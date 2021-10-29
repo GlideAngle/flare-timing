@@ -38,6 +38,7 @@ module Flight.Mask
     , FlyClipSection(..)
     , GroupLeg(..)
     , checkTracks
+    , settingsLogs
     , zonesToTaskZones
     , slice
     , section

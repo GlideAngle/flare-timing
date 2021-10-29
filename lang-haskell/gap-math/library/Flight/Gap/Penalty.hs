@@ -21,6 +21,7 @@ module Flight.Gap.Penalty
     , mkMul, mkAdd, mkReset
     , exMul, exAdd, exReset
     , identityOfMul, identityOfAdd, identityOfReset
+    , onPointsReduced
     ) where
 
 import qualified Data.CReal as ExactReal
@@ -43,7 +44,7 @@ import Data.Aeson
     , object, withObject
     )
 
-import Flight.Gap.Points.Task (TaskPoints(..))
+import Flight.Gap.Points.Task (TaskPoints(..), onTaskPoints)
 import Data.Ratio.Rounding (sdRound)
 
 type CReal = ExactReal.CReal 64
@@ -69,9 +70,14 @@ instance FromJSON (Refined '[GE 0] Int) where
     parseJSON o = assumeProp @(GE 0) . refined <$> parseJSON o
 
 -- NOTE: Reset points are the final points awarded and so can be ints.
+
+-- | Paragliders starting early are scored from launch to start.
 data LaunchToStartPoints = LaunchToStartPoints PosInt
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+-- | Hang glider pilots starting too early are scored for minimum distance.  If
+-- they jump the gun then application of the penalty won't reduce their score
+-- below minimum distance points either.
 data TooEarlyPoints = TooEarlyPoints PosInt
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -81,13 +87,14 @@ data Reset
 
 data PointPenalty a where
 
-    -- | If positive then remove this fraction of points and if negative add this
-    -- fraction of points. Unlike FS that uses 0 as a sentinel value meaning no
-    -- penalty in all penalty applications, for a fraction we're using the
-    -- identity of multiplication here for that purpose.
+    -- | Strictly a multiplication of the score so a penalty would normally be
+    -- between 0 .. 1 and a bonus greater than one. Unlike FS that uses 0 as a
+    -- sentinel value meaning no penalty in all penalty applications, for a
+    -- fraction we're using the identity of multiplication here for that
+    -- purpose.
     PenaltyFraction :: CReal -> PointPenalty Mul
 
-    -- | If positive then remove this number of points and if negative add this
+    -- | If positive then add this number of points and if negative remove this
     -- number of points.
     PenaltyPoints :: CReal -> PointPenalty Add
 
@@ -269,14 +276,36 @@ data PenaltySeqs =
 data PointsReduced =
     PointsReduced
         { subtotal :: TaskPoints
+        -- ^ Points before penalties are applied.
         , mulApplied :: TaskPoints
+        -- ^ The points after applying multiplicative penalties to the bare subtotal.
         , addApplied :: TaskPoints
+        -- ^ The points after applying additive penalties to the mulApplied
+        -- subtotal.
         , resetApplied :: TaskPoints
+        -- ^ The points after applying reset penalties to the addApplied
+        -- subtotal.
         , total :: TaskPoints
+        -- ^ Points after penalties are applied.
         , effp :: PenaltySeq
+        -- ^ The effective sequence of penalties.
         , effj :: PenaltySeq
+        -- ^ The effective sequence of jump the gun penalties.
+        , effg :: PenaltySeq
+        -- ^ The effective sequence of ESS but not goal penalties.
+        , rawj :: PenaltySeqs
+        -- ^ The raw sequence of jump the gun penalties.
         }
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+
+onPointsReduced :: (Double -> Double) -> PointsReduced -> PointsReduced
+onPointsReduced f x =
+    x
+        { subtotal = onTaskPoints f (subtotal x)
+        , mulApplied = onTaskPoints f (mulApplied x)
+        , addApplied = onTaskPoints f (addApplied x)
+        , resetApplied = onTaskPoints f (resetApplied x)
+        }
 
 identityOfMul :: PointPenalty Mul
 identityOfMul = PenaltyFraction 1
@@ -335,8 +364,8 @@ mkAdd x = PenaltyPoints $ realToFrac x
 mkReset :: Maybe Int -> PointPenalty Reset
 mkReset Nothing = PenaltyReset Nothing
 mkReset (Just x) =
-    if | x < 0 -> error "Points cannot be reset to less than 0"
-       | x > 1000 -> error "Points cannot be reset to greater than 1000"
+    if | x < 0 -> error $ printf "Points cannot be reset to less than 0 but got %d." x
+       | x > 1000 -> error $ printf "Points cannot be reset to greater than 1000 but got %d." x
        | otherwise -> PenaltyReset . Just . assumeProp $ refined x
 
 exMul :: PointPenalty Mul -> Double
@@ -637,7 +666,7 @@ isJustReset (PenaltyReset x) = isJust x
 --
 -- prop> \x -> applyMul [] x == x
 -- prop> \x -> applyMul [identityOfMul] x == x
--- prop> \x y -> applyMul [mkMul x] y == (TaskPoints x) * y
+-- prop> \x y -> applyMul [mkMul x] (TaskPoints y) == TaskPoints (x * y)
 applyMul :: [PointPenalty Mul] -> TaskPoints -> TaskPoints
 applyMul fracs p =
     applyPenalty p (effectiveMul fracs)
@@ -646,7 +675,7 @@ applyMul fracs p =
 --
 -- prop> \x -> applyAdd [] x == x
 -- prop> \x -> applyAdd [identityOfAdd] x == x
--- prop> \x y -> applyAdd [mkAdd x] y == (TaskPoints x) + y
+-- prop> \x y -> applyAdd [mkAdd x] (TaskPoints y) == TaskPoints (x + y)
 applyAdd :: [PointPenalty Add] -> TaskPoints -> TaskPoints
 applyAdd points p =
     applyPenalty p (effectiveAdd points)
@@ -686,7 +715,7 @@ applyAdd points p =
 --
 -- prop> \x -> applyReset [] x == x
 -- prop> \x -> applyReset [identityOfReset] x == x
--- prop> \x y -> x >= 0 ==> applyReset [mkReset $ Just x] y == TaskPoints (fromIntegral x)
+-- prop> \x y -> x >= 0 && y >= 0 ==> applyReset [mkReset $ Just x] y == TaskPoints (fromIntegral x)
 applyReset :: [PointPenalty Reset] -> TaskPoints -> TaskPoints
 applyReset resets p =
     applyPenalty p (effectiveReset resets)
@@ -709,7 +738,7 @@ applyReset resets p =
 -- -1.000
 --
 -- >>> applyPenalty 2 (mkReset $ Just (-1))
--- *** Exception: Points cannot be reset to less than 0
+-- *** Exception: Points cannot be reset to less than 0 but got -1.
 -- ...
 --
 -- >>> applyPenalty 2 (mkMul 0)
@@ -737,20 +766,49 @@ applyPenalty (TaskPoints p) pp = TaskPoints p'
             -- NOTE: When positive @Add@ penalties are bonuses. A true penalty is
             -- subtraction, adding a negative number. A bonus adds a positive
             -- number.
-            | Just (_, n) <- cmpAdd pp = p + n
+            | Just (ordAdd, n) <- cmpAdd pp =
+                case ordAdd of
+                    EQ -> p
+                    GT -> p + n
+                    LT -> p + n
 
             -- NOTE: It doesn't matter the magnitude or the sign of the scaling
-            -- as we're going to multiply by it anyway.
-            | Just (_, n) <- cmpMul pp = p * n
+            -- as we're going to multiply by it anyway but clamp it
+            -- non-negative.
+            | Just (ordMul, n) <- cmpMul pp =
+                case ordMul of
+                    EQ -> p
+                    GT -> p * n
+                    LT -> p * n
 
+            -- NOTE: Resets are never negative.
             | PenaltyReset (Just n) <- pp = fromIntegral $ unrefined n
 
-            | Just (EQ, _) <- cmpMul pp = p
-            | Just (EQ, _) <- cmpAdd pp = p
             | PenaltyReset Nothing <- pp = p
             | otherwise = p
 
 -- | Applies the penalties, fractionals then absolutes and finally the resets.
+--
+-- >>> total $ applyPenalties [] [] [] 100
+-- 100.000
+--
+-- >>> total $ applyPenalties [mkMul (1)] [] [] 100
+-- 100.000
+--
+-- >>> total $ applyPenalties [mkMul (-1)] [] [] 100
+-- -100.000
+--
+-- >>> total $ applyPenalties [mkMul 0] [] [] 100
+-- 0.000
+--
+-- >>> total $ applyPenalties [mkMul 0] [] [mkReset $ Just 16] 100
+-- 16.000
+--
+-- >>> total $ applyPenalties [] [mkAdd (-5)] [] 100
+-- 95.000
+--
+-- >>> total $ applyPenalties [mkMul 0.5] [mkAdd (-5)] [] 100
+-- 45.000
 --
 -- prop> \ms as rs x -> (total $ applyPenalties ms as rs x) == applyReset rs (applyAdd as (applyMul ms x))
 -- prop> \x -> (total $ applyPenalties [identityOfMul] [] [] x) == x
@@ -779,6 +837,8 @@ applyPenalties fracs points resets p =
             , total = withReset
             , effp = PenaltySeq eMul eAdd eReset
             , effj = idSeq
+            , effg = idSeq
+            , rawj = nullSeqs
             }
 
 -- $setup

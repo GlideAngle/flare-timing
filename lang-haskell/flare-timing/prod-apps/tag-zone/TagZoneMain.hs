@@ -7,7 +7,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..), Extension(..))
@@ -19,24 +19,27 @@ import Flight.Geodesy (EarthMath(..), EarthModel(..), Projection(..))
 import Flight.Mask (TaskZone, GeoTag(..), GeoSliver(..))
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Comp
-    ( FileType(CompInput)
-    , CompSettings(..)
+    ( FindDirFile(..)
+    , FileType(CompInput)
+    , CompTaskSettings(..)
     , CompInputFile(..)
-    , CrossZoneFile(..)
     , Comp(..)
     , Task(..)
-    , compToCross
-    , crossToTag
     , findCompInput
-    , ensureExt
+    , reshape
+    , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Track.Cross
-    (Crossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
+    (CompFlying(..), CompCrossing(..), TrackCross(..), PilotTrackCross(..), endOfFlying)
 import Flight.Track.Tag
-    ( Tagging(..), TrackTag(..), PilotTrackTag(..)
+    ( CompTagging(..), TrackTag(..), PilotTrackTag(..)
     , timed
     )
-import Flight.Scribe (readComp, readCrossing, writeTagging)
+import Flight.Scribe
+    ( readCompAndTasks
+    , readCompFlyTime, readCompCrossZone, writeCompTagZone
+    )
 import TagZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -51,45 +54,59 @@ main = do
                             description
                             (Just $ Extension "*.comp-input.yaml")
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o@CmdBatchOptions{math} = do
+drive CmdBatchOptions{math, file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go math) files
     end <- getTime Monotonic
     fprint ("Tagging zones completed in " % timeSpecs % "\n") start end
 
 go :: Math -> CompInputFile -> IO ()
-go math compFile@(CompInputFile compPath) = do
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
-    putStrLn $ "Reading tasks from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
+go math compFile = do
+    putStrLn $ "Reading tasks from " ++ show compFile
 
-    cs <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
+            (const $ return Nothing)
+
+
+    fys <-
+        catchIO
+            (Just <$> readCompFlyTime compFile)
             (const $ return Nothing)
 
     cgs <-
         catchIO
-            (Just <$> readCrossing crossFile)
+            (Just <$> readCompCrossZone compFile)
             (const $ return Nothing)
 
-    case (cs, cgs) of
-        (Nothing, _) ->
+    case (filesTaskAndSettings, fys, cgs) of
+        (Nothing, _, _) ->
             putStrLn "Couldn't read the comp settings."
 
-        (_, Nothing) ->
+        (_, Nothing, _) ->
+            putStrLn "Couldn't read the flyings."
+
+        (_, _, Nothing) ->
             putStrLn "Couldn't read the crossings."
 
-        (Just CompSettings{tasks, comp = Comp{earthMath, give}}, Just Crossing{crossing, flying}) -> do
+        ( Just (_taskFiles, settings)
+            , Just CompFlying{flying}
+            , Just CompCrossing{crossing}) -> do
+            let CompTaskSettings{tasks, comp = Comp{earthMath, give}} = uncurry mkCompTaskSettings $ settings
             let pss :: [[PilotTrackTag]] =
                     [
                         (\case
@@ -125,9 +142,9 @@ go math compFile@(CompInputFile compPath) = do
                     | fs <- fmap (endOfFlying . snd) <$> flying
                     ]
 
-            let tagZone = Tagging{timing = times, tagging = pss}
+            let tagZone = CompTagging{timing = times, tagging = pss}
 
-            writeTagging (crossToTag crossFile) tagZone
+            writeCompTagZone compFile tagZone
 
 flownTag
     :: Math

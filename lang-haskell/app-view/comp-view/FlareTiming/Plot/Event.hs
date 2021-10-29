@@ -2,9 +2,11 @@
 
 module FlareTiming.Plot.Event where
 
+import Text.Printf (printf)
 import Reflex.Dom
 import Reflex.Time (delay)
 import Data.Text (Text)
+import qualified Data.Text as T (length, pack, unpack)
 import Control.Monad (when)
 import Control.Monad.Fix (MonadFix(..))
 import Control.Monad.IO.Class (MonadIO(..))
@@ -44,11 +46,17 @@ mkMsg dPilot msg = do
 
     return ()
 
+trimRightPilot :: Int -> Text -> Text
+trimRightPilot n name =
+    if T.length name > n
+        then T.pack . printf "%s ..." . take n $ T.unpack name
+        else name
+
 mkLegend :: MonadWidget t m => Dynamic t Int -> Text -> Pilot -> m ()
 mkLegend w classes pp = when (pp /= nullPilot) $ do
     el "tr" $ do
         el "td" $ elClass "span" classes $ text "▩"
-        el "td" . dynText $ ffor w (flip showPilot $ pp)
+        el "td" . dynText $ ffor w (trimRightPilot 20 . (flip showPilot) pp)
         return ()
 
 legendClasses :: [Text]

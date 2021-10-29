@@ -34,9 +34,10 @@ import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 import Flight.Comp
     ( AlignTimeDir(..)
+    , ScoringInputFiles
     , CompInputFile(..)
     , AlignTimeFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Pilot(..)
     , Task(..)
     , IxTask(..)
@@ -54,7 +55,7 @@ import Flight.Mask
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (Fix(..), ZoneTag(..), asIfFix)
-import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
+import Flight.Track.Tag (CompTagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Track.Stop (TrackScoredSection(..))
 import Flight.Kml (MarkedFixes(..), timeToFixIdx)
 import Data.Ratio.Rounding (dpRound)
@@ -74,16 +75,16 @@ unTaskDistance (TaskDistance d) =
 writeTime
     :: [IxTask]
     -> [Pilot]
-    -> CompInputFile
-    -> (CompInputFile
+    -> ScoringInputFiles
+    -> (ScoringInputFiles
       -> [IxTask]
       -> [Pilot]
       -> IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
     -> IO ()
-writeTime selectTasks selectPilots compFile f = do
+writeTime selectTasks selectPilots inFiles@(compFile, _) f = do
     checks <-
         catchIO
-            (Just <$> f compFile selectTasks selectPilots)
+            (Just <$> f inFiles selectTasks selectPilots)
             (const $ return Nothing)
 
     case checks of
@@ -97,10 +98,10 @@ writeTime selectTasks selectPilots compFile f = do
                         xs
 
             zipWithM_
-                (\ n zs ->
-                    when (includeTask selectTasks $ IxTask n) $
-                        mapM_ (writePilotTimes compFile n) zs)
-                [1 .. ]
+                (\ixTask zs ->
+                    when (includeTask selectTasks ixTask) $
+                        mapM_ (writePilotTimes compFile ixTask) zs)
+                (IxTask <$> [1 .. ])
                 ys
 
 checkAll
@@ -110,8 +111,8 @@ checkAll
     -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
-    -> Tagging
-    -> CompInputFile
+    -> CompTagging
+    -> ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
     -> IO
@@ -123,21 +124,21 @@ checkAll
          ]
 checkAll math earthMath give sp ssOnly scoredLookup tagging =
     checkTracks
-        (\CompSettings{tasks} ->
+        (\CompTaskSettings{tasks} -> do
             group math earthMath give sp ssOnly scoredLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
-writePilotTimes :: CompInputFile -> Int -> (Pilot, [TimeRow]) -> IO ()
-writePilotTimes compFile iTask (pilot, rows) = do
+writePilotTimes :: CompInputFile -> IxTask -> (Pilot, [TimeRow]) -> IO ()
+writePilotTimes compFile ixTask (pilot, rows) = do
     putStrLn . commentOnFixRange pilot $ fixIdx <$> rows
     _ <- createDirectoryIfMissing True dOut
     _ <- writeAlignTime (AlignTimeFile $ dOut </> f) rows
     return ()
     where
         dir = compFileToCompDir compFile
-        (AlignTimeDir dOut, AlignTimeFile f) = alignTimePath dir iTask pilot
+        (AlignTimeDir dOut, AlignTimeFile f) = alignTimePath dir ixTask pilot
 
 mkTimeRows
     :: Maybe FirstLead
@@ -198,7 +199,7 @@ group
     -> SampleParams Double
     -> Bool -- ^ Exclude zones outside speed section
     -> ScoredLookup
-    -> Tagging
+    -> CompTagging
     -> FnIxTask k (Pilot -> [TimeRow])
 group
     math
@@ -207,7 +208,7 @@ group
     sp
     ssOnly
     (ScoredLookup lookupScored)
-    tags@Tagging{timing}
+    tags@CompTagging{timing}
     tasks iTask@(IxTask i)
     mf@MarkedFixes{mark0} p =
     case (tasks ^? element (i - 1), timing ^? element (i - 1)) of

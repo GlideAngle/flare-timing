@@ -24,3 +24,6 @@ for everything to be checked by hand.
    mask-track
    land-out
    gap-point
+
+.. image:: https://static.scarf.sh/a.png?x-pxid=9fca804d-1838-4882-86fe-2a259c45392b
+   :alt: Scarf Analytics

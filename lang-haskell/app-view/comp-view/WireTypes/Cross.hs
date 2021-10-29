@@ -23,6 +23,7 @@ data TrackFlyingSection =
     TrackFlyingSection
         { loggedFixes :: Maybe Int
         , flyingFixes :: FlyingSection Int
+        , flyingTimes :: FlyingSection UTCTime
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
@@ -30,6 +31,7 @@ data TrackFlyingSection =
 data TrackScoredSection =
     TrackScoredSection
         { scoredFixes :: FlyingSection Int
+        , scoredTimes :: FlyingSection UTCTime
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)

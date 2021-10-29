@@ -7,16 +7,19 @@ module Flight.Fsdb.Internal.XmlPickle
     , xpNewtypeLat
     , xpNewtypeLng
     , xpBool
+    , xpUtcOffset
     ) where
 
+import Text.Printf (printf)
 import Control.Newtype (Newtype(..))
 import Data.Maybe (fromMaybe)
 import Data.UnitsOfMeasure (unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle (XmlPickler(..), PU(..), xpWrap, xpPrim, xpText)
 
-import Flight.Fsdb.Internal.Parse (parseDegree)
+import Flight.Fsdb.Internal.Parse (parseDegree, parseUtcOffset)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
+import Flight.Comp (UtcOffset(..))
 
 -- |
 -- >>> fromXML "33.21354" :: Maybe RawLat
@@ -108,6 +111,48 @@ xpBool =
         , fromEnum
         )
         xpPrim
+
+-- | A pickler for UtcOffset.
+--
+-- >>> pickleDoc xpUtcOffset (UtcOffset 0)
+-- NTree (XTag "/" []) [NTree (XText "0") []]
+--
+-- >>> pickleDoc xpUtcOffset (UtcOffset 60)
+-- NTree (XTag "/" []) [NTree (XText "+1") []]
+--
+-- >>> pickleDoc xpUtcOffset (UtcOffset 90)
+-- NTree (XTag "/" []) [NTree (XText "+1.50") []]
+--
+-- >>> pickleDoc xpUtcOffset (UtcOffset (negate 60))
+-- NTree (XTag "/" []) [NTree (XText "-1") []]
+--
+-- >>> pickleDoc xpUtcOffset (UtcOffset (negate 90))
+-- NTree (XTag "/" []) [NTree (XText "-1.50") []]
+--
+-- >>> unpickleDoc' xpUtcOffset $ pickleDoc xpUtcOffset (UtcOffset 0)
+-- Right (UtcOffset {timeZoneMinutes = 0})
+--
+-- >>> unpickleDoc' xpUtcOffset $ pickleDoc xpUtcOffset (UtcOffset 60)
+-- Right (UtcOffset {timeZoneMinutes = 60})
+xpUtcOffset :: PU UtcOffset
+xpUtcOffset =
+    xpWrap
+        ( \utcHrs ->
+            fromMaybe (error $ printf "Can't parse %s as UTC offset." utcHrs)
+            $ parseUtcOffset utcHrs
+        , \(UtcOffset utcMins) ->
+            case utcMins `compare` 0 of
+                EQ -> "0"
+                GT ->
+                    case utcMins `divMod` 60 of
+                        (x, 0) -> printf "+%d" x
+                        _ -> printf "+%.2f" $ (fromIntegral utcMins :: Double) / 60.0
+                LT ->
+                    case utcMins `divMod` 60 of
+                        (x, 0) -> printf "%d" x
+                        _ -> printf "%.2f" $ (fromIntegral utcMins :: Double) / 60.0
+        )
+        xpText
 
 -- $setup
 -- >>> import Text.XML.HXT.Arrow.Pickle.Xml

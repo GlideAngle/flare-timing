@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 54f9f08c97092e584235cc13961a32cdafe4209b1c0b1f00f6dfd81dbdf3e7fb
+-- hash: 70071bdc2ca28300d786f9d7b8c586384b0b4946bb73af9827c180b0c918ea0a
 
 name:           detour-via-sci
 version:        1.0.1
 synopsis:       JSON and CSV encoding for rationals as decimal point numbers.
 description:    Lossy JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places.
 category:       Data, Math, Numeric, JSON, CSV
-homepage:       https://github.com/blockscope/flare-timing/tree/master/detour-via-sci#readme
+homepage:       https://github.com/BlockScope/flare-timing/tree/master/lang-haskell/detour-via-sci#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,8 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: detour-via-sci
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False

@@ -131,7 +131,7 @@ data StopValidityWorking =
         , launchToEssDistance :: Maybe (LaunchToEss (Quantity Double [u| km |]))
         -- ^ The launch to ESS distance is parsed from an XML attribute that
         -- may not exist.
-        , reachStats :: ReachToggle ReachStats
+        , reachStats :: ReachToggle (Maybe ReachStats)
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -375,7 +375,7 @@ stopValidity
     -> PilotsAtEss
     -> PilotsLanded
     -> PilotsFlying
-    -> ReachToggle ReachStats
+    -> ReachToggle (Maybe ReachStats)
     -> LaunchToEss (Quantity Double [u| km |])
     -> (StopValidity, Maybe StopValidityWorking)
 stopValidity
@@ -383,23 +383,20 @@ stopValidity
     pe@(PilotsAtEss ess)
     landedByStop@(PilotsLanded landed)
     stillFlying
-    ReachToggle
-        { extra
-        , flown =
-            flown@ReachStats
+    ReachToggle{extra, flown}
+    ed'@(LaunchToEss ed)
+    | flying == 0 = (StopValidity 0, Nothing)
+    -- REVIEW: Check what the formula in the GAP rules does when flown > ed.
+    | Nothing <- flown = (StopValidity 0, Nothing)
+    | Just ReachStats{max = FlownMax flownMax'} <- flown
+    , flownMax' > ed = (StopValidity 0, Nothing)
+    | Just flown' <- flown =
+        let ReachStats
                 { max = FlownMax flownMax'
                 , mean = FlownMean flownMean
                 , stdDev = FlownStdDev flownStdDev
-                }
-        }
-    ed'@(LaunchToEss ed)
-    | flying == 0 = (StopValidity 0, Nothing)
-    | denom == zero = (StopValidity 0, Nothing)
-    -- REVIEW: Check what the formula in the GAP rules does when flown > ed.
-    | flownMax' > ed = (StopValidity 0, Nothing)
-    | ess > 0 = (StopValidity 1, Just w)
-    | otherwise = (StopValidity $ Stats.min 1 (toRational $ unQuantity a + b**3), Just w)
-        where
+                } = flown'
+
             flownMax :: Quantity Double [u| km |]
             flownMax = convert flownMax'
             denom = ed -: flownMax +: [u| 1 km |]
@@ -424,6 +421,11 @@ stopValidity
                             }
                     , launchToEssDistance = Just ed'
                     }
+
+        in
+            if | denom == zero -> (StopValidity 0, Nothing)
+               | ess > 0 -> (StopValidity 1, Just w)
+               | otherwise -> (StopValidity $ Stats.min 1 (toRational $ unQuantity a + b**3), Just w)
 
 taskValidity
     :: LaunchValidity

@@ -7,15 +7,13 @@ import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Comp (Discipline(..))
 import qualified FlareTiming.Plot.Effort.View as V (effortPlot)
 import WireTypes.Pilot (Pilot(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
 
 effortPlot
     :: MonadWidget t m
     => Dynamic t Discipline
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackEffort)])
     -> m ()
-effortPlot hgOrPg sEx rh =
+effortPlot hgOrPg rh =
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -42,6 +40,6 @@ effortPlot hgOrPg sEx rh =
 
                             _ ->
                                 elClass "article" "tile is-child" $
-                                    V.effortPlot sEx (fromMaybe [] <$> rh))
+                                    V.effortPlot (fromMaybe [] <$> rh))
 
                     return ()

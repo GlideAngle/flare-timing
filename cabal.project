@@ -1,12 +1,21 @@
 with-compiler: ghc-8.2.2
 packages:
-      lang-haskell/clip
-    , lang-haskell/cmd
-    , lang-haskell/comp
+      lang-haskell/build
+
     , lang-haskell/detour-via-sci
     , lang-haskell/detour-via-uom
+    , lang-haskell/tasty-compare
+    , lang-haskell/siggy-chardust
+
+    , lang-haskell/hcoord/hcoord
+    , lang-haskell/hcoord/hcoord-utm
+    , lang-haskell/exact-real
+    , lang-haskell/uom-plugin/uom-plugin
+
+    , lang-haskell/clip
+    , lang-haskell/cmd
+    , lang-haskell/comp
     , lang-haskell/earth
-    , lang-haskell/flare-timing
     , lang-haskell/fsdb
     , lang-haskell/gap-allot
     , lang-haskell/gap-effort
@@ -23,17 +32,16 @@ packages:
     , lang-haskell/mask
     , lang-haskell/route
     , lang-haskell/scribe
-    , lang-haskell/siggy-chardust
     , lang-haskell/span
     , lang-haskell/task
-    , lang-haskell/tasty-compare
     , lang-haskell/time
     , lang-haskell/track
     , lang-haskell/units
     , lang-haskell/zone
-    , lang-haskell/hcoord/hcoord
-    , lang-haskell/hcoord/hcoord-utm
-    , lang-haskell/exact-real
+
+    , lang-haskell/flare-timing
+    , lang-haskell/app-serve
+
 package flight-clip
     tests: true
 package flight-cmd
@@ -113,11 +121,13 @@ package exact-real
 constraints:
     -- NOTE: The following are taken from stack.yaml extra-deps section.
       hxt-xpath ^>= 9.1.2.2
-    , uom-plugin ^>= 0.3.0.0
+    -- NOTE: We're using a local version of the uom-plugin.
+    --, uom-plugin ^>= 0.3.0.0
     , doctest ^>= 0.15.0
     , megaparsec ^>= 7.0.4
     , parser-combinators ^>= 1.0.0
-    , HUnit ^>= 1.5.0.0
+    -- WARNING: To build app-serve don't constraint HUnit.
+    -- , HUnit ^>= 1.5.0.0
 
     -- NOTE: The following are taken from stackage with some items commented
     -- out that clash with the above extra-deps.
@@ -2377,7 +2387,7 @@ constraints:
     , unlit ==0.4.0.0
     , unordered-containers ==0.2.9.0
     , unsafe ==0.0
-    , uom-plugin ==0.3.0.0
+    --, uom-plugin ==0.3.0.0
     , uri-bytestring ==0.3.2.0
     , uri-bytestring-aeson ==0.1.0.6
     , uri-encode ==1.5.0.5

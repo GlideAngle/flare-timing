@@ -11,6 +11,7 @@
     ) where
 
 import GHC.Generics (Generic)
+import Control.DeepSeq
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
@@ -46,6 +47,10 @@ instance FromJSON RawLatLng where
 newtype RawLat = RawLat Rational deriving (Eq, Ord, Generic)
 newtype RawLng = RawLng Rational deriving (Eq, Ord, Generic)
 newtype RawAlt = RawAlt Rational deriving (Eq, Ord, Generic)
+
+deriving anyclass instance NFData RawLat
+deriving anyclass instance NFData RawLng
+deriving anyclass instance NFData RawAlt
 
 instance Newtype RawLat Rational where
     pack = RawLat

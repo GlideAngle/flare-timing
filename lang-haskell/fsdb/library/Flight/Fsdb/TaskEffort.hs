@@ -1,4 +1,4 @@
-module Flight.Fsdb.TaskEffort (parseNormLandouts) where
+module Flight.Fsdb.TaskEffort (parseAltLandouts) where
 
 import Data.Either (partitionEithers)
 import Data.List (sortBy)
@@ -37,8 +37,7 @@ import Flight.Units ()
 import Flight.Fsdb.Internal.XmlPickle ()
 import Flight.Track.Land (TaskLanding(..))
 import Flight.Comp (Pilot(..), PilotId(..))
-import "flight-gap-allot" Flight.Score
-    (MinimumDistance(..), PilotDistance(..), FlownMax(..))
+import "flight-gap-allot" Flight.Score (PilotDistance(..), FlownMax(..))
 import "flight-gap-effort" Flight.Score
     ( Lookahead(..), SumOfDifficulty(..)
     , IxChunk(..), Chunk(..), Chunking(..)
@@ -50,11 +49,10 @@ import "flight-gap-valid" Flight.Score (ReachToggle(..))
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Pilot (getCompPilot)
 
-nullLanding :: MinimumDistance (Quantity Double [u| km |]) -> TaskLanding
-nullLanding free =
+nullLanding :: TaskLanding
+nullLanding =
     TaskLanding
-        { minDistance = free
-        , bestDistance = Nothing
+        { bestDistance = Nothing
         , landout = 0
         , lookahead = Nothing
         , chunking = Nothing
@@ -162,8 +160,8 @@ xpChunk pidMap =
 ixc :: Double -> (IxChunk, Chunk (Quantity Double [u| km |]))
 ixc x = let q = MkQuantity x in (toIxChunk $ PilotDistance q, Chunk q)
 
-xpDifficulty :: MinimumDistance (Quantity Double [u| km |]) -> PU TaskLanding
-xpDifficulty free =
+xpDifficulty :: PU TaskLanding
+xpDifficulty =
     xpElem "FsTaskDifficulty"
     -- WARNING: Filter only attributes, ignoring child elements such as
     -- <FsChunk ... />. If not then the pickling will fail with
@@ -178,7 +176,7 @@ xpDifficulty free =
         )
     $ xpWrap
         ( \(ahead, sc, ec, sumDiff, lo) ->
-            (nullLanding free)
+            nullLanding
                 { lookahead = Just $ Lookahead ahead
                 , chunking =
                     Just $
@@ -229,13 +227,12 @@ getReach =
 
 getEffort
     :: ArrowXml a
-    => MinimumDistance (Quantity Double [u| km |])
-    -> [Pilot]
+    => [Pilot]
     -> a XmlTree (Either String TaskLanding)
-getEffort free pilots =
+getEffort pilots =
     getChildren
     >>> deep (hasName "FsTaskDifficulty")
-    >>> arr (unpickleDoc' $ xpDifficulty free)
+    >>> arr (unpickleDoc' xpDifficulty)
     &&& listA getChunk
     >>> arr (\case
         (Left s, _) -> Left s
@@ -251,11 +248,8 @@ getEffort free pilots =
             >>> hasName "FsChunk"
             >>> arr (unpickleDoc' $ xpChunk kps)
 
-parseNormLandouts
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> String
-    -> IO (Either String [TaskLanding])
-parseNormLandouts free contents = do
+parseAltLandouts :: String -> IO (Either String [TaskLanding])
+parseAltLandouts contents = do
     let doc =
             readString
                 [ withValidate no
@@ -266,7 +260,7 @@ parseNormLandouts free contents = do
 
     ps <- runX $ doc >>> getCompPilot
     rs <- runX $ doc >>> getReach
-    xs <- runX $ doc >>> getEffort free ps
+    xs <- runX $ doc >>> getEffort ps
 
     let f ReachToggle{flown = bd} = bd
     let g bd x = x{bestDistance = Just bd}

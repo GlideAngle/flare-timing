@@ -4,7 +4,7 @@ on:
   push:
     branches: [ci-cabal]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:
@@ -21,30 +21,17 @@ jobs:
       with:
         submodules: true
 
-    - uses: actions/setup-haskell@v1
-      name: setup GHC and cabal-install
+    - uses: haskell/actions/setup@v1
+      name: Setup GHC and cabal-install
       with:
         ghc-version: ${{ matrix.ghc }}
         cabal-version: ${{ matrix.cabal }}
-
-    # SEE: https://github.com/actions/cache/blob/master/examples.md#haskell---cabal
-    - uses: actions/cache@v1
-      name: cache ~/.cabal/packages
-      with:
-        path: ~/.cabal/packages
-        key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-packages
 
     - uses: actions/cache@v1
       name: cache ~/.cabal/store
       with:
         path: ~/.cabal/store
-        key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-store
-
-    - uses: actions/cache@v1
-      name: cache dist-newstyle
-      with:
-        path: dist-newstyle
-        key: ${{ runner.os }}-${{ matrix.ghc }}-dist-newstyle
+        key: ${{ runner.os }}-${{ matrix.ghc }}-cabal
 
     - name: build
       run: |

@@ -3,10 +3,11 @@
 module WireTypes.Point
     ( StartGate(..)
     , Velocity(..)
-    , NormBreakdown(..)
+    , AltBreakdown(..)
     , Breakdown(..)
     , Allocation(..)
     , GoalRatio(..)
+    , EssNotGoal(..)
     , PilotDistance(..)
     , JumpedTheGun(..)
     , Alt(..)
@@ -32,13 +33,13 @@ module WireTypes.Point
     , showPilotDistanceDiff
     , showPilotAlt
     , showJumpedTheGunTime
-    , showJumpedTheGunPenalty
     -- * Showing Points
     , showTaskDistancePoints
     , showTaskLinearPoints
     , showTaskDifficultyPoints
     , showTaskArrivalPoints
     , showTaskTimePoints
+    , showTaskTimeArrivalPoints
     , showTaskLeadingPoints
     , showTaskPoints
     , showTaskPointsRounded
@@ -92,6 +93,10 @@ newtype StartGate = StartGate UTCTime
     deriving anyclass (FromJSON)
 
 newtype GoalRatio = GoalRatio Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
+newtype EssNotGoal = EssNotGoal Bool
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
@@ -187,15 +192,6 @@ showJumpedTheGunTime :: Maybe JumpedTheGun -> T.Text
 showJumpedTheGunTime Nothing = ""
 showJumpedTheGunTime (Just (JumpedTheGun s)) = showHmsForSecs s
 
--- | Positive penalties (demerits) are shown as negative amounts and negative
--- penalties (bonuses) are shown as positive amounts.
-showJumpedTheGunPenalty :: Int -> PenaltySeqs -> T.Text
-showJumpedTheGunPenalty dp PenaltySeqs{adds, resets} =
-    T.pack $
-    if null resets
-        then let (PenaltyPoints p) = effectiveAdd adds in printf "%+.*f" dp p
-        else ""
-
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
     T.pack . printf "%.0f" $ a
@@ -277,6 +273,17 @@ showTaskTimePoints :: Maybe TimePoints -> TimePoints -> T.Text
 showTaskTimePoints task (TimePoints p) =
     showMax p (\(TimePoints x) -> x) task
 
+showTaskTimeArrivalPoints
+    :: (Maybe (TimePoints, ArrivalPoints))
+    -> (TimePoints, ArrivalPoints)
+    -> T.Text
+showTaskTimeArrivalPoints task (TimePoints tp, ArrivalPoints ap) =
+    showMax'
+        (printf "%.1f")
+        (tp + ap)
+        (\(TimePoints tTask, ArrivalPoints aTask) -> tTask + aTask)
+        task
+
 showTaskLeadingPoints :: Maybe LeadingPoints -> LeadingPoints -> T.Text
 showTaskLeadingPoints task (LeadingPoints p) =
     showMax p (\(LeadingPoints x) -> x) task
@@ -299,18 +306,15 @@ showDemeritPointsNonZero dp (TaskPoints p)
     | p == 0 = ""
     | otherwise = showTaskPoints dp (TaskPoints $ negate p)
 
-showTaskPointsDiffStats :: [Maybe TaskPoints] -> [TaskPoints] -> T.Text
+showTaskPointsDiffStats :: Maybe [TaskPoints] -> [TaskPoints] -> T.Text
 showTaskPointsDiffStats es ps =
-    let es' :: Maybe [TaskPoints]
-        es' = sequence es
-    in
-        T.pack $
-            maybe
-                ("Points")
-                (\es'' ->
-                    let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es''
-                    in printf "Points (Δ = %.1f ± %.1f)" (Stats.mean xs) (Stats.stdDev xs))
-                es'
+    T.pack $
+        maybe
+            ""
+            (\es' ->
+                let xs = zipWith (\(TaskPoints p) (TaskPoints e) -> p - e) ps es'
+                in printf "Δ = %.1f ± %.1f" (Stats.mean xs) (Stats.stdDev xs))
+            es
 
 showLinearPoints :: LinearPoints -> T.Text
 showLinearPoints (LinearPoints p) = T.pack $ printf "%.1f" p
@@ -459,18 +463,23 @@ data ReachToggle a =
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
-data NormBreakdown =
-    NormBreakdown
-        { place :: TaskPlacing
+data AltBreakdown =
+    AltBreakdown
+        { placeGiven :: TaskPlacing
+        , placeTaken :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points
         , fractions :: Fractions
-        , reach :: ReachToggle PilotDistance
-        , landedMade :: PilotDistance
+        , reach :: ReachToggle (Maybe PilotDistance)
+        -- ^ Most pilots have reach but some get nulls from airScore.
+        , landedMade :: Maybe PilotDistance
+        -- ^ Reported by FS but not by airScore. Not actually used in
+        -- calculating points in GAP.
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe PilotTime
-        , leadingArea :: LeadingArea
+        , leadingArea :: Maybe LeadingArea
+        -- ^ Reported by FS but not by airScore.
         , leadingCoef :: LeadingCoefficient
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
@@ -483,8 +492,11 @@ data Breakdown =
         , demeritPoint :: TaskPoints
         , demeritReset :: TaskPoints
         , total :: TaskPoints
+        , essNotGoal :: Maybe EssNotGoal
+        , penaltiesEssNotGoal :: PenaltySeqs
         , jump :: Maybe JumpedTheGun
-        , penaltiesJump :: PenaltySeqs
+        , penaltiesJumpRaw :: Maybe PenaltySeqs
+        , penaltiesJumpEffective :: PenaltySeqs
         , penalties :: PenaltySeqs
         , penaltyReason :: String
         , breakdown :: Points

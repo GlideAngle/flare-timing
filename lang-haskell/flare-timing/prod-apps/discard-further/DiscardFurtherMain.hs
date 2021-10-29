@@ -2,6 +2,7 @@
 
 import Prelude hiding (last)
 import Data.Maybe (fromMaybe)
+import Data.List (find)
 import Data.List.NonEmpty (nonEmpty, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -10,7 +11,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -18,9 +19,11 @@ import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Zone.MkZones (Zones(..))
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
+    , ScoringInputFiles
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Comp(..)
     , Task(..)
     , PilotName(..)
@@ -28,13 +31,16 @@ import Flight.Comp
     , TrackFileFail
     , IxTask(..)
     , findCompInput
-    , ensureExt
+    , reshape
     , pilotNamed
+    , mkCompTaskSettings
+    , compFileToTaskFiles
     )
-import Flight.Track.Time (TimeToTick, glideRatio, altBonusTimeToTick, copyTimeToTick)
+import Flight.Track.Time (TimeRow(..), TimeToTick, glideRatio, altBonusTimeToTick, copyTimeToTick)
+import Flight.Track.Stop (CompFraming(..), StopFraming(..), TrackScoredSection(..))
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readComp
+    ( readCompAndTasks, readCompPegFrame
     , readPilotAlignTimeWriteDiscardFurther
     , readPilotAlignTimeWritePegThenDiscard
     )
@@ -45,57 +51,79 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
     fprint ("Filtering times completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-
-    compSettings <-
+go CmdBatchOptions{..} compFile = do
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
-    case compSettings of
-        Nothing -> putStrLn "Couldn't read the comp settings."
-        Just cs ->
+    stopping <-
+        catchIO
+            (Just <$> readCompPegFrame compFile)
+            (const $ return Nothing)
+
+    case (filesTaskAndSettings, stopping) of
+        (Nothing, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing) -> putStrLn "Couldn't read the scored frames."
+        (Just (taskFiles, settings@(cs, _)), Just CompFraming{stopFlying}) ->
             filterTime
-                cs
-                compFile
+                (uncurry mkCompTaskSettings $ settings)
+                (compFile, taskFiles)
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
+                stopFlying
                 checkAll
 
+filterTimeRow :: StopFraming -> TimeRow -> Bool
+filterTimeRow StopFraming{stopScored} TimeRow{time = t} = fromMaybe True $ do
+    TrackScoredSection{scoredTimes} <- stopScored
+    (t0, t1) <- scoredTimes
+    return $ t0 <= t && t <= t1
+
 filterTime
-    :: CompSettings k
-    -> CompInputFile
+    :: CompTaskSettings k
+    -> ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
-    -> (CompInputFile
+    -> [[(Pilot, StopFraming)]]
+    -> (ScoringInputFiles
         -> [IxTask]
         -> [Pilot]
         -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
-    CompSettings{comp = Comp{discipline = hgOrPg}, tasks}
-    compFile selectTasks selectPilots f = do
+    CompTaskSettings{comp = Comp{discipline = hgOrPg}, tasks}
+    inFiles@(compFile, _) selectTasks selectPilots stopFlying f = do
+
+    let filterOnPilotStops pilot stops =
+            (maybe
+                (const True)
+                (filterTimeRow . snd)
+                (find ((==) pilot . fst) stops))
 
     checks <-
         catchIO
-            (Just <$> f compFile selectTasks selectPilots)
+            (Just <$> f inFiles selectTasks selectPilots)
             (const $ return Nothing)
 
     case checks of
@@ -111,15 +139,19 @@ filterTime
             sequence_
                 [
                     mapM_
-                        (readPilotAlignTimeWriteDiscardFurther
-                            copyTimeToTick
-                            id
-                            compFile
-                            (includeTask selectTasks)
-                            n)
+                        (\p ->
+                            readPilotAlignTimeWriteDiscardFurther
+                                copyTimeToTick
+                                id
+                                compFile
+                                (includeTask selectTasks)
+                                (filterOnPilotStops p stops)
+                                n
+                                p)
                         pilots
                 | n <- (IxTask <$> [1 .. ])
                 | pilots <- taskPilots
+                | stops <- stopFlying
                 ]
 
             let altBonusesOnTime :: [TimeToTick] =
@@ -142,6 +174,7 @@ filterTime
                                 id
                                 compFile
                                 (includeTask selectTasks)
+                                (filterOnPilotStops p stops)
                                 n
                                 p
                         return $ (p, a)
@@ -150,15 +183,16 @@ filterTime
                     ]
                 | n <- (IxTask <$> [1 .. ])
                 | pilots <- taskPilots
+                | stops <- stopFlying
                 | timeToTick <- altBonusesOnTime
                 ]
 
 checkAll
-    :: CompInputFile
+    :: ScoringInputFiles
     -> [IxTask]
     -> [Pilot]
     -> IO [[Either (Pilot, TrackFileFail) (Pilot, ())]]
-checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
+checkAll = checkTracks $ \CompTaskSettings{tasks} -> (\ _ _ _ -> ()) tasks
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)

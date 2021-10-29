@@ -18,7 +18,7 @@ import Data.Csv
     (Header, decodeByName, EncodeOptions(..), encodeByNameWith, defaultEncodeOptions)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
-import qualified Data.Vector as V (toList, null, last)
+import qualified Data.Vector as V (toList, null, last, filter)
 
 import Flight.Track.Time
     ( TimeRow(..), TickRow(..), TimeToTick, TickToTick
@@ -89,10 +89,10 @@ readCompBestDistances
     -> IO [[Maybe (Pilot, TickRow)]]
 readCompBestDistances altBonus compFile includeTask =
     zipWithM
-        (\ i ps ->
-            if not (includeTask i)
+        (\ ixTask ps ->
+            if not (includeTask ixTask)
                then return []
-               else readTaskBestDistances altBonus compFile i ps)
+               else readTaskBestDistances altBonus compFile ixTask ps)
         (IxTask <$> [1 .. ])
 
 readTaskBestDistances
@@ -101,8 +101,8 @@ readTaskBestDistances
     -> IxTask
     -> [Pilot]
     -> IO [Maybe (Pilot, TickRow)]
-readTaskBestDistances altBonus compFile i =
-    mapM (readPilotBestDistance altBonus compFile i)
+readTaskBestDistances altBonus compFile ixTask =
+    mapM (readPilotBestDistance altBonus compFile ixTask)
 
 readPilotBestDistance
     :: AltBonus
@@ -110,24 +110,25 @@ readPilotBestDistance
     -> IxTask
     -> Pilot
     -> IO (Maybe (Pilot, TickRow))
-readPilotBestDistance (AltBonus False) compFile (IxTask iTask) pilot = do
+readPilotBestDistance (AltBonus False) compFile ixTask pilot = do
     (_, rows) <- readDiscardFurther $ (DiscardFurtherFile $ path </> file)
     return $ (pilot,) <$> lastRow rows
     where
         dir = compFileToCompDir compFile
-        (DiscardFurtherDir path, DiscardFurtherFile file) = discardFurtherPath dir iTask pilot
-readPilotBestDistance (AltBonus True) compFile (IxTask iTask) pilot = do
+        (DiscardFurtherDir path, DiscardFurtherFile file) = discardFurtherPath dir ixTask pilot
+readPilotBestDistance (AltBonus True) compFile ixTask pilot = do
     (_, rows) <- readPegThenDiscard (PegThenDiscardFile $ path </> file)
     return $ (pilot,) <$> lastRow rows
     where
         dir = compFileToCompDir compFile
-        (PegThenDiscardDir path, PegThenDiscardFile file) = pegThenDiscardPath dir iTask pilot
+        (PegThenDiscardDir path, PegThenDiscardFile file) = pegThenDiscardPath dir ixTask pilot
 
 readPilotAlignTimeWriteDiscardFurther
     :: TimeToTick
     -> TickToTick
     -> CompInputFile
     -> (IxTask -> Bool)
+    -> (TimeRow -> Bool)
     -> IxTask
     -> Pilot
     -> IO (Maybe (Vector TickRow))
@@ -136,24 +137,27 @@ readPilotAlignTimeWriteDiscardFurther
     tickToTick
     compFile
     selectTask
-    iTask@(IxTask i) pilot =
-    if not (selectTask iTask) then return Nothing else do
+    selectRow
+    ixTask pilot =
+    if not (selectTask ixTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
-    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick timeRows
+    let keptTimeRows = V.filter selectRow timeRows
+    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick keptTimeRows
     _ <- f tickRows
     return $ Just tickRows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file)
         dir = compFileToCompDir compFile
-        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
-        (DiscardFurtherDir dOut) = discardFurtherDir dir i
+        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir ixTask pilot
+        (DiscardFurtherDir dOut) = discardFurtherDir dir ixTask
 
 readPilotAlignTimeWritePegThenDiscard
     :: TimeToTick
     -> TickToTick
     -> CompInputFile
     -> (IxTask -> Bool)
+    -> (TimeRow -> Bool)
     -> IxTask
     -> Pilot
     -> IO (Maybe (Vector TickRow))
@@ -162,29 +166,31 @@ readPilotAlignTimeWritePegThenDiscard
     tickToTick
     compFile
     selectTask
-    iTask@(IxTask i) pilot =
-    if not (selectTask iTask) then return Nothing else do
+    selectRow
+    ixTask pilot =
+    if not (selectTask ixTask) then return Nothing else do
     _ <- createDirectoryIfMissing True dOut
     (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
-    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick timeRows
+    let keptTimeRows = V.filter selectRow timeRows
+    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick keptTimeRows
     _ <- f tickRows
     return $ Just tickRows
     where
         f = writePegThenDiscard (PegThenDiscardFile $ dOut </> file) tickHeader
         dir = compFileToCompDir compFile
-        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
-        (PegThenDiscardDir dOut) = pegThenDiscardDir dir i
+        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir ixTask pilot
+        (PegThenDiscardDir dOut) = pegThenDiscardDir dir ixTask
 
 readPilotDiscardFurther :: CompInputFile -> IxTask -> Pilot -> IO [TickRow]
-readPilotDiscardFurther compFile (IxTask i) pilot = do
+readPilotDiscardFurther compFile ixTask pilot = do
     let dir = compFileToCompDir compFile
-    let (DiscardFurtherDir path, DiscardFurtherFile file) = discardFurtherPath dir i pilot
+    let (DiscardFurtherDir path, DiscardFurtherFile file) = discardFurtherPath dir ixTask pilot
     (_, rows) <- readDiscardFurther (DiscardFurtherFile $ path </> file)
     return $ V.toList rows
 
 readPilotPegThenDiscard :: CompInputFile -> IxTask -> Pilot -> IO [TickRow]
-readPilotPegThenDiscard compFile (IxTask i) pilot = do
+readPilotPegThenDiscard compFile ixTask pilot = do
     let dir = compFileToCompDir compFile
-    let (PegThenDiscardDir path, PegThenDiscardFile file) = pegThenDiscardPath dir i pilot
+    let (PegThenDiscardDir path, PegThenDiscardFile file) = pegThenDiscardPath dir ixTask pilot
     (_, rows) <- readPegThenDiscard (PegThenDiscardFile $ path </> file)
     return $ V.toList rows

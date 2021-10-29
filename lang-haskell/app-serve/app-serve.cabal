@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.31.0.
+-- This file has been generated from package.dhall by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a3e47457a949faa622dcf4f67f616458f28cd959150ca009ef8593cd84c0b2fd
+-- hash: 396b79a6911a28d7ffab4e3f62436f0ae70f0468d8057cd86e0d7b48f08c9728
 
 name:           app-serve
 version:        0.1.0
 synopsis:       A collection of apps and libraries for scoring hang gliding and paragliding competitions.
 description:    Scoring and viewing hang gliding and paragliding competitions.
 category:       Data, Parsing
-homepage:       https://github.com/blockscope/flare-timing#readme
+homepage:       https://github.com/blockscope/flare-timing/lang-haskell/app-serve#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -27,24 +27,105 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/blockscope/flare-timing
-  subdir: app-serve
+  location: https://github.com/BlockScope/flare-timing.git
 
 flag suppress-failing-tests
   manual: False
   default: True
 
-executable comp-serve
-  main-is: ServeMain.hs
+executable ft-comp-py
+  main-is: GenPyClient.hs
   other-modules:
-      ServeArea
+      Serve.Alt
+      Serve.Api
+      Serve.App
+      Serve.Area
+      Serve.Config
+      Serve.Error
+      Serve.Pilot
+      Serve.PointDiff
+      Serve.Route
+      Serve.Task
+      Serve.Track
+      Serve.Validity
       ServeOptions
       ServeSwagger
-      ServeTrack
-      ServeValidity
-      Paths_app_serve
   hs-source-dirs:
-      comp-serve
+      src
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , cmdargs
+    , containers
+    , detour-via-sci
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-earth
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
+    , flight-kml
+    , flight-latlng
+    , flight-mask
+    , flight-route
+    , flight-scribe
+    , flight-units
+    , flight-zone
+    , lens
+    , mtl
+    , raw-strings-qq
+    , safe-exceptions
+    , sampling
+    , servant
+    , servant-py
+    , servant-server
+    , servant-swagger
+    , servant-swagger-ui
+    , siggy-chardust
+    , statistics
+    , swagger2
+    , text
+    , time
+    , transformers
+    , uom-plugin
+    , vector
+    , wai
+    , wai-cors
+    , wai-extra
+    , warp
+    , yaml
+  default-language: Haskell2010
+
+executable ft-comp-serve
+  main-is: ServeMain.hs
+  other-modules:
+      Serve.Alt
+      Serve.Api
+      Serve.App
+      Serve.Area
+      Serve.Config
+      Serve.Error
+      Serve.Pilot
+      Serve.PointDiff
+      Serve.Route
+      Serve.Task
+      Serve.Track
+      Serve.Validity
+      ServeOptions
+      ServeSwagger
+  hs-source-dirs:
+      src
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:

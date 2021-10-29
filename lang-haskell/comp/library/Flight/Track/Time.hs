@@ -63,6 +63,7 @@ import Data.ByteString.Lazy.Char8 (unpack, pack)
 import Data.HashMap.Strict (unions)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
+import Control.DeepSeq
 import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
 import Data.UnitsOfMeasure
     ( (+:), (-:), (*:), (/:), KnownUnit, Unpack
@@ -121,7 +122,7 @@ instance Show LegIdx where show (LegIdx x) = show x
 -- | The index of a fix within the whole track.
 newtype FixIdx = FixIdx Int
     deriving (Eq, Ord, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON, FromJSON, NFData)
     deriving newtype (Enum, Num, ToField, FromField)
 
 -- | The index of a fix for a leg, that section of the tracklog between one
@@ -187,7 +188,7 @@ data TrackRow =
         , alt :: RawAlt
         -- ^ Altitude of the fix.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON, NFData)
 
 -- | A fix but with time as elapsed time from the first crossing time.
 data TimeRow =

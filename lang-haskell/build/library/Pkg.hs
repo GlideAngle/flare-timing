@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Pkg (buildRules) where
 
 import Development.Shake
@@ -5,7 +7,7 @@ import Development.Shake
     , CmdOption(Cwd, Shell)
     , (%>)
     , phony
-    , cmd
+    , cmd, cmd_
     , need
     )
 
@@ -13,6 +15,8 @@ import Development.Shake.FilePath ((<.>), (</>))
 
 type Folder = String
 type Pkg = String
+type CmdApp = String
+type Title = String
 
 -- | The names of the folders for dhall-format and hpack-dhall.
 dhallPkgs :: [Folder]
@@ -22,10 +26,9 @@ dhallPkgs = fst <$> dhallCabal
 -- name.
 dhallCabal :: [(Folder, Pkg)]
 dhallCabal =
-
     [ ("lang-haskell/detour-via-sci", "detour-via-sci")
     , ("lang-haskell/detour-via-uom", "detour-via-uom")
-    , ("lang-haskell/build", "build-flare-timing")
+    , ("lang-haskell/build", "ft-build")
     , ("lang-haskell/cmd", "flight-cmd")
     , ("lang-haskell/clip", "flight-clip")
     , ("lang-haskell/comp", "flight-comp")
@@ -59,6 +62,28 @@ dhallCabal =
     , ("lang-haskell/tasty-compare", "tasty-compare")
     ]
 
+readmes :: [(Folder, CmdApp, Title)]
+readmes =
+    [ ("extract-input", "ft-extract-input", "Extracting Scoring Inputs from FSDB")
+    , ("fs-arrival", "fs-arrival", "FS Arrivals")
+    , ("fs-effort", "fs-effort", "FS Effort")
+    , ("fs-filter", "fs-filter", "Filter the FSDB")
+    , ("fs-route", "fs-route", "FS Routes")
+    , ("fs-score", "fs-score", "FS Scores")
+    , ("task-length", "ft-task-length", "Task Lengths")
+    , ("cross-zone", "ft-cross-zone", "Zone Crossings")
+    , ("tag-zone", "ft-tag-zone", "Zone Taggings")
+    , ("unpack-track", "ft-unpack-track", "Unpacking Tracks for Mapping")
+    , ("peg-frame", "ft-peg-frame", "Pegging the Scoring Time Frame")
+    , ("align-time", "ft-align-time", "Align Times")
+    , ("discard-further", "ft-discard-further", "Discard Further Fixes")
+    , ("area-step", "ft-area-step", "Area Steps")
+    , ("mask-arrival", "ft-mask-arrival", "Masking Tracks for Arrivar")
+    , ("mask-track", "ft-mask-track", "Masking Tracks")
+    , ("land-out", "ft-land-out", "Landing Out")
+    , ("gap-point", "ft-gap-point", "Tallying the GAP Points")
+    ]
+
 dhallRootImports :: [String]
 dhallRootImports =
     [ "defaults"
@@ -89,12 +114,25 @@ cabal :: (Folder, Pkg) -> Rules ()
 cabal (folder, pkg) =
     folder </> pkg <.> "cabal" %> \_ -> need ["hpack-dhall-" ++ folder]
 
+readme :: (Folder, CmdApp, Title) -> Rules ()
+readme (folder, cmdApp, title) =
+    phony ("readme-" ++ cmdApp) $ do
+        let path :: String = "lang-haskell/flare-timing/prod-apps" </> folder
+        cmd_ (Cwd path) Shell ("echo \"### " ++ title ++ "\" > README.md")
+        cmd_ (Cwd path) Shell ("echo >> README.md")
+        cmd_ (Cwd path) Shell ("echo \'```\' >> README.md")
+        cmd_ (Cwd path) Shell ("echo \"> " ++ cmdApp ++ " --help\" >> README.md")
+        cmd_ (Cwd path) Shell (cmdApp ++ " --help >> README.md")
+        cmd_ (Cwd path) Shell ("echo \'```\' >> README.md")
+
 buildRules :: Rules ()
 buildRules = do
     sequence_ $ formatRoot <$> dhallRootImports
     sequence_ $ formatPkg <$> dhallPkgs
     sequence_ $ hpack <$> dhallPkgs
     sequence_ $ cabal <$> dhallCabal
+    sequence_ $ readme <$> readmes
     phony "dhall-format" $ need $ (\x -> "dhall-format-" ++ x) <$> dhallPkgs ++ dhallRootImports
     phony "hpack-dhall" $ need $ (\x -> "hpack-dhall-" ++ x) <$> dhallPkgs
     phony "cabal-files" $ need $ (\(x, y) -> x </> y <.> "cabal") <$> dhallCabal
+    phony "readmes" $ need $ (\(_, y, _) -> "readme-" ++ y) <$> readmes

@@ -75,7 +75,7 @@ readPilotTimeRow
     -> Pilot
     -> Maybe LeadTick
     -> IO (Maybe (Pilot, TimeRow))
-readPilotTimeRow compFile (IxTask iTask) pilot mark = do
+readPilotTimeRow compFile iTask pilot mark = do
     (_, rows) <- readAlignTime (AlignTimeFile (dirIn </> file))
 
     return $

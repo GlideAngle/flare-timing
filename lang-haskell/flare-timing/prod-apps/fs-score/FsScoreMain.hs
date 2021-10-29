@@ -12,24 +12,31 @@ import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseNominal, parseNormScores)
+import Flight.Fsdb (parseComp, parseNominal, parseTweak, parseAltScores)
 import Flight.Track.Speed (TrackSpeed)
+import Flight.Track.Place (rankByAltTotal, sortAltScores)
 import qualified Flight.Track.Speed as Time (TrackSpeed(..))
-import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
+import Flight.Track.Point (AlternativePointing(..), AltPointing, AltBreakdown(..))
 import Flight.Comp
-    ( FileType(TrimFsdb)
+    ( AltDot(AltFs)
+    , FindDirFile(..)
+    , FileType(TrimFsdb)
     , TrimFsdbFile(..)
     , FsdbXml(..)
     , Pilot(..)
+    , Comp(..)
     , Nominal(..)
-    , trimFsdbToNormScore
+    , Tweak(..)
+    , trimFsdbToAltScore
     , findTrimFsdb
-    , ensureExt
+    , reshape
     )
+import Flight.Zone.MkZones (Discipline(..))
 import qualified "flight-gap-allot" Flight.Score as Gap (bestTime')
 import qualified "flight-gap-allot" Flight.Score as Frac (Fractions(..))
 import "flight-gap-allot" Flight.Score
@@ -39,6 +46,7 @@ import "flight-gap-allot" Flight.Score
     , DistanceFraction(..)
     , LinearFraction(..)
     , DifficultyFraction(..)
+    , PowerExponent
     , speedFraction
     )
 import "flight-gap-math" Flight.Score
@@ -49,7 +57,7 @@ import "flight-gap-math" Flight.Score
     , LinearPoints(..)
     , DifficultyPoints(..)
     )
-import Flight.Scribe (readTrimFsdb, writeNormScore)
+import Flight.Scribe (readTrimFsdb, writeAltScore)
 import FsScoreOptions (description)
 
 main :: IO ()
@@ -57,16 +65,17 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt TrimFsdb}
+    let lf = LenientFile {coerceFile = reshape TrimFsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findTrimFsdb o
+    cwd <- getCurrentDirectory
+    files <- findTrimFsdb $ FindDirFile {dir = cwd, file = file}
 
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
@@ -78,7 +87,18 @@ go trimFsdbFile = do
     FsdbXml contents <- readTrimFsdb trimFsdbFile
     let contents' = dropWhile (/= '<') contents
     settings <- runExceptT $ normScores (FsdbXml contents')
-    either print (writeNormScore (trimFsdbToNormScore trimFsdbFile)) settings
+    either print (writeAltScore (trimFsdbToAltScore AltFs trimFsdbFile)) settings
+
+fsdbComp :: FsdbXml -> ExceptT String IO Comp
+fsdbComp (FsdbXml contents) = do
+    cs <- lift $ parseComp contents
+    case cs of
+        Left msg -> ExceptT . return $ Left msg
+        Right [c] -> ExceptT . return $ Right c
+        Right _ -> do
+            let msg = "Expected only one comp"
+            lift $ print msg
+            throwE msg
 
 fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
 fsdbNominal (FsdbXml contents) = do
@@ -91,19 +111,34 @@ fsdbNominal (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbScores :: Nominal -> FsdbXml -> ExceptT String IO NormPointing
+fsdbTweak :: Discipline -> FsdbXml -> ExceptT String IO Tweak
+fsdbTweak discipline (FsdbXml contents) = do
+    ns <- lift $ parseTweak discipline contents
+    case ns of
+        Left msg -> ExceptT . return $ Left msg
+        Right [n] -> ExceptT . return $ Right n
+        _ -> do
+            let msg = "Expected only one set of tweaks for the comp"
+            lift $ print msg
+            throwE msg
+
+fsdbScores :: Nominal -> FsdbXml -> ExceptT String IO AltPointing
 fsdbScores n (FsdbXml contents) = do
-    fs <- lift $ parseNormScores n contents
+    fs <- lift $ parseAltScores n contents
     ExceptT $ return fs
 
-normScores :: FsdbXml -> ExceptT String IO NormPointing
+normScores :: FsdbXml -> ExceptT String IO AltPointing
 normScores fsdbXml = do
     n <- fsdbNominal fsdbXml
-    np@NormPointing{score = xss} <- fsdbScores n fsdbXml
+    Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
+    Tweak{timePowerExponent = tpe} <- fsdbTweak hgOrPg fsdbXml
+    np@AlternativePointing{score = xss} <- fsdbScores n fsdbXml
 
+    -- V for velocity.
     let vss :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-            times <$> xss
+            times tpe <$> xss
 
+    -- T for time.
     let tss =
             [
                 reverse . sortOn (total . snd) $
@@ -119,7 +154,7 @@ normScores fsdbXml = do
                                         { Time.time = tt
                                         , Time.frac = tf
                                         } -> (p, x{timeElapsed = Just tt, fractions = fracs{Frac.time = tf}})
-                        | px@(p, x@NormBreakdown{fractions = fracs}) <- xs
+                        | px@(p, x@AltBreakdown{fractions = fracs}) <- xs
                         ])
                     vs
 
@@ -127,6 +162,7 @@ normScores fsdbXml = do
             | vs <- (fmap . fmap) snd vss
             ]
 
+    -- L for leading.
     let lss =
             [
                 maybe
@@ -134,7 +170,7 @@ normScores fsdbXml = do
                     (\ys ->
                         [ (p, t{fractions = fracs{Frac.leading = c}})
                         | (_, c) <- ys
-                        | (p, t@NormBreakdown{fractions = fracs}) <- xs
+                        | (p, t@AltBreakdown{fractions = fracs}) <- xs
                         ]
                     )
                     (leads xs)
@@ -142,6 +178,7 @@ normScores fsdbXml = do
             | xs <- tss
             ]
 
+    -- A for arrival.
     let ass =
             [
                 maybe
@@ -149,7 +186,7 @@ normScores fsdbXml = do
                     (\ys ->
                         [ (p, t{fractions = fracs{Frac.arrival = c}})
                         | (_, c) <- ys
-                        | (p, t@NormBreakdown{fractions = fracs}) <- xs
+                        | (p, t@AltBreakdown{fractions = fracs}) <- xs
                         ]
                     )
                     (arrivals xs)
@@ -157,6 +194,7 @@ normScores fsdbXml = do
             | xs <- lss
             ]
 
+    -- R for reach.
     let rss =
             [
                 maybe
@@ -164,7 +202,7 @@ normScores fsdbXml = do
                     (\ys ->
                         [ (p, t{fractions = fracs{Frac.reach = c}})
                         | (_, c) <- ys
-                        | (p, t@NormBreakdown{fractions = fracs}) <- xs
+                        | (p, t@AltBreakdown{fractions = fracs}) <- xs
                         ]
                     )
                     (reaches xs)
@@ -172,6 +210,7 @@ normScores fsdbXml = do
             | xs <- ass
             ]
 
+    -- E for effort.
     let ess =
             [
                 maybe
@@ -179,7 +218,7 @@ normScores fsdbXml = do
                     (\ys ->
                         [ (p, t{fractions = fracs{Frac.effort = c}})
                         | (_, c) <- ys
-                        | (p, t@NormBreakdown{fractions = fracs}) <- xs
+                        | (p, t@AltBreakdown{fractions = fracs}) <- xs
                         ]
                     )
                     (efforts xs)
@@ -187,6 +226,7 @@ normScores fsdbXml = do
             | xs <- rss
             ]
 
+    -- D for distance.
     let dss =
             [
                 maybe
@@ -194,7 +234,7 @@ normScores fsdbXml = do
                     (\ys ->
                         [ (p, t{fractions = fracs{Frac.distance = c}})
                         | (_, c) <- ys
-                        | (p, t@NormBreakdown{fractions = fracs}) <- xs
+                        | (p, t@AltBreakdown{fractions = fracs}) <- xs
                         ]
                     )
                     (distances xs)
@@ -202,15 +242,20 @@ normScores fsdbXml = do
             | xs <- ess
             ]
 
-    return np{bestTime = (fmap . fmap) fst vss, score = dss}
+    let rankss =
+            [ rankByAltTotal $ sortAltScores xs
+            | xs <- dss
+            ]
 
-arrivals :: [(Pilot, NormBreakdown)] -> Maybe [(Pilot, ArrivalFraction)]
+    return np{bestTime = (fmap . fmap) fst vss, score = rankss}
+
+arrivals :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, ArrivalFraction)]
 arrivals xs =
     (\ lf -> second (g lf) <$> ys)
     <$> maxArrivalPoints cs
     where
         ys :: [(Pilot, ArrivalPoints)]
-        ys = (\(p, NormBreakdown{breakdown = Points{arrival = c}}) -> (p,c)) <$> xs
+        ys = (\(p, AltBreakdown{breakdown = Points{arrival = c}}) -> (p,c)) <$> xs
 
         cs :: [ArrivalPoints]
         cs = snd <$> ys
@@ -262,48 +307,48 @@ maxLeadingPoints :: [LeadingPoints] -> Maybe LeadingPoints
 maxLeadingPoints [] = Nothing
 maxLeadingPoints xs = Just $ maximum xs
 
-reaches :: [(Pilot, NormBreakdown)] -> Maybe [(Pilot, LinearFraction)]
+reaches :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, LinearFraction)]
 reaches xs =
     (\lf -> second (g lf) <$> ys) <$> maxLinearPoints cs
     where
         ys :: [(Pilot, LinearPoints)]
-        ys = (\(p, NormBreakdown{breakdown = Points{reach = c}}) -> (p,c)) <$> xs
+        ys = (\(p, AltBreakdown{breakdown = Points{reach = c}}) -> (p,c)) <$> xs
 
         cs :: [LinearPoints]
         cs = snd <$> ys
 
         g rMin r = reachFraction rMin r
 
-efforts :: [(Pilot, NormBreakdown)] -> Maybe [(Pilot, DifficultyFraction)]
+efforts :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, DifficultyFraction)]
 efforts xs =
     (\lf -> second (g lf) <$> ys) <$> maxDifficultyPoints cs
     where
         ys :: [(Pilot, DifficultyPoints)]
-        ys = (\(p, NormBreakdown{breakdown = Points{effort = c}}) -> (p,c)) <$> xs
+        ys = (\(p, AltBreakdown{breakdown = Points{effort = c}}) -> (p,c)) <$> xs
 
         cs :: [DifficultyPoints]
         cs = snd <$> ys
 
         g eMin e = effortFraction eMin e
 
-distances :: [(Pilot, NormBreakdown)] -> Maybe [(Pilot, DistanceFraction)]
+distances :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, DistanceFraction)]
 distances xs =
     (\lf -> second (g lf) <$> ys) <$> maxDistancePoints cs
     where
         ys :: [(Pilot, DistancePoints)]
-        ys = (\(p, NormBreakdown{breakdown = Points{distance = c}}) -> (p,c)) <$> xs
+        ys = (\(p, AltBreakdown{breakdown = Points{distance = c}}) -> (p,c)) <$> xs
 
         cs :: [DistancePoints]
         cs = snd <$> ys
 
         g dMin d = distanceFraction dMin d
 
-leads :: [(Pilot, NormBreakdown)] -> Maybe [(Pilot, LeadingFraction)]
+leads :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, LeadingFraction)]
 leads xs =
     (\lf -> second (g lf) <$> ys) <$> maxLeadingPoints cs
     where
         ys :: [(Pilot, LeadingPoints)]
-        ys = (\(p, NormBreakdown{breakdown = Points{leading = c}}) -> (p,c)) <$> xs
+        ys = (\(p, AltBreakdown{breakdown = Points{leading = c}}) -> (p,c)) <$> xs
 
         cs :: [LeadingPoints]
         cs = snd <$> ys
@@ -311,15 +356,16 @@ leads xs =
         g lcMin lc = leadingFraction lcMin lc
 
 times
-    :: [(Pilot, NormBreakdown)]
+    :: PowerExponent
+    -> [(Pilot, AltBreakdown)]
     -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
-times xs =
+times pe xs =
     (\bt -> (bt, second (g bt) <$> ys)) <$> Gap.bestTime' ts
     where
         ys :: [(Pilot, PilotTime (Quantity Double [u| h |]))]
         ys =
             catMaybes
-            $ (\(p, NormBreakdown{timeElapsed = t}) -> (p,) <$> t)
+            $ (\(p, AltBreakdown{timeElapsed = t}) -> (p,) <$> t)
             <$> xs
 
         ts :: [PilotTime (Quantity Double [u| h |])]
@@ -328,5 +374,5 @@ times xs =
         g best t =
             Time.TrackSpeed
                 { Time.time = t
-                , Time.frac = speedFraction best t
+                , Time.frac = speedFraction pe best t
                 }

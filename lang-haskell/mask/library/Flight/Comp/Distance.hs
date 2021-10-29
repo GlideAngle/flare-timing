@@ -29,7 +29,7 @@ import Flight.Zone.Raw (Give)
 import Flight.Route (TrackLine(..))
 import "flight-gap-allot" Flight.Score (BestTime(..), MinimumDistance(..))
 import Flight.Track.Time (LeadTick(..))
-import Flight.Track.Distance (TrackDistance(..), Land, Nigh)
+import Flight.Track.Distance (TrackDistance(..), Effort, Nigh)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 
@@ -103,7 +103,7 @@ compDistance dMin lsTask psArriving psLandingOut tsBest rows =
         MinimumDistance (MkQuantity dMin') = dMin
 
         -- Distances (ds) of point in the flight closest to goal.
-        dsNigh :: [[(Pilot, TrackDistance Land)]] =
+        dsNigh :: [[(Pilot, TrackDistance Effort)]] =
                 zipWith3
                     lookupTaskBestDistance
                     (Map.fromList . catMaybes <$> rows)
@@ -170,7 +170,7 @@ lookupTaskBestDistance
     :: Map Pilot Time.TickRow
     -> Maybe (QTaskDistance Double [u| m |])
     -> [Pilot]
-    -> [(Pilot, TrackDistance Land)]
+    -> [(Pilot, TrackDistance Effort)]
 lookupTaskBestDistance m td =
     sortOn (togo . snd)
     . mapMaybe (lookupPilotBestDistance m td)
@@ -179,14 +179,14 @@ lookupPilotBestDistance
     :: Map Pilot Time.TickRow
     -> Maybe (QTaskDistance Double [u| m |])
     -> Pilot
-    -> Maybe (Pilot, TrackDistance Land)
+    -> Maybe (Pilot, TrackDistance Effort)
 lookupPilotBestDistance m td p =
     (p,) . madeDistance td <$> Map.lookup p m
 
 madeDistance
     :: Maybe (QTaskDistance Double [u| m |])
     -> Time.TickRow
-    -> TrackDistance Land
+    -> TrackDistance Effort
 
 madeDistance Nothing Time.TickRow{togo = d} =
     TrackDistance

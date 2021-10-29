@@ -22,7 +22,7 @@ import Flight.Gap.Time.Best (BestTime(..))
 import Flight.Gap.Time.Pilot (PilotTime(..))
 import Flight.Gap.Fraction.Arrival (ArrivalFraction(..))
 import Flight.Gap.Fraction.Speed (SpeedFraction(..))
-import Flight.Gap.Equation (powerFraction, arrivalTimePowerFraction)
+import Flight.Gap.Equation (PowerExponent, powerFraction, arrivalTimePowerFraction)
 
 -- | Given the placing and the number of pilots making the end of the speed
 -- section, work out the arrival fraction.
@@ -212,11 +212,12 @@ bestTime' xs =
 -- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t16))
 -- 0.279
 speedFraction
-    :: BestTime (Quantity Double [u| h |])
+    :: PowerExponent
+    -> BestTime (Quantity Double [u| h |])
     -> PilotTime (Quantity Double [u| h |])
     -> SpeedFraction
-speedFraction (BestTime (MkQuantity tMin)) (PilotTime (MkQuantity t)) =
-    SpeedFraction . toRational $ powerFraction tMin t
+speedFraction pe (BestTime (MkQuantity tMin)) (PilotTime (MkQuantity t)) =
+    SpeedFraction . toRational $ powerFraction pe tMin t
 
 -- $setup
 -- >>> import Text.Printf (printf)

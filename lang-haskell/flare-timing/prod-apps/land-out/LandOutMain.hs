@@ -8,7 +8,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Zip (munzip)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -16,21 +16,21 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
     , CompInputFile(..)
-    , CompSettings(..)
+    , CompTaskSettings(..)
     , Nominal(..)
-    , MaskEffortFile(..)
-    , compToMaskEffort
-    , compToLand
     , findCompInput
-    , ensureExt
+    , reshape
+    , mkCompTaskSettings
+    , compFileToTaskFiles
     )
 import Flight.Distance (unTaskDistanceAsKm)
 import Flight.Track.Distance (TrackDistance(..))
-import Flight.Track.Mask (MaskingEffort(..))
-import qualified Flight.Track.Land as Cmp (Landing(..))
-import Flight.Scribe (readComp, readMaskingEffort, writeLanding)
+import Flight.Track.Mask (CompMaskingEffort(..))
+import qualified Flight.Track.Land as Cmp (CompLanding(..))
+import Flight.Scribe (readCompAndTasks, readCompMaskEffort, writeCompLandOut)
 import "flight-gap-allot" Flight.Score
     (FlownMax(..), PilotDistance(..), MinimumDistance(..), Pilot)
 import "flight-gap-effort" Flight.Score (Difficulty(..), mergeChunks)
@@ -43,16 +43,17 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
@@ -60,37 +61,37 @@ drive o = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let maskFile@(MaskEffortFile maskPath) = compToMaskEffort compFile
-    let landFile = compToLand compFile
-    putStrLn $ "Reading land outs from '" ++ takeFileName maskPath ++ "'"
-
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
     masking <-
         catchIO
-            (Just <$> readMaskingEffort maskFile)
+            (Just <$> readCompMaskEffort compFile)
             (const $ return Nothing)
 
-    case (compSettings, masking) of
+    case (filesTaskAndSettings, masking) of
         (Nothing, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing) -> putStrLn "Couldn't read the maskings."
-        (Just cs, Just mk) -> writeLanding landFile $ difficulty cs mk
+        (Just (_taskFiles, settings), Just mk) ->
+            let cs = uncurry mkCompTaskSettings $ settings
+            in writeCompLandOut compFile $ difficulty cs mk
 
-difficulty :: CompSettings k -> MaskingEffort -> Cmp.Landing
-difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
-    Cmp.Landing
-        { minDistance = md
-        , bestDistance = bests
+difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.CompLanding
+difficulty CompTaskSettings{nominal} CompMaskingEffort{bestEffort, land} =
+    Cmp.CompLanding
+        { bestDistance = bests
         , landout = length <$> land
         , lookahead = ahead
         , chunking = cgs
         , difficulty = cs
         }
     where
-        md@(MinimumDistance (MkQuantity free')) = free nominal
+        MinimumDistance (MkQuantity free') = free nominal
 
         pss :: [[Pilot]]
         pss = (fmap . fmap) fst land

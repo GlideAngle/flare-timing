@@ -1,5 +1,4 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -8,29 +7,26 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
-import System.FilePath (takeFileName)
+import System.Directory (getCurrentDirectory)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Zone.Cylinder (SampleParams(..), Samples(..), Tolerance(..))
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FindDirFile(..)
+    , FileType(CompInput)
     , CompInputFile(..)
-    , TagZoneFile(..)
-    , PegFrameFile(..)
     , PilotName(..)
     , IxTask(..)
     , CompSettings(..)
     , Comp(..)
-    , compToCross
-    , crossToTag
-    , tagToPeg
     , findCompInput
-    , ensureExt
+    , reshape
     , pilotNamed
+    , compFileToTaskFiles
     )
-import Flight.Scribe (readComp, readTagging, readFraming)
+import Flight.Scribe (readCompAndTasks, readCompTagZone, readCompPegFrame)
 import Flight.Lookup.Stop (stopFlying)
 import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)
@@ -46,55 +42,55 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = reshape CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
 drive :: CmdBatchOptions -> IO ()
-drive o = do
+drive o@CmdBatchOptions{file} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCompInput o
+    cwd <- getCurrentDirectory
+    files <- findCompInput $ FindDirFile {dir = cwd, file = file}
     if null files then putStrLn "Couldn't find input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
     Fmt.fprint ("Aligning times completed in " Fmt.% timeSpecs Fmt.% "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
-    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
+go CmdBatchOptions{..} compFile = do
+    putStrLn $ "Reading competition from " ++ show compFile
 
-    compSettings <-
+    filesTaskAndSettings <-
         catchIO
-            (Just <$> readComp compFile)
+            (Just <$> do
+                ts <- compFileToTaskFiles compFile
+                s <- readCompAndTasks (compFile, ts)
+                return (ts, s))
             (const $ return Nothing)
 
     tagging <-
         catchIO
-            (Just <$> readTagging tagFile)
+            (Just <$> readCompTagZone compFile)
             (const $ return Nothing)
 
     stopping <-
         catchIO
-            (Just <$> readFraming stopFile)
+            (Just <$> readCompPegFrame compFile)
             (const $ return Nothing)
 
     let scoredLookup = stopFlying stopping
 
-    case (compSettings, tagging, stopping) of
-        (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
+    case (filesTaskAndSettings, tagging, stopping) of
+        (Nothing, _, _) -> putStrLn "Couldn't find the task files or read the settings."
         (_, Nothing, _) -> putStrLn "Couldn't read the taggings."
         (_, _, Nothing) -> putStrLn "Couldn't read the scored frame."
-        (Just cs@CompSettings{comp = Comp{earthMath, give}}, Just t, Just _) ->
+        (Just (taskFiles, (cs@CompSettings{comp = Comp{earthMath, give}}, _)), Just t, Just _) ->
             let f =
                     writeTime
                         (IxTask <$> task)
                         (pilotNamed cs $ PilotName <$> pilot)
-                        (CompInputFile compPath)
+                        (compFile, taskFiles)
 
             in (f . checkAll math earthMath give sp speedSectionOnly scoredLookup) t

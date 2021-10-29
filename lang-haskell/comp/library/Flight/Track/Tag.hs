@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Flight.Track.Tag
 Copyright   : (c) Block Scope Limited 2017
@@ -8,7 +10,8 @@ Stability   : experimental
 Tracks tagging task control zones.
 -}
 module Flight.Track.Tag
-    ( Tagging(..)
+    ( TaskTagging(..)
+    , CompTagging(..)
     , TrackTime(..)
     , TrackTag(..)
     , PilotTrackTag(..)
@@ -16,8 +19,12 @@ module Flight.Track.Tag
     , ZonesLastTag(..)
     , firstLead
     , firstStart
+    , lastStarting
     , lastArrival
     , timed
+    , starting
+    , tagTimes
+    , mkCompTagZone, unMkCompTagZone
     ) where
 
 import Data.Maybe (listToMaybe, fromMaybe, catMaybes)
@@ -34,9 +41,19 @@ import Flight.Comp (FirstLead(..), FirstStart(..), LastArrival(..))
 import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
 import Flight.Field (FieldOrdering(..))
 
+data TaskTagging =
+    TaskTagging
+        { timing :: TrackTime
+          -- ^ For each made zone, the first and last tag.
+        , tagging :: [PilotTrackTag]
+          -- ^ For each made zone, the tag.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 -- | For each task, the timing and tagging for that task.
-data Tagging =
-    Tagging
+data CompTagging =
+    CompTagging
         { timing :: [TrackTime]
           -- ^ For each made zone, the first and last tag.
         , tagging :: [[PilotTrackTag]]
@@ -44,6 +61,16 @@ data Tagging =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+mkCompTagZone :: [TaskTagging] -> CompTagging
+mkCompTagZone ts =
+    uncurry CompTagging $ unzip
+    [ (i, g)
+    | TaskTagging{timing = i, tagging = g} <- ts
+    ]
+
+unMkCompTagZone :: CompTagging -> [TaskTagging]
+unMkCompTagZone CompTagging{timing = is, tagging = gs} = zipWith TaskTagging is gs
 
 -- | The first tagging of each zone.
 newtype ZonesFirstTag = ZonesFirstTag [Maybe UTCTime]
@@ -73,6 +100,21 @@ data TrackTime =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+-- | The time of the start given tagging times for a single pilot for each zone.
+starting :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
+starting ss tags =
+    case drop ((maybe 1 fst ss) - 1) tags of
+        [] -> Nothing
+        t : _ -> t
+
+-- | The time of the last start and pilots starting at that time.
+lastStarting :: SpeedSection -> TrackTime -> (Maybe UTCTime, [Pilot])
+lastStarting ss TrackTime{zonesLast = ZonesLastTag tags, zonesRankTime, zonesRankPilot} =
+    case drop ((maybe 1 fst ss) - 1) (zip3 tags zonesRankTime zonesRankPilot) of
+        [] -> (Nothing, [])
+        (Nothing, _, _) : _ -> (Nothing, [])
+        (Just tag, ts, ps) : _ -> (Just tag, fmap snd . filter ((==) tag . fst) $ zip ts ps)
 
 timed
     :: [PilotTrackTag]
@@ -212,7 +254,10 @@ data PilotTrackTag =
         -- ^ The tags should be Just if the pilot launched.
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-instance FieldOrdering Tagging where
+instance FieldOrdering TaskTagging where
+    fieldOrder _ = cmp
+
+instance FieldOrdering CompTagging where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

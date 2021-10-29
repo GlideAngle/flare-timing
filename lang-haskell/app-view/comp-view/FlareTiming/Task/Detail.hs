@@ -11,7 +11,7 @@ import WireTypes.Pilot
     (Pilot(..), Nyp(..), Dnf(..), DfNoTrack(..), Penal(..), nullPilot)
 import qualified WireTypes.Comp as Comp
 import WireTypes.Comp
-    ( UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..), ScoreBackTime
+    ( Discipline(..), UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..), ScoreBackTime
     , EarthModel(..), EarthMath(..)
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
     , showScoreBackTime
@@ -21,13 +21,14 @@ import WireTypes.Cross (TrackFlyingSection(..), TrackScoredSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
-    ( getTaskScore, getTaskNormScore
+    ( AltDot(..)
+    , getTaskScore, getTaskAltScore
     , getTaskBolsterStats, getTaskBonusBolsterStats
     , getTaskReach, getTaskBonusReach
-    , getTaskEffort, getTaskLanding, getTaskNormLanding
-    , getTaskArrival, getTaskNormArrival, getTaskLead, getTaskTime
-    , getTaskValidityWorking, getTaskNormValidityWorking
-    , getTaskLengthNormSphere
+    , getTaskEffort, getTaskLanding, getTaskAltLanding
+    , getTaskArrival, getTaskAltArrival, getTaskLead, getTaskTime
+    , getTaskValidityWorking, getTaskAltValidityWorking
+    , getTaskLengthAltSphere
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -41,6 +42,15 @@ import FlareTiming.Comms
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map.View (viewMap)
+import FlareTiming.Map.Track (tableTrack)
+
+import FlareTiming.ViePlot.Reach (reachViePlot)
+import FlareTiming.ViePlot.Effort (effortViePlot)
+import FlareTiming.ViePlot.Time (timeViePlot)
+import FlareTiming.ViePlot.LeadCoef (leadCoefViePlot)
+import FlareTiming.ViePlot.LeadArea (leadAreaViePlot)
+import FlareTiming.ViePlot.Arrival (arrivalViePlot)
+
 import FlareTiming.Plot.Weight (weightPlot)
 import FlareTiming.Plot.Reach (reachPlot)
 import FlareTiming.Plot.Effort (effortPlot)
@@ -49,20 +59,40 @@ import FlareTiming.Plot.LeadCoef (leadCoefPlot)
 import FlareTiming.Plot.LeadArea (leadAreaPlot)
 import FlareTiming.Plot.Arrival (arrivalPlot)
 import FlareTiming.Plot.Valid (validPlot)
+
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
 import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
+import FlareTiming.Nav.TabPenal (PenalTab(..), tabsPenal)
 import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
 import FlareTiming.Nav.TabPlotLead (PlotLeadTab(..), tabsPlotLead)
+
+import FlareTiming.Nav.TabVie (VieTab(..), tabsVie)
+import FlareTiming.Nav.TabVieScoreFs (VieScoreFsTab(..), tabsVieScoreFs)
+import FlareTiming.Nav.TabViePlotFs (ViePlotFsTab(..), tabsViePlotFs)
+import FlareTiming.Nav.TabViePlotFsLead (ViePlotFsLeadTab(..), tabsViePlotFsLead)
+
+import FlareTiming.VieScoreBoth.Over (tableVieScoreBothOver)
+import FlareTiming.VieScoreFs.Split (tableVieScoreFsSplit)
+import FlareTiming.VieScoreFs.Reach (tableVieScoreFsReach)
+import FlareTiming.VieScoreFs.Effort (tableVieScoreFsEffort)
+import FlareTiming.VieScoreFs.Speed (tableVieScoreFsSpeed)
+import FlareTiming.VieScoreFs.Time (tableVieScoreFsTime)
+import FlareTiming.VieScoreFs.Arrive (tableVieScoreFsArrive)
+
+import FlareTiming.Score.Over (tableScoreOver)
+import FlareTiming.Score.Split (tableScoreSplit)
+import FlareTiming.Score.Reach (tableScoreReach)
+import FlareTiming.Score.Effort (tableScoreEffort)
+import FlareTiming.Score.Speed (tableScoreSpeed)
+import FlareTiming.Score.Time (tableScoreTime)
+import FlareTiming.Score.Arrive (tableScoreArrive)
+
+import FlareTiming.Penal.Jump (tablePenalJump)
+import FlareTiming.Penal.EssGoal (tablePenalEssGoal)
+import FlareTiming.Penal.Manual (tablePenalManual)
+
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
-import FlareTiming.Task.Score.Over (tableScoreOver)
-import FlareTiming.Task.Score.Penal (tableScorePenal)
-import FlareTiming.Task.Score.Split (tableScoreSplit)
-import FlareTiming.Task.Score.Reach (tableScoreReach)
-import FlareTiming.Task.Score.Effort (tableScoreEffort)
-import FlareTiming.Task.Score.Speed (tableScoreSpeed)
-import FlareTiming.Task.Score.Time (tableScoreTime)
-import FlareTiming.Task.Score.Arrive (tableScoreArrive)
 import FlareTiming.Task.Geo (tableGeo)
 import FlareTiming.Task.Turnpoints (tableTask)
 import FlareTiming.Task.Absent (tableAbsent)
@@ -88,18 +118,19 @@ showRetro tz TaskStop{..} = showT tz retroactive
 
 taskTileZones
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => Dynamic t Discipline
+    -> Dynamic t UtcOffset
     -> Dynamic t (Maybe ScoreBackTime)
     -> Dynamic t Task
     -> Dynamic t (Maybe TaskLength)
     -> m ()
-taskTileZones utcOffset sb t len = do
+taskTileZones hgOrPg utcOffset sb t len = do
     tz <- sample . current $ timeZone <$> utcOffset
     let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
     let title = T.intercalate "-" <$> zs
     let ss = getSpeedSection <$> t
-    let gs = length . getStartGates <$> t
+    let gsNum = length . getStartGates <$> t
     let d = ffor len (maybe "" $ \TaskLength{..} -> showTaskDistance taskRoute)
     let stp = stopped <$> t
 
@@ -117,12 +148,12 @@ taskTileZones utcOffset sb t len = do
 
                 dyn_ $ ffor ss (\case
                     Just _ -> do
-                        let kind = ffor gs (\case
+                        let kind = ffor gsNum (\case
                                     0 -> " elapsed time*"
                                     1 -> " race to goal* with a single start gate"
                                     n -> " race to goal* with " <> (T.pack . show $ n) <> " start gates")
 
-                        let sideNote = ffor gs (\case 0 -> elapsedNote; _ -> raceNote)
+                        let sideNote = ffor gsNum (\case 0 -> elapsedNote; _ -> raceNote)
 
                         elClass "p" "level subtitle is-6" $ do
                             elClass "span" "level-item level-left" $ do
@@ -140,10 +171,10 @@ taskTileZones utcOffset sb t len = do
                                 dynText d
                                 dynText $ openKind)
 
-                dyn_ $ ffor2 stp sb (\x y ->
-                    case x of
-                        Nothing -> return ()
-                        Just x' -> do
+                dyn_ $ ffor3 hgOrPg stp sb (\hgOrPg' x y ->
+                    case (hgOrPg', x) of
+                        (_, Nothing) -> return ()
+                        (Paragliding, Just x') -> do
                             let stop = "Stopped at " <> showStop tz x' <> "†"
 
                             elClass "p" "level subtitle is-6" $ do
@@ -161,7 +192,27 @@ taskTileZones utcOffset sb t len = do
                                                 <> showRetro tz x'
 
                                         elClass "span" "level-item level-right" $
-                                            el "strong" $ text back)
+                                            el "strong" $ text back
+                        (HangGliding, Just x') -> do
+                            let stop = "Stopped at " <> showStop tz x' <> "†"
+                            sbGates <- sample . current $ ffor gsNum (\case
+                                            0 -> "15 mins with no start gates"
+                                            1 -> "15 mins with one start gate"
+                                            _ -> "the start gate interval")
+
+                            elClass "p" "level subtitle is-6" $ do
+                                elClass "span" "level-item level-left" $ do
+                                            elClass "span" "level-item level-right" $
+                                                el "strong" $ text stop
+
+                                let back =
+                                        "† Scored back by "
+                                        <> sbGates
+                                        <> " to "
+                                        <> showRetro tz x'
+
+                                elClass "span" "level-item level-right" $
+                                    el "strong" $ text back)
 
 taskDetail
     :: MonadWidget t m
@@ -174,7 +225,7 @@ taskDetail
     -> Dynamic t (Maybe Allocation)
     -> m (Event t IxTask)
 
-taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
+taskDetail ix@(IxTask _) comp nom task vy vyAlt alloc = do
     let utc = utcOffset <$> comp
     let sb = scoreBack <$> comp
     let hgOrPg = discipline <$> comp
@@ -184,23 +235,25 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     let penal = Penal . Comp.penals <$> task
     let tweak = Comp.taskTweak <$> task
     let early = earlyStart <$> task
+    let stp = stopped <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
-    sEx <- holdDyn [] =<< getTaskNormScore ix pb
+    sAltFs <- holdDyn [] =<< getTaskAltScore AltFs ix pb
+    sAltAs <- holdDyn [] =<< getTaskAltScore AltAs ix pb
     reachStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBolsterStats ix pb)
     bonusStats <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusBolsterStats ix pb)
     reach <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
     bonusReach <- holdDyn Nothing =<< (fmap Just <$> getTaskBonusReach ix pb)
     ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)
     lg <- holdDyn Nothing =<< (getTaskLanding ix pb)
-    lgN <- holdDyn Nothing =<< (getTaskNormLanding ix pb)
+    lgN <- holdDyn Nothing =<< (getTaskAltLanding ix pb)
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
-    avN <- holdDyn Nothing =<< (fmap Just <$> getTaskNormArrival ix pb)
+    avN <- holdDyn Nothing =<< (fmap Just <$> getTaskAltArrival ix pb)
     ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
     sd <- holdDyn Nothing =<< (fmap Just <$> getTaskTime ix pb)
     ft <- holdDyn Nothing =<< (fmap Just <$> getTaskFlyingSectionTimes ix pb)
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
-    vwNorm <- holdDyn Nothing =<< getTaskNormValidityWorking ix pb
+    vwAlt <- holdDyn Nothing =<< getTaskAltValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
     dfNt <- holdDyn (DfNoTrack []) =<< getTaskPilotDfNoTrack ix pb
@@ -217,7 +270,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                 _ -> s)
 
     planarRoute <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
-    normRoute <- holdDyn Nothing =<< getTaskLengthNormSphere ix pb
+    normRoute <- holdDyn Nothing =<< getTaskLengthAltSphere ix pb
 
     let ln = taskLength <$> earthMathRoutes
     let legs = taskLegs <$> earthMathRoutes
@@ -226,7 +279,7 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
     let tp = (fmap . fmap) taskPoints alloc
     let wg = (fmap . fmap) weight alloc
 
-    taskTileZones utc sb task ln
+    taskTileZones hgOrPg utc sb task ln
     es <- crumbTask ix task comp
     tabTask <- tabsTask
 
@@ -234,44 +287,171 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
             tabScore <- tabsScore
             let tableScoreHold =
                     elAttr "div" ("id" =: "score-overview") $
-                        tableScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                        tableScoreOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
             _ <- widgetHold tableScoreHold $
                     (\case
                         ScoreTabOver ->
                             tableScoreHold
 
-                        ScoreTabPenal ->
-                            elAttr "div" ("id" =: "score-penal") $
-                            tableScorePenal hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                         ScoreTabSplit ->
                             elAttr "div" ("id" =: "score-points") $
-                                tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tableScoreSplit utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                         ScoreTabReach ->
                             elAttr "div" ("id" =: "score-reach") $
-                                tableScoreReach utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tableScoreReach utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
                         ScoreTabEffort ->
                             elAttr "div" ("id" =: "score-effort") $
-                                tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx lg lgN
+                                tableScoreEffort utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
                         ScoreTabSpeed ->
                             elAttr "div" ("id" =: "score-speed") $
-                                tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                         ScoreTabTime ->
                             elAttr "div" ("id" =: "score-time") $
-                                tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                tableScoreTime utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
                         ScoreTabArrive ->
                             elAttr "div" ("id" =: "score-arrival") $
-                                tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
+                                tableScoreArrive utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
 
                     <$> tabScore
 
             return ()
 
-    _ <- widgetHold taskTabScoreContent $
+    let taskTabVieContent = do
+            tabVie <- tabsVie
+            let vieHold =
+                    elAttr "div" ("id" =: "vie-with-both") $
+                        tableVieScoreBothOver utc hgOrPg early free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs sAltAs
+
+            _ <- widgetHold vieHold $
+                    (\case
+                        VieTabScore -> vieHold
+
+                        VieTabScoreFs -> do
+                            tabVieScoreFs <- tabsVieScoreFs
+                            let tableVieScoreFsHold =
+                                    elAttr "div" ("id" =: "score-compare-split") $
+                                        tableVieScoreFsSplit AltFs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+
+                            _ <- widgetHold tableVieScoreFsHold $
+                                    (\case
+                                        VieScoreFsTabSplit ->
+                                            tableVieScoreFsHold
+
+                                        VieScoreFsTabReach ->
+                                            elAttr "div" ("id" =: "score-compare-reach") $
+                                                tableVieScoreFsReach AltFs utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltFs
+                                        VieScoreFsTabEffort ->
+                                            elAttr "div" ("id" =: "score-compare-effort") $
+                                                tableVieScoreFsEffort AltFs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs lg lgN
+                                        VieScoreFsTabSpeed ->
+                                            elAttr "div" ("id" =: "score-compare-speed") $
+                                                tableVieScoreFsSpeed AltFs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                        VieScoreFsTabTime ->
+                                            elAttr "div" ("id" =: "score-compare-time") $
+                                                tableVieScoreFsTime AltFs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+                                        VieScoreFsTabArrive ->
+                                            elAttr "div" ("id" =: "score-compare-arrival") $
+                                                tableVieScoreFsArrive AltFs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs)
+
+                                    <$> tabVieScoreFs
+
+                            return ()
+
+                        VieTabPlotFs -> do
+                            tabViePlotFs <- tabsViePlotFs
+                            let plotReach = reachViePlot task sAltFs reach bonusReach
+                            _ <- widgetHold (plotReach) $
+                                    (\case
+                                        ViePlotFsTabReach -> plotReach
+                                        ViePlotFsTabEffort -> effortViePlot hgOrPg sAltFs ef
+                                        ViePlotFsTabTime -> timeViePlot tweak sgs sAltFs sd
+
+                                        ViePlotFsTabLead -> do
+                                            tabViePlotFsLead <- tabsViePlotFsLead
+                                            let plotLeadCoef = leadCoefViePlot ix tweak sAltFs ld
+                                            _ <- widgetHold (plotLeadCoef) $
+                                                    (\case
+                                                        ViePlotFsLeadTabPoint -> plotLeadCoef
+                                                        ViePlotFsLeadTabArea -> leadAreaViePlot ix tweak sAltFs ld
+                                                    )
+                                                    <$> tabViePlotFsLead
+                                            return ()
+
+                                        ViePlotFsTabArrive -> arrivalViePlot hgOrPg tweak av avN
+                                    )
+                                    <$> tabViePlotFs
+
+                            return ()
+
+                        VieTabScoreAs -> do
+                            tabVieScoreFs <- tabsVieScoreFs
+                            let tableVieScoreFsHold =
+                                    elAttr "div" ("id" =: "score-compare-split") $
+                                        tableVieScoreFsSplit AltAs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs
+
+                            _ <- widgetHold tableVieScoreFsHold $
+                                    (\case
+                                        VieScoreFsTabSplit ->
+                                            tableVieScoreFsHold
+
+                                        VieScoreFsTabReach ->
+                                            elAttr "div" ("id" =: "score-compare-reach") $
+                                                tableVieScoreFsReach AltAs utc hgOrPg free' sgs ln stp dnf dfNt vw ps sDf sAltAs
+                                        VieScoreFsTabEffort ->
+                                            elAttr "div" ("id" =: "score-compare-effort") $
+                                                tableVieScoreFsEffort AltAs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs lg lgN
+                                        VieScoreFsTabSpeed ->
+                                            elAttr "div" ("id" =: "score-compare-speed") $
+                                                tableVieScoreFsSpeed AltAs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs
+                                        VieScoreFsTabTime ->
+                                            elAttr "div" ("id" =: "score-compare-time") $
+                                                tableVieScoreFsTime AltAs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs
+                                        VieScoreFsTabArrive ->
+                                            elAttr "div" ("id" =: "score-compare-arrival") $
+                                                tableVieScoreFsArrive AltAs utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sAltAs)
+
+                                    <$> tabVieScoreFs
+
+                            return ()
+
+                        VieTabPlotAs -> do
+                            tabViePlotFs <- tabsViePlotFs
+                            let plotReach = reachViePlot task sAltAs reach bonusReach
+                            _ <- widgetHold (plotReach) $
+                                    (\case
+                                        ViePlotFsTabReach -> plotReach
+                                        ViePlotFsTabEffort -> effortViePlot hgOrPg sAltAs ef
+                                        ViePlotFsTabTime -> timeViePlot tweak sgs sAltAs sd
+
+                                        ViePlotFsTabLead -> do
+                                            tabViePlotFsLead <- tabsViePlotFsLead
+                                            let plotLeadCoef = leadCoefViePlot ix tweak sAltAs ld
+                                            _ <- widgetHold (plotLeadCoef) $
+                                                    (\case
+                                                        ViePlotFsLeadTabPoint -> plotLeadCoef
+                                                        ViePlotFsLeadTabArea -> leadAreaViePlot ix tweak sAltAs ld
+                                                    )
+                                                    <$> tabViePlotFsLead
+                                            return ()
+
+                                        ViePlotFsTabArrive -> arrivalViePlot hgOrPg tweak av avN
+                                    )
+                                    <$> tabViePlotFs
+
+                            return ()
+                    )
+
+                    <$> tabVie
+
+            return ()
+
+    _ <- widgetHold taskTabVieContent $
             (\case
                 TaskTabTask -> tableTask utc task legs
 
                 TaskTabMap -> mdo
                     p <- viewMap utc ix task sphericalRoutes ellipsoidRoutes planarRoute normRoute pt
+                    _ <- tableTrack utc ptfs''
                     p' <- holdDyn nullPilot p
 
                     tfs <- getTaskPilotTrackFlyingSection ix p
@@ -282,6 +462,18 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
 
                     tts <- holdUniqDyn $ zipDynWith (,) tfs' tss'
                     ptfs <- holdUniqDyn $ zipDynWith (,) p' tts
+
+                    ptfs' <-
+                        foldDyn
+                            (\a@(p0, ((p1,_), (p2, _))) b ->
+                                if | nullPilot `elem` [p0, p1, p2] -> b
+                                   | p0 /= p1 -> b
+                                   | p1 /= p2 -> b
+                                   | otherwise -> a : b)
+                            []
+                            (updated ptfs)
+
+                    ptfs'' <- holdUniqDyn ptfs'
 
                     tag <- getTaskPilotTag ix p
                     tag' <- holdDyn (nullPilot, []) (attachPromptlyDyn p' tag)
@@ -312,22 +504,22 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                     _ <- widgetHold (plotSplit) $
                             (\case
                                 PlotTabSplit -> plotSplit
-                                PlotTabReach -> reachPlot task sEx reach bonusReach
-                                PlotTabEffort -> effortPlot hgOrPg sEx ef
-                                PlotTabTime -> timePlot sgs sEx sd
+                                PlotTabReach -> reachPlot task reach bonusReach
+                                PlotTabEffort -> effortPlot hgOrPg ef
+                                PlotTabTime -> timePlot tweak sgs sAltFs sd
 
                                 PlotTabLead -> do
                                     tabPlotLead <- tabsPlotLead
-                                    let plotLeadCoef = leadCoefPlot ix tweak sEx ld
+                                    let plotLeadCoef = leadCoefPlot ix tweak ld
                                     _ <- widgetHold (plotLeadCoef) $
                                             (\case
                                                 PlotLeadTabPoint -> plotLeadCoef
-                                                PlotLeadTabArea -> leadAreaPlot ix tweak sEx ld
+                                                PlotLeadTabArea -> leadAreaPlot ix tweak ld
                                             )
                                             <$> tabPlotLead
                                     return ()
 
-                                PlotTabArrive -> arrivalPlot hgOrPg tweak av avN
+                                PlotTabArrive -> arrivalPlot hgOrPg tweak av
                                 PlotTabValid -> validPlot vy vw
                             )
                             <$> tabPlot
@@ -343,16 +535,40 @@ taskDetail ix@(IxTask _) comp nom task vy vyNorm alloc = do
                                 BasisTabValidity ->
                                     viewValidity
                                         utc ln free' task
-                                        vy vyNorm
-                                        vw vwNorm
+                                        vy vyAlt
+                                        vw vwAlt
                                         reachStats bonusStats
                                         reach bonusReach
-                                        ft dfNt sEx
+                                        ft dfNt sAltFs
                                 BasisTabGeo -> tableGeo ix comp)
 
                             <$> tabBasis
 
-                    return ())
+                    return ()
+
+                TaskTabPenal -> do
+                    tabPenal <- tabsPenal
+                    let penalJump =
+                            elAttr "div" ("id" =: "score-penal") $
+                                tablePenalJump hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs penalAuto
+
+                    _ <- widgetHold penalJump $
+                            (\case
+                                PenalTabJump -> penalJump
+
+                                PenalTabEssGoal ->
+                                    elAttr "div" ("id" =: "score-penal") $
+                                        tablePenalEssGoal hgOrPg tweak early sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs
+
+                                PenalTabManual ->
+                                    elAttr "div" ("id" =: "score-penal") $
+                                        tablePenalManual hgOrPg early sgs ln dnf dfNt vy vw wg ps tp sDf sAltFs penal)
+
+                            <$> tabPenal
+
+                    return ()
+
+                TaskTabVie -> taskTabVieContent)
 
             <$> tabTask
 

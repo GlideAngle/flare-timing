@@ -17,13 +17,13 @@ import WireTypes.Cross (FlyingSection)
 import WireTypes.Reach (TrackReach(..), BolsterStats(..))
 import WireTypes.Pilot (Pilot(..), DfNoTrack(..))
 import WireTypes.Comp (MinimumDistance(..), Task(..), UtcOffset(..), TaskStop(..))
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import FlareTiming.Task.Validity.Widget (spacer)
-import FlareTiming.Task.Validity.Launch (viewLaunch, launchWorking)
-import FlareTiming.Task.Validity.Time (viewTime, timeWorking)
-import FlareTiming.Task.Validity.Distance(viewDistance, distanceWorking)
-import FlareTiming.Task.Validity.Stop (viewStop, stopWorking)
-import FlareTiming.Task.Validity.Task (viewTask, taskWorking)
+import qualified WireTypes.Point as Alt (AltBreakdown(..))
+import FlareTiming.Validity.Widget (spacer)
+import FlareTiming.Validity.Launch (viewLaunch, launchWorking)
+import FlareTiming.Validity.Time (viewTime, timeWorking)
+import FlareTiming.Validity.Distance(viewDistance, distanceWorking)
+import FlareTiming.Validity.Stop (viewStop, stopWorking)
+import FlareTiming.Validity.Task (viewTask, taskWorking)
 
 hookWorking
     :: Vy.Validity
@@ -63,12 +63,12 @@ viewValidity
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> Dynamic t DfNoTrack
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, Alt.AltBreakdown)]
     -> m ()
 viewValidity
     utcOffset ln free task
-    vy vyNorm
-    vw vwNorm
+    vy vyAlt
+    vw vwAlt
     reachStats bonusStats
     reach bonusReach
     flyingTimes
@@ -84,11 +84,11 @@ viewValidity
                         partition (maybe False ((< t) . snd) . snd) ft)
                     stopped)
 
-    _ <- dyn $ ffor2 vy vyNorm (\vy' vyNorm' ->
-            dyn $ ffor2 vw vwNorm (\vw' vwNorm' ->
+    _ <- dyn $ ffor2 vy vyAlt (\vy' vyAlt' ->
+            dyn $ ffor2 vw vwAlt (\vw' vwAlt' ->
             dyn $ ffor2 reachStats bonusStats (\reachStats' bonusStats' ->
             dyn $ ffor sEx (\sEx' ->
-                case (vy', vyNorm', vw', vwNorm', reachStats', bonusStats') of
+                case (vy', vyAlt', vw', vwAlt', reachStats', bonusStats') of
                     (Nothing, _, _, _, _, _) -> text "Loading validity ..."
                     (_, Nothing, _, _, _, _) -> text "Loading expected validity from FS ..."
                     (_, _, Nothing, _, _, _) -> text "Loading validity workings ..."

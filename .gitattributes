@@ -1,1 +1,5 @@
 *.golden -text
+*.js linguist-detectable=false
+*.bazel linguist-detectable=false
+*.nix linguist-detectable=false
+*.dhall linguist-detectable=false

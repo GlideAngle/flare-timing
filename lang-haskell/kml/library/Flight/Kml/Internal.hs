@@ -52,21 +52,27 @@ sc = L.space space1 lineComment blockComment
   where
     lineComment  = L.skipLineComment "//"
     blockComment = L.skipBlockComment "/*" "*/"
+{-# INLINE sc #-}
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
+{-# INLINE lexeme #-}
 
 pFloat :: ParsecT String String Identity Rational
 pFloat = (toRational :: Double -> Rational) <$> float_
+{-# INLINE pFloat #-}
 
 pNat :: ParsecT String String Identity Integer
 pNat = decimal_
+{-# INLINE pNat #-}
 
 float_ :: (m ~ ParsecT String String Identity, RealFloat a) => m a
 float_ = lexeme L.float
+{-# INLINE float_ #-}
 
 decimal_ :: (m ~ ParsecT String String Identity, Integral a) => m a
 decimal_ = lexeme L.decimal
+{-# INLINE decimal_ #-}
 
 pNats :: Parsec String String [Integer]
 pNats = do
@@ -74,6 +80,7 @@ pNats = do
     xs <- pNat `sepBy` space
     _ <- eof
     return xs
+{-# INLINE pNats #-}
 
 -- | Parses UTC time in the format yyyy-MM-ddThh:mm:ssZ.
 --
@@ -84,10 +91,11 @@ parseUtcTime s =
     case P.parse pUtcTimeZ "(stdin)" s of
         Left _ -> Nothing
         Right t -> Just t
+{-# INLINE parseUtcTime #-}
 
 pUtcTimeZ :: ParsecT Void String Identity UTCTime
 pUtcTimeZ = do
-    ymd <- many $ noneOf ("T" :: String)
+    ymd <- many $ satisfy ((/=) 'T')
     _ <- char 'T'
     hrs <- count 2 digitChar
     _ <- char ':'
@@ -102,6 +110,7 @@ pUtcTimeZ = do
     case t of
         Nothing -> empty
         Just t' -> return t'
+{-# INLINE pUtcTimeZ #-}
 
 pFix :: ParsecT String String Identity (Rational, Rational, Integer)
 pFix = do
@@ -117,6 +126,7 @@ pFix = do
     altSign <- option id $ const negate <$> char '-'
     alt <- pNat <?> "No altitude"
     return (latSign lat, lngSign lng, altSign alt)
+{-# INLINE pFix #-}
 
 pFixes :: ParsecT String String Identity [ (Rational, Rational, Integer) ]
 pFixes = do
@@ -124,6 +134,7 @@ pFixes = do
     xs <- pFix `sepBy` space <?> "No fixes"
     _ <- eof
     return xs
+{-# INLINE pFixes #-}
 
 -- | Parse the list of time offsets.
 --
@@ -134,6 +145,7 @@ parseTimeOffsets s =
     case P.parse pNats "(stdin)" s of
         Left _ -> []
         Right xs -> Seconds <$> xs
+{-# INLINE parseTimeOffsets #-}
 
 -- | Parse the list of barometric pressure altitudes.
 -- 
@@ -144,6 +156,7 @@ parseBaroMarks s =
     case P.parse pNats "(stdin)" s of
          Left _ -> []
          Right xs -> Altitude <$> xs
+{-# INLINE parseBaroMarks #-}
 
 -- | Parse comma-separated triples of lng,lat,alt, each triple separated by
 -- spaces.
@@ -160,6 +173,7 @@ parseLngLatAlt s =
                      (Latitude lat)
                      (Longitude lng)
                      (Altitude alt)) <$> xs
+{-# INLINE parseLngLatAlt #-}
 
 -- | Avoids __@"0."@__ because ...
 -- 

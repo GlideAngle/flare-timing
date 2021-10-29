@@ -4,11 +4,9 @@ module FlareTiming.Plot.LeadArea.Table (tablePilotArea) where
 
 import Reflex.Dom
 import qualified Data.Text as T (Text)
-import qualified Data.Map.Strict as Map
 
 import WireTypes.Comp (Tweak(..), LwScaling(..))
-import WireTypes.Lead (TrackLead(..), showArea, showAreaDiff, showCoef)
-import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import WireTypes.Lead (TrackLead(..), showArea, showCoef)
 import WireTypes.Pilot (Pilot(..), pilotIdsWidth)
 import FlareTiming.Pilot (showPilot, hashIdHyphenPilot)
 import FlareTiming.Plot.Event (rowClass)
@@ -16,18 +14,17 @@ import FlareTiming.Plot.Event (rowClass)
 tablePilotArea
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
-tablePilotArea tweak sEx xs select = do
+tablePilotArea tweak xs select = do
     ev <- dyn $ ffor tweak (\case
         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> do
             ePilot <- tablePilotSimple tweak xs select
             return ePilot
 
         _ -> do
-            ePilot <- tablePilotCompare tweak sEx xs select
+            ePilot <- tablePilotCompare tweak xs select
             return ePilot)
 
     switchHold never ev
@@ -47,21 +44,18 @@ tablePilotSimple tweak xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
     let thArea = ffor tweak thAreaUnits
 
-    ePilot :: Event _ Pilot <- elClass "table" "table is-striped" $ do
-            el "thead" $ do
-                el "tr" $ do
-                    el "th" $ dynText thArea
-                    el "th" $ text "Coef"
-                    el "th" . dynText $ ffor w hashIdHyphenPilot
+    elClass "table" "table is-striped" $ do
+        el "thead" $ do
+            el "tr" $ do
+                el "th" $ dynText thArea
+                el "th" $ text "Coef"
+                el "th" . dynText $ ffor w hashIdHyphenPilot
 
-                    return ()
+                return ()
 
-            ev <- el "tbody" $ do
-                ePilots <- simpleList xs (uncurry (rowLeadSimple w select) . splitDynPure)
-                return $ switchDyn $ leftmost <$> ePilots
-
-            return ev
-    return ePilot
+        el "tbody" $ do
+            ePilots <- simpleList xs (uncurry (rowLeadSimple w select) . splitDynPure)
+            return $ switchDyn $ leftmost <$> ePilots
 
 rowLeadSimple
     :: MonadWidget t m
@@ -76,7 +70,7 @@ rowLeadSimple w select p av = do
     (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         el "td" . dynText $ showArea . area <$> av
         el "td" . dynText $ showCoef . coef <$> av
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 
@@ -85,71 +79,37 @@ rowLeadSimple w select p av = do
 tablePilotCompare
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
-    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> Dynamic t [Pilot]
     -> m (Event t Pilot)
-tablePilotCompare tweak sEx xs select = do
+tablePilotCompare tweak xs select = do
     let w = ffor xs (pilotIdsWidth . fmap fst)
     let thArea = ffor tweak thAreaUnits
 
-    ev :: Event _ (Event _ Pilot) <- elClass "table" "table is-striped" $ do
-            el "thead" $ do
-                el "tr" $ do
-                    elAttr "th" ("colspan" =: "3" <> ("class" =: "th-lead-area"))
-                        $ dynText thArea
-                    el "th" $ text "Coef"
-                    el "th" . dynText $ ffor w hashIdHyphenPilot
-                el "tr" $ do
-                    el "th" $ text ""
-                    elClass "th" "th-norm" $ text "✓"
-                    elClass "th" "th-norm" $ text "Δ"
-                    el "th" $ text ""
-                    el "th" $ text ""
+    elClass "table" "table is-striped" $ do
+        el "thead" $ do
+            el "tr" $ do
+                elClass "th" "th-lead-area" $ dynText thArea
+                el "th" $ text "Coef"
+                el "th" . dynText $ ffor w hashIdHyphenPilot
 
-                    return ()
-
-            ev <- dyn $ ffor sEx (\sEx' -> do
-                    let mapN = Map.fromList sEx'
-                    ePilots <- el "tbody" $ simpleList xs (uncurry (rowLeadCompare w mapN select) . splitDynPure)
-                    return $ switchDyn $ leftmost <$> ePilots)
-
-            el "tfoot" $
-                el "tr" $
-                    elAttr "td" ("colspan" =: "5") $
-                        text "Δ A difference of actual value over expected value minus one."
-
-            return ev
-
-    switchHold never ev
+        ePilots <- el "tbody" $ simpleList xs (uncurry (rowLeadCompare w select) . splitDynPure)
+        return $ switchDyn $ leftmost <$> ePilots
 
 rowLeadCompare
     :: MonadWidget t m
     => Dynamic t Int
-    -> Map.Map Pilot Norm.NormBreakdown
     -> Dynamic t [Pilot]
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m (Event t Pilot)
-rowLeadCompare w mapN select p tl = do
-    (pilot, yArea, yAreaDiff) <- sample . current
-                $ ffor2 p tl (\pilot TrackLead{area} ->
-                    case Map.lookup pilot mapN of
-                        Just
-                            Norm.NormBreakdown{leadingArea = area'} ->
-                            ( pilot
-                            , showArea area'
-                            , showAreaDiff area' area
-                            )
-
-                        _ -> (pilot, "", ""))
+rowLeadCompare w select p tl = do
+    pilot <- sample $ current p
 
     (eRow, _) <- elDynClass' "tr" (ffor2 p select rowClass) $ do
         elClass "td" "td-lead-area" . dynText $ showArea . area <$> tl
-        elClass "td" "td-norm td-norm" . text $ yArea
-        elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
         elClass "td" "td-lead-coef" . dynText $ showCoef . coef <$> tl
-        el "td" . dynText $ ffor2 w p showPilot
+        elClass "td" "td-pilot" . dynText $ ffor2 w p showPilot
 
         return ()
 

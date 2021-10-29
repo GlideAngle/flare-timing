@@ -30,11 +30,13 @@ module Flight.Score
     , Points(..)
     , PointsReduced(..)
     , ReconcilePointErrors(..)
+    , GoalValidatedPoints(..)
     , PosInt, GE
     , PenaltySeq(..), PenaltySeqs(..)
     , Mul, Add, Reset
     , zeroPoints
     , taskPoints
+    , onTaskPoints
     , tallySubtotal
     , applyPenalties
     , idSeq, nullSeqs, toSeqs
@@ -47,6 +49,8 @@ module Flight.Score
     , applyMul, applyAdd, applyReset
     , availablePointsPg
     , availablePointsHg
+    , egPenalty, egPenaltyNull
+    , onPointsReduced
     -- * Early start
     , SecondsPerPoint(..)
     , JumpTheGunLimit(..)

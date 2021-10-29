@@ -16,7 +16,7 @@ import Flight.Task (Zs(..), fromZs)
 import Flight.Geodesy.Solution (SeparatedZones)
 import Flight.ShortestPath (OptimalPath)
 
-import Flight.Mask.Internal.Zone (TaskZone(..), TrackZone(..), slice)
+import Flight.Mask.Internal.Zone (TaskZone(..), TrackZone(..), slice, boundingZone)
 import Flight.Mask.Internal.Race (RaceSections(..), Ticked)
 
 -- | The distance to goal given the zones have been ticked.
@@ -75,7 +75,7 @@ dashPathToGoalR
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        zsSkipStart = unTaskZone <$> drop 1 zsSpeed
+        zsSkipStart = boundingZone <$> drop 1 zsSpeed
         zs' = zsToCheck sepZs mkZone x zsSkipStart
 
 dashPathToGoalR
@@ -93,7 +93,7 @@ dashPathToGoalR
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        zsNotTicked = unTaskZone <$> drop (length race) zsSpeed
+        zsNotTicked = boundingZone <$> drop (length race) zsSpeed
         zs' = zsToCheck sepZs mkZone x zsNotTicked
 
 -- | If the fix I'm checking is inside the first zone then I want to
