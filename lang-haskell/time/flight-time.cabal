@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 23d38e81671ac52214633189bdf57f9151af2d61e4af7ae26e2743a47feb0595
+-- hash: 157998109611c4ec0eefca23be967d07a06fd70e137a7bc3997304cf03744465
 
 name:           flight-time
 version:        0.1.0
@@ -172,4 +172,70 @@ test-suite golden
     , vector
   if flag(suppress-failing-tests)
     buildable: False
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Time.Align
+      Paths_flight_time
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , directory
+    , filepath
+    , flight-clip
+    , flight-comp
+    , flight-earth
+    , flight-kml
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-scribe
+    , flight-span
+    , flight-zone
+    , hlint
+    , lens
+    , mtl
+    , safe-exceptions
+    , siggy-chardust
+    , these
+    , time
+    , uom-plugin
   default-language: Haskell2010

@@ -166,8 +166,12 @@ jobs:
     - name: flight-task
       run: stack test flight-task --no-terminal --test-arguments "--color=always"
 
-    - name: flight-time
-      run: stack test flight-time --no-terminal --test-arguments "--color=always"
+    - name: flight-time:hlint
+      run: stack test flight-time:hlint --no-terminal --test-arguments "--color=always"
+
+    # No longer compiles
+    # - name: flight-time:golden
+    #   run: stack test flight-time:golden --no-terminal --test-arguments "--color=always"
 
     - name: flight-track
       run: stack test flight-track --no-terminal --test-arguments "--color=always"

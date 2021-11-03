@@ -154,8 +154,12 @@ jobs:
     # - name: flight-task
     #   run: cabal test flight-task --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-time
-    #   run: cabal test flight-time --test-show-details=direct --test-option="--color=always"
+    - name: flight-time:hlint
+      run: cabal test flight-time:hlint --test-show-details=direct --test-option="--color=always"
+
+    # No longer compiles
+    # - name: flight-time:golden
+    #   run: cabal test flight-time:golden --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-track
     #   run: cabal test flight-track --test-show-details=direct --test-option="--color=always"
