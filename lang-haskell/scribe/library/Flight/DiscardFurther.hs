@@ -123,6 +123,23 @@ readPilotBestDistance (AltBonus True) compFile ixTask pilot = do
         dir = compFileToCompDir compFile
         (PegThenDiscardDir path, PegThenDiscardFile file) = pegThenDiscardPath dir ixTask pilot
 
+readAlign
+    :: TimeToTick
+    -> TickToTick
+    -> (TimeRow -> Bool)
+    -> (Vector TickRow -> IO a)
+    -> FilePath
+    -> FilePath
+    -> FilePath
+    -> IO (Maybe (Vector TickRow))
+readAlign timeToTick tickToTick selectRow f file dIn dOut = do
+    _ <- createDirectoryIfMissing True dOut
+    (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
+    let keptTimeRows = V.filter selectRow timeRows
+    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick keptTimeRows
+    _ <- f tickRows
+    return $ Just tickRows
+
 readPilotAlignTimeWriteDiscardFurther
     :: TimeToTick
     -> TickToTick
@@ -139,13 +156,8 @@ readPilotAlignTimeWriteDiscardFurther
     selectTask
     selectRow
     ixTask pilot =
-    if not (selectTask ixTask) then return Nothing else do
-    _ <- createDirectoryIfMissing True dOut
-    (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
-    let keptTimeRows = V.filter selectRow timeRows
-    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick keptTimeRows
-    _ <- f tickRows
-    return $ Just tickRows
+    if not (selectTask ixTask) then return Nothing else
+        readAlign timeToTick tickToTick selectRow f file dIn dOut
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file)
         dir = compFileToCompDir compFile
@@ -168,13 +180,8 @@ readPilotAlignTimeWritePegThenDiscard
     selectTask
     selectRow
     ixTask pilot =
-    if not (selectTask ixTask) then return Nothing else do
-    _ <- createDirectoryIfMissing True dOut
-    (_, timeRows :: Vector TimeRow) <- readAlignTime (AlignTimeFile (dIn </> file))
-    let keptTimeRows = V.filter selectRow timeRows
-    let tickRows :: Vector TickRow = timesToKeptTicks timeToTick tickToTick keptTimeRows
-    _ <- f tickRows
-    return $ Just tickRows
+    if not (selectTask ixTask) then return Nothing else
+        readAlign timeToTick tickToTick selectRow f file dIn dOut
     where
         f = writePegThenDiscard (PegThenDiscardFile $ dOut </> file) tickHeader
         dir = compFileToCompDir compFile
