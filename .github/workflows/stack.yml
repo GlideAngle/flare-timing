@@ -77,8 +77,8 @@ jobs:
     - name: flight-gap-lead
       run: stack test flight-gap-lead --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-math
-      run: stack test flight-gap-math --no-terminal --test-arguments "--color=always"
+    # - name: flight-gap-math
+    #  run: stack test flight-gap-math --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-stop
       run: stack test flight-gap-stop --no-terminal --test-arguments "--color=always"
