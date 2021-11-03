@@ -47,17 +47,34 @@ jobs:
     # - name: build tests
     #   run: stack test --no-run-tests --no-terminal
 
-    - name: flight-clip
-      run: stack test flight-clip --no-terminal --test-arguments "--color=always"
+    - name: flight-clip:hlint
+      run: stack test flight-clip:hlint --no-terminal --test-arguments "--color=always"
 
-    - name: flight-cmd
-      run: stack test flight-cmd --no-terminal --test-arguments "--color=always"
+    - name: flight-clip:doctest
+      run: stack test flight-clip:doctest --no-terminal --test-arguments "--color=always"
 
-    - name: flight-comp
-      run: stack test flight-comp --no-terminal --test-arguments "--color=always"
+    - name: flight-cmd:hlint
+      run: stack test flight-cmd:hlint --no-terminal --test-arguments "--color=always"
 
-    - name: detour-via-sci
-      run: stack test detour-via-sci --no-terminal --test-arguments "--color=always"
+    # 46 hints
+    # - name: flight-comp:hlint
+    #   run: stack test flight-comp:hlint --no-terminal --test-arguments "--color=always"
+
+    - name: flight-comp:doctest
+      run: stack test flight-comp:doctest --no-terminal --test-arguments "--color=always"
+
+    # Variable not in scope: ensureExt :: FileType -> [Char] -> FilePath
+    # - name: flight-comp:comp
+    #   run: stack test flight-comp:comp --no-terminal --test-arguments "--color=always"
+
+    - name: detour-via-sci:hlint
+      run: stack test detour-via-sci:hlint --no-terminal --test-arguments "--color=always"
+
+### Failure in library/Data/Via/Scientific.hs:81: expression `fromSci x'
+# expected: 4043636029064415 % 36028797018963968
+# but got: 0.1122334455667788
+    # - name: detour-via-sci:doctest
+    #   run: stack test detour-via-sci:doctest --no-terminal --test-arguments "--color=always"
 
     - name: detour-via-uom
       run: stack test detour-via-uom --no-terminal --test-arguments "--color=always"

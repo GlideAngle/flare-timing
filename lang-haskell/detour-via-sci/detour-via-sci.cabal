@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eb39d2b4217ab66c50d7235a31622c40b56c031eb3958d152a4f33f5d3db8b50
+-- hash: dd9714af1a3730038561246065e92ef7887d74d29b066536ba58e8afca276459
 
 name:           detour-via-sci
 version:        1.0.1
@@ -75,6 +75,29 @@ test-suite doctest
     , scientific
     , siggy-chardust
     , template-haskell
-  if flag(suppress-failing-tests)
-    buildable: False
+    , text
+    , vector
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Data.Via.Scientific
+      Paths_detour_via_sci
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      PackageImports
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , hlint
+    , newtype
+    , scientific
+    , siggy-chardust
+    , template-haskell
   default-language: Haskell2010

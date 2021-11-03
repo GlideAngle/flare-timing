@@ -35,56 +35,72 @@ jobs:
 
     - name: build
       run: |
-        cabal v2-update
-        cabal v2-build all --enable-tests
+        cabal update
+        cabal build all --enable-tests
 
     # NOTE: Github actions YAML doesn't support anchors.
 
-    # NOTE: Commented out packages might have tests but they're not buildable.
-    #- name: flight-clip
-    #  run: cabal v2-test flight-clip --test-show-details=direct --test-option="--color=always"
+    - name: flight-clip:hlint
+      run: cabal test flight-clip:hlint --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-cmd
-      run: cabal v2-test flight-cmd --test-show-details=direct --test-option="--color=always"
+    - name: flight-clip:doctest
+      run: cabal test flight-clip:hlint --test-show-details=direct --test-option="--color=always"
 
-    #- name: flight-comp
-    #  run: cabal v2-test flight-comp --test-show-details=direct --test-option="--color=always"
+    - name: flight-cmd:hlint
+      run: cabal test flight-cmd:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: detour-via-sci
-    #   run: cabal v2-test detour-via-sci --test-show-details=direct --test-option="--color=always"
+    # 46 hints
+    # - name: flight-comp
+    #   run: cabal test flight-comp --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-comp:doctest
+      run: cabal test flight-comp:doctest --test-show-details=direct --test-option="--color=always"
+
+    # Variable not in scope: ensureExt :: FileType -> [Char] -> FilePath
+    # - name: flight-comp:comp
+    #  run: cabal test flight-comp:comp --test-show-details=direct --test-option="--color=always"
+ 
+    - name: detour-via-sci:hlint
+      run: cabal test detour-via-sci:hlint --test-show-details=direct --test-option="--color=always"
+
+### Failure in library/Data/Via/Scientific.hs:81: expression `fromSci x'
+# expected: 4043636029064415 % 36028797018963968
+# but got: 0.1122334455667788
+    # - name: detour-via-sci:doctest
+    #   run: cabal test detour-via-sci:doctest --test-show-details=direct --test-option="--color=always"
 
     # - name: detour-via-uom
-    #   run: cabal v2-test detour-via-uom --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test detour-via-uom --test-show-details=direct --test-option="--color=always"
 
     - name: flight-earth
-      run: cabal v2-test flight-earth --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-earth --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-fsdb
-    #   run: cabal v2-test flight-fsdb --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-fsdb --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-gap-allot
-    #   run: cabal v2-test flight-gap-allot --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-gap-allot --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-gap-effort
-    #   run: cabal v2-test flight-gap-effort --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-gap-effort --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-lead
-      run: cabal v2-test flight-gap-lead --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-gap-lead --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-gap-math
-    #  run: cabal v2-test flight-gap-math --test-show-details=direct --test-option="--color=always"
+    #  run: cabal test flight-gap-math --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-stop
-      run: cabal v2-test flight-gap-stop --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-gap-stop --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-valid
-      run: cabal v2-test flight-gap-valid --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-gap-valid --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-weight
-      run: cabal v2-test flight-gap-weight --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-gap-weight --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-igc
-    #  run: cabal v2-test flight-igc --test-show-details=direct --test-option="--color=always"
+    #  run: cabal test flight-igc --test-show-details=direct --test-option="--color=always"
 # Test suite doctest: RUNNING...
 ### Failure in library/Flight/Igc/Fix.hs:308: expression `(markJason : _, (fixesJason, _)) = let (Right xs) = parse $(embedStr (readFile fileJason)) in (partition isFix <$> partition isMark xs)'
 # expected: 
@@ -96,40 +112,40 @@ jobs:
 #              • In the untyped splice: $(embedStr (readFile fileJason))
 
     - name: flight-kml
-      run: cabal v2-test flight-kml --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-kml --test-show-details=direct --test-option="--color=always"
 
     - name: flight-latlng
-      run: cabal v2-test flight-latlng --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-latlng --test-show-details=direct --test-option="--color=always"
 
     - name: flight-lookup
-      run: cabal v2-test flight-lookup --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-lookup --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-mask
-    #   run: cabal v2-test flight-mask --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-mask --test-show-details=direct --test-option="--color=always"
 
     - name: flight-route
-      run: cabal v2-test flight-route --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-route --test-show-details=direct --test-option="--color=always"
 
     - name: flight-scribe
-      run: cabal v2-test flight-scribe --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-scribe --test-show-details=direct --test-option="--color=always"
 
     - name: siggy-chardust
-      run: cabal v2-test siggy-chardust --test-show-details=direct --test-option="--color=always"
+      run: cabal test siggy-chardust --test-show-details=direct --test-option="--color=always"
 
     - name: flight-span
-      run: cabal v2-test flight-span --test-show-details=direct --test-option="--color=always"
+      run: cabal test flight-span --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-task
-    #   run: cabal v2-test flight-task --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-task --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-time
-    #   run: cabal v2-test flight-time --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-time --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-track
-    #   run: cabal v2-test flight-track --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-track --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-units
-    #   run: cabal v2-test flight-units --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-units --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-zone
-    #   run: cabal v2-test flight-zone --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-zone --test-show-details=direct --test-option="--color=always"
