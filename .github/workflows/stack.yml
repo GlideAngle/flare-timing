@@ -106,6 +106,10 @@ jobs:
     - name: flight-gap-weight
       run: stack test flight-gap-weight --no-terminal --test-arguments "--color=always"
 
+    # 8 hints
+    # - name: flight-igc:hlint
+    #  run: stack test flight-igc:hlint --no-terminal --test-arguments "--color=always"
+
  #flight-igc > test (suite: doctest, args: --color=always)
  #
  #### Failure in library/Flight/Igc/Fix.hs:308: expression `(markJason : _, (fixesJason, _)) = let (Right xs) = parse $(embedStr (readFile fileJason)) in (partition isFix <$> partition isMark xs)'
@@ -120,8 +124,8 @@ jobs:
  #Examples: 110  Tried: 71  Errors: 0  Failures: 1
  #
  #flight-igc > Test suite doctest failed
-    # - name: flight-igc
-    #  run: stack test flight-igc --no-terminal --test-arguments "--color=always"
+    # - name: flight-igc:doctest
+    #  run: stack test flight-igc:doctest --no-terminal --test-arguments "--color=always"
 
     - name: flight-kml
       run: stack test flight-kml --no-terminal --test-arguments "--color=always"
