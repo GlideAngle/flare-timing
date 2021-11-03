@@ -15,7 +15,7 @@ newtype ScoredLookup =
     ScoredLookup (Maybe (StopLookup TrackScoredSection))
 
 stopFlying :: Maybe S.CompFraming -> ScoredLookup
-stopFlying = ScoredLookup . (fmap flyingTask)
+stopFlying = ScoredLookup . fmap flyingTask
 
 flyingTask :: S.CompFraming -> IxTask -> Pilot -> Maybe TrackScoredSection
 flyingTask S.CompFraming{stopFlying = xs} (IxTask i) pilot =

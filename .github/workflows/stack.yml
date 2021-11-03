@@ -139,8 +139,8 @@ jobs:
     - name: flight-latlng:hlint
       run: stack test flight-latlng:hlint --no-terminal --test-arguments "--color=always"
 
-    - name: flight-lookup
-      run: stack test flight-lookup --no-terminal --test-arguments "--color=always"
+    - name: flight-lookup:hlint
+      run: stack test flight-lookup:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-mask
       run: stack test flight-mask --no-terminal --test-arguments "--color=always"

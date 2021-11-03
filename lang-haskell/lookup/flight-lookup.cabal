@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5f556f409e774634c31813c36cc15f8f6af336feb6ed489ddf2bf546999f32d7
+-- hash: 062419ef105684b376db5a7e2c60ca35b47b952a6286d1f4a22c8779ca1c376d
 
 name:           flight-lookup
 version:        0.1.0
@@ -97,6 +97,82 @@ library
     , flight-mask
     , flight-route
     , flight-zone
+    , lens
+    , mtl
+    , path
+    , scientific
+    , split
+    , time
+    , unordered-containers
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Lookup
+      Flight.Lookup.Cross
+      Flight.Lookup.Route
+      Flight.Lookup.Stop
+      Flight.Lookup.Tag
+      Paths_flight_lookup
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , cassava
+    , containers
+    , detour-via-sci
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-comp
+    , flight-gap-allot
+    , flight-gap-math
+    , flight-kml
+    , flight-latlng
+    , flight-mask
+    , flight-route
+    , flight-zone
+    , hlint
     , lens
     , mtl
     , path
