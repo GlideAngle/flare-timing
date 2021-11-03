@@ -114,8 +114,8 @@ jobs:
     - name: flight-kml
       run: cabal test flight-kml --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-latlng
-      run: cabal test flight-latlng --test-show-details=direct --test-option="--color=always"
+    - name: flight-latlng:hlint
+      run: cabal test flight-latlng:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: flight-lookup
       run: cabal test flight-lookup --test-show-details=direct --test-option="--color=always"

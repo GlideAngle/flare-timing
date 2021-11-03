@@ -114,7 +114,7 @@ data PathDistance a =
         }
 
 instance Eq a => Eq (PathDistance a) where
-    a == b = (edgesSum a) == (edgesSum b) && (vertices a) == (vertices b)
+    a == b = edgesSum a == edgesSum b && vertices a == vertices b
 
 instance Ord a => Ord (PathDistance a) where
     compare a b = compare (edgesSum a) (edgesSum b)

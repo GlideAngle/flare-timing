@@ -126,8 +126,8 @@ jobs:
     - name: flight-kml
       run: stack test flight-kml --no-terminal --test-arguments "--color=always"
 
-    - name: flight-latlng
-      run: stack test flight-latlng --no-terminal --test-arguments "--color=always"
+    - name: flight-latlng:hlint
+      run: stack test flight-latlng:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-lookup
       run: stack test flight-lookup --no-terminal --test-arguments "--color=always"
