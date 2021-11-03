@@ -151,11 +151,17 @@ jobs:
     - name: flight-scribe:hlint
       run: stack test flight-scribe:hlint --no-terminal --test-arguments "--color=always"
 
-    - name: siggy-chardust
-      run: stack test siggy-chardust --no-terminal --test-arguments "--color=always"
+    - name: siggy-chardust:hlint
+      run: stack test siggy-chardust:hlint --no-terminal --test-arguments "--color=always"
 
-    - name: flight-span
-      run: stack test flight-span --no-terminal --test-arguments "--color=always"
+    - name: siggy-chardust:doctest
+      run: stack test siggy-chardust:doctest --no-terminal --test-arguments "--color=always"
+
+    - name: siggy-chardust:digits
+      run: stack test siggy-chardust:digits --no-terminal --test-arguments "--color=always"
+
+    - name: flight-span:hlint
+      run: stack test flight-span:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-task
       run: stack test flight-task --no-terminal --test-arguments "--color=always"

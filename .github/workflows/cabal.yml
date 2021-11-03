@@ -139,11 +139,17 @@ jobs:
     - name: flight-scribe:hlint
       run: cabal test flight-scribe:hlint --test-show-details=direct --test-option="--color=always"
 
-    - name: siggy-chardust
-      run: cabal test siggy-chardust --test-show-details=direct --test-option="--color=always"
+    - name: siggy-chardust:hlint
+      run: cabal test siggy-chardust:hlint --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-span
-      run: cabal test flight-span --test-show-details=direct --test-option="--color=always"
+    - name: siggy-chardust:doctest
+      run: cabal test siggy-chardust:doctest --test-show-details=direct --test-option="--color=always"
+
+    - name: siggy-chardust:digits
+      run: cabal test siggy-chardust:digits --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-span:hlint
+      run: cabal test flight-span:hlint --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-task
     #   run: cabal test flight-task --test-show-details=direct --test-option="--color=always"
