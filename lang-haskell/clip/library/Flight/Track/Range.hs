@@ -63,7 +63,7 @@ asRollovers zs =
             [] -> ([], [])
             xs@(x0 : _) ->
                 let xys = zip (x0 : xs) xs in
-                case findIndex (\(x, y) -> x > y) xys of
+                case findIndex (uncurry (>)) xys of
                     Nothing -> (xs, [])
                     Just i -> (take i xs, drop i xs))
         zs
@@ -104,7 +104,7 @@ deleteSort :: Ord a => [a] -> [a]
 deleteSort [] = []
 deleteSort [x] = [x]
 deleteSort xs@(x0 : _) =
-    let ys = fmap snd $ filter (\(i, j) -> i <= j) $ zip (x0 : xs) xs
+    let ys = fmap snd $ filter (uncurry (<=)) $ zip (x0 : xs) xs
     in if ys /= xs then deleteSort ys else xs
 
 -- $setup
