@@ -62,12 +62,6 @@ in  let defs = ./../defaults.dhall
                         "Spec.hs"
                     , source-dirs =
                         [ "library", "test-suite-serial" ]
-                    , when =
-                        { condition =
-                            "flag(suppress-failing-tests)"
-                        , buildable =
-                            False
-                        }
                     }
                 , doctest =
                     { dependencies =
@@ -78,12 +72,6 @@ in  let defs = ./../defaults.dhall
                         "DocTest.hs"
                     , source-dirs =
                         [ "library", "test-suite-doctest" ]
-                    , when =
-                        { condition =
-                            "flag(suppress-failing-tests)"
-                        , buildable =
-                            False
-                        }
                     }
                 }
           }

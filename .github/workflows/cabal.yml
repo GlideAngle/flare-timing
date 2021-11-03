@@ -150,5 +150,13 @@ jobs:
     - name: flight-units:doctest
       run: cabal test flight-units:doctest --test-show-details=direct --test-option="--color=always"
 
+    # 41 hints
     # - name: flight-zone
     #   run: cabal test flight-zone --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-zone:doctest
+      run: cabal test flight-zone:doctest --test-show-details=direct --test-option="--color=always"
+
+    # ghc: could not execute: tasty-discover
+    # - name: flight-zone:serial
+    #   run: cabal test flight-zone:serial --test-show-details=direct --test-option="--color=always"

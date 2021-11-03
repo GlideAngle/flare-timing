@@ -162,5 +162,12 @@ jobs:
     - name: flight-units:doctest
       run: stack test flight-units:doctest --no-terminal --test-arguments "--color=always"
 
-    - name: flight-zone
-      run: stack test flight-zone --no-terminal --test-arguments "--color=always"
+    # 41 hints
+    # - name: flight-zone:hlint
+    #   run: stack test flight-zone:hlint --no-terminal --test-arguments "--color=always"
+
+    - name: flight-zone:doctest
+      run: stack test flight-zone:doctest --no-terminal --test-arguments "--color=always"
+
+    - name: flight-zone:serial
+      run: stack test flight-zone:serial --no-terminal --test-arguments "--color=always"
