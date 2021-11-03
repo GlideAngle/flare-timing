@@ -55,7 +55,7 @@ readCompMaskLead compFile = do
 writeCompMaskLead
     :: (KnownUnit (Unpack u), KnownUnit (Unpack v))
     => CompInputFile
-    -> (CompMaskingLead u v)
+    -> CompMaskingLead u v
     -> IO ()
 writeCompMaskLead compFile compMaskLeads = do
     putStrLn "Writing leading to:"

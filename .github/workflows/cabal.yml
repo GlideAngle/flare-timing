@@ -136,8 +136,8 @@ jobs:
     - name: flight-route
       run: cabal test flight-route --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-scribe
-      run: cabal test flight-scribe --test-show-details=direct --test-option="--color=always"
+    - name: flight-scribe:hlint
+      run: cabal test flight-scribe:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: siggy-chardust
       run: cabal test siggy-chardust --test-show-details=direct --test-option="--color=always"

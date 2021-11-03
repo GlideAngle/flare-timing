@@ -79,9 +79,9 @@ readPilotTimeRow compFile iTask pilot mark = do
     (_, rows) <- readAlignTime (AlignTimeFile (dirIn </> file))
 
     return $
-        ((fmap . fmap)
+        (fmap . fmap)
             (pilot,)
-            (V.find (\TimeRow{tickLead} -> mark == tickLead)))
+            (V.find (\TimeRow{tickLead} -> mark == tickLead))
         rows
     where
         dir = compFileToCompDir compFile

@@ -51,7 +51,7 @@ writeCompLeadingAreas
     -> IO [[Maybe (Vector (AreaRow u))]]
 writeCompLeadingAreas compFile tasks ass =
         sequence
-        [ sequence $ (writePilotAreaStep compFile (const True) task) <$> as
+        [ sequence $ writePilotAreaStep compFile (const True) task <$> as
         | task <- tasks
         | as <- ass
         ]
@@ -85,11 +85,7 @@ readCompLeadingAreas
 readCompLeadingAreas areaSteps lengths compFile select tasks toLegs raceTimes pilots =
     sequence
         [
-            (readTaskLeadingAreas areaSteps lengths compFile select)
-                task
-                toLeg
-                rt
-                ps
+            readTaskLeadingAreas areaSteps lengths compFile select task toLeg rt ps
         | task <- tasks
         | toLeg <- toLegs
         | rt <- raceTimes

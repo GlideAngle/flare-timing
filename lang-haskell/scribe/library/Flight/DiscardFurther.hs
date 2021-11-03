@@ -44,7 +44,7 @@ import Flight.Comp
     )
 import Flight.AlignTime (readAlignTime)
 
-data AltBonus = AltBonus Bool
+newtype AltBonus = AltBonus Bool
 
 readDiscardFurther
     :: (MonadThrow m, MonadIO m)
@@ -111,7 +111,7 @@ readPilotBestDistance
     -> Pilot
     -> IO (Maybe (Pilot, TickRow))
 readPilotBestDistance (AltBonus False) compFile ixTask pilot = do
-    (_, rows) <- readDiscardFurther $ (DiscardFurtherFile $ path </> file)
+    (_, rows) <- readDiscardFurther (DiscardFurtherFile $ path </> file)
     return $ (pilot,) <$> lastRow rows
     where
         dir = compFileToCompDir compFile

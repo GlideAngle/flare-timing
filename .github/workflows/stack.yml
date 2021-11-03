@@ -148,8 +148,8 @@ jobs:
     - name: flight-route
       run: stack test flight-route --no-terminal --test-arguments "--color=always"
 
-    - name: flight-scribe
-      run: stack test flight-scribe --no-terminal --test-arguments "--color=always"
+    - name: flight-scribe:hlint
+      run: stack test flight-scribe:hlint --no-terminal --test-arguments "--color=always"
 
     - name: siggy-chardust
       run: stack test siggy-chardust --no-terminal --test-arguments "--color=always"
