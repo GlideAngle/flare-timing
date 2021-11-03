@@ -150,7 +150,7 @@ showMarkFix mark0 fixMark =
 
 instance Show MarkedFixes where
     show MarkedFixes{mark0, fixes = []} = showMarkFix mark0 0
-    show MarkedFixes{mark0, fixes = Fix{fixMark} : []} = showMarkFix mark0 fixMark
+    show MarkedFixes{mark0, fixes = [Fix{fixMark}]} = showMarkFix mark0 fixMark
 
     show MarkedFixes{mark0 = m0, fixes = Fix{fixMark = x0} : xs} =
         let start = showHmsForSecs x0 in
@@ -174,8 +174,8 @@ instance Semigroup MarkedFixes where
         mfx@MarkedFixes{mark0 = mx, fixes = xs}
         mfy@MarkedFixes{mark0 = my, fixes = ys}
           | mx == my = mfx{fixes = sort . nub $ xs ++ ys}
-          | xs == [] = mfy
-          | ys == [] = mfx
+          | null xs = mfy
+          | null ys = mfx
           | otherwise =
               let diff' = my `diffUTCTime` mx
                   xs' =

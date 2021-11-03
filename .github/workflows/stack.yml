@@ -127,8 +127,14 @@ jobs:
     # - name: flight-igc:doctest
     #  run: stack test flight-igc:doctest --no-terminal --test-arguments "--color=always"
 
-    - name: flight-kml
-      run: stack test flight-kml --no-terminal --test-arguments "--color=always"
+    - name: flight-kml:hlint
+      run: stack test flight-kml:hlint --no-terminal --test-arguments "--color=always"
+
+    - name: flight-kml:doctest
+      run: stack test flight-kml:doctest --no-terminal --test-arguments "--color=always"
+
+    - name: flight-kml:parse
+      run: stack test flight-kml:parse --no-terminal --test-arguments "--color=always"
 
     - name: flight-latlng:hlint
       run: stack test flight-latlng:hlint --no-terminal --test-arguments "--color=always"

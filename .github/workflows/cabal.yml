@@ -115,8 +115,14 @@ jobs:
 #                Code: embedStr (readFile fileJason)
 #              • In the untyped splice: $(embedStr (readFile fileJason))
 
-    - name: flight-kml
-      run: cabal test flight-kml --test-show-details=direct --test-option="--color=always"
+    - name: flight-kml:hlint
+      run: cabal test flight-kml:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-kml:doctest
+      run: cabal test flight-kml:doctest --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-kml:parse
+      run: cabal test flight-kml:parse --test-show-details=direct --test-option="--color=always"
 
     - name: flight-latlng:hlint
       run: cabal test flight-latlng:hlint --test-show-details=direct --test-option="--color=always"
