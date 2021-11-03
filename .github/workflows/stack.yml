@@ -53,8 +53,8 @@ jobs:
     # - name: flight-cmd
     #   run: stack test flight-cmd --no-terminal --test-arguments "--color=always"
 
-    # - name: flight-comp
-    #   run: stack test flight-comp --no-terminal --test-arguments "--color=always"
+    - name: flight-comp
+      run: stack test flight-comp --no-terminal --test-arguments "--color=always"
 
     # - name: detour-via-sci
     #   run: stack test detour-via-sci --no-terminal --test-arguments "--color=always"
