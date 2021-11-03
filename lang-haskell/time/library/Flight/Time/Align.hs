@@ -124,8 +124,7 @@ checkAll
          ]
 checkAll math earthMath give sp ssOnly scoredLookup tagging =
     checkTracks
-        (\CompTaskSettings{tasks} -> do
-            group math earthMath give sp ssOnly scoredLookup tagging tasks)
+        (\CompTaskSettings{tasks} -> group math earthMath give sp ssOnly scoredLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -277,7 +276,7 @@ group
                                 scoredMarkedFixes
                         Rational -> error "Grouping for rational math is not yet implemented."
 
-                yss = (fmap $ FlyCut scoredTimeRange) <$> xs
+                yss = fmap (FlyCut scoredTimeRange) <$> xs
 
                 ticked =
                     fromMaybe (RaceSections [] [] [])
@@ -306,14 +305,14 @@ group
                                 let legL = LegIdx 0
                                     (_, reticked) = retick ticked (LegIdx start) legL
                                 in f reticked times task legL ys
-                            Just (GroupLeg{groupLeg = That (LegIdx legR)}) ->
+                            Just GroupLeg{groupLeg = That (LegIdx legR)} ->
                                 let legL = LegIdx $ legR - 1
                                     (_, reticked) = retick ticked (LegIdx start) legL
                                 in f reticked times task legL ys
-                            Just (GroupLeg{groupLeg = These legL _}) ->
+                            Just GroupLeg{groupLeg = These legL _} ->
                                 let (_, reticked) = retick ticked (LegIdx start) legL
                                 in f reticked times task legL ys
-                            Just (GroupLeg{groupLeg = This legL}) ->
+                            Just GroupLeg{groupLeg = This legL} ->
                                 let (_, reticked) = retick ticked (LegIdx start) legL in
                                 f reticked times task legL ys
 
