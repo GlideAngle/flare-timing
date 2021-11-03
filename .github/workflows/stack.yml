@@ -156,8 +156,11 @@ jobs:
     - name: flight-track
       run: stack test flight-track --no-terminal --test-arguments "--color=always"
 
-    - name: flight-units
-      run: stack test flight-units --no-terminal --test-arguments "--color=always"
+    - name: flight-units:hlint
+      run: stack test flight-units:hlint --no-terminal --test-arguments "--color=always"
+
+    - name: flight-units:doctest
+      run: stack test flight-units:doctest --no-terminal --test-arguments "--color=always"
 
     - name: flight-zone
       run: stack test flight-zone --no-terminal --test-arguments "--color=always"

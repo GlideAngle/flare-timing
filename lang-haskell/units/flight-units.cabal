@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a5bef670ec4d0f4e37d7764339eb10a267fbc2ebd39df84576ebe8b681c2bcdd
+-- hash: a8b2cd0349f6f461dd74dd975a2e4295628c88aacdeb42bbf87a7b1b35315276
 
 name:           flight-units
 version:        0.1.0
@@ -148,6 +148,63 @@ test-suite doctest
     , siggy-chardust
     , text
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Ratio
+      Flight.Units
+      Flight.Units.Angle
+      Flight.Units.DegMinSec
+      Paths_flight_units
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , fixed
+    , formatting
+    , hlint
+    , newtype
+    , numbers
+    , siggy-chardust
+    , text
+    , uom-plugin
   default-language: Haskell2010

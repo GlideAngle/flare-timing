@@ -130,7 +130,7 @@ instance Convertible u [u| deg |] => Angle (Quantity Double u) where
             n =
                 MkQuantity $
                     case (divMod' d 180.0 :: (Integer, Double)) of
-                        (a, 0.0) -> if even a then 0.0 else (fromIntegral $ signum a) * 180.0
+                        (a, 0.0) -> if even a then 0.0 else fromIntegral (signum a) * 180.0
                         (a, b) -> if even a then b else b - 180.0
 
             (MkQuantity d) = convert d' :: Quantity Double [u| deg |]
@@ -169,7 +169,7 @@ instance Convertible u [u| deg |] => Angle (Quantity Rational u) where
             n =
                 MkQuantity $
                     case (divMod' d 180.0 :: (Integer, Rational)) of
-                        (a, 0.0) -> if even a then 0.0 else (fromIntegral $ signum a) * 180.0
+                        (a, 0.0) -> if even a then 0.0 else fromIntegral (signum a) * 180.0
                         (a, b) -> if even a then b else b - 180.0
 
             (MkQuantity d) = convert d' :: Quantity Rational [u| deg |]

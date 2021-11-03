@@ -49,12 +49,6 @@ in  let defs = ./../defaults.dhall
                         "DocTest.hs"
                     , source-dirs =
                         [ "library", "test-suite-doctest" ]
-                    , when =
-                        { condition =
-                            "flag(suppress-failing-tests)"
-                        , buildable =
-                            False
-                        }
                     }
                 }
           }
