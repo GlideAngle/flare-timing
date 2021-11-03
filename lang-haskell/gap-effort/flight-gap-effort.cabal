@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.2.
+-- This file has been generated from package.dhall by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6972ac136eebf1b6faa6a50fe31702167c7f9876f43e7f39b14dd697845dac86
+-- hash: a64b424f820e0383b79923b0aea4b7dbe9415c854f3d04964a84c6dff3a2168e
 
 name:           flight-gap-effort
 version:        0.1.0
@@ -18,7 +18,8 @@ maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
-tested-with:    GHC == 8.2.2
+tested-with:
+    GHC == 8.2.2
 build-type:     Simple
 extra-source-files:
     package.dhall
@@ -43,7 +44,38 @@ library
       Paths_flight_gap_effort
   hs-source-dirs:
       library
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures
   build-depends:
       QuickCheck
@@ -72,7 +104,38 @@ test-suite doctest
       Paths_flight_gap_effort
   hs-source-dirs:
       test-suite-doctest
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       QuickCheck
@@ -110,7 +173,38 @@ test-suite effort
       Paths_flight_gap_effort
   hs-source-dirs:
       test-suite-effort
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       QuickCheck

@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.2.
+-- This file has been generated from package.dhall by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 48cf363384a7633d6172df6539e98f69ae59b4ef2d1055e5ccceda05e82cc68b
+-- hash: 2296de749bf88a5ccfc540d6428b06492acdf1d1b577b7c89876913c1f19799d
 
 name:           app-view
 version:        0.1.0
@@ -18,7 +18,8 @@ maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
-tested-with:    GHC == 8.2.2
+tested-with:
+    GHC == 8.2.2
 build-type:     Simple
 extra-source-files:
     package.dhall
@@ -187,7 +188,43 @@ executable comp-view
       Paths_app_view
   hs-source-dirs:
       comp-view
-  default-extensions: ConstraintKinds DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields DuplicateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs KindSignatures LambdaCase MonoLocalBinds MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecursiveDo RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      ConstraintKinds
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      DuplicateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      KindSignatures
+      LambdaCase
+      MonoLocalBinds
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecursiveDo
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

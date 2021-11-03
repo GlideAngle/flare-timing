@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.2.
+-- This file has been generated from package.dhall by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 224281a0fc66849d103584079c9687fd55aa090ad0998ba48a6909a3486f29ba
+-- hash: 2174166944984090cd85583e722bd429b37152067c07909406c0c14ba1ba28db
 
 name:           flare-timing
 version:        0.1.0
@@ -18,7 +18,8 @@ maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
-tested-with:    GHC == 8.2.2
+tested-with:
+    GHC == 8.2.2
 build-type:     Simple
 extra-source-files:
     package.dhall
@@ -44,7 +45,38 @@ executable fs-arrival
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/fs-arrival
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -83,7 +115,38 @@ executable fs-clean
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/fs-clean
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -121,7 +184,38 @@ executable fs-effort
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/fs-effort
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -159,7 +253,38 @@ executable fs-route
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/fs-route
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -197,7 +322,38 @@ executable fs-score
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/fs-score
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -235,7 +391,38 @@ executable fs-trim
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/fs-trim
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -273,7 +460,38 @@ executable ft-align-time
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/align-time
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -311,7 +529,38 @@ executable ft-cross-zone
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/cross-zone
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -353,7 +602,38 @@ executable ft-discard-further
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/discard-further
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -392,7 +672,38 @@ executable ft-extract-input
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/extract-input
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -434,7 +745,38 @@ executable ft-far-out
       prod-apps/mask-common
       prod-apps/mask-effort
       prod-apps/far-out
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -472,7 +814,38 @@ executable ft-fly-time
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/fly-time
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -514,7 +887,38 @@ executable ft-fsdb-parser
       Paths_flare_timing
   hs-source-dirs:
       test-apps/fsdb-parser
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base >=4.10.1.0 && <5
@@ -539,7 +943,38 @@ executable ft-gap-point
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/gap-point
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -585,7 +1020,38 @@ executable ft-igc-parser
       Paths_flare_timing
   hs-source-dirs:
       test-apps/igc-parser
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base >=4.10.1.0 && <5
@@ -608,7 +1074,38 @@ executable ft-kml-parser
       Paths_flare_timing
   hs-source-dirs:
       test-apps/kml-parser
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base >=4.10.1.0 && <5
@@ -631,7 +1128,38 @@ executable ft-land-out
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/land-out
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -665,7 +1193,38 @@ executable ft-lead-area
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/lead-area
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -710,7 +1269,38 @@ executable ft-mask-arrival
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/mask-arrival
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -770,7 +1360,38 @@ executable ft-mask-bonus
   hs-source-dirs:
       prod-apps/mask-common
       prod-apps/mask-bonus
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -830,7 +1451,38 @@ executable ft-mask-effort
   hs-source-dirs:
       prod-apps/mask-common
       prod-apps/mask-effort
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -890,7 +1542,38 @@ executable ft-mask-lead
   hs-source-dirs:
       prod-apps/mask-common
       prod-apps/mask-lead
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -952,7 +1635,38 @@ executable ft-mask-reach
   hs-source-dirs:
       prod-apps/mask-common
       prod-apps/mask-reach
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -1004,7 +1718,38 @@ executable ft-peg-frame
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/peg-frame
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -1040,7 +1785,38 @@ executable ft-tag-zone
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/tag-zone
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -1077,7 +1853,38 @@ executable ft-task-length
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/task-length
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -1113,7 +1920,38 @@ executable ft-unpack-track
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/unpack-track
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson

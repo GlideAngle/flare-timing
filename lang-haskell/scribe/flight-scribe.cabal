@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.2.
+-- This file has been generated from package.dhall by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bc609eb15304572cfde59db4c99d6c85294b20bc945a60926cb1bfe2fe4d1be0
+-- hash: f2eb1cdc9650cd0aceee399125c58f85f6d34fab68b6e03d2e1e1cd574675d81
 
 name:           flight-scribe
 version:        0.1.0
@@ -18,7 +18,8 @@ maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
-tested-with:    GHC == 8.2.2
+tested-with:
+    GHC == 8.2.2
 build-type:     Simple
 extra-source-files:
     package.dhall
@@ -61,7 +62,38 @@ library
       Paths_flight_scribe
   hs-source-dirs:
       library
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures
   build-depends:
       aeson

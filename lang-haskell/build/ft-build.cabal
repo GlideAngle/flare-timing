@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.2.
+-- This file has been generated from package.dhall by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 726f8ab716c4b868da1746ae840695100037c1d9d4df06574a313c4ae26d7c8b
+-- hash: 52f07aa4d51021079953f810cef248200eee9a956c35f190b7f50d2164736208
 
 name:           ft-build
 version:        0.1.0
@@ -18,7 +18,8 @@ maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
-tested-with:    GHC == 8.2.2
+tested-with:
+    GHC == 8.2.2
 build-type:     Simple
 extra-source-files:
     package.dhall
@@ -48,7 +49,8 @@ executable ft-build
   hs-source-dirs:
       app-cmd
       library
-  default-extensions: PackageImports
+  default-extensions:
+      PackageImports
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       ansi-terminal
