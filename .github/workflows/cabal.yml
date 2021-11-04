@@ -88,8 +88,11 @@ jobs:
     # - name: flight-gap-effort
     #   run: cabal test flight-gap-effort --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-lead
-      run: cabal test flight-gap-lead --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-lead:hlint
+      run: cabal test flight-gap-lead:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-lead:lead
+      run: cabal test flight-gap-lead:lead --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-gap-math
     #  run: cabal test flight-gap-math --test-show-details=direct --test-option="--color=always"

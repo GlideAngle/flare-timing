@@ -26,6 +26,8 @@ import "flight-gap-lead" Flight.Score
 
 import TestNewtypes
 
+{-# ANN module ("HLint: ignore Use pragma syntax" :: String) #-}
+
 leadingCoefficientUnits :: TestTree
 leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
     [ madeGoalUnits
