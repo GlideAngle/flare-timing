@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 04bef495b65336e305130fd192f386db76602d4b3f55b86e1e50f55837e1076c
+-- hash: 29a1754c4ca6de3b7aed69af3431cd80bbedc77c5ddbb18d7637549ab630d791
 
 name:           flight-gap-effort
 version:        0.1.0
@@ -157,8 +157,6 @@ test-suite doctest
     , template-haskell
     , text
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010
 
 test-suite effort

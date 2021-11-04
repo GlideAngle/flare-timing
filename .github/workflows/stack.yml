@@ -112,8 +112,15 @@ jobs:
     - name: flight-gap-lead:lead
       run: stack test flight-gap-lead:lead --no-terminal --test-arguments "--color=always"
 
-    # - name: flight-gap-math
-    #  run: stack test flight-gap-math --no-terminal --test-arguments "--color=always"
+    # 60 hints
+    # - name: flight-gap-math:hlint
+    #  run: stack test flight-gap-math:hlint --no-terminal --test-arguments "--color=always"
+
+    - name: flight-gap-math:doctest
+      run: stack test flight-gap-math:doctest --no-terminal --test-arguments "--color=always"
+
+    - name: flight-gap-math:math
+      run: stack test flight-gap-math:math --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-stop:hlint
       run: stack test flight-gap-stop:hlint --no-terminal --test-arguments "--color=always"
