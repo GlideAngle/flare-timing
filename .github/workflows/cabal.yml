@@ -75,8 +75,12 @@ jobs:
     - name: flight-earth
       run: cabal test flight-earth --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-fsdb
-    #   run: cabal test flight-fsdb --test-show-details=direct --test-option="--color=always"
+    # 14 hints
+    # - name: flight-fsdb:hlint
+    #   run: cabal test flight-fsdb:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-fsdb:doctest
+      run: cabal test flight-fsdb:doctest --test-show-details=direct --test-option="--color=always"
 
     # - name: flight-gap-allot
     #   run: cabal test flight-gap-allot --test-show-details=direct --test-option="--color=always"
@@ -90,8 +94,11 @@ jobs:
     # - name: flight-gap-math
     #  run: cabal test flight-gap-math --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-stop
-      run: cabal test flight-gap-stop --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-stop:hlint
+      run: cabal test flight-gap-stop:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-stop:stop
+      run: cabal test flight-gap-stop:stop --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-valid
       run: cabal test flight-gap-valid --test-show-details=direct --test-option="--color=always"

@@ -53,7 +53,8 @@ in  let defs =
                 ./../default-tests.dhall
               ⫽ { doctest =
                     { dependencies =
-                        defs.dependencies # [ "doctest", "hxt-pickle-utils" ]
+                          defs.dependencies
+                        # [ "doctest", "hxt-pickle-utils", "flight-comp" ]
                     , ghc-options =
                         [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                     , main =

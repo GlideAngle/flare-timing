@@ -82,8 +82,12 @@ jobs:
     - name: flight-earth
       run: stack test flight-earth --no-terminal --test-arguments "--color=always"
 
-    - name: flight-fsdb
-      run: stack test flight-fsdb --no-terminal --test-arguments "--color=always"
+    # 14 hints
+    # - name: flight-fsdb:hlint
+    #   run: stack test flight-fsdb --no-terminal --test-arguments "--color=always"
+
+    - name: flight-fsdb:doctest
+      run: stack test flight-fsdb:doctest --no-terminal --test-arguments "--color=always"
 
     # - name: flight-gap-allot
     #   run: stack test flight-gap-allot --no-terminal --test-arguments "--color=always"
@@ -97,8 +101,11 @@ jobs:
     # - name: flight-gap-math
     #  run: stack test flight-gap-math --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-stop
-      run: stack test flight-gap-stop --no-terminal --test-arguments "--color=always"
+    - name: flight-gap-stop:hlint
+      run: stack test flight-gap-stop:hlint --no-terminal --test-arguments "--color=always"
+
+    - name: flight-gap-stop:stop
+      run: stack test flight-gap-stop:stop --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-valid
       run: stack test flight-gap-valid --no-terminal --test-arguments "--color=always"
