@@ -128,8 +128,12 @@ jobs:
     - name: flight-gap-stop:stop
       run: stack test flight-gap-stop:stop --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-valid
-      run: stack test flight-gap-valid --no-terminal --test-arguments "--color=always"
+    # 9 hints
+    # - name: flight-gap-valid:hlint
+    #   run: stack test flight-gap-valid:hlint --no-terminal --test-arguments "--color=always"
+
+    - name: flight-gap-valid:valid
+      run: stack test flight-gap-valid:valid --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-weight
       run: stack test flight-gap-weight --no-terminal --test-arguments "--color=always"
