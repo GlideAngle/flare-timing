@@ -178,9 +178,8 @@ jobs:
     - name: flight-gap-stop:stop
       run: cabal test flight-gap-stop:stop --test-show-details=direct --test-option="--color=always"
 
-    # 9 hints
-    # - name: flight-gap-valid:hlint
-    #  run: cabal test flight-gap-valid:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-valid:hlint
+      run: cabal test flight-gap-valid:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-valid:valid
       run: cabal test flight-gap-valid:valid --test-show-details=direct --test-option="--color=always"
