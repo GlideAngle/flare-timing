@@ -6,7 +6,6 @@ module Flight.Zone.Zone
     , toCylinder, rawToLatLng, unlineZones
     ) where
 
-import Data.Maybe (fromMaybe)
 import Data.Foldable (asum)
 import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
@@ -317,7 +316,7 @@ rawToRadius (Radius r) =
 toCylinder :: (Eq a, Ord a, Num a, Fractional a) => Raw.RawZone -> Zone a
 toCylinder Raw.RawZone{Raw.radius = r, ..} =
     Cylinder
-        (fromMaybe (rawToRadius r) (rawToRadius <$> giveOut))
+        (maybe (rawToRadius r) rawToRadius giveOut)
         (rawToLatLng lat lng)
 
 -- | Make sure all Line and SemiCircle zones have their normals fixed.
@@ -326,12 +325,12 @@ unlineZones azimuthFwd zs =
     -- WARNING: Assume for now that lines and semicircles are only at goal.
     -- TODO: Handle lines and semicircles at the end of the speed section.
     case reverse zs of
-        (Line Nothing r o) : xM : xs ->
+        Line Nothing r o : xM : xs ->
             let az = Bearing . normalize <$> azimuthFwd o (center xM) in
-            reverse $ (Line az r o) : xM : xs
+            reverse $ Line az r o : xM : xs
 
-        (SemiCircle Nothing r o) : xM : xs ->
+        SemiCircle Nothing r o : xM : xs ->
             let az = Bearing . normalize <$> azimuthFwd o (center xM) in
-            reverse $ (SemiCircle az r o) : xM : xs
+            reverse $ SemiCircle az r o : xM : xs
 
         _ -> zs

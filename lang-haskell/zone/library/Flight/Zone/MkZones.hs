@@ -307,19 +307,19 @@ unkind resize g (SemiCircle r x) = Z.Cylinder (resize g r) x
 inflate :: ResizeRadius
 inflate Nothing r = r
 inflate (Just Give{giveFraction = gf, giveDistance = Nothing}) (Radius r) =
-    let fMax = ([u| 1.0 |] +: (MkQuantity gf)) *: r
+    let fMax = ([u| 1.0 |] +: MkQuantity gf) *: r
     in Radius fMax
 inflate (Just Give{giveFraction = gf, giveDistance = Just (Radius dg)}) (Radius r) =
-    let fMax = ([u| 1.0 |] +: (MkQuantity gf)) *: r
+    let fMax = ([u| 1.0 |] +: MkQuantity gf) *: r
         dMax = r +: dg
     in Radius $ max fMax dMax
 
 deflate :: ResizeRadius
 deflate Nothing r = r
 deflate (Just Give{giveFraction = gf, giveDistance = Nothing}) (Radius r) =
-    let fMax = ([u| 1.0 |] -: (MkQuantity gf)) *: r
+    let fMax = ([u| 1.0 |] -: MkQuantity gf) *: r
     in Radius fMax
 deflate (Just Give{giveFraction = gf, giveDistance = Just (Radius dg)}) (Radius r) =
-    let fMax = ([u| 1.0 |] -: (MkQuantity gf)) *: r
+    let fMax = ([u| 1.0 |] -: MkQuantity gf) *: r
         dMax = r -: dg
     in Radius $ min fMax dMax

@@ -48,7 +48,7 @@ data RawZone =
     deriving anyclass (ToJSON, FromJSON)
 
 showZone :: RawZone -> String
-showZone (RawZone{..}) =
+showZone RawZone{..} =
     unwords [ zoneName
             , showLat lat
             , showLng lng
@@ -61,8 +61,8 @@ entryOrExit :: Give -> RawZone -> RawZone
 entryOrExit
     Give{giveFraction = gf, giveDistance = Nothing}
     z@RawZone{radius = Radius r} =
-    let fMin = ([u| 1.0 |] -: (MkQuantity gf)) *: r
-        fMax = ([u| 1.0 |] +: (MkQuantity gf)) *: r
+    let fMin = ([u| 1.0 |] -: MkQuantity gf) *: r
+        fMax = ([u| 1.0 |] +: MkQuantity gf) *: r
     in
         z
             { giveIn = Just . Radius $ fMin
@@ -71,8 +71,8 @@ entryOrExit
 entryOrExit
     Give{giveFraction = gf, giveDistance = Just (Radius dg)}
     z@RawZone{radius = Radius r} =
-    let fMin = ([u| 1.0 |] -: (MkQuantity gf)) *: r
-        fMax = ([u| 1.0 |] +: (MkQuantity gf)) *: r
+    let fMin = ([u| 1.0 |] -: MkQuantity gf) *: r
+        fMax = ([u| 1.0 |] +: MkQuantity gf) *: r
 
         dMin = max [u| 0.0 m |] $ r -: dg
         dMax = r +: dg

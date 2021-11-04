@@ -67,10 +67,10 @@ sampleAngles pi' samples (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zo
     (fmap . fmap) (TrueCourse . MkQuantity) $
     case (zoneM, zoneN) of
         (Nothing, _) -> (Nothing, cs)
-        (Just _, Point _) -> (Nothing, cs)
-        (Just _, Vector _ _) -> (Nothing, cs)
-        (Just _, Cylinder _ _) -> (Nothing, cs)
-        (Just _, Conical _ _ _) -> (Nothing, cs)
+        (Just _, Point{}) -> (Nothing, cs)
+        (Just _, Vector{}) -> (Nothing, cs)
+        (Just _, Cylinder{}) -> (Nothing, cs)
+        (Just _, Conical{}) -> (Nothing, cs)
         (Just _, Line Nothing _ _) -> (Nothing, cs)
         (Just _, Line (Just (Bearing az)) _ _) ->
             -- NOTE: For a line we don't want to miss a likely local
@@ -85,17 +85,17 @@ sampleAngles pi' samples (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zo
                     : unQuantity (az -: deg90)
                     : cs
 
-        (Just _, Circle _ _) -> (Nothing, cs)
-        (Just _, SemiCircle _ _ _) -> (Nothing, cs)
+        (Just _, Circle{}) -> (Nothing, cs)
+        (Just _, SemiCircle{}) -> (Nothing, cs)
     where
         nNum = unSamples samples
         half = nNum `div` 2
-        step = bearing / (fromIntegral nNum)
+        step = bearing / fromIntegral nNum
         mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) arc0
 
         cs =
-                let lhs = [mid - (fromIntegral n) * step | n <- [1 .. half]]
-                    rhs = [mid + (fromIntegral n) * step | n <- [1 .. half]]
+                let lhs = [mid - fromIntegral n * step | n <- [1 .. half]]
+                    rhs = [mid + fromIntegral n * step | n <- [1 .. half]]
                 -- NOTE: The reverse of the LHS is not needed for correct
                 -- operation but it helps when tracing.
                 in reverse lhs ++ (mid : rhs)
