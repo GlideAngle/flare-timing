@@ -7,7 +7,17 @@ arguments :: [String]
 arguments =
     [ "library"
     , "test-suite-hlint"
-    , "test-suite-earth"
+    , "test-suite-geodesy"
+    , "test-suite-forbes"
+    , "test-suite-forbes-r"
+    , "test-suite-greda"
+    , "test-suite-meridian"
+    , "test-suite-meridian-r"
+    , "test-suite-published"
+    , "test-suite-published-r"
+    , "test-suite-zones"
+    , "test-suite-cylinder"
+    , "test-suite-cylinder-r"
     -- WARNING: HLint turns off QuasiQuotes even if turned on in
     -- default-extensions in the cabal file, #55.
     -- SEE: https://github.com/ndmitchell/hlint/issues/223

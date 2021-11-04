@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5649245a8a400395fbf52ba758925ed02717f06cc96f04c6a29e9c65c996a00b
+-- hash: 491f56fa8cc204440f218dd000cf20de835c238842fc7d8159d7be14d89835f8
 
 name:           flight-earth
 version:        0.1.0
@@ -235,8 +235,6 @@ test-suite cylinder
     , tasty-smallcheck
     , text
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010
 
 test-suite cylinder-r
@@ -338,8 +336,6 @@ test-suite cylinder-r
     , tasty-smallcheck
     , text
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010
 
 test-suite doctest
@@ -447,8 +443,6 @@ test-suite doctest
     , text
     , transformers
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010
 
 test-suite forbes
@@ -538,8 +532,6 @@ test-suite forbes
     , tasty-hunit
     , text
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010
 
 test-suite forbes-r
@@ -903,6 +895,111 @@ test-suite greda-r
     , uom-plugin
   default-language: Haskell2010
 
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Earth.Ellipsoid
+      Flight.Earth.Flat
+      Flight.Earth.Flat.Double
+      Flight.Earth.Flat.Rational
+      Flight.Earth.Math
+      Flight.Earth.Sphere
+      Flight.Earth.ZoneShape.Double
+      Flight.Earth.ZoneShape.Rational
+      Flight.Geodesy
+      Flight.Geodesy.Double
+      Flight.Geodesy.Math
+      Flight.Geodesy.Problem
+      Flight.Geodesy.Rational
+      Flight.Geodesy.Solution
+      Internal.ClearlySeparated
+      Internal.CylinderOutline.Double
+      Internal.CylinderOutline.Rational
+      Internal.Ellipsoid.Cylinder.Vincenty.Double
+      Internal.Ellipsoid.Cylinder.Vincenty.Rational
+      Internal.Ellipsoid.PointToPoint.Andoyer.Double
+      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
+      Internal.Ellipsoid.PointToPoint.Double
+      Internal.Ellipsoid.PointToPoint.Rational
+      Internal.Ellipsoid.PointToPoint.Vincenty.Double
+      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
+      Internal.Ellipsoid.Separated
+      Internal.Flat.Cylinder.Double
+      Internal.Flat.Cylinder.Rational
+      Internal.Flat.PointToPoint.Double
+      Internal.Flat.PointToPoint.Rational
+      Internal.Flat.Projected.Double
+      Internal.Flat.Projected.Internal
+      Internal.Flat.Projected.Rational
+      Internal.Flat.Separated
+      Internal.Sphere.Cylinder.Double
+      Internal.Sphere.Cylinder.Rational
+      Internal.Sphere.PointToPoint.Double
+      Internal.Sphere.PointToPoint.Rational
+      Internal.Sphere.Separated
+      Paths_flight_earth
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
+      AllowAmbiguousTypes
+      InstanceSigs
+      UndecidableSuperClasses
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , errors
+    , fgl
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , hlint
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
 test-suite meridian
   type: exitcode-stdio-1.0
   main-is: MeridianMain.hs
@@ -1174,8 +1271,6 @@ test-suite published
     , tasty-hunit
     , text
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010
 
 test-suite published-r
@@ -1368,6 +1463,4 @@ test-suite zones
     , tasty-hunit
     , text
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010

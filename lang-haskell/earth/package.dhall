@@ -74,12 +74,6 @@ in  let defs =
                                 "DocTest.hs"
                             , source-dirs =
                                 [ "library", "test-suite-doctest" ]
-                            , when =
-                                { condition =
-                                    "flag(suppress-failing-tests)"
-                                , buildable =
-                                    False
-                                }
                             }
                         , geodesy =
                             { dependencies =
@@ -117,12 +111,6 @@ in  let defs =
                                 , "test-suite/geodesy"
                                 , "test-suite-forbes"
                                 ]
-                            , when =
-                                { condition =
-                                    "flag(suppress-failing-tests)"
-                                , buildable =
-                                    False
-                                }
                             }
                         , forbes-r =
                             { dependencies =
@@ -228,12 +216,6 @@ in  let defs =
                                 , "test-suite/published"
                                 , "test-suite-published"
                                 ]
-                            , when =
-                                { condition =
-                                    "flag(suppress-failing-tests)"
-                                , buildable =
-                                    False
-                                }
                             }
                         , published-r =
                             { dependencies =
@@ -269,12 +251,6 @@ in  let defs =
                                 , "test-suite/geodesy"
                                 , "test-suite-zones"
                                 ]
-                            , when =
-                                { condition =
-                                    "flag(suppress-failing-tests)"
-                                , buildable =
-                                    False
-                                }
                             }
                         , cylinder =
                             { dependencies =
@@ -296,12 +272,6 @@ in  let defs =
                                 , "test-suite/cylinder"
                                 , "test-suite-cylinder"
                                 ]
-                            , when =
-                                { condition =
-                                    "flag(suppress-failing-tests)"
-                                , buildable =
-                                    False
-                                }
                             }
                         , cylinder-r =
                             { dependencies =
@@ -323,12 +293,6 @@ in  let defs =
                                 , "test-suite/cylinder"
                                 , "test-suite-cylinder-r"
                                 ]
-                            , when =
-                                { condition =
-                                    "flag(suppress-failing-tests)"
-                                , buildable =
-                                    False
-                                }
                             }
                         }
                   }
