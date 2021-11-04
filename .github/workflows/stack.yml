@@ -83,6 +83,9 @@ jobs:
     # - name: detour-via-uom:doctest
     #   run: stack test detour-via-uom:doctest --no-terminal --test-arguments "--color=always"
 
+    - name: tasty-compare:hlint
+      run: stack test tasty-compare:hlint --no-terminal --test-arguments "--color=always"
+
     # 7 hints
     # - name: flight-earth:hlint
     #   run: stack test flight-earth:hlint --no-terminal --test-arguments "--color=always"
