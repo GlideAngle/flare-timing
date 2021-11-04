@@ -39,19 +39,13 @@ in  let defs = ./../defaults.dhall
                 ./../default-tests.dhall
               ⫽ { doctest =
                     { dependencies =
-                        defs.dependencies # [ "doctest" ]
+                        defs.dependencies # [ "doctest", "QuickCheck" ]
                     , ghc-options =
                         [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                     , main =
                         "DocTest.hs"
                     , source-dirs =
                         [ "library", "test-suite-doctest" ]
-                    , when =
-                        { condition =
-                            "flag(suppress-failing-tests)"
-                        , buildable =
-                            False
-                        }
                     }
                 }
           }

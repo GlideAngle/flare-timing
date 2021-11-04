@@ -196,8 +196,13 @@ jobs:
     # - name: flight-time:golden
     #   run: cabal test flight-time:golden --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-track
-    #   run: cabal test flight-track --test-show-details=direct --test-option="--color=always"
+    # parse error on SCC annotation
+    # - name: flight-track:hlint
+    #   run: cabal test flight-track:hlint --test-show-details=direct --test-option="--color=always"
+
+    # 1 failure
+    # - name: flight-track:doctest
+    #   run: cabal test flight-track:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-units:hlint
       run: cabal test flight-units:hlint --test-show-details=direct --test-option="--color=always"

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1f4c45ed90ad3f4d99764bf4deb61e2fb702e485c496fa83af53568d57f208eb
+-- hash: 9a2d660354c8a375c2a0949bfd5aae9b50163c52417a46ab35e8bf42bfdefe53
 
 name:           flight-zone
 version:        0.1.0
@@ -176,8 +176,79 @@ test-suite doctest
     , scientific
     , siggy-chardust
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Zone
+      Flight.Zone.AltTime
+      Flight.Zone.Bearing
+      Flight.Zone.Convert
+      Flight.Zone.Cylinder
+      Flight.Zone.Cylinder.Edge
+      Flight.Zone.Cylinder.Sample
+      Flight.Zone.Incline
+      Flight.Zone.Internal.ZoneKind
+      Flight.Zone.MkZones
+      Flight.Zone.Path
+      Flight.Zone.Radius
+      Flight.Zone.Raw
+      Flight.Zone.Raw.Zone
+      Flight.Zone.SpeedSection
+      Flight.Zone.TaskZones
+      Flight.Zone.Zone
+      Flight.Zone.ZoneKind
+      Paths_flight_zone
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , detour-via-sci
+    , detour-via-uom
+    , flight-latlng
+    , flight-units
+    , hlint
+    , newtype
+    , scientific
+    , siggy-chardust
+    , uom-plugin
   default-language: Haskell2010
 
 test-suite serial
@@ -260,6 +331,4 @@ test-suite serial
     , text
     , uom-plugin
     , yaml
-  if flag(suppress-failing-tests)
-    buildable: False
   default-language: Haskell2010
