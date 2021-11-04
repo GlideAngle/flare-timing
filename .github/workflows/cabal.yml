@@ -112,7 +112,7 @@ jobs:
 
     # compile error
     # - name: flight-earth:zone
-      run: cabal test flight-earth:zone --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-earth:zone --test-show-details=direct --test-option="--color=always"
 
     # compile error
     # - name: flight-earth:cylinder
@@ -185,8 +185,6 @@ jobs:
     # - name: flight-igc:hlint
     #  run: cabal test flight-igc:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-igc:doctest
-    #  run: cabal test flight-igc:doctest --test-show-details=direct --test-option="--color=always"
 # Test suite doctest: RUNNING...
 ### Failure in library/Flight/Igc/Fix.hs:308: expression `(markJason : _, (fixesJason, _)) = let (Right xs) = parse $(embedStr (readFile fileJason)) in (partition isFix <$> partition isMark xs)'
 # expected: 
@@ -196,6 +194,8 @@ jobs:
 #                  ./test-suite-doctest/Jason_Kath.20180101-000746.18332.30.igc: openFile: does not exist (No such file or directory)
 #                Code: embedStr (readFile fileJason)
 #              • In the untyped splice: $(embedStr (readFile fileJason))
+    # - name: flight-igc:doctest
+    #  run: cabal test flight-igc:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-kml:hlint
       run: cabal test flight-kml:hlint --test-show-details=direct --test-option="--color=always"
