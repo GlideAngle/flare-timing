@@ -226,8 +226,8 @@ jobs:
     # - name: flight-mask:doctest
     #   run: stack test flight-mask:doctest --no-terminal --test-arguments "--color=always"
 
-    - name: flight-route
-      run: stack test flight-route --no-terminal --test-arguments "--color=always"
+    - name: flight-route:hlint
+      run: stack test flight-route:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-scribe:hlint
       run: stack test flight-scribe:hlint --no-terminal --test-arguments "--color=always"

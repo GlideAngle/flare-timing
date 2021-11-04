@@ -211,8 +211,8 @@ jobs:
     # - name: flight-mask:doctest
     #   run: cabal test flight-mask:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-route
-      run: cabal test flight-route --test-show-details=direct --test-option="--color=always"
+    - name: flight-route:hlint
+      run: cabal test flight-route:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: flight-scribe:hlint
       run: cabal test flight-scribe:hlint --test-show-details=direct --test-option="--color=always"
