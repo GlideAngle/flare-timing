@@ -1,3 +1,4 @@
+-- SEE: https://github.com/sol/hpack/issues/254
 let mkHome = ./../home.dhall
 
 in  let defs = ./../defaults.dhall
@@ -56,6 +57,8 @@ in  let defs = ./../defaults.dhall
                         , "tasty-discover"
                         , "tasty-golden"
                         ]
+                    , verbatim =
+                        { build-tool-depends = "tasty-discover:tasty-discover" }
                     , ghc-options =
                         [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                     , main =

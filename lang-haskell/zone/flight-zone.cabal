@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9a2d660354c8a375c2a0949bfd5aae9b50163c52417a46ab35e8bf42bfdefe53
+-- hash: b3b3a3d013a87d1ac10d8b93022878e990a87b0111b7b2d7f669ce40fbdb588e
 
 name:           flight-zone
 version:        0.1.0
@@ -332,3 +332,4 @@ test-suite serial
     , uom-plugin
     , yaml
   default-language: Haskell2010
+  build-tool-depends: tasty-discover:tasty-discover
