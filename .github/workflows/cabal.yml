@@ -122,9 +122,8 @@ jobs:
     # - name: flight-earth:cylinder-r
     #   run: cabal test flight-earth:cylinder-r --test-show-details=direct --test-option="--color=always"
 
-    # 14 hints
-    # - name: flight-fsdb:hlint
-    #   run: cabal test flight-fsdb:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-fsdb:hlint
+      run: cabal test flight-fsdb:hlint --test-show-details=direct --test-option="--color=always"
 
  #library/Flight/Fsdb/Internal/Parse.hs:25:1: error:
  #Error:     Could not find module ‘Flight.Comp’

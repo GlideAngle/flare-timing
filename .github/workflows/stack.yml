@@ -132,9 +132,8 @@ jobs:
     # - name: flight-earth:cylinder-r
     #  run: stack test flight-earth:cylinder-r --no-terminal --test-arguments "--color=always"
 
-    # 14 hints
-    # - name: flight-fsdb:hlint
-    #   run: stack test flight-fsdb --no-terminal --test-arguments "--color=always"
+    - name: flight-fsdb:hlint
+      run: stack test flight-fsdb --no-terminal --test-arguments "--color=always"
 
     - name: flight-fsdb:doctest
       run: stack test flight-fsdb:doctest --no-terminal --test-arguments "--color=always"

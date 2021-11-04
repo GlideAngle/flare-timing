@@ -707,33 +707,19 @@ parseAltScores
             | ys <- (fmap . fmap) snd yss
             ]
 
-    let es :: [Maybe ReachStats] =
-            [ do
-                xs <- Just $ fromMaybe (TaskDistance zero) <$> xs'
-                let ys = V.fromList $ unTaskDistanceAsKm <$> xs
-                let (ysMean, ysVar) = Stats.meanVariance ys
-                return $
-                    ReachStats
-                        { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
-                        , mean = FlownMean $ MkQuantity ysMean
-                        , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
-                        }
-            | (xs', _) <- rss
-            ]
+    let mkReachStats xs' = do
+            xs <- Just $ fromMaybe (TaskDistance zero) <$> xs'
+            let ys = V.fromList $ unTaskDistanceAsKm <$> xs
+            let (ysMean, ysVar) = Stats.meanVariance ys
+            return $
+                ReachStats
+                    { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
+                    , mean = FlownMean $ MkQuantity ysMean
+                    , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
+                    }
 
-    let rs :: [Maybe ReachStats] =
-            [ do
-                xs <- Just $ fromMaybe (TaskDistance zero) <$> xs'
-                let ys = V.fromList $ unTaskDistanceAsKm <$> xs
-                let (ysMean, ysVar) = Stats.meanVariance ys
-                return $
-                    ReachStats
-                        { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
-                        , mean = FlownMean $ MkQuantity ysMean
-                        , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
-                        }
-            | (_, xs') <- rss
-            ]
+    let es :: [Maybe ReachStats] = [ mkReachStats xs' | (xs', _) <- rss ]
+    let rs :: [Maybe ReachStats] = [ mkReachStats xs' | (_, xs') <- rss ]
 
     gvs <- runX $ doc >>> getValidity ng nl nd md nt
     let vws :: [Either String (Maybe _, Maybe _, Maybe _, Maybe _, Maybe _)] =
