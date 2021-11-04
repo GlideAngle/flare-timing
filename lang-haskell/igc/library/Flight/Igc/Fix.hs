@@ -183,9 +183,9 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
         minute' = fromIntegral minute
         sec' = fromIntegral sec
         utc =
-            (fromInteger $ 60 * ((60 * hr') + minute') + sec')
+            fromInteger $ 60 * ((60 * hr') + minute') + sec'
             `addUTCTime`
-            (UTCTime (fromGregorian y mm dd) 0)
+            UTCTime (fromGregorian y mm dd) 0
 
 -- TODO: Why are Scott's tracklog and Jason's tracklog not sorted when marked
 -- for time or ticks?

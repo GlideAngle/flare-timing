@@ -176,8 +176,7 @@ instance Show IgcRecord where
          , show altB
          , "(" ++ show altG ++ ")"
          ]
-    show (HFDTEDATE {ymd, nth = Nth n}) =
-        concat [show ymd, ", ", n]
+    show HFDTEDATE{ymd, nth = Nth n} = concat [show ymd, ", ", n]
     show (HFDTE ymd) = show ymd
     show G = "G"
     show Ignore = "?"
@@ -232,7 +231,7 @@ instance Arbitrary IgcRecord where
                      lat <- arbitrary
                      lng <- arbitrary
                      altBaro <- AltBaro . Altitude <$> arbitrary
-                     altGps <- (fmap $ AltGps . Altitude) <$> arbitrary
+                     altGps <- fmap (AltGps . Altitude) <$> arbitrary
                      return $ B hms (lat, lng, altBaro, altGps)
 
             d1 = do

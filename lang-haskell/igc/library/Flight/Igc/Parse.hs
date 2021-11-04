@@ -306,7 +306,7 @@ notNewLine = satisfy (\x -> x /= '\r' && x /= '\n')
 parse
    :: ByteString -- ^ A string to parse
    -> Either String [IgcRecord]
-parse s = P.parseOnly igcFile s
+parse = P.parseOnly igcFile
 
 parseFromFile
     :: FilePath -- ^ An IGC file to parse.
