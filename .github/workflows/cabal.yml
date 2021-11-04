@@ -69,8 +69,12 @@ jobs:
     # - name: detour-via-sci:doctest
     #   run: cabal test detour-via-sci:doctest --test-show-details=direct --test-option="--color=always"
 
-    # - name: detour-via-uom
-    #   run: cabal test detour-via-uom --test-show-details=direct --test-option="--color=always"
+    - name: detour-via-uom:hlint
+      run: cabal test detour-via-uom:hlint --test-show-details=direct --test-option="--color=always"
+
+    # compile error, Not in scope: 'u'
+    # - name: detour-via-uom:doctest
+    #   run: cabal test detour-via-uom:doctest --test-show-details=direct --test-option="--color=always"
 
     # 7 hints
     # - name: flight-earth:hlint
