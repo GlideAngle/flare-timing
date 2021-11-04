@@ -189,9 +189,8 @@ jobs:
     - name: flight-gap-weight:weight
       run: stack test flight-gap-weight:weight --no-terminal --test-arguments "--color=always"
 
-    # 8 hints
-    # - name: flight-igc:hlint
-    #  run: stack test flight-igc:hlint --no-terminal --test-arguments "--color=always"
+    - name: flight-igc:hlint
+      run: stack test flight-igc:hlint --no-terminal --test-arguments "--color=always"
 
  #flight-igc > test (suite: doctest, args: --color=always)
  #

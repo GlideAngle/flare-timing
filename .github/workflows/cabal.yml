@@ -190,9 +190,8 @@ jobs:
     - name: flight-gap-weight:weight
       run: cabal test flight-gap-weight:weight --test-show-details=direct --test-option="--color=always"
 
-    # 8 hints
-    # - name: flight-igc:hlint
-    #  run: cabal test flight-igc:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-igc:hlint
+      run: cabal test flight-igc:hlint --test-show-details=direct --test-option="--color=always"
 
 # Test suite doctest: RUNNING...
 ### Failure in library/Flight/Igc/Fix.hs:308: expression `(markJason : _, (fixesJason, _)) = let (Right xs) = parse $(embedStr (readFile fileJason)) in (partition isFix <$> partition isMark xs)'
