@@ -251,6 +251,8 @@ in  let defs =
                                 , "test-suite/geodesy"
                                 , "test-suite-zones"
                                 ]
+                            , buildable =
+                                False
                             }
                         , cylinder =
                             { dependencies =
@@ -272,6 +274,8 @@ in  let defs =
                                 , "test-suite/cylinder"
                                 , "test-suite-cylinder"
                                 ]
+                            , buildable =
+                                False
                             }
                         , cylinder-r =
                             { dependencies =
@@ -293,6 +297,8 @@ in  let defs =
                                 , "test-suite/cylinder"
                                 , "test-suite-cylinder-r"
                                 ]
+                            , buildable =
+                                False
                             }
                         }
                   }

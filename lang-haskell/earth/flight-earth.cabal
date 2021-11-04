@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 491f56fa8cc204440f218dd000cf20de835c238842fc7d8159d7be14d89835f8
+-- hash: 50a0d6b0227c75b91340f908f80e2f725cdf2bf657cde14e3d309c72f9f0c6a9
 
 name:           flight-earth
 version:        0.1.0
@@ -235,6 +235,7 @@ test-suite cylinder
     , tasty-smallcheck
     , text
     , uom-plugin
+  buildable: False
   default-language: Haskell2010
 
 test-suite cylinder-r
@@ -336,6 +337,7 @@ test-suite cylinder-r
     , tasty-smallcheck
     , text
     , uom-plugin
+  buildable: False
   default-language: Haskell2010
 
 test-suite doctest
@@ -1463,4 +1465,5 @@ test-suite zones
     , tasty-hunit
     , text
     , uom-plugin
+  buildable: False
   default-language: Haskell2010
