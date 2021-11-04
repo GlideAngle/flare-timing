@@ -11,18 +11,18 @@ in    ./../defaults.dhall
           "Builds the packages making up flare-timing."
       , category =
           "Data, Parsing"
+      , dependencies =
+          [ "base"
+          , "shake"
+          , "ansi-terminal"
+          , "dhall"
+          , "raw-strings-qq"
+          , "text"
+          , "time"
+          ]
       , executables =
           { ft-build =
-              { dependencies =
-                  [ "base"
-                  , "ansi-terminal"
-                  , "dhall"
-                  , "shake"
-                  , "raw-strings-qq"
-                  , "text"
-                  , "time"
-                  ]
-              , ghc-options =
+              { ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
                   "Main.hs"
