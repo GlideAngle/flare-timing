@@ -128,8 +128,11 @@ jobs:
     - name: flight-gap-valid:valid
       run: cabal test flight-gap-valid:valid --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-weight
-      run: cabal test flight-gap-weight --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-weight:hlint
+      run: cabal test flight-gap-weight:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-weight:weight
+      run: cabal test flight-gap-weight:weight --test-show-details=direct --test-option="--color=always"
 
     # 8 hints
     # - name: flight-igc:hlint

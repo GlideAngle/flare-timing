@@ -135,8 +135,11 @@ jobs:
     - name: flight-gap-valid:valid
       run: stack test flight-gap-valid:valid --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-weight
-      run: stack test flight-gap-weight --no-terminal --test-arguments "--color=always"
+    - name: flight-gap-weight:hlint
+      run: stack test flight-gap-weight:hlint --no-terminal --test-arguments "--color=always"
+
+    - name: flight-gap-weight:weight
+      run: stack test flight-gap-weight:weight --no-terminal --test-arguments "--color=always"
 
     # 8 hints
     # - name: flight-igc:hlint
