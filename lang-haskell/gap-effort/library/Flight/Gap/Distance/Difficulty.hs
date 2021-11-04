@@ -9,7 +9,8 @@ module Flight.Gap.Distance.Difficulty
 
 import Data.Ratio ((%))
 import Data.Maybe (catMaybes)
-import Data.List (sort, sortOn, nub)
+import Data.Ord(Down(Down))
+import Data.List (sortOn, nub)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure ((+:), u, convert)
@@ -17,10 +18,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 
 import Flight.Units ()
-import "flight-gap-allot" Flight.Score (PilotDistance(..))
-import "flight-gap-allot" Flight.Score (FlownMax(..))
-import "flight-gap-allot" Flight.Score (Pilot)
-import "flight-gap-allot" Flight.Score (DifficultyFraction(..))
+import "flight-gap-allot" Flight.Score
+    ( PilotDistance(..), FlownMax(..), Pilot, DifficultyFraction(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 import Flight.Gap.Distance.Chunk
     ( IxChunk(..)
@@ -185,7 +184,7 @@ gradeDifficulty best@(FlownMax (MkQuantity bd)) pilots landings =
         lookaheadMap = toInteger <$> Map.fromList listOfAll
 
         sumOfDiff :: Integer
-        sumOfDiff = toInteger . sum . take 1 . reverse . sort $ snd <$> listOfDiffs
+        sumOfDiff = toInteger . sum . take 1 . sortOn Down $ snd <$> listOfDiffs
 
         relativeDiffMap :: Map.Map IxChunk Double
         relativeDiffMap = (\d -> fromRational $ d % (2 * sumOfDiff)) <$> lookaheadMap

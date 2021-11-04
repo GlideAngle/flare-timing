@@ -146,9 +146,8 @@ jobs:
     # - name: flight-gap-allot:doctest
     #   run: stack test flight-gap-allot:doctest --no-terminal --test-arguments "--color=always"
 
-    # 11 hints
-    # - name: flight-gap-effort:hlint
-    #   run: stack test flight-gap-effort:hlint --no-terminal --test-arguments "--color=always"
+    - name: flight-gap-effort:hlint
+      run: stack test flight-gap-effort:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-effort:doctest
       run: stack test flight-gap-effort:doctest --no-terminal --test-arguments "--color=always"

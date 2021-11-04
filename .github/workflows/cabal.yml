@@ -147,9 +147,8 @@ jobs:
     # - name: flight-gap-allot:doctest
     #   run: cabal test flight-gap-allot:doctest --test-show-details=direct --test-option="--color=always"
 
-    # 11 hints
-    # - name: flight-gap-effort:hlint
-    #   run: cabal test flight-gap-effort:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-effort:hlint
+      run: cabal test flight-gap-effort:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-effort:doctest
       run: cabal test flight-gap-effort:doctest --test-show-details=direct --test-option="--color=always"
