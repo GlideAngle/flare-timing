@@ -5,7 +5,7 @@ module Flight.Fsdb.TaskScore (parseAltScores) where
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
-import Data.Maybe (catMaybes)
+import Data.Maybe (fromMaybe, catMaybes)
 import Data.List (unzip5)
 import qualified Data.Map.Strict as Map (fromList, lookup, union)
 import qualified Data.Vector as V (fromList)
@@ -629,11 +629,11 @@ getValidity
 getValidity ng nl nd md nt =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> (maybeScored getTaskValidity)
-    &&& (maybeScored getLaunchValidityWorking)
-    &&& (maybeScored getTimeValidityWorking)
-    &&& (maybeScored getDistanceValidityWorking)
-    &&& (maybeScored getStopValidityWorking)
+    >>> maybeScored getTaskValidity
+    &&& maybeScored getLaunchValidityWorking
+    &&& maybeScored getTimeValidityWorking
+    &&& maybeScored getDistanceValidityWorking
+    &&& maybeScored getStopValidityWorking
     >>> arr (\(tv, (lw, (tw, (dw, sw)))) -> do
             tv' <- tv
             lw' <- lw
@@ -709,7 +709,7 @@ parseAltScores
 
     let es :: [Maybe ReachStats] =
             [ do
-                xs <- Just $ maybe (TaskDistance zero) id <$> xs'
+                xs <- Just $ fromMaybe (TaskDistance zero) <$> xs'
                 let ys = V.fromList $ unTaskDistanceAsKm <$> xs
                 let (ysMean, ysVar) = Stats.meanVariance ys
                 return $
@@ -723,7 +723,7 @@ parseAltScores
 
     let rs :: [Maybe ReachStats] =
             [ do
-                xs <- Just $ maybe (TaskDistance zero) id <$> xs'
+                xs <- Just $ fromMaybe (TaskDistance zero) <$> xs'
                 let ys = V.fromList $ unTaskDistanceAsKm <$> xs
                 let (ysMean, ysVar) = Stats.meanVariance ys
                 return $
