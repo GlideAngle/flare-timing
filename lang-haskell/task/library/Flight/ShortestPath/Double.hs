@@ -100,13 +100,13 @@ instance RealFloat a => GeoPath Double a where
                     -- point.
                     (dist, zs') =
                         case reverse xs of
-                            ((Line Nothing _ _) : _) ->
+                            (Line Nothing _ _ : _) ->
                                 error "Need a line with azimuth or normal set."
                             (xN@(Line (Just _) _ _) : _) ->
                                 let zPts = Point . point <$> zs in
                                 case (zPts, reverse zPts) of
                                     (v : _, _ : ws@(w : _)) ->
-                                        let vs = v : (reverse (w : xN : ws))
+                                        let vs = v : reverse (w : xN : ws)
                                             (_, ys') = f $ pad vs
                                         in
                                             g . snd . g $ ys'

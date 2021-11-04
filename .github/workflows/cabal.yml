@@ -186,8 +186,12 @@ jobs:
     - name: flight-span:hlint
       run: cabal test flight-span:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-task
-    #   run: cabal test flight-task --test-show-details=direct --test-option="--color=always"
+    - name: flight-task:hlint
+      run: cabal test flight-task:hlint --test-show-details=direct --test-option="--color=always"
+
+    # compile errors
+    # - name: flight-task:task
+    #   run: cabal test flight-task:task --test-show-details=direct --test-option="--color=always"
 
     - name: flight-time:hlint
       run: cabal test flight-time:hlint --test-show-details=direct --test-option="--color=always"
