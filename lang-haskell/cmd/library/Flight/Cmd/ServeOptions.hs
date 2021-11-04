@@ -19,7 +19,7 @@ import System.Console.CmdArgs.Implicit
 import Flight.Cmd.Options (ProgramName(..), Description(..), Extension(..))
 
 -- | Options passed in on the command line.
-data CmdServeOptions
+newtype CmdServeOptions
     = CmdServeOptions
         { file :: FilePath
         -- ^ Picking the competition in this file.

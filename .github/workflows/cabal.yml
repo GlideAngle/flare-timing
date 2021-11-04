@@ -203,8 +203,13 @@ jobs:
     - name: flight-lookup:hlint
       run: cabal test flight-lookup:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-mask
-    #   run: cabal test flight-mask --test-show-details=direct --test-option="--color=always"
+    # 25 hints
+    # - name: flight-mask:hlint
+    #   run: cabal test flight-mask:hlint --test-show-details=direct --test-option="--color=always"
+
+    # 1 failure, ‘tasks’ is not a (visible) field of constructor ‘CompSettings’
+    # - name: flight-mask:doctest
+    #   run: cabal test flight-mask:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-route
       run: cabal test flight-route --test-show-details=direct --test-option="--color=always"

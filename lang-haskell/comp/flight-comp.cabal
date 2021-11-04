@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7d3a7cdb0326d2fabf3b234488874136cbe2626fbd2a45ba20f5857b522880ca
+-- hash: bb16442a69a8ceccc93a3f5e614bd960dbf8362746d127e94ba6fd09420730ab
 
 name:           flight-comp
 version:        0.1.0
@@ -345,6 +345,113 @@ test-suite doctest
     , flight-route
     , flight-units
     , flight-zone
+    , microlens
+    , mtl
+    , newtype
+    , path
+    , scientific
+    , siggy-chardust
+    , split
+    , text
+    , time
+    , unordered-containers
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Comp
+      Flight.Path
+      Flight.Path.Find
+      Flight.Path.Tx
+      Flight.Path.Types
+      Flight.Pilot
+      Flight.Track.Arrival
+      Flight.Track.Cross
+      Flight.Track.Curry
+      Flight.Track.Distance
+      Flight.Track.Land
+      Flight.Track.Lead
+      Flight.Track.Mask
+      Flight.Track.Mask.Arrival
+      Flight.Track.Mask.Cmp
+      Flight.Track.Mask.Effort
+      Flight.Track.Mask.Lead
+      Flight.Track.Mask.Reach
+      Flight.Track.Mask.Speed
+      Flight.Track.Place
+      Flight.Track.Point
+      Flight.Track.Speed
+      Flight.Track.Stop
+      Flight.Track.Tag
+      Flight.Track.Time
+      Paths_flight_comp
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DeriveAnyClass
+      DerivingStrategies
+      DisambiguateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      GADTs
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      PackageImports
+      ParallelListComp
+      PartialTypeSignatures
+      PatternSynonyms
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      TypeSynonymInstances
+      TupleSections
+      UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , cassava
+    , containers
+    , deepseq
+    , detour-via-sci
+    , detour-via-uom
+    , directory
+    , facts
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-earth
+    , flight-gap-allot
+    , flight-gap-effort
+    , flight-gap-lead
+    , flight-gap-math
+    , flight-gap-stop
+    , flight-gap-valid
+    , flight-gap-weight
+    , flight-latlng
+    , flight-route
+    , flight-units
+    , flight-zone
+    , hlint
     , microlens
     , mtl
     , newtype
