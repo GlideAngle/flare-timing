@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 52f07aa4d51021079953f810cef248200eee9a956c35f190b7f50d2164736208
+-- hash: 3851a986b1905dacd911875647d4f5721a5172d18591ce92e4bc78a399d78718
 
 name:           ft-build
 version:        0.1.0
@@ -60,4 +60,27 @@ executable ft-build
     , shake
     , text
     , time
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Cmd
+      Doc
+      Nix
+      Pkg
+      Snack
+      Target
+      Web
+      Paths_ft_build
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      PackageImports
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , hlint
   default-language: Haskell2010
