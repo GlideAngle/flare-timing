@@ -89,8 +89,12 @@ jobs:
     - name: flight-fsdb:doctest
       run: stack test flight-fsdb:doctest --no-terminal --test-arguments "--color=always"
 
-    # - name: flight-gap-allot
-    #   run: stack test flight-gap-allot --no-terminal --test-arguments "--color=always"
+    - name: flight-gap-allot:hlint
+      run: stack test flight-gap-allot:hlint --no-terminal --test-arguments "--color=always"
+
+    # 5 failures
+    # - name: flight-gap-allot:doctest
+    #   run: stack test flight-gap-allot:doctest --no-terminal --test-arguments "--color=always"
 
     # 11 hints
     # - name: flight-gap-effort:hlint

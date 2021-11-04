@@ -94,7 +94,7 @@ arrivalRankFraction (PilotsAtEss n) (ArrivalPlacingEqual rankEqual count)
         + (633 % 1000) * ac * ac * ac
         where
             m = fromIntegral count
-            rank = (sum $ take m (repeat rankEqual) ++ take m [0..]) % count
+            rank = sum (replicate m rankEqual ++ take m [0..]) % count
             ac = (1 % 1) - ((rank - 1 % 1) * (1 % n))
 
 arrivalTimeFraction

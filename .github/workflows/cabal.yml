@@ -82,8 +82,12 @@ jobs:
     - name: flight-fsdb:doctest
       run: cabal test flight-fsdb:doctest --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-gap-allot
-    #   run: cabal test flight-gap-allot --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-allot:hlint
+      run: cabal test flight-gap-allot:hlint --test-show-details=direct --test-option="--color=always"
+
+    # 5 failures
+    # - name: flight-gap-allot:doctest
+    #   run: cabal test flight-gap-allot:doctest --test-show-details=direct --test-option="--color=always"
 
     # 11 hints
     # - name: flight-gap-effort:hlint
