@@ -188,7 +188,7 @@ pgUnits = testGroup "PG Points"
                 egPgPenalty
                 idSeq
                 nullSeqs
-                ptsAllOn
+                ptsAllOne
                 @?=
                     Right essNoGoalPg
 
