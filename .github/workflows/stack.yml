@@ -86,9 +86,9 @@ jobs:
     - name: tasty-compare:hlint
       run: stack test tasty-compare:hlint --no-terminal --test-arguments "--color=always"
 
-    # 7 hints
-    # - name: flight-earth:hlint
-    #   run: stack test flight-earth:hlint --no-terminal --test-arguments "--color=always"
+    # 2 reduce duplication hints
+    - name: flight-earth:hlint
+      run: stack test flight-earth:hlint --no-terminal --test-arguments "--color=always"
 
     # on github runner: Examples: 247  Tried: 212  Errors: 0  Failures: 4
     # on mac locally: Examples: 247  Tried: 247  Errors: 0  Failures: 0

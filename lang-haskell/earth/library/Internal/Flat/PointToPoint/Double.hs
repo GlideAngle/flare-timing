@@ -4,7 +4,7 @@ module Internal.Flat.PointToPoint.Double
     , azimuthRev
     ) where
 
-import Data.Maybe (fromMaybe)
+import Data.Maybe (maybe)
 import Flight.LatLng (AzimuthFwd, AzimuthRev)
 import Flight.Zone (Zone(..))
 import Flight.Distance (PathDistance(..), SpanLatLng)
@@ -16,7 +16,7 @@ import qualified Internal.Sphere.PointToPoint.Double as H (distance)
 distance :: (Real a, Floating a) => SpanLatLng a
 distance x y =
     -- NOTE: Fallback on haversines on the sphere outside the range of the UTM projection.
-    fromMaybe (H.distance x y) $ edgesSum <$> costEastNorth (Point x) (Point y)
+    maybe (H.distance x y) edgesSum (costEastNorth (Point x) (Point y))
 
 azimuthFwd :: (Real a, Fractional a) => AzimuthFwd a
 azimuthFwd x y =

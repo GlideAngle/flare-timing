@@ -249,7 +249,7 @@ directUnchecked
                 cosU1cosσcosα1 = cosU1 * cosσ * cosα1
             in
                 (   sinU1sinσ  - cosU1cosσcosα1
-                , -(sinU1sinσ) + cosU1cosσcosα1
+                , -sinU1sinσ + cosU1cosσcosα1
                 )
 
 
