@@ -22,7 +22,7 @@ import qualified Data.Map.Merge.Strict as Map
 import Data.List (partition)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
-import Control.Monad (mapM_, join)
+import Control.Monad (mapM_)
 import Control.Monad.Zip (mzip)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
