@@ -36,7 +36,7 @@ import Data.Refined
     , checkProp, assumeProp, refined, unrefined
     )
 import Data.Foldable (asum)
-import Data.Maybe (listToMaybe, isJust)
+import Data.Maybe (fromMaybe, listToMaybe, isJust)
 import Data.List (sort)
 import GHC.Generics (Generic)
 import Data.Aeson
@@ -72,14 +72,16 @@ instance FromJSON (Refined '[GE 0] Int) where
 -- NOTE: Reset points are the final points awarded and so can be ints.
 
 -- | Paragliders starting early are scored from launch to start.
-data LaunchToStartPoints = LaunchToStartPoints PosInt
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+newtype LaunchToStartPoints = LaunchToStartPoints PosInt
+    deriving stock (Eq, Ord, Show, Generic)
+    deriving newtype (ToJSON, FromJSON)
 
 -- | Hang glider pilots starting too early are scored for minimum distance.  If
 -- they jump the gun then application of the penalty won't reduce their score
 -- below minimum distance points either.
-data TooEarlyPoints = TooEarlyPoints PosInt
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+newtype TooEarlyPoints = TooEarlyPoints PosInt
+    deriving stock (Eq, Ord, Show, Generic)
+    deriving newtype (ToJSON, FromJSON)
 
 data Add
 data Mul
@@ -200,7 +202,7 @@ instance Num (PointPenalty Reset) where
 
 instance ToJSON CReal where
     toJSON 0 = toJSON (0 :: Double)
-    toJSON x = toJSON ((realToFrac x) :: Double)
+    toJSON x = toJSON (realToFrac x :: Double)
 
 instance FromJSON CReal where
     parseJSON o = do
@@ -619,7 +621,7 @@ effectiveAdd = sum
 -- (= 1)
 effectiveReset :: [PointPenalty Reset] -> PointPenalty Reset
 effectiveReset =
-    maybe (PenaltyReset Nothing) id
+    fromMaybe (PenaltyReset Nothing)
     . listToMaybe
     . take 1
     . sort

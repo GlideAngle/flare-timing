@@ -160,9 +160,9 @@ jobs:
     - name: flight-gap-lead:lead
       run: stack test flight-gap-lead:lead --no-terminal --test-arguments "--color=always"
 
-    # 60 hints
-    # - name: flight-gap-math:hlint
-    #  run: stack test flight-gap-math:hlint --no-terminal --test-arguments "--color=always"
+    # 4 reduce duplication hints
+    - name: flight-gap-math:hlint
+      run: stack test flight-gap-math:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-math:doctest
       run: stack test flight-gap-math:doctest --no-terminal --test-arguments "--color=always"

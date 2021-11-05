@@ -161,9 +161,9 @@ jobs:
     - name: flight-gap-lead:lead
       run: cabal test flight-gap-lead:lead --test-show-details=direct --test-option="--color=always"
 
-    # 60 hints
-    # - name: flight-gap-math:hlint
-    #  run: cabal test flight-gap-math:hlint --test-show-details=direct --test-option="--color=always"
+    # 4 reduce duplication hints
+    - name: flight-gap-math:hlint
+      run: cabal test flight-gap-math:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-math:doctest
       run: cabal test flight-gap-math:doctest --test-show-details=direct --test-option="--color=always"

@@ -183,7 +183,7 @@ instance QC.Arbitrary (PtTest Hg) where
             QC.oneof
                 [ addSeq <$> arbitrary
                 , mulSeq <$> arbitrary
-                , (\x -> resetSeq $ ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
+                , (\x -> resetSeq ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
                 ]
 
         let genOthers = do
@@ -194,7 +194,7 @@ instance QC.Arbitrary (PtTest Hg) where
                     PenaltySeqs
                         (mkMul <$> muls)
                         (mkAdd <$> adds)
-                        ((mkReset . fmap (\(QC.Positive y) -> y)) <$> resets)
+                        (mkReset . fmap (\(QC.Positive y) -> y) <$> resets)
 
         others <- genOthers
 
@@ -217,7 +217,7 @@ instance QC.Arbitrary (PtTest Pg) where
             QC.oneof
                 [ addSeq <$> arbitrary
                 , mulSeq <$> arbitrary
-                , (\x -> resetSeq $ ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
+                , (\x -> resetSeq ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
                 ]
 
         let genOthers = do
@@ -228,7 +228,7 @@ instance QC.Arbitrary (PtTest Pg) where
                     PenaltySeqs
                         (mkMul <$> muls)
                         (mkAdd <$> adds)
-                        ((mkReset . fmap (\(QC.Positive y) -> y)) <$> resets)
+                        (mkReset . fmap (\(QC.Positive y) -> y) <$> resets)
 
         others <- genOthers
 

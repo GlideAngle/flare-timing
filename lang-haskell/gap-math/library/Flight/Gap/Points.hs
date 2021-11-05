@@ -158,6 +158,7 @@ data ReconcilePointErrors
     | WAT_Jumped_Seconds_Per_Point (SitRep Hg)
     | EQ_Jumped_Point (SitRep Hg, PointPenalty Add)
     deriving Eq
+{-# ANN module ("HLint: ignore Use camelCase" :: String) #-}
 
 instance Show ReconcilePointErrors where
     show (EQ_JumpedTooEarly_Reset e) =
@@ -283,12 +284,12 @@ reconcileJumped p@(JumpedNoGoal _ spp jtg) eg j@((==) idSeq -> True) ps points =
     reconcileJumped p eg j{add = mkAdd . negate $ jumpTheGunPenalty spp jtg} ps points
 
 reconcileJumped p@(Jumped _ spp jtg) _ (seqOnlyAdds -> Just j) ps points =
-    if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
+    if negate (jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
 
 reconcileJumped p@(JumpedNoGoal _ spp jtg) _ (seqOnlyAdds -> Just j) ps points =
-    if (negate $ jumpTheGunPenalty spp jtg) /= exAdd j then
+    if negate (jumpTheGunPenalty spp jtg) /= exAdd j then
         Left $ EQ_Jumped_Point (p, j)
     else _reconcileJumped p (exAdd j) ps points
 
