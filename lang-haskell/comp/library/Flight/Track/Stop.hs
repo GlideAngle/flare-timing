@@ -186,7 +186,7 @@ effectiveTagging
         ]
 
 endOfScored :: Maybe TrackScoredSection -> Maybe UTCTime
-endOfScored = join . fmap (fmap snd . scoredTimes)
+endOfScored = ((fmap snd . scoredTimes) =<<)
 
 -- | Find the last crossing of the start of an elapsed time task.
 tardyElapsed :: SpeedSection -> ZonesLastTag -> Maybe LastStart
@@ -213,20 +213,20 @@ tardyGate gs ss ts _ = do
 stopClipByDuration :: Seconds -> FlyingSection UTCTime -> FlyingSection UTCTime
 stopClipByDuration (Seconds n) x = do
     (s, e) <- x
-    return (s, min e $ (fromIntegral n) `addUTCTime` s)
+    return (s, min e $ fromIntegral n `addUTCTime` s)
 
 -- | The scoring time window can be limited when a task was stopped. Find the
 -- start gate taken and the scored time window. This is the flying time window
 -- truncated to only so many seconds after the start gate taken.
 stopClipByGate :: Seconds -> [StartGate] -> FlyingSection UTCTime -> (Maybe StartGate, FlyingSection UTCTime)
-stopClipByGate (Seconds n) (sg@(StartGate g) : []) x = unzip $ do
+stopClipByGate (Seconds n) [sg@(StartGate g)] x = unzip $ do
     (s, e) <- x
-    return (sg, (s, min e $ (fromIntegral n) `addUTCTime` g))
+    return (sg, (s, min e $ fromIntegral n `addUTCTime` g))
 stopClipByGate (Seconds n) gs x = unzip $ do
     (s, e) <- x
     gs' <- nonEmpty gs
     let sg@(StartGate g) = snd $ startGateTaken gs' s
-    return (sg, (s, min e $ (fromIntegral n) `addUTCTime` g))
+    return (sg, (s, min e $ fromIntegral n `addUTCTime` g))
 
 instance FieldOrdering TaskFraming where
     fieldOrder _ = cmp

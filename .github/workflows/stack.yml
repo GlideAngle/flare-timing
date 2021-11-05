@@ -56,9 +56,9 @@ jobs:
     - name: flight-cmd:hlint
       run: stack test flight-cmd:hlint --no-terminal --test-arguments "--color=always"
 
-    # 46 hints
-    # - name: flight-comp:hlint
-    #   run: stack test flight-comp:hlint --no-terminal --test-arguments "--color=always"
+    # 2 reduce duplication hints
+    - name: flight-comp:hlint
+      run: stack test flight-comp:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-comp:doctest
       run: stack test flight-comp:doctest --no-terminal --test-arguments "--color=always"

@@ -18,7 +18,7 @@ module Flight.Track.Place
     ) where
 
 import Data.Function (on)
-import Data.List (groupBy, sort, sortBy)
+import Data.List (group, groupBy, sort, sortBy)
 import Data.Time.Clock (UTCTime)
 
 import Flight.Track.Point
@@ -54,20 +54,20 @@ reIndex xs =
         (\i zs o ->
             -- NOTE: Use j so that we get; 1,2=,2=,4 and not 1,3=,3=,4.
             let j = fromIntegral $ length zs - 1
-            in (i + (fromIntegral o) - j, zs))
+            in (i + fromIntegral o - j, zs))
         [1..]
         ys
         offsets
     where
         (_, ys) = unzip xs
-        lens = (\y -> (length y) - 1) <$> ys
+        lens = (\y -> length y - 1) <$> ys
         offsets = scanl1 (+) lens
 
 -- SEE: https://stackoverflow.com/questions/51572782/how-to-create-a-ranking-based-on-a-list-of-scores-in-haskell
 -- SEE: https://stackoverflow.com/questions/15412027/haskell-equivalent-to-scalas-groupby
 rankByTotal :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
 rankByTotal xs =
-    [ (rankScore f ii) <$> y
+    [ rankScore f ii <$> y
     | (ii, ys) <-
                 reIndex
                 . zip [1..]
@@ -79,7 +79,7 @@ rankByTotal xs =
 
 rankByAltTotal :: [(Pilot, AltBreakdown)] -> [(Pilot, AltBreakdown)]
 rankByAltTotal xs =
-    [ (rankAltScore f ii) <$> y
+    [ rankAltScore f ii <$> y
     | (ii, ys) <-
                 reIndex
                 . zip [1..]
@@ -109,7 +109,7 @@ rankByArrival ts =
     | (ii, ys) <-
                 reIndex
                 . zip [1..]
-                . groupBy (==)
+                . group
                 $ sort ts
     , let n = length ys
     , let f =

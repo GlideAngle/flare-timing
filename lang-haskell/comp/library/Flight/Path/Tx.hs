@@ -199,91 +199,91 @@ trimFsdbToComp _ = let DotDirName s d = shape CompInput in CompInputFile $ dotDi
 -- >>> taskToTaskLength (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/task-length.yaml"
 taskToTaskLength :: TaskInputFile -> TaskLengthFile
-taskToTaskLength (TaskInputFile s) = TaskLengthFile $ (takeDirectory s) </> reshape TaskLength s
+taskToTaskLength (TaskInputFile s) = TaskLengthFile $ takeDirectory s </> reshape TaskLength s
 
 -- |
 -- >>> taskToFlyTime (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/fly-time.yaml"
 taskToFlyTime :: TaskInputFile -> FlyTimeFile
-taskToFlyTime (TaskInputFile s) = FlyTimeFile $ (takeDirectory s) </> reshape FlyTime s
+taskToFlyTime (TaskInputFile s) = FlyTimeFile $ takeDirectory s </> reshape FlyTime s
 
 -- |
 -- >>> taskToCrossZone (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/cross-zone.yaml"
 taskToCrossZone :: TaskInputFile -> CrossZoneFile
-taskToCrossZone (TaskInputFile s) = CrossZoneFile $ (takeDirectory s) </> reshape CrossZone s
+taskToCrossZone (TaskInputFile s) = CrossZoneFile $ takeDirectory s </> reshape CrossZone s
 
 -- |
 -- >>> taskToTagZone (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/tag-zone.yaml"
 taskToTagZone :: TaskInputFile -> TagZoneFile
-taskToTagZone (TaskInputFile s) = TagZoneFile $ (takeDirectory s) </> reshape TagZone s
+taskToTagZone (TaskInputFile s) = TagZoneFile $ takeDirectory s </> reshape TagZone s
 
 -- |
 -- >>> taskToPegFrame (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/peg-frame.yaml"
 taskToPegFrame :: TaskInputFile -> PegFrameFile
-taskToPegFrame (TaskInputFile s) = PegFrameFile $ (takeDirectory s) </> reshape PegFrame s
+taskToPegFrame (TaskInputFile s) = PegFrameFile $ takeDirectory s </> reshape PegFrame s
 
 -- |
 -- >>> taskToLeadArea (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/lead-area.yaml"
 taskToLeadArea :: TaskInputFile -> LeadAreaFile
-taskToLeadArea (TaskInputFile s) = LeadAreaFile $ (takeDirectory s) </> reshape LeadArea s
+taskToLeadArea (TaskInputFile s) = LeadAreaFile $ takeDirectory s </> reshape LeadArea s
 
 -- |
 -- >>> taskToMaskArrival (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/mask-arrival.yaml"
 taskToMaskArrival :: TaskInputFile -> MaskArrivalFile
-taskToMaskArrival (TaskInputFile s) = MaskArrivalFile $ (takeDirectory s) </> reshape MaskArrival s
+taskToMaskArrival (TaskInputFile s) = MaskArrivalFile $ takeDirectory s </> reshape MaskArrival s
 
 -- |
 -- >>> taskToMaskEffort (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/mask-effort.yaml"
 taskToMaskEffort :: TaskInputFile -> MaskEffortFile
-taskToMaskEffort (TaskInputFile s) = MaskEffortFile $ (takeDirectory s) </> reshape MaskEffort s
+taskToMaskEffort (TaskInputFile s) = MaskEffortFile $ takeDirectory s </> reshape MaskEffort s
 
 -- |
 -- >>> taskToMaskReach (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/mask-reach.yaml"
 taskToMaskReach :: TaskInputFile -> MaskReachFile
-taskToMaskReach (TaskInputFile s) = MaskReachFile $ (takeDirectory s) </> reshape MaskReach s
+taskToMaskReach (TaskInputFile s) = MaskReachFile $ takeDirectory s </> reshape MaskReach s
 
 -- |
 -- >>> taskToMaskBonus (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/mask-bonus.yaml"
 taskToMaskBonus :: TaskInputFile -> MaskBonusFile
-taskToMaskBonus (TaskInputFile s) = MaskBonusFile $ (takeDirectory s) </> reshape MaskBonus s
+taskToMaskBonus (TaskInputFile s) = MaskBonusFile $ takeDirectory s </> reshape MaskBonus s
 
 -- |
 -- >>> taskToMaskSpeed (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/mask-speed.yaml"
 taskToMaskSpeed :: TaskInputFile -> MaskSpeedFile
-taskToMaskSpeed (TaskInputFile s) = MaskSpeedFile $ (takeDirectory s) </> reshape MaskSpeed s
+taskToMaskSpeed (TaskInputFile s) = MaskSpeedFile $ takeDirectory s </> reshape MaskSpeed s
 
 -- |
 -- >>> taskToMaskLead (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/mask-lead.yaml"
 taskToMaskLead :: TaskInputFile -> MaskLeadFile
-taskToMaskLead (TaskInputFile s) = MaskLeadFile $ (takeDirectory s) </> reshape MaskLead s
+taskToMaskLead (TaskInputFile s) = MaskLeadFile $ takeDirectory s </> reshape MaskLead s
 
 -- |
 -- >>> taskToLandOut (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/land-out.yaml"
 taskToLandOut :: TaskInputFile -> LandOutFile
-taskToLandOut (TaskInputFile s) = LandOutFile $ (takeDirectory s) </> reshape LandOut s
+taskToLandOut (TaskInputFile s) = LandOutFile $ takeDirectory s </> reshape LandOut s
 
 -- |
 -- >>> taskToFarOut (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/far-out.yaml"
 taskToFarOut :: TaskInputFile -> FarOutFile
-taskToFarOut (TaskInputFile s) = FarOutFile $ (takeDirectory s) </> reshape FarOut s
+taskToFarOut (TaskInputFile s) = FarOutFile $ takeDirectory s </> reshape FarOut s
 
 -- |
 -- >>> taskToGapPoint (TaskInputFile ".flare-timing/task-1/task-input.yaml")
 -- ".flare-timing/task-1/gap-point.yaml"
 taskToGapPoint :: TaskInputFile -> GapPointFile
-taskToGapPoint (TaskInputFile s) = GapPointFile $ (takeDirectory s) </> reshape GapPoint s
+taskToGapPoint (TaskInputFile s) = GapPointFile $ takeDirectory s </> reshape GapPoint s
 
 -- |
 -- >>> compToAltArrival AltFs (CompInputFile ".flare-timing/comp-input.yaml")

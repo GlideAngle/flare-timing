@@ -138,7 +138,7 @@ compLeading sumAreas' invert CompLeading{areas = ass} lsTask =
                 ]
 
         css :: [[(Pilot, LeadingCoef (Quantity Double [u| 1 |]))]] =
-                [ (fmap $ LeadingCoef . k . toRational' . unpack . sumAreas') <$> as
+                [ fmap (LeadingCoef . k . toRational' . unpack . sumAreas') <$> as
                 | k <- ks
                 | as <- ass
                 ]

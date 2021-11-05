@@ -29,7 +29,8 @@ module Flight.Track.Tag
 
 import Data.Maybe (listToMaybe, fromMaybe, catMaybes)
 import Data.String (IsString())
-import Data.List (transpose, sortOn, sort)
+import Data.Ord (Down(Down))
+import Data.List (transpose, sortOn)
 import Data.Time.Clock (UTCTime)
 import Control.Monad (join)
 import GHC.Generics (Generic)
@@ -104,14 +105,14 @@ data TrackTime =
 -- | The time of the start given tagging times for a single pilot for each zone.
 starting :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
 starting ss tags =
-    case drop ((maybe 1 fst ss) - 1) tags of
+    case drop (maybe 1 fst ss - 1) tags of
         [] -> Nothing
         t : _ -> t
 
 -- | The time of the last start and pilots starting at that time.
 lastStarting :: SpeedSection -> TrackTime -> (Maybe UTCTime, [Pilot])
 lastStarting ss TrackTime{zonesLast = ZonesLastTag tags, zonesRankTime, zonesRankPilot} =
-    case drop ((maybe 1 fst ss) - 1) (zip3 tags zonesRankTime zonesRankPilot) of
+    case drop (maybe 1 fst ss - 1) (zip3 tags zonesRankTime zonesRankPilot) of
         [] -> (Nothing, [])
         (Nothing, _, _) : _ -> (Nothing, [])
         (Just tag, ts, ps) : _ -> (Just tag, fmap snd . filter ((==) tag . fst) $ zip ts ps)
@@ -134,7 +135,7 @@ timed xs ys =
             case catMaybes ys of
                 [] -> Nothing
                 ts ->
-                    case reverse $ sort ts of
+                    case sortOn Down ts of
                         [] -> Nothing
                         (t : _) -> Just t
 

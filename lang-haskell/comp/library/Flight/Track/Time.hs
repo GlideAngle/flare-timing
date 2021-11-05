@@ -541,7 +541,7 @@ leadingAreas
                 }
             where
                 ys = V.toList xs
-                (landing, lcTrack@LcSeq{seq = lcPoints}) = (toLcTrack toLeg close down arrival ys)
+                (landing, lcTrack@LcSeq{seq = lcPoints}) = toLcTrack toLeg close down arrival ys
 
                 LeadingAreas{areaFlown = LcSeq{seq = areas}} :: LcArea _ =
                     areaSteps
@@ -713,7 +713,7 @@ altBonusTickToTick (GlideRatio gr) (Alt qAltGoal) row@TickRow{alt = RawAlt a, ..
             let d :: Quantity Double [u| km |]
                 d = convert $ diffTogo -: diffAltAsReach
             -- TODO: Stop rounding of togo in altBonus.
-            in (unQuantity $ qAltGoal, fromRational . dpRound 3 . toRational $ unQuantity d)
+            in (unQuantity qAltGoal, fromRational . dpRound 3 . toRational $ unQuantity d)
 
 altBonusTimeToTick :: GlideRatio -> QAlt Double [u| m |] -> TimeToTick
 altBonusTimeToTick (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..} =
@@ -749,7 +749,7 @@ altBonusTimeToTick (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..
             let d :: Quantity Double [u| km |]
                 d = convert $ diffTogo -: diffAltAsReach
             -- TODO: Stop rounding of togo in altBonus.
-            in (unQuantity $ qAltGoal, fromRational . dpRound 3 . toRational $ unQuantity d)
+            in (unQuantity qAltGoal, fromRational . dpRound 3 . toRational $ unQuantity d)
 
 ticksToAreas
     :: AreaSteps (LeadingAreaUnits u)
@@ -782,8 +782,7 @@ timesToKeptTicks timeToTick tickToTick =
     . discardFurther
     . dropZeros
     . V.toList
-    . fmap tickToTick
-    . fmap timeToTick
+    . fmap (tickToTick . timeToTick)
 
 -- | Drop any rows where the distance togo is zero.
 dropZeros :: [TickRow] -> [TickRow]

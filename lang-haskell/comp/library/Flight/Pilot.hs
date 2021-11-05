@@ -43,11 +43,11 @@ dfNoTrackReach (TaskDistance td) DfNoTrackPilot{pilot, awardedReach} =
             ReachToggle
                 { flown =
                     TrackReach
-                        (TaskDistance $ (MkQuantity aF) *: td)
+                        (TaskDistance $ MkQuantity aF *: td)
                         (LinearFraction $ toRational aF)
                 , extra =
                     TrackReach
-                        (TaskDistance $ (MkQuantity aE) *: td)
+                        (TaskDistance $ MkQuantity aE *: td)
                         (LinearFraction $ toRational aE)
                 })
         awardedReach
