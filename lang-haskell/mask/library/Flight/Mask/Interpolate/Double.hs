@@ -37,7 +37,7 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
         -> TaskZone Double
         -> LatLng Double [u| rad |]
         -> LatLng Double [u| rad |]
-        -> Zs ([LatLng Double [u| rad |]])
+        -> Zs [LatLng Double [u| rad |]]
 
     interpolate e sp (SharpZone z) x y =
         vertices <$> ee
@@ -76,7 +76,7 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
     fractionate
         :: Trig Double a
         => Earth Double
-        -> Zs ([LatLng Double [u| rad |]])
+        -> Zs [LatLng Double [u| rad |]]
         -> Maybe (LatLng Double [u| rad |], Double)
     fractionate e (Zs [x, xy, y]) =
         Just (xy, realToFrac $ d0 / d1)
@@ -116,7 +116,7 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
             let MkQuantity xLat' = convert xLat :: Quantity _ [u| deg |]
             let MkQuantity xLng' = convert xLng :: Quantity _ [u| deg |]
             let secs :: NominalDiffTime = t1 `diffUTCTime` t0
-            let secs' :: NominalDiffTime = secs * (realToFrac frac)
+            let secs' :: NominalDiffTime = secs * realToFrac frac
 
             return
                 InterpolatedFix

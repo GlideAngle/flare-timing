@@ -33,7 +33,7 @@ settingsLogs files@(compFile, _) tasks selectPilots = do
     let ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
     let fs = Log.makeAbsolute dir <$> taskFolders
     let zs = zipWith (<$>) fs ys
-    return (uncurry mkCompTaskSettings $ settings, zs)
+    return (uncurry mkCompTaskSettings settings, zs)
 
 checkTracks
     :: (NFData a, MonadThrow m, MonadIO m)

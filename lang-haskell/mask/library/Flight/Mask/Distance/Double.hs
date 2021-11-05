@@ -185,8 +185,7 @@ instance GeoSliver Double a => GeoDash Double a where
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> Maybe (QTaskDistance Double [u| m |])
-    togoAtLanding e give sp ticked task xs =
-        dashDistanceToGoal @Double @Double e give sp ticked task xs
+    togoAtLanding = dashDistanceToGoal @Double @Double
 
     madeAtLanding
         :: Trig Double a
@@ -198,5 +197,4 @@ instance GeoSliver Double a => GeoDash Double a where
         -> Task k
         -> FlyCut UTCTime MarkedFixes
         -> Maybe (QTaskDistance Double [u| m |])
-    madeAtLanding e give sp dTaskF ticked task xs =
-        dashDistanceFlown @Double @Double e give sp dTaskF ticked task xs
+    madeAtLanding = dashDistanceFlown @Double @Double

@@ -7,7 +7,6 @@ import Data.Coerce (coerce)
 import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
 import Data.List ((\\), filter, inits, foldl')
 import Control.Arrow (first)
-import Control.Monad (join)
 
 import Flight.Clip (FlyingSection)
 import Flight.Units ()
@@ -24,7 +23,6 @@ import Flight.Geodesy (clearlySeparatedZones)
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..), GeoZones(..))
 
 import Flight.Span.Sliver (GeoSliver(..))
-import Flight.Mask.Tag (GeoTag(..))
 import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
     ( MadeZones(..)
@@ -51,7 +49,7 @@ import Flight.Mask.Internal.Cross
     , reindex
     )
 import Flight.Mask.Interpolate (GeoTagInterpolate(..))
-import Flight.Mask.Tag (FnTask, selectZoneCross)
+import Flight.Mask.Tag (GeoTag(..), FnTask, selectZoneCross)
 import Flight.Mask.Tag.Prove (keepCrossing, prove, proveCrossing)
 import Flight.Mask.Tag.Motion (flyingSection, secondsRange, timeRange)
 
@@ -258,7 +256,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
                 case sliceZones speedSection $ coerce nominees of
                     (_ : ns : _) ->
                         let ns' = catMaybes ns in if null ns' then const True else
-                        \x -> all ((<) x) ns'
+                        \x -> all (x <) ns'
                     _ -> const True
 
             dedupStarts' = (fmap . fmap) (filter beforeNextZoneCrossing) dedupStarts
@@ -282,14 +280,14 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
 
                 case crossingPair of
                     [Fix{fix = i}, Fix{fix = j}] ->
-                        let start = [crossing ((ZoneIdx i), (ZoneIdx j))]
+                        let start = [crossing (ZoneIdx i, ZoneIdx j)]
                         in Just $ restartZones speedSection start xss'
 
                     _ ->
                         Nothing
 
             yss :: [[OrdCrossing]]
-            yss = ((fmap . fmap) OrdCrossing xss'')
+            yss = (fmap . fmap) OrdCrossing xss''
 
             yss' :: [[Crossing]]
             yss' = (fmap . fmap) unOrdCrossing yss
@@ -353,7 +351,7 @@ instance GeoTagInterpolate Double a => GeoTag Double a where
         -> [Maybe ZoneCross]
         -> [Maybe ZoneTag]
     tagZones e sp zs cs =
-        [ join $ g z <$> c
+        [ (g z =<< c)
         | z <- zs
         | c <- cs
         ]
