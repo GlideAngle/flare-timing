@@ -14,7 +14,7 @@ import System.Console.CmdArgs.Implicit
     )
 
 -- | Options passed in on the command line.
-data IgcOptions
+newtype IgcOptions
     = IgcOptions
         { file :: FilePath
         -- ^ Picking the competition in this file.

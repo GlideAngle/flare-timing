@@ -91,12 +91,12 @@ go CmdBatchOptions{math, task, pilot} compFile = do
         (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frames."
         (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
         (Just (taskFiles, settings@(cs, _)), Just tg, Just stp, Just _) -> do
-            let iTasks = (IxTask <$> task)
-            let ps = (pilotNamed cs $ PilotName <$> pilot)
+            let iTasks = IxTask <$> task
+            let ps = pilotNamed cs $ PilotName <$> pilot
             let tagging' = Just $ effectiveTagging tg stp
 
             writeMask
-                (uncurry mkCompTaskSettings $ settings)
+                (uncurry mkCompTaskSettings settings)
                 lookupTaskLength
                 math
                 scoredLookup

@@ -126,7 +126,7 @@ go CmdBatchOptions{..} compFile = do
         (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
         (Just (taskFiles, settings@(cs, _)), Just tg, Just sp, Just _) ->
             filterTime
-                (uncurry mkCompTaskSettings $ settings)
+                (uncurry mkCompTaskSettings settings)
                 (routeLength taskRoute taskRouteSpeedSubset stopRoute startRoute routes)
                 (tagTaskLeading . Just $ effectiveTagging tg sp)
                 (compFile, taskFiles)
@@ -249,9 +249,9 @@ lc1 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
 
     _ <- writeCompLeadingAreas compFile iTasks ass
 
-    let ass' :: [[(Pilot, (LeadingAreas (LeadingArea LeadingArea1Units) (LeadingArea LeadingArea1Units)))]] =
+    let ass' :: [[(Pilot, LeadingAreas (LeadingArea LeadingArea1Units) (LeadingArea LeadingArea1Units))]] =
             [
-                catMaybes $
+                catMaybes
                 [
                     do
                         RaceTime{leadAllDown} <- rt
@@ -312,9 +312,9 @@ lc2 routes (compFile, _) selectTasks tasks lsSpeedTask raceTimes taskPilots = do
 
     _ <- writeCompLeadingAreas compFile iTasks ass
 
-    let ass' :: [[(Pilot, (LeadingAreas (LeadingArea LeadingArea2Units) (LeadingArea LeadingArea2Units)))]] =
+    let ass' :: [[(Pilot, LeadingAreas (LeadingArea LeadingArea2Units) (LeadingArea LeadingArea2Units))]] =
             [
-                catMaybes $
+                catMaybes
                 [
                     do
                         RaceTime{leadAllDown} <- rt

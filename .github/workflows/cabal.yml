@@ -282,6 +282,6 @@ jobs:
     - name: flight-zone:serial
       run: cabal test flight-zone:serial --test-show-details=direct --test-option="--color=always"
 
-    # 105 hints
-    # - name: flare-timing:hlint
-    #   run: cabal test flare-timing:hlint --test-show-details=direct --test-option="--color=always"
+    # 3 reduce duplication hints
+    - name: flare-timing:hlint
+      run: cabal test flare-timing:hlint --test-show-details=direct --test-option="--color=always"

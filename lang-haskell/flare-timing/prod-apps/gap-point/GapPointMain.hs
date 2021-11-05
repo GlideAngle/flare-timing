@@ -267,7 +267,7 @@ go CmdBatchOptions{..} compFile = do
         (_, _, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
         (_, _, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
         (Just (_taskFiles, settings), Just cg, Just tg, Just stp, Just mA, Just _mE, Just mL2, Just mR, Just bR, Just mS, Just lg, Just _) -> do
-            let cs = uncurry mkCompTaskSettings $ settings
+            let cs = uncurry mkCompTaskSettings settings
             let tg' = effectiveTagging tg stp
             let mE' = efforts lg
 
@@ -467,11 +467,11 @@ points'
             [ do
                 lv' <- lv
                 dv' <- dv
-                (flip (ValidityWorking lv' dv') sv) <$> tv
+                flip (ValidityWorking lv' dv') sv <$> tv
             | lv <- snd <$> lvs
             | dv <- snd <$> dvs
             | tv <- snd <$> tvs
-            | sv <- (join . fmap snd) <$> svs
+            | sv <- (snd =<<) <$> svs
             ]
 
         grs =
@@ -502,7 +502,7 @@ points'
                         if | discipline == HangGliding -> LwScaled k dw
                            | gr == GoalRatio 0 -> LwPgZ $ distanceRatio bd td
                            | otherwise -> LwScaled k dw)
-                    (join $ leadingWeightScaling <$> tw)
+                    (leadingWeightScaling =<< tw)
 
             | gr <- grs
             | dw <- dws
@@ -540,7 +540,7 @@ points'
         plss :: [[(Pilot, UTCTime)]] =
             [
                 catMaybes
-                [ sequence (p, join $ (fmap snd . flyingTimes) <$> tfs)
+                [ sequence (p, (fmap snd . flyingTimes) =<< tfs)
                 | (p, tfs) <- fts
                 ]
             | fts <- flying
@@ -738,7 +738,7 @@ points'
                     (LinearPoints 0)
                     (\(ReachStats{max = FlownMax b}, ps') ->
                         let bd = Just . TaskDistance $ convert b in
-                        (applyLinear free bd ps') (Just . unQuantity $ unpack free))
+                        applyLinear free bd ps' (Just . unQuantity $ unpack free))
                     (mzip rStats ps)
             | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
@@ -752,7 +752,7 @@ points'
                     (LinearPoints 0)
                     (\(ReachStats{max = FlownMax b}, ps') ->
                         let bd = Just . TaskDistance $ convert b
-                        in (applyLinear free bd ps') launchToStart)
+                        in applyLinear free bd ps' launchToStart)
                     (mzip rStats ps)
             | rStats <- bolsterStatsE
             | ps <- (fmap . fmap) points allocs
@@ -984,13 +984,12 @@ madeDifficultyDf
     -> DifficultyFraction
 madeDifficultyDf _ mapIxToFrac td =
     -- WARNING: The pilot distance, if rounded up could index the next chunk.
-    case Map.lookup ix mapIxToFrac of
-        Just df -> df
-        Nothing ->
-            case Map.lookupLE ix mapIxToFrac of
-                Just (ixLE, df) | ix - ixLE == 1 -> df
-                Just _ -> DifficultyFraction 0
-                Nothing -> DifficultyFraction 0
+    fromMaybe
+        (case Map.lookupLE ix mapIxToFrac of
+            Just (ixLE, df) | ix - ixLE == 1 -> df
+            Just _ -> DifficultyFraction 0
+            Nothing -> DifficultyFraction 0)
+        (Map.lookup ix mapIxToFrac)
     where
         pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
         ix = toIxChunk pd
@@ -1200,7 +1199,7 @@ mergePenalties
 mergePenalties =
     Map.merge
         (Map.mapMissing (\_ _ -> (nullSeqs, "")))
-        (Map.preserveMissing)
+        Map.preserveMissing
         (Map.zipWithMatched (\_ _ y -> y))
 
 mergeSpeed :: Gap.Points -> Gap.Points -> Gap.Points
@@ -1360,7 +1359,7 @@ tallyDf
                 return $ startGateTaken gs' ss''
 
         jump :: Maybe (JumpedTheGun _)
-        jump = join $ fst <$> jumpGate
+        jump = fst =<< jumpGate
 
         ptsReduced =
             case hgOrPg of
@@ -1425,9 +1424,7 @@ tallyDf
 
         ss' = getTagTime unStart
         es' = getTagTime unEnd
-        getTagTime accessor =
-            ((time :: InterpolatedFix -> _) . inter)
-            <$> (accessor =<< g)
+        getTagTime accessor = (time :: InterpolatedFix -> _) . inter <$> (accessor =<< g)
 
 tallyDfNoTrack
     :: Discipline
@@ -1520,13 +1517,11 @@ tallyDfNoTrack
 
         dE = PilotDistance <$> do
                 dT <- dT'
-                aw <- aw'
-                return $ awardByFrac (Clamp False) dT (Gap.extra aw)
+                awardByFrac (Clamp False) dT . Gap.flown <$> aw'
 
         dF = PilotDistance <$> do
                 dT <- dT'
-                aw <- aw'
-                return $ awardByFrac (Clamp False) dT (Gap.flown aw)
+                awardByFrac (Clamp False) dT . Gap.flown <$> aw'
 
         dS = PilotDistance <$> do
                 TaskDistance d <- dS'

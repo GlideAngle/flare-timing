@@ -13,10 +13,9 @@ import Flight.Comp
 import Flight.Distance
     (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Comp.Distance (compDistance)
-import Flight.Track.Lead (CompLeading(..), LeadingAreaSum, MkLeadingCoef, MkAreaToCoef)
+import Flight.Track.Lead (CompLeading(..), LeadingAreaSum, MkLeadingCoef, MkAreaToCoef, compLeading)
 import Flight.Track.Time (LeadTick)
 import qualified Flight.Track.Time as Time (TickRow(..))
-import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (CompMaskingLead(..), RaceTime(..))
 import "flight-gap-allot" Flight.Score (BestTime(..), MinimumDistance(..))
 import "flight-gap-lead" Flight.Score (LeadingAreaUnits, LengthOfSs(..))
@@ -26,7 +25,7 @@ maskLeadCoef
     => LeadingAreaSum u
     -> MkLeadingCoef u
     -> MkAreaToCoef v
-    -> (MinimumDistance (Quantity Double [u| km |]))
+    -> MinimumDistance (Quantity Double [u| km |])
     -> [Maybe RaceTime]
     -> [Maybe TaskRouteDistance]
     -> [[Pilot]]
@@ -85,7 +84,7 @@ maskLeadCoef
         -- NOTE: This is the sum of distance over minimum distance.
         dsSum =
                 [
-                    (fmap $ TaskDistance . MkQuantity)
+                    fmap (TaskDistance . MkQuantity)
                     . (\case 0 -> Nothing; x -> Just x)
                     . sum
                     . fmap unTaskDistanceAsKm

@@ -48,14 +48,13 @@ rankByArrival
     -> [(Pilot, FlightStats _)]
     -> [(Pilot, FlightStats _)]
 rankByArrival xsDf xsDfNt =
-    case any isJust yTs of
-        False -> xsDf ++ xsDfNt
-        True ->
-            [ (rankArrival f ii ) <$> y
+    if any isJust yTs
+        then
+            [ rankArrival f ii <$> y
             | (ii, ys) <-
                         reIndex
                         . zip [1..]
-                        . groupBy ((==) `on` (fmap Stats.esMark) . statTimeRank . snd)
+                        . groupBy ((==) `on` fmap Stats.esMark . statTimeRank . snd)
                         $ xs
             , let f =
                     if length ys == 1
@@ -64,13 +63,12 @@ rankByArrival xsDf xsDfNt =
             , y <- ys
             ]
             ++ xsLandout
+        else xsDf ++ xsDfNt
     where
         yTs = statTimeRank . snd <$> xsDfNt
 
         xs :: [(Pilot, FlightStats _)]
-        xs =
-            sortOn ((fmap Stats.esMark) . statTimeRank . snd)
-            $ xsArrived
+        xs = sortOn (fmap Stats.esMark . statTimeRank . snd) xsArrived
 
         (xsArrived, xsLandout) =
             partition (\(_, FlightStats{statTimeRank = r}) -> isJust r)

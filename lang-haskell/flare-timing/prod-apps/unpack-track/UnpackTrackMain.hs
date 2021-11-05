@@ -1,6 +1,4 @@
-﻿{-# LANGUAGE BangPatterns #-}
-
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 import Debug.Trace (traceShowId)
 import Text.Printf (printf)
@@ -88,7 +86,7 @@ go CmdBatchOptions{..} compFile = do
         Nothing -> putStrLn "Couldn't read the comp settings."
         Just (taskFiles, settings@(cs, _)) -> do
             let inFiles = (compFile, taskFiles)
-            let CompTaskSettings{tasks} = uncurry mkCompTaskSettings $ settings
+            let CompTaskSettings{tasks} = uncurry mkCompTaskSettings settings
             let ixSelectTasks = IxTask <$> task
             let ps = pilotNamed cs $ PilotName <$> pilot
             (_, selectedCompLogs) <- settingsLogs inFiles ixSelectTasks ps
@@ -98,7 +96,7 @@ go CmdBatchOptions{..} compFile = do
                     [ do
                         check <-
                             catchIO
-                                (Just <$> (runExceptT $ pilotTrack (dump tasks ixTask) (traceShowId pilotLog)))
+                                (Just <$> runExceptT (pilotTrack (dump tasks ixTask) (traceShowId pilotLog)))
                                 (const $ return Nothing)
 
                         case check of

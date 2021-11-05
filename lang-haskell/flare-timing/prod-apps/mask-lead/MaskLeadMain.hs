@@ -104,7 +104,7 @@ go CmdBatchOptions{..} compFile = do
         (_, _, _, Nothing, _) -> putStrLn "Couldn't read the arrivals."
         (_, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
         (Just (taskFiles, settings@(cs, _)), Just tg, Just stp, Just as, Just _) -> do
-            let cts@CompTaskSettings{compTweak} = uncurry mkCompTaskSettings $ settings
+            let cts@CompTaskSettings{compTweak} = uncurry mkCompTaskSettings settings
             let tagging' = Just $ effectiveTagging tg stp
 
             let lc1 = writeMask as sumAreas (mk1Coef . area1toCoef) area1toCoef

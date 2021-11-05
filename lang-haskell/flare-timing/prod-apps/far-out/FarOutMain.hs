@@ -104,7 +104,7 @@ go CmdBatchOptions{..} compFile = do
         (_, _, Nothing) -> putStrLn "Couldn't read the maskings."
         (Just (_taskFiles, settings), Just mk, Just _) -> do
             let cs@CompTaskSettings{nominal = Cmp.Nominal{free}, tasks, pilotGroups} =
-                    (uncurry mkCompTaskSettings $ settings)
+                    uncurry mkCompTaskSettings settings
 
             let ixTasks = take (length tasks) (IxTask <$> [1 ..])
 
@@ -148,7 +148,7 @@ difficultyByReach cs CompMaskingReach{bolster, nigh} dfNtss =
     where
         xss =
                 [
-                    [ (p,) . (\x -> TrackDistance Nothing x) $ made
+                    [ (p,) . TrackDistance Nothing $ made
                     | (p, TrackDistance{made}) <- ns
                     ]
                 | ns <- nigh
