@@ -42,24 +42,31 @@ data TrackArrival =
 
 type ArrivalInputs = [(Pilot, UTCTime)]
 
+placeAndLag
+    :: [(a, UTCTime)]
+    -> (PilotsAtEss, [(a, (ArrivalPlacing, ArrivalLag (Quantity Double [u| h |])))])
+placeAndLag ys = (pilots, ys') where
+    n = toInteger $ length ys
+
+    pilots :: PilotsAtEss
+    pilots = PilotsAtEss n
+
+    ts = snd <$> ys
+    minT = minimum ts
+    placings = rankByArrival ts
+    place t = fromMaybe (ArrivalPlacing n) (lookup t placings)
+
+    ys' =
+        (\(p, t) ->
+            let lag = ArrivalLag $ pilotArrivalLag minT t
+            in (p, (place t, lag)))
+        <$> ys
+
 arrivalsByRank :: ArrivalInputs -> [(Pilot, TrackArrival)]
 arrivalsByRank ys =
     sortOn (rank . snd) $ (fmap . fmap) f ys'
     where
-        n = toInteger $ length ys
-        pilots :: PilotsAtEss
-        pilots = PilotsAtEss n
-
-        ts = snd <$> ys
-        minT = minimum ts
-        placings = rankByArrival ts
-        place t = fromMaybe (ArrivalPlacing n) (lookup t placings)
-
-        ys' =
-            (\(p, t) ->
-                let lag = ArrivalLag $ pilotArrivalLag minT t
-                in (p, (place t, lag)))
-            <$> ys
+        (pilots, ys') = placeAndLag ys
 
         f (position, tm) =
             TrackArrival
@@ -72,20 +79,7 @@ arrivalsByTime :: ArrivalInputs -> [(Pilot, TrackArrival)]
 arrivalsByTime ys =
     sortOn (rank . snd) $ (fmap . fmap) f ys'
     where
-        n = toInteger $ length ys
-        pilots :: PilotsAtEss
-        pilots = PilotsAtEss n
-
-        ts = snd <$> ys
-        minT = minimum ts
-        placings = rankByArrival ts
-        place t = fromMaybe (ArrivalPlacing n) (lookup t placings)
-
-        ys' =
-            (\(p, t) ->
-                let lag = ArrivalLag $ pilotArrivalLag minT t
-                in (p, (place t, lag)))
-            <$> ys
+        (pilots, ys') = placeAndLag ys
 
         f (pEss, tm) =
             TrackArrival
