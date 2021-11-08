@@ -148,6 +148,29 @@ instance QC.Arbitrary PointParts where
             , arrival = ArrivalPoints a
             }
 
+genPtTest :: SitRep a -> Gen (PtTest a)
+genPtTest penalty = do
+    (PointParts parts) <- arbitrary
+
+    jumps :: PenaltySeq <-
+        QC.oneof
+            [ addSeq <$> arbitrary
+            , mulSeq <$> arbitrary
+            , (\x -> resetSeq ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
+            ]
+
+    others <- do
+        muls <- arbitrary :: Gen [Double]
+        adds <- arbitrary :: Gen [Double]
+        resets <- arbitrary :: Gen [Maybe (QC.Positive Int)]
+        return $
+            PenaltySeqs
+                (mkMul <$> muls)
+                (mkAdd <$> adds)
+                (mkReset . fmap (\(QC.Positive y) -> y) <$> resets)
+
+    return $ PtTest penalty egPenaltyNull jumps others parts
+
 instance QC.Arbitrary (PtTest Hg) where
     arbitrary = do
         penalty <-
@@ -177,28 +200,7 @@ instance QC.Arbitrary (PtTest Hg) where
                             (JumpedTheGun $ MkQuantity jtg)
                 ]
 
-        (PointParts parts) <- arbitrary
-
-        jumps :: PenaltySeq <-
-            QC.oneof
-                [ addSeq <$> arbitrary
-                , mulSeq <$> arbitrary
-                , (\x -> resetSeq ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
-                ]
-
-        let genOthers = do
-                muls <- arbitrary :: Gen [Double]
-                adds <- arbitrary :: Gen [Double]
-                resets <- arbitrary :: Gen [Maybe (QC.Positive Int)]
-                return $
-                    PenaltySeqs
-                        (mkMul <$> muls)
-                        (mkAdd <$> adds)
-                        (mkReset . fmap (\(QC.Positive y) -> y) <$> resets)
-
-        others <- genOthers
-
-        return $ PtTest penalty egPenaltyNull jumps others parts
+        genPtTest penalty
 
 instance QC.Arbitrary (PtTest Pg) where
     arbitrary = do
@@ -211,25 +213,4 @@ instance QC.Arbitrary (PtTest Pg) where
                     return $ Early (LaunchToStartPoints (assumeProp $ refined x))
                 ]
 
-        (PointParts parts) <- arbitrary
-
-        jumps :: PenaltySeq <-
-            QC.oneof
-                [ addSeq <$> arbitrary
-                , mulSeq <$> arbitrary
-                , (\x -> resetSeq ((\(QC.Positive y) -> y) <$> x)) <$> arbitrary
-                ]
-
-        let genOthers = do
-                muls <- arbitrary :: Gen [Double]
-                adds <- arbitrary :: Gen [Double]
-                resets <- arbitrary :: Gen [Maybe (QC.Positive Int)]
-                return $
-                    PenaltySeqs
-                        (mkMul <$> muls)
-                        (mkAdd <$> adds)
-                        (mkReset . fmap (\(QC.Positive y) -> y) <$> resets)
-
-        others <- genOthers
-
-        return $ PtTest penalty egPenaltyNull jumps others parts
+        genPtTest penalty

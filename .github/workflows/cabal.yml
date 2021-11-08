@@ -49,7 +49,6 @@ jobs:
     - name: flight-cmd:hlint
       run: cabal test flight-cmd:hlint --test-show-details=direct --test-option="--color=always"
 
-    # 2 reduce duplication hints
     - name: flight-comp
       run: cabal test flight-comp --test-show-details=direct --test-option="--color=always"
 

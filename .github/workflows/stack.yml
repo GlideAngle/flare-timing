@@ -56,7 +56,6 @@ jobs:
     - name: flight-cmd:hlint
       run: stack test flight-cmd:hlint --no-terminal --test-arguments "--color=always"
 
-    # 2 reduce duplication hints
     - name: flight-comp:hlint
       run: stack test flight-comp:hlint --no-terminal --test-arguments "--color=always"
 
@@ -160,7 +159,6 @@ jobs:
     - name: flight-gap-lead:lead
       run: stack test flight-gap-lead:lead --no-terminal --test-arguments "--color=always"
 
-    # 4 reduce duplication hints
     - name: flight-gap-math:hlint
       run: stack test flight-gap-math:hlint --no-terminal --test-arguments "--color=always"
 

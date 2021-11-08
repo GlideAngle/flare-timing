@@ -35,6 +35,8 @@ import "flight-gap-math" Flight.Score
     )
 import Points.Round ((<&>), dpRoundPointsReduced)
 
+{-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
+
 egHgPenalty :: FS.GoalValidatedPoints -> FS.PenaltySeq
 egHgPenalty = egPenalty $ EGwScaling 0.8
 
