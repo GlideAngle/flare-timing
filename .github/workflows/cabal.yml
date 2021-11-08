@@ -160,7 +160,6 @@ jobs:
     - name: flight-gap-lead:lead
       run: cabal test flight-gap-lead:lead --test-show-details=direct --test-option="--color=always"
 
-    # 4 reduce duplication hints
     - name: flight-gap-math:hlint
       run: cabal test flight-gap-math:hlint --test-show-details=direct --test-option="--color=always"
 
@@ -218,7 +217,6 @@ jobs:
     - name: flight-lookup:hlint
       run: cabal test flight-lookup:hlint --test-show-details=direct --test-option="--color=always"
 
-    # 5 reduce duplication hints
     - name: flight-mask:hlint
       run: cabal test flight-mask:hlint --test-show-details=direct --test-option="--color=always"
 
