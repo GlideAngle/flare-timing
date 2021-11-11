@@ -1,5 +1,9 @@
 image:
   file: .gitpod.Dockerfile
+github:
+  prebuilds:
+    master: true
+    branches: true
 tasks:
   - init: |
       cabal update
