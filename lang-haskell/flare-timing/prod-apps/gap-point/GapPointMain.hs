@@ -604,22 +604,22 @@ points'
             | v <- (fmap . fmap) Gap.task validities
             ]
 
-        -- NOTE: Pilots either get to goal or have a nigh distance.
-        nighDistanceDfE :: [[(Pilot, Maybe Double)]] =
-            [ let xs' = (fmap . fmap) madeNigh xs
+        mkNigh rStats xs ys =
+              let xs' = (fmap . fmap) madeNigh xs
                   f = (\ReachStats{max = b} -> unFlownMaxAsKm b) <$> rStats
                   ys' = (fmap . fmap) (const f) ys
               in (xs' ++ ys')
+
+        -- NOTE: Pilots either get to goal or have a nigh distance.
+        nighDistanceDfE :: [[(Pilot, Maybe Double)]] =
+            [ mkNigh rStats xs ys
             | rStats <- bolsterStatsE
             | xs <- nighE
             | ys <- arrivalRank
             ]
 
         nighDistanceDfF :: [[(Pilot, Maybe Double)]] =
-            [ let xs' = (fmap . fmap) madeNigh xs
-                  f = (\ReachStats{max = b} -> unFlownMaxAsKm b) <$> rStats
-                  ys' = (fmap . fmap) (const f) ys
-              in (xs' ++ ys')
+            [ mkNigh rStats xs ys
             | rStats <- bolsterStatsF
             | xs <- nighF
             | ys <- arrivalRank

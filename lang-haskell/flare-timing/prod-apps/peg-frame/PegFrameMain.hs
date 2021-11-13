@@ -174,6 +174,14 @@ writeStop
     let trackss :: [Map Pilot [TrackRow]] =
             maybe (repeat Map.empty) (fmap (Map.fromList . catMaybes)) trackss'
 
+    let secs t (t0, t1) w0 =
+            let delta0 = t `diffUTCTime` t0
+                delta1 = t1 `diffUTCTime` t
+                r0 = round delta0
+                r1 = round delta1
+            in
+                (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
+
     let sfss :: [[(Pilot, (Maybe TrackScoredSection, Maybe TrackRacingGateSection))]] =
             [
                 [ (p,) $ sw & \case
@@ -236,11 +244,7 @@ writeStop
                                 let rgSecs =
                                         do
                                             (Seconds w0, _) <- flyingSeconds
-                                            let delta0 = tG `diffUTCTime` t0
-                                            let delta1 = t1 `diffUTCTime` tG
-                                            let r0 = round delta0
-                                            let r1 = round delta1
-                                            return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
+                                            return $ secs tG (t0, t1) w0
 
                                 return
                                     ( TrackScoredSection
@@ -315,11 +319,7 @@ writeStop
                             let rsSecs =
                                     do
                                         (Seconds w0, _) <- flyingSeconds
-                                        let delta0 = tS `diffUTCTime` t0
-                                        let delta1 = t1 `diffUTCTime` tS
-                                        let r0 = round delta0
-                                        let r1 = round delta1
-                                        return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
+                                        return $ secs tS (t0, t1) w0
 
                             return
                                 TrackRacingStartSection
