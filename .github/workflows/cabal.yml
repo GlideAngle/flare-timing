@@ -78,7 +78,6 @@ jobs:
     - name: tasty-compare:hlint
       run: cabal test tasty-compare:hlint --test-show-details=direct --test-option="--color=always"
 
-    # 2 reduce duplication hints
     - name: flight-earth:hlint
       run: cabal test flight-earth:hlint --test-show-details=direct --test-option="--color=always"
 

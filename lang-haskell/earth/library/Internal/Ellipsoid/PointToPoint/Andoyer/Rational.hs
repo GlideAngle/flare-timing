@@ -23,6 +23,7 @@ import Flight.Earth.Ellipsoid
     )
 import Flight.Geodesy (InverseProblem(..), InverseSolution(..))
 import Flight.Earth.Math (normalizeLngR, atan2')
+import Internal.Ellipsoid.PointToPoint.Andoyer.Double (InverseWorking(..))
 
 inverse
     :: Andoyer
@@ -38,39 +39,18 @@ inverse
 inverse a@FsAndoyer = inverseFs a
 inverse a = inverseStuifbergen a
 
--- | The inverse solution of Andoyer-Lambert using the same formulae as FS.
-inverseFs
-    :: Andoyer
-    -> Ellipsoid Rational
-    -> Epsilon
-    -> GeodeticAccuracy Rational
-    -> InverseProblem (LatLng Rational [u| rad |])
-    -> GeodeticInverse
-        (InverseSolution
-            (QTaskDistance Rational [u| m |])
-            (Quantity Rational [u| rad |])
-        )
-inverseFs
-    andoyer
-    ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
+inverseWorking :: Ellipsoid Rational -> Epsilon -> InverseProblem (LatLng Rational u) -> InverseWorking Rational
+inverseWorking
+    ellipsoid
     e@(Epsilon eps)
-    _
     InverseProblem
         { x = LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁))
         , y = LatLng (Lat (MkQuantity _Φ₂), Lng (MkQuantity _L₂))
         } =
-    GeodeticInverse $
-        InverseSolution
-            { s =
-                TaskDistance . MkQuantity $
-                    case andoyer of
-                         FsAndoyer -> a * (d + f * d₁)
-                         _ -> error "FsAndoyer expected."
-
-            , α₁ = MkQuantity $ atan2' e i j
-            , α₂ = Just . MkQuantity $ atan2' e i' j'
-            }
+        InverseWorking f sin' tan' d sind cosd sinΦ₁ sinΦ₂ sinU₁ sinU₂ i j i' j'
     where
+        f = flattening ellipsoid
+
         sin' = F.sin eps
         cos' = F.cos eps
         acos' = F.acos eps
@@ -78,7 +58,6 @@ inverseFs
         atan' = F.atan eps
         normalizeLng' = normalizeLngR e
 
-        f = flattening ellipsoid
         auxLat = atan' . ((1 - f) *) . tan'
         _U₁ = auxLat _Φ₁; _U₂ = auxLat _Φ₂
 
@@ -86,6 +65,8 @@ inverseFs
             case _L₂ - _L₁ of
                 _L' | abs _L' <= F.pi eps -> _L'
                 _ -> normalizeLng' _L₂ - normalizeLng' _L₁
+
+        sinΦ₁ = sin' _Φ₁; sinΦ₂ = sin' _Φ₂
 
         sinU₁ = sin' _U₁; sinU₂ = sin' _U₂
         cosU₁ = cos' _U₁; cosU₂ = cos' _U₂
@@ -105,6 +86,41 @@ inverseFs
         cosd = sinU₁sinU₂ + cosU₁cosU₂ * cosλ
         d = acos' cosd
         sind = sin' d
+
+-- | The inverse solution of Andoyer-Lambert using the same formulae as FS.
+inverseFs
+    :: Andoyer
+    -> Ellipsoid Rational
+    -> Epsilon
+    -> GeodeticAccuracy Rational
+    -> InverseProblem (LatLng Rational [u| rad |])
+    -> GeodeticInverse
+        (InverseSolution
+            (QTaskDistance Rational [u| m |])
+            (Quantity Rational [u| rad |])
+        )
+inverseFs
+    andoyer
+    ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
+    e
+    _
+    prob@InverseProblem
+        { x = LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁))
+        , y = LatLng (Lat (MkQuantity _Φ₂), Lng (MkQuantity _L₂))
+        } =
+    GeodeticInverse $
+        InverseSolution
+            { s =
+                TaskDistance . MkQuantity $
+                    case andoyer of
+                         FsAndoyer -> a * (d + f * d₁)
+                         _ -> error "FsAndoyer expected."
+
+            , α₁ = MkQuantity $ atan2' e i j
+            , α₂ = Just . MkQuantity $ atan2' e i' j'
+            }
+    where
+        InverseWorking{..} = inverseWorking ellipsoid e prob
 
         -- NOTE: This is the same Andoyer correction as used in FS.
         _K = let x = sinU₁ - sinU₂ in x * x
@@ -132,9 +148,9 @@ inverseStuifbergen
 inverseStuifbergen
     andoyer
     ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
-    e@(Epsilon eps)
+    e
     _
-    InverseProblem
+    prob@InverseProblem
         { x = LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁))
         , y = LatLng (Lat (MkQuantity _Φ₂), Lng (MkQuantity _L₂))
         } =
@@ -151,40 +167,8 @@ inverseStuifbergen
             , α₂ = Just . MkQuantity $ atan2' e i' j'
             }
     where
-        sin' = F.sin eps
-        cos' = F.cos eps
-        acos' = F.acos eps
-        tan' = F.tan eps
-        atan' = F.atan eps
-        normalizeLng' = normalizeLngR e
+        InverseWorking{..} = inverseWorking ellipsoid e prob
 
-        f = flattening ellipsoid
-        auxLat = atan' . ((1 - f) *) . tan'
-        _U₁ = auxLat _Φ₁; _U₂ = auxLat _Φ₂
-
-        λ =
-            case _L₂ - _L₁ of
-                _L' | abs _L' <= F.pi eps -> _L'
-                _ -> normalizeLng' _L₂ - normalizeLng' _L₁
-
-        sinU₁ = sin' _U₁; sinU₂ = sin' _U₂
-        cosU₁ = cos' _U₁; cosU₂ = cos' _U₂
-
-        sinU₁sinU₂ = sinU₁ * sinU₂
-        cosU₁cosU₂ = cosU₁ * cosU₂
-
-        sinλ = sin' λ
-        cosλ = cos' λ
-
-        i' = cosU₁ * sinλ
-        j' = -sinU₁ * cosU₂ + cosU₁ * sinU₂ * cosλ
-
-        i = cosU₂ * sinλ
-        j = cosU₁ * sinU₂ - sinU₁ * cosU₂ * cosλ
-
-        cosd = sinU₁sinU₂ + cosU₁cosU₂ * cosλ
-        d = acos' cosd
-        sind = sin' d
         sin2d = sin' $ 2 * d
         tand = tan' d
 
