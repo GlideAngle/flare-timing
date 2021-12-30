@@ -40,7 +40,7 @@ packages:
     , lang-haskell/zone
 
     , lang-haskell/flare-timing
-    -- , lang-haskell/app-serve
+    , lang-haskell/app-serve
 
 package flight-clip
     tests: true
@@ -118,3 +118,6 @@ package hcoord-utm
     tests: false
 package exact-real
     tests: false
+constraints:
+    sampling ==0.3.3
+    , servant ==0.13.0.1
