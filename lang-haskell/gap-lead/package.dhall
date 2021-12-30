@@ -1,8 +1,7 @@
 let mkHome = ./../home.dhall
 
-in  let defs =
-          ./../defaults.dhall
-    
+in  let defs = ./../defaults.dhall
+
     in  let testdeps =
               [ "base"
               , "containers"
@@ -24,35 +23,30 @@ in  let defs =
               , "QuickCheck"
               , "quickcheck-instances"
               ]
-        
+
         in  let testopts =
                   [ "-rtsopts"
                   , "-threaded"
                   , "-with-rtsopts=-N"
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
-            
+
             in    defs
                 ⫽ ./../default-extensions.dhall
-                ⫽ { flags =
-                      { suppress-failing-tests =
-                          { manual = False, default = True }
-                      }
-                  , name =
-                      "flight-gap-lead"
-                  , homepage =
-                      mkHome "lang-haskell/gap-lead#readme"
-                  , synopsis =
-                      "GAP Scoring, Leading"
+                ⫽ { flags.suppress-failing-tests
+                    =
+                    { manual = False, default = True }
+                  , name = "flight-gap-lead"
+                  , homepage = mkHome "lang-haskell/gap-lead#readme"
+                  , synopsis = "GAP Scoring, Leading"
                   , description =
                       "GAP scoring for hang gliding and paragliding competitons, the leading parts."
-                  , category =
-                      "Flight"
+                  , category = "Flight"
                   , ghc-options =
-                      [ "-Wall"
-                      , "-fplugin Data.UnitsOfMeasure.Plugin"
-                      , "-fno-warn-partial-type-signatures"
-                      ]
+                    [ "-Wall"
+                    , "-fplugin Data.UnitsOfMeasure.Plugin"
+                    , "-fno-warn-partial-type-signatures"
+                    ]
                   , dependencies =
                         defs.dependencies
                       # [ "aeson"
@@ -73,22 +67,16 @@ in  let defs =
                         , "flight-gap-allot"
                         ]
                   , library =
-                      { source-dirs =
-                          "library"
-                      , exposed-modules =
-                          "Flight.Score"
-                      }
+                    { source-dirs = "library"
+                    , exposed-modules = "Flight.Score"
+                    }
                   , tests =
                         ./../default-tests.dhall
                       ⫽ { lead =
-                            { dependencies =
-                                testdeps # [ "flight-gap-lead" ]
-                            , ghc-options =
-                                testopts
-                            , main =
-                                "LeadTestMain.hs"
-                            , source-dirs =
-                                "test-suite-lead"
-                            }
+                          { dependencies = testdeps # [ "flight-gap-lead" ]
+                          , ghc-options = testopts
+                          , main = "LeadTestMain.hs"
+                          , source-dirs = "test-suite-lead"
+                          }
                         }
                   }

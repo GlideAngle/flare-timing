@@ -1,4 +1,4 @@
-    let defs = ./../defaults.dhall
+let defs = ./../defaults.dhall
 
 in  let deps =
           [ "aeson"
@@ -51,90 +51,70 @@ in  let deps =
           , "siggy-chardust"
           ]
 
-in    defs
-    ⫽ ./../default-extensions.dhall
-    ⫽ { name =
-          "app-serve"
-      , homepage =
-          "https://github.com/blockscope/flare-timing/lang-haskell/app-serve#readme"
-      , synopsis =
-          "A collection of apps and libraries for scoring hang gliding and paragliding competitions."
-      , description =
-          "Scoring and viewing hang gliding and paragliding competitions."
-      , category =
-          "Data, Parsing"
-      , dependencies =
-          defs.dependencies
-      , ghc-options =
-          [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
-      , executables =
-          { ft-comp-py =
-              { dependencies =
-                  deps # [ "servant-py" ]
+    in    defs
+        ⫽ ./../default-extensions.dhall
+        ⫽ { name = "app-serve"
+          , homepage =
+              "https://github.com/blockscope/flare-timing/lang-haskell/app-serve#readme"
+          , synopsis =
+              "A collection of apps and libraries for scoring hang gliding and paragliding competitions."
+          , description =
+              "Scoring and viewing hang gliding and paragliding competitions."
+          , category = "Data, Parsing"
+          , dependencies = defs.dependencies
+          , ghc-options = [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+          , executables =
+            { ft-comp-py =
+              { dependencies = deps # [ "servant-py" ]
               , other-modules =
-                  [ "Serve.Alt"
-                  , "Serve.Api"
-                  , "Serve.App"
-                  , "Serve.Area"
-                  , "Serve.Config"
-                  , "Serve.Error"
-                  , "Serve.Pilot"
-                  , "Serve.PointDiff"
-                  , "Serve.Route"
-                  , "Serve.Task"
-                  , "Serve.Track"
-                  , "Serve.Validity"
-                  , "ServeOptions"
-                  , "ServeSwagger"
-                  ]
-              , main =
-                  "GenPyClient.hs"
-              , source-dirs =
-                  "src"
+                [ "Serve.Alt"
+                , "Serve.Api"
+                , "Serve.App"
+                , "Serve.Area"
+                , "Serve.Config"
+                , "Serve.Error"
+                , "Serve.Pilot"
+                , "Serve.PointDiff"
+                , "Serve.Route"
+                , "Serve.Task"
+                , "Serve.Track"
+                , "Serve.Validity"
+                , "ServeOptions"
+                , "ServeSwagger"
+                ]
+              , main = "GenPyClient.hs"
+              , source-dirs = "src"
               }
-          , ft-comp-serve =
-              { dependencies =
-                  deps
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+            , ft-comp-serve =
+              { dependencies = deps
+              , ghc-options = [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , other-modules =
-                  [ "Serve.Alt"
-                  , "Serve.Api"
-                  , "Serve.App"
-                  , "Serve.Area"
-                  , "Serve.Config"
-                  , "Serve.Error"
-                  , "Serve.Pilot"
-                  , "Serve.PointDiff"
-                  , "Serve.Route"
-                  , "Serve.Task"
-                  , "Serve.Track"
-                  , "Serve.Validity"
-                  , "ServeOptions"
-                  , "ServeSwagger"
-                  ]
-              , main =
-                  "ServeMain.hs"
-              , source-dirs =
-                  "src"
+                [ "Serve.Alt"
+                , "Serve.Api"
+                , "Serve.App"
+                , "Serve.Area"
+                , "Serve.Config"
+                , "Serve.Error"
+                , "Serve.Pilot"
+                , "Serve.PointDiff"
+                , "Serve.Route"
+                , "Serve.Task"
+                , "Serve.Track"
+                , "Serve.Validity"
+                , "ServeOptions"
+                , "ServeSwagger"
+                ]
+              , main = "ServeMain.hs"
+              , source-dirs = "src"
               }
+            }
+          , tests.hlint
+            =
+            { dependencies = [ "base", "hlint", "flight-comp" ]
+            , ghc-options = [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+            , main = "HLint.hs"
+            , source-dirs = "test-suite-hlint"
+            , when =
+              { condition = "flag(suppress-failing-tests)", buildable = False }
+            }
           }
-      , tests =
-          { hlint =
-              { dependencies =
-                  [ "base", "hlint", "flight-comp" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  "test-suite-hlint"
-              , when =
-                  { condition =
-                      "flag(suppress-failing-tests)"
-                  , buildable =
-                      False
-                  }
-              }
-          }
-      }
