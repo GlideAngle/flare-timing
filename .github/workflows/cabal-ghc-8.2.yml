@@ -1,4 +1,4 @@
-name: cabal
+name: cabal-ghc-8.2
 
 on:
   push:
