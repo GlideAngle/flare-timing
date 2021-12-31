@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Prelude hiding (last)
@@ -7,7 +9,11 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+#if __GLASGOW_HASKELL__ <= 802
 import Control.Monad (join, mapM_)
+#else
+import Control.Monad (join)
+#endif
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
 import Data.Vector (Vector)

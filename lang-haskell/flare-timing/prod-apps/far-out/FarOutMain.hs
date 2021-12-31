@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 import System.Environment (getProgName)
@@ -6,7 +8,9 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
+#if __GLASGOW_HASKELL__ <= 802
 import Control.Monad (mapM_)
+#endif
 import Control.Monad.Zip (munzip)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
@@ -71,7 +75,7 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Far outs counted for distance difficulty completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile = do
+go CmdBatchOptions{} compFile = do
     filesTaskAndSettings <-
         catchIO
             (Just <$> do

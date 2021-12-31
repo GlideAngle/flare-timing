@@ -35,11 +35,11 @@ instance Show RawLatLng where
     show RawLatLng{lat, lng} =
         "(" ++ showLat lat ++ "," ++ showLng lng ++ ")"
 
-instance ToJSON RawLatLng where
+instance (ToJSON RawLat, ToJSON RawLng) => ToJSON RawLatLng where
     toJSON RawLatLng{..} =
         object ["lat" .= lat, "lng" .= lng]
 
-instance FromJSON RawLatLng where
+instance (FromJSON RawLat, FromJSON RawLng) => FromJSON RawLatLng where
     parseJSON = withObject "RawLatLng" $ \v -> RawLatLng
         <$> v .: "lat"
         <*> v .: "lng"

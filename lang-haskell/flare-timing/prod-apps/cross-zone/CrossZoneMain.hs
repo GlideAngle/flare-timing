@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 import Debug.Trace (traceShowId)
 import Prelude hiding (span)
 import System.Environment (getProgName)
@@ -8,7 +10,9 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
 import Control.Lens ((^?), element)
+#if __GLASGOW_HASKELL__ <= 802
 import Control.Monad (mapM_)
+#endif
 import Control.Monad.Except (runExceptT)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)

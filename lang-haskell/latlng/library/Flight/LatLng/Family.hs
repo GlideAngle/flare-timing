@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.LatLng.Family  where
@@ -19,7 +20,8 @@ type DegToRad a = Quantity a [u| deg |] -> Quantity a [u| rad |]
 type RadToDeg a = Quantity a [u| rad |] -> Quantity a [u| deg |]
 
 qRandomR
-    :: (Real a, Fractional a, RandomGen g)
+    :: forall a g
+    .  (Real a, Fractional a, RandomGen g)
     => g
     -> Quantity a [u| rad |]
     -> Quantity a [u| rad |]
@@ -27,20 +29,14 @@ qRandomR
 qRandomR g (MkQuantity lo) (MkQuantity hi) =
     (z, g')
     where
-        (n, g') = next g
-        (a, b) = genRange g
+        lo', hi' :: Double
+        lo' = realToFrac lo
+        hi' = realToFrac hi
 
-        dn :: Double
-        dn = realToFrac hi - realToFrac lo
-
-        dd :: Double
-        dd = fromIntegral (b - a + 1)
-
-        scale :: Double
-        scale = dn / dd
+        (x, g') = uniformR (lo', hi') g
 
         y :: Quantity Double [u| rad |]
-        y = MkQuantity $ scale * fromIntegral (n - a) + realToFrac lo
+        y = MkQuantity x
 
         z :: Quantity _ [u| rad |]
         z = fromRational' . toRational' $ y

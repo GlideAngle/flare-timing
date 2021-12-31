@@ -15,13 +15,13 @@ import Flight.Geodesy.Solution (SeparatedZones)
 
 -- | The distance to goal checking for each crossing.
 dotToGoal
-    :: (Real b, Fractional b)
+    :: (Real a, Fractional a)
     => SeparatedZones a
-    -> (Zones -> [TaskZone b])
+    -> (Zones -> [TaskZone a])
     -> Reach _ _ _
     -> Task k
     -> MarkedFixes
-    -> Maybe (TaskDistance b)
+    -> Maybe (TaskDistance a)
     -- ^ Nothing indicates no such task or a task with no zones.
 dotToGoal
     sepZs fromZones dvz

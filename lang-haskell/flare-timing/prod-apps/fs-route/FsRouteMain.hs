@@ -1,10 +1,14 @@
+{-# LANGUAGE CPP #-}
+
 import Data.Coerce (coerce)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+#if __GLASGOW_HASKELL__ <= 802
 import Control.Monad (mapM_)
+#endif
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))

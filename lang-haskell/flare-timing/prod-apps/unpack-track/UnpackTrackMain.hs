@@ -1,4 +1,4 @@
-﻿{-# LANGUAGE BangPatterns #-}
+﻿{-# LANGUAGE CPP, BangPatterns #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -10,7 +10,9 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
+#if __GLASGOW_HASKELL__ <= 802
 import Control.Monad (mapM_)
+#endif
 import Control.DeepSeq
 import Control.Concurrent.ParallelIO (parallel_)
 import Control.Exception.Safe (catchIO)

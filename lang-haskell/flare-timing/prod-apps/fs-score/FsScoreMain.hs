@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -7,7 +9,9 @@ import Data.Maybe (catMaybes)
 import Data.List (sortOn)
 import qualified Data.Map.Strict as Map (fromList, lookup)
 import Control.Arrow (second)
+#if __GLASGOW_HASKELL__ <= 802
 import Control.Monad (mapM_)
+#endif
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)

@@ -1,4 +1,6 @@
-﻿module Flight.Types
+﻿{-# LANGUAGE CPP #-}
+
+module Flight.Types
     ( Fix(..)
     , LLA(..)
     , LatLngAlt(..)
@@ -16,7 +18,9 @@
 
 import Prelude hiding (min)
 import Control.DeepSeq
+#if __GLASGOW_HASKELL__ <= 802
 import Data.Semigroup
+#endif
 import Text.Printf (printf)
 import Data.Time.Clock (UTCTime(..), addUTCTime, diffUTCTime)
 import Data.List (findIndex, findIndices, sort, nub)

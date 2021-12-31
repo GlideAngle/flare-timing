@@ -1,9 +1,13 @@
+{-# LANGUAGE CPP #-}
+
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+#if __GLASGOW_HASKELL__ <= 802
 import Control.Monad (mapM_)
+#endif
 import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 import Control.Exception.Safe (catchIO)

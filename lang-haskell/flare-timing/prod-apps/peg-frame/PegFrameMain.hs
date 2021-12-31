@@ -77,7 +77,7 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Pegging the scoring frame completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile = do
+go CmdBatchOptions{} compFile = do
 
     filesTaskAndSettings <-
         catchIO

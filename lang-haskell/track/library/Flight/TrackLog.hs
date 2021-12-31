@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP, BangPatterns #-}
 
 {-|
 Module      : Flight.TrackLog
@@ -29,6 +29,7 @@ import Data.Char (toLower)
 import Control.DeepSeq
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
+#if __GLASGOW_HASKELL__ <= 802
 import System.FilePath
     ( FilePath
     , (</>)
@@ -38,6 +39,16 @@ import System.FilePath
     , joinPath
     , takeExtension
     )
+#else
+import System.FilePath
+    ( (</>)
+    , takeDirectory
+    , normalise
+    , splitDirectories
+    , joinPath
+    , takeExtension
+    )
+#endif
 import Data.Set (Set)
 import qualified Data.Set as Set
 

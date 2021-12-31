@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {-|
 Module: Flight.Kml
 Copyright:
@@ -67,7 +69,9 @@ import Text.XML.HXT.Core
     , orElse
     , constA
     )
+#if __GLASGOW_HASKELL__ <= 802
 import Data.List (concatMap)
+#endif
 import qualified Flight.Types as T (LatLngAlt(..), FixMark(..))
 import Flight.Types
     ( LLA(..)

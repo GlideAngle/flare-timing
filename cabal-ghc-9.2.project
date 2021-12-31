@@ -1,0 +1,124 @@
+packages:
+
+      lang-haskell/detour-via-sci
+    , lang-haskell/detour-via-uom
+    , lang-haskell/tasty-compare
+    , lang-haskell/siggy-chardust
+
+    , lang-haskell/hcoord/hcoord
+    , lang-haskell/hcoord/hcoord-utm
+    , lang-haskell/exact-real
+    , lang-haskell/uom-plugin/uom-plugin
+    , lang-haskell/uom-plugin/ghc-corroborate/ghc-corroborate
+
+    , lang-haskell/clip
+    , lang-haskell/cmd
+    , lang-haskell/comp
+    , lang-haskell/earth
+    , lang-haskell/fsdb
+    , lang-haskell/gap-allot
+    , lang-haskell/gap-effort
+    , lang-haskell/gap-lead
+    , lang-haskell/gap-math
+    , lang-haskell/gap-stop
+    , lang-haskell/gap-valid
+    , lang-haskell/gap-weight
+    , lang-haskell/gap
+    , lang-haskell/igc
+    , lang-haskell/kml
+    , lang-haskell/latlng
+    , lang-haskell/lookup
+    , lang-haskell/mask
+    , lang-haskell/route
+    , lang-haskell/scribe
+    , lang-haskell/span
+    , lang-haskell/task
+    , lang-haskell/time
+    , lang-haskell/track
+    , lang-haskell/units
+    , lang-haskell/zone
+
+    , lang-haskell/flare-timing
+    -- , lang-haskell/app-serve
+    --  lang-haskell/build
+
+package flight-clip
+    tests: true
+package flight-cmd
+    tests: true
+package flight-comp
+    tests: true
+package detour-via-sci
+    tests: true
+package detour-via-uom
+    tests: true
+package flight-earth
+    tests: true
+package flight-flare-timing
+    tests: true
+package flight-fsdb
+    tests: true
+package flight-gap-allot
+    tests: true
+    flags: +suppress-failing-tests
+package flight-gap-effort
+    tests: true
+    flags: +suppress-failing-tests
+package flight-gap-lead
+    tests: true
+    flags: -suppress-failing-tests
+package flight-gap-math
+    tests: true
+    flags: +suppress-failing-tests
+package flight-gap-stop
+    tests: true
+    flags: -suppress-failing-tests
+package flight-gap-valid
+    tests: true
+package flight-gap-weight
+    tests: true
+package flight-gap
+    tests: true
+package flight-igc
+    tests: true
+package flight-kml
+    tests: true
+package flight-latlng
+    tests: true
+package flight-lookup
+    tests: true
+package flight-mask
+    tests: true
+package flight-route
+    tests: true
+package flight-scribe
+    tests: true
+package siggy-chardust
+    tests: true
+package flight-span
+    tests: true
+package flight-task
+    tests: true
+package tasty-compare
+    tests: true
+package flight-time
+    tests: true
+package flight-track
+    tests: true
+package flight-units
+    tests: true
+    flags: +suppress-failing-tests
+package flight-zone
+    tests: true
+package flare-timing
+    tests: true
+package hcoord
+    tests: false
+package hcoord-utm
+    tests: false
+package exact-real
+    tests: false
+allow-newer:
+    facts:template-haskell
+    , hxt-pickle-utils:base
+    , megaparsec
