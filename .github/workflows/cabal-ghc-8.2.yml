@@ -22,7 +22,7 @@ jobs:
         submodules: true
 
     - name: init submodule uom-plugin/ghc-corroborate
-    - run: |
+      run: |
         cd lang-haskell/uom-plugin
         git submodule update --init --recursive
 
