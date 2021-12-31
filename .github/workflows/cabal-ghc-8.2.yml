@@ -2,7 +2,7 @@ name: cabal
 
 on:
   push:
-    branches: [ci-cabal, fix/haskell-actions-setup-519]
+    branches: [ci-cabal, wip/ghc-9.2-minimal]
   pull_request:
     branches: [master]
 
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cabal: ["3.0"]
+        cabal: ["3.6"]
         ghc:
           - "8.2.2"
 
