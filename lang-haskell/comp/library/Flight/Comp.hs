@@ -76,8 +76,7 @@ module Flight.Comp
 
 import Data.Refined (assumeProp, refined)
 import Data.Ratio ((%))
-import Data.Time.Clock (UTCTime)
-import Data.Time.Clock (addUTCTime)
+import Data.Time.Clock (UTCTime, addUTCTime)
 import GHC.Generics (Generic)
 import Control.DeepSeq
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -245,7 +244,7 @@ unpackOpenClose = \case
 type TimePass = UTCTime -> Bool
 
 gateTimeCheck :: JumpTheGunLimit (Quantity Double [u| s |]) -> StartGate -> TimePass
-gateTimeCheck (JumpTheGunLimit (MkQuantity limit)) (StartGate sg) = \t ->
+gateTimeCheck (JumpTheGunLimit (MkQuantity limit)) (StartGate sg) t =
     let limit' = negate $ fromIntegral (round limit :: Int)
         earliestStart = limit' `addUTCTime` sg
         notEarly = earliestStart <= t
@@ -256,7 +255,7 @@ gateTimeCheck (JumpTheGunLimit (MkQuantity limit)) (StartGate sg) = \t ->
 -- then for jump the gun to work pilots must be able to start before the gate
 -- open time.
 zoneTimeCheck :: JumpTheGunLimit (Quantity Double [u| s |]) -> OpenClose -> TimePass
-zoneTimeCheck (JumpTheGunLimit (MkQuantity limit)) OpenClose{open, close} = \t ->
+zoneTimeCheck (JumpTheGunLimit (MkQuantity limit)) OpenClose{open, close} t =
     let notLate = t <= close
         limit' = negate $ fromIntegral (round limit :: Int)
         earliestStart = limit' `addUTCTime` open
@@ -269,7 +268,7 @@ timeCheck EarlyStart{earliest} startGates zoneTimes =
     [
         let zoneCheck = maybe (const True) (zoneTimeCheck earliest) oc
             gateChecks = gateTimeCheck earliest <$> startGates
-            gatesCheck t = null startGates || (or $ ($ t) <$> gateChecks)
+            gatesCheck t = null startGates || or (($ t) <$> gateChecks)
         in (\t -> zoneCheck t && gatesCheck t)
 
     | oc <- unpackOpenClose zoneTimes

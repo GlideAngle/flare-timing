@@ -66,7 +66,7 @@ pilotEssTime _ StartEnd{unEnd = Nothing} = (Nothing, Nothing)
 pilotEssTime gs StartEnd{unStart, unEnd = e@(Just _)} =
     maybe
         (Nothing, e)
-        (\gs' -> (const e) <$> (startGateTaken gs' unStart))
+        (\gs' -> const e <$> startGateTaken gs' unStart)
         (nonEmpty gs)
 
 -- | The start gate the pilot took.

@@ -70,8 +70,7 @@ effortRank CompLanding{difficulty} =
             ( (\TrackEffort{frac = DifficultyFraction x} -> negate x)
             . snd
             )
-        . concat
-        . fmap chunkEffort
+        . concatMap chunkEffort
         )
         d
     | d <- difficulty

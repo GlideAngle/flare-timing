@@ -106,7 +106,7 @@ go math compFile = do
         ( Just (_taskFiles, settings)
             , Just CompFlying{flying}
             , Just CompCrossing{crossing}) -> do
-            let CompTaskSettings{tasks, comp = Comp{earthMath, give}} = uncurry mkCompTaskSettings $ settings
+            let CompTaskSettings{tasks, comp = Comp{earthMath, give}} = uncurry mkCompTaskSettings settings
             let pss :: [[PilotTrackTag]] =
                     [
                         (\case

@@ -88,16 +88,16 @@ xpReach =
         <+> hasName "best_real_dist"
         )
     $ xpWrap
-        ( (\(bdE, bdF) ->
+        ( \(bdE, bdF) ->
                 ReachToggle
                     { extra = FlownMax $ MkQuantity bdE
                     , flown = FlownMax $ MkQuantity bdF
-                    })
-        , (\ReachToggle
+                    }
+        , \ReachToggle
                 { extra = FlownMax (MkQuantity bdE)
                 , flown = FlownMax (MkQuantity bdF)
                 } ->
-                    (bdE, bdF))
+                    (bdE, bdF)
         )
     $ xpPair
         (xpAttr "best_dist" xpPrim)

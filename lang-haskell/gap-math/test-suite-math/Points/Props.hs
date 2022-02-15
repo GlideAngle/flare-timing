@@ -37,17 +37,17 @@ import Points.Round ((<&>))
 hgTaskPoints :: PtTest Hg -> Bool
 hgTaskPoints (PtTest sitrep eg js others parts) =
     let expected = correct sitrep eg js others parts
-        actual = (FS.taskPoints sitrep eg js others parts) <&> total
+        actual = FS.taskPoints sitrep eg js others parts <&> total
     in actual == expected
 
 pgTaskPoints :: PtTest Pg -> Bool
 pgTaskPoints (PtTest sitrep eg js others parts) =
     let expected = correct sitrep eg js others parts
-        actual = (FS.taskPoints sitrep eg js others parts) <&> total
+        actual = FS.taskPoints sitrep eg js others parts <&> total
     in actual == expected
 
 correct
-    :: forall a. (SitRep a)
+    :: forall a. SitRep a
     -> (GoalValidatedPoints -> PenaltySeq)
     -> PenaltySeq
     -> PenaltySeqs

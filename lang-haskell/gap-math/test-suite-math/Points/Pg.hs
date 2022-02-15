@@ -29,6 +29,8 @@ import "flight-gap-math" Flight.Score
     )
 import Points.Round ((<&>))
 
+{-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
+
 egPgPenalty :: FS.GoalValidatedPoints -> FS.PenaltySeq
 egPgPenalty = egPenalty $ EGwScaling 0
 
@@ -66,22 +68,23 @@ pgUnits :: TestTree
 pgUnits = testGroup "PG Points"
     [ testGroup "Nominal"
         [ HU.testCase "✓ Zero for each component sum to zero task points" $
-            ((FS.taskPoints
+            FS.taskPoints
                 NominalPg
                 egPgPenalty
                 idSeq
                 nullSeqs
-                zeroPoints) <&> total)
+                zeroPoints
+                <&> total
                 @?=
                     Right (TaskPoints 0)
 
         , HU.testCase "✓ Task points are the sum of reach, leading, time and arrival" $
-            (FS.taskPoints
+            FS.taskPoints
                 NominalPg
                 egPgPenalty
                 idSeq
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -97,32 +100,32 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✘ With jump penalty points" $
-            (FS.taskPoints
+            FS.taskPoints
                 NominalPg
                 egPgPenalty
                 (addSeq $ negate 1)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     (Left $ WAT_Nominal_Pg (NominalPg, addSeq $ negate 1, nullSeqs))
 
         , HU.testCase "✘ Applying jump penalty fraction" $
-            (FS.taskPoints
+            FS.taskPoints
                 NominalPg
                 egPgPenalty
                 (mulSeq 0)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     (Left $ WAT_Nominal_Pg (NominalPg, mulSeq 0, nullSeqs))
 
         , HU.testCase "✘ Applying jump penalty reset" $
-            (FS.taskPoints
+            FS.taskPoints
                 NominalPg
                 egPgPenalty
                 (resetSeq $ Just 1)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     (Left $ WAT_Nominal_Pg (NominalPg, resetSeq $ Just 1, nullSeqs))
 
@@ -159,12 +162,12 @@ pgUnits = testGroup "PG Points"
                         -}
 
         , HU.testCase "✓ Applying a bonus fractio increases score" $
-            (FS.taskPoints
+            FS.taskPoints
                 NominalPg
                 egPgPenalty
                 idSeq
                 nullSeqs{muls = [mkMul 2]}
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -182,54 +185,54 @@ pgUnits = testGroup "PG Points"
 
     , testGroup "ESS but no goal"
         [ HU.testCase "✓ Task points are the sum of reach and leading, ignoring time and arrival" $
-            (FS.taskPoints
+            FS.taskPoints
                 NoGoalPg
                 egPgPenalty
                 idSeq
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right essNoGoalPg
 
         , HU.testCase "✓ With jump penalty fraction == 1 (the identity of multiplication)" $
-            (FS.taskPoints
+            FS.taskPoints
                 NoGoalPg
                 egPgPenalty
                 (mulSeq 1)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right essNoGoalPg
 
         , HU.testCase "✓ With jump penalty points == 0 (the identity of addition)" $
-            (FS.taskPoints
+            FS.taskPoints
                 NoGoalPg
                 egPgPenalty
                 (addSeq 0)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right essNoGoalPg
 
         , HU.testCase "✓ XX With jump penalty points == ∅ (the identity of reset)" $
-            (FS.taskPoints
+            FS.taskPoints
                 NoGoalPg
                 (egPenalty $ EGwScaling 0)
                 (addSeq 0)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right essNoGoalPg
         ]
 
     , testGroup "Early"
         [ HU.testCase "✓ distance to start points only, ignoring effort and arrival, jump reset generated" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 idSeq
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -245,12 +248,12 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✓ distance to start points only, ignoring effort and arrival, jump reset applied" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (resetSeq $ Just 1)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -266,12 +269,12 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✓ other score-lowering reset can't raise the total" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (resetSeq $ Just 1)
                 nullSeqs{adds = [mkAdd $ negate 1], muls = [mkMul 0.5]}
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -291,12 +294,12 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✓ other non-reset score-raising penalties don't change total" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (resetSeq (Just 1))
                 nullSeqs{adds = [mkAdd 1], muls = [mkMul 2]}
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -317,12 +320,12 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✓ taking the smallest reset penalty from jump and other sets" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart2)
                 egPgPenalty
                 (resetSeq $ Just 2)
                 nullSeqs{resets = [mkReset $ Just 1]}
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -338,52 +341,52 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✘ error on wrong reset applied" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (resetSeq $ Just 2)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     (Left $ EQ_Early_Reset (Early launchToStart1, mkReset $ Just 2))
 
         , HU.testCase "✘ error on wrong type of jump penalty, a point penalty, applied" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (addSeq $ negate 1)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     (Left $ WAT_Early_Jump (Early launchToStart1, addSeq $ negate 1))
 
         , HU.testCase "✘ error on wrong type of penalty, a fraction penalty, applied" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (mulSeq 0.5)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     (Left $ WAT_Early_Jump (Early launchToStart1, mulSeq 0.5))
 
         , HU.testCase "✘ error on wrong type of penalty, a fraction penalty, applied, with other resets" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (mulSeq 0.5)
                 nullSeqs{resets = [mkReset $ Just 0]}
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     (Left $ WAT_Early_Jump (Early launchToStart1, mulSeq 0.5))
 
         , HU.testCase "✓ Tolerates no explicit jump penalty" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 idSeq
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -399,12 +402,12 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✓ With jump penalty fraction = 1 (the identity of multiplication)" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (mulSeq 1)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -420,12 +423,12 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✓ With jump penalty points = 0 (the identity of addition)" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (addSeq 0)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -441,12 +444,12 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✓ With jump reset points = ∅ (the identity of reset)" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 (resetSeq Nothing)
                 nullSeqs
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -462,12 +465,12 @@ pgUnits = testGroup "PG Points"
                         }
 
         , HU.testCase "✓ Overriden by other reset to zero" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart1)
                 egPgPenalty
                 idSeq
                 nullSeqs{resets = [mkReset $ Just 0]}
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     Right
                     PointsReduced
@@ -499,12 +502,12 @@ pgUnits = testGroup "PG Points"
                         -}
 
         , HU.testCase "✘ Ignores other penalty fraction that would increase the score" $
-            (FS.taskPoints
+            FS.taskPoints
                 (Early launchToStart7)
                 egPgPenalty
                 (resetSeq $ Just 11)
                 nullSeqs{resets = [mkReset $ Just 1]}
-                ptsAllOne)
+                ptsAllOne
                 @?=
                     (Left $ EQ_Early_Reset (Early launchToStart7, mkReset $ Just 11))
         ]

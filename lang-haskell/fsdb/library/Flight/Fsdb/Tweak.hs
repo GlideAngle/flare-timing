@@ -39,7 +39,7 @@ import Flight.Fsdb.Internal.XmlPickle (xpBool)
 
 -- | The default is to use the square of leading area distance since 2016.
 leadingSquareAreaDefault :: String -> Bool
-leadingSquareAreaDefault formula = not $ formula `elem` xs where
+leadingSquareAreaDefault formula = formula `notElem` xs where
     xs =
         [ "OzGAP2005"
         , "GAP2000"

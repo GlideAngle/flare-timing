@@ -27,12 +27,12 @@ class GeoSliver g a => GeoTagInterpolate g a where
         -> TaskZone g
         -> LatLng g [u| rad |]
         -> LatLng g [u| rad |]
-        -> Zs ([LatLng g [u| rad |]])
+        -> Zs [LatLng g [u| rad |]]
 
     fractionate
         :: Trig g a
         => Earth g
-        -> Zs ([LatLng g [u| rad |]])
+        -> Zs [LatLng g [u| rad |]]
         -> Maybe (LatLng g [u| rad |], g)
 
     -- | Given two points on either side of a zone, what is the crossing tag.

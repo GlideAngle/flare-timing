@@ -56,13 +56,13 @@ distanceVincentyF :: VincentyTest Double -> Bool
 distanceVincentyF (VincentyTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = (spanD wgs84) x y
+        TaskDistance d = spanD wgs84 x y
 
 distanceVincenty :: VincentyTest Rational -> Bool
 distanceVincenty (VincentyTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = (spanR wgs84) x y
+        TaskDistance d = spanR wgs84 x y
 
 distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =

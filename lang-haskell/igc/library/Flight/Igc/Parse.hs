@@ -196,17 +196,20 @@ security = do
     return G
 {-# INLINE security #-}
 
+parseYMD :: Parser YMD
+parseYMD = do
+    dd <- Day <$> digitInt2
+    mm <- Month <$> digitInt2
+    yy <- Year <$> digitInt2
+    return $ YMD {year = yy, month = mm, day = dd}
+
 -- |
 -- >>> parseTest dateHFDTEDATE "HFDTEDATE:030118,01"
 -- 2018-01-03, 01
 dateHFDTEDATE :: Parser IgcRecord
 dateHFDTEDATE = do
     _ <- string "HFDTEDATE:"
-
-    dd <- Day <$> digitInt2
-    mm <- Month <$> digitInt2
-    yy <- Year <$> digitInt2
-    let ymd = YMD {year = yy, month = mm, day = dd}
+    ymd <- parseYMD
 
     _ <- string ","
     nn <- Nth <$> count 2 digit
@@ -220,13 +223,7 @@ dateHFDTEDATE = do
 dateHFDTE :: Parser IgcRecord
 dateHFDTE = do
     _ <- string "HFDTE"
-
-    dd <- Day <$> digitInt2
-    mm <- Month <$> digitInt2
-    yy <- Year <$> digitInt2
-    let ymd = YMD {year = yy, month = mm, day = dd}
-
-    return $ HFDTE ymd
+    HFDTE <$> parseYMD
 {-# INLINE dateHFDTE #-}
 
 ignore :: Parser IgcRecord
@@ -306,7 +303,7 @@ notNewLine = satisfy (\x -> x /= '\r' && x /= '\n')
 parse
    :: ByteString -- ^ A string to parse
    -> Either String [IgcRecord]
-parse s = P.parseOnly igcFile s
+parse = P.parseOnly igcFile
 
 parseFromFile
     :: FilePath -- ^ An IGC file to parse.

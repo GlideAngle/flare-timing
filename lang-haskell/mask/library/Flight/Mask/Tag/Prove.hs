@@ -19,23 +19,21 @@ import Flight.Mask.Internal.Zone
     , fixFromFix
     )
 
+zoneCrossFixes :: UTCTime -> [Kml.Fix] -> ZoneIdx -> ZoneIdx -> Maybe (Fix, Fix)
+zoneCrossFixes mark0 fixes i@(ZoneIdx i') j@(ZoneIdx j') = do
+    fixM <- fixes ^? element i'
+    fixN <- fixes ^? element j'
+    let f = fixFromFix mark0
+    return (f i fixM, f j fixN)
+
+keep :: TimePass -> UTCTime -> [Kml.Fix] -> ZoneIdx -> ZoneIdx -> Bool
+keep pass mark0 fixes i j = fromMaybe False $ do
+    (Fix{time = ti}, Fix{time = tj}) <- zoneCrossFixes mark0 fixes i j
+    return $ pass ti || pass tj
+
 keepCrossing :: TimePass -> UTCTime -> [Kml.Fix] -> Crossing -> Bool
-
-keepCrossing pass mark0 fixes (Left (ZoneEntry i@(ZoneIdx i') j@(ZoneIdx j'))) =
-    fromMaybe False $ do
-        fixM <- fixes ^? element i'
-        fixN <- fixes ^? element j'
-        let f = fixFromFix mark0
-        let [Fix{time = ti}, Fix{time = tj}] = [f i fixM, f j fixN]
-        return $ pass ti || pass tj
-
-keepCrossing pass mark0 fixes (Right (ZoneExit i@(ZoneIdx i') j@(ZoneIdx j'))) =
-    fromMaybe False $ do
-        fixM <- fixes ^? element i'
-        fixN <- fixes ^? element j'
-        let f = fixFromFix mark0
-        let [Fix{time = ti}, Fix{time = tj}] = [f i fixM, f j fixN]
-        return $ pass ti || pass tj
+keepCrossing pass mark0 fixes (Left (ZoneEntry i j)) = keep pass mark0 fixes i j
+keepCrossing pass mark0 fixes (Right (ZoneExit i j)) = keep pass mark0 fixes i j
 
 -- | Prove from the fixes and mark that the crossing exits. We don't know the
 -- interpolated crossing point and time yet so we'll accept a crossing where
@@ -48,12 +46,9 @@ prove
     -> ZoneIdx
     -> [Bool]
     -> Maybe ZoneCross
-prove pass mark0 fixes i@(ZoneIdx i') j@(ZoneIdx j') bs = do
-    fixM <- fixes ^? element i'
-    fixN <- fixes ^? element j'
-    let f = fixFromFix mark0
-    let fs@[Fix{time = ti}, Fix{time = tj}] = [f i fixM, f j fixN]
-    let zc = ZoneCross{crossingPair = fs, inZone = bs}
+prove pass mark0 fixes i j bs = do
+    (f0@Fix{time = ti}, f1@Fix{time = tj}) <- zoneCrossFixes mark0 fixes i j
+    let zc = ZoneCross{crossingPair = [f0, f1], inZone = bs}
     if pass ti || pass tj then return zc else Nothing
 {-# INLINABLE prove #-}
 

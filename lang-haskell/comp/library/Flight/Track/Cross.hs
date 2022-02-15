@@ -30,7 +30,6 @@ module Flight.Track.Cross
 
 import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
-import Control.Monad (join)
 import GHC.Generics (Generic)
 import Control.DeepSeq
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -246,7 +245,7 @@ instance Ord ZoneTag where
         i `compare` j
 
 endOfFlying :: Maybe TrackFlyingSection -> Maybe UTCTime
-endOfFlying = join . fmap (fmap snd . flyingTimes)
+endOfFlying = ((fmap snd . flyingTimes) =<<)
 
 asIfFix :: ZoneTag -> Fix
 asIfFix ZoneTag{inter = InterpolatedFix{fixFrac, time, lat, lng, alt}} =

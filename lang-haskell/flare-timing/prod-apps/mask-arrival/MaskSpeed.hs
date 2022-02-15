@@ -3,7 +3,7 @@
 
 module MaskSpeed (maskSpeed) where
 
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (mapMaybe, fromMaybe, catMaybes)
 import Data.List (sortOn)
 import Control.Arrow (second)
 import Data.UnitsOfMeasure (u)
@@ -19,9 +19,7 @@ import "flight-gap-allot" Flight.Score
 import Stats (TimeStats(..), FlightStats(..))
 
 landAltitudes :: [(Pilot, FlightStats k)] -> [(Pilot, QAlt Double [u| m |])]
-landAltitudes xs =
-    catMaybes
-    $ fmap (\(p, FlightStats{..}) -> (p,) <$> statAlt) xs
+landAltitudes = mapMaybe (\(p, FlightStats{..}) -> (p,) <$> statAlt)
 
 times
     :: PowerExponent

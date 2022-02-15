@@ -13,7 +13,7 @@ import System.Console.CmdArgs.Implicit
     )
 
 -- | Options passed in on the command line.
-data KmlOptions
+newtype KmlOptions
     = KmlOptions
         { file :: FilePath
         -- ^ Picking the competition in this file.

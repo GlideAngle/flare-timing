@@ -4,6 +4,7 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
+import Data.Ord(Down(Down))
 import Data.List (sortOn)
 import qualified Data.Map.Strict as Map (fromList, lookup)
 import Control.Arrow (second)
@@ -141,7 +142,7 @@ normScores fsdbXml = do
     -- T for time.
     let tss =
             [
-                reverse . sortOn (total . snd) $
+                sortOn (Down . total . snd) $
                 maybe
                     xs
                     (\vs' ->
@@ -251,7 +252,7 @@ normScores fsdbXml = do
 
 arrivals :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, ArrivalFraction)]
 arrivals xs =
-    (\ lf -> second (g lf) <$> ys)
+    (\ lf -> second (arrivalFraction lf) <$> ys)
     <$> maxArrivalPoints cs
     where
         ys :: [(Pilot, ArrivalPoints)]
@@ -259,8 +260,6 @@ arrivals xs =
 
         cs :: [ArrivalPoints]
         cs = snd <$> ys
-
-        g arMax ar = arrivalFraction arMax ar
 
 reachFraction :: LinearPoints -> LinearPoints -> LinearFraction
 reachFraction (LinearPoints maxPts) (LinearPoints pts)
@@ -309,7 +308,7 @@ maxLeadingPoints xs = Just $ maximum xs
 
 reaches :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, LinearFraction)]
 reaches xs =
-    (\lf -> second (g lf) <$> ys) <$> maxLinearPoints cs
+    (\lf -> second (reachFraction lf) <$> ys) <$> maxLinearPoints cs
     where
         ys :: [(Pilot, LinearPoints)]
         ys = (\(p, AltBreakdown{breakdown = Points{reach = c}}) -> (p,c)) <$> xs
@@ -317,11 +316,9 @@ reaches xs =
         cs :: [LinearPoints]
         cs = snd <$> ys
 
-        g rMin r = reachFraction rMin r
-
 efforts :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, DifficultyFraction)]
 efforts xs =
-    (\lf -> second (g lf) <$> ys) <$> maxDifficultyPoints cs
+    (\lf -> second (effortFraction lf) <$> ys) <$> maxDifficultyPoints cs
     where
         ys :: [(Pilot, DifficultyPoints)]
         ys = (\(p, AltBreakdown{breakdown = Points{effort = c}}) -> (p,c)) <$> xs
@@ -329,11 +326,9 @@ efforts xs =
         cs :: [DifficultyPoints]
         cs = snd <$> ys
 
-        g eMin e = effortFraction eMin e
-
 distances :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, DistanceFraction)]
 distances xs =
-    (\lf -> second (g lf) <$> ys) <$> maxDistancePoints cs
+    (\lf -> second (distanceFraction lf) <$> ys) <$> maxDistancePoints cs
     where
         ys :: [(Pilot, DistancePoints)]
         ys = (\(p, AltBreakdown{breakdown = Points{distance = c}}) -> (p,c)) <$> xs
@@ -341,19 +336,15 @@ distances xs =
         cs :: [DistancePoints]
         cs = snd <$> ys
 
-        g dMin d = distanceFraction dMin d
-
 leads :: [(Pilot, AltBreakdown)] -> Maybe [(Pilot, LeadingFraction)]
 leads xs =
-    (\lf -> second (g lf) <$> ys) <$> maxLeadingPoints cs
+    (\lf -> second (leadingFraction lf) <$> ys) <$> maxLeadingPoints cs
     where
         ys :: [(Pilot, LeadingPoints)]
         ys = (\(p, AltBreakdown{breakdown = Points{leading = c}}) -> (p,c)) <$> xs
 
         cs :: [LeadingPoints]
         cs = snd <$> ys
-
-        g lcMin lc = leadingFraction lcMin lc
 
 times
     :: PowerExponent

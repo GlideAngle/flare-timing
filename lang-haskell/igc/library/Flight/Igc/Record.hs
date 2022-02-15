@@ -27,7 +27,7 @@ import GHC.Generics (Generic)
 import Control.DeepSeq
 import Text.Printf (printf)
 import Data.List (partition)
-import Test.QuickCheck (Arbitrary(..), frequency, oneof)
+import Test.QuickCheck (Gen, Arbitrary(..), frequency, oneof)
 
 -- | An altitude in metres.
 newtype Altitude = Altitude Int
@@ -176,8 +176,7 @@ instance Show IgcRecord where
          , show altB
          , "(" ++ show altG ++ ")"
          ]
-    show (HFDTEDATE {ymd, nth = Nth n}) =
-        concat [show ymd, ", ", n]
+    show HFDTEDATE{ymd, nth = Nth n} = concat [show ymd, ", ", n]
     show (HFDTE ymd) = show ymd
     show G = "G"
     show Ignore = "?"
@@ -198,11 +197,7 @@ instance Arbitrary Second where
     arbitrary = Second <$> arbitrary
 
 instance Arbitrary HMS where
-    arbitrary = do
-        h <- arbitrary
-        m <- arbitrary
-        s <- arbitrary
-        return $ HMS h m s
+    arbitrary = HMS <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance Arbitrary Lat where
     arbitrary =
@@ -218,6 +213,13 @@ instance Arbitrary Lng where
              , LngW <$> arbitrary <*> arbitrary
              ]
 
+genYMD :: Gen YMD
+genYMD = do
+    d <- Day <$> arbitrary
+    m <- Month <$> arbitrary
+    y <- Year <$> arbitrary
+    return $ YMD {year = y, month = m, day = d}
+
 instance Arbitrary IgcRecord where
     arbitrary =
         frequency
@@ -232,23 +234,15 @@ instance Arbitrary IgcRecord where
                      lat <- arbitrary
                      lng <- arbitrary
                      altBaro <- AltBaro . Altitude <$> arbitrary
-                     altGps <- (fmap $ AltGps . Altitude) <$> arbitrary
+                     altGps <- fmap (AltGps . Altitude) <$> arbitrary
                      return $ B hms (lat, lng, altBaro, altGps)
 
             d1 = do
-                     d <- Day <$> arbitrary
-                     m <- Month <$> arbitrary
-                     y <- Year <$> arbitrary
-                     let ymd = YMD {year = y, month = m, day = d}
+                     ymd <- genYMD
                      n <- Nth <$> arbitrary
                      return $ HFDTEDATE {ymd = ymd, nth = n}
 
-            d2 = do
-                     d <- Day <$> arbitrary
-                     m <- Month <$> arbitrary
-                     y <- Year <$> arbitrary
-                     let ymd = YMD {year = y, month = m, day = d}
-                     return $ HFDTE ymd
+            d2 = HFDTE <$> genYMD
 
 -- |
 -- >>> addHoursHms (Hour 0) (HMS (Hour 0) (MinuteOfTime 0) (Second 0))

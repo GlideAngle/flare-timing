@@ -58,9 +58,9 @@ xpRankScore =
         -- points are positive but airscore writes it empty, not parsable as a
         -- UTC time. Guard against that parse with the check on @arrival_points.
         ( \(a, es) -> (ArrivalPoints $ dToR a,) <$> (parseUtcTime <$> if a > 0 then es else Nothing)
-        , (\case
+        , \case
             Nothing -> (0, Nothing)
-            Just (ArrivalPoints a, es) -> (fromRational a, Just $ show es))
+            Just (ArrivalPoints a, es) -> (fromRational a, Just $ show es)
         )
     $ xpPair
         (xpAttr "arrival_points" xpPrim)
@@ -106,7 +106,7 @@ getScore pilots =
                     >>> arr (\(pid, x) -> do
                             y :: (Maybe (ArrivalPoints, UTCTime)) <- x
                             z :: (ArrivalPoints, UTCTime) <- y
-                            return $
+                            return
                                 (unKeyPilot (keyMap kps) . PilotId $ pid
                                 , z
                                 ))

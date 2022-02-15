@@ -94,9 +94,9 @@ compDistance
         -- ^ The lead time of the point closest to goal.
         )
 compDistance dMin lsTask psArriving psLandingOut tsBest rows =
-    ( (fmap . fmap) (TaskDistance . MkQuantity . ((*) 1000000)) dsSumArriving
-    , (fmap . fmap) (TaskDistance . MkQuantity . ((*) 1000000)) dsSumLandingOut
-    , (fmap . fmap) (TaskDistance . MkQuantity . ((*) 1000)) dsBest
+    ( (fmap . fmap) (TaskDistance . MkQuantity . (1000000 *)) dsSumArriving
+    , (fmap . fmap) (TaskDistance . MkQuantity . (1000000 *)) dsSumLandingOut
+    , (fmap . fmap) (TaskDistance . MkQuantity . (1000 *)) dsBest
     , rowTicks
     )
     where

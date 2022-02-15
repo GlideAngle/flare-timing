@@ -78,7 +78,7 @@ go CmdBatchOptions{..} compFile = do
         (Nothing, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing) -> putStrLn "Couldn't read the maskings."
         (Just (_taskFiles, settings), Just mk) ->
-            let cs = uncurry mkCompTaskSettings $ settings
+            let cs = uncurry mkCompTaskSettings settings
             in writeCompLandOut compFile $ difficulty cs mk
 
 difficulty :: CompTaskSettings k -> CompMaskingEffort -> Cmp.CompLanding

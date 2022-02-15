@@ -733,13 +733,12 @@ getTaskPilotPenaltiesAuto pilots =
                     getChildren
                     >>> hasName "FsParticipant"
                         `containing`
-                        (( getChildren
+                        ( getChildren
                         >>> hasName "FsResult"
                         >>> hasAttr "penalty_points_auto"
                         >>> hasAttr "penalty_reason_auto")
                         `notContaining`
-                        ( hasAttrValue "penalty_points_auto" (== "0")
-                        ))
+                        hasAttrValue "penalty_points_auto" (== "0")
                     >>> getAttrValue "id"
                     &&& getResultPenaltyAuto
                     >>> arr (\(pid, x) ->

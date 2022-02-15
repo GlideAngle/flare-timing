@@ -165,57 +165,57 @@ spec_From_YAML = do
     it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
         $ ydec
         [hereFile|ydec/alt-time.yaml|]
-        `shouldBe` (Right altTime)
+        `shouldBe` Right altTime
 
     it ("decodes a bearing of 1.57 rad as " ++ show bearing')
         $ ydec
         [hereFile|ydec/bearing.yaml|]
-        `shouldBe` (Right bearing')
+        `shouldBe` Right bearing'
 
     it ("decodes an incline of 90° as " ++ show incline)
         $ ydec
         [hereFile|ydec/incline-90.yaml|]
-        `shouldBe` (Right incline)
+        `shouldBe` Right incline
 
     it ("decodes an incline of 11.223° as " ++ show incline')
         $ ydec
         [hereFile|ydec/incline-11.yaml|]
-        `shouldBe` (Right incline')
+        `shouldBe` Right incline'
 
     it ("decodes a radius of 11.2 m as " ++ show radius')
         $ ydec
         [hereFile|ydec/radius.yaml|]
-        `shouldBe` (Right radius)
+        `shouldBe` Right radius
 
     it "decodes a point zone kind"
         $ ydec
         [hereFile|ydec/point.yaml|]
-        `shouldBe` (Right zkPt)
+        `shouldBe` Right zkPt
 
     it "decodes a cylinder zone kind"
         $ ydec
         [hereFile|ydec/cylinder.yaml|]
-        `shouldBe` (Right zkCyl)
+        `shouldBe` Right zkCyl
 
     it "decodes a circle zone kind"
         $ ydec
         [hereFile|ydec/circle.yaml|]
-        `shouldBe` (Right zkCircle)
+        `shouldBe` Right zkCircle
 
     it "decodes an ESS is goal race"
         $ ydec
         [hereFile|ydec/ess-is-goal-race.yaml|]
-        `shouldBe` (Right tzEssIsGoalRace)
+        `shouldBe` Right tzEssIsGoalRace
 
     it "decodes an ESS is not goal race"
         $ ydec
         [hereFile|ydec/ess-is-not-goal-race.yaml|]
-        `shouldBe` (Right tzEssIsNotGoalRace)
+        `shouldBe` Right tzEssIsNotGoalRace
 
     it "decodes an ESS is not goal race with prolog and epilog"
         $ ydec
         [hereFile|ydec/ess-is-not-goal-race-pro-epi.yaml|]
-        `shouldBe` (Right tzEssIsNotGoalRaceProEpi)
+        `shouldBe` Right tzEssIsNotGoalRaceProEpi
 
 spec_To_JSON :: Spec
 spec_To_JSON = do
@@ -279,57 +279,57 @@ spec_From_JSON = do
     it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
         $ decode
         [hereFile|jdec/alt-time.json|]
-        `shouldBe` (Just altTime)
+        `shouldBe` Just altTime
 
     it ("decodes a bearing of 1.57 rad as " ++ show bearing')
         $ decode
         [hereFile|jdec/bearing.json|]
-        `shouldBe` (Just bearing')
+        `shouldBe` Just bearing'
 
     it ("decodes an incline of 90° as " ++ show incline)
         $ decode
         [hereFile|jdec/incline-90.json|]
-        `shouldBe` (Just incline)
+        `shouldBe` Just incline
 
     it ("decodes an incline of 11.223° as " ++ show incline')
         $ decode
         [hereFile|jdec/incline-11.json|]
-        `shouldBe` (Just incline')
+        `shouldBe` Just incline'
 
     it ("decodes a radius of 11.2 m as " ++ show radius')
         $ decode
         [hereFile|jdec/radius.json|]
-        `shouldBe` (Just radius')
+        `shouldBe` Just radius'
 
     it "decodes a point zone kind"
         $ decode
         [hereFile|jdec/point.json|]
-        `shouldBe` (Just zkPt)
+        `shouldBe` Just zkPt
 
     it "decodes a cylinder zone kind"
         $ decode
         [hereFile|jdec/cylinder.json|]
-        `shouldBe` (Just zkCyl)
+        `shouldBe` Just zkCyl
 
     it "decodes a circle zone kind"
         $ decode
         [hereFile|jdec/circle.json|]
-        `shouldBe` (Just zkCircle)
+        `shouldBe` Just zkCircle
 
     it "decodes an ESS is goal race"
         $ decode
         [hereFile|jdec/ess-is-goal-race.json|]
-        `shouldBe` (Just tzEssIsGoalRace)
+        `shouldBe` Just tzEssIsGoalRace
 
     it "decodes an ESS is not goal race"
         $ decode
         [hereFile|jdec/ess-is-not-goal-race.json|]
-        `shouldBe` (Just tzEssIsNotGoalRace)
+        `shouldBe` Just tzEssIsNotGoalRace
 
     it "decodes an ESS is not goal race with prolog and epilog"
         $ decode
         [hereFile|jdec/ess-is-not-goal-race-pro-epi.json|]
-        `shouldBe` (Just tzEssIsNotGoalRaceProEpi)
+        `shouldBe` Just tzEssIsNotGoalRaceProEpi
 
 deg90 :: Quantity Double [u| deg |]
 deg90 = [u| 90 deg |]

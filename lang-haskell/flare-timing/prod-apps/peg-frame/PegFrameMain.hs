@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Prelude hiding (head, last)
-import Data.Maybe (catMaybes)
+import Data.Maybe (isNothing, catMaybes)
 import Data.List.NonEmpty (nonEmpty, head, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -11,7 +11,6 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
-import Control.Monad (join)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
 import Data.Map (Map)
@@ -103,7 +102,7 @@ go CmdBatchOptions{..} compFile = do
         (_, _, Nothing) -> putStrLn "Couldn't read the taggings."
         (Just (_, settings), Just fy, Just tg) ->
             writeStop
-                (uncurry mkCompTaskSettings $ settings)
+                (uncurry mkCompTaskSettings settings)
                 compFile
                 fy
                 tg
@@ -141,7 +140,7 @@ writeStop
 
                         -- NOTE: A race task with a single start gate. All
                         -- pilots share the same start.
-                        (StartGate t0) : [] ->
+                        [StartGate t0] ->
                             return
                                 StopWindow
                                     { lastStartTime = tN
@@ -173,7 +172,15 @@ writeStop
             (const $ return Nothing)
 
     let trackss :: [Map Pilot [TrackRow]] =
-            maybe (repeat $ Map.empty) (fmap (Map.fromList . catMaybes)) trackss'
+            maybe (repeat Map.empty) (fmap (Map.fromList . catMaybes)) trackss'
+
+    let secs t (t0, t1) w0 =
+            let delta0 = t `diffUTCTime` t0
+                delta1 = t1 `diffUTCTime` t
+                r0 = round delta0
+                r1 = round delta1
+            in
+                (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
 
     let sfss :: [[(Pilot, (Maybe TrackScoredSection, Maybe TrackRacingGateSection))]] =
             [
@@ -200,7 +207,7 @@ writeStop
                                 let delta = round $ t1 `diffUTCTime` t0
                                 let st = Just (t0, t1)
                                 let track = Map.lookup p tracks
-                                let si = join $ scoredIndices st <$> track
+                                let si = scoredIndices st =<< track
 
                                 return
                                     ( TrackScoredSection
@@ -224,10 +231,10 @@ writeStop
                                 let track = Map.lookup p tracks
 
                                 let st = Just (t0, t1)
-                                let si = join $ scoredIndices st <$> track
+                                let si = scoredIndices st =<< track
 
                                 let rgt = Just (tG, t1)
-                                let rgi = join $ scoredIndices rgt <$> track
+                                let rgi = scoredIndices rgt =<< track
 
                                 let sfSecs =
                                         do
@@ -237,11 +244,7 @@ writeStop
                                 let rgSecs =
                                         do
                                             (Seconds w0, _) <- flyingSeconds
-                                            let delta0 = tG `diffUTCTime` t0
-                                            let delta1 = t1 `diffUTCTime` tG
-                                            let r0 = round delta0
-                                            let r1 = round delta1
-                                            return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
+                                            return $ secs tG (t0, t1) w0
 
                                 return
                                     ( TrackScoredSection
@@ -270,7 +273,7 @@ writeStop
 
     let tagss :: [[PilotTrackTag]] =
             [
-                if sw == Nothing then pts else
+                if isNothing sw then pts else
                 [
                     PilotTrackTag p $ do
                         TrackTag{zonesTag = zs} <- tt
@@ -311,16 +314,12 @@ writeStop
                             let track = Map.lookup p tracks
 
                             let rst = Just (tS, t1)
-                            let rsi = join $ scoredIndices rst <$> track
+                            let rsi = scoredIndices rst =<< track
 
                             let rsSecs =
                                     do
                                         (Seconds w0, _) <- flyingSeconds
-                                        let delta0 = tS `diffUTCTime` t0
-                                        let delta1 = t1 `diffUTCTime` tS
-                                        let r0 = round delta0
-                                        let r1 = round delta1
-                                        return (Seconds r1, (Seconds $ w0 + r0, Seconds $ w0 + r0 + r1))
+                                        return $ secs tS (t0, t1) w0
 
                             return
                                 TrackRacingStartSection

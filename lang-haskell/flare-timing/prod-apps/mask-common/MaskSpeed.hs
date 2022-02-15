@@ -42,5 +42,5 @@ times pe f xs =
 maskSpeedBestTime
     :: PowerExponent
     -> [[(Pilot, FlightStats k)]]
-    -> ([Maybe (BestTime (Quantity Double [u| h |]))])
+    -> [Maybe (BestTime (Quantity Double [u| h |]))]
 maskSpeedBestTime pe yss = (fmap . fmap) fst $ times pe gsTime <$> yss

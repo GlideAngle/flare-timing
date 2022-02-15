@@ -64,9 +64,9 @@ writeMask
     (_, selectedCompLogs) <- settingsLogs inFiles ixSelectTasks selectPilots
 
     fss :: [[IOStep k]] <-
-            sequence $
+            sequence
             [
-                parallel $
+                parallel
                 [ runExceptT $ pilotTrack (flown math flying tags tasks ixTask) pilotLog
                 | pilotLog <- taskLogs
                 ]

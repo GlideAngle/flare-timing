@@ -97,16 +97,16 @@ go CmdBatchOptions{pilot, math, task} compFile = do
         Nothing -> putStrLn "Couldn't read the comp settings."
         Just (taskFiles, settings@(cs, _)) -> do
             let inFiles = (compFile, taskFiles)
-            let CompTaskSettings{comp, tasks} = uncurry mkCompTaskSettings $ settings
+            let CompTaskSettings{comp, tasks} = uncurry mkCompTaskSettings settings
             let ixSelectTasks = IxTask <$> task
             let ps = pilotNamed cs $ PilotName <$> pilot
             (_, selectedCompLogs) <- settingsLogs inFiles ixSelectTasks ps
 
             tracks :: [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]] <-
-                    sequence $
+                    sequence
                     [
-                        parallel $
-                        [ runExceptT $ pilotTrack ((flown comp math) tasks ixTask) (traceShowId pilotLog)
+                        parallel
+                        [ runExceptT $ pilotTrack (flown comp math tasks ixTask) (traceShowId pilotLog)
                         | pilotLog <- taskLogs
                         ]
 
@@ -175,10 +175,10 @@ flown c math tasks (IxTask i) fs =
             flownTask c math task fs
 
 flownTask :: Comp -> Math -> FnTask k MadeZones
-flownTask Comp{earth, earthMath, give} math task =
+flownTask Comp{earth, earthMath, give} math =
     -- WARNING: FS doesn't exclude crossings if they are outside zone time
     -- windows or if they jump the gun by too much.
-    f give (repeat $ const True) task
+    f give (repeat $ const True)
     where
         f = case ((earthMath, earth), math) of
                 (e@(Pythagorus, EarthAsFlat{}), Floating) ->

@@ -69,7 +69,7 @@ go CmdOptions{earthMath, measure, noTaskWaypoints} compFile@(CompInputFile compP
         Nothing -> putStrLn "Couldn't read the comp settings."
         Just (_taskFiles, settings) -> do
             let CompTaskSettings{comp = Comp{earthMath = eMath}, tasks} =
-                    uncurry mkCompTaskSettings $ settings
+                    uncurry mkCompTaskSettings settings
 
             let ixs = speedSection <$> tasks
 

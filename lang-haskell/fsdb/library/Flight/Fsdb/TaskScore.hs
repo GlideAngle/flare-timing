@@ -5,7 +5,7 @@ module Flight.Fsdb.TaskScore (parseAltScores) where
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
-import Data.Maybe (catMaybes)
+import Data.Maybe (fromMaybe, catMaybes)
 import Data.List (unzip5)
 import qualified Data.Map.Strict as Map (fromList, lookup, union)
 import qualified Data.Vector as V (fromList)
@@ -629,11 +629,11 @@ getValidity
 getValidity ng nl nd md nt =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> (maybeScored getTaskValidity)
-    &&& (maybeScored getLaunchValidityWorking)
-    &&& (maybeScored getTimeValidityWorking)
-    &&& (maybeScored getDistanceValidityWorking)
-    &&& (maybeScored getStopValidityWorking)
+    >>> maybeScored getTaskValidity
+    &&& maybeScored getLaunchValidityWorking
+    &&& maybeScored getTimeValidityWorking
+    &&& maybeScored getDistanceValidityWorking
+    &&& maybeScored getStopValidityWorking
     >>> arr (\(tv, (lw, (tw, (dw, sw)))) -> do
             tv' <- tv
             lw' <- lw
@@ -707,33 +707,19 @@ parseAltScores
             | ys <- (fmap . fmap) snd yss
             ]
 
-    let es :: [Maybe ReachStats] =
-            [ do
-                xs <- Just $ maybe (TaskDistance zero) id <$> xs'
-                let ys = V.fromList $ unTaskDistanceAsKm <$> xs
-                let (ysMean, ysVar) = Stats.meanVariance ys
-                return $
-                    ReachStats
-                        { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
-                        , mean = FlownMean $ MkQuantity ysMean
-                        , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
-                        }
-            | (xs', _) <- rss
-            ]
+    let mkReachStats xs' = do
+            xs <- Just $ fromMaybe (TaskDistance zero) <$> xs'
+            let ys = V.fromList $ unTaskDistanceAsKm <$> xs
+            let (ysMean, ysVar) = Stats.meanVariance ys
+            return $
+                ReachStats
+                    { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
+                    , mean = FlownMean $ MkQuantity ysMean
+                    , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
+                    }
 
-    let rs :: [Maybe ReachStats] =
-            [ do
-                xs <- Just $ maybe (TaskDistance zero) id <$> xs'
-                let ys = V.fromList $ unTaskDistanceAsKm <$> xs
-                let (ysMean, ysVar) = Stats.meanVariance ys
-                return $
-                    ReachStats
-                        { max = FlownMax $ if null ys then [u| 0 km |] else MkQuantity $ maximum ys
-                        , mean = FlownMean $ MkQuantity ysMean
-                        , stdDev = FlownStdDev . MkQuantity $ sqrt ysVar
-                        }
-            | (_, xs') <- rss
-            ]
+    let es :: [Maybe ReachStats] = [ mkReachStats xs' | (xs', _) <- rss ]
+    let rs :: [Maybe ReachStats] = [ mkReachStats xs' | (_, xs') <- rss ]
 
     gvs <- runX $ doc >>> getValidity ng nl nd md nt
     let vws :: [Either String (Maybe _, Maybe _, Maybe _, Maybe _, Maybe _)] =

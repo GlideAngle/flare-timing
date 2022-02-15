@@ -35,8 +35,7 @@ data FindDirFile =
 compFileToTaskFiles :: CompInputFile -> IO [TaskInputFile]
 compFileToTaskFiles (CompInputFile pathComp) = do
     let pathTask = reshape TaskInput pathComp
-    files <- findTaskInput $ FindDirFile {dir = takeDirectory pathComp, file = pathTask}
-    return files
+    findTaskInput $ FindDirFile {dir = takeDirectory pathComp, file = pathTask}
 
 findAltArrival' :: AltDot -> FilePath -> IO [AltArrivalFile]
 findAltArrival' AltFs dir = fmap AltArrivalFile <$> findFiles DotFs (AltArrival AltFs) dir

@@ -87,7 +87,7 @@ go CmdBatchOptions{..} compFile = do
         (_, Nothing) -> putStrLn "Couldn't read the scored frames."
         (Just (taskFiles, settings@(cs, _)), Just CompFraming{stopFlying}) ->
             filterTime
-                (uncurry mkCompTaskSettings $ settings)
+                (uncurry mkCompTaskSettings settings)
                 (compFile, taskFiles)
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
@@ -116,10 +116,10 @@ filterTime
     inFiles@(compFile, _) selectTasks selectPilots stopFlying f = do
 
     let filterOnPilotStops pilot stops =
-            (maybe
+            maybe
                 (const True)
                 (filterTimeRow . snd)
-                (find ((==) pilot . fst) stops))
+                (find ((==) pilot . fst) stops)
 
     checks <-
         catchIO
@@ -177,7 +177,7 @@ filterTime
                                 (filterOnPilotStops p stops)
                                 n
                                 p
-                        return $ (p, a)
+                        return (p, a)
 
                     | p <- pilots
                     ]

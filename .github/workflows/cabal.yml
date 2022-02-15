@@ -49,9 +49,8 @@ jobs:
     - name: flight-cmd:hlint
       run: cabal test flight-cmd:hlint --test-show-details=direct --test-option="--color=always"
 
-    # 46 hints
-    # - name: flight-comp
-    #   run: cabal test flight-comp --test-show-details=direct --test-option="--color=always"
+    - name: flight-comp
+      run: cabal test flight-comp --test-show-details=direct --test-option="--color=always"
 
     - name: flight-comp:doctest
       run: cabal test flight-comp:doctest --test-show-details=direct --test-option="--color=always"
@@ -79,9 +78,8 @@ jobs:
     - name: tasty-compare:hlint
       run: cabal test tasty-compare:hlint --test-show-details=direct --test-option="--color=always"
 
-    # 7 hints
-    # - name: flight-earth:hlint
-    #   run: cabal test flight-earth:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-earth:hlint
+      run: cabal test flight-earth:hlint --test-show-details=direct --test-option="--color=always"
 
     # on github runner: Examples: 247  Tried: 212  Errors: 0  Failures: 4
     # on mac locally: Examples: 247  Tried: 247  Errors: 0  Failures: 0
@@ -112,7 +110,7 @@ jobs:
 
     # compile error
     # - name: flight-earth:zone
-      run: cabal test flight-earth:zone --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-earth:zone --test-show-details=direct --test-option="--color=always"
 
     # compile error
     # - name: flight-earth:cylinder
@@ -122,12 +120,22 @@ jobs:
     # - name: flight-earth:cylinder-r
     #   run: cabal test flight-earth:cylinder-r --test-show-details=direct --test-option="--color=always"
 
-    # 14 hints
-    # - name: flight-fsdb:hlint
-    #   run: cabal test flight-fsdb:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-fsdb:hlint
+      run: cabal test flight-fsdb:hlint --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-fsdb:doctest
-      run: cabal test flight-fsdb:doctest --test-show-details=direct --test-option="--color=always"
+ #library/Flight/Fsdb/Internal/Parse.hs:25:1: error:
+ #Error:     Could not find module ‘Flight.Comp’
+ #    Perhaps you meant
+ #      Flight.Clip (from flight-clip-1.1.0)
+ #      Flight.Zone (from flight-zone-0.1.0)
+ #    Use -v to see a list of the files searched for.
+ #   |
+ #25 | import Flight.Comp (UtcOffset(..))
+ #   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ #Test suite doctest: FAIL
+    # pases locally but fails on github.
+    # - name: flight-fsdb:doctest
+    #  run: cabal test flight-fsdb:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-allot:hlint
       run: cabal test flight-gap-allot:hlint --test-show-details=direct --test-option="--color=always"
@@ -136,9 +144,8 @@ jobs:
     # - name: flight-gap-allot:doctest
     #   run: cabal test flight-gap-allot:doctest --test-show-details=direct --test-option="--color=always"
 
-    # 11 hints
-    # - name: flight-gap-effort:hlint
-    #   run: cabal test flight-gap-effort:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-effort:hlint
+      run: cabal test flight-gap-effort:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-effort:doctest
       run: cabal test flight-gap-effort:doctest --test-show-details=direct --test-option="--color=always"
@@ -152,9 +159,8 @@ jobs:
     - name: flight-gap-lead:lead
       run: cabal test flight-gap-lead:lead --test-show-details=direct --test-option="--color=always"
 
-    # 60 hints
-    # - name: flight-gap-math:hlint
-    #  run: cabal test flight-gap-math:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-math:hlint
+      run: cabal test flight-gap-math:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-math:doctest
       run: cabal test flight-gap-math:doctest --test-show-details=direct --test-option="--color=always"
@@ -168,9 +174,8 @@ jobs:
     - name: flight-gap-stop:stop
       run: cabal test flight-gap-stop:stop --test-show-details=direct --test-option="--color=always"
 
-    # 9 hints
-    # - name: flight-gap-valid:hlint
-    #  run: cabal test flight-gap-valid:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-valid:hlint
+      run: cabal test flight-gap-valid:hlint --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-valid:valid
       run: cabal test flight-gap-valid:valid --test-show-details=direct --test-option="--color=always"
@@ -181,12 +186,9 @@ jobs:
     - name: flight-gap-weight:weight
       run: cabal test flight-gap-weight:weight --test-show-details=direct --test-option="--color=always"
 
-    # 8 hints
-    # - name: flight-igc:hlint
-    #  run: cabal test flight-igc:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-igc:hlint
+      run: cabal test flight-igc:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-igc:doctest
-    #  run: cabal test flight-igc:doctest --test-show-details=direct --test-option="--color=always"
 # Test suite doctest: RUNNING...
 ### Failure in library/Flight/Igc/Fix.hs:308: expression `(markJason : _, (fixesJason, _)) = let (Right xs) = parse $(embedStr (readFile fileJason)) in (partition isFix <$> partition isMark xs)'
 # expected: 
@@ -196,6 +198,8 @@ jobs:
 #                  ./test-suite-doctest/Jason_Kath.20180101-000746.18332.30.igc: openFile: does not exist (No such file or directory)
 #                Code: embedStr (readFile fileJason)
 #              • In the untyped splice: $(embedStr (readFile fileJason))
+    # - name: flight-igc:doctest
+    #  run: cabal test flight-igc:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-kml:hlint
       run: cabal test flight-kml:hlint --test-show-details=direct --test-option="--color=always"
@@ -212,9 +216,8 @@ jobs:
     - name: flight-lookup:hlint
       run: cabal test flight-lookup:hlint --test-show-details=direct --test-option="--color=always"
 
-    # 25 hints
-    # - name: flight-mask:hlint
-    #   run: cabal test flight-mask:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flight-mask:hlint
+      run: cabal test flight-mask:hlint --test-show-details=direct --test-option="--color=always"
 
     # 1 failure, ‘tasks’ is not a (visible) field of constructor ‘CompSettings’
     # - name: flight-mask:doctest
@@ -266,17 +269,14 @@ jobs:
     - name: flight-units:doctest
       run: cabal test flight-units:doctest --test-show-details=direct --test-option="--color=always"
 
-    # 41 hints
-    # - name: flight-zone
-    #   run: cabal test flight-zone --test-show-details=direct --test-option="--color=always"
+    - name: flight-zone
+      run: cabal test flight-zone --test-show-details=direct --test-option="--color=always"
 
     - name: flight-zone:doctest
       run: cabal test flight-zone:doctest --test-show-details=direct --test-option="--color=always"
 
-    # ghc: could not execute: tasty-discover
-    # - name: flight-zone:serial
-    #   run: cabal test flight-zone:serial --test-show-details=direct --test-option="--color=always"
+    - name: flight-zone:serial
+      run: cabal test flight-zone:serial --test-show-details=direct --test-option="--color=always"
 
-    # 105 hints
-    # - name: flare-timing:hlint
-    #   run: cabal test flare-timing:hlint --test-show-details=direct --test-option="--color=always"
+    - name: flare-timing:hlint
+      run: cabal test flare-timing:hlint --test-show-details=direct --test-option="--color=always"

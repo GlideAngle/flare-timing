@@ -89,12 +89,6 @@ in  let defs =
                                 "EffortTestMain.hs"
                             , source-dirs =
                                 "test-suite-effort"
-                            , when =
-                                { condition =
-                                    "flag(suppress-failing-tests)"
-                                , buildable =
-                                    False
-                                }
                             }
                         , doctest =
                             { dependencies =

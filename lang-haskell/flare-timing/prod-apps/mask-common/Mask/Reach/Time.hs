@@ -87,21 +87,20 @@ maskReachTime
         trackedNigh :: [[(Pilot, TrackReach)]] =
             [
                 catMaybes
-                $ sequence
-                . (fmap (\TrackDistance{made} -> do
-                        TaskDistance b <- dBest
-                        td@(TaskDistance d) <- made
+                $ mapM (\TrackDistance{made} -> do
+                    TaskDistance b <- dBest
+                    td@(TaskDistance d) <- made
 
-                        let bd :: FlownMax (Quantity Double [u| km |]) =
-                                FlownMax $ convert b
-                        let pd :: PilotDistance (Quantity Double [u| km |]) =
-                                PilotDistance $ convert d
+                    let bd :: FlownMax (Quantity Double [u| km |]) =
+                            FlownMax $ convert b
+                    let pd :: PilotDistance (Quantity Double [u| km |]) =
+                            PilotDistance $ convert d
 
-                        return
-                            TrackReach
-                                { reach = td
-                                , frac = linearFraction bd pd
-                                }))
+                    return
+                        TrackReach
+                            { reach = td
+                            , frac = linearFraction bd pd
+                            })
                 <$> ds
 
             | dBest <- dsBest
@@ -126,7 +125,7 @@ maskReachTime
                                     { reach = td
                                     , frac = linearFraction bd pd
                                     }
-                        in (flip (,)) tr <$> ps
+                        in (, tr) <$> ps
 
             | dBest <- dsBest
             | ps <- psArriving
