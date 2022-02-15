@@ -80,8 +80,38 @@ jobs:
     #- name: detour-via-uom
       #run: ~/.local/bin/pier test detour-via-uom
 
+# Build instead of test flight-earth.
+# Error when running Shake build system:
+# * Test suites from flight-earth
+# * Library doctest
+# * Library ghc-paths
+# * Command: ghc-paths-0.1.0.9: building library
+
+# _pier/artifact/aSAglvFGrs2_ie9NyRDZNIwAaImwZ2zi7zD1npAcXTI/package/raw/ghc-paths-0.1.0.9/GHC/Paths.hs:9:11: error:
+#     Data constructor not in scope: GHC_PATHS_LIBDIR :: FilePath
+#   |
+# 9 | libdir  = GHC_PATHS_LIBDIR
+#   |           ^^^^^^^^^^^^^^^^
+
+# _pier/artifact/aSAglvFGrs2_ie9NyRDZNIwAaImwZ2zi7zD1npAcXTI/package/raw/ghc-paths-0.1.0.9/GHC/Paths.hs:10:11: error:
+#     Data constructor not in scope: GHC_PATHS_DOCDIR :: FilePath
+#    |
+# 10 | docdir  = GHC_PATHS_DOCDIR
+#    |           ^^^^^^^^^^^^^^^^
+
+# _pier/artifact/aSAglvFGrs2_ie9NyRDZNIwAaImwZ2zi7zD1npAcXTI/package/raw/ghc-paths-0.1.0.9/GHC/Paths.hs:12:11: error:
+#     Data constructor not in scope: GHC_PATHS_GHC :: FilePath
+#    |
+# 12 | ghc     = GHC_PATHS_GHC
+#    |           ^^^^^^^^^^^^^
+
+# _pier/artifact/aSAglvFGrs2_ie9NyRDZNIwAaImwZ2zi7zD1npAcXTI/package/raw/ghc-paths-0.1.0.9/GHC/Paths.hs:13:11: error:
+#     Data constructor not in scope: GHC_PATHS_GHC_PKG :: FilePath
+#    |
+# 13 | ghc_pkg = GHC_PATHS_GHC_PKG
+#    |           ^^^^^^^^^^^^^^^^^
     - name: flight-earth
-      run: ~/.local/bin/pier test flight-earth
+      run: ~/.local/bin/pier build flight-earth
 
     #- name: flight-fsdb
       #run: ~/.local/bin/pier test flight-fsdb
