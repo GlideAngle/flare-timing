@@ -1,12 +1,12 @@
 [submodule "lang-haskell/hcoord"]
 	path = lang-haskell/hcoord
-	url = https://github.com/blockscope/hcoord
+	url = https://github.com/typechecker/hcoord
 [submodule "lang-haskell/reflex-platform"]
 	path = lang-haskell/reflex-platform
-	url = https://github.com/BlockScope/reflex-platform.git
+	url = https://github.com/typechecker/reflex-platform.git
 [submodule "lang-haskell/exact-real"]
 	path = lang-haskell/exact-real
-	url = https://github.com/BlockScope/exact-real.git
+	url = https://github.com/typechecker/exact-real.git
 [submodule "lang-haskell/uom-plugin"]
 	branch = wip/faster-task-length-461
 	path = lang-haskell/uom-plugin
