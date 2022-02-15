@@ -2,7 +2,7 @@ name: pier
 
 on:
   push:
-    branches: [ci-pier]
+    branches: [main, ci-pier]
   pull_request:
     branches: [main]
 
