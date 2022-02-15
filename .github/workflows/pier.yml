@@ -8,37 +8,148 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    name: ghc ${{ matrix.ghc }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        cabal:
+          - "3.2"
+        ghc:
+          - "8.2.2"
 
     steps:
-    - uses: mstksg/get-package@v1
-      name: Install OS Packages
-      with:
-        apt-get: libgmp-dev
-
     - uses: actions/checkout@v2
       with:
         submodules: true
 
-    - uses: mstksg/setup-stack@v1
-      name: Setup Stack
+    - uses: haskell/actions/setup@v1
+      name: setup GHC and cabal-install
+      with:
+        enable-stack: true
+        stack-version: 'latest'
+        ghc-version: ${{ matrix.ghc }}
+        cabal-version: ${{ matrix.cabal }}
 
-    - name: Cache Key
-      id: cache_key
-      run: echo ::set-output name=key::$(md5sum lang-haskell/stack.yaml | awk '{print $1}')
-
+    # SEE: https://github.com/actions/cache/blob/master/examples.md#haskell---cabal
     - uses: actions/cache@v1
-      name: Cache ~/.stack
-      id: cache
+      name: cache ~/.stack
       with:
         path: ~/.stack
-        key: ${{ matrix.os }}-${{ steps.cache_key.outputs.key }}
+        key: ${{ runner.os }}-${{ matrix.ghc }}-stack
+
+    - uses: actions/cache@v1
+      name: cache .stack-work
+      with:
+        path: .stack-work
+        key: ${{ runner.os }}-${{ matrix.ghc }}-stack-work
+
+    - uses: actions/cache@v1
+      name: cache ~/.pier/artifact
+      with:
+        path: ~/.pier/artifact
+        key: ${{ runner.os }}-${{ matrix.ghc }}-shared-pier-artifact
+
+    - uses: actions/cache@v1
+      name: cache _pier/artifact
+      with:
+        path: _pier/artifact
+        key: ${{ runner.os }}-${{ matrix.ghc }}-pier-artifact
+
+    - uses: actions/cache@v1
+      name: cache-pier-exe
+      with:
+        path: ~/.local/bin/pier
+        key: ${{ runner.os }}-${{ matrix.ghc }}-pier-exe
 
     - name: install pier
+      if: steps.cache-pier-exe.outputs.cache-hit != 'true'
       run: stack install pier --stack-yaml=lang-haskell/stack-pier.yaml
 
+    #- name: flight-clip
+       #run: ~/.local/bin/pier test flight-clip
+
+    #- name: flight-cmd
+       #run: ~/.local/bin/pier test flight-cmd
+
+    #- name: flight-comp
+      #run: ~/.local/bin/pier test flight-comp:test:comp
+
+    #- name: detour-via-sci
+      #run: ~/.local/bin/pier test detour-via-sci
+
+    #- name: detour-via-uom
+      #run: ~/.local/bin/pier test detour-via-uom
+
+    - name: flight-earth
+      run: ~/.local/bin/pier test flight-earth
+
+    #- name: flight-fsdb
+      #run: ~/.local/bin/pier test flight-fsdb
+
+    #- name: flight-gap-allot
+      #run: ~/.local/bin/pier test flight-gap-allot
+
+    - name: flight-gap-effort
+      run: ~/.local/bin/pier test flight-gap-effort:test:effort
+
+    - name: flight-gap-lead
+      run: ~/.local/bin/pier test flight-gap-lead:test:lead
+
+    - name: flight-gap-math
+      run: ~/.local/bin/pier test flight-gap-math:test:math
+
+    - name: flight-gap-stop
+      run: ~/.local/bin/pier test flight-gap-stop:test:stop
+
+    - name: flight-gap-valid
+      run: ~/.local/bin/pier test flight-gap-valid:test:valid
+
+    - name: flight-gap-weight
+      run: ~/.local/bin/pier test flight-gap-weight:test:weight
+
+    #- name: flight-igc
+      #run: ~/.local/bin/pier test flight-igc
+
+    - name: flight-kml
+      run: ~/.local/bin/pier test flight-kml:test:parse
+
+    #- name: flight-latlng
+      #run: ~/.local/bin/pier test flight-latlng
+
+    #- name: flight-lookup
+      #run: ~/.local/bin/pier test flight-lookup
+
+    #- name: flight-mask
+      #run: ~/.local/bin/pier test flight-mask
+
+    #- name: flight-route
+      #run: ~/.local/bin/pier test flight-route
+
+    #- name: flight-scribe
+      #run: ~/.local/bin/pier test flight-scribe
+
     - name: siggy-chardust
-      run: pier test siggy-chardust:test:digits
+      run: ~/.local/bin/pier test siggy-chardust:test:digits
+
+    #- name: flight-span
+      #run: ~/.local/bin/pier test flight-span
+
+    #- name: flight-task
+      #run: ~/.local/bin/pier test flight-task:test:task
+
+    #- name: flight-time
+      #run: ~/.local/bin/pier test flight-time
+
+    #- name: flight-track
+      #run: ~/.local/bin/pier test flight-track
+
+    #- name: flight-units
+      #  run: ~/.local/bin/pier test flight-units
+
+    # NOTE: Test using tasty-discover fails.
+    # Error when running Shake build system:
+    # * TestSuite serial from flight-zone
+    # * Command: flight-zone-0.1.0: building test-suite serial
+    # ghc: could not execute: tasty-discover
+    #- name: flight-zone
+      #run: ~/.local/bin/pier test flight-zone:test:serial

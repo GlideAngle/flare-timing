@@ -113,5 +113,11 @@ data PathDistance a =
         -- ^ The vertices that each edge spans.
         }
 
+instance Eq a => Eq (PathDistance a) where
+    a == b = edgesSum a == edgesSum b && vertices a == vertices b
+
+instance Ord a => Ord (PathDistance a) where
+    compare a b = compare (edgesSum a) (edgesSum b)
+
 instance (Real a, Fractional a) => Show (PathDistance a) where
     show (PathDistance (TaskDistance d) _) = showDistance $ toRational' d

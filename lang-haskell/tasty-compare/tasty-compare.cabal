@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.2.
+-- This file has been generated from package.dhall by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f20b67be344e341a0c656ef48e152a064cbe6ed99d2fbebd61491aacc43e9fae
+-- hash: 7ca48db4a9e05dcf483248b06ed7562e629a4a305cd3e9baeb81b09e05b13d31
 
 name:           tasty-compare
 version:        0.1.0
@@ -18,7 +18,8 @@ maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
-tested-with:    GHC == 8.2.2
+tested-with:
+    GHC == 8.2.2
 build-type:     Simple
 extra-source-files:
     package.dhall
@@ -40,11 +41,32 @@ library
       Paths_tasty_compare
   hs-source-dirs:
       library
-  default-extensions: PackageImports
+  default-extensions:
+      PackageImports
   ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths
   build-depends:
       base >=4.10.1.0 && <5
     , call-stack
+    , tasty
+    , tasty-hunit
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Test.Tasty.HUnit.Compare
+      Paths_tasty_compare
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      PackageImports
+  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , call-stack
+    , hlint
     , tasty
     , tasty-hunit
   default-language: Haskell2010

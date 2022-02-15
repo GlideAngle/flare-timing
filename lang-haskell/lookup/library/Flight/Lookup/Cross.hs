@@ -15,7 +15,7 @@ newtype FlyingLookup =
     FlyingLookup (Maybe (CrossingLookup TrackFlyingSection))
 
 flyingTime :: Maybe C.CompFlying -> FlyingLookup
-flyingTime = FlyingLookup . (fmap flyingTask)
+flyingTime = FlyingLookup . fmap flyingTask
 
 flyingTask :: C.CompFlying -> IxTask -> Pilot -> Maybe TrackFlyingSection
 flyingTask C.CompFlying{flying = xs} (IxTask i) pilot =

@@ -4,6 +4,7 @@
 module Flight.TaskTrack.Double (taskTracks, geoTrack) where
 
 import Data.Either (partitionEithers)
+import Data.Maybe (fromMaybe)
 import Data.List (nub)
 import Data.UnitsOfMeasure ((/:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -211,7 +212,7 @@ taskTrack sp excludeWaypoints tdm ss zsTask =
 -- TODO: Propagate Maybe result from costEastNorth.
 costEN :: (Real a, Fractional a) => Zone a -> Zone a -> PathDistance a
 costEN z0 z1 =
-    maybe (error "Can't get east north cost.") id
+    fromMaybe (error "Can't get east north cost.")
     $ costEastNorth z0 z1
 
 -- NOTE: The projected distance is worked out from easting and northing, in the

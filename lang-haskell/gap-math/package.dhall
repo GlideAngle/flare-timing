@@ -107,12 +107,6 @@ in  let defs =
                                 "DocTest.hs"
                             , source-dirs =
                                 "test-suite-doctest"
-                            , when =
-                                { condition =
-                                    "flag(suppress-failing-tests)"
-                                , buildable =
-                                    False
-                                }
                             }
                         }
                   }

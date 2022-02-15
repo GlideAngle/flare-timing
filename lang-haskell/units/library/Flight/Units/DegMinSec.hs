@@ -278,7 +278,7 @@ instance Angle DMS where
             n =
                 MkQuantity $
                     case (divMod' d 180.0 :: (Integer, Double)) of
-                        (a, 0.0) -> if even a then 0.0 else (fromIntegral $ signum a) * 180.0
+                        (a, 0.0) -> if even a then 0.0 else fromIntegral (signum a) * 180.0
                         (a, b) -> if even a then b else b - 180.0
 
             (MkQuantity d) = toQuantity dms :: Quantity Double [u| deg |]
@@ -565,10 +565,10 @@ absDiffDMS y x =
 -- inverse solution and the call to atan2 to get the reverse azimuth is
 -- sensitive to this.
 diffDMS180 :: DiffDMS
-diffDMS180 y x = diffDMS (rotate (DMS (180, 0, 0)) y) x
+diffDMS180 y = diffDMS (rotate (DMS (180, 0, 0)) y)
 
 absDiffDMS180 :: DiffDMS
-absDiffDMS180 y x = absDiffDMS (rotate (DMS (180, 0, 0)) y) x
+absDiffDMS180 y = absDiffDMS (rotate (DMS (180, 0, 0)) y)
 
 -- $ setup
 -- >>> import Test.QuickCheck

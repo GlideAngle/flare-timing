@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.2.
+-- This file has been generated from package.dhall by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e499f9cefed080d9a3446d8cf0f2097e4c77625ac6105116b3ffdd408aa8fdd4
+-- hash: fbab6e5d0a0596a340d7e5588570bb425a7319c0515ab06ab053475ca7061513
 
 name:           detour-via-uom
 version:        1.0.1
@@ -18,7 +18,8 @@ maintainer:     phil.dejoux@blockscope.com
 copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
-tested-with:    GHC == 8.2.2
+tested-with:
+    GHC == 8.2.2
 build-type:     Simple
 extra-source-files:
     package.dhall
@@ -40,7 +41,8 @@ library
       Paths_detour_via_uom
   hs-source-dirs:
       library
-  default-extensions: PackageImports
+  default-extensions:
+      PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -61,7 +63,8 @@ test-suite doctest
   hs-source-dirs:
       library
       test-suite-doctest
-  default-extensions: PackageImports
+  default-extensions:
+      PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -71,7 +74,30 @@ test-suite doctest
     , doctest
     , newtype
     , scientific
+    , siggy-chardust
     , uom-plugin
-  if flag(suppress-failing-tests)
-    buildable: False
+    , vector
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Data.Via.UnitsOfMeasure
+      Paths_detour_via_uom
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions:
+      PackageImports
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , cassava
+    , detour-via-sci
+    , hlint
+    , newtype
+    , scientific
+    , uom-plugin
   default-language: Haskell2010

@@ -17,6 +17,7 @@ module Flight.Mask.Internal.Zone
     , rowToPoint
     , fixFromFix
     , zonesToTaskZones
+    , boundingZone
     ) where
 
 import GHC.Generics (Generic)
@@ -39,7 +40,7 @@ import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawAlt(..))
 import Flight.Zone (Zone(..), realToFracZone, unlineZones)
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 import Flight.Zone.Raw (Give)
-import Flight.Zone.MkZones (Zones(..), unkindZones)
+import Flight.Zone.MkZones (Zones(..), unkindZones, inflate, deflate)
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
 import Flight.Track.Cross (Fix(..), ZoneCross(..), TrackFlyingSection(..))
 import Flight.Units ()
@@ -107,10 +108,17 @@ instance Show OrdCrossing where
     show x = show $ pos x
 
 -- | A task control zone.
-newtype TaskZone a = TaskZone { unTaskZone :: Zone a }
+data TaskZone a
+    = SharpZone { sharpZone :: Zone a }
+    | BluntZone { innerZone :: Zone a, outerZone :: Zone a }
 
 -- | A fix in a flight track converted to a point zone.
 newtype TrackZone a = TrackZone { unTrackZone :: Zone a }
+
+boundingZone :: TaskZone a -> Zone a
+boundingZone = \case
+    SharpZone z -> z
+    BluntZone _ z -> z
 
 slice :: SpeedSection -> [a] -> [a]
 slice = sliceZones
@@ -155,10 +163,16 @@ zonesToTaskZones
     -> [TaskZone a]
 
 zonesToTaskZones give az zs@Zones{raceKind = Just _} =
-    TaskZone <$> unlineZones az (realToFracZone <$> unkindZones give zs)
+    BluntZone
+    <$> unlineZones az (realToFracZone <$> unkindZones inflate give zs)
+    <*> unlineZones az (realToFracZone <$> unkindZones deflate give zs)
 
 zonesToTaskZones give az zs@Zones{openKind = Just _} =
-    TaskZone <$> unlineZones az (realToFracZone <$> unkindZones give zs)
+    BluntZone
+    <$> unlineZones az (realToFracZone <$> unkindZones inflate give zs)
+    <*> unlineZones az (realToFracZone <$> unkindZones deflate give zs)
 
 zonesToTaskZones give _ zs =
-    TaskZone <$> (realToFracZone <$> unkindZones give zs)
+    BluntZone
+    <$> (realToFracZone <$> unkindZones inflate give zs)
+    <*> (realToFracZone <$> unkindZones deflate give zs)

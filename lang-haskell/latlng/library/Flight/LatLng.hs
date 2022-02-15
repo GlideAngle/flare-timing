@@ -62,7 +62,7 @@ opposite (LatLng (Lat lat, Lng lng)) =
     LatLng (Lat lat', Lng lng')
     where
         lat' = negate' lat
-        lng' = normalize $ lng +: (convert [u| 180 deg |])
+        lng' = normalize $ lng +: convert [u| 180 deg |]
 
 fromDMS :: (DMS, DMS) -> LatLng Double [u| rad |]
 fromDMS (lat, lng) =

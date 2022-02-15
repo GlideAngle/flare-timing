@@ -2,7 +2,7 @@ name: cabal
 
 on:
   push:
-    branches: [ci-cabal, fix/haskell-actions-setup-519]
+    branches: [ci-cabal]
   pull_request:
     branches: [main]
 
@@ -35,92 +35,248 @@ jobs:
 
     - name: build
       run: |
-        cabal v2-update
-        cabal v2-build all --enable-tests
+        cabal update
+        cabal build all --enable-tests
 
     # NOTE: Github actions YAML doesn't support anchors.
 
-    # NOTE: Commented out packages might have tests but they're not buildable.
-    #- name: flight-clip
-    #  run: cabal v2-test flight-clip --test-show-details=direct --test-option="--color=always"
+    - name: flight-clip:hlint
+      run: cabal test flight-clip:hlint --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-cmd
-      run: cabal v2-test flight-cmd --test-show-details=direct --test-option="--color=always"
+    - name: flight-clip:doctest
+      run: cabal test flight-clip:hlint --test-show-details=direct --test-option="--color=always"
 
-    #- name: flight-comp
-    #  run: cabal v2-test flight-comp --test-show-details=direct --test-option="--color=always"
+    - name: flight-cmd:hlint
+      run: cabal test flight-cmd:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: detour-via-sci
-    #   run: cabal v2-test detour-via-sci --test-show-details=direct --test-option="--color=always"
+    # 46 hints
+    # - name: flight-comp
+    #   run: cabal test flight-comp --test-show-details=direct --test-option="--color=always"
 
-    # - name: detour-via-uom
-    #   run: cabal v2-test detour-via-uom --test-show-details=direct --test-option="--color=always"
+    - name: flight-comp:doctest
+      run: cabal test flight-comp:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-earth
-      run: cabal v2-test flight-earth --test-show-details=direct --test-option="--color=always"
+    # Variable not in scope: ensureExt :: FileType -> [Char] -> FilePath
+    # - name: flight-comp:comp
+    #  run: cabal test flight-comp:comp --test-show-details=direct --test-option="--color=always"
+ 
+    - name: detour-via-sci:hlint
+      run: cabal test detour-via-sci:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-fsdb
-    #   run: cabal v2-test flight-fsdb --test-show-details=direct --test-option="--color=always"
+### Failure in library/Data/Via/Scientific.hs:81: expression `fromSci x'
+# expected: 4043636029064415 % 36028797018963968
+# but got: 0.1122334455667788
+    # - name: detour-via-sci:doctest
+    #   run: cabal test detour-via-sci:doctest --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-gap-allot
-    #   run: cabal v2-test flight-gap-allot --test-show-details=direct --test-option="--color=always"
+    - name: detour-via-uom:hlint
+      run: cabal test detour-via-uom:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-gap-effort
-    #   run: cabal v2-test flight-gap-effort --test-show-details=direct --test-option="--color=always"
+    # compile error, Not in scope: 'u'
+    # - name: detour-via-uom:doctest
+    #   run: cabal test detour-via-uom:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-lead
-      run: cabal v2-test flight-gap-lead --test-show-details=direct --test-option="--color=always"
+    - name: tasty-compare:hlint
+      run: cabal test tasty-compare:hlint --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-math
-      run: cabal v2-test flight-gap-math --test-show-details=direct --test-option="--color=always"
+    # 7 hints
+    # - name: flight-earth:hlint
+    #   run: cabal test flight-earth:hlint --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-stop
-      run: cabal v2-test flight-gap-stop --test-show-details=direct --test-option="--color=always"
+    # on github runner: Examples: 247  Tried: 212  Errors: 0  Failures: 4
+    # on mac locally: Examples: 247  Tried: 247  Errors: 0  Failures: 0
+    # - name: flight-earth:doctest
+    #  run: cabal test flight-earth:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-valid
-      run: cabal v2-test flight-gap-valid --test-show-details=direct --test-option="--color=always"
+    - name: flight-earth:geodesy
+      run: cabal test flight-earth:geodesy --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-weight
-      run: cabal v2-test flight-gap-weight --test-show-details=direct --test-option="--color=always"
+    # 81 out of 222 tests failed
+    # - name: flight-earth:forbes
+    #  run: cabal test flight-earth:forbes --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-igc
-    #   run: cabal v2-test flight-igc --test-show-details=direct --test-option="--color=always"
+    - name: flight-earth:greda
+      run: cabal test flight-earth:greda --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-kml
-      run: cabal v2-test flight-kml --test-show-details=direct --test-option="--color=always"
+    - name: flight-earth:greda-r
+      run: cabal test flight-earth:greda-r --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-latlng
-      run: cabal v2-test flight-latlng --test-show-details=direct --test-option="--color=always"
+    - name: flight-earth:meridian
+      run: cabal test flight-earth:meridian-r --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-lookup
-      run: cabal v2-test flight-lookup --test-show-details=direct --test-option="--color=always"
+    - name: flight-earth:published
+      run: cabal test flight-earth:published --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-mask
-    #   run: cabal v2-test flight-mask --test-show-details=direct --test-option="--color=always"
+    - name: flight-earth:published-r
+      run: cabal test flight-earth:published-r --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-route
-      run: cabal v2-test flight-route --test-show-details=direct --test-option="--color=always"
+    # compile error
+    # - name: flight-earth:zone
+      run: cabal test flight-earth:zone --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-scribe
-      run: cabal v2-test flight-scribe --test-show-details=direct --test-option="--color=always"
+    # compile error
+    # - name: flight-earth:cylinder
+    #   run: cabal test flight-earth:cylinder --test-show-details=direct --test-option="--color=always"
 
-    - name: siggy-chardust
-      run: cabal v2-test siggy-chardust --test-show-details=direct --test-option="--color=always"
+    # compile error
+    # - name: flight-earth:cylinder-r
+    #   run: cabal test flight-earth:cylinder-r --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-span
-      run: cabal v2-test flight-span --test-show-details=direct --test-option="--color=always"
+    # 14 hints
+    # - name: flight-fsdb:hlint
+    #   run: cabal test flight-fsdb:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-task
-    #   run: cabal v2-test flight-task --test-show-details=direct --test-option="--color=always"
+    - name: flight-fsdb:doctest
+      run: cabal test flight-fsdb:doctest --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-time
-    #   run: cabal v2-test flight-time --test-show-details=direct --test-option="--color=always"
+    - name: flight-gap-allot:hlint
+      run: cabal test flight-gap-allot:hlint --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-track
-    #   run: cabal v2-test flight-track --test-show-details=direct --test-option="--color=always"
+    # 5 failures
+    # - name: flight-gap-allot:doctest
+    #   run: cabal test flight-gap-allot:doctest --test-show-details=direct --test-option="--color=always"
 
-    # - name: flight-units
-    #   run: cabal v2-test flight-units --test-show-details=direct --test-option="--color=always"
+    # 11 hints
+    # - name: flight-gap-effort:hlint
+    #   run: cabal test flight-gap-effort:hlint --test-show-details=direct --test-option="--color=always"
 
+    - name: flight-gap-effort:doctest
+      run: cabal test flight-gap-effort:doctest --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-effort:effort
+      run: cabal test flight-gap-effort:effort --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-lead:hlint
+      run: cabal test flight-gap-lead:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-lead:lead
+      run: cabal test flight-gap-lead:lead --test-show-details=direct --test-option="--color=always"
+
+    # 60 hints
+    # - name: flight-gap-math:hlint
+    #  run: cabal test flight-gap-math:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-math:doctest
+      run: cabal test flight-gap-math:doctest --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-math:math
+      run: cabal test flight-gap-math:math --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-stop:hlint
+      run: cabal test flight-gap-stop:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-stop:stop
+      run: cabal test flight-gap-stop:stop --test-show-details=direct --test-option="--color=always"
+
+    # 9 hints
+    # - name: flight-gap-valid:hlint
+    #  run: cabal test flight-gap-valid:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-valid:valid
+      run: cabal test flight-gap-valid:valid --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-weight:hlint
+      run: cabal test flight-gap-weight:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-gap-weight:weight
+      run: cabal test flight-gap-weight:weight --test-show-details=direct --test-option="--color=always"
+
+    # 8 hints
+    # - name: flight-igc:hlint
+    #  run: cabal test flight-igc:hlint --test-show-details=direct --test-option="--color=always"
+
+    # - name: flight-igc:doctest
+    #  run: cabal test flight-igc:doctest --test-show-details=direct --test-option="--color=always"
+# Test suite doctest: RUNNING...
+### Failure in library/Flight/Igc/Fix.hs:308: expression `(markJason : _, (fixesJason, _)) = let (Right xs) = parse $(embedStr (readFile fileJason)) in (partition isFix <$> partition isMark xs)'
+# expected: 
+# but got: 
+#          <interactive>:63:59: error:
+#              • Exception when trying to run compile-time code:
+#                  ./test-suite-doctest/Jason_Kath.20180101-000746.18332.30.igc: openFile: does not exist (No such file or directory)
+#                Code: embedStr (readFile fileJason)
+#              • In the untyped splice: $(embedStr (readFile fileJason))
+
+    - name: flight-kml:hlint
+      run: cabal test flight-kml:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-kml:doctest
+      run: cabal test flight-kml:doctest --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-kml:parse
+      run: cabal test flight-kml:parse --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-latlng:hlint
+      run: cabal test flight-latlng:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-lookup:hlint
+      run: cabal test flight-lookup:hlint --test-show-details=direct --test-option="--color=always"
+
+    # 25 hints
+    # - name: flight-mask:hlint
+    #   run: cabal test flight-mask:hlint --test-show-details=direct --test-option="--color=always"
+
+    # 1 failure, ‘tasks’ is not a (visible) field of constructor ‘CompSettings’
+    # - name: flight-mask:doctest
+    #   run: cabal test flight-mask:doctest --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-route:hlint
+      run: cabal test flight-route:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-scribe:hlint
+      run: cabal test flight-scribe:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: siggy-chardust:hlint
+      run: cabal test siggy-chardust:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: siggy-chardust:doctest
+      run: cabal test siggy-chardust:doctest --test-show-details=direct --test-option="--color=always"
+
+    - name: siggy-chardust:digits
+      run: cabal test siggy-chardust:digits --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-span:hlint
+      run: cabal test flight-span:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-task:hlint
+      run: cabal test flight-task:hlint --test-show-details=direct --test-option="--color=always"
+
+    # compile errors
+    # - name: flight-task:task
+    #   run: cabal test flight-task:task --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-time:hlint
+      run: cabal test flight-time:hlint --test-show-details=direct --test-option="--color=always"
+
+    # No longer compiles
+    # - name: flight-time:golden
+    #   run: cabal test flight-time:golden --test-show-details=direct --test-option="--color=always"
+
+    # parse error on SCC annotation
+    # - name: flight-track:hlint
+    #   run: cabal test flight-track:hlint --test-show-details=direct --test-option="--color=always"
+
+    # 1 failure
+    # - name: flight-track:doctest
+    #   run: cabal test flight-track:doctest --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-units:hlint
+      run: cabal test flight-units:hlint --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-units:doctest
+      run: cabal test flight-units:doctest --test-show-details=direct --test-option="--color=always"
+
+    # 41 hints
     # - name: flight-zone
-    #   run: cabal v2-test flight-zone --test-show-details=direct --test-option="--color=always"
+    #   run: cabal test flight-zone --test-show-details=direct --test-option="--color=always"
+
+    - name: flight-zone:doctest
+      run: cabal test flight-zone:doctest --test-show-details=direct --test-option="--color=always"
+
+    # ghc: could not execute: tasty-discover
+    # - name: flight-zone:serial
+    #   run: cabal test flight-zone:serial --test-show-details=direct --test-option="--color=always"
+
+    # 105 hints
+    # - name: flare-timing:hlint
+    #   run: cabal test flare-timing:hlint --test-show-details=direct --test-option="--color=always"

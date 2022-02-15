@@ -19,7 +19,7 @@ routeLength
     -- ^ Gets the launch to SSS of the task optimal route to use.
     -> Maybe [Maybe TaskTrack] -> RoutesLookupTaskDistance
 routeLength f g ssEnd ssStart =
-    RoutesLookupTaskDistance . (fmap $ length f g ssEnd ssStart)
+    RoutesLookupTaskDistance . fmap (length f g ssEnd ssStart)
 
 length
     :: (OptimalRoute (Maybe TrackLine) -> Maybe TrackLine)

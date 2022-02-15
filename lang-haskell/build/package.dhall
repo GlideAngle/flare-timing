@@ -1,4 +1,4 @@
-    let mkHome = ./../home.dhall
+let mkHome = ./../home.dhall
 
 in    ./../defaults.dhall
     ⫽ { name =

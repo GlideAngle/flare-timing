@@ -36,7 +36,6 @@ data RaceSections a =
         , epilog :: [a]
         -- ^ Zones crossed after the end of the speed section.
         }
-        deriving Show
 
 -- | Without knowing which zones have been ticked, a function that uses a
 -- crossing predicate to work out a distance.

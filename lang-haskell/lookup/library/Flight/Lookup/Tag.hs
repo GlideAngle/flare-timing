@@ -50,10 +50,10 @@ newtype TaskLeadingLookup =
 type TaggingLookup a = IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
 
 tagTaskTime :: Maybe CompTagging -> TaskTimeLookup
-tagTaskTime = TaskTimeLookup . (fmap taskTimeElapsed)
+tagTaskTime = TaskTimeLookup . fmap taskTimeElapsed
 
 tagTaskLeading :: Maybe CompTagging -> TaskLeadingLookup
-tagTaskLeading = TaskLeadingLookup . (fmap taskLeadingTimes)
+tagTaskLeading = TaskLeadingLookup . fmap taskLeadingTimes
 
 taskLeadingTimes
     :: CompTagging
@@ -86,16 +86,16 @@ newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe ZoneTag]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 
 tagTicked :: Maybe CompTagging -> TickLookup
-tagTicked = TickLookup . (fmap ticked)
+tagTicked = TickLookup . fmap ticked
 
 tagPilotTime :: Maybe CompTagging -> TimeLookup
-tagPilotTime = TimeLookup . (fmap timeElapsed)
+tagPilotTime = TimeLookup . fmap timeElapsed
 
 tagPilotTag :: Maybe CompTagging -> TagLookup
-tagPilotTag = TagLookup . (fmap tagged)
+tagPilotTag = TagLookup . fmap tagged
 
 tagArrivalRank :: Maybe CompTagging -> ArrivalRankLookup
-tagArrivalRank = ArrivalRankLookup . (fmap arrivalRank)
+tagArrivalRank = ArrivalRankLookup . fmap arrivalRank
 
 ticked
     :: CompTagging

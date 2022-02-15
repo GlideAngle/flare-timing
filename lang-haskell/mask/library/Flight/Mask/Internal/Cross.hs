@@ -25,6 +25,7 @@ import Flight.Mask.Internal.Zone
     , ZoneExit(..)
     , Crossing
     , OrdCrossing(..)
+    , boundingZone
     )
 import Flight.Geodesy.Solution (SeparatedZones)
 
@@ -45,7 +46,12 @@ insideZone
     -> TaskZone a
     -> [TrackZone a]
     -> Maybe ZoneIdx
-insideZone sepZs (TaskZone z) =
+
+insideZone sepZs (SharpZone z) =
+    fmap ZoneIdx
+    . findIndex (\(TrackZone x) -> not $ sepZs [x, z])
+
+insideZone sepZs (BluntZone _ z) =
     fmap ZoneIdx
     . findIndex (\(TrackZone x) -> not $ sepZs [x, z])
 
@@ -55,7 +61,12 @@ outsideZone
     -> TaskZone a
     -> [TrackZone a]
     -> Maybe ZoneIdx
-outsideZone sepZs (TaskZone z) =
+
+outsideZone sepZs (SharpZone z) =
+    fmap ZoneIdx
+    . findIndex (\(TrackZone x) -> sepZs [x, z])
+
+outsideZone sepZs (BluntZone _ z) =
     fmap ZoneIdx
     . findIndex (\(TrackZone x) -> sepZs [x, z])
 
@@ -184,7 +195,8 @@ isStartExit sepZs fromZones Task{speedSection, zones}
         if i > 1
             then
                 case (zs ^? element (i - 2), zs ^? element (i - 1)) of
-                    (Just tp, Just start) -> Just . not . sepZs $ unTaskZone <$> [tp, start]
+                    (Just tp, Just start) ->
+                        Just . not . sepZs $ boundingZone <$> [tp, start]
                     _ -> Nothing
             else
                 Nothing

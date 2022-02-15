@@ -38,7 +38,8 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
         -> LatLng Double [u| rad |]
         -> LatLng Double [u| rad |]
         -> Zs ([LatLng Double [u| rad |]])
-    interpolate e sp (TaskZone z) x y =
+
+    interpolate e sp (SharpZone z) x y =
         vertices <$> ee
         where
             Sliver{..} = sliver @Double @Double e
@@ -46,6 +47,31 @@ instance GeoSliver Double a => GeoTagInterpolate Double a where
             ac = angleCut @Double @Double e
             dEE = shortestPath @Double @Double e
             ee = dEE cseg cs ac sp zs'
+
+    interpolate e sp BluntZone{innerZone, outerZone} x y =
+        let ee =
+                case (eeInner, eeOuter) of
+                    (ZxNotSeparated, o) -> o
+                    (i, ZxNotSeparated) -> i
+
+                    (Z0, o) -> o
+                    (i, Z0) -> i
+
+                    (Z1, o) -> o
+                    (i, Z1) -> i
+
+                    (i@(Zs iPath), o@(Zs oPath)) -> if iPath < oPath then i else o
+
+        in vertices <$> ee
+        where
+            Sliver{..} = sliver @Double @Double e
+            ac = angleCut @Double @Double e
+            dEE = shortestPath @Double @Double e
+
+            zsInner = [Point x, innerZone, Point y]
+            zsOuter = [Point x, outerZone, Point y]
+            eeInner = dEE cseg cs ac sp zsInner
+            eeOuter = dEE cseg cs ac sp zsOuter
 
     fractionate
         :: Trig Double a
