@@ -3,7 +3,7 @@
 
 The backend of flare-timing, the web app, this uses
 [servant](https://haskell-servant.readthedocs.io) to serve the data needed by
-the [frontend](../app-view).
+the [frontend](https://github.com/NoseCone/nose-cone).
 
 To serve a comp that has already been scored, go to its root folder and start
 the server like so for the [QuestAir Open

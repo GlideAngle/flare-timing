@@ -1,22 +1,16 @@
 let mkHome = ./../home.dhall
 
-in  let defs =
-          ./../defaults.dhall
-    
+in  let defs = ./../defaults.dhall
+
     in    defs
         ⫽ ./../default-extensions.dhall
-        ⫽ { name =
-              "flight-fsdb"
-          , homepage =
-              mkHome "lang-haskell/fsdb#readme"
-          , synopsis =
-              "A parser for fsdb, the database XML format of FS."
+        ⫽ { name = "flight-fsdb"
+          , homepage = mkHome "lang-haskell/fsdb#readme"
+          , synopsis = "A parser for fsdb, the database XML format of FS."
           , description =
               "Hang gliding and paragliding competitors, tasks and results as XML."
-          , category =
-              "Data, Parsing"
-          , ghc-options =
-              [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+          , category = "Data, Parsing"
+          , ghc-options = [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
           , dependencies =
                 defs.dependencies
               # [ "aeson"
@@ -48,19 +42,17 @@ in  let defs =
                 , "flight-zone"
                 ]
           , library =
-              { source-dirs = "library", exposed-modules = "Flight.Fsdb" }
+            { source-dirs = "library", exposed-modules = "Flight.Fsdb" }
           , tests =
                 ./../default-tests.dhall
               ⫽ { doctest =
-                    { dependencies =
-                          defs.dependencies
-                        # [ "doctest", "hxt-pickle-utils", "flight-comp" ]
-                    , ghc-options =
-                        [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-                    , main =
-                        "DocTest.hs"
-                    , source-dirs =
-                        [ "library", "test-suite-doctest" ]
-                    }
+                  { dependencies =
+                        defs.dependencies
+                      # [ "doctest", "hxt-pickle-utils", "flight-comp" ]
+                  , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                  , main = "DocTest.hs"
+                  , source-dirs = [ "library", "test-suite-doctest" ]
+                  }
                 }
           }

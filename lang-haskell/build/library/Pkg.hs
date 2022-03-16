@@ -58,7 +58,6 @@ dhallCabal =
     , ("lang-haskell/units", "flight-units")
     , ("lang-haskell/zone", "flight-zone")
     , ("lang-haskell/app-serve", "app-serve")
-    , ("lang-haskell/app-view", "app-view")
     , ("lang-haskell/tasty-compare", "tasty-compare")
     ]
 

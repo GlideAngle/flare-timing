@@ -182,15 +182,12 @@ reflex-platform.project ({ pkgs, ... }: with pkgs.lib; {
   # WARNING: Reflex platform is building with GHC == 8.4.3. That's not going
   # to work with anything depending on uom-plugin needing GHC <= 8.2.2.
   packages = {
-    app-view = ./app-view;
   };
 
   shells = {
     ghc = [
-      "app-view"
     ];
     ghcjs = [
-      "app-view"
     ];
   };
 })

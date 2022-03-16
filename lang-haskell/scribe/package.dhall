@@ -1,24 +1,19 @@
 let mkHome = ./../home.dhall
 
 in  let defs = ./../defaults.dhall
-    
+
     in    defs
         ⫽ ./../default-extensions.dhall
-        ⫽ { name =
-              "flight-scribe"
-          , homepage =
-              mkHome "lang-haskell/scribe#readme"
-          , synopsis =
-              "Hang gliding and paragliding competition scoring files."
-          , description =
-              "Reading and writing competition scoring files."
-          , category =
-              "Data"
+        ⫽ { name = "flight-scribe"
+          , homepage = mkHome "lang-haskell/scribe#readme"
+          , synopsis = "Hang gliding and paragliding competition scoring files."
+          , description = "Reading and writing competition scoring files."
+          , category = "Data"
           , ghc-options =
-              [ "-Wall"
-              , "-fplugin Data.UnitsOfMeasure.Plugin"
-              , "-fno-warn-partial-type-signatures"
-              ]
+            [ "-Wall"
+            , "-fplugin Data.UnitsOfMeasure.Plugin"
+            , "-fno-warn-partial-type-signatures"
+            ]
           , dependencies =
                 defs.dependencies
               # [ "split"
@@ -52,7 +47,6 @@ in  let defs = ./../defaults.dhall
                 , "flight-zone"
                 ]
           , library =
-              { source-dirs = "library", exposed-modules = "Flight.Scribe" }
-          , tests =
-              ./../default-tests.dhall
+            { source-dirs = "library", exposed-modules = "Flight.Scribe" }
+          , tests = ./../default-tests.dhall
           }

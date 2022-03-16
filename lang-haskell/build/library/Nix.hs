@@ -53,7 +53,6 @@ shellPkgs =
     , "tasty-compare"
     , "flare-timing"
     , "app-serve"
-    , "app-view"
     ]
     ++ flyPkgs
 
@@ -82,10 +81,6 @@ buildRules = do
     phony' "flare-timing"
     phony' "app-serve"
 
-    -- WARNING: webkitgtk is marked as insecure, refusing to evaluate.
-    -- This is an indirect dependency of app-view.
-    -- phony' "app-view"
-
     where
         phony' s = do
             phony (prefix "nix-build-" s) $
@@ -113,7 +108,6 @@ fromCabalRules = do
         : "cabal2nix-tasty-compare"
         : "cabal2nix-flare-timing"
         : "cabal2nix-app-serve"
-        : "cabal2nix-app-view"
         : (prefix "cabal2nix-" <$> flyPkgs)
 
     phony "cabal2nix-detour-via-sci" $
@@ -151,12 +145,6 @@ fromCabalRules = do
             (Cwd "app-serve")
             Shell
             (cabal2nix "app-serve")
-
-    phony "cabal2nix-app-view" $
-        cmd
-            (Cwd "app-view")
-            Shell
-            (cabal2nix "app-view")
 
     where
         fromCabalRule :: String -> Rules ()

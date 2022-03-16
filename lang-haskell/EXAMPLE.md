@@ -8,18 +8,9 @@ working with the Forbes Flatlands comp of 2014.
 For both scoring and display we'll get the source and checkout a release.
 
 ```
-> git clone https://github.com/BlockScope/flare-timing.git
+> git clone https://github.com/BlockScope/flare-timing.git --recursive
 > cd flare-timing
-> git checkout app-view-0.26
-...
-You are in 'detached HEAD' state.
-...
-> git submodule update --init
-...
-Submodule path 'lang-haskell/hcoord': checked out '807c1bf18652ae14ccd0c2dd915f2d08b919b565'
-Submodule path 'lang-haskell/reflex-platform': checked out '299d4b549de67049544e0435ed228aac1811877b'
-> cd lang-haskell
-.../lang-haskell> stack install
+> stack install
 ...
 Copied executables to /Users/.../.local/bin:
 - align-time

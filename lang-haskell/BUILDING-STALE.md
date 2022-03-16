@@ -79,7 +79,6 @@ a build target to update the `*.nix` file for each package:
     # cabal2nix (for cabal2nix-comp)
     # cabal2nix (for cabal2nix-cmd)
     # cabal2nix (for cabal2nix-clip)
-    # cabal2nix (for cabal2nix-app-view)
     # cabal2nix (for cabal2nix-app-serve)
     # cabal2nix (for cabal2nix-flare-timing)
     # cabal2nix (for cabal2nix-tasty-compare)

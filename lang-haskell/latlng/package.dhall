@@ -1,22 +1,16 @@
 let mkHome = ./../home.dhall
 
-in  let deps =
-          ./../defaults.dhall
-    
+in  let deps = ./../defaults.dhall
+
     in    deps
         ⫽ ./../default-extensions.dhall
-        ⫽ { name =
-              "flight-latlng"
-          , homepage =
-              mkHome "lang-haskell/latlng#readme"
+        ⫽ { name = "flight-latlng"
+          , homepage = mkHome "lang-haskell/latlng#readme"
           , synopsis =
               "Latitude and longitude as used in hang gliding and paragliding competitions."
-          , description =
-              "Latitude and longitude."
-          , category =
-              "Flight"
-          , ghc-options =
-              [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+          , description = "Latitude and longitude."
+          , category = "Flight"
+          , ghc-options = [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
           , dependencies =
                 deps.dependencies
               # [ "numbers"
@@ -38,19 +32,17 @@ in  let deps =
                 , "flight-units"
                 ]
           , library =
-              { source-dirs =
-                  "library"
-              , exposed-modules =
-                  [ "Flight.Field"
-                  , "Flight.EastNorth"
-                  , "Flight.LatLng"
-                  , "Flight.LatLng.Raw"
-                  , "Flight.LatLng.Double"
-                  , "Flight.LatLng.Float"
-                  , "Flight.LatLng.Rational"
-                  , "Flight.Distance"
-                  ]
-              }
-          , tests =
-              ./../default-tests.dhall
+            { source-dirs = "library"
+            , exposed-modules =
+              [ "Flight.Field"
+              , "Flight.EastNorth"
+              , "Flight.LatLng"
+              , "Flight.LatLng.Raw"
+              , "Flight.LatLng.Double"
+              , "Flight.LatLng.Float"
+              , "Flight.LatLng.Rational"
+              , "Flight.Distance"
+              ]
+            }
+          , tests = ./../default-tests.dhall
           }

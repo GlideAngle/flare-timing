@@ -179,7 +179,6 @@ Copied executables to /Users/.../flare-timing/__shake-build:
 # cabal2nix (for comp/drv.nix)
 # cabal2nix (for cmd/drv.nix)
 # cabal2nix (for clip/drv.nix)
-# cabal2nix (for app-view/drv.nix)
 # cabal2nix (for app-serve/drv.nix)
 # cabal2nix (for flare-timing/drv.nix)
 # cabal2nix (for tasty-compare/drv.nix)
@@ -219,9 +218,6 @@ Copied executables to /Users/.../flare-timing/__shake-build:
 # dhall (for dhall-format-tasty-compare)
 # dhall-hpack-cabal (for hpack-dhall-tasty-compare)
 tasty-compare.cabal is up-to-date
-# dhall (for dhall-format-app-view)
-# dhall-hpack-cabal (for hpack-dhall-app-view)
-app-view.cabal is up-to-date
 # dhall (for dhall-format-app-serve)
 # dhall-hpack-cabal (for hpack-dhall-app-serve)
 app-serve.cabal is up-to-date

@@ -3,7 +3,6 @@ module Target where
 import Development.Shake (Rules)
 import Doc (buildRules, cleanRules)
 import Cmd (buildRules, cleanRules, testRules, lintRules, docTestRules)
-import Web (buildRules, cleanRules)
 import Nix (buildRules, cleanRules, shellRules, fromCabalRules)
 import Snack (buildRules, testRules, rulesSiggyChardust)
 import Pkg (buildRules)
@@ -33,7 +32,6 @@ cleanRules :: Rules ()
 cleanRules = do
     Doc.cleanRules
     Cmd.cleanRules
-    Web.cleanRules
     Nix.cleanRules
 
 buildRules :: Rules ()
@@ -41,7 +39,6 @@ buildRules = do
     Doc.buildRules
     Pkg.buildRules
     Cmd.buildRules
-    Web.buildRules
     Nix.buildRules
     Nix.shellRules
     Nix.fromCabalRules

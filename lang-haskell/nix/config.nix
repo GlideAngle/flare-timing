@@ -30,10 +30,6 @@
               flight-scribe = self.flight-scribe;
             };
 
-        # WARNING: webkitgtk is marked as insecure, refusing to evaluate.
-        # This is an indirect dependency of app-view.
-        # app-view = super.callPackage ../app-view/app-view.nix {};
-
         detour-via-sci =
           super.callPackage ../detour-via-sci/detour-via-sci.nix
             { siggy-chardust = self.siggy-chardust; };

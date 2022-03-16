@@ -1,8 +1,7 @@
 let mkHome = ./../home.dhall
 
-in  let defs =
-          ./../defaults.dhall
-    
+in  let defs = ./../defaults.dhall
+
     in  let testdeps =
               [ "base"
               , "containers"
@@ -24,35 +23,30 @@ in  let defs =
               , "QuickCheck"
               , "quickcheck-instances"
               ]
-        
+
         in  let testopts =
                   [ "-rtsopts"
                   , "-threaded"
                   , "-with-rtsopts=-N"
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
-            
+
             in    defs
                 ⫽ ./../default-extensions.dhall
-                ⫽ { flags =
-                      { suppress-failing-tests =
-                          { manual = False, default = True }
-                      }
-                  , name =
-                      "flight-gap-valid"
-                  , homepage =
-                      mkHome "lang-haskell/gap-valid#readme"
-                  , synopsis =
-                      "GAP Scoring Validities"
+                ⫽ { flags.suppress-failing-tests
+                    =
+                    { manual = False, default = True }
+                  , name = "flight-gap-valid"
+                  , homepage = mkHome "lang-haskell/gap-valid#readme"
+                  , synopsis = "GAP Scoring Validities"
                   , description =
                       "GAP scoring for hang gliding and paragliding competitons, the validity parts."
-                  , category =
-                      "Flight"
+                  , category = "Flight"
                   , ghc-options =
-                      [ "-Wall"
-                      , "-fplugin Data.UnitsOfMeasure.Plugin"
-                      , "-fno-warn-partial-type-signatures"
-                      ]
+                    [ "-Wall"
+                    , "-fplugin Data.UnitsOfMeasure.Plugin"
+                    , "-fno-warn-partial-type-signatures"
+                    ]
                   , dependencies =
                         defs.dependencies
                       # [ "aeson"
@@ -72,22 +66,16 @@ in  let defs =
                         , "flight-gap-allot"
                         ]
                   , library =
-                      { source-dirs =
-                          "library"
-                      , exposed-modules =
-                          "Flight.Score"
-                      }
+                    { source-dirs = "library"
+                    , exposed-modules = "Flight.Score"
+                    }
                   , tests =
                         ./../default-tests.dhall
                       ⫽ { valid =
-                            { dependencies =
-                                testdeps # [ "flight-gap-valid" ]
-                            , ghc-options =
-                                testopts
-                            , main =
-                                "ValidityTestMain.hs"
-                            , source-dirs =
-                                "test-suite-valid"
-                            }
+                          { dependencies = testdeps # [ "flight-gap-valid" ]
+                          , ghc-options = testopts
+                          , main = "ValidityTestMain.hs"
+                          , source-dirs = "test-suite-valid"
+                          }
                         }
                   }

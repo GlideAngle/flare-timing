@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.34.6.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 073892ca2ab24bf34031182bffae8e59e288a157fcc605fb3c86309a20b7cd17
+-- hash: a5f906de4f7cf63292dff301001df66f9df07e2c431bf73af7bb9763f76f1c88
 
 name:           ft-build
 version:        0.1.0
@@ -44,7 +44,6 @@ executable ft-build
       Pkg
       Snack
       Target
-      Web
       Paths_ft_build
   hs-source-dirs:
       app-cmd
@@ -72,7 +71,6 @@ test-suite hlint
       Pkg
       Snack
       Target
-      Web
       Paths_ft_build
   hs-source-dirs:
       library
