@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 49e60bd4ec3ef995ff013b1ccf6cfc48c89d3e1ea5eef3dd6b62848368cc7f5f
+-- hash: 68bd54cbcbcc060c503e81bcc9218153e5dd3ff654b23761af083655e6aa1b17
 
 name:           flight-mask
 version:        0.1.0
@@ -245,112 +245,5 @@ test-suite doctest
     , time
     , uom-plugin
     , utf8-string
-    , yaml
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Comp.Distance
-      Flight.Comp.Distance.Double
-      Flight.Comp.Distance.Line
-      Flight.Mask
-      Flight.Mask.Distance
-      Flight.Mask.Distance.Double
-      Flight.Mask.Group
-      Flight.Mask.Group.Double
-      Flight.Mask.Internal.Cross
-      Flight.Mask.Internal.Dash
-      Flight.Mask.Internal.Dot
-      Flight.Mask.Internal.Race
-      Flight.Mask.Internal.Zone
-      Flight.Mask.Interpolate
-      Flight.Mask.Interpolate.Double
-      Flight.Mask.Tag
-      Flight.Mask.Tag.Double
-      Flight.Mask.Tag.Motion
-      Flight.Mask.Tag.Prove
-      Flight.Mask.Time
-      Flight.Mask.Time.Double
-      Flight.Mask.Tracks
-      Flight.Span.Double
-      Flight.Span.Rational
-      Flight.Span.Sliver
-      Paths_flight_mask
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-      AllowAmbiguousTypes
-      InstanceSigs
-      UndecidableSuperClasses
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      base >=4.10.1.0 && <5
-    , bytestring
-    , cmdargs
-    , containers
-    , deepseq
-    , detour-via-sci
-    , directory
-    , fgl
-    , filepath
-    , flight-clip
-    , flight-comp
-    , flight-earth
-    , flight-gap-allot
-    , flight-gap-lead
-    , flight-kml
-    , flight-latlng
-    , flight-route
-    , flight-scribe
-    , flight-span
-    , flight-task
-    , flight-track
-    , flight-units
-    , flight-zone
-    , hlint
-    , lens
-    , mtl
-    , numbers
-    , path
-    , safe-exceptions
-    , siggy-chardust
-    , split
-    , these
-    , time
-    , uom-plugin
     , yaml
   default-language: Haskell2010

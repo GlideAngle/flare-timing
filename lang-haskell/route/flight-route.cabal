@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 06f2b69aeaa868f0fcb202f993df97b0db2c14e8059a6073c923eac914d265e7
+-- hash: 2b67bebb706718f89ed4d1983b28036bba85da7b3325da3037e0649e0c6f9b1e
 
 name:           flight-route
 version:        0.1.0
@@ -90,71 +90,6 @@ library
     , flight-units
     , flight-zone
     , hcoord-utm
-    , numbers
-    , scientific
-    , siggy-chardust
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Route
-      Flight.Route.Optimal
-      Flight.Route.TrackLine
-      Flight.TaskTrack.Double
-      Flight.TaskTrack.Internal
-      Flight.TaskTrack.Rational
-      Paths_flight_route
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , bifunctors
-    , detour-via-sci
-    , flight-earth
-    , flight-latlng
-    , flight-task
-    , flight-units
-    , flight-zone
-    , hcoord-utm
-    , hlint
     , numbers
     , scientific
     , siggy-chardust

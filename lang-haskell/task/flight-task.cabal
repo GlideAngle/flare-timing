@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0e062f447df9e493f06163ece347cde3e1263d4e6cc1e12e78943cd690a80e11
+-- hash: d76aa2690f90986f4dd3f1f85369ae78d1a7c8955cc84ddea22874bc693751cd
 
 name:           flight-task
 version:        0.1.0
@@ -92,74 +92,6 @@ library
     , flight-latlng
     , flight-units
     , flight-zone
-    , mtl
-    , numbers
-    , scientific
-    , siggy-chardust
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.ShortestPath
-      Flight.ShortestPath.Cost
-      Flight.ShortestPath.Double
-      Flight.ShortestPath.Graph
-      Flight.ShortestPath.Rational
-      Flight.Task
-      Paths_flight_task
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-      AllowAmbiguousTypes
-      InstanceSigs
-      UndecidableSuperClasses
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , bifunctors
-    , detour-via-sci
-    , fgl
-    , flight-earth
-    , flight-latlng
-    , flight-units
-    , flight-zone
-    , hlint
     , mtl
     , numbers
     , scientific

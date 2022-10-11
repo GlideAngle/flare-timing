@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cef1c11b757b1bf45b282c1347779c7747f43a4d51cb2605eaded46a222a889e
+-- hash: f2eb1cdc9650cd0aceee399125c58f85f6d34fab68b6e03d2e1e1cd574675d81
 
 name:           flight-scribe
 version:        0.1.0
@@ -114,103 +114,6 @@ library
     , flight-route
     , flight-units
     , flight-zone
-    , mtl
-    , parallel-io
-    , path
-    , safe-exceptions
-    , scientific
-    , split
-    , text
-    , time
-    , unordered-containers
-    , uom-plugin
-    , vector
-    , yaml
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.AlignTime
-      Flight.CompInput
-      Flight.CrossZone
-      Flight.DiscardFurther
-      Flight.FarOut
-      Flight.FlyTime
-      Flight.Fsdb
-      Flight.GapPoint
-      Flight.LandOut
-      Flight.LeadArea
-      Flight.LeadArea.AreaStep
-      Flight.Mask.Arrival
-      Flight.Mask.Bonus
-      Flight.Mask.Effort
-      Flight.Mask.Lead
-      Flight.Mask.Reach
-      Flight.Mask.Speed
-      Flight.PegFrame
-      Flight.Scribe
-      Flight.TagZone
-      Flight.TaskLength
-      Flight.UnpackTrack
-      Paths_flight_scribe
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , bytestring
-    , cassava
-    , containers
-    , deepseq
-    , detour-via-sci
-    , directory
-    , filemanip
-    , filepath
-    , flight-clip
-    , flight-comp
-    , flight-gap-allot
-    , flight-gap-lead
-    , flight-latlng
-    , flight-route
-    , flight-units
-    , flight-zone
-    , hlint
     , mtl
     , parallel-io
     , path

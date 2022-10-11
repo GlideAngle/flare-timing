@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ce41fe22add955d499cee5986b8bb7f8e23e8bf8e8fa896e6c8a961ce6d86e8e
+-- hash: dd6fe1580255e810a2158124f350ecbb1315dbf3aef70429b69ea6b038c45f03
 
 name:           flight-cmd
 version:        0.1.0
@@ -84,64 +84,6 @@ library
     , filemanip
     , filepath
     , flight-span
-    , mtl
-    , raw-strings-qq
-    , transformers
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Cmd.BatchOptions
-      Flight.Cmd.Options
-      Flight.Cmd.Paths
-      Flight.Cmd.ServeOptions
-      Paths_flight_cmd
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      base >=4.10.1.0 && <5
-    , cmdargs
-    , directory
-    , filemanip
-    , filepath
-    , flight-span
-    , hlint
     , mtl
     , raw-strings-qq
     , transformers

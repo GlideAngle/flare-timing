@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2fa8e1f4d1aee15801a9eb4d9e143076b805caa6ce50532d5d64b4415200d9e8
+-- hash: fd9de8e47a9c4c67384857ede60edc630fedeb4499d8dcba45f75624e44137f1
 
 name:           flight-track
 version:        0.1.0
@@ -151,67 +151,6 @@ test-suite doctest
     , flight-comp
     , flight-igc
     , flight-kml
-    , mtl
-    , path
-    , split
-    , time
-    , utf8-string
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.TrackLog
-      Paths_flight_track
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      base >=4.10.1.0 && <5
-    , bytestring
-    , containers
-    , deepseq
-    , directory
-    , filepath
-    , flight-clip
-    , flight-comp
-    , flight-igc
-    , flight-kml
-    , hlint
     , mtl
     , path
     , split

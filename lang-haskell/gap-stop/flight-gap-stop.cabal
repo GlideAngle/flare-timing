@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dae6d1989c03563d26d46aecc03cee41602cb0afedb52db8ffccec61012b7647
+-- hash: eeaff5da8a56bf40fc04aae08010ec195c3da16ec84958eddd775877581f1afb
 
 name:           flight-gap-stop
 version:        0.1.0
@@ -89,73 +89,6 @@ library
     , flight-gap-lead
     , flight-gap-math
     , flight-units
-    , newtype
-    , numbers
-    , scientific
-    , siggy-chardust
-    , template-haskell
-    , text
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Gap.Stopped
-      Flight.Gap.Time.ScoreBack
-      Flight.Score
-      Paths_flight_gap_stop
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      QuickCheck
-    , aeson
-    , base >=4.10.1.0 && <5
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , facts
-    , flight-gap-allot
-    , flight-gap-lead
-    , flight-gap-math
-    , flight-units
-    , hlint
     , newtype
     , numbers
     , scientific

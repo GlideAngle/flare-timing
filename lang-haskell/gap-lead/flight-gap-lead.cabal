@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5d9e5c90d4322241e7b547cccecbe49e54605c81431dfb287793f338b5bbebd4
+-- hash: 6c682ec5b1ee000a3567f46f07ebb9d7104c9e4f77a394251e6d1c658cef1efe
 
 name:           flight-gap-lead
 version:        0.1.0
@@ -92,76 +92,6 @@ library
     , facts
     , flight-gap-allot
     , flight-units
-    , newtype
-    , numbers
-    , scientific
-    , siggy-chardust
-    , template-haskell
-    , text
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Gap.Leading
-      Flight.Gap.Leading.Area
-      Flight.Gap.Leading.Coef
-      Flight.Gap.Leading.Scaling
-      Flight.Gap.Leading1Area
-      Flight.Gap.Leading2Area
-      Flight.Gap.Time.Leading
-      Flight.Score
-      Paths_flight_gap_lead
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      QuickCheck
-    , aeson
-    , base >=4.10.1.0 && <5
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , facts
-    , flight-gap-allot
-    , flight-units
-    , hlint
     , newtype
     , numbers
     , scientific

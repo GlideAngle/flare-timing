@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c74db95c660c01247533a9c78266da53a45b5f5e2e27ba537431e06a9d3f0a87
+-- hash: 885503991b0a7db2559b49bc0a1496f65b9dfd3fa1e114105af9cb9bd4894c51
 
 name:           flight-gap-allot
 version:        0.1.0
@@ -176,95 +176,6 @@ test-suite doctest
     , newtype
     , numbers
     , quickcheck-classes
-    , scientific
-    , siggy-chardust
-    , template-haskell
-    , text
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Gap.Allot
-      Flight.Gap.Distance.Min
-      Flight.Gap.Distance.Nominal
-      Flight.Gap.Distance.Pilot
-      Flight.Gap.Distance.Stop
-      Flight.Gap.Distance.Sum
-      Flight.Gap.Equation
-      Flight.Gap.Fraction
-      Flight.Gap.Fraction.Arrival
-      Flight.Gap.Fraction.Difficulty
-      Flight.Gap.Fraction.Distance
-      Flight.Gap.Fraction.Goal
-      Flight.Gap.Fraction.Launch
-      Flight.Gap.Fraction.Leading
-      Flight.Gap.Fraction.Linear
-      Flight.Gap.Fraction.Speed
-      Flight.Gap.Pilots
-      Flight.Gap.Place.Arrival
-      Flight.Gap.Place.Task
-      Flight.Gap.Ratio
-      Flight.Gap.Time.Arrival
-      Flight.Gap.Time.Best
-      Flight.Gap.Time.Nominal
-      Flight.Gap.Time.Pilot
-      Flight.Gap.Time.Velocity
-      Flight.Score
-      Paths_flight_gap_allot
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      QuickCheck
-    , aeson
-    , base >=4.10.1.0 && <5
-    , cassava
-    , containers
-    , deepseq
-    , detour-via-sci
-    , detour-via-uom
-    , exact-real
-    , facts
-    , flight-units
-    , hlint
-    , newtype
-    , numbers
     , scientific
     , siggy-chardust
     , template-haskell

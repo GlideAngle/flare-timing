@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b18d78a5f531be8e3cf3f546fa387276d3e938b7a095133d1cdd354deccd6711
+-- hash: 640b8c4f584c7408b5c15ac1baa7e5abd32db49af2754dbf70792f95483dccac
 
 name:           flight-latlng
 version:        0.1.0
@@ -97,82 +97,6 @@ library
     , detour-via-uom
     , flight-units
     , formatting
-    , newtype
-    , numbers
-    , random
-    , siggy-chardust
-    , smallcheck
-    , tasty-quickcheck
-    , text
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Distance
-      Flight.EastNorth
-      Flight.Field
-      Flight.LatLng
-      Flight.LatLng.Alt
-      Flight.LatLng.Double
-      Flight.LatLng.Family
-      Flight.LatLng.Float
-      Flight.LatLng.Lat
-      Flight.LatLng.Lng
-      Flight.LatLng.Rational
-      Flight.LatLng.Raw
-      Flight.LatLng.RawLatLng
-      Paths_flight_latlng
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , bifunctors
-    , bytestring
-    , cassava
-    , deepseq
-    , detour-via-sci
-    , detour-via-uom
-    , flight-units
-    , formatting
-    , hlint
     , newtype
     , numbers
     , random

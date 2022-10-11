@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 50a0d6b0227c75b91340f908f80e2f725cdf2bf657cde14e3d309c72f9f0c6a9
+-- hash: f671804c388a802f7bd37e520d4ff533860c4d4aa640056b7d7e98ec266dd76c
 
 name:           flight-earth
 version:        0.1.0
@@ -893,111 +893,6 @@ test-suite greda-r
     , tasty
     , tasty-compare
     , tasty-hunit
-    , text
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Earth.Ellipsoid
-      Flight.Earth.Flat
-      Flight.Earth.Flat.Double
-      Flight.Earth.Flat.Rational
-      Flight.Earth.Math
-      Flight.Earth.Sphere
-      Flight.Earth.ZoneShape.Double
-      Flight.Earth.ZoneShape.Rational
-      Flight.Geodesy
-      Flight.Geodesy.Double
-      Flight.Geodesy.Math
-      Flight.Geodesy.Problem
-      Flight.Geodesy.Rational
-      Flight.Geodesy.Solution
-      Internal.ClearlySeparated
-      Internal.CylinderOutline.Double
-      Internal.CylinderOutline.Rational
-      Internal.Ellipsoid.Cylinder.Vincenty.Double
-      Internal.Ellipsoid.Cylinder.Vincenty.Rational
-      Internal.Ellipsoid.PointToPoint.Andoyer.Double
-      Internal.Ellipsoid.PointToPoint.Andoyer.Rational
-      Internal.Ellipsoid.PointToPoint.Double
-      Internal.Ellipsoid.PointToPoint.Rational
-      Internal.Ellipsoid.PointToPoint.Vincenty.Double
-      Internal.Ellipsoid.PointToPoint.Vincenty.Rational
-      Internal.Ellipsoid.Separated
-      Internal.Flat.Cylinder.Double
-      Internal.Flat.Cylinder.Rational
-      Internal.Flat.PointToPoint.Double
-      Internal.Flat.PointToPoint.Rational
-      Internal.Flat.Projected.Double
-      Internal.Flat.Projected.Internal
-      Internal.Flat.Projected.Rational
-      Internal.Flat.Separated
-      Internal.Sphere.Cylinder.Double
-      Internal.Sphere.Cylinder.Rational
-      Internal.Sphere.PointToPoint.Double
-      Internal.Sphere.PointToPoint.Rational
-      Internal.Sphere.Separated
-      Paths_flight_earth
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-      AllowAmbiguousTypes
-      InstanceSigs
-      UndecidableSuperClasses
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , bifunctors
-    , detour-via-sci
-    , detour-via-uom
-    , errors
-    , fgl
-    , flight-latlng
-    , flight-units
-    , flight-zone
-    , hcoord
-    , hcoord-utm
-    , hlint
-    , mtl
-    , numbers
-    , scientific
-    , siggy-chardust
     , text
     , uom-plugin
   default-language: Haskell2010
