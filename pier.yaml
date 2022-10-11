@@ -1,54 +1,57 @@
-resolver: lts-11.22
-tested-with: GHC == 8.2.2
+resolver: nightly-2022-10-08
+tested-with: GHC == 9.2.4
 packages:
-- lang-haskell/detour-via-sci
-- lang-haskell/detour-via-uom
-- lang-haskell/clip
-- lang-haskell/cmd
-- lang-haskell/comp
-- lang-haskell/earth
-- lang-haskell/fsdb
-- lang-haskell/gap-allot
-- lang-haskell/gap-effort
-- lang-haskell/gap-lead
-- lang-haskell/gap-math
-- lang-haskell/gap-stop
-- lang-haskell/gap-valid
-- lang-haskell/gap-weight
-- lang-haskell/gap
-- lang-haskell/igc
-- lang-haskell/kml
-- lang-haskell/latlng
-- lang-haskell/lookup
-- lang-haskell/mask
-- lang-haskell/route
-- lang-haskell/scribe
-- lang-haskell/siggy-chardust
-- lang-haskell/span
-- lang-haskell/task
-- lang-haskell/tasty-compare
-- lang-haskell/time
-- lang-haskell/track
-- lang-haskell/units
-- lang-haskell/zone
-- lang-haskell/flare-timing
-- lang-haskell/app-serve
-- lang-haskell/hcoord/hcoord
-- lang-haskell/hcoord/hcoord-utm
-- lang-haskell/exact-real
+    - lang-haskell/build
+
+    - lang-haskell/detour-via-sci
+    - lang-haskell/detour-via-uom
+    - lang-haskell/tasty-compare
+    - lang-haskell/siggy-chardust
+
+    - lang-haskell/clip
+    - lang-haskell/cmd
+    - lang-haskell/comp
+    - lang-haskell/earth
+    - lang-haskell/fsdb
+    - lang-haskell/gap-allot
+    - lang-haskell/gap-effort
+    - lang-haskell/gap-lead
+    - lang-haskell/gap-math
+    - lang-haskell/gap-stop
+    - lang-haskell/gap-valid
+    - lang-haskell/gap-weight
+    - lang-haskell/gap
+    - lang-haskell/igc
+    - lang-haskell/kml
+    - lang-haskell/latlng
+    - lang-haskell/lookup
+    - lang-haskell/mask
+    - lang-haskell/route
+    - lang-haskell/scribe
+    - lang-haskell/span
+    - lang-haskell/task
+    - lang-haskell/time
+    - lang-haskell/track
+    - lang-haskell/units
+    - lang-haskell/zone
+
+    - lang-haskell/flare-timing
+    - lang-haskell/app-serve
 extra-deps:
-- hxt-xpath-9.1.2.2
-- uom-plugin-0.3.0.0
-- doctest-0.15.0
-- megaparsec-7.0.4
-- parser-combinators-1.0.0
-- HUnit-1.5.0.0
-- chell-0.4.0.2
-- chell-quickcheck-0.2.5.1
-- ghc-paths-0.1.0.9
-- facts-0.0.1.0
-- memoize-0.8.1
-- servant-py-0.1.1.1
+    - git: https://github.com/typechecker/hcoord.git
+      commit: e6f72eeb16c10f29b6d2438cca6b7d3978ea91f9
+      subdirs:
+        - hcoord
+        - hcoord-utm
+    - git: https://github.com/typechecker/facts.git 
+      commit: fda33feb0c4ddd95f77a453dd4199ef7be4a3b82
+    - git: https://github.com/typechecker/hxt-pickle-utils.git
+      commit: 1c9349233701f896313a9a0cb163d65f8b15bb9d
+    - uom-plugin-0.4.0.0
+    - exact-real-0.12.5.1
+    - ghc-tcplugin-api-0.8.3.0
+    - hxt-xpath-9.1.2.2
+    - servant-py-0.1.0.4
 flags:
     detour-via-sci:
         suppress-failing-tests: true
