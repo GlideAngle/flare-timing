@@ -1,0 +1,70 @@
+- arguments:
+  - -XDataKinds
+  - -XDeriveFunctor
+  - -XDeriveGeneric
+  - -XDeriveAnyClass
+  - -XDerivingStrategies
+  - -XDisambiguateRecordFields
+  - -XFlexibleContexts
+  - -XFlexibleInstances
+  - -XGeneralizedNewtypeDeriving
+  - -XGADTs
+  - -XLambdaCase
+  - -XMultiParamTypeClasses
+  - -XMultiWayIf
+  - -XNamedFieldPuns
+  - -XOverloadedStrings
+  - -XPackageImports
+  - -XParallelListComp
+  - -XPartialTypeSignatures
+  - -XPatternSynonyms
+  - -XQuasiQuotes
+  - -XRankNTypes
+  - -XRecordWildCards
+  - -XScopedTypeVariables
+  - -XStandaloneDeriving
+  - -XTemplateHaskell
+  - -XTypeApplications
+  - -XTypeFamilies
+  - -XTypeOperators
+  - -XTypeSynonymInstances
+  - -XTupleSections
+  - -XUndecidableInstances
+# Warnings currently triggered by your code
+- ignore: {name: "Avoid lambda"} # 3 hints
+- ignore: {name: "Avoid lambda using `infix`"} # 2 hints
+- ignore: {name: "Evaluate"} # 6 hints
+- ignore: {name: "Functor law"} # 12 hints
+- ignore: {name: "Hoist not"} # 2 hints
+- ignore: {name: "Move brackets to avoid $"} # 33 hints
+- ignore: {name: "Move guards forward"} # 1 hint
+- ignore: {name: "Redundant $"} # 1 hint
+- ignore: {name: "Redundant <$>"} # 41 hints
+- ignore: {name: "Redundant bracket"} # 64 hints
+- ignore: {name: "Redundant fmap"} # 4 hints
+- ignore: {name: "Redundant lambda"} # 1 hint
+- ignore: {name: "Redundant multi-way if"} # 5 hints
+- ignore: {name: "Redundant return"} # 2 hints
+- ignore: {name: "Replace case with maybe"} # 1 hint
+- ignore: {name: "Unused LANGUAGE pragma"} # 7 hints
+- ignore: {name: "Use (,)"} # 1 hint
+- ignore: {name: "Use <$"} # 18 hints
+- ignore: {name: "Use <$>"} # 1 hint
+- ignore: {name: "Use =<<"} # 6 hints
+- ignore: {name: "Use ?~"} # 4 hints
+- ignore: {name: "Use concatMap"} # 1 hint
+- ignore: {name: "Use empty"} # 1 hint
+- ignore: {name: "Use fewer imports"} # 2 hints
+- ignore: {name: "Use first"} # 4 hints
+- ignore: {name: "Use fmap"} # 2 hints
+- ignore: {name: "Use fromMaybe"} # 1 hint
+- ignore: {name: "Use list comprehension"} # 4 hints
+- ignore: {name: "Use map"} # 2 hints
+- ignore: {name: "Use mapM"} # 5 hints
+- ignore: {name: "Use mapM_"} # 13 hints
+- ignore: {name: "Use mapMaybe"} # 22 hints
+- ignore: {name: "Use maybe"} # 1 hint
+- ignore: {name: "Use newtype instead of data"} # 1 hint
+- ignore: {name: "Use splitAt"} # 2 hints
+- ignore: {name: "Use unless"} # 1 hint
+- ignore: {name: "Use ||"} # 1 hint
