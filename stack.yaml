@@ -1,36 +1,4 @@
-resolver:
-  size: 527836
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/11/22.yaml
-  sha256: 341870ac98d8a9f8f77c4adf2e9e0b22063e264a7fbeb4c85b7af5f380dac60e
-extra-deps:
-- hackage: hxt-xpath-9.1.2.2@sha256:9cd590ae93a04573db8f90fa4094625ebd97dded45da7667c577ce6b38a42900,1999
-  pantry-tree:
-    size: 2225
-    sha256: aee2f75974e868ff429b8ff349a29667536c60397098f5dfedc968d1951511bb
-- hackage: doctest-0.15.0@sha256:b90e16b49bdb3863c394525b229dc6f1be99457ec49fb8831e2706f80389b590,6932
-  pantry-tree:
-    size: 7980
-    sha256: 14af7694cecb5f78ba68d89dd68a1ace80e86de08aad6c1278d922b27e432324
-- hackage: megaparsec-7.0.4@sha256:890d317e75151a48567900cdbe39d3c44e83918d79a39ce97b9245cab5402d5e,6222
-  pantry-tree:
-    size: 2647
-    sha256: 550e6fd35a8fde17f7fa005e823ee7a23b5415e73c8d5058825832d256ab5609
-- hackage: parser-combinators-1.0.0@sha256:7374d14cd3b38af0c7f7333049d6af1ccbbe6009deaa66e18701c2194e48f253,1884
-  pantry-tree:
-    size: 725
-    sha256: ea2b83e0b1ddd632012a4ee4d4e87b73038e7be3f9e999a65788d01064bf713a
-- hackage: HUnit-1.5.0.0@sha256:b15caa77f5237546894b53be5549f76cf106b187e6988e681669de67ea94bc82,1600
-  pantry-tree:
-    size: 878
-    sha256: c6d3549f14a2156953f09fa1ea3294a269cdba49085df973f37a441ec773eb5f
-- hackage: facts-0.0.1.0@sha256:97fe2f20dd9da98b19d42946d9431d9d45ccc2c8836fdacbdce6d348f7b8660f,1507
-  pantry-tree:
-    size: 310
-    sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
-- memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
-- servant-py-0.1.1.1@sha256:815f2791443bec2a40821a01da6623154029a8c3cb041dc7845a1b92fd2e9601,2931
-- aeson-1.3.1.1@sha256:1ab29743b4c4c9be7df57200ed2c8779048adda4cead075944b7b471e93ed4c3,6006
-- checkers-0.5.6@sha256:c9d35082c25d0e4b350077084318b0931ec47aa923b8f382ef16f0b3bbb51b93,2160
+resolver: nightly-2022-10-08
 flags:
     detour-via-sci:
         suppress-failing-tests: true
@@ -80,46 +48,55 @@ flags:
         suppress-failing-tests: true
     flare-timing:
         suppress-test-parsers: true
-tested-with: GHC == 8.2.2
 packages:
-- lang-haskell/build
+    - lang-haskell/build
 
-- lang-haskell/detour-via-sci
-- lang-haskell/detour-via-uom
-- lang-haskell/tasty-compare
-- lang-haskell/siggy-chardust
+    - lang-haskell/detour-via-sci
+    - lang-haskell/detour-via-uom
+    - lang-haskell/tasty-compare
+    - lang-haskell/siggy-chardust
 
-- lang-haskell/hcoord/hcoord
-- lang-haskell/hcoord/hcoord-utm
-- lang-haskell/exact-real
-- lang-haskell/uom-plugin/uom-plugin
+    - lang-haskell/clip
+    - lang-haskell/cmd
+    - lang-haskell/comp
+    - lang-haskell/earth
+    - lang-haskell/fsdb
+    - lang-haskell/gap-allot
+    - lang-haskell/gap-effort
+    - lang-haskell/gap-lead
+    - lang-haskell/gap-math
+    - lang-haskell/gap-stop
+    - lang-haskell/gap-valid
+    - lang-haskell/gap-weight
+    - lang-haskell/gap
+    - lang-haskell/igc
+    - lang-haskell/kml
+    - lang-haskell/latlng
+    - lang-haskell/lookup
+    - lang-haskell/mask
+    - lang-haskell/route
+    - lang-haskell/scribe
+    - lang-haskell/span
+    - lang-haskell/task
+    - lang-haskell/time
+    - lang-haskell/track
+    - lang-haskell/units
+    - lang-haskell/zone
 
-- lang-haskell/clip
-- lang-haskell/cmd
-- lang-haskell/comp
-- lang-haskell/earth
-- lang-haskell/fsdb
-- lang-haskell/gap-allot
-- lang-haskell/gap-effort
-- lang-haskell/gap-lead
-- lang-haskell/gap-math
-- lang-haskell/gap-stop
-- lang-haskell/gap-valid
-- lang-haskell/gap-weight
-- lang-haskell/gap
-- lang-haskell/igc
-- lang-haskell/kml
-- lang-haskell/latlng
-- lang-haskell/lookup
-- lang-haskell/mask
-- lang-haskell/route
-- lang-haskell/scribe
-- lang-haskell/span
-- lang-haskell/task
-- lang-haskell/time
-- lang-haskell/track
-- lang-haskell/units
-- lang-haskell/zone
-
-- lang-haskell/flare-timing
-- lang-haskell/app-serve
+    - lang-haskell/flare-timing
+    - lang-haskell/app-serve
+extra-deps:
+    - git: https://github.com/typechecker/hcoord.git
+      commit: e6f72eeb16c10f29b6d2438cca6b7d3978ea91f9
+      subdirs:
+        - hcoord
+        - hcoord-utm
+    - git: https://github.com/typechecker/facts.git 
+      commit: fda33feb0c4ddd95f77a453dd4199ef7be4a3b82
+    - git: https://github.com/typechecker/hxt-pickle-utils.git
+      commit: 1c9349233701f896313a9a0cb163d65f8b15bb9d
+    - uom-plugin-0.4.0.0@sha256:1530b5c0e86e945ecfe9f07dccfc3952da306adf4876301c3119e61c7eace78a,3542
+    - exact-real-0.12.5.1@sha256:258e91c9f0725496b13dff8d8984b3ddf9a6040892e2687779aae8d3cf90e7c8,2427
+    - ghc-tcplugin-api-0.8.3.0@sha256:96d95563ea1fdecf10a8fb1f2a53973c37b3b997db95931422cb832591bad7dd,4434
+    - hxt-xpath-9.1.2.2@sha256:9cd590ae93a04573db8f90fa4094625ebd97dded45da7667c577ce6b38a42900,1999
+    - servant-py-0.1.0.4@sha256:4905a1a6bb06c2b399af92f787f722798f4aed329cbbfedd07182a0252f842f2,2774
