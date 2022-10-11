@@ -46,6 +46,7 @@ in  let defs = ./../defaults.dhall
                     , "here"
                     , "bytestring"
                     , "aeson-pretty"
+                    , "hspec"
                     , "tasty"
                     , "tasty-hspec"
                     , "tasty-discover"

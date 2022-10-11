@@ -1,7 +1,7 @@
 module Serve.Config (Config(..), AppT(..), nullConfig) where
 
 import Data.UnitsOfMeasure (u)
-import Servant (ServantErr)
+import Servant (ServerError)
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ReaderT, MonadReader)
@@ -79,14 +79,14 @@ nullConfig fs cs =
 
 newtype AppT k m a =
     AppT
-        { unApp :: ReaderT (Config k) (ExceptT ServantErr m) a
+        { unApp :: ReaderT (Config k) (ExceptT ServerError m) a
         }
     deriving newtype
         ( Functor
         , Applicative
         , Monad
         , MonadReader (Config k)
-        , MonadError ServantErr
+        , MonadError ServerError
         , MonadIO
         , MonadThrow
         )

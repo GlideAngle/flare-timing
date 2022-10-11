@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5a7820945e9c30075db119a1b324244c01c4c3a5df75d981acd84bac1e409094
+-- hash: b18d78a5f531be8e3cf3f546fa387276d3e938b7a095133d1cdd354deccd6711
 
 name:           flight-latlng
 version:        0.1.0
@@ -40,6 +40,7 @@ library
       Flight.EastNorth
       Flight.LatLng
       Flight.LatLng.Raw
+      Flight.LatLng.RawLatLng
       Flight.LatLng.Double
       Flight.LatLng.Float
       Flight.LatLng.Rational
@@ -122,6 +123,7 @@ test-suite hlint
       Flight.LatLng.Lng
       Flight.LatLng.Rational
       Flight.LatLng.Raw
+      Flight.LatLng.RawLatLng
       Paths_flight_latlng
   hs-source-dirs:
       library

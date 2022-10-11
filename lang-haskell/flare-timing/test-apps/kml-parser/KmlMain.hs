@@ -1,6 +1,5 @@
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Control.Monad (mapM_)
 import System.FilePath (takeFileName)
 import System.Directory (getCurrentDirectory)
 

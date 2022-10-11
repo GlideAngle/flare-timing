@@ -29,6 +29,7 @@ import Flight.Zone
 import Flight.Distance
 import Flight.LatLng
 import Flight.LatLng.Raw
+import Flight.LatLng.RawLatLng
 import Flight.Geodesy
 import Flight.Earth.Ellipsoid
 import Flight.Route
@@ -81,7 +82,6 @@ instance ToSchema (TaskZones OpenDistance Double) where
     declareNamedSchema _ = do
         doubleSchema <- declareSchemaRef (Proxy :: Proxy Double)
         return . NamedSchema (Just "OpenDistance") $ mempty
-          & (type_ .~ SwaggerObject)
           & properties .~
               [ ("prolog", doubleSchema)
               , ("open-mandatory", doubleSchema)
@@ -93,7 +93,6 @@ instance ToSchema (TaskZones Race Double) where
     declareNamedSchema _ = do
         doubleSchema <- declareSchemaRef (Proxy :: Proxy Double)
         return . NamedSchema (Just "Race") $ mempty
-          & (type_ .~ SwaggerObject)
           & properties .~
               [ ("prolog", doubleSchema)
               , ("race", doubleSchema)
@@ -110,7 +109,6 @@ instance ToSchema (TaskZones Race Double) where
 
 _dpNum :: DecimalPlaces -> ParamSchema t
 _dpNum (DecimalPlaces n) = mempty
-    & type_ .~ SwaggerString
     -- SEE: https://www.regular-expressions.info/floatingpoint.html
     & pattern .~ Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "}$"))
 
@@ -118,19 +116,16 @@ dpUnit :: DecimalPlaces -> String -> ParamSchema t
 dpUnit (DecimalPlaces n) unit
     | n <= 0 = intUnit unit
     | otherwise = mempty
-        & type_ .~ SwaggerString
         -- SEE: https://www.regular-expressions.info/floatingpoint.html
         & pattern .~ Just (T.pack ([r|^[-+]?[0-9]*\.?[0-9]{0,|] ++ show n ++ "} " ++ unit ++ "$"))
 
 intUnit :: String -> ParamSchema t
 intUnit unit = mempty
-    & type_ .~ SwaggerString
     -- SEE: https://www.regular-expressions.info/floatingpoint.html
     & pattern .~ Just (T.pack ([r|^[-+]?[0-9]+ |] ++ unit ++ "$"))
 
 posUnit :: String -> ParamSchema t
 posUnit unit = mempty
-    & type_ .~ SwaggerString
     -- SEE: https://www.regular-expressions.info/floatingpoint.html
     & pattern .~ Just (T.pack ([r|^[+]?[0-9]+ |] ++ unit ++ "$"))
 

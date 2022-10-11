@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bb16442a69a8ceccc93a3f5e614bd960dbf8362746d127e94ba6fd09420730ab
+-- hash: 3ad12367d6057b20c037a1b9684abe9f409a730035b08ad9b4b1cb9e87a33829
 
 name:           flight-comp
 version:        0.1.0
@@ -247,9 +247,9 @@ test-suite comp
     , unordered-containers
     , uom-plugin
     , vector
+  default-language: Haskell2010
   if flag(suppress-failing-tests)
     buildable: False
-  default-language: Haskell2010
 
 test-suite doctest
   type: exitcode-stdio-1.0

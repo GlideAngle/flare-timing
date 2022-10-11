@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b3b3a3d013a87d1ac10d8b93022878e990a87b0111b7b2d7f669ce40fbdb588e
+-- hash: 64cf5c6433341758211008ad8985a2ccbeb652645e1d0702376143b4e65ebe31
 
 name:           flight-zone
 version:        0.1.0
@@ -321,6 +321,7 @@ test-suite serial
     , flight-latlng
     , flight-units
     , here
+    , hspec
     , newtype
     , scientific
     , siggy-chardust

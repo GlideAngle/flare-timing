@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 473325023d3d929ca8ca3efc594433d3406521de75a1b3b5d8460098c6d7d8a3
+-- hash: 7b0054f6c8fbb382719d6db331e42f6ffc92a72c7010793370b77e62724f007b
 
 name:           flight-fsdb
 version:        0.1.0
@@ -111,7 +111,7 @@ library
     , flight-zone
     , hxt
     , hxt-xpath
-    , megaparsec >=7.0.4 && <7.1
+    , megaparsec >=7.0.4
     , newtype
     , path
     , scientific
@@ -203,7 +203,7 @@ test-suite doctest
     , hxt
     , hxt-pickle-utils
     , hxt-xpath
-    , megaparsec >=7.0.4 && <7.1
+    , megaparsec >=7.0.4
     , newtype
     , path
     , scientific
@@ -294,7 +294,7 @@ test-suite hlint
     , hlint
     , hxt
     , hxt-xpath
-    , megaparsec >=7.0.4 && <7.1
+    , megaparsec >=7.0.4
     , newtype
     , path
     , scientific

@@ -5,8 +5,8 @@ module Test.Validity.AesonSpec where
 import Data.Bifunctor (first)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as BL (ByteString, fromStrict)
+import Test.Hspec (Spec, it, shouldBe)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.Hspec (Spec, it, shouldBe)
 import Test.Tasty.Golden
 import Data.Aeson (ToJSON, FromJSON, encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)

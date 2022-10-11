@@ -30,8 +30,7 @@ import Control.DeepSeq
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath
-    ( FilePath
-    , (</>)
+    ( (</>)
     , takeDirectory
     , normalise
     , splitDirectories

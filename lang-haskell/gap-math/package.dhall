@@ -55,7 +55,7 @@ in  let defs = ./../defaults.dhall
                         , "facts"
                         , "newtype"
                         , "exact-real"
-                        , "QuickCheck"
+                        , "QuickCheck >= 2.14.2"
                         , "scientific"
                         , "template-haskell"
                         , "text"

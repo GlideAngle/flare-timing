@@ -5,7 +5,6 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import qualified Formatting as Fmt ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
 

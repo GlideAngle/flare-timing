@@ -8,7 +8,6 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
-import Control.Monad (mapM_)
 import Control.DeepSeq
 import Control.Concurrent.ParallelIO (parallel_)
 import Control.Exception.Safe (catchIO)

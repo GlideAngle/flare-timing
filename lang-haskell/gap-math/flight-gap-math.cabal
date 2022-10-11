@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 798117cfc5c690c768caab3da6ac181af025fa6ed048e41ac820cbb24111f665
+-- hash: c6bc9f258a10bd4c1390f58baaca02a6d343e29f08bfda5d90849cd82c991066
 
 name:           flight-gap-math
 version:        0.1.0
@@ -84,7 +84,7 @@ library
       UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures
   build-depends:
-      QuickCheck
+      QuickCheck >=2.14.2
     , aeson
     , base >=4.10.1.0 && <5
     , cassava
@@ -146,7 +146,7 @@ test-suite doctest
       UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      QuickCheck
+      QuickCheck >=2.14.2
     , aeson
     , base >=4.10.1.0 && <5
     , cassava
@@ -221,7 +221,7 @@ test-suite hlint
       UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      QuickCheck
+      QuickCheck >=2.14.2
     , aeson
     , base >=4.10.1.0 && <5
     , cassava

@@ -38,6 +38,7 @@ in  let deps = ./../defaults.dhall
               , "Flight.EastNorth"
               , "Flight.LatLng"
               , "Flight.LatLng.Raw"
+              , "Flight.LatLng.RawLatLng"
               , "Flight.LatLng.Double"
               , "Flight.LatLng.Float"
               , "Flight.LatLng.Rational"

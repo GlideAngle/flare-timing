@@ -1,27 +1,25 @@
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-
 module Flight.Mask.Internal.Dot (dotToGoal) where
 
 import Prelude hiding (span)
 
-import Flight.Kml (MarkedFixes(..))
+import Flight.Kml (MarkedFixes(..), Fix)
 import Flight.Comp (Task(..), Zones(..))
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
-import Flight.Mask.Internal.Zone (TaskZone(..), fixToPoint)
+import Flight.Mask.Internal.Zone (TaskZone(..), Crossing, fixToPoint)
 import Flight.Mask.Internal.Race (Reach)
 import Flight.Mask.Internal.Cross (crossingPredicates, isStartExit)
 import Flight.Geodesy.Solution (SeparatedZones)
 
 -- | The distance to goal checking for each crossing.
 dotToGoal
-    :: (Real b, Fractional b)
+    :: (Real a, Fractional a)
     => SeparatedZones a
-    -> (Zones -> [TaskZone b])
-    -> Reach _ _ _
+    -> (Zones -> [TaskZone a])
+    -> Reach Fix a Crossing
     -> Task k
     -> MarkedFixes
-    -> Maybe (TaskDistance b)
+    -> Maybe (TaskDistance a)
     -- ^ Nothing indicates no such task or a task with no zones.
 dotToGoal
     sepZs fromZones dvz

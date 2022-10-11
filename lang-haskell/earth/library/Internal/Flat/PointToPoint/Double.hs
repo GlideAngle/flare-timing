@@ -4,7 +4,6 @@ module Internal.Flat.PointToPoint.Double
     , azimuthRev
     ) where
 
-import Data.Maybe (maybe)
 import Flight.LatLng (AzimuthFwd, AzimuthRev)
 import Flight.Zone (Zone(..))
 import Flight.Distance (PathDistance(..), SpanLatLng)

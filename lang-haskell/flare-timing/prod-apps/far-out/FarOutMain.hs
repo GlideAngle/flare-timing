@@ -6,7 +6,6 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
-import Control.Monad (mapM_)
 import Control.Monad.Zip (munzip)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
@@ -71,7 +70,7 @@ drive o@CmdBatchOptions{file} = do
     fprint ("Far outs counted for distance difficulty completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile = do
+go CmdBatchOptions{} compFile = do
     filesTaskAndSettings <-
         catchIO
             (Just <$> do

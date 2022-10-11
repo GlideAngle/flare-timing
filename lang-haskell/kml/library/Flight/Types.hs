@@ -16,7 +16,6 @@
 
 import Prelude hiding (min)
 import Control.DeepSeq
-import Data.Semigroup
 import Text.Printf (printf)
 import Data.Time.Clock (UTCTime(..), addUTCTime, diffUTCTime)
 import Data.List (findIndex, findIndices, sort, nub)

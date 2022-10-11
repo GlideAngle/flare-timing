@@ -21,7 +21,7 @@ import Data.UnitsOfMeasure (u, zero)
 import Flight.Field (FieldOrdering(..))
 import Flight.EastNorth (EastingNorthing(..), UtmZone(..))
 import Flight.LatLng (LatLng(..))
-import Flight.LatLng.Raw (RawLatLng(..))
+import Flight.LatLng.RawLatLng (RawLatLng(..))
 import Flight.Distance
     (QTaskDistance, TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..))

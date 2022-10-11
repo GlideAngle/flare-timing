@@ -18,7 +18,7 @@ in  let defs = ./../defaults.dhall
                 , "facts"
                 , "hxt"
                 , "hxt-xpath"
-                , "megaparsec ^>= 7.0.4"
+                , "megaparsec >= 7.0.4"
                 , "newtype"
                 , "path"
                 , "scientific"

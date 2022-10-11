@@ -1,7 +1,8 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-{-# OPTIONS_GHC -fno-warn-incomplete-uni-patterns #-}
+{-# OPTIONS_GHC -Wno-partial-type-signatures #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
+{-# OPTIONS_GHC -Wno-error=ambiguous-fields #-}
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
@@ -22,7 +23,6 @@ import qualified Data.Map.Merge.Strict as Map
 import Data.List (partition)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
-import Control.Monad (mapM_)
 import Control.Monad.Zip (mzip)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
@@ -174,7 +174,7 @@ drive o@CmdBatchOptions{file} = do
     Fmt.fprint ("Tallying points completed in " Fmt.% timeSpecs Fmt.% "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile = do
+go CmdBatchOptions{} compFile = do
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
 
     filesTaskAndSettings <-

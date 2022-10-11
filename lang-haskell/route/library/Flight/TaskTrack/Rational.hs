@@ -12,7 +12,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.LatLng (LatLng(..))
-import Flight.LatLng.Raw (RawLatLng(..))
+import Flight.LatLng.RawLatLng (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center, toCylinder)

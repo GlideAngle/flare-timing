@@ -14,7 +14,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Test.QuickCheck.Instances ()
 
-import Flight.Ratio (pattern (:%))
+import Flight.Ratio (pattern (:%), splitRatio)
 import "flight-gap-allot" Flight.Score
 import "flight-gap-math" Flight.Score
 
@@ -35,7 +35,7 @@ instance Monad m => SC.Serial m AfTest where
 
 instance QC.Arbitrary AfTest where
     arbitrary = do
-        (Normal (rank :% n)) <- arbitrary
+        (rank, n) <- splitRatio <$> arbitrary
         return $ AfTest (PilotsAtEss n, ArrivalPlacing $ Prelude.max 1 rank)
 
 -- | Speed fraction
@@ -56,7 +56,7 @@ instance Monad m => SC.Serial m SfTest where
 
 instance QC.Arbitrary SfTest where
     arbitrary = do
-        (Normal (n :% d)) <- arbitrary
+        (n, d) <- splitRatio <$> arbitrary
         return . SfTest $
             ( BestTime . MkQuantity . fromRational $ (d % 1)
             , PilotTime . MkQuantity . fromRational $ (d + n) % 1
@@ -80,7 +80,8 @@ instance Monad m => SC.Serial m LfTest where
 
 instance QC.Arbitrary LfTest where
     arbitrary = do
-        (Normal ((n :% d) :: Rational)) <- arbitrary
+        (Normal (x :: Rational)) <- arbitrary
+        let (n, d) = splitRatio x
         return . LfTest $
             ( FlownMax . MkQuantity . fromIntegral $ d + n
             , PilotDistance . MkQuantity . fromIntegral $ d
