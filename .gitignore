@@ -41,3 +41,5 @@ bazel-*
 lang-fsharp/packages
 *.swk
 *.swj
+.updo
+updo
