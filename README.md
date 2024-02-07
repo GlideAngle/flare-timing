@@ -5,6 +5,11 @@
 ![pier](https://github.com/BlockScope/flare-timing/workflows/pier/badge.svg)
 [![docs](https://readthedocs.org/projects/flare-timing/badge/?version=latest)](https://flare-timing.readthedocs.io/en/latest/?badge=latest)
 
+> [!IMPORTANT]
+> This project depends on `uom-plugin-0.3.0.0` that was constrained to use
+> `ghc <= 8.2`. A new version, `uom-plugin-0.4.0.0`, has been released that
+> works with `ghc >= 9` so this project could now be upgraded.
+
 **Flare Timing** is a reference implementation of [GAP](lang-haskell/GAP.md)
 scoring for cross country hang gliding and paragliding racing.
 
