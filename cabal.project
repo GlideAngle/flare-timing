@@ -1,4 +1,4 @@
-import: https://stackage.org/lts-11.22/cabal.config
+import: ./project-stackage/lts-11.22.config
 
 -- We have upgraded 33 packages and have 33 yet to do.
 packages:
