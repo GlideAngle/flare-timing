@@ -5,91 +5,128 @@
 
 packages:
 - completed:
-    hackage: hxt-xpath-9.1.2.2@sha256:9cd590ae93a04573db8f90fa4094625ebd97dded45da7667c577ce6b38a42900,1999
+    commit: e6f72eeb16c10f29b6d2438cca6b7d3978ea91f9
+    git: https://github.com/typechecker/hcoord
+    name: hcoord
     pantry-tree:
-      size: 2225
-      sha256: aee2f75974e868ff429b8ff349a29667536c60397098f5dfedc968d1951511bb
+      sha256: 4dc11890dad9d8bda0aa7eaa6c7e6ba818fd52921a654b5953749445b2f74e8b
+      size: 1035
+    subdir: hcoord
+    version: 1.0.0.0
   original:
-    hackage: hxt-xpath-9.1.2.2@sha256:9cd590ae93a04573db8f90fa4094625ebd97dded45da7667c577ce6b38a42900,1999
-    pantry-tree:
-      size: 2225
-      sha256: aee2f75974e868ff429b8ff349a29667536c60397098f5dfedc968d1951511bb
+    commit: e6f72eeb16c10f29b6d2438cca6b7d3978ea91f9
+    git: https://github.com/typechecker/hcoord
+    subdir: hcoord
 - completed:
-    hackage: doctest-0.15.0@sha256:b90e16b49bdb3863c394525b229dc6f1be99457ec49fb8831e2706f80389b590,6932
+    commit: e6f72eeb16c10f29b6d2438cca6b7d3978ea91f9
+    git: https://github.com/typechecker/hcoord
+    name: hcoord-utm
     pantry-tree:
-      size: 7980
-      sha256: 14af7694cecb5f78ba68d89dd68a1ace80e86de08aad6c1278d922b27e432324
+      sha256: e3f0d077b75dc64f53e58e6e5c17a302d51701033d1dc50d09f7b174bbbc9213
+      size: 644
+    subdir: hcoord-utm
+    version: 1.0.0.0
   original:
-    hackage: doctest-0.15.0@sha256:b90e16b49bdb3863c394525b229dc6f1be99457ec49fb8831e2706f80389b590,6932
-    pantry-tree:
-      size: 7980
-      sha256: 14af7694cecb5f78ba68d89dd68a1ace80e86de08aad6c1278d922b27e432324
+    commit: e6f72eeb16c10f29b6d2438cca6b7d3978ea91f9
+    git: https://github.com/typechecker/hcoord
+    subdir: hcoord-utm
 - completed:
-    hackage: megaparsec-7.0.4@sha256:890d317e75151a48567900cdbe39d3c44e83918d79a39ce97b9245cab5402d5e,6222
+    commit: c4308efc37c53e266fee348a80fdfbabb18822be
+    git: https://github.com/typechecker/exact-real
+    name: exact-real
     pantry-tree:
-      size: 2647
-      sha256: 550e6fd35a8fde17f7fa005e823ee7a23b5415e73c8d5058825832d256ab5609
+      sha256: 0ed52c60bb0962458d47635c4bc6a3a3fd38f4e28314c907b82b07494dee9ab9
+      size: 2115
+    version: 0.12.5.1
   original:
-    hackage: megaparsec-7.0.4@sha256:890d317e75151a48567900cdbe39d3c44e83918d79a39ce97b9245cab5402d5e,6222
-    pantry-tree:
-      size: 2647
-      sha256: 550e6fd35a8fde17f7fa005e823ee7a23b5415e73c8d5058825832d256ab5609
+    commit: c4308efc37c53e266fee348a80fdfbabb18822be
+    git: https://github.com/typechecker/exact-real
 - completed:
-    hackage: parser-combinators-1.0.0@sha256:7374d14cd3b38af0c7f7333049d6af1ccbbe6009deaa66e18701c2194e48f253,1884
+    commit: 7419e73e7fa534cced7ecd3232103f6304bed728
+    git: https://github.com/blockscope/uom-plugin
+    name: uom-plugin
     pantry-tree:
-      size: 725
-      sha256: ea2b83e0b1ddd632012a4ee4d4e87b73038e7be3f9e999a65788d01064bf713a
+      sha256: fb93d8b8d865a7b513191d11741989140cfb4746c31ccf46d0cfd58061bffe7d
+      size: 2089
+    subdir: uom-plugin
+    version: 0.3.0.1
   original:
-    hackage: parser-combinators-1.0.0@sha256:7374d14cd3b38af0c7f7333049d6af1ccbbe6009deaa66e18701c2194e48f253,1884
-    pantry-tree:
-      size: 725
-      sha256: ea2b83e0b1ddd632012a4ee4d4e87b73038e7be3f9e999a65788d01064bf713a
+    commit: 7419e73e7fa534cced7ecd3232103f6304bed728
+    git: https://github.com/blockscope/uom-plugin
+    subdir: uom-plugin
 - completed:
-    hackage: HUnit-1.5.0.0@sha256:b15caa77f5237546894b53be5549f76cf106b187e6988e681669de67ea94bc82,1600
+    hackage: HUnit-1.5.0.0@sha256:ea62236fd92b11fe34b8d44a027a1427d37d1f2c7f40490123c6623805b800e3,1703
     pantry-tree:
+      sha256: 0f3e1c05b326e16a67bc5158ec7d306744f90cdebb449882a60f4c048539f642
       size: 878
-      sha256: c6d3549f14a2156953f09fa1ea3294a269cdba49085df973f37a441ec773eb5f
   original:
-    hackage: HUnit-1.5.0.0@sha256:b15caa77f5237546894b53be5549f76cf106b187e6988e681669de67ea94bc82,1600
-    pantry-tree:
-      size: 878
-      sha256: c6d3549f14a2156953f09fa1ea3294a269cdba49085df973f37a441ec773eb5f
+    hackage: HUnit-1.5.0.0
 - completed:
-    hackage: facts-0.0.1.0@sha256:97fe2f20dd9da98b19d42946d9431d9d45ccc2c8836fdacbdce6d348f7b8660f,1507
+    hackage: aeson-1.3.1.1@sha256:6bc7f8be0bbc28a05c1994e7bb0402086dc3c397fc4a8d3f3ecba322230959bc,6026
     pantry-tree:
-      size: 310
-      sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
-  original:
-    hackage: facts-0.0.1.0@sha256:97fe2f20dd9da98b19d42946d9431d9d45ccc2c8836fdacbdce6d348f7b8660f,1507
-    pantry-tree:
-      size: 310
-      sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
-- completed:
-    hackage: memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
-    pantry-tree:
-      size: 473
-      sha256: 598188857937054d2cc4ac91aee580944d750e91120756507891d09e02056066
-  original:
-    hackage: memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
-- completed:
-    hackage: servant-py-0.1.1.1@sha256:815f2791443bec2a40821a01da6623154029a8c3cb041dc7845a1b92fd2e9601,2931
-    pantry-tree:
-      size: 704
-      sha256: debf3dffbaa5c93f369514cf8dab3e9c40e5280bc07372ebcf217557e94b2267
-  original:
-    hackage: servant-py-0.1.1.1@sha256:815f2791443bec2a40821a01da6623154029a8c3cb041dc7845a1b92fd2e9601,2931
-- completed:
-    hackage: aeson-1.3.1.1@sha256:1ab29743b4c4c9be7df57200ed2c8779048adda4cead075944b7b471e93ed4c3,6006
-    pantry-tree:
+      sha256: 1ed3d37becb8eec8be1c05210a0ea15baa88f88c705ab4a07992a96145d180e3
       size: 39767
-      sha256: 51b7dee2a814836224eb735f4c70efd29a8c753ae2465e2de0469fc3be1c2ebd
   original:
-    hackage: aeson-1.3.1.1@sha256:1ab29743b4c4c9be7df57200ed2c8779048adda4cead075944b7b471e93ed4c3,6006
+    hackage: aeson-1.3.1.1
 - completed:
     hackage: checkers-0.5.6@sha256:c9d35082c25d0e4b350077084318b0931ec47aa923b8f382ef16f0b3bbb51b93,2160
     pantry-tree:
-      size: 1267
       sha256: 2761f3e1467590005ce8e754e040dc4df8b555d2887dc88f4c26462332f84037
+      size: 1267
   original:
-    hackage: checkers-0.5.6@sha256:c9d35082c25d0e4b350077084318b0931ec47aa923b8f382ef16f0b3bbb51b93,2160
-snapshots: []
+    hackage: checkers-0.5.6
+- completed:
+    hackage: doctest-0.15.0@sha256:b90e16b49bdb3863c394525b229dc6f1be99457ec49fb8831e2706f80389b590,6932
+    pantry-tree:
+      sha256: 14af7694cecb5f78ba68d89dd68a1ace80e86de08aad6c1278d922b27e432324
+      size: 7980
+  original:
+    hackage: doctest-0.15.0
+- completed:
+    hackage: facts-0.0.1.0@sha256:97fe2f20dd9da98b19d42946d9431d9d45ccc2c8836fdacbdce6d348f7b8660f,1507
+    pantry-tree:
+      sha256: 66a727d5aa5505bf2a449bb272d00f99dd189aa340ef257fe6e4860381825da5
+      size: 310
+  original:
+    hackage: facts-0.0.1.0
+- completed:
+    hackage: hxt-xpath-9.1.2.2@sha256:9cd590ae93a04573db8f90fa4094625ebd97dded45da7667c577ce6b38a42900,1999
+    pantry-tree:
+      sha256: aee2f75974e868ff429b8ff349a29667536c60397098f5dfedc968d1951511bb
+      size: 2225
+  original:
+    hackage: hxt-xpath-9.1.2.2
+- completed:
+    hackage: megaparsec-7.0.4@sha256:890d317e75151a48567900cdbe39d3c44e83918d79a39ce97b9245cab5402d5e,6222
+    pantry-tree:
+      sha256: 550e6fd35a8fde17f7fa005e823ee7a23b5415e73c8d5058825832d256ab5609
+      size: 2647
+  original:
+    hackage: megaparsec-7.0.4
+- completed:
+    hackage: memoize-0.8.1@sha256:2146197c639c126796d850cb4457b24cfeb6966d6d878825f855aafce31f8874,1601
+    pantry-tree:
+      sha256: 598188857937054d2cc4ac91aee580944d750e91120756507891d09e02056066
+      size: 473
+  original:
+    hackage: memoize-0.8.1
+- completed:
+    hackage: parser-combinators-1.0.0@sha256:7374d14cd3b38af0c7f7333049d6af1ccbbe6009deaa66e18701c2194e48f253,1884
+    pantry-tree:
+      sha256: ea2b83e0b1ddd632012a4ee4d4e87b73038e7be3f9e999a65788d01064bf713a
+      size: 725
+  original:
+    hackage: parser-combinators-1.0.0
+- completed:
+    hackage: servant-py-0.1.1.1@sha256:815f2791443bec2a40821a01da6623154029a8c3cb041dc7845a1b92fd2e9601,2931
+    pantry-tree:
+      sha256: debf3dffbaa5c93f369514cf8dab3e9c40e5280bc07372ebcf217557e94b2267
+      size: 704
+  original:
+    hackage: servant-py-0.1.1.1
+snapshots:
+- completed:
+    sha256: 341870ac98d8a9f8f77c4adf2e9e0b22063e264a7fbeb4c85b7af5f380dac60e
+    size: 527836
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/11/22.yaml
+  original: lts-11.22
