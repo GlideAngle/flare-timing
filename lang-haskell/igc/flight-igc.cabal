@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e165bcc72935c20ef174d0a35624f774a0ddc985472dc68b577f972156899bf9
+-- hash: ffc6b1b0d3ba3127f1346cd4c2a46270770289f95d03d027a5d3d21356f69ad9
 
 name:           flight-igc
 version:        2.0.0
@@ -148,9 +148,9 @@ test-suite doctest
     , flight-clip
     , time
     , utf8-string
+  default-language: Haskell2010
   if flag(suppress-failing-tests)
     buildable: True
-  default-language: Haskell2010
 
 test-suite hlint
   type: exitcode-stdio-1.0

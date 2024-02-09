@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bf37f4010a4b50fe03c48d3b0477878b0c353166e69db72d0e06dead7f2abd58
+-- hash: c436bde5e9dbfa360719e42b9592fc7b7500edca55d3e193702417612860d14a
 
 name:           app-serve
 version:        0.1.0
@@ -287,6 +287,6 @@ test-suite hlint
       base
     , flight-comp
     , hlint
+  default-language: Haskell2010
   if flag(suppress-failing-tests)
     buildable: False
-  default-language: Haskell2010

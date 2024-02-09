@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c9bdc91e0dec2d1830542ea6b4c4ef1ad1efa5b5555db8d4938b73d2b4e57cce
+-- hash: 0e062f447df9e493f06163ece347cde3e1263d4e6cc1e12e78943cd690a80e11
 
 name:           flight-task
 version:        0.1.0
@@ -247,6 +247,6 @@ test-suite task
     , tasty-quickcheck
     , tasty-smallcheck
     , uom-plugin
+  default-language: Haskell2010
   if flag(suppress-failing-tests)
     buildable: False
-  default-language: Haskell2010

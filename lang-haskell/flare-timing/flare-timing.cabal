@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.dhall by hpack version 0.34.4.
+-- This file has been generated from package.dhall by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2e0120cd0ad17519d6270d2bb1fda95a47375b2474f648770318940f22236a45
+-- hash: d065d0cd946ba18f7bf90ee2a0806defbf804609d409835038c7b67524ad1652
 
 name:           flare-timing
 version:        0.1.0
@@ -932,9 +932,9 @@ executable ft-fsdb-parser
     , flight-units
     , raw-strings-qq
     , uom-plugin
+  default-language: Haskell2010
   if flag(suppress-test-parsers)
     buildable: False
-  default-language: Haskell2010
 
 executable ft-gap-point
   main-is: GapPointMain.hs
@@ -1063,9 +1063,9 @@ executable ft-igc-parser
     , flight-comp
     , flight-igc
     , raw-strings-qq
+  default-language: Haskell2010
   if flag(suppress-test-parsers)
     buildable: False
-  default-language: Haskell2010
 
 executable ft-kml-parser
   main-is: KmlMain.hs
@@ -1117,9 +1117,9 @@ executable ft-kml-parser
     , flight-comp
     , flight-kml
     , raw-strings-qq
+  default-language: Haskell2010
   if flag(suppress-test-parsers)
     buildable: False
-  default-language: Haskell2010
 
 executable ft-land-out
   main-is: LandOutMain.hs
