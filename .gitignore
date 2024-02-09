@@ -25,7 +25,6 @@ result*
 dist-*
 .ghc.*
 *.local
-ghc-*
 uom-plugin-*
 *.hi
 *.o
