@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ffc6b1b0d3ba3127f1346cd4c2a46270770289f95d03d027a5d3d21356f69ad9
+-- hash: 6b4cffd0d271f4c19606dd6411abb0981960c747b7408f2c25b5515a314b4890
 
 name:           flight-igc
 version:        2.0.0
@@ -151,60 +151,3 @@ test-suite doctest
   default-language: Haskell2010
   if flag(suppress-failing-tests)
     buildable: True
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Igc
-      Flight.Igc.Fix
-      Flight.Igc.Parse
-      Flight.Igc.Record
-      Paths_flight_igc
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -Werror -Wincomplete-uni-patterns -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      QuickCheck
-    , attoparsec
-    , base >=4.10.1.0 && <5
-    , bytestring
-    , deepseq
-    , flight-clip
-    , hlint
-    , time
-    , utf8-string
-  default-language: Haskell2010

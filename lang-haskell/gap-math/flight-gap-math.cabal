@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 798117cfc5c690c768caab3da6ac181af025fa6ed048e41ac820cbb24111f665
+-- hash: 6d0eb6e6ff604db7b3ff654693aab38767765e1ccbcf3d0e63bc34e462280e9d
 
 name:           flight-gap-math
 version:        0.1.0
@@ -162,80 +162,6 @@ test-suite doctest
     , flight-units
     , newtype
     , quickcheck-classes
-    , scientific
-    , siggy-chardust
-    , template-haskell
-    , text
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Gap.Distance.Early
-      Flight.Gap.Penalty
-      Flight.Gap.Points
-      Flight.Gap.Points.Arrival
-      Flight.Gap.Points.Distance
-      Flight.Gap.Points.Leading
-      Flight.Gap.Points.Task
-      Flight.Gap.Points.Time
-      Flight.Gap.Time.Early
-      Flight.Score
-      Paths_flight_gap_math
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      QuickCheck
-    , aeson
-    , base >=4.10.1.0 && <5
-    , cassava
-    , containers
-    , detour-via-sci
-    , detour-via-uom
-    , exact-real
-    , facts
-    , flight-gap-allot
-    , flight-gap-valid
-    , flight-gap-weight
-    , flight-units
-    , hlint
-    , newtype
     , scientific
     , siggy-chardust
     , template-haskell

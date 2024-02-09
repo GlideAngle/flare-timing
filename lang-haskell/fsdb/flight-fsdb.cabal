@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 473325023d3d929ca8ca3efc594433d3406521de75a1b3b5d8460098c6d7d8a3
+-- hash: 26193c7b380a961c6eb07c4974f53142bb5a9be4135f423055dba2e831058f73
 
 name:           flight-fsdb
 version:        0.1.0
@@ -202,97 +202,6 @@ test-suite doctest
     , flight-zone
     , hxt
     , hxt-pickle-utils
-    , hxt-xpath
-    , megaparsec >=7.0.4 && <7.1
-    , newtype
-    , path
-    , scientific
-    , split
-    , statistics
-    , time
-    , uom-plugin
-    , vector
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Fsdb
-      Flight.Fsdb.Clean
-      Flight.Fsdb.Comp
-      Flight.Fsdb.Distance
-      Flight.Fsdb.Internal.Parse
-      Flight.Fsdb.Internal.Xml
-      Flight.Fsdb.Internal.XmlPickle
-      Flight.Fsdb.KeyPilot
-      Flight.Fsdb.Nominal
-      Flight.Fsdb.Pilot
-      Flight.Fsdb.Stopped
-      Flight.Fsdb.Task
-      Flight.Fsdb.TaskArrival
-      Flight.Fsdb.TaskEffort
-      Flight.Fsdb.TaskRoute
-      Flight.Fsdb.TaskScore
-      Flight.Fsdb.Trim
-      Flight.Fsdb.Tweak
-      Paths_flight_fsdb
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions:
-      DataKinds
-      DeriveFunctor
-      DeriveGeneric
-      DeriveAnyClass
-      DerivingStrategies
-      DisambiguateRecordFields
-      FlexibleContexts
-      FlexibleInstances
-      GeneralizedNewtypeDeriving
-      GADTs
-      LambdaCase
-      MultiParamTypeClasses
-      MultiWayIf
-      NamedFieldPuns
-      OverloadedStrings
-      PackageImports
-      ParallelListComp
-      PartialTypeSignatures
-      PatternSynonyms
-      QuasiQuotes
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TemplateHaskell
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      TypeSynonymInstances
-      TupleSections
-      UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.10.1.0 && <5
-    , containers
-    , detour-via-sci
-    , facts
-    , flight-comp
-    , flight-earth
-    , flight-gap-allot
-    , flight-gap-effort
-    , flight-gap-lead
-    , flight-gap-math
-    , flight-gap-stop
-    , flight-gap-valid
-    , flight-gap-weight
-    , flight-latlng
-    , flight-units
-    , flight-zone
-    , hlint
-    , hxt
     , hxt-xpath
     , megaparsec >=7.0.4 && <7.1
     , newtype

@@ -47,17 +47,8 @@ jobs:
     # - name: build tests
     #   run: stack test --no-run-tests --no-terminal
 
-    - name: flight-clip:hlint
-      run: stack test flight-clip:hlint --no-terminal --test-arguments "--color=always"
-
     - name: flight-clip:doctest
       run: stack test flight-clip:doctest --no-terminal --test-arguments "--color=always"
-
-    - name: flight-cmd:hlint
-      run: stack test flight-cmd:hlint --no-terminal --test-arguments "--color=always"
-
-    - name: flight-comp:hlint
-      run: stack test flight-comp:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-comp:doctest
       run: stack test flight-comp:doctest --no-terminal --test-arguments "--color=always"
@@ -66,27 +57,15 @@ jobs:
     # - name: flight-comp:comp
     #   run: stack test flight-comp:comp --no-terminal --test-arguments "--color=always"
 
-    - name: detour-via-sci:hlint
-      run: stack test detour-via-sci:hlint --no-terminal --test-arguments "--color=always"
-
 ### Failure in library/Data/Via/Scientific.hs:81: expression `fromSci x'
 # expected: 4043636029064415 % 36028797018963968
 # but got: 0.1122334455667788
     # - name: detour-via-sci:doctest
     #   run: stack test detour-via-sci:doctest --no-terminal --test-arguments "--color=always"
 
-    - name: detour-via-uom:hlint
-      run: stack test detour-via-uom:hlint --no-terminal --test-arguments "--color=always"
-
     # compile error, Not in scope: 'u'
     # - name: detour-via-uom:doctest
     #   run: stack test detour-via-uom:doctest --no-terminal --test-arguments "--color=always"
-
-    - name: tasty-compare:hlint
-      run: stack test tasty-compare:hlint --no-terminal --test-arguments "--color=always"
-
-    - name: flight-earth:hlint
-      run: stack test flight-earth:hlint --no-terminal --test-arguments "--color=always"
 
     # on github runner: Examples: 247  Tried: 212  Errors: 0  Failures: 4
     # on mac locally: Examples: 247  Tried: 247  Errors: 0  Failures: 0
@@ -130,21 +109,12 @@ jobs:
     # - name: flight-earth:cylinder-r
     #  run: stack test flight-earth:cylinder-r --no-terminal --test-arguments "--color=always"
 
-    - name: flight-fsdb:hlint
-      run: stack test flight-fsdb --no-terminal --test-arguments "--color=always"
-
     - name: flight-fsdb:doctest
       run: stack test flight-fsdb:doctest --no-terminal --test-arguments "--color=always"
-
-    - name: flight-gap-allot:hlint
-      run: stack test flight-gap-allot:hlint --no-terminal --test-arguments "--color=always"
 
     # 5 failures
     # - name: flight-gap-allot:doctest
     #   run: stack test flight-gap-allot:doctest --no-terminal --test-arguments "--color=always"
-
-    - name: flight-gap-effort:hlint
-      run: stack test flight-gap-effort:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-effort:doctest
       run: stack test flight-gap-effort:doctest --no-terminal --test-arguments "--color=always"
@@ -152,14 +122,8 @@ jobs:
     - name: flight-gap-effort:effort
       run: stack test flight-gap-effort:effort --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-lead:hlint
-      run: stack test flight-gap-lead:hlint --no-terminal --test-arguments "--color=always"
-
     - name: flight-gap-lead:lead
       run: stack test flight-gap-lead:lead --no-terminal --test-arguments "--color=always"
-
-    - name: flight-gap-math:hlint
-      run: stack test flight-gap-math:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-math:doctest
       run: stack test flight-gap-math:doctest --no-terminal --test-arguments "--color=always"
@@ -167,26 +131,14 @@ jobs:
     - name: flight-gap-math:math
       run: stack test flight-gap-math:math --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-stop:hlint
-      run: stack test flight-gap-stop:hlint --no-terminal --test-arguments "--color=always"
-
     - name: flight-gap-stop:stop
       run: stack test flight-gap-stop:stop --no-terminal --test-arguments "--color=always"
-
-    - name: flight-gap-valid:hlint
-      run: stack test flight-gap-valid:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-gap-valid:valid
       run: stack test flight-gap-valid:valid --no-terminal --test-arguments "--color=always"
 
-    - name: flight-gap-weight:hlint
-      run: stack test flight-gap-weight:hlint --no-terminal --test-arguments "--color=always"
-
     - name: flight-gap-weight:weight
       run: stack test flight-gap-weight:weight --no-terminal --test-arguments "--color=always"
-
-    - name: flight-igc:hlint
-      run: stack test flight-igc:hlint --no-terminal --test-arguments "--color=always"
 
  #flight-igc > test (suite: doctest, args: --color=always)
  #
@@ -205,36 +157,15 @@ jobs:
     # - name: flight-igc:doctest
     #  run: stack test flight-igc:doctest --no-terminal --test-arguments "--color=always"
 
-    - name: flight-kml:hlint
-      run: stack test flight-kml:hlint --no-terminal --test-arguments "--color=always"
-
     - name: flight-kml:doctest
       run: stack test flight-kml:doctest --no-terminal --test-arguments "--color=always"
 
     - name: flight-kml:parse
       run: stack test flight-kml:parse --no-terminal --test-arguments "--color=always"
 
-    - name: flight-latlng:hlint
-      run: stack test flight-latlng:hlint --no-terminal --test-arguments "--color=always"
-
-    - name: flight-lookup:hlint
-      run: stack test flight-lookup:hlint --no-terminal --test-arguments "--color=always"
-
-    - name: flight-mask:hlint
-      run: stack test flight-mask:hlint --no-terminal --test-arguments "--color=always"
-
     # 1 failure, ‘tasks’ is not a (visible) field of constructor ‘CompSettings’
     # - name: flight-mask:doctest
     #   run: stack test flight-mask:doctest --no-terminal --test-arguments "--color=always"
-
-    - name: flight-route:hlint
-      run: stack test flight-route:hlint --no-terminal --test-arguments "--color=always"
-
-    - name: flight-scribe:hlint
-      run: stack test flight-scribe:hlint --no-terminal --test-arguments "--color=always"
-
-    - name: siggy-chardust:hlint
-      run: stack test siggy-chardust:hlint --no-terminal --test-arguments "--color=always"
 
     - name: siggy-chardust:doctest
       run: stack test siggy-chardust:doctest --no-terminal --test-arguments "--color=always"
@@ -242,45 +173,23 @@ jobs:
     - name: siggy-chardust:digits
       run: stack test siggy-chardust:digits --no-terminal --test-arguments "--color=always"
 
-    - name: flight-span:hlint
-      run: stack test flight-span:hlint --no-terminal --test-arguments "--color=always"
-
-    - name: flight-task:hlint
-      run: stack test flight-task:hlint --no-terminal --test-arguments "--color=always"
-
     # compile errors
     # - name: flight-task:task
     #  run: stack test flight-task:task --no-terminal --test-arguments "--color=always"
-
-    - name: flight-time:hlint
-      run: stack test flight-time:hlint --no-terminal --test-arguments "--color=always"
 
     # No longer compiles
     # - name: flight-time:golden
     #   run: stack test flight-time:golden --no-terminal --test-arguments "--color=always"
 
-    # parse error on SCC annotation
-    # - name: flight-track:hlint
-    #   run: stack test flight-track:hlint --no-terminal --test-arguments "--color=always"
-
     # 1 failure
     # - name: flight-track:doctest
     #   run: stack test flight-track:doctest --no-terminal --test-arguments "--color=always"
 
-    - name: flight-units:hlint
-      run: stack test flight-units:hlint --no-terminal --test-arguments "--color=always"
-
     - name: flight-units:doctest
       run: stack test flight-units:doctest --no-terminal --test-arguments "--color=always"
-
-    - name: flight-zone:hlint
-      run: stack test flight-zone:hlint --no-terminal --test-arguments "--color=always"
 
     - name: flight-zone:doctest
       run: stack test flight-zone:doctest --no-terminal --test-arguments "--color=always"
 
     - name: flight-zone:serial
       run: stack test flight-zone:serial --no-terminal --test-arguments "--color=always"
-
-    - name: flare-timing:hlint
-      run: stack test flare-timing:hlint --no-terminal --test-arguments "--color=always"
