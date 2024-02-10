@@ -3,7 +3,7 @@
   user-message: "WARNING: This stack project is generated."
 
   ghc-options:
-      "$locals": -Werror
+      "$locals": -Werror=unused-imports
 
   flags:
       detour-via-sci:
@@ -49,8 +49,6 @@
       flight-units:
           suppress-failing-tests: false
       flight-zone:
-          suppress-failing-tests: true
-      app-serve:
           suppress-failing-tests: true
       flare-timing:
           suppress-test-parsers: true
