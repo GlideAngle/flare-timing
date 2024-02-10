@@ -78,12 +78,12 @@ newtype DecimalPlaces = DecimalPlaces Int deriving (Show, Lift)
 -- | From 'Scientific' exactly to 'Rational'.
 --
 -- >>> let x = 0.1122334455667788
--- >>> fromSci x
+-- >>> fromSci x :: Rational
 -- 4043636029064415 % 36028797018963968
 -- >>> x == fromRational (fromSci x)
 -- True
 -- >>> let y = -0.038
--- >>> fromSci y
+-- >>> fromSci y :: Rational
 -- (-5476377146882523) % 144115188075855872
 -- >>> y == fromRational (fromSci y)
 -- True
