@@ -223,7 +223,7 @@ nubOrdOnExcluding f = go
 
 -- |
 -- >>> mark markSasha fixesSasha
--- ((2018-01-03 03:13:00 UTC,2018-01-03 06:57:50 UTC),(00:00:00,03:44:50))
+-- ((2018-01-03 03:12:59 UTC,2018-01-03 06:57:50 UTC),(00:00:00,03:44:51))
 --
 -- >>> mark markBrad fixesBrad
 -- ((2018-01-03 04:05:47 UTC,2018-01-03 06:13:55 UTC),(00:00:00,02:08:08))
@@ -292,7 +292,7 @@ readAltGps (AltGps (Altitude alt)) = K.Altitude $ fromIntegral alt
 {-# INLINE readAltGps #-}
 
 -- $setup
--- >>> :set -XTemplateHaskell
+-- >>> :set -XTemplateHaskell -XOverloadedStrings
 -- >>> import Test.QuickCheck
 -- >>> import Data.List
 -- >>> import Language.Haskell.TH
