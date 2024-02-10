@@ -1,4 +1,6 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ViewPatterns #-}
+
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Flight.Gap.Penalty
@@ -26,10 +28,12 @@ module Flight.Gap.Penalty
 
 import qualified Data.CReal as ExactReal
 import Test.QuickCheck (Arbitrary(..), Gen, NonNegative(..))
+#if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup
+#endif
 import Data.Typeable
 import GHC.TypeLits (Nat, KnownNat, natVal)
-import Data.Proxy (Proxy(..))
+import Data.Proxy ()
 import Text.Printf (printf)
 import Data.Refined
     ( Prop, PropProjection, Refined

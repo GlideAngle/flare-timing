@@ -39,10 +39,12 @@ import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs)
 import Flight.ShortestPath (GeoPath(..))
 import Flight.ShortestPath.Double ()
 import Flight.Route.TrackLine
-    ( ToTrackLine(..), GeoLines(..)
-    , TrackLine(..), ProjectedTrackLine(..), PlanarTrackLine(..)
+    ( ToTrackLine(..), GeoLines(..), ProjectedTrackLine, TrackLine, PlanarTrackLine
     , speedSubset, sumLegs, flipSumLegs
     )
+import qualified Flight.Route.TrackLine as Line (TrackLine(..))
+import qualified Flight.Route.TrackLine as Planar (PlanarTrackLine(..))
+import qualified Flight.Route.TrackLine as Projected (ProjectedTrackLine(..))
 import Flight.Route.Optimal (emptyOptimal)
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
@@ -222,7 +224,7 @@ goByProj sp excludeWaypoints zs = do
     dEE <- fromZs $ distanceEdgeSphere sp costEN zs
 
     let projected = toTrackLine spanF excludeWaypoints dEE
-    let ps = toPoint <$> waypoints projected
+    let ps = toPoint <$> Line.waypoints projected
     let (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps
 
     -- NOTE: Workout the distance for each leg projected.
@@ -238,13 +240,13 @@ goByProj sp excludeWaypoints zs = do
 
     let spherical =
             projected
-                { distance =
+                { Line.distance =
                     edgesSum <$> distancePointToPoint spanS $ ps
                 } :: TrackLine
 
     let planar =
-            PlanarTrackLine
-                { distance = distance (projected :: TrackLine)
+            Planar.PlanarTrackLine
+                { distance = Line.distance (projected :: TrackLine)
                 , mappedZones =
                     let us = fromUTMRefZone <$> es
                         us' = nub us
@@ -259,7 +261,7 @@ goByProj sp excludeWaypoints zs = do
                 } :: PlanarTrackLine
 
     return
-        ProjectedTrackLine
+        Projected.ProjectedTrackLine
             { planar = planar
             , spherical = spherical
             , ellipsoid = spherical
@@ -267,7 +269,7 @@ goByProj sp excludeWaypoints zs = do
 
 goByPoint :: Bool -> [Zone Double] -> TrackLine
 goByPoint excludeWaypoints zs =
-    TrackLine
+    Line.TrackLine
         { distance = d
         , waypoints = if excludeWaypoints then [] else xs
         , legs = ds

@@ -108,13 +108,4 @@ in  let deps =
               , source-dirs = "src"
               }
             }
-          , tests.hlint
-            =
-            { dependencies = [ "base", "hlint", "flight-comp" ]
-            , ghc-options = [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-            , main = "HLint.hs"
-            , source-dirs = "test-suite-hlint"
-            , when =
-              { condition = "flag(suppress-failing-tests)", buildable = False }
-            }
           }

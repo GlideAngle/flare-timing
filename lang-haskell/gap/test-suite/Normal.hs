@@ -1,6 +1,13 @@
+{-# LANGUAGE CPP #-}
+
 module Normal (Normal(..), NormalProduct(..), NormalSum(..)) where
 
-import Control.Applicative (pure, empty)
+import Control.Applicative
+  ( empty
+#if !MIN_VERSION_base(4,9,0)
+  , pure
+#endif
+  )
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Data.Ratio ((%))

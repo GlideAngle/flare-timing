@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6346acc4eafb155ee0c02574be2961070e4e3241afc6c63af609ea064407dd6a
+-- hash: fe3e57771033c83f257a8ee3cfe04d6f4b28e7c8dbe9cddf3fb2b18869f05114
 
 name:           flight-zone
 version:        0.1.0
@@ -248,6 +248,7 @@ test-suite serial
     , flight-latlng
     , flight-units
     , here
+    , hspec
     , newtype
     , scientific
     , siggy-chardust

@@ -1,7 +1,14 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 {-# OPTIONS_GHC -fno-warn-incomplete-uni-patterns #-}
+
+#if MIN_VERSION_base(4,16,0)
+-- TODO: Remove -Wno-ambiguous-fields.
+{-# OPTIONS_GHC -Wno-ambiguous-fields #-}
+#endif
 
 import Prelude hiding (max)
 import qualified Prelude as Stats (max)
@@ -22,7 +29,6 @@ import qualified Data.Map.Merge.Strict as Map
 import Data.List (partition)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
-import Control.Monad (mapM_)
 import Control.Monad.Zip (mzip)
 import Control.Exception.Safe (catchIO)
 import System.Directory (getCurrentDirectory)
@@ -174,7 +180,7 @@ drive o@CmdBatchOptions{file} = do
     Fmt.fprint ("Tallying points completed in " Fmt.% timeSpecs Fmt.% "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile = do
+go CmdBatchOptions{} compFile = do
     putStrLn $ "Reading pilots ABS & DNF from task from " ++ show compFile
 
     filesTaskAndSettings <-
@@ -1424,7 +1430,7 @@ tallyDf
 
         ss' = getTagTime unStart
         es' = getTagTime unEnd
-        getTagTime accessor = (time :: InterpolatedFix -> _) . inter <$> (accessor =<< g)
+        getTagTime accessor = (\InterpolatedFix{time} -> time) . inter <$> (accessor =<< g)
 
 tallyDfNoTrack
     :: Discipline

@@ -114,7 +114,6 @@ import "flight-gap-math" Flight.Score
     )
 import "flight-gap-weight" Flight.Score (LwScaling(..), EGwScaling(..))
 import Flight.Geodesy (EarthMath(..), EarthModel(..))
-import Flight.Path.Types (IxTask(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.

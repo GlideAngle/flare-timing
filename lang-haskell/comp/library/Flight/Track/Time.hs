@@ -760,7 +760,7 @@ dropZeros :: [TickRow] -> [TickRow]
 dropZeros =
     dropWhile ((== 0) . d)
     where
-        d = togo :: (TickRow -> Double)
+        d = \TickRow{togo} -> togo
 
 -- | Discard fixes further from goal than any previous fix.
 discardFurther :: [TickRow] -> [TickRow]
@@ -768,7 +768,7 @@ discardFurther (x : y : ys)
     | d x <= d y = discardFurther (x : ys)
     | otherwise = x : discardFurther (y : ys)
     where
-        d = togo :: (TickRow -> Double)
+        d = \TickRow{togo} -> togo
 discardFurther ys = ys
 
 commentOnFixRange :: Pilot -> [FixIdx] -> String

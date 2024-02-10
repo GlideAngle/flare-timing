@@ -62,7 +62,7 @@ module Flight.Path.Tx
 
 import Data.Coerce (coerce)
 import Text.Printf (printf)
-import System.FilePath (FilePath, (</>), (<.>), takeDirectory, replaceExtensions)
+import System.FilePath ((</>), (<.>), takeDirectory, replaceExtensions)
 import "flight-gap-allot" Flight.Score (PilotId(..), PilotName(..), Pilot(..))
 import Flight.Path.Types
 

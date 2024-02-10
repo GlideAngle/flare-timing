@@ -5,7 +5,7 @@ module Flight.Mask.Tag.Double where
 import Prelude hiding (span)
 import Data.Coerce (coerce)
 import Data.Maybe (listToMaybe, catMaybes, fromMaybe)
-import Data.List ((\\), filter, inits, foldl')
+import Data.List ((\\), inits, foldl')
 import Control.Arrow (first)
 
 import Flight.Clip (FlyingSection)

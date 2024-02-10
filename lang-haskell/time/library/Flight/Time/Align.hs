@@ -11,7 +11,7 @@ import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Lens ((^?), element)
 import Data.These
 import Data.Maybe (catMaybes, fromMaybe, listToMaybe)
-import Control.Monad (mapM_, when, zipWithM_)
+import Control.Monad (when, zipWithM_)
 import Control.Exception.Safe (catchIO)
 import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))

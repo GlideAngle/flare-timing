@@ -1,6 +1,6 @@
 module Ellipsoid.Ellipsoid (properties) where
 
-import Test.Tasty (TestTree, testGroup)
+import Test.Tasty (testGroup)
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.Providers as QC
 

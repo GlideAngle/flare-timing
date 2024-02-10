@@ -18,7 +18,7 @@ module Flight.Path.Find
 
 import GHC.Records
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath ((</>), FilePath, takeDirectory)
+import System.FilePath ((</>), takeDirectory)
 import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension, fileName)
 import qualified System.FilePath.Find as Find (FileType(..))

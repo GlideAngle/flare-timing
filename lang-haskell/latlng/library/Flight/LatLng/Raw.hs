@@ -24,6 +24,54 @@ import Data.Via.Scientific
     , deriveShowValueViaSci
     )
 
+showLat :: RawLat -> String
+showLat (RawLat lat') =
+    if x < 0
+       then showSci dpDegree (negate x) ++ "°S"
+       else showSci dpDegree x ++ "°N"
+    where
+        x = toSci dpDegree lat'
+
+showLng :: RawLng -> String
+showLng (RawLng lng') =
+    if x < 0
+       then showSci dpDegree (negate x) ++ "°W"
+       else showSci dpDegree x ++ "°E"
+    where
+        x = toSci dpDegree lng'
+
+newtype RawLat = RawLat Rational deriving (Eq, Ord, Generic)
+newtype RawLng = RawLng Rational deriving (Eq, Ord, Generic)
+newtype RawAlt = RawAlt Rational deriving (Eq, Ord, Generic)
+
+deriveDecimalPlaces dpDegree ''RawLat
+deriveDecimalPlaces dpDegree ''RawLng
+deriveDecimalPlaces dpAlt ''RawAlt
+
+instance Newtype RawLat Rational where
+    pack = RawLat
+    unpack (RawLat a) = a
+
+instance Newtype RawLng Rational where
+    pack = RawLng
+    unpack (RawLng a) = a
+
+instance Newtype RawAlt Rational where
+    pack = RawAlt
+    unpack (RawAlt a) = a
+
+deriveJsonViaSci ''RawLat
+deriveJsonViaSci ''RawLng
+deriveJsonViaSci ''RawAlt
+
+deriveShowValueViaSci ''RawLat
+deriveShowValueViaSci ''RawLng
+deriveShowValueViaSci ''RawAlt
+
+deriveCsvViaSci ''RawLat
+deriveCsvViaSci ''RawLng
+deriveCsvViaSci ''RawAlt
+
 data RawLatLng =
     RawLatLng
         { lat :: RawLat
@@ -44,25 +92,9 @@ instance FromJSON RawLatLng where
         <$> v .: "lat"
         <*> v .: "lng"
 
-newtype RawLat = RawLat Rational deriving (Eq, Ord, Generic)
-newtype RawLng = RawLng Rational deriving (Eq, Ord, Generic)
-newtype RawAlt = RawAlt Rational deriving (Eq, Ord, Generic)
-
 deriving anyclass instance NFData RawLat
 deriving anyclass instance NFData RawLng
 deriving anyclass instance NFData RawAlt
-
-instance Newtype RawLat Rational where
-    pack = RawLat
-    unpack (RawLat a) = a
-
-instance Newtype RawLng Rational where
-    pack = RawLng
-    unpack (RawLng a) = a
-
-instance Newtype RawAlt Rational where
-    pack = RawAlt
-    unpack (RawAlt a) = a
 
 csvSciLL :: Rational -> String
 csvSciLL = showSci dpDegree . toSci dpDegree
@@ -91,40 +123,8 @@ instance FromNamedRecord RawLng where
 instance FromNamedRecord RawAlt where
     parseNamedRecord m = RawAlt . fromSci <$> m Csv..: "alt"
 
-showLat :: RawLat -> String
-showLat (RawLat lat') =
-    if x < 0
-       then showSci dpDegree (negate x) ++ "°S"
-       else showSci dpDegree x ++ "°N"
-    where
-        x = toSci dpDegree lat'
-
-showLng :: RawLng -> String
-showLng (RawLng lng') =
-    if x < 0
-       then showSci dpDegree (negate x) ++ "°W"
-       else showSci dpDegree x ++ "°E"
-    where
-        x = toSci dpDegree lng'
-
 showAlt :: RawAlt -> String
 showAlt (RawAlt alt') =
     showSci dpAlt x ++ "m"
     where
         x = toSci dpAlt alt'
-
-deriveDecimalPlaces dpDegree ''RawLat
-deriveDecimalPlaces dpDegree ''RawLng
-deriveDecimalPlaces dpAlt ''RawAlt
-
-deriveJsonViaSci ''RawLat
-deriveJsonViaSci ''RawLng
-deriveJsonViaSci ''RawAlt
-
-deriveShowValueViaSci ''RawLat
-deriveShowValueViaSci ''RawLng
-deriveShowValueViaSci ''RawAlt
-
-deriveCsvViaSci ''RawLat
-deriveCsvViaSci ''RawLng
-deriveCsvViaSci ''RawAlt

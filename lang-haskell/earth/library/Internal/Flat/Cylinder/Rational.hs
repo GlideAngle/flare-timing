@@ -110,10 +110,10 @@ translate
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Rational
 circumSample SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
-    | bearing < 0 || bearing > 2 * F.pi eps = fail "Arc sweep must be in the range 0..2π radians."
+    | bearing < 0 || bearing > 2 * F.pi eps = error "Arc sweep must be in the range 0..2π radians."
     | otherwise =
         case spSamples of
-            [] -> fail "Empty list of sample numbers."
+            [] -> error "Empty list of sample numbers."
             sp0 : _ ->
                 let (θ, xs) = sampleAngles (F.pi eps) sp0 arcSweep arc0 zoneM zoneN
 

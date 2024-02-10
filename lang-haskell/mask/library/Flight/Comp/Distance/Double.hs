@@ -19,7 +19,6 @@ import qualified Flight.Track.Time as Time (TimeRow(..))
 import qualified Flight.Task as T (fromZs)
 import Flight.Geodesy.Solution (Trig, GeodesySolutions(..))
 
-import Flight.Mask (dashPathToGoalTimeRows)
 import Flight.Mask.Internal.Race (FlyCut(..))
 import Flight.Mask.Distance (GeoDash(..))
 import Flight.Comp.Distance (GeoNigh(..), DashPathInputs(..))
