@@ -57,11 +57,8 @@ jobs:
     # - name: flight-comp:comp
     #   run: stack test flight-comp:comp --no-terminal --test-arguments "--color=always"
 
-### Failure in library/Data/Via/Scientific.hs:81: expression `fromSci x'
-# expected: 4043636029064415 % 36028797018963968
-# but got: 0.1122334455667788
-    # - name: detour-via-sci:doctest
-    #   run: stack test detour-via-sci:doctest --no-terminal --test-arguments "--color=always"
+    - name: detour-via-sci:doctest
+      run: stack test detour-via-sci:doctest --no-terminal --test-arguments "--color=always"
 
     # compile error, Not in scope: 'u'
     # - name: detour-via-uom:doctest
