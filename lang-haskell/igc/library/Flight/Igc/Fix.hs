@@ -280,7 +280,7 @@ toFixTick :: UTCTime -> UTCTime -> Second
 toFixTick mark0 t = Second . round $ t `diffUTCTime` mark0
 
 -- $setup
--- >>> :set -XTemplateHaskell
+-- >>> :set -XTemplateHaskell -XOverloadedStrings
 -- >>> import Test.QuickCheck
 -- >>> import System.IO (readFile)
 -- >>> import Data.List
@@ -298,8 +298,8 @@ toFixTick mark0 t = Second . round $ t `diffUTCTime` mark0
 -- >>> fileBrad  = "./test-suite-doctest/Brad-Porter.20180104-095852.36822.34.igc"
 -- >>> fileScott = "./test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc"
 -- >>> fileGordon = "./test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc"
--- >>> fileJason = "./test-suite-doctest/Jason_Kath.20180101-000746.18332.30.igc"
--- >>> fileJeff = "./test-suite-doctest/T4.kannard.126.igc"
+-- >>> fileJason = "./test-suite-doctest/Jason_Kath.20180101-000746.18332.30.IGC"
+-- >>> fileJeff = "./test-suite-doctest/T4.kannard.126.IGC"
 --
 -- >>> (markSasha : _, (fixesSasha, _)) = let (Right xs) = parse $(embedStr (readFile fileSasha)) in (partition isFix <$> partition isMark xs)
 -- >>> (markBrad : _, (fixesBrad, _)) = let (Right xs) = parse $(embedStr (readFile fileBrad)) in (partition isFix <$> partition isMark xs)
