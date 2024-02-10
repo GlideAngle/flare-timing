@@ -1,7 +1,7 @@
 user-message: "WARNING: This stack project is generated."
 
 ghc-options:
-    "$locals": -Werror
+    "$locals": -Werror=unused-imports
 
 flags:
     detour-via-sci:
@@ -48,16 +48,13 @@ flags:
         suppress-failing-tests: false
     flight-zone:
         suppress-failing-tests: true
-    app-serve:
-        suppress-failing-tests: true
     flare-timing:
         suppress-test-parsers: true
 
-resolver: lts-11.22
+resolver: lts-21.25
 
-# We have upgraded 33 packages and have 1 yet to do.
+# We have upgraded 32 packages and have 1 yet to do.
 packages:
-  - ./lang-haskell/app-serve
   - ./lang-haskell/build
   - ./lang-haskell/clip
   - ./lang-haskell/cmd
@@ -91,36 +88,29 @@ packages:
   - ./lang-haskell/units
   - ./lang-haskell/zone
 
-# We have 3 source packages:
+# We have 4 source packages:
 #   * external 0
 #   * internal 0
 #   * external forks 0
-#   * internal forks 3
+#   * internal forks 4
 extra-deps:
   # Source Packages, internal forks of other repositories.
   # Can we upstream and unfork?
+  - git: https://github.com/typechecker/exact-real
+    commit: c4308efc37c53e266fee348a80fdfbabb18822be
+  - git: https://github.com/typechecker/facts
+    commit: fda33feb0c4ddd95f77a453dd4199ef7be4a3b82
   - git: https://github.com/typechecker/hcoord
     commit: e6f72eeb16c10f29b6d2438cca6b7d3978ea91f9
     subdirs:
       - hcoord
       - hcoord-utm
-  - git: https://github.com/typechecker/exact-real
-    commit: c4308efc37c53e266fee348a80fdfbabb18822be
-  - git: https://github.com/blockscope/uom-plugin
-    commit: 7419e73e7fa534cced7ecd3232103f6304bed728
-    subdirs:
-      - uom-plugin
+  - git: https://github.com/typechecker/hxt-pickle-utils
+    commit: 1c9349233701f896313a9a0cb163d65f8b15bb9d
 
   # Package versions for published packages either not on Stackage or
   # not matching the version on Stackage for the resolver we use.
   # These package-version extra dependencies are equivalent to cabal constraints.
-  - HUnit-1.5.0.0
-  - aeson-1.3.1.1
-  - checkers-0.5.6
-  - doctest-0.15.0
-  - facts-0.0.1.0
+  - ghc-tcplugin-api-0.8.3.0
   - hxt-xpath-9.1.2.2
-  - megaparsec-7.0.4
-  - memoize-0.8.1
-  - parser-combinators-1.0.0
-  - servant-py-0.1.1.1
+  - uom-plugin-0.4.0.0
