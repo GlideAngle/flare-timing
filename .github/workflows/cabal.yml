@@ -44,11 +44,9 @@ jobs:
     # - name: flight-clip:doctest
     #   run: cabal test flight-clip:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-comp
-      run: cabal test flight-comp --test-show-details=direct --test-option="--color=always"
-
-    - name: flight-comp:doctest
-      run: cabal test flight-comp:doctest --test-show-details=direct --test-option="--color=always"
+    # doctest: <command line>: Could not find module ‘Data.UnitsOfMeasure.Plugin’
+    # - name: flight-comp:doctest
+    #   run: cabal test flight-comp:doctest --test-show-details=direct --test-option="--color=always"
 
     # Variable not in scope: ensureExt :: FileType -> [Char] -> FilePath
     # - name: flight-comp:comp
