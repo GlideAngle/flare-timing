@@ -91,11 +91,10 @@ jobs:
     # - name: flight-earth:zone
     #   run: cabal test flight-earth:zone --test-show-details=direct --test-option="--color=always"
 
-    # compile error
-    # - name: flight-earth:cylinder
-    #   run: cabal test flight-earth:cylinder --test-show-details=direct --test-option="--color=always"
+    - name: flight-earth:cylinder
+      run: cabal test flight-earth:cylinder --test-show-details=direct --test-option="--color=always"
 
-    # compile error
+    # failures and takes a long time to run
     # - name: flight-earth:cylinder-r
     #   run: cabal test flight-earth:cylinder-r --test-show-details=direct --test-option="--color=always"
 

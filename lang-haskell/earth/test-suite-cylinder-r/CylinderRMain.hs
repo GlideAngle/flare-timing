@@ -1,6 +1,6 @@
 import Test.Tasty (TestTree, testGroup, defaultMain)
 
-import qualified Cylinder.Sphere.Sphere as S
+import qualified Cylinder.Sphere as S
 import qualified Cylinder.Ellipsoid.Vincenty as V
 
 main :: IO ()

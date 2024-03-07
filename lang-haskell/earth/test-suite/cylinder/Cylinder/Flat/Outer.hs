@@ -11,7 +11,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.Zone (QBearing, Bearing(..), Radius(..))
+import Flight.Zone (QBearing, Bearing(..))
 import Flight.Zone.Cylinder (Tolerance(..))
 import Cylinder.Flat.Span
     ( spanD, csD, spD

@@ -11,7 +11,7 @@ import Flight.Zone.Path (distancePointToPoint)
 import Zone (MkZone, QLL, showQ, describedZones)
 import qualified Distance as D (DistanceEqual, toDistanceEqual)
 import Flight.Earth.Ellipsoid (wgs84)
-import Ellipsoid.Span (spanD, spanR)
+import Cylinder.Ellipsoid.Vincenty.Span (spanD, spanR)
 
 coincidentUnits :: TestTree
 coincidentUnits =

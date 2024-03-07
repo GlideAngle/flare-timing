@@ -58,7 +58,7 @@ mm1 :: Tolerance Rational
 mm1 = Tolerance $ 1 % 1000
 
 sampleParams :: SampleParams Rational
-sampleParams = SampleParams { spSamples = Samples 100
+sampleParams = SampleParams { spSamples = [Samples 100]
                             , spTolerance = mm30
                             }
 

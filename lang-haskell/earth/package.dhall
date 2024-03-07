@@ -253,7 +253,6 @@ in  let defs = ./../defaults.dhall
                             , "test-suite/cylinder"
                             , "test-suite-cylinder"
                             ]
-                          , buildable = False
                           }
                         , cylinder-r =
                           { dependencies =
@@ -274,7 +273,6 @@ in  let defs = ./../defaults.dhall
                             , "test-suite/cylinder"
                             , "test-suite-cylinder-r"
                             ]
-                          , buildable = False
                           }
                         }
                   }

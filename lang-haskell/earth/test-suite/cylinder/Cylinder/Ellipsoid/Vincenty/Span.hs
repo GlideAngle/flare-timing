@@ -44,14 +44,14 @@ csR = circumSample @Rational @Rational (Vincenty, EarthAsEllipsoid wgs84, defEps
 spD :: SampleParams Double
 spD =
     SampleParams
-        { spSamples = Samples 100
+        { spSamples = [Samples 100]
         , spTolerance = mm30
         }
 
 spR :: SampleParams Rational
 spR =
     SampleParams
-        { spSamples = Samples 100
+        { spSamples = [Samples 100]
         , spTolerance = mm30
         }
 
