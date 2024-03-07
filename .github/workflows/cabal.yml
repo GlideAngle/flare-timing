@@ -116,8 +116,9 @@ jobs:
     # - name: flight-gap-allot:doctest
     #   run: cabal test flight-gap-allot:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-effort:doctest
-      run: cabal test flight-gap-effort:doctest --test-show-details=direct --test-option="--color=always"
+    # doctest: <command line>: cannot satisfy -package flight-units
+    # - name: flight-gap-effort:doctest
+    #   run: cabal test flight-gap-effort:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-effort:effort
       run: cabal test flight-gap-effort:effort --test-show-details=direct --test-option="--color=always"
@@ -125,8 +126,9 @@ jobs:
     - name: flight-gap-lead:lead
       run: cabal test flight-gap-lead:lead --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-gap-math:doctest
-      run: cabal test flight-gap-math:doctest --test-show-details=direct --test-option="--color=always"
+    # doctest: <command line>: cannot satisfy -package exact-real
+    # - name: flight-gap-math:doctest
+    #   run: cabal test flight-gap-math:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-gap-math:math
       run: cabal test flight-gap-math:math --test-show-details=direct --test-option="--color=always"
@@ -152,8 +154,9 @@ jobs:
     # - name: flight-igc:doctest
     #  run: cabal test flight-igc:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-kml:doctest
-      run: cabal test flight-kml:doctest --test-show-details=direct --test-option="--color=always"
+    # doctest can't find many of the modules.
+    # - name: flight-kml:doctest
+    #   run: cabal test flight-kml:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-kml:parse
       run: cabal test flight-kml:parse --test-show-details=direct --test-option="--color=always"
@@ -180,14 +183,13 @@ jobs:
     # - name: flight-track:doctest
     #   run: cabal test flight-track:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-units:doctest
-      run: cabal test flight-units:doctest --test-show-details=direct --test-option="--color=always"
+    # doctest: <command line>: Could not find module ‘Data.UnitsOfMeasure.Plugin’
+    # - name: flight-units:doctest
+    #   run: cabal test flight-units:doctest --test-show-details=direct --test-option="--color=always"
 
-    - name: flight-zone
-      run: cabal test flight-zone --test-show-details=direct --test-option="--color=always"
-
-    - name: flight-zone:doctest
-      run: cabal test flight-zone:doctest --test-show-details=direct --test-option="--color=always"
+    # doctest: <command line>: Could not find module ‘Data.UnitsOfMeasure.Plugin’
+    # - name: flight-zone:doctest
+    #   run: cabal test flight-zone:doctest --test-show-details=direct --test-option="--color=always"
 
     - name: flight-zone:serial
       run: cabal test flight-zone:serial --test-show-details=direct --test-option="--color=always"
